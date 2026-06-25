@@ -1,0 +1,193 @@
+version: "3.9"
+
+# ─── Shared network ────────────────────────────────────────────────────────────
+networks:
+  news-pipeline:
+    driver: bridge
+
+# ─── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+  redis_data:
+
+# ─── Services ─────────────────────────────────────────────────────────────────
+services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: news_pipeline
+      POSTGRES_USER: pipeline
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - news-pipeline
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pipeline"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - news-pipeline
+
+  # ── Backend microservices ────────────────────────────────────────────────────
+
+  source-service:
+    build:
+      context: ./backend
+      dockerfile: services/source/Dockerfile   # TODO: create per-service Dockerfiles
+    environment:
+      SOURCE_SERVICE_PORT: 3001
+      DATABASE_URL: postgresql://pipeline:${POSTGRES_PASSWORD:-changeme}@postgres:5432/news_pipeline
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - news-pipeline
+
+  news-service:
+    build:
+      context: ./backend
+      dockerfile: services/news/Dockerfile
+    environment:
+      NEWS_SERVICE_PORT: 3002
+      SOURCE_SERVICE_URL: http://source-service:3001
+      DATABASE_URL: postgresql://pipeline:${POSTGRES_PASSWORD:-changeme}@postgres:5432/news_pipeline
+    ports:
+      - "3002:3002"
+    depends_on:
+      - source-service
+    networks:
+      - news-pipeline
+
+  fact-check-service:
+    build:
+      context: ./backend
+      dockerfile: services/fact-check/Dockerfile
+    environment:
+      FACT_CHECK_SERVICE_PORT: 3003
+      NEWS_SERVICE_URL: http://news-service:3002
+      # TODO: add API keys for external fact-check providers
+    ports:
+      - "3003:3003"
+    depends_on:
+      - news-service
+    networks:
+      - news-pipeline
+
+  nlp-service:
+    build:
+      context: ./backend
+      dockerfile: services/nlp/Dockerfile
+    environment:
+      NLP_SERVICE_PORT: 3004
+      # TODO: OPENAI_API_KEY or HUGGINGFACE_API_KEY
+    ports:
+      - "3004:3004"
+    networks:
+      - news-pipeline
+
+  content-service:
+    build:
+      context: ./backend
+      dockerfile: services/content/Dockerfile
+    environment:
+      CONTENT_SERVICE_PORT: 3005
+      NLP_SERVICE_URL: http://nlp-service:3004
+    ports:
+      - "3005:3005"
+    depends_on:
+      - nlp-service
+    networks:
+      - news-pipeline
+
+  media-service:
+    build:
+      context: ./backend
+      dockerfile: services/media/Dockerfile
+    environment:
+      MEDIA_SERVICE_PORT: 3006
+      # TODO: UNSPLASH_ACCESS_KEY, GETTY_API_KEY, etc.
+    ports:
+      - "3006:3006"
+    networks:
+      - news-pipeline
+
+  qa-service:
+    build:
+      context: ./backend
+      dockerfile: services/qa/Dockerfile
+    environment:
+      QA_SERVICE_PORT: 3007
+    ports:
+      - "3007:3007"
+    networks:
+      - news-pipeline
+
+  publishing-service:
+    build:
+      context: ./backend
+      dockerfile: services/publishing/Dockerfile
+    environment:
+      PUBLISHING_SERVICE_PORT: 3008
+      CONTENT_SERVICE_URL: http://content-service:3005
+      REDIS_URL: redis://redis:6379
+      # TODO: CMS_API_KEY, TWITTER_API_KEY, MAILCHIMP_API_KEY
+    ports:
+      - "3008:3008"
+    depends_on:
+      - content-service
+      - redis
+    networks:
+      - news-pipeline
+
+  analytics-service:
+    build:
+      context: ./backend
+      dockerfile: services/analytics/Dockerfile
+    environment:
+      ANALYTICS_SERVICE_PORT: 3009
+      SOURCE_SERVICE_URL: http://source-service:3001
+      DATABASE_URL: postgresql://pipeline:${POSTGRES_PASSWORD:-changeme}@postgres:5432/news_pipeline
+    ports:
+      - "3009:3009"
+    networks:
+      - news-pipeline
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile   # TODO: create Next.js Dockerfile
+    environment:
+      NEXT_PUBLIC_SOURCE_SERVICE_URL: http://source-service:3001
+      NEXT_PUBLIC_NEWS_SERVICE_URL: http://news-service:3002
+      NEXT_PUBLIC_FACT_CHECK_SERVICE_URL: http://fact-check-service:3003
+      NEXT_PUBLIC_NLP_SERVICE_URL: http://nlp-service:3004
+      NEXT_PUBLIC_CONTENT_SERVICE_URL: http://content-service:3005
+      NEXT_PUBLIC_MEDIA_SERVICE_URL: http://media-service:3006
+      NEXT_PUBLIC_QA_SERVICE_URL: http://qa-service:3007
+      NEXT_PUBLIC_PUBLISHING_SERVICE_URL: http://publishing-service:3008
+      NEXT_PUBLIC_ANALYTICS_SERVICE_URL: http://analytics-service:3009
+    ports:
+      - "3000:3000"
+    depends_on:
+      - source-service
+      - news-service
+    networks:
+      - news-pipeline
