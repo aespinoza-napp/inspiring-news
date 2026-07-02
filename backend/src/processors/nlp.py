@@ -1,25 +1,18 @@
-from textblob import TextBlob
-from rake_nltk import Rake
-import nltk
+"""
+Natural Language Processing module.
 
-nltk.download('punkt')
-nltk.download('stopwords')
+Current implementation:
+    • sentence segmentation
+    • claim extraction
+    • naive entity extraction
 
-class NLPEngine:
-    def __init__(self):
-        self.rake = Rake()
+Future implementations may use
 
-    def analyze(self, text: str):
-        # Sentiment
-        analysis = TextBlob(text)
-        sentiment = "Positive" if analysis.sentiment.polarity > 0 else "Negative" if analysis.sentiment.polarity < 0 else "Neutral"
-        
-        # Keywords
-        self.rake.extract_keywords_from_text(text)
-        keywords = self.rake.get_ranked_phrases()[:5]
-        
-        return sentiment, keywords
-    
+- spaCy
+- OpenAI
+- Gemini
+- LangChain
+"""
 
 import re
 
@@ -27,37 +20,44 @@ from src.models.claim import Claim
 
 
 class NLPProcessor:
-    """
-    Extremely simple NLP processor.
 
-    - Splits the article into sentences.
-    - Every sentence becomes a claim.
-    - Extracts capitalized words as entities.
-    """
-
-    ENTITY_REGEX = re.compile(r"\b[A-Z][a-zA-Z]+\b")
+    ENTITY_PATTERN = re.compile(r"\b[A-Z][a-zA-Z]+\b")
 
     def process(self, text: str) -> list[Claim]:
+        """
+        Convert an article into a list of factual claims.
+
+        Parameters
+        ----------
+        text:
+            Complete article text.
+
+        Returns
+        -------
+        list[Claim]
+        """
 
         claims = []
 
         sentences = [
-            sentence.strip()
-            for sentence in text.split(".")
-            if sentence.strip()
+            s.strip()
+            for s in text.split(".")
+            if s.strip()
         ]
 
         for sentence in sentences:
 
-            entities = sorted(
-                set(self.ENTITY_REGEX.findall(sentence))
+            entities = list(
+                set(
+                    self.ENTITY_PATTERN.findall(sentence)
+                )
             )
 
             claims.append(
                 Claim(
                     text=sentence,
-                    confidence=1.0,
                     entities=entities,
+                    confidence=1.0,
                 )
             )
 

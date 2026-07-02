@@ -2,13 +2,12 @@ from datetime import datetime
 
 from fastapi import APIRouter
 
-from src.container import repository
+from src.container import pipeline
 from src.models.news import News
 from src.workflows.news_pipeline import NewsPipeline
 
 router = APIRouter()
 
-pipeline = NewsPipeline(repository)
 
 
 @router.post("/news")

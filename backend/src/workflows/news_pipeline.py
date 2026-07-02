@@ -1,75 +1,84 @@
+"""
+Main news processing pipeline.
+
+The pipeline coordinates the execution of all processing stages while
+delegating the actual work to specialized components.
+
+Responsibilities
+----------------
+1. Extract claims and entities.
+2. Compute article sentiment.
+3. Fact-check every extracted claim.
+4. Persist the enriched article.
+"""
+
 from textblob import TextBlob
-from typing import List
-from src.api.scraper import ScraperAgent
-from src.agents.fact_checker import FactChecker
-from src.processors.nlp import NLPEngine
-from src.models.news import NewsArticle
-
-class NewsIntelligence:
-    def __init__(self, db_client):
-        self.db = db_client
-
-    async def analyze_sentiment(self, text: str) -> float:
-        # Returns score from -1 (negative) to 1 (positive)
-        return TextBlob(text).sentiment.polarity
-
-    async def fact_check(self, article: str) -> str:
-        # Placeholder for LLM fact-checking logic
-        # In production, use LangChain + Google Search Tool
-        return "verified"
-
-    async def format_for_social(self, article: str, platform: str) -> str:
-        if platform == "instagram":
-            return f"📸 NEWS: {article[:100]}... #news #info"
-        if platform == "tiktok":
-            return f"🎥 Check this out: {article[:50]} #fyp"
-        return article
-
-    async def process_and_store(self, article: NewsArticle):
-        article.sentiment_score = await self.analyze_sentiment(article.raw_content)
-        article.fact_check_status = await self.fact_check(article.raw_content)
-        
-        # Save to Neo4j
-        await self.db.save_news_node(article)
-
 
 from src.agents.fact_checker import FactChecker
-from src.database.local_repository import LocalRepository
+from src.database.repository import NewsRepository
 from src.models.news import News
 from src.processors.nlp import NLPProcessor
 
 
 class NewsPipeline:
+    """Coordinates the complete news enrichment workflow."""
 
     def __init__(
         self,
-        repository: LocalRepository,
+        repository: NewsRepository,
+        nlp: NLPProcessor,
+        fact_checker: FactChecker,
     ):
 
         self.repository = repository
+        self.nlp = nlp
+        self.fact_checker = fact_checker
 
-        self.nlp = NLPProcessor()
+    def analyze_sentiment(self, text: str) -> float:
+        """
+        Computes a sentiment score.
 
-        self.fact_checker = FactChecker()
+        Returns
+        -------
+        float
+            Score between -1 and 1.
+        """
 
-    def execute(
-        self,
-        news: News,
-    ) -> News:
+        return TextBlob(text).sentiment.polarity
 
-        claims = self.nlp.process(
+    def execute(self, news: News) -> News:
+        """
+        Execute the complete enrichment pipeline.
+
+        Parameters
+        ----------
+        news:
+            Raw article.
+
+        Returns
+        -------
+        News
+            Fully processed article.
+        """
+
+        # ---------- NLP ----------
+
+        news.claims = self.nlp.process(news.content)
+
+        # ---------- Sentiment ----------
+
+        news.sentiment = self.analyze_sentiment(
             news.content
         )
 
-        news.claims = claims
+        # ---------- Fact Checking ----------
 
         news.fact_checks = [
-
             self.fact_checker.verify(claim)
-
-            for claim in claims
-
+            for claim in news.claims
         ]
+
+        # ---------- Persistence ----------
 
         self.repository.save(news)
 
