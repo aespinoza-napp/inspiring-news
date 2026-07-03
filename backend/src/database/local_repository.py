@@ -26,7 +26,7 @@ class LocalRepository(NewsRepository):
 
         return (
             self.folder /
-            f"{news.source}_{date}_{news.id}.json"
+            f"{news.source_id}_{date}_{news.id}.json"
         )
 
     def save(

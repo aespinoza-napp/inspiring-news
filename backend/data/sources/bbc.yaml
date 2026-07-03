@@ -1,0 +1,22 @@
+id: bbc
+
+name: BBC
+
+base_url: https://www.bbc.com
+
+rss_url: http://feeds.bbci.co.uk/news/rss.xml
+
+language: en
+
+country: UK
+
+source_type: news
+
+reliability_index: 0.94
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general

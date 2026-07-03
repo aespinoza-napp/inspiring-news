@@ -1,0 +1,23 @@
+id: nasa
+
+name: NASA
+
+base_url: https://www.nasa.gov
+
+rss_url: https://www.nasa.gov/rss/dyn/breaking_news.rss
+
+language: en
+
+country: US
+
+source_type: government
+
+reliability_index: 1.0
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - space

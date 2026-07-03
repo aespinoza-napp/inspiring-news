@@ -1,0 +1,18 @@
+id: cnn
+
+name: CNN
+
+base_url: https://www.cnn.com
+
+rss_url: https://rss.cnn.com/rss/edition.rss
+
+country: US
+
+language: en
+
+reliability_index: 0.72
+
+enabled: true
+
+tags:
+  - general

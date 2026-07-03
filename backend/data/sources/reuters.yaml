@@ -1,0 +1,23 @@
+id: reuters
+
+name: Reuters
+
+base_url: https://www.reuters.com
+
+rss_url: https://www.reutersagency.com/feed/
+
+language: en
+
+country: GB
+
+source_type: news
+
+reliability_index: 0.96
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - finance

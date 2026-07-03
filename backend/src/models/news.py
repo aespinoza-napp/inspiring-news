@@ -4,8 +4,7 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 from typing import Optional
 from src.models.claim import Claim
-from src.models.factcheck import FactCheck
-
+from src.models.fact_check import FactCheck
 
 class News(BaseModel):
 
@@ -13,7 +12,7 @@ class News(BaseModel):
 
     title: str
 
-    source: str
+    source_id: str
 
     url: str
 

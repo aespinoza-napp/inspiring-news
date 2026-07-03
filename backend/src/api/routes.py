@@ -21,7 +21,7 @@ def example():
 
     news = News(
         title="NASA discovers new planet",
-        source="cnn",
+        source_id="cnn",
         url="https://cnn.com/example",
         published_at=datetime.now(),
         content=(
