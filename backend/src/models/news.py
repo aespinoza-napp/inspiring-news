@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
-
+from typing import Optional
 from src.models.claim import Claim
 from src.models.factcheck import FactCheck
 
@@ -26,3 +26,4 @@ class News(BaseModel):
     fact_checks: list[FactCheck] = []
 
     metadata: dict = {}
+    sentiment: Optional[float] = None
