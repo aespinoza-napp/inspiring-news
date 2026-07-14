@@ -16,11 +16,15 @@ class DiscoveryService:
     def discover(
         self,
         source: NewsSource,
+        topics: list[str],
     ) -> list[str]:
 
         for strategy in self.strategies:
 
-            urls = strategy.discover(source)
+            urls = strategy.discover(
+                source=source,
+                topics=topics,
+            )
 
             if urls:
                 return urls

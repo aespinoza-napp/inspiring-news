@@ -10,15 +10,19 @@ class News(BaseModel):
 
     id: str = Field(default_factory=lambda: uuid4().hex)
 
-    title: str
-
     source_id: str
 
     url: str
 
+    title: str
+
+    author: str = None
+
     published_at: datetime
 
     content: str
+
+    image_url: str = None
 
     claims: list[Claim] = []
 

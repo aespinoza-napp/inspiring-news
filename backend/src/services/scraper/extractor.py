@@ -7,7 +7,9 @@ from .strategies.trafilatura import TrafilaturaStrategy
 from .strategies.newspaper import NewspaperStrategy
 from .strategies.beautifulsoup import BeautifulSoupStrategy
 from .strategies.playwright_extraction import PlaywrightExtractionStrategy
+from src.models.news import News
 
+from .extraction_validator import ExtractionValidator
 
 class ExtractorService:
 
@@ -24,13 +26,32 @@ class ExtractorService:
         self,
         source: NewsSource,
         url: str,
-    ) -> Optional[News]:
+    ) -> News | None:
 
         for strategy in self.strategies:
 
-            article = strategy.extract(source, url)
+            extracted = strategy.extract(
+                source,
+                url,
+            )
 
-            if article:
-                return article
+            if extracted is None:
+                continue
+
+            if not ExtractionValidator.is_valid(extracted):
+                continue
+
+            return News(
+                source_id=source.id,
+                url=url,
+                title=extracted.title,
+                author=extracted.author,
+
+                published_at=extracted.published_at,
+
+                content=extracted.body,
+
+                image_url=extracted.lead_image,
+            )
 
         return None
