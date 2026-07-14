@@ -12,12 +12,11 @@ Responsibilities
 4. Persist the enriched article.
 """
 
-from textblob import TextBlob
-
 from src.agents.fact_checker import FactChecker
 from src.database.repository import NewsRepository
 from src.models.news import News
 from src.processors.nlp import NLPProcessor
+from src.processors.sentiment_analysis import SentimentAnalyzer
 
 
 class NewsPipeline:
@@ -27,24 +26,13 @@ class NewsPipeline:
         self,
         repository: NewsRepository,
         nlp: NLPProcessor,
+        sentiment_analyzer: SentimentAnalyzer,
         fact_checker: FactChecker,
     ):
-
         self.repository = repository
         self.nlp = nlp
+        self.sentiment_analyzer = sentiment_analyzer
         self.fact_checker = fact_checker
-
-    def analyze_sentiment(self, text: str) -> float:
-        """
-        Computes a sentiment score.
-
-        Returns
-        -------
-        float
-            Score between -1 and 1.
-        """
-
-        return TextBlob(text).sentiment.polarity
 
     def execute(self, news: News) -> News:
         """
@@ -67,7 +55,7 @@ class NewsPipeline:
 
         # ---------- Sentiment ----------
 
-        news.sentiment = self.analyze_sentiment(
+        news.sentiment = self.sentiment_analyzer.analyze(
             news.content
         )
 

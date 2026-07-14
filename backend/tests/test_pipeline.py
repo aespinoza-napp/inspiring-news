@@ -2,7 +2,7 @@ from src.agents.fact_checker import FactChecker
 from src.database.local_repository import LocalRepository
 from src.processors.nlp import NLPProcessor
 from src.workflows.news_pipeline import NewsPipeline
-
+from src.processors.sentiment_analysis import SentimentAnalyzer
 
 def test_pipeline(tmp_path, example_news):
     repo = LocalRepository(tmp_path)
@@ -11,6 +11,7 @@ def test_pipeline(tmp_path, example_news):
         repository=repo,
         nlp=NLPProcessor(),
         fact_checker=FactChecker(),
+        sentiment_analyzer=SentimentAnalyzer()
     )
 
     result = pipeline.execute(example_news)
