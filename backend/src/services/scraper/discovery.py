@@ -1,7 +1,7 @@
 from src.models.source import NewsSource
 
 from .strategies.rss import RSSDiscoveryStrategy
-from .strategies.playwright import PlaywrightDiscoveryStrategy
+from .strategies.playwright_discover import PlaywrightDiscoveryStrategy
 
 
 class DiscoveryService:

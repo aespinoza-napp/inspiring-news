@@ -6,6 +6,7 @@ from src.models.source import NewsSource
 from .strategies.trafilatura import TrafilaturaStrategy
 from .strategies.newspaper import NewspaperStrategy
 from .strategies.beautifulsoup import BeautifulSoupStrategy
+from .strategies.playwright_extraction import PlaywrightExtractionStrategy
 
 
 class ExtractorService:
@@ -16,6 +17,7 @@ class ExtractorService:
             TrafilaturaStrategy(),
             NewspaperStrategy(),
             BeautifulSoupStrategy(),
+            PlaywrightExtractionStrategy()
         ]
 
     def extract(
