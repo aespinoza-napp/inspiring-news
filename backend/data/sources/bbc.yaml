@@ -6,6 +6,8 @@ base_url: https://www.bbc.com
 
 rss_url: http://feeds.bbci.co.uk/news/rss.xml
 
+search_url: https://www.bbc.co.uk/search?q={query}
+
 language: en
 
 country: UK
@@ -20,3 +22,13 @@ requires_javascript: false
 
 tags:
   - general
+  - world
+  - politics
+  - technology
+  - science
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

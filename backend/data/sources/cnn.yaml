@@ -2,17 +2,33 @@ id: cnn
 
 name: CNN
 
-base_url: https://www.cnn.com
+base_url: https://edition.cnn.com
 
-rss_url: https://rss.cnn.com/rss/edition.rss
+rss_url: http://rss.cnn.com/rss/edition.rss
+
+search_url: https://edition.cnn.com/search?q={query}
+
+language: en
 
 country: US
 
-language: en
+source_type: news
 
 reliability_index: 0.72
 
 enabled: true
 
+requires_javascript: false
+
 tags:
   - general
+  - politics
+  - business
+  - technology
+  - world
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

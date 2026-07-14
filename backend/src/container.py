@@ -1,4 +1,4 @@
-from src.config import settings
+from src.config.settings import settings
 from src.database.local_repository import LocalRepository
 from src.processors.nlp import NLPProcessor
 from src.agents.fact_checker import FactChecker
@@ -11,9 +11,11 @@ nlp = NLPProcessor()
 
 fact_checker = FactChecker()
 
+sentiment_analyzer = SentimentAnalyzer()
+
 pipeline = NewsPipeline(
     repository=repository,
     nlp=nlp,
     fact_checker=fact_checker,
-    sentiment_analyzer=SentimentAnalyzer()
+    sentiment_analyzer=sentiment_analyzer
 )

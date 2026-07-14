@@ -1,6 +1,6 @@
 import pytest
 from src.database.neo4j_client import GraphClient
-from src.config import settings
+from src.config.settings import settings
 
 
 @pytest.fixture(scope="session")

@@ -23,10 +23,10 @@ class LocalRepository(NewsRepository):
     ):
 
         date = news.published_at.date()
-
+        
         return (
             self.folder /
-            f"{news.source_id}_{date}_{news.id}.json"
+            f"{date}_{news.source_id}_{news.id}.json"
         )
 
     def save(
@@ -37,7 +37,8 @@ class LocalRepository(NewsRepository):
         file = self._filename(news)
 
         file.write_text(
-            news.model_dump_json(indent=4)
+            self.model_dump_json(indent=2),
+            encoding="utf-8",
         )
 
     def load(

@@ -9,7 +9,7 @@ def test_extract_html():
 
     for source in repository.list():
 
-        article = strategy.extract(source, source.url)
+        article = strategy.extract(source, source.base_url)
 
         assert article is not None
         assert article.body != ""

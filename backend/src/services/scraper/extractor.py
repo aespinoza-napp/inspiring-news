@@ -4,7 +4,6 @@ from src.models.news import News
 from src.models.source import NewsSource
 
 from .strategies.trafilatura import TrafilaturaStrategy
-from .strategies.newspaper import NewspaperStrategy
 from .strategies.beautifulsoup import BeautifulSoupStrategy
 from .strategies.playwright_extraction import PlaywrightExtractionStrategy
 from src.models.news import News
@@ -17,9 +16,8 @@ class ExtractorService:
 
         self.strategies = [
             TrafilaturaStrategy(),
-            NewspaperStrategy(),
-            BeautifulSoupStrategy(),
-            PlaywrightExtractionStrategy()
+            #BeautifulSoupStrategy(),
+            #PlaywrightExtractionStrategy()
         ]
 
     def extract(
@@ -46,11 +44,8 @@ class ExtractorService:
                 url=url,
                 title=extracted.title,
                 author=extracted.author,
-
                 published_at=extracted.published_at,
-
                 content=extracted.body,
-
                 image_url=extracted.lead_image,
             )
 

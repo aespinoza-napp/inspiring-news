@@ -1,0 +1,52 @@
+{
+    "id": "f7a8e0d6bbaf4675bdf52d4a1d7831c6",
+    "source_id": "cnn",
+    "url": "https://cnn.com/example",
+    "title": "NASA discovers new planet",
+    "author": null,
+    "published_at": "2026-07-14T12:42:54.696313",
+    "content": "NASA discovered a new planet. Scientists are excited. This fake announcement spread online.",
+    "image_url": null,
+    "claims": [
+        {
+            "text": "NASA discovered a new planet",
+            "confidence": 1.0,
+            "entities": [
+                "NASA"
+            ]
+        },
+        {
+            "text": "Scientists are excited",
+            "confidence": 1.0,
+            "entities": [
+                "Scientists"
+            ]
+        },
+        {
+            "text": "This fake announcement spread online",
+            "confidence": 1.0,
+            "entities": [
+                "This"
+            ]
+        }
+    ],
+    "fact_checks": [
+        {
+            "verdict": "TRUE",
+            "explanation": "Mock verification.",
+            "confidence": 0.8
+        },
+        {
+            "verdict": "TRUE",
+            "explanation": "Mock verification.",
+            "confidence": 0.8
+        },
+        {
+            "verdict": "FALSE",
+            "explanation": "Mock keyword detection.",
+            "confidence": 0.95
+        }
+    ],
+    "metadata": {},
+    "sentiment": 0.0037878787878787845
+}

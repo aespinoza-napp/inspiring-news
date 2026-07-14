@@ -35,7 +35,6 @@ class TrafilaturaStrategy(ExtractionStrategy):
             )
 
             response.raise_for_status()
-
             extracted = trafilatura.extract(
                 response.text,
                 output_format="json",

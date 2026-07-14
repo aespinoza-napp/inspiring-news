@@ -6,6 +6,8 @@ base_url: https://www.nasa.gov
 
 rss_url: https://www.nasa.gov/rss/dyn/breaking_news.rss
 
+search_url: https://www.nasa.gov/search/?search={query}
+
 language: en
 
 country: US
@@ -21,3 +23,10 @@ requires_javascript: false
 tags:
   - science
   - space
+  - astronomy
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

@@ -6,6 +6,8 @@ base_url: https://www.reuters.com
 
 rss_url: https://www.reutersagency.com/feed/
 
+search_url: https://www.reuters.com/site-search/?query={query}
+
 language: en
 
 country: GB
@@ -21,3 +23,11 @@ requires_javascript: false
 tags:
   - general
   - finance
+  - business
+  - world
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

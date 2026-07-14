@@ -1,7 +1,7 @@
 from src.models.source import NewsSource
 
 from .strategies.rss import RSSDiscoveryStrategy
-from .strategies.playwright_discover import PlaywrightDiscoveryStrategy
+#from .strategies.playwright_discover import PlaywrightDiscoveryStrategy
 
 
 class DiscoveryService:
@@ -10,13 +10,12 @@ class DiscoveryService:
 
         self.strategies = [
             RSSDiscoveryStrategy(),
-            PlaywrightDiscoveryStrategy(),
         ]
 
     def discover(
         self,
         source: NewsSource,
-        topics: list[str],
+        topics: list[str] = None,
     ) -> list[str]:
 
         for strategy in self.strategies:

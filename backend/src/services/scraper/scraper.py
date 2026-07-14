@@ -30,6 +30,7 @@ class Scraper:
         self,
         source: NewsSource,
         url: str,
+        topics: list[str] | None = None,
     ) -> Optional[News]:
 
         return self.extractor.extract(source, url)

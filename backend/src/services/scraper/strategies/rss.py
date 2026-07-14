@@ -32,7 +32,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
     def discover(
         self,
         source: NewsSource,
-        topics: list[str],
+        topics: list[str] = None,
     ) -> list[str]:
 
         if not source.rss_url:
