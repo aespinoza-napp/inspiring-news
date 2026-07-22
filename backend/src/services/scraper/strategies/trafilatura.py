@@ -11,14 +11,14 @@ from src.models.source import NewsSource
 
 from .base import ExtractionStrategy
 
-def __parse_date(date_str: str | None) -> str | None:
+def _parse_date(date_str: str | None) -> str | None:
     if not date_str:
         return datetime.datetime.now().strftime("%Y-%m-%d")
     try:
         return date_str.split("T")[0]
     except Exception:
         return None
-
+    
 class TrafilaturaStrategy(ExtractionStrategy):
 
     TIMEOUT = 20
@@ -67,10 +67,10 @@ class TrafilaturaStrategy(ExtractionStrategy):
                 body=body,
                 summary=data.get("description"),
                 author=data.get("author"),
-                published_at=__parse_date(data.get("date")),
+                published_at=_parse_date(data.get("date")),
                 lead_image=data.get("image"),
             )
 
         except Exception:
-
+            print(f"Error extracting {url} with TrafilaturaStrategy: {str(Exception)}")
             return None

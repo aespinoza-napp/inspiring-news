@@ -37,7 +37,7 @@ class LocalRepository(NewsRepository):
         file = self._filename(news)
 
         file.write_text(
-            self.model_dump_json(indent=2),
+            news.model_dump_json(indent=2),
             encoding="utf-8",
         )
 

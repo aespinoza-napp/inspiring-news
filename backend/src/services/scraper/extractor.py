@@ -35,11 +35,12 @@ class ExtractorService:
 
             if extracted is None:
                 continue
-
+            print(len(extracted.body))
             if not ExtractionValidator.is_valid(extracted):
+                
                 continue
-
-            return News(
+            print("VALID")
+            news = News(
                 source_id=source.id,
                 url=url,
                 title=extracted.title,
@@ -48,5 +49,6 @@ class ExtractorService:
                 content=extracted.body,
                 image_url=extracted.lead_image,
             )
+            return news
 
         return None

@@ -11,8 +11,8 @@ class ExtractionValidator:
         article: ExtractionResult,
     ) -> bool:
 
-        if not article.title:
-            return False
+        #if not article.title:
+        #    return False
 
         if len(article.body.strip()) < cls.MIN_BODY_LENGTH:
             return False

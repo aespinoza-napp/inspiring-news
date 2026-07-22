@@ -14,19 +14,20 @@ class News(BaseModel):
 
     url: str
 
-    title: str
+    title: Optional[str] = None
 
-    author: str = None
+    author: Optional[str] = None
 
     published_at: datetime
 
     content: str
 
-    image_url: str = None
+    image_url: Optional[str] = None
 
     claims: list[Claim] = []
 
     fact_checks: list[FactCheck] = []
 
     metadata: dict = {}
+
     sentiment: Optional[float] = None
