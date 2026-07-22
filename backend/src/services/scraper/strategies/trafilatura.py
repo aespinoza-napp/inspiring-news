@@ -4,12 +4,20 @@ import json
 
 import requests
 import trafilatura
+import datetime
 
 from src.models.extraction import ExtractionResult
 from src.models.source import NewsSource
 
 from .base import ExtractionStrategy
 
+def __parse_date(date_str: str | None) -> str | None:
+    if not date_str:
+        return datetime.datetime.now().strftime("%Y-%m-%d")
+    try:
+        return date_str.split("T")[0]
+    except Exception:
+        return None
 
 class TrafilaturaStrategy(ExtractionStrategy):
 
@@ -54,12 +62,12 @@ class TrafilaturaStrategy(ExtractionStrategy):
                 return None
 
             return ExtractionResult(
-                source_id=source,
+                source_id=source.id,
                 title=data.get("title", ""),
                 body=body,
                 summary=data.get("description"),
                 author=data.get("author"),
-                published_at=data.get("date"),
+                published_at=__parse_date(data.get("date")),
                 lead_image=data.get("image"),
             )
 
