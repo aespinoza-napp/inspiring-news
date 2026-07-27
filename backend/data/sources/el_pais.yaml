@@ -1,0 +1,35 @@
+id: el_pais
+
+name: El País
+
+base_url: https://elpais.com
+
+rss_url: https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada
+
+search_url: https://elpais.com/buscador/?qt={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.90
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - politics
+  - economy
+  - technology
+  - science
+  - culture
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

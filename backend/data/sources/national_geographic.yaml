@@ -1,0 +1,35 @@
+id: national_geographic
+
+name: National Geographic
+
+base_url: https://www.nationalgeographic.com
+
+rss_url: https://www.nationalgeographic.com/rss
+
+search_url: https://www.nationalgeographic.com/search?q={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.98
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - environment
+  - wildlife
+  - climate
+  - exploration
+  - history
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

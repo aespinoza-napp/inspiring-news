@@ -1,0 +1,34 @@
+id: rtve
+
+name: RTVE Noticias
+
+base_url: https://www.rtve.es
+
+rss_url: https://www.rtve.es/rss/noticias.xml
+
+search_url: https://www.rtve.es/buscador/?text={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.93
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - politics
+  - science
+  - technology
+  - culture
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

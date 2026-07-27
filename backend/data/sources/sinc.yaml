@@ -1,0 +1,34 @@
+id: sinc
+
+name: SINC
+
+base_url: https://www.agenciasinc.es
+
+rss_url: https://www.agenciasinc.es/rss
+
+search_url: https://www.agenciasinc.es/Buscar?SearchText={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.99
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - medicine
+  - technology
+  - biology
+  - environment
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

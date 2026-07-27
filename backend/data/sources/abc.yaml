@@ -1,0 +1,33 @@
+id: abc
+
+name: ABC
+
+base_url: https://www.abc.es
+
+rss_url: https://www.abc.es/rss/feeds/abcPortada.xml
+
+search_url: https://www.abc.es/buscador/?query={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.86
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - politics
+  - culture
+  - science
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

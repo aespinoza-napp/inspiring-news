@@ -1,0 +1,34 @@
+id: el_mundo
+
+name: El Mundo
+
+base_url: https://www.elmundo.es
+
+rss_url: https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml
+
+search_url: https://www.elmundo.es/buscador/archivo.html?q={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.87
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - politics
+  - economy
+  - science
+  - technology
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

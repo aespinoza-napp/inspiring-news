@@ -1,0 +1,34 @@
+id: efe
+
+name: Agencia EFE
+
+base_url: https://efe.com
+
+rss_url: https://efe.com/feed/
+
+search_url: https://efe.com/buscador/?s={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.95
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - world
+  - economy
+  - science
+  - technology
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search
