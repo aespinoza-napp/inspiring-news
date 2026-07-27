@@ -9,14 +9,14 @@ by another NLP model (e.g. VADER, spaCy, Hugging Face, OpenAI).
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 from scipy.special import softmax
+from .base import BaseProcessor
 
-
-class SentimentAnalysis():
+class SentimentAnalyzer(BaseProcessor):
     def __init__(self, cfg):
         self.sentiment_model = AutoModelForSequenceClassification.from_pretrained(cfg.SENTIMENT_MODEL)
         self.tokenizer_sentiment = AutoTokenizer.from_pretrained(cfg.SENTIMENT_MODEL)
 
-    def __call__(self, text):
+    def process(self, text):
         with torch.no_grad():
             text = self.analyze(text)
             encoded_input = self.tokenizer_sentiment(text, return_tensors='pt')

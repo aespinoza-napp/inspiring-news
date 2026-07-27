@@ -1,9 +1,9 @@
-from src.processors.sentiment_analysis import SentimentAnalyzer
+from src.processors.nlp.sentiment import SentimentAnalyzer
 
 def test_sentiment_analsyis():
     analyzer = SentimentAnalyzer()
 
-    score = analyzer.analyze(
+    score = analyzer.process(
         "The company reported excellent results and investors were delighted."
     )
 
