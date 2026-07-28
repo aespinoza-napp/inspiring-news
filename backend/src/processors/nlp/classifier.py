@@ -5,6 +5,7 @@ from typing import List
 import numpy as np
 
 from src.config.topics import TOPICS
+from src.models.topic_prediction import TopicPrediction
 from src.services.embeddings.service import EmbeddingService
 
 from .base import BaseProcessor
@@ -16,7 +17,7 @@ class TopicClassifier(BaseProcessor):
 
     def __init__(
         self,
-        threshold: float = 0.45,
+        threshold: float = 0.25,
     ):
 
         self.embedding_service = EmbeddingService()
@@ -25,21 +26,26 @@ class TopicClassifier(BaseProcessor):
 
         if TopicClassifier._topic_embeddings is None:
 
-            TopicClassifier._topic_embeddings = {
+            TopicClassifier._topic_embeddings = {}
 
-                topic_id: self.embedding_service.encode(
-                    topic.description
+            for topic_id, topic in TOPICS.items():
+
+                topic_text = f"""
+                {topic.name}
+
+                {topic.description}
+
+                Keywords:
+                {", ".join(topic.keywords)}
+                """
+
+                TopicClassifier._topic_embeddings[topic_id] = (
+                    self.embedding_service.encode(topic_text)
                 )
 
-                for topic_id, topic in TOPICS.items()
+    def process(self, text: str) -> List[TopicPrediction]:
 
-            }
-
-    def process(self, text: str) -> List[str]:
-
-        article_embedding = self.embedding_service.encode(
-            text
-        )
+        article_embedding = self.embedding_service.encode(text)
 
         similarities = []
 
@@ -61,13 +67,32 @@ class TopicClassifier(BaseProcessor):
                     )
                 )
 
+        if not similarities:
+            return []
+
         similarities.sort(
-            key=lambda item: item[1],
+            key=lambda x: x[1],
             reverse=True,
         )
 
+        scores = np.array(
+            [score for _, score in similarities]
+        )
+
+        # Softmax normalization
+        exp = np.exp(scores - scores.max())
+
+        probabilities = exp / exp.sum()
+
         return [
-            topic
-            for topic, _
-            in similarities
+
+            TopicPrediction(
+                topic=topic,
+                confidence=round(confidence, 4),
+                probability=round(float(probability), 4),
+            )
+
+            for (topic, confidence), probability
+            in zip(similarities, probabilities)
+
         ]

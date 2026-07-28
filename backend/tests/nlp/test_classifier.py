@@ -10,14 +10,22 @@ def test_topic_classifier():
     model that improves programming and reasoning.
     """
 
-    topics = classifier.process(text)
+    predictions = classifier.process(text)
 
-    print(topics)
+    print(predictions)
 
-    assert isinstance(topics, list)
+    assert isinstance(predictions, list)
 
-    assert len(topics) > 0
+    assert len(predictions) > 0
 
-    assert "Technology" in topics
+    assert predictions[0].topic == "artificial_intelligence"
+
+    assert 0.0 <= predictions[0].confidence <= 1.0
+
+    assert 0.0 <= predictions[0].probability <= 1.0
+
+    assert abs(
+        sum(p.probability for p in predictions) - 1.0
+    ) < 1e-6
 
 test_topic_classifier()
