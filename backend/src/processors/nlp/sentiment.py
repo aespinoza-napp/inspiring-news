@@ -1,36 +1,132 @@
 """
 Sentiment analysis processor.
 
-This module computes the overall sentiment polarity of a news article.
-The implementation currently uses TextBlob but can easily be replaced
-by another NLP model (e.g. VADER, spaCy, Hugging Face, OpenAI).
+Outputs:
+    - positive score
+    - neutral score
+    - negative score
+    - polarity
+    - subjectivity
+    - confidence
+    - emotional intensity
 """
 
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from __future__ import annotations
+
+from src.models.sentiment_result import SentimentResult
+
 import torch
 from scipy.special import softmax
+from textblob import TextBlob
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+)
+
 from .base import BaseProcessor
 
 class SentimentAnalyzer(BaseProcessor):
+
     def __init__(self, cfg):
-        self.sentiment_model = AutoModelForSequenceClassification.from_pretrained(cfg.SENTIMENT_MODEL)
-        self.tokenizer_sentiment = AutoTokenizer.from_pretrained(cfg.SENTIMENT_MODEL)
 
-    def process(self, text):
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            cfg.SENTIMENT_MODEL
+        )
+
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            cfg.SENTIMENT_MODEL
+        )
+
+    def process(
+        self,
+        text: str,
+    ) -> SentimentResult:
+
+        text = self._normalize(text)
+
+        encoded = self.tokenizer(
+            text,
+            return_tensors="pt",
+            truncation=True,
+            max_length=512,
+        )
+
         with torch.no_grad():
-            text = self.analyze(text)
-            encoded_input = self.tokenizer_sentiment(text, return_tensors='pt')
-            output = self.sentiment_model(**encoded_input)
-            scores = output[0][0].detach().numpy()
-            scores = list(softmax(scores))
-            print(f'The scores of the sentiment are: {scores}')
-            return True if scores[2] > 0.2 else False
-    
-    def analyze(self, text):
-        new_text = []
-        for t in text.split(" "):
-            t = '@user' if t.startswith('@') and len(t) > 1 else t
-            t = 'http' if t.startswith('http') else t
-            new_text.append(t)
-        return " ".join(new_text)
 
+            output = self.model(**encoded)
+
+        scores = softmax(
+            output.logits[0].numpy()
+        )
+
+        negative, neutral, positive = map(float, scores)
+
+        polarity = positive - negative
+
+        blob = TextBlob(text)
+
+        subjectivity = float(
+            blob.sentiment.subjectivity
+        )
+
+        confidence = max(
+            positive,
+            neutral,
+            negative,
+        )
+
+        emotional_intensity = abs(polarity)
+
+        label = max(
+            [
+                ("negative", negative),
+                ("neutral", neutral),
+                ("positive", positive),
+            ],
+            key=lambda x: x[1],
+        )[0]
+
+        return SentimentResult(
+
+            label=label,
+
+            positive=round(positive, 4),
+
+            neutral=round(neutral, 4),
+
+            negative=round(negative, 4),
+
+            polarity=round(polarity, 4),
+
+            subjectivity=round(subjectivity, 4),
+
+            confidence=round(confidence, 4),
+
+            emotional_intensity=round(
+                emotional_intensity,
+                4,
+            ),
+        )
+
+    def _normalize(
+        self,
+        text: str,
+    ) -> str:
+
+        words = []
+
+        for word in text.split():
+
+            if word.startswith("@"):
+
+                words.append("@user")
+
+            elif word.startswith("http"):
+
+                words.append("http")
+
+            else:
+
+                words.append(word)
+
+        return " ".join(words)
