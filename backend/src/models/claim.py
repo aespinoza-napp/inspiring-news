@@ -1,10 +1,11 @@
 from pydantic import BaseModel
 
+from typing import Dict
 
 class Claim(BaseModel):
 
     text: str
 
-    confidence: float | None = None
+    entities: dict[str, list[str]]
 
-    entities: list[str] = []
+    confidence: float
