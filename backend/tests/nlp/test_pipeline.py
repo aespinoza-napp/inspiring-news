@@ -17,7 +17,7 @@ def test_enrichment_pipeline():
         folder=settings.RAW_PATH,
     )
 
-    article = repository.list()[2]
+    article = repository.list()[0]
 
     pipeline = NewsEnrichmentPipeline(settings)
 

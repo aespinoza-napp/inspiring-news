@@ -17,7 +17,7 @@ class TopicClassifier(BaseProcessor):
 
     def __init__(
         self,
-        threshold: float = 0.25,
+        threshold: float = 0.4,
     ):
 
         self.embedding_service = EmbeddingService()

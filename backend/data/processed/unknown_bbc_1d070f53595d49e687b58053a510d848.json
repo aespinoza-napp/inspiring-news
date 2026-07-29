@@ -45,212 +45,67 @@
     {
       "topic": "robotics",
       "confidence": 0.3749,
-      "probability": 0.0259
+      "probability": 0.0811
     },
     {
       "topic": "industry",
       "confidence": 0.3313,
-      "probability": 0.0248
+      "probability": 0.0776
     },
     {
       "topic": "fitness",
       "confidence": 0.3312,
-      "probability": 0.0248
+      "probability": 0.0776
     },
     {
       "topic": "international_events",
       "confidence": 0.328,
-      "probability": 0.0248
+      "probability": 0.0774
     },
     {
       "topic": "space",
       "confidence": 0.3273,
-      "probability": 0.0247
+      "probability": 0.0773
     },
     {
       "topic": "agriculture",
       "confidence": 0.3239,
-      "probability": 0.0247
+      "probability": 0.0771
     },
     {
       "topic": "sports",
       "confidence": 0.3188,
-      "probability": 0.0245
+      "probability": 0.0767
     },
     {
       "topic": "employment",
       "confidence": 0.3151,
-      "probability": 0.0244
+      "probability": 0.0764
     },
     {
       "topic": "healthy_food",
       "confidence": 0.3135,
-      "probability": 0.0244
+      "probability": 0.0763
     },
     {
       "topic": "myths",
       "confidence": 0.3076,
-      "probability": 0.0243
+      "probability": 0.0758
     },
     {
       "topic": "sustainable_food",
       "confidence": 0.3046,
-      "probability": 0.0242
+      "probability": 0.0756
     },
     {
       "topic": "medicine",
       "confidence": 0.3046,
-      "probability": 0.0242
+      "probability": 0.0756
     },
     {
       "topic": "artificial_intelligence",
       "confidence": 0.3041,
-      "probability": 0.0242
-    },
-    {
-      "topic": "climate_change",
-      "confidence": 0.299,
-      "probability": 0.0241
-    },
-    {
-      "topic": "computing",
-      "confidence": 0.2922,
-      "probability": 0.0239
-    },
-    {
-      "topic": "energy",
-      "confidence": 0.2922,
-      "probability": 0.0239
-    },
-    {
-      "topic": "national_events",
-      "confidence": 0.2876,
-      "probability": 0.0238
-    },
-    {
-      "topic": "cinema",
-      "confidence": 0.2875,
-      "probability": 0.0238
-    },
-    {
-      "topic": "fashion",
-      "confidence": 0.2872,
-      "probability": 0.0238
-    },
-    {
-      "topic": "education",
-      "confidence": 0.2844,
-      "probability": 0.0237
-    },
-    {
-      "topic": "dance",
-      "confidence": 0.284,
-      "probability": 0.0237
-    },
-    {
-      "topic": "quotes",
-      "confidence": 0.2799,
-      "probability": 0.0236
-    },
-    {
-      "topic": "home",
-      "confidence": 0.2784,
-      "probability": 0.0236
-    },
-    {
-      "topic": "social_movements",
-      "confidence": 0.2778,
-      "probability": 0.0235
-    },
-    {
-      "topic": "emerging_technology",
-      "confidence": 0.2774,
-      "probability": 0.0235
-    },
-    {
-      "topic": "ecotourism",
-      "confidence": 0.276,
-      "probability": 0.0235
-    },
-    {
-      "topic": "financial_wellbeing",
-      "confidence": 0.2747,
-      "probability": 0.0235
-    },
-    {
-      "topic": "wildlife",
-      "confidence": 0.2729,
-      "probability": 0.0234
-    },
-    {
-      "topic": "travel",
-      "confidence": 0.2729,
-      "probability": 0.0234
-    },
-    {
-      "topic": "psychology",
-      "confidence": 0.2714,
-      "probability": 0.0234
-    },
-    {
-      "topic": "art",
-      "confidence": 0.2696,
-      "probability": 0.0234
-    },
-    {
-      "topic": "music",
-      "confidence": 0.2672,
-      "probability": 0.0233
-    },
-    {
-      "topic": "green_innovation",
-      "confidence": 0.2664,
-      "probability": 0.0233
-    },
-    {
-      "topic": "sustainable_transport",
-      "confidence": 0.2642,
-      "probability": 0.0232
-    },
-    {
-      "topic": "beauty",
-      "confidence": 0.2637,
-      "probability": 0.0232
-    },
-    {
-      "topic": "circular_economy",
-      "confidence": 0.2603,
-      "probability": 0.0231
-    },
-    {
-      "topic": "positive_living",
-      "confidence": 0.2591,
-      "probability": 0.0231
-    },
-    {
-      "topic": "city_life",
-      "confidence": 0.2583,
-      "probability": 0.0231
-    },
-    {
-      "topic": "history",
-      "confidence": 0.2573,
-      "probability": 0.0231
-    },
-    {
-      "topic": "architecture",
-      "confidence": 0.257,
-      "probability": 0.0231
-    },
-    {
-      "topic": "sustainability_tips",
-      "confidence": 0.2563,
-      "probability": 0.023
-    },
-    {
-      "topic": "gastronomy",
-      "confidence": 0.2562,
-      "probability": 0.023
+      "probability": 0.0756
     }
   ],
   "claims": [
