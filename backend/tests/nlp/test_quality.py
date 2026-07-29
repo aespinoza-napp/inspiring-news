@@ -1,10 +1,10 @@
 from src.models.sentiment_result import SentimentResult
-from src.processors.nlp.quality import ArticleQualityAnalyzer
+from src.processors.nlp.quality import QualityAnalyzer
 
 
 def test_article_quality():
 
-    analyzer = ArticleQualityAnalyzer()
+    analyzer = QualityAnalyzer()
 
     text = """
     Scientists from the World Health Organization developed a

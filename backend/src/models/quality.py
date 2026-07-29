@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class ArticleQuality(BaseModel):
+class Quality(BaseModel):
 
     readability: float
 

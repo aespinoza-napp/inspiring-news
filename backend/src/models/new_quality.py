@@ -3,7 +3,7 @@ from pydantic.dataclasses import dataclass
 from backend.src.models.sentiment_result import SentimentResult
 
 @dataclass
-class ArticleQuality:
+class Quality:
 
     sentiment: SentimentResult
 

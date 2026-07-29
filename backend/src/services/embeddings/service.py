@@ -36,6 +36,12 @@ class EmbeddingService:
         return self._model
 
     #########################################################
+    @property
+    def model_name(self) -> str:
+        return settings.EMBEDDING_MODEL
+
+    #########################################################
+
 
     def encode(
         self,

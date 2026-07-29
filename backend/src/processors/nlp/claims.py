@@ -10,38 +10,76 @@ from .base import BaseProcessor
 
 class ClaimExtractor(BaseProcessor):
 
-    CLAIM_VERBS = {
-        "is",
-        "are",
-        "was",
-        "were",
-        "has",
-        "have",
-        "had",
+    REPORTING_VERBS = {
+        "announce",
         "announced",
+        "say",
         "said",
+        "report",
         "reported",
+        "confirm",
         "confirmed",
-        "developed",
-        "created",
+        "discover",
         "discovered",
+        "find",
         "found",
+        "reveal",
         "revealed",
+        "publish",
         "published",
+        "launch",
         "launched",
+        "approve",
         "approved",
+        "win",
         "won",
-        "became",
+        "identify",
         "identified",
+        "detect",
         "detected",
-        "improved",
-        "reduced",
+        "increase",
         "increased",
+        "reduce",
+        "reduced",
+        "improve",
+        "improved",
+        "show",
+        "showed",
+        "demonstrate",
+        "demonstrated",
+        "indicate",
+        "indicated",
+        "estimate",
+        "estimated",
     }
+
+    DATE_PATTERN = re.compile(
+        r"\b("
+        r"\d{4}"
+        r"|january|february|march|april|may|june|july|"
+        r"august|september|october|november|december|"
+        r"today|yesterday|tomorrow"
+        r")\b",
+        re.IGNORECASE,
+    )
+
+    NUMBER_PATTERN = re.compile(r"\d+(?:[.,]\d+)?")
+
+    MEASUREMENT_PATTERN = re.compile(
+        r"\b("
+        r"%|percent|km|m|cm|kg|g|tons?|"
+        r"million|billion|euros?|dollars?|people"
+        r")\b",
+        re.IGNORECASE,
+    )
+
+    QUOTE_PATTERN = re.compile(r"[\"“”']")
 
     def __init__(self):
 
         self.entity_extractor = EntityExtractor()
+
+    ##########################################################
 
     def process(
         self,
@@ -50,33 +88,24 @@ class ClaimExtractor(BaseProcessor):
 
         claims = []
 
-        sentences = self._split_sentences(text)
-
-        for sentence in sentences:
-
-            if not self._is_claim(sentence):
-
-                continue
+        for sentence in self._split_sentences(text):
 
             entities = self.entity_extractor.process(sentence)
 
-            confidence = self._confidence(
+            confidence = self._score(
                 sentence,
                 entities,
             )
 
+            if confidence < 0.50:
+                continue
+
             claims.append(
-
                 Claim(
-
                     text=sentence,
-
                     entities=entities,
-
-                    confidence=confidence,
-
+                    confidence=round(confidence, 2),
                 )
-
             )
 
         return claims
@@ -89,61 +118,80 @@ class ClaimExtractor(BaseProcessor):
     ) -> list[str]:
 
         return [
-
-            sentence.strip()
-
-            for sentence in re.split(
+            s.strip()
+            for s in re.split(
                 r"(?<=[.!?])\s+",
                 text,
             )
-
-            if sentence.strip()
-
+            if s.strip()
         ]
 
     ##########################################################
 
-    def _is_claim(
+    def _score(
         self,
         sentence: str,
-    ) -> bool:
+        entities,
+    ) -> float:
+
+        score = 0.0
 
         sentence_lower = sentence.lower()
 
-        if any(
-            verb in sentence_lower
-            for verb in self.CLAIM_VERBS
-        ):
-            return True
-
-        if re.search(r"\d", sentence):
-            return True
-
-        return False
-
-    ##########################################################
-
-    def _confidence(
-        self,
-        sentence: str,
-        entities: list[str],
-    ) -> float:
-
-        score = 0.4
+        ##################################################
+        # Named entities
+        ##################################################
 
         if entities:
-            score += 0.2
+            score += 0.25
 
-        if re.search(r"\d", sentence):
-            score += 0.2
+        ##################################################
+        # Numbers
+        ##################################################
 
-        if '"' in sentence:
-            score += 0.1
+        if self.NUMBER_PATTERN.search(sentence):
+            score += 0.20
 
-        if len(sentence.split()) > 8:
-            score += 0.1
+        ##################################################
+        # Dates
+        ##################################################
 
-        return round(
-            min(score, 1.0),
-            2,
-        )
+        if self.DATE_PATTERN.search(sentence):
+            score += 0.15
+
+        ##################################################
+        # Measurements
+        ##################################################
+
+        if self.MEASUREMENT_PATTERN.search(sentence):
+            score += 0.10
+
+        ##################################################
+        # Reporting verbs
+        ##################################################
+
+        if any(
+            verb in sentence_lower
+            for verb in self.REPORTING_VERBS
+        ):
+            score += 0.20
+
+        ##################################################
+        # Quotes
+        ##################################################
+
+        if self.QUOTE_PATTERN.search(sentence):
+            score += 0.05
+
+        ##################################################
+        # Long informative sentences
+        ##################################################
+
+        if len(sentence.split()) >= 8:
+            score += 0.05
+
+        ##################################################
+        # Upper bound
+        ##################################################
+
+        return min(score, 1.0)

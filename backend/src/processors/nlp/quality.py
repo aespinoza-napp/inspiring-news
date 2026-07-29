@@ -103,7 +103,7 @@ GLOBAL = {
 }
 
 
-class ArticleQualityAnalyzer(BaseProcessor):
+class QualityAnalyzer(BaseProcessor):
 
     WORD = re.compile(r"\b[\w'-]+\b")
 
