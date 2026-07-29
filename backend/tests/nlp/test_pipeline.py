@@ -3,22 +3,35 @@ from pathlib import Path
 from src.config.settings import Settings
 from src.database.local_repository import LocalRepository
 from src.workflows.enrichment import NewsEnrichmentPipeline
+from src.models.news import News
+from src.models.enriched_article import EnrichedArticle
 
 
 def test_enrichment_pipeline():
 
     settings = Settings()
 
+    # Look to the repository for a news article to enrich
     repository = LocalRepository(
-        settings.STORAGE_PATH,
+        model=News,
+        folder=settings.RAW_PATH,
     )
 
     article = repository.list()[2]
 
     pipeline = NewsEnrichmentPipeline(settings)
 
+    # Save to the repository the enriched article
     enriched = pipeline.process(article)
 
+    repository_to_save = LocalRepository(
+        model=EnrichedArticle,
+        folder=settings.PROCESSED_PATH,
+    )
+    repository_to_save.save(enriched)
+
+    print("\n\n\n")
+    print(enriched)
     print()
 
     print("=" * 80)

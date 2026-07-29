@@ -1,113 +1,182 @@
+from __future__ import annotations
+
 from pathlib import Path
-
 from logging import getLogger
+from typing import Type, TypeVar
 
-from src.config.settings import settings
-from src.models.news import News
-
-from .repository import NewsRepository
+from pydantic import BaseModel
 
 logger = getLogger(__name__)
 
-class LocalRepository(NewsRepository):
+T = TypeVar("T", bound=BaseModel)
+
+
+class LocalRepository:
 
     def __init__(
         self,
-        folder: Path | None = None,
+        model: Type[T],
+        folder: Path,
     ):
 
-        self.folder = folder or settings.STORAGE_PATH
+        self.model = model
+
+        self.folder = folder
 
         self.folder.mkdir(
             parents=True,
             exist_ok=True,
         )
 
-    ####################################################
+    ########################################################
 
     def __iter__(self):
 
         yield from self.list()
 
-    ####################################################
+    ########################################################
 
     def _filename(
         self,
-        news: News,
+        item: T,
     ) -> Path:
 
-        date = news.published_at.date()
+        date = getattr(
+            item,
+            "published_at",
+            None,
+        )
+
+        if date is not None:
+
+            date = date.date()
+
+        else:
+
+            date = "unknown"
+
+        source = getattr(
+            item,
+            "source_id",
+            "unknown",
+        )
+
+        identifier = getattr(
+            item,
+            "id",
+            "unknown",
+        )
 
         return (
             self.folder
-            / f"{date}_{news.source_id}_{news.id}.json"
+            / f"{date}_{source}_{identifier}.json"
         )
 
-    ####################################################
+    ########################################################
 
     def save(
         self,
-        news: News,
+        item: T,
     ):
 
-        self._filename(news).write_text(
-            news.model_dump_json(indent=2),
+        self._filename(item).write_text(
+            item.model_dump_json(
+                indent=2,
+            ),
             encoding="utf-8",
         )
 
-    ####################################################
+    ########################################################
 
     def load(
         self,
-        news_id: str,
-    ) -> News:
+        item_id: str,
+    ) -> T:
 
         for file in self.folder.glob("*.json"):
 
-            if news_id in file.name:
+            if item_id not in file.name:
+                continue
 
-                return News.model_validate_json(
-                    file.read_text()
+            return self.model.model_validate_json(
+                file.read_text(
+                    encoding="utf-8",
                 )
+            )
 
-        raise FileNotFoundError(news_id)
+        raise FileNotFoundError(item_id)
 
-    ####################################################
+    ########################################################
 
-    def list(self) -> list[News]:
+    def list(self) -> list[T]:
 
-        articles = []
+        results = []
 
         for file in self.folder.glob("*.json"):
 
             try:
 
-                article = News.model_validate_json(
-                    file.read_text(
-                        encoding="utf-8",
+                results.append(
+
+                    self.model.model_validate_json(
+                        file.read_text(
+                            encoding="utf-8",
+                        )
                     )
+
                 )
 
-                articles.append(article)
-
-            except Exception as e:
+            except Exception as exc:
 
                 logger.warning(
-                    "Cannot read %s: %s",
+                    "Cannot read %s (%s)",
                     file,
-                    e,
+                    exc,
                 )
 
-        return sorted(
-            articles,
-            key=lambda news: news.published_at,
-            reverse=True,
+        if hasattr(self.model, "published_at"):
+
+            try:
+
+                results.sort(
+                    key=lambda x: x.published_at,
+                    reverse=True,
+                )
+
+            except Exception:
+                pass
+
+        return results
+
+    ########################################################
+
+    def first(self) -> T | None:
+
+        items = self.list()
+
+        return items[0] if items else None
+
+    ########################################################
+
+    def delete(
+        self,
+        item_id: str,
+    ):
+
+        for file in self.folder.glob("*.json"):
+
+            if item_id in file.name:
+
+                file.unlink()
+
+                return
+
+    ########################################################
+
+    def count(self) -> int:
+
+        return len(
+            list(
+                self.folder.glob("*.json")
+            )
         )
-
-    ####################################################
-
-    def first(self) -> News | None:
-
-        articles = self.list()
-
-        return articles[0] if articles else None

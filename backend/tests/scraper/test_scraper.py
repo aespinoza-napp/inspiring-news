@@ -4,12 +4,13 @@ from src.config.settings import settings
 from src.database.local_repository import LocalRepository
 from src.database.source_repository import SourceRepository
 from src.services.scraper.scraper import Scraper
+from src.models.news import News
 
 def test_scraper_pipeline():
 
     scraper = Scraper()
 
-    storage = LocalRepository(settings.STORAGE_PATH)
+    storage = LocalRepository(model=News, folder=settings.RAW_PATH)
 
     repository = SourceRepository().list()
 

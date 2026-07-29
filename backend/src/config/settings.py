@@ -11,21 +11,23 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    STORAGE_PATH: Path = Path("data/news")
+    STORAGE_PATH: Path = Path("data")
 
-    #########################################
-    # Database
-    #########################################
+    RAW_PATH: Path = STORAGE_PATH / "raw"
+
+    PROCESSED_PATH: Path = STORAGE_PATH / "processed"
+
+    EMBEDDINGS_PATH: Path = STORAGE_PATH / "embeddings"
+
+    FACT_CHECK_PATH: Path = STORAGE_PATH / "fact_checks"
+
+    GRAPH_PATH: Path = STORAGE_PATH / "graph"
+
+    CACHE_PATH: Path = STORAGE_PATH / "cache"
 
     NEO4J_URI: str = "bolt://localhost:7687"
-
     NEO4J_USER: str = "neo4j"
-
     NEO4J_PASSWORD: SecretStr
-
-    #########################################
-    # NLP Models
-    #########################################
 
     SENTIMENT_MODEL: str = (
         "cardiffnlp/twitter-roberta-base-sentiment-latest"
@@ -38,7 +40,16 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-settings.STORAGE_PATH.mkdir(
-    parents=True,
-    exist_ok=True,
-)
+for folder in (
+    settings.STORAGE_PATH,
+    settings.RAW_PATH,
+    settings.PROCESSED_PATH,
+    settings.EMBEDDINGS_PATH,
+    settings.FACT_CHECK_PATH,
+    settings.GRAPH_PATH,
+    settings.CACHE_PATH,
+):
+    folder.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
