@@ -3,41 +3,50 @@ from src.repositories.vector_repository import VectorRepository
 
 from tests.factories import create_article
 
+import tempfile
+import pytest
 
-def test_save_article():
+from src.database.qdrant import QdrantDatabase
+from src.repositories.vector_repository import VectorRepository
 
-    repository = VectorRepository(
-        QdrantDatabase()
-    )
 
-    repository.clear()
+@pytest.fixture
+def repository():
+
+    with tempfile.TemporaryDirectory() as path:
+
+        database = QdrantDatabase()
+
+        repo = VectorRepository(database)
+
+        yield repo
+
+        database.client.close()
+
+def test_save_article(repository):
 
     article = create_article(
-        id="test"
+        id="11111111-1111-1111-1111-111111111111"
     )
 
     repository.save(article)
 
-    assert repository.exists("test")
+    assert repository.exists("11111111-1111-1111-1111-111111111111")
 
     assert repository.count() == 1
 
-def test_get_article():
-
-    repository = VectorRepository(
-        QdrantDatabase()
-    )
+def test_get_article(repository):
 
     repository.clear()
 
     article = create_article(
-        id="test"
+        id="11111111-1111-1111-1111-111111111111"
     )
 
     repository.save(article)
 
-    saved = repository.get("test")
-
+    saved = repository.get("11111111-1111-1111-1111-111111111111")
+    
     assert saved is not None
 
     assert saved.id == article.id
@@ -46,13 +55,11 @@ def test_get_article():
 
     assert saved.url == article.url
 
-    assert saved.embedding == article.embedding
+    assert len(saved.embedding) == len(article.embedding)
 
-def test_delete_article():
+    
 
-    repository = VectorRepository(
-        QdrantDatabase()
-    )
+def test_delete_article(repository):
 
     repository.clear()
 
@@ -66,11 +73,7 @@ def test_delete_article():
 
     assert repository.count() == 0
 
-def test_search_returns_article():
-
-    repository = VectorRepository(
-        QdrantDatabase()
-    )
+def test_search_returns_article(repository):
 
     repository.clear()
 

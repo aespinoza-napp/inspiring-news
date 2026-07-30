@@ -8,7 +8,7 @@ from src.models.sentiment_result import SentimentResult
 def create_article(**kwargs) -> EnrichedArticle:
 
     article = EnrichedArticle(
-        id="test",
+        id="11111111-1111-1111-1111-111111111111",
         source_id="bbc",
         url="https://bbc.com/test",
         title="Test article",
