@@ -10,19 +10,6 @@ from src.database.qdrant import QdrantDatabase
 from src.repositories.vector_repository import VectorRepository
 
 
-@pytest.fixture
-def repository():
-
-    with tempfile.TemporaryDirectory() as path:
-
-        database = QdrantDatabase()
-
-        repo = VectorRepository(database)
-
-        yield repo
-
-        database.client.close()
-
 def test_save_article(repository):
 
     article = create_article(

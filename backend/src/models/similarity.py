@@ -1,15 +1,10 @@
-from dataclasses import dataclass
-from typing import List, Optional
 from pydantic import BaseModel
+
+from src.models.enriched_article import EnrichedArticle
+
 
 class SimilarArticle(BaseModel):
 
-    id: str
+    article: EnrichedArticle
 
     similarity: float
-
-    title: Optional[str] = None
-
-    url: Optional[str] = None
-
-    source_id: Optional[str] = None

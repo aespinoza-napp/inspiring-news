@@ -15,7 +15,7 @@ from src.database.qdrant import QdrantDatabase
 from src.models.enriched_article import EnrichedArticle
 from src.models.quality import Quality
 from src.models.sentiment_result import SentimentResult
-
+from src.models.similarity import SimilarArticle
 
 class VectorRepository:
 
@@ -97,7 +97,8 @@ class VectorRepository:
         self,
         vector: list[float],
         limit: int = 5,
-    ) -> list[EnrichedArticle]:
+    ) -> list[SimilarArticle]:
+
 
         results = self.client.query_points(
             collection_name=self.COLLECTION,
@@ -107,8 +108,12 @@ class VectorRepository:
             with_vectors=True,
         )
 
+
         return [
-            self._to_article(point)
+            SimilarArticle(
+                article=self._to_article(point),
+                similarity=point.score,
+            )
             for point in results.points
         ]
 

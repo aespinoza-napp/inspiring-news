@@ -44,6 +44,7 @@ class Settings(BaseSettings):
 
     # Similarity threshold for duplicate detection
     DUPLICATE_THRESHOLD: float = 0.90
+    RELATEDNESS_THRESHOLD: float = 0.80
 
 
 settings = Settings()
