@@ -1,220 +1,256 @@
 TOPIC_URL_PATTERNS = {
+
     # ==========================
-    # Environment
+    # Society
     # ==========================
 
-    "wildlife": (
-        "/wildlife/",
-        "/animals/",
-        "/nature/",
-        "/species/",
-        "/conservation/",
+    "education": (
+        "/education/",
+        "/schools/",
+        "/school/",
+        "/university/",
+        "/universities/",
+        "/learning/",
+        "/students/",
     ),
 
-    "climate_change": (
-        "/climate/",
-        "/climate-change/",
-        "/environment/",
-        "/global-warming/",
-        "/sustainability/",
+    "community": (
+        "/community/",
+        "/communities/",
+        "/society/",
+        "/social/",
+        "/charity/",
+        "/volunteer/",
+        "/nonprofit/",
     ),
 
-    "circular_economy": (
-        "/circular-economy/",
-        "/recycling/",
-        "/reuse/",
-        "/zero-waste/",
-        "/waste/",
+    "employment": (
+        "/jobs/",
+        "/job/",
+        "/careers/",
+        "/career/",
+        "/employment/",
+        "/work/",
+        "/business/",
+        "/economy/",
     ),
 
-    "green_innovation": (
-        "/green-tech/",
-        "/clean-tech/",
-        "/innovation/",
-        "/research/",
-        "/technology/",
-    ),
-
-    "agriculture": (
-        "/agriculture/",
-        "/farming/",
-        "/food/",
-        "/agronomy/",
-    ),
-
-    "oceans": (
-        "/ocean/",
-        "/oceans/",
-        "/marine/",
-        "/sea/",
-    ),
-
-    "energy": (
-        "/energy/",
-        "/renewable/",
-        "/renewables/",
-        "/solar/",
-        "/wind/",
-        "/hydrogen/",
-    ),
-
-    "biodiversity": (
-        "/biodiversity/",
-        "/ecosystem/",
-        "/habitat/",
-    ),
-
-    "transport": (
+    "cities": (
+        "/cities/",
+        "/city/",
+        "/urban/",
+        "/housing/",
         "/transport/",
         "/mobility/",
-        "/electric-vehicles/",
-        "/ev/",
+        "/infrastructure/",
+    ),
+
+    "fact_checking": (
+        "/fact-check/",
+        "/factcheck/",
+        "/fact-checking/",
+        "/verification/",
+        "/misinformation/",
+        "/fake-news/",
     ),
 
     # ==========================
     # Science
     # ==========================
 
-    "artificial_intelligence": (
-        "/ai/",
-        "/artificial-intelligence/",
-        "/machine-learning/",
-        "/deep-learning/",
-        "/openai/",
-        "/llm/",
-    ),
-
     "space": (
         "/space/",
         "/astronomy/",
+        "/astrophysics/",
         "/nasa/",
         "/esa/",
         "/spacex/",
+        "/science/space/",
     ),
 
-    "robotics": (
-        "/robotics/",
-        "/robots/",
-        "/automation/",
-        "/drone/",
-    ),
-
-    "computing": (
+    "technology": (
         "/technology/",
         "/tech/",
+        "/ai/",
+        "/artificial-intelligence/",
         "/software/",
-        "/hardware/",
         "/cybersecurity/",
-        "/cloud/",
+        "/robotics/",
+        "/innovation/",
     ),
 
-    "medicine": (
-        "/health/",
-        "/medicine/",
-        "/medical/",
-        "/healthcare/",
+    "research": (
+        "/science/",
+        "/research/",
+        "/discoveries/",
+        "/innovation/",
+        "/laboratory/",
+        "/breakthrough/",
     ),
 
     "biology": (
         "/biology/",
         "/genetics/",
-        "/science/",
-    ),
-
-    "psychology": (
-        "/psychology/",
-        "/mental-health/",
-        "/wellbeing/",
+        "/genome/",
+        "/dna/",
+        "/microbiology/",
+        "/biotechnology/",
+        "/life-sciences/",
     ),
 
     # ==========================
-    # Lifestyle
+    # Environment
     # ==========================
 
-    "travel": (
-        "/travel/",
-        "/tourism/",
-        "/destinations/",
+    "climate": (
+        "/climate/",
+        "/climate-change/",
+        "/environment/",
+        "/global-warming/",
+        "/carbon/",
+        "/weather/",
     ),
 
-    "fitness": (
-        "/fitness/",
-        "/exercise/",
-        "/health/",
+    "nature": (
+        "/nature/",
+        "/wildlife/",
+        "/biodiversity/",
+        "/ecosystem/",
+        "/conservation/",
+        "/animals/",
+        "/species/",
     ),
 
-    "healthy_food": (
+    "energy": (
+        "/energy/",
+        "/renewable-energy/",
+        "/renewables/",
+        "/solar/",
+        "/wind/",
+        "/hydrogen/",
+        "/electricity/",
+    ),
+
+    "sustainability": (
+        "/sustainability/",
+        "/sustainable/",
+        "/green/",
+        "/green-tech/",
+        "/clean-tech/",
+        "/recycling/",
+        "/circular-economy/",
+    ),
+
+    "food": (
+        "/food/",
+        "/agriculture/",
+        "/farming/",
+        "/organic/",
         "/nutrition/",
-        "/healthy-eating/",
-        "/food/",
-        "/recipes/",
-    ),
-
-    "fashion": (
-        "/fashion/",
-        "/style/",
-    ),
-
-    "beauty": (
-        "/beauty/",
-        "/skincare/",
-    ),
-
-    "home": (
-        "/home/",
-        "/living/",
-        "/interior/",
-    ),
-
-    "gastronomy": (
-        "/food/",
-        "/recipes/",
-        "/cooking/",
-        "/restaurant/",
-    ),
-
-    "finance": (
-        "/money/",
-        "/finance/",
-        "/personal-finance/",
+        "/oceans/",
+        "/marine/",
     ),
 
     # ==========================
     # Culture
     # ==========================
 
-    "cinema": (
-        "/movies/",
-        "/film/",
-        "/cinema/",
-    ),
-
-    "music": (
-        "/music/",
-        "/concert/",
-    ),
-
-    "art": (
+    "arts": (
         "/art/",
         "/arts/",
         "/museum/",
+        "/architecture/",
+        "/design/",
+        "/dance/",
+        "/theatre/",
+        "/theater/",
+    ),
+
+    "entertainment": (
+        "/entertainment/",
+        "/movies/",
+        "/movie/",
+        "/film/",
+        "/cinema/",
+        "/music/",
+        "/tv/",
+        "/television/",
+        "/streaming/",
+    ),
+
+    "heritage": (
+        "/history/",
+        "/heritage/",
+        "/archaeology/",
+        "/culture/",
+        "/civilization/",
+        "/historic/",
     ),
 
     "literature": (
         "/books/",
+        "/book/",
         "/literature/",
+        "/reading/",
+        "/authors/",
+        "/publishing/",
     ),
 
-    "history": (
-        "/history/",
-        "/archaeology/",
+    "inspiration": (
+        "/inspiration/",
+        "/success/",
+        "/good-news/",
+        "/positive-news/",
+        "/human-interest/",
+        "/community/",
     ),
 
-    "sports": (
-        "/sport/",
-        "/sports/",
-        "/football/",
-        "/basketball/",
-        "/tennis/",
+    # ==========================
+    # Health
+    # ==========================
+
+    "medicine": (
+        "/health/",
+        "/medicine/",
+        "/medical/",
+        "/healthcare/",
+        "/disease/",
+        "/vaccines/",
+        "/clinical-trials/",
+    ),
+
+    "mental_health": (
+        "/mental-health/",
+        "/psychology/",
+        "/wellbeing/",
+        "/mindfulness/",
+        "/brain/",
+        "/neuroscience/",
+    ),
+
+    "nutrition": (
+        "/nutrition/",
+        "/healthy-eating/",
+        "/diet/",
+        "/recipes/",
+        "/food/",
+    ),
+
+    "fitness": (
+        "/fitness/",
+        "/exercise/",
+        "/workout/",
+        "/gym/",
+        "/running/",
+        "/sports-health/",
+    ),
+
+    "public_health": (
+        "/public-health/",
+        "/health-policy/",
+        "/epidemiology/",
+        "/who/",
+        "/prevention/",
+        "/global-health/",
     ),
 }

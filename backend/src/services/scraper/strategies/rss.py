@@ -6,7 +6,7 @@ from __future__ import annotations
 import feedparser
 
 from src.models.source import NewsSource
-
+from src.config.topic_url_patterns import TOPIC_URL_PATTERNS
 from .base import DiscoveryStrategy
 
 
@@ -14,19 +14,24 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
     """Discover article URLs from an RSS feed."""
 
     ARTICLE_PATTERNS = (
-        "/news/",
-        "/article/",
-        "/articles/",
         "/story/",
         "/stories/",
         "/world/",
-        "/business/",
-        "/politics/",
         "/technology/",
+        "/tech/",
         "/science/",
+        "/health/",
+        "/environment/",
+        "/climate/",
+        "/culture/",
+        "/travel/",
+        "/food/",
         "/sport/",
         "/sports/",
-        "/202",
+        "/features/",
+        "/feature/",
+        "/latest/",
+        "/live/"
     )
 
     def discover(

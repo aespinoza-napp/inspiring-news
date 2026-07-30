@@ -40,8 +40,6 @@ class LocalRepository:
         self,
         item: T,
     ) -> Path:
-        print("item", item)
-        print("item.published_at", getattr(item, "published_at", None))
         date = getattr(
             item,
             "published_at",

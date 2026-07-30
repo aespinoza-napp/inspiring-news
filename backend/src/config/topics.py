@@ -1,339 +1,276 @@
 from src.models.topics import Topic
 
-
 TOPICS = {
 
     # ==========================
-    # Environment
+    # Society
     # ==========================
 
-    "wildlife": Topic(
-        name="Wildlife",
-        description="News about wildlife, animal species, conservation projects, endangered species, habitats and biodiversity protection.",
-        keywords=["wildlife", "fauna", "animals", "species", "conservation"],
+    "education": Topic(
+        name="Education",
+        description="Education systems, schools, universities, lifelong learning, educational innovation and public education policies.",
+        keywords=[
+            "education", "school", "university", "student",
+            "teacher", "learning", "curriculum"
+        ],
     ),
 
-    "climate_change": Topic(
-        name="Climate Change",
-        description="News about climate change, global warming, greenhouse gases, carbon emissions, climate policy and decarbonization.",
-        keywords=["climate change", "global warming", "carbon emissions", "net zero"],
-    ),
-
-    "circular_economy": Topic(
-        name="Circular Economy",
-        description="News related to recycling, reuse, waste reduction, sustainable production, resource efficiency and circular economy initiatives.",
-        keywords=["circular economy", "recycling", "reuse", "zero waste"],
-    ),
-
-    "environmental_discoveries": Topic(
-        name="Environmental Discoveries",
-        description="Scientific discoveries about nature, ecosystems, geology, environmental research and ecological breakthroughs.",
-        keywords=["environment", "discovery", "nature", "research"],
-    ),
-
-    "green_innovation": Topic(
-        name="Green Innovation",
-        description="Innovations, startups and technologies focused on sustainability, renewable solutions and environmental engineering.",
-        keywords=["green technology", "clean technology", "innovation"],
-    ),
-
-    "agriculture": Topic(
-        name="Agriculture",
-        description="News about farming, crops, food production, agronomy, livestock and sustainable agriculture.",
-        keywords=["agriculture", "crop", "soil", "food production"],
-    ),
-
-    "oceans": Topic(
-        name="Oceans",
-        description="Marine ecosystems, oceans, coral reefs, fisheries, coastal environments and marine biodiversity.",
-        keywords=["ocean", "marine", "sea", "coral reef"],
-    ),
-
-    "social_movements": Topic(
-        name="Social Movements",
-        description="Community initiatives, activism, volunteering, NGOs, civic engagement and social impact.",
-        keywords=["community", "activism", "volunteering", "social impact"],
+    "community": Topic(
+        name="Community & Social Impact",
+        description="Community initiatives, volunteering, NGOs, social innovation, inclusion, solidarity and civic engagement.",
+        keywords=[
+            "community", "volunteer", "charity",
+            "social impact", "nonprofit", "activism"
+        ],
     ),
 
     "employment": Topic(
         name="Employment",
-        description="Jobs, careers, labour market, employment policies, recruitment, workplace and professional skills.",
-        keywords=["employment", "jobs", "career", "workforce"],
+        description="Jobs, careers, labour market, workplace innovation, entrepreneurship and professional development.",
+        keywords=[
+            "employment", "career", "jobs",
+            "workforce", "entrepreneurship", "skills"
+        ],
     ),
 
-    "education": Topic(
-        name="Education",
-        description="Schools, universities, education systems, teaching, students, educational research and learning.",
-        keywords=["education", "school", "university", "student"],
+    "cities": Topic(
+        name="Cities & Society",
+        description="Urban development, smart cities, mobility, housing, quality of life and public services.",
+        keywords=[
+            "city", "urban", "housing",
+            "mobility", "community", "transport"
+        ],
     ),
 
-    "energy": Topic(
-        name="Energy",
-        description="Renewable energy, solar power, wind energy, batteries, hydrogen, electricity and energy transition.",
-        keywords=["renewable energy", "solar", "wind", "hydrogen"],
-    ),
-
-    "industry": Topic(
-        name="Industry",
-        description="Manufacturing, industrial production, factories, industrial innovation and supply chains.",
-        keywords=["industry", "manufacturing", "factory"],
-    ),
-
-    "ecotourism": Topic(
-        name="Ecotourism",
-        description="Sustainable tourism, responsible travel, protected natural areas and eco-friendly tourism.",
-        keywords=["ecotourism", "nature tourism", "sustainable tourism"],
-    ),
-
-    "sustainable_food": Topic(
-        name="Sustainable Food",
-        description="Organic food, regenerative agriculture, sustainable diets, food sustainability and responsible consumption.",
-        keywords=["organic food", "plant-based", "regenerative agriculture"],
-    ),
-
-    "biodiversity": Topic(
-        name="Biodiversity",
-        description="Species diversity, ecosystems, habitats, biodiversity conservation and ecological restoration.",
-        keywords=["biodiversity", "ecosystem", "habitat"],
-    ),
-
-    "sustainability_tips": Topic(
-        name="Sustainability Tips",
-        description="Practical advice about sustainable living, reducing carbon footprint, recycling and eco-friendly habits.",
-        keywords=["eco-friendly", "green living", "carbon footprint"],
-    ),
-
-    "sustainable_transport": Topic(
-        name="Sustainable Transport",
-        description="Electric vehicles, cycling, public transport, sustainable mobility and green transportation.",
-        keywords=["electric vehicle", "public transport", "cycling"],
+    "fact_checking": Topic(
+        name="Fact Checking",
+        description="Verification of information, misinformation, fake news, myths and evidence-based journalism.",
+        keywords=[
+            "fact check", "misinformation",
+            "fake news", "myth", "debunked"
+        ],
     ),
 
     # ==========================
     # Science
     # ==========================
 
-    "artificial_intelligence": Topic(
-        name="Artificial Intelligence",
-        description="Artificial intelligence, machine learning, large language models, robotics, generative AI and AI applications.",
-        keywords=["AI", "machine learning", "GPT", "LLM", "OpenAI", "Anthropic"],
-    ),
-
     "space": Topic(
         name="Space",
-        description="Astronomy, astrophysics, satellites, space exploration, rockets, NASA, ESA and SpaceX missions.",
-        keywords=["NASA", "ESA", "SpaceX", "Mars", "Moon"],
+        description="Astronomy, astrophysics, satellites, planetary science and space exploration.",
+        keywords=[
+            "space", "NASA", "ESA",
+            "SpaceX", "Mars", "Moon"
+        ],
     ),
 
-    "robotics": Topic(
-        name="Robotics",
-        description="Robots, automation, humanoids, drones, autonomous systems and industrial robotics.",
-        keywords=["robot", "automation", "drone", "humanoid"],
+    "technology": Topic(
+        name="Technology",
+        description="Computing, cybersecurity, software engineering, robotics and emerging technologies.",
+        keywords=[
+            "technology", "software",
+            "robotics", "cybersecurity",
+            "cloud", "automation"
+        ],
     ),
 
-    "computing": Topic(
-        name="Computing",
-        description="Software engineering, programming, cloud computing, cybersecurity, computer science and hardware.",
-        keywords=["software", "programming", "cloud", "cybersecurity"],
-    ),
-
-    "emerging_technology": Topic(
-        name="Emerging Technology",
-        description="Quantum computing, nanotechnology, biotechnology and breakthrough technological innovations.",
-        keywords=["quantum computing", "nanotechnology", "biotechnology"],
-    ),
-
-    "psychology": Topic(
-        name="Psychology",
-        description="Mental health, behaviour, cognition, wellbeing, neuroscience and psychological research.",
-        keywords=["psychology", "mental health", "mindfulness"],
-    ),
-
-    "medicine": Topic(
-        name="Medicine",
-        description="Healthcare, clinical trials, diseases, treatments, vaccines, medical innovation and public health.",
-        keywords=["medicine", "healthcare", "vaccine", "therapy"],
-    ),
-
-    "myths": Topic(
-        name="Myths and Fact Checking",
-        description="Fact-checking, misinformation, myths, urban legends and debunking false claims.",
-        keywords=["fact check", "myth", "debunked"],
+    "research": Topic(
+        name="Scientific Research",
+        description="Scientific discoveries, academic research, innovation, laboratories and multidisciplinary science.",
+        keywords=[
+            "research", "discovery",
+            "science", "innovation",
+            "breakthrough"
+        ],
     ),
 
     "biology": Topic(
         name="Biology",
-        description="Genetics, microbiology, evolution, cells, DNA and biological sciences.",
-        keywords=["biology", "DNA", "genetics"],
+        description="Life sciences including genetics, microbiology, evolution, ecology and biotechnology.",
+        keywords=[
+            "biology", "DNA",
+            "genetics", "microbiology",
+            "evolution"
+        ],
     ),
 
     # ==========================
-    # Lifestyle
+    # Environment
     # ==========================
 
-    "wellbeing": Topic(
-        name="Wellbeing",
-        description="Healthy lifestyles, wellness, quality of life, mental wellbeing and self-improvement.",
-        keywords=["wellbeing", "wellness", "healthy lifestyle"],
+    "climate": Topic(
+        name="Climate",
+        description="Climate change, decarbonisation, emissions, environmental policy and climate adaptation.",
+        keywords=[
+            "climate change", "global warming",
+            "carbon", "net zero",
+            "emissions"
+        ],
     ),
 
-    "fashion": Topic(
-        name="Fashion",
-        description="Fashion industry, clothing, designers, sustainable fashion and style trends.",
-        keywords=["fashion", "designer", "clothing"],
+    "nature": Topic(
+        name="Nature & Biodiversity",
+        description="Wildlife, biodiversity, conservation, ecosystems and protected natural areas.",
+        keywords=[
+            "wildlife", "biodiversity",
+            "ecosystem", "species",
+            "conservation"
+        ],
     ),
 
-    "travel": Topic(
-        name="Travel",
-        description="Travel destinations, tourism, holidays, cultural trips, adventure travel and visitor experiences.",
-        keywords=["travel", "tourism", "vacation", "destination"],
+    "energy": Topic(
+        name="Energy",
+        description="Renewable energy, clean technologies, batteries, hydrogen and energy transition.",
+        keywords=[
+            "renewable energy",
+            "solar", "wind",
+            "battery", "hydrogen"
+        ],
     ),
 
-    "healthy_food": Topic(
-        name="Healthy Food",
-        description="Nutrition, healthy recipes, balanced diets, superfoods and healthy eating habits.",
-        keywords=["nutrition", "healthy recipes", "balanced diet"],
+    "sustainability": Topic(
+        name="Sustainability",
+        description="Circular economy, sustainable production, responsible consumption and green innovation.",
+        keywords=[
+            "sustainability",
+            "circular economy",
+            "recycling",
+            "green technology",
+            "eco-friendly"
+        ],
     ),
 
-    "fitness": Topic(
-        name="Fitness",
-        description="Exercise, sports training, gyms, running, physical activity and personal fitness.",
-        keywords=["fitness", "exercise", "gym", "running"],
-    ),
-
-    "home": Topic(
-        name="Home",
-        description="Interior design, home improvement, smart homes, decoration and sustainable housing.",
-        keywords=["interior design", "smart home", "decor"],
-    ),
-
-    "gastronomy": Topic(
-        name="Gastronomy",
-        description="Cuisine, restaurants, chefs, recipes, culinary culture and food experiences.",
-        keywords=["chef", "restaurant", "recipe"],
-    ),
-
-    "financial_wellbeing": Topic(
-        name="Financial Wellbeing",
-        description="Personal finance, savings, investing, budgeting and financial education.",
-        keywords=["saving", "investing", "budgeting"],
-    ),
-
-    "beauty": Topic(
-        name="Beauty",
-        description="Skincare, cosmetics, beauty products, makeup and self-care.",
-        keywords=["beauty", "skincare", "makeup"],
-    ),
-
-    "positive_living": Topic(
-        name="Positive Living",
-        description="Motivation, happiness, personal growth, inspiration and positive psychology.",
-        keywords=["motivation", "happiness", "personal growth"],
-    ),
-
-    "city_life": Topic(
-        name="City Life",
-        description="Urban living, smart cities, communities, mobility and quality of life in cities.",
-        keywords=["urban living", "smart city", "community"],
+    "food": Topic(
+        name="Food & Agriculture",
+        description="Agriculture, food production, regenerative farming, sustainable food systems and oceans.",
+        keywords=[
+            "agriculture",
+            "food production",
+            "organic food",
+            "marine",
+            "ocean"
+        ],
     ),
 
     # ==========================
-    # Culture & Society
+    # Culture
     # ==========================
 
-    "cinema": Topic(
-        name="Cinema",
-        description="Films, directors, actors, movie releases, film festivals and the cinema industry.",
-        keywords=["film", "movie", "director"],
+    "arts": Topic(
+        name="Arts",
+        description="Visual arts, museums, architecture, dance, theatre and artistic expression.",
+        keywords=[
+            "art", "museum",
+            "architecture",
+            "dance",
+            "theatre"
+        ],
     ),
 
-    "music": Topic(
-        name="Music",
-        description="Artists, albums, concerts, festivals, music industry and musical culture.",
-        keywords=["music", "concert", "artist"],
+    "entertainment": Topic(
+        name="Entertainment",
+        description="Cinema, television, music, festivals and cultural productions.",
+        keywords=[
+            "movie", "film",
+            "music", "concert",
+            "festival"
+        ],
     ),
 
-    "theatre": Topic(
-        name="Theatre",
-        description="Stage performances, theatre productions, actors and performing arts.",
-        keywords=["theatre", "play", "performance"],
-    ),
-
-    "art": Topic(
-        name="Art",
-        description="Painting, sculpture, museums, exhibitions, artists and visual arts.",
-        keywords=["art", "museum", "painting"],
-    ),
-
-    "dance": Topic(
-        name="Dance",
-        description="Dance, ballet, choreography, dance companies and live performances.",
-        keywords=["dance", "ballet", "choreography"],
-    ),
-
-    "culture": Topic(
-        name="Culture",
-        description="Cultural heritage, traditions, local customs, festivals and cultural events.",
-        keywords=["culture", "heritage", "tradition"],
+    "heritage": Topic(
+        name="History & Heritage",
+        description="History, archaeology, historical discoveries, traditions and cultural heritage.",
+        keywords=[
+            "history",
+            "archaeology",
+            "heritage",
+            "civilization"
+        ],
     ),
 
     "literature": Topic(
         name="Literature",
-        description="Books, novels, authors, poetry, publishing and literary events.",
-        keywords=["book", "novel", "author"],
+        description="Books, authors, publishing, reading and literary events.",
+        keywords=[
+            "book",
+            "author",
+            "novel",
+            "literature"
+        ],
     ),
 
-    "architecture": Topic(
-        name="Architecture",
-        description="Architecture, historic buildings, urban design, architects and restoration projects.",
-        keywords=["architecture", "building", "architect"],
+    "inspiration": Topic(
+        name="Inspirational Stories",
+        description="Success stories, acts of kindness, role models, inspiring people and positive social initiatives.",
+        keywords=[
+            "success",
+            "kindness",
+            "volunteer",
+            "achievement",
+            "role model"
+        ],
     ),
 
-    "international_events": Topic(
-        name="International Events",
-        description="Global summits, international conferences, expos and worldwide events.",
-        keywords=["summit", "conference", "world expo"],
+    # ==========================
+    # Health
+    # ==========================
+
+    "medicine": Topic(
+        name="Medicine",
+        description="Healthcare, diseases, vaccines, treatments, clinical research and medical innovation.",
+        keywords=[
+            "medicine",
+            "healthcare",
+            "vaccine",
+            "therapy",
+            "clinical trial"
+        ],
     ),
 
-    "national_events": Topic(
-        name="National Events",
-        description="National celebrations, festivals, commemorations and public events.",
-        keywords=["festival", "celebration"],
+    "mental_health": Topic(
+        name="Mental Health",
+        description="Psychology, emotional wellbeing, neuroscience, stress management and mental health research.",
+        keywords=[
+            "mental health",
+            "psychology",
+            "wellbeing",
+            "mindfulness",
+            "depression"
+        ],
     ),
 
-    "history": Topic(
-        name="History",
-        description="Historical events, archaeology, civilizations, historical heritage and discoveries.",
-        keywords=["history", "archaeology", "heritage"],
+    "nutrition": Topic(
+        name="Nutrition",
+        description="Healthy eating, nutrition, balanced diets, food science and healthy recipes.",
+        keywords=[
+            "nutrition",
+            "healthy eating",
+            "diet",
+            "healthy recipes"
+        ],
     ),
 
-    "good_deeds": Topic(
-        name="Good Deeds",
-        description="Acts of kindness, volunteering, charity, solidarity and community service.",
-        keywords=["charity", "volunteer", "kindness"],
+    "fitness": Topic(
+        name="Fitness",
+        description="Exercise, sports, physical activity, performance and healthy lifestyles.",
+        keywords=[
+            "fitness",
+            "exercise",
+            "gym",
+            "running",
+            "training"
+        ],
     ),
 
-    "sports": Topic(
-        name="Sports",
-        description="Sports competitions, athletes, football, basketball, tennis, Olympic sports and sporting events.",
-        keywords=["football", "basketball", "tennis", "competition"],
-    ),
-
-    "social_stories": Topic(
-        name="Social Stories",
-        description="Human-interest stories, testimonials, inspiring communities and real-life experiences.",
-        keywords=["human story", "testimonial", "community"],
-    ),
-
-    "quotes": Topic(
-        name="Quotes",
-        description="Inspirational quotes, famous quotations, speeches and motivational messages.",
-        keywords=["quote", "inspirational quote"],
-    ),
-
-    "success_stories": Topic(
-        name="Success Stories",
-        description="Entrepreneurship, achievements, inspiring people, innovation and role models.",
-        keywords=["entrepreneur", "achievement", "role model"],
+    "public_health": Topic(
+        name="Public Health",
+        description="Health policies, epidemiology, prevention, healthcare systems and global health.",
+        keywords=[
+            "public health",
+            "prevention",
+            "epidemiology",
+            "health policy",
+            "WHO"
+        ],
     ),
 }

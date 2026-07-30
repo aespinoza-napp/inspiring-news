@@ -35,11 +35,10 @@ class ExtractorService:
 
             if extracted is None:
                 continue
-            print(len(extracted.body))
+
             if not ExtractionValidator.is_valid(extracted):
-                
                 continue
-            print("VALID")
+
             news = News(
                 source_id=source.id,
                 url=url,

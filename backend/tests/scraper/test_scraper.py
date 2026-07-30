@@ -25,7 +25,6 @@ def test_scraper_pipeline():
             topics=["space", "technology", "ia"],
         )
         discovered += len(urls)
-        print(discovered)
         for url in urls:
 
             news = scraper.extract(
