@@ -3,7 +3,7 @@ from datetime import datetime
 from src.models.enriched_article import EnrichedArticle
 from src.models.quality import Quality
 from src.models.sentiment_result import SentimentResult
-
+from src.models.topic_prediction import TopicPrediction
 
 def create_article(**kwargs) -> EnrichedArticle:
 
@@ -19,7 +19,7 @@ def create_article(**kwargs) -> EnrichedArticle:
         keywords=["test"],
         entities={},
 
-        topics=[],
+        topics=[TopicPrediction(topic="environment", confidence=0.71, probability=0.71)],
         claims=[],
 
         sentiment=SentimentResult(

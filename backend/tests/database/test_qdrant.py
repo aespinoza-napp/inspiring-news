@@ -44,7 +44,24 @@ def test_get_article(repository):
 
     assert len(saved.embedding) == len(article.embedding)
 
-    
+
+def test_search_returns_article(repository):
+
+    repository.clear()
+
+    article = create_article()
+
+    repository.save(article)
+
+    results = repository.search(
+        article.embedding,
+        limit=1,
+    )
+    print(results[0].article.id)
+    print(article.id)
+    assert len(results) == 1
+
+    assert results[0].article.id == article.id
 
 def test_delete_article(repository):
 
@@ -59,20 +76,3 @@ def test_delete_article(repository):
     assert not repository.exists(article.id)
 
     assert repository.count() == 0
-
-def test_search_returns_article(repository):
-
-    repository.clear()
-
-    article = create_article()
-
-    repository.save(article)
-
-    results = repository.search(
-        article.embedding,
-        limit=1,
-    )
-
-    assert len(results) == 1
-
-    assert results[0].id == article.id

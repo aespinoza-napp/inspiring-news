@@ -54,8 +54,6 @@ class DuplicateValidator:
 
         similarity = best.similarity
 
-        print(f"Best similarity: {similarity}, Article ID: {best.article.id}")
-        print(f"DUPLICATE_THRESHOLD: {self.DUPLICATE_THRESHOLD}, RELATEDNESS_THRESHOLD: {self.RELATEDNESS_THRESHOLD}")
         if similarity >= self.DUPLICATE_THRESHOLD:
 
             return DuplicateResult(
