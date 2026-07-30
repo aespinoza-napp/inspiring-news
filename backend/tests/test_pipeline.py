@@ -1,5 +1,5 @@
 from src.agents.fact_checker import FactChecker
-from src.database.local_repository import LocalRepository
+from src.repositories.local_repository import LocalRepository
 from src.processors.nlp.processor import NLPProcessor
 from src.workflows.news_pipeline import NewsPipeline
 from src.processors.nlp.sentiment import SentimentAnalyzer

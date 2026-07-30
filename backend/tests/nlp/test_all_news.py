@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from src.config.settings import Settings
-from src.database.local_repository import LocalRepository
+from src.repositories.local_repository import LocalRepository
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
 

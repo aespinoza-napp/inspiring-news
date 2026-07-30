@@ -1,5 +1,5 @@
 from src.config.settings import settings
-from src.database.local_repository import LocalRepository
+from src.repositories.local_repository import LocalRepository
 from src.processors.nlp import NLPProcessor
 from src.agents.fact_checker import FactChecker
 from src.workflows.news_pipeline import NewsPipeline

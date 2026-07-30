@@ -1,4 +1,4 @@
-from src.database.source_repository import SourceRepository
+from src.repositories.source_repository import SourceRepository
 
 
 def test_source_repository():

@@ -4,7 +4,7 @@ import pytest
 
 from src.models.news import News
 from src.models.source import NewsSource, SourceType
-from src.database.source_repository import SourceRepository
+from src.repositories.source_repository import SourceRepository
 
 @pytest.fixture
 def example_news():

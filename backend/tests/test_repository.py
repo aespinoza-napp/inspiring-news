@@ -1,4 +1,4 @@
-from src.database.local_repository import LocalRepository
+from src.repositories.local_repository import LocalRepository
 
 
 def test_repository(tmp_path, example_news):

@@ -33,6 +33,10 @@ class Settings(BaseSettings):
         "cardiffnlp/twitter-roberta-base-sentiment-latest"
     )
 
+    QDRANT_PATH: Path = Path("data/vector_db")
+
+    EMBEDDING_DIMENSION: int = 1024
+
     EMBEDDING_MODEL: str = (
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )

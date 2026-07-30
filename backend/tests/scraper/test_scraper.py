@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from src.config.settings import settings
-from src.database.local_repository import LocalRepository
-from src.database.source_repository import SourceRepository
+from src.repositories.local_repository import LocalRepository
+from src.repositories.source_repository import SourceRepository
 from src.services.scraper.scraper import Scraper
 from src.models.news import News
 

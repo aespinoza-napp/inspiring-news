@@ -13,7 +13,7 @@ Responsibilities
 """
 
 from src.agents.fact_checker import FactChecker
-from src.database.repository import NewsRepository
+from src.repositories.repository import NewsRepository
 from src.models.news import News
 from src.processors.nlp import NLPProcessor
 from src.processors.nlp.sentiment import SentimentAnalyzer
