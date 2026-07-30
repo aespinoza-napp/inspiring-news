@@ -45,6 +45,8 @@ class NewsEnrichmentPipeline:
             body=article.content,
 
             #language=article.language,
+            
+            published_at=article.published_at,
 
             keywords=self.keywords.process(article.content),
 

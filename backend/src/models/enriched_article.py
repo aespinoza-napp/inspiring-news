@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 from typing import Optional
 from src.models.topic_prediction import TopicPrediction
@@ -20,15 +22,17 @@ class EnrichedArticle(BaseModel):
 
     language: Optional[str] = None
 
+    published_at: Optional[datetime] = None
+
     #################################################
 
     keywords: list[str]
 
     entities: dict[str, list[str]]
 
-    topics: list[TopicPrediction]
+    topics: Optional[list[TopicPrediction]] = None
 
-    claims: list[Claim]
+    claims: Optional[list[Claim]] = None
 
     sentiment: SentimentResult
 
