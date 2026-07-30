@@ -33,6 +33,7 @@ class Settings(BaseSettings):
         "cardiffnlp/twitter-roberta-base-sentiment-latest"
     )
 
+    # Qdrant settings
     QDRANT_PATH: Path = Path("data/vector_db")
 
     EMBEDDING_DIMENSION: int = 1024
@@ -40,6 +41,9 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = (
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
+
+    # Similarity threshold for duplicate detection
+    DUPLICATE_THRESHOLD: float = 0.90
 
 
 settings = Settings()

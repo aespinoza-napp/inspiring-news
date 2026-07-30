@@ -1,23 +1,20 @@
-
-from src.repositories.repository import NewsRepository
 from src.models.enriched_article import EnrichedArticle
 from src.models.duplicate_result import DuplicateResult
+from src.repositories.vector_repository import VectorRepository
+from config.settings import settings
 
 class DuplicateValidator:
 
-    def __init__(self, vector_db):
 
-        self.vector_db = vector_db
+    DUPLICATE_THRESHOLD = settings.DUPLICATE_THRESHOLD
 
-    def is_url_duplicate(
+
+    def __init__(
         self,
-        url: str,
-        repository: NewsRepository,
-    ) -> bool:
+        repository: VectorRepository,
+    ):
 
-        normalized = normalize_url(url)
-
-        return repository.exists_url(normalized)
+        self.repository = repository
 
 
     def validate(
@@ -25,23 +22,44 @@ class DuplicateValidator:
         article: EnrichedArticle,
     ) -> DuplicateResult:
 
-        neighbours = self.vector_db.search(
+
+        similar_articles = self.repository.search(
             article.embedding,
-            limit=1,
+            limit=5,
         )
 
-        if not neighbours:
+
+        # remove itself if it already exists
+        candidates = [
+            item
+            for item in similar_articles
+            if item.id != article.id
+        ]
+
+
+        if not candidates:
 
             return DuplicateResult(
-                False,
-                None,
-                0.0,
+                duplicate=False,
+                similarity=0.0,
+                reason="No similar articles found",
             )
 
-        best = neighbours[0]
+
+        # because Qdrant returns nearest neighbours
+        most_similar = candidates[0]
+
+
+        similarity = self.repository.last_similarity
+
 
         return DuplicateResult(
-            duplicate=best.similarity >= 0.95,
-            duplicate_article_id=best.id,
-            similarity=best.similarity,
+            duplicate=similarity >= self.DUPLICATE_THRESHOLD,
+            similarity=similarity,
+            matched_article_id=most_similar.id,
+            reason=(
+                "Similar article found"
+                if similarity >= self.DUPLICATE_THRESHOLD
+                else "Article is different"
+            ),
         )
