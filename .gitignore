@@ -221,3 +221,7 @@ __marimo__/
 
 # SearXNG local instance config (contains a generated secret_key)
 docker/searxng/settings.yml
+
+# Runtime data - local Qdrant storage and the /analyze results cache
+backend/data/vector_db/
+backend/data/cache/
