@@ -45,6 +45,23 @@ export interface AnalyzeResponse {
   results: AnalysisResult[];
 }
 
+export type JobStatus = "queued" | "running" | "done" | "failed";
+
+export interface PhaseEvent {
+  phase: string;
+  data: Record<string, unknown>;
+  at: string;
+}
+
+export interface AnalysisJob {
+  jobId: string;
+  url: string;
+  status: JobStatus;
+  events: PhaseEvent[];
+  result: AnalysisResult | null;
+  error: string | null;
+}
+
 export interface CorrectionMetric {
   score: number;
   summary: string;

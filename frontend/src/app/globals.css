@@ -236,6 +236,27 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.phase-trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0;
+}
+
+.phase-step {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.phase-step-active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .claim {
   padding: 0.6rem 0;
   border-top: 1px solid var(--border);
