@@ -16,6 +16,12 @@ class FactCheckReport(BaseModel):
 
     skipped_reason: Optional[str] = None
 
+    topic_ok: bool = True
+
+    positive_ok: bool = True
+
+    duplicate: bool = False
+
     claims_total: int = 0
 
     claims_selected: int = 0

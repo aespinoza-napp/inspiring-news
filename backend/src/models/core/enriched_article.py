@@ -16,7 +16,7 @@ class EnrichedArticle(BaseModel):
 
     url: str
 
-    title: str
+    title: str = ""
 
     body: str
 

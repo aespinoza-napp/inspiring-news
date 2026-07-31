@@ -1,12 +1,38 @@
 from datetime import datetime
 
 from fastapi import APIRouter
+from pydantic import BaseModel
 
-from src.container import pipeline
+from src.container import analysis_service, pipeline, text_corrector
 from src.models.core.news import News
 from src.workflows.news_pipeline import NewsPipeline
 
 router = APIRouter()
+
+
+class AnalyzeRequest(BaseModel):
+    urls: list[str]
+
+
+class CorrectRequest(BaseModel):
+    text: str
+
+
+@router.post("/analyze")
+def analyze(request: AnalyzeRequest):
+
+    return {
+        "results": [
+            analysis_service.analyze(url)
+            for url in request.urls
+        ]
+    }
+
+
+@router.post("/correct")
+def correct(request: CorrectRequest):
+
+    return text_corrector.correct(request.text)
 
 
 

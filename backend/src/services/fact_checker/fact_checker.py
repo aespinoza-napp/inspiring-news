@@ -54,6 +54,9 @@ class FactChecker:
                 article_id=article.id,
                 validation_passed=False,
                 skipped_reason=self._reason(validation),
+                topic_ok=validation.topic_ok,
+                positive_ok=validation.positive_ok,
+                duplicate=validation.duplicate,
                 claims_total=len(article.claims or []),
                 claims_selected=0,
             )
@@ -65,6 +68,9 @@ class FactChecker:
         return FactCheckReport(
             article_id=article.id,
             validation_passed=True,
+            topic_ok=validation.topic_ok,
+            positive_ok=validation.positive_ok,
+            duplicate=validation.duplicate,
             claims_total=len(article.claims or []),
             claims_selected=len(selected),
             claim_checks=claim_checks,

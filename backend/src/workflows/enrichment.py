@@ -40,7 +40,7 @@ class NewsEnrichmentPipeline:
 
             url=article.url,
 
-            title=article.title,
+            title=article.title or "",
 
             body=article.content,
 

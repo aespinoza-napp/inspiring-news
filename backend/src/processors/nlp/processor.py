@@ -1,4 +1,5 @@
 
+from src.config.settings import settings
 from src.models.nlp.nlp_result import NLPResult
 
 from .claims import ClaimExtractor
@@ -19,7 +20,7 @@ class NLPProcessor:
 
         self.classifier = TopicClassifier()
 
-        self.sentiment = SentimentAnalyzer()
+        self.sentiment = SentimentAnalyzer(settings)
 
         self.claims = ClaimExtractor()
 
