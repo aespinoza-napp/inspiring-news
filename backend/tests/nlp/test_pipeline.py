@@ -7,7 +7,7 @@ from src.models.core.news import News
 from src.models.core.enriched_article import EnrichedArticle
 
 
-def test_enrichment_pipeline():
+def test_enrichment_pipeline(tmp_path):
 
     settings = Settings()
 
@@ -21,12 +21,14 @@ def test_enrichment_pipeline():
 
     pipeline = NewsEnrichmentPipeline(settings)
 
-    # Save to the repository the enriched article
+    # Save the enriched article to a throwaway directory, not the tracked
+    # sample data under settings.PROCESSED_PATH - this test previously
+    # overwrote a committed fixture file on every run.
     enriched = pipeline.process(article)
 
     repository_to_save = LocalRepository(
         model=EnrichedArticle,
-        folder=settings.PROCESSED_PATH,
+        folder=tmp_path,
     )
     repository_to_save.save(enriched)
 
@@ -81,6 +83,4 @@ def test_enrichment_pipeline():
 
     assert enriched.sentiment.confidence > 0
 
-    assert enriched.quality.readability >= 0
-
-test_enrichment_pipeline()
+    assert enriched.quality.readability >= 0
