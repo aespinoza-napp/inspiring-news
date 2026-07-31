@@ -1,4 +1,4 @@
-from src.models.evidence import EvidenceOrigin
+from src.models.fact_checker.evidence import EvidenceOrigin
 from src.services.fact_checker.retrieval.vector_retriever import VectorRetriever
 
 from tests.factories import create_article, create_claim

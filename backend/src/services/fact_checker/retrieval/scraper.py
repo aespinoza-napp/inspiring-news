@@ -1,7 +1,7 @@
 from logging import getLogger
 
-from src.models.evidence import Evidence
-from src.models.source import NewsSource, SourceType
+from src.models.fact_checker.evidence import Evidence
+from src.models.core.source import NewsSource, SourceType
 from src.services.scraper.extractor import ExtractorService
 
 logger = getLogger(__name__)

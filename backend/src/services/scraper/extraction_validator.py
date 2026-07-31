@@ -1,4 +1,4 @@
-from src.models.extraction import ExtractionResult
+from src.models.scraper.extraction import ExtractionResult
 
 
 class ExtractionValidator:

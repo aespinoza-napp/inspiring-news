@@ -6,8 +6,8 @@ import requests
 import trafilatura
 import datetime
 
-from src.models.extraction import ExtractionResult
-from src.models.source import NewsSource
+from src.models.scraper.extraction import ExtractionResult
+from src.models.core.source import NewsSource
 
 from .base import ExtractionStrategy
 

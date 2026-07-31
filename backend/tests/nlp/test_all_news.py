@@ -1,6 +1,6 @@
 from src.config.settings import Settings
-from src.models.news import News
-from src.models.enriched_article import EnrichedArticle
+from src.models.core.news import News
+from src.models.core.enriched_article import EnrichedArticle
 from src.repositories.local_repository import LocalRepository
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
@@ -79,4 +79,4 @@ def test_enrichment_pipeline_all():
 
 
 if __name__ == "__main__":
-    test_enrichment_pipeline_all()
+    test_enrichment_pipeline_all()

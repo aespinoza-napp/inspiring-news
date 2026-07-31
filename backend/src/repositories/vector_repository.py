@@ -12,10 +12,10 @@ from qdrant_client.models import (
 
 from src.config.settings import settings
 from src.database.qdrant import QdrantDatabase
-from src.models.enriched_article import EnrichedArticle
-from src.models.quality import Quality
-from src.models.sentiment_result import SentimentResult
-from src.models.similarity import SimilarArticle
+from src.models.core.enriched_article import EnrichedArticle
+from src.models.nlp.quality import Quality
+from src.models.nlp.sentiment_result import SentimentResult
+from src.models.core.similarity import SimilarArticle
 
 class VectorRepository:
 
@@ -150,4 +150,4 @@ class VectorRepository:
             collection_name=self.COLLECTION,
             points_selector=Filter(),
             wait=True,
-        )
+        )

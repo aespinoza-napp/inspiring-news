@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.models.news import News
+from src.models.core.news import News
 
 
 class NewsRepository(ABC):

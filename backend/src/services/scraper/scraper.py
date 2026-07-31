@@ -1,8 +1,8 @@
 from typing import Optional
 
 from src.config.topics import TOPICS
-from src.models.news import News
-from src.models.source import NewsSource
+from src.models.core.news import News
+from src.models.core.source import NewsSource
 
 from .discovery import DiscoveryService
 from .extractor import ExtractorService

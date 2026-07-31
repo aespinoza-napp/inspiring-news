@@ -13,7 +13,7 @@ Outputs:
 
 from __future__ import annotations
 
-from src.models.sentiment_result import SentimentResult
+from src.models.nlp.sentiment_result import SentimentResult
 
 import torch
 from scipy.special import softmax

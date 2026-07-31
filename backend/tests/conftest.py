@@ -6,8 +6,8 @@ import pytest
 
 from src.database.qdrant import QdrantDatabase
 from src.repositories.vector_repository import VectorRepository
-from src.models.news import News
-from src.models.source import NewsSource, SourceType
+from src.models.core.news import News
+from src.models.core.source import NewsSource, SourceType
 from src.repositories.source_repository import SourceRepository
 
 @pytest.fixture

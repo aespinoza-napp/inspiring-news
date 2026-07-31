@@ -7,7 +7,7 @@ import asyncio
 
 from playwright.async_api import async_playwright
 
-from src.models.source import NewsSource
+from src.models.core.source import NewsSource
 
 from .base import DiscoveryStrategy
 

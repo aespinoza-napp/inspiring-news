@@ -1,5 +1,5 @@
-from src.models.enriched_article import EnrichedArticle
-from src.models.duplicate_result import DuplicateResult
+from src.models.core.enriched_article import EnrichedArticle
+from src.models.fact_checker.duplicate_result import DuplicateResult
 from src.repositories.vector_repository import VectorRepository
 from src.config.settings import settings
 
@@ -79,4 +79,4 @@ class DuplicateValidator:
             similarity=similarity,
             matched_article_id=None,
             reason="Article is unrelated",
-        )
+        )

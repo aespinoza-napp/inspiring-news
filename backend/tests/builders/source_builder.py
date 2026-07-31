@@ -1,6 +1,6 @@
 # builders/source_builder.py
 
-from src.models.source import NewsSource
+from src.models.core.source import NewsSource
 
 
 def build_source(**kwargs):

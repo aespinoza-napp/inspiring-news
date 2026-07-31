@@ -2,9 +2,9 @@ from logging import getLogger
 
 from pydantic import BaseModel, Field
 
-from src.models.claim import Claim
-from src.models.evidence import Evidence
-from src.models.fact_check import Verdict
+from src.models.core.claim import Claim
+from src.models.fact_checker.evidence import Evidence
+from src.models.fact_checker.fact_check import Verdict
 from src.services.llms import LLMClient
 
 logger = getLogger(__name__)

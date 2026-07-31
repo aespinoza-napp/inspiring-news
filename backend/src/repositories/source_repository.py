@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-from src.models.source import NewsSource
+from src.models.core.source import NewsSource
 
 
 class SourceRepository:

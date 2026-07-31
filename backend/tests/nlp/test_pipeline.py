@@ -3,8 +3,8 @@ from pathlib import Path
 from src.config.settings import Settings
 from src.repositories.local_repository import LocalRepository
 from src.workflows.enrichment import NewsEnrichmentPipeline
-from src.models.news import News
-from src.models.enriched_article import EnrichedArticle
+from src.models.core.news import News
+from src.models.core.enriched_article import EnrichedArticle
 
 
 def test_enrichment_pipeline():
@@ -83,4 +83,4 @@ def test_enrichment_pipeline():
 
     assert enriched.quality.readability >= 0
 
-test_enrichment_pipeline()
+test_enrichment_pipeline()

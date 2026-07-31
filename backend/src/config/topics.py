@@ -1,4 +1,4 @@
-from src.models.topics import Topic
+from src.models.nlp.topics import Topic
 
 TOPICS = {
 

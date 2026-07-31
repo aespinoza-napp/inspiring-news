@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from src.config.settings import settings
-from src.models.claim import Claim
-from src.models.evidence import Evidence, EvidenceOrigin
+from src.models.core.claim import Claim
+from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
 from src.services.search import SearxngClient
 
 

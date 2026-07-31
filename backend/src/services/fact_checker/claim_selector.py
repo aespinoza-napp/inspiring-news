@@ -1,5 +1,5 @@
 from src.config.settings import settings
-from src.models.claim import Claim
+from src.models.core.claim import Claim
 from src.services.embeddings.service import EmbeddingService
 
 

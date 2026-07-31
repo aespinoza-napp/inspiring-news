@@ -1,5 +1,5 @@
 from src.agents.fact_checker import FactChecker
-from src.models.claim import Claim
+from src.models.core.claim import Claim
 
 
 def test_fact_checker():

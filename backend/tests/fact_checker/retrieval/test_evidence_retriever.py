@@ -1,5 +1,5 @@
 from src.config.settings import settings
-from src.models.evidence import Evidence, EvidenceOrigin
+from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
 from src.services.fact_checker.retrieval.evidence_retriever import EvidenceRetriever
 
 from tests.factories import create_claim

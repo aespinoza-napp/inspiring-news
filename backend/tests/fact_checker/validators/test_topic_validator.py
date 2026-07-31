@@ -1,11 +1,11 @@
 import pytest
 from datetime import datetime
 
-from src.models.claim import Claim
-from src.models.enriched_article import EnrichedArticle
-from src.models.quality import Quality
-from src.models.sentiment_result import SentimentResult
-from src.models.topic_prediction import TopicPrediction
+from src.models.core.claim import Claim
+from src.models.core.enriched_article import EnrichedArticle
+from src.models.nlp.quality import Quality
+from src.models.nlp.sentiment_result import SentimentResult
+from src.models.nlp.topic_prediction import TopicPrediction
 from src.services.fact_checker.validators.topic_validator import TopicValidator
 
 

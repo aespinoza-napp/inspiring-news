@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.models.news import News
+from src.models.core.news import News
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
 
 from tests.factories import create_evidence

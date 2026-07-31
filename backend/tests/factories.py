@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from src.models.claim import Claim
-from src.models.enriched_article import EnrichedArticle
-from src.models.evidence import Evidence, EvidenceOrigin
-from src.models.quality import Quality
-from src.models.sentiment_result import SentimentResult
-from src.models.topic_prediction import TopicPrediction
+from src.models.core.claim import Claim
+from src.models.core.enriched_article import EnrichedArticle
+from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
+from src.models.nlp.quality import Quality
+from src.models.nlp.sentiment_result import SentimentResult
+from src.models.nlp.topic_prediction import TopicPrediction
 
 def create_article(**kwargs) -> EnrichedArticle:
 
@@ -79,4 +79,4 @@ def create_evidence(**kwargs) -> Evidence:
 
     evidence = evidence.model_copy(update=kwargs)
 
-    return evidence
+    return evidence

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from src.config.settings import settings
-from src.models.source import NewsSource, SourceType
+from src.models.core.source import NewsSource, SourceType
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
 
 from tests.factories import create_claim, create_evidence

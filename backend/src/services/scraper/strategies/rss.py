@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import feedparser
 
-from src.models.source import NewsSource
+from src.models.core.source import NewsSource
 from src.config.topic_url_patterns import TOPIC_URL_PATTERNS
 from .base import DiscoveryStrategy
 

@@ -1,5 +1,5 @@
-from src.models.quality import Quality
-from src.models.sentiment_result import SentimentResult
+from src.models.nlp.quality import Quality
+from src.models.nlp.sentiment_result import SentimentResult
 
 from src.services.fact_checker.validators.positive_impact_validator import PositiveImpactValidator
 

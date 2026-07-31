@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from src.models.claim import Claim
+from src.models.core.claim import Claim
 from src.processors.nlp.entities import EntityExtractor
 
 from .base import BaseProcessor
@@ -194,4 +194,4 @@ class ClaimExtractor(BaseProcessor):
         # Upper bound
         ##################################################
 
-        return min(score, 1.0)
+        return min(score, 1.0)

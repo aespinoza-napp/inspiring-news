@@ -1,7 +1,7 @@
 from src.config.settings import settings
-from src.models.claim import Claim
-from src.models.evidence import Evidence
-from src.models.fact_check import FactCheck, Verdict
+from src.models.core.claim import Claim
+from src.models.fact_checker.evidence import Evidence
+from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.services.fact_checker.verification.llm_verification import LLMVerificationResult
 
 
@@ -9,8 +9,8 @@ class ConfidenceScorer:
 
     MIN_EVIDENCE = settings.MIN_EVIDENCE_FOR_VERDICT
 
-    LLM_WEIGHT = 0.7
-    EVIDENCE_WEIGHT = 0.3
+    LLM_WEIGHT = settings.CONFIDENCE_LLM_WEIGHT
+    EVIDENCE_WEIGHT = settings.CONFIDENCE_EVIDENCE_WEIGHT
 
     def score(
         self,

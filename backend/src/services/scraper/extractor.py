@@ -1,12 +1,12 @@
 from typing import Optional
 
-from src.models.news import News
-from src.models.source import NewsSource
+from src.models.core.news import News
+from src.models.core.source import NewsSource
 
 from .strategies.trafilatura import TrafilaturaStrategy
 from .strategies.beautifulsoup import BeautifulSoupStrategy
 from .strategies.playwright_extraction import PlaywrightExtractionStrategy
-from src.models.news import News
+from src.models.core.news import News
 
 from .extraction_validator import ExtractionValidator
 

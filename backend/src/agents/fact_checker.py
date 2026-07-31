@@ -18,8 +18,8 @@ Future implementation
     Verdict
 """
 
-from src.models.claim import Claim
-from src.models.fact_check import FactCheck
+from src.models.core.claim import Claim
+from src.models.fact_checker.fact_check import FactCheck
 
 
 class FactChecker:

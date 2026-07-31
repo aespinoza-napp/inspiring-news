@@ -1,5 +1,5 @@
 
-from src.models.enriched_article import EnrichedArticle
+from src.models.core.enriched_article import EnrichedArticle
 
 
 class TopicValidator:
@@ -12,4 +12,4 @@ class TopicValidator:
         return any(
             topic.confidence > 0.35
             for topic in article.topics
-        )
+        )

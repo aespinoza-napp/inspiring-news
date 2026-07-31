@@ -1,4 +1,4 @@
-from src.models.fact_check import Verdict
+from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.verification.llm_verification import LLMVerifier
 
 from tests.factories import create_claim, create_evidence

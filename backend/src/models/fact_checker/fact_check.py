@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-from src.models.evidence import Evidence
+from src.models.fact_checker.evidence import Evidence
 
 
 class Verdict(str, Enum):

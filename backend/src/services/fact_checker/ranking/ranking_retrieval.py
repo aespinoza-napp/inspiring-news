@@ -3,19 +3,19 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from src.config.settings import settings
-from src.models.claim import Claim
-from src.models.evidence import Evidence
+from src.models.core.claim import Claim
+from src.models.fact_checker.evidence import Evidence
 from src.repositories.source_repository import SourceRepository
 from src.services.embeddings.service import EmbeddingService
 
 
 class EvidenceRanker:
 
-    SEMANTIC_WEIGHT = 0.60
-    RECENCY_WEIGHT = 0.25
-    RELIABILITY_WEIGHT = 0.15
+    SEMANTIC_WEIGHT = settings.RANKING_SEMANTIC_WEIGHT
+    RECENCY_WEIGHT = settings.RANKING_RECENCY_WEIGHT
+    RELIABILITY_WEIGHT = settings.RANKING_RELIABILITY_WEIGHT
 
-    DEFAULT_RELIABILITY = 0.5
+    DEFAULT_RELIABILITY = settings.RANKING_DEFAULT_RELIABILITY
 
     RECENCY_HALF_LIFE_DAYS = settings.EVIDENCE_RECENCY_HALF_LIFE_DAYS
 

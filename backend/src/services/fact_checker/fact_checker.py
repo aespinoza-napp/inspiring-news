@@ -1,7 +1,7 @@
-from src.models.claim import Claim
-from src.models.enriched_article import EnrichedArticle
-from src.models.fact_check import FactCheck, Verdict
-from src.models.fact_check_report import FactCheckReport
+from src.models.core.claim import Claim
+from src.models.core.enriched_article import EnrichedArticle
+from src.models.fact_checker.fact_check import FactCheck, Verdict
+from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.repositories.vector_repository import VectorRepository
 from src.services.fact_checker.claim_selector import ClaimSelector
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker

@@ -1,4 +1,4 @@
-from src.models.fact_check import Verdict
+from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.claim_selector import ClaimSelector
 from src.services.fact_checker.fact_checker import FactChecker
 from src.services.fact_checker.verification.confidence_scorer import ConfidenceScorer

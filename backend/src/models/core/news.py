@@ -3,8 +3,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 from typing import Optional
-from src.models.claim import Claim
-from src.models.fact_check import FactCheck
+from src.models.core.claim import Claim
+from src.models.fact_checker.fact_check import FactCheck
 
 class News(BaseModel):
 

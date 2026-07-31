@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from src.models.enriched_article import EnrichedArticle
+from src.models.core.enriched_article import EnrichedArticle
 from src.repositories.vector_repository import VectorRepository
 from src.services.fact_checker.validators.topic_validator import TopicValidator
 from src.services.fact_checker.validators.positive_impact_validator import (
@@ -56,4 +56,4 @@ class ValidationPipeline:
             topic_ok=topic_ok,
             positive_ok=positive.passed,
             duplicate=duplicate.duplicate,
-        )
+        )

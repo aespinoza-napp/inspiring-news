@@ -1,4 +1,4 @@
-from src.models.sentiment_result import SentimentResult
+from src.models.nlp.sentiment_result import SentimentResult
 from src.processors.nlp.quality import QualityAnalyzer
 
 
@@ -69,4 +69,4 @@ def test_article_quality():
     #assert quality["societal_impact"] > 0.3
     #assert quality["novelty"] == 0.82
 
-test_article_quality()
+test_article_quality()

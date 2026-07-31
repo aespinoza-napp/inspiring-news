@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.models.claim import Claim
+from src.models.core.claim import Claim
 
 
 class NLPResult(BaseModel):
@@ -15,4 +15,4 @@ class NLPResult(BaseModel):
 
     claims: list[Claim]
 
-    embedding: list[float]
+    embedding: list[float]

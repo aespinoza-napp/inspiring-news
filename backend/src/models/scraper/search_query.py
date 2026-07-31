@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from src.models.source import NewsSource
+from src.models.core.source import NewsSource
 
 class SearchQuery(BaseModel):
     keywords: list[str]

@@ -4,7 +4,7 @@ from src.config.settings import settings
 from src.repositories.local_repository import LocalRepository
 from src.repositories.source_repository import SourceRepository
 from src.services.scraper.scraper import Scraper
-from src.models.news import News
+from src.models.core.news import News
 
 def test_scraper_pipeline():
 

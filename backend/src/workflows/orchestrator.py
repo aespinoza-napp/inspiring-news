@@ -3,7 +3,7 @@ from typing import List
 from src.api.scraper import ScraperAgent
 from src.agents.fact_checker import FactChecker
 from src.processors.nlp import NLPEngine
-from src.models.news import NewsArticle
+from src.models.core.news import NewsArticle
 
 class NewsIntelligence:
     def __init__(self, db_client):

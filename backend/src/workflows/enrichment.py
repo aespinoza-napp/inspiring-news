@@ -6,7 +6,7 @@ from src.processors.nlp.sentiment import SentimentAnalyzer
 from src.processors.nlp.quality import QualityAnalyzer
 from src.processors.nlp.embeddings import EmbeddingProcessor
 
-from src.models.enriched_article import EnrichedArticle
+from src.models.core.enriched_article import EnrichedArticle
 
 class NewsEnrichmentPipeline:
 
@@ -65,4 +65,4 @@ class NewsEnrichmentPipeline:
             embedding_model=self.embedding.service.model_name,
 
             embedding_dimension=len(embedding),
-        )
+        )

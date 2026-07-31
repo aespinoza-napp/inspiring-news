@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 
 from src.config.topics import TOPICS
-from src.models.topic_prediction import TopicPrediction
+from src.models.nlp.topic_prediction import TopicPrediction
 from src.services.embeddings.service import EmbeddingService
 
 from .base import BaseProcessor
@@ -95,4 +95,4 @@ class TopicClassifier(BaseProcessor):
             for (topic, confidence), probability
             in zip(similarities, probabilities)
 
-        ]
+        ]

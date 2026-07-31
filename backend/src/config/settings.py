@@ -69,6 +69,16 @@ class Settings(BaseSettings):
     EVIDENCE_RECENCY_HALF_LIFE_DAYS: float = 365.0
     MIN_EVIDENCE_FOR_VERDICT: int = 1
 
+    # EvidenceRanker scoring weights (must sum to 1.0)
+    RANKING_SEMANTIC_WEIGHT: float = 0.60
+    RANKING_RECENCY_WEIGHT: float = 0.25
+    RANKING_RELIABILITY_WEIGHT: float = 0.15
+    RANKING_DEFAULT_RELIABILITY: float = 0.5
+
+    # ConfidenceScorer weights (must sum to 1.0)
+    CONFIDENCE_LLM_WEIGHT: float = 0.7
+    CONFIDENCE_EVIDENCE_WEIGHT: float = 0.3
+
 
 settings = Settings()
 

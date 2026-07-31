@@ -1,7 +1,7 @@
 
-from src.models.sentiment_result import SentimentResult
-from src.models.quality import Quality
-from src.models.validation_result import ValidationResult
+from src.models.nlp.sentiment_result import SentimentResult
+from src.models.nlp.quality import Quality
+from src.models.fact_checker.validation_result import ValidationResult
 
 
 
@@ -56,4 +56,4 @@ class PositiveImpactValidator:
             passed=passed,
             score=max(0.0, min(score, 1.0)),
             reasons=reasons,
-        )
+        )

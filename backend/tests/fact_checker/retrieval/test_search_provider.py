@@ -1,5 +1,5 @@
 from src.services.fact_checker.retrieval.search_provider import SearchProvider
-from src.models.evidence import EvidenceOrigin
+from src.models.fact_checker.evidence import EvidenceOrigin
 
 from tests.factories import create_claim
 from tests.fact_checker.fakes import FakeSearxngClient

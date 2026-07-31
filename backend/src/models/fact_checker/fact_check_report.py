@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from src.models.fact_check import FactCheck, Verdict
+from src.models.fact_checker.fact_check import FactCheck, Verdict
 
 
 class FactCheckReport(BaseModel):

@@ -1,5 +1,5 @@
 
-from src.models.nlp_result import NLPResult
+from src.models.nlp.nlp_result import NLPResult
 
 from .claims import ClaimExtractor
 from .classifier import TopicClassifier
@@ -40,4 +40,4 @@ class NLPProcessor:
             claims=self.claims.process(text),
 
             embedding=self.embeddings.process(text),
-        )
+        )
