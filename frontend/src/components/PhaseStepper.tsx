@@ -15,6 +15,8 @@ interface Stage {
 // which describe the five coarse-grained stages, not every fine-grained
 // backend phase.
 const CURRENT_PHASE_LABELS: Record<string, string> = {
+  initializing: "Warming up (loading local AI models, first run only)…",
+  initialized: "Models ready",
   scraping: "Fetching the article…",
   scraped: "Article fetched",
   enriching: "Extracting keywords, entities & topics…",

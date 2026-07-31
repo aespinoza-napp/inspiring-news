@@ -36,7 +36,37 @@ def test_run_analysis_job_records_phases_and_completes():
 
     assert updated.status == JobStatus.DONE
     assert updated.result == {"url": job.url, "title": "Final"}
-    assert [event.phase for event in updated.events] == ["scraping", "enriched"]
+    assert [event.phase for event in updated.events] == [
+        "initializing", "initialized", "scraping", "enriched",
+    ]
+
+
+def test_run_analysis_job_reports_initializing_before_building_the_service():
+    """
+    Regression test: building AnalysisService (loading GLiNER/embedding/
+    sentiment models on the first request in a fresh process) can take
+    ~10-15s with no on_phase events firing during it - "initializing"
+    must be recorded before get_analysis_service() is even called, or a
+    polling client sees nothing but status "queued" for that whole
+    window, indistinguishable from being stuck.
+    """
+
+    store = JobStore()
+    job = store.create("https://example.com/a")
+
+    call_order = []
+
+    def factory():
+        call_order.append("factory")
+        return make_analysis_service(return_value={"url": job.url})
+
+    run_analysis_job(store, factory, job.job_id, job.url)
+
+    updated = store.get(job.job_id)
+
+    phases = [event.phase for event in updated.events]
+    assert phases[:2] == ["initializing", "initialized"]
+    assert call_order == ["factory"]
 
 
 def test_run_analysis_job_records_failure_from_failed_phase():

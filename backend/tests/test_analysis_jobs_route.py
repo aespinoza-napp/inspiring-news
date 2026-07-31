@@ -48,7 +48,7 @@ def test_create_and_poll_analysis_job(monkeypatch):
     assert body["result"] == {"url": "https://example.com/a", "title": "Fake title", "cached": False}
 
     phases = [event["phase"] for event in body["events"]]
-    assert phases == ["scraping", "enriched"]
+    assert phases == ["initializing", "initialized", "scraping", "enriched"]
 
 
 def test_get_unknown_job_returns_404():

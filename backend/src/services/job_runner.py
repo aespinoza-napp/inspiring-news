@@ -66,22 +66,21 @@ def run_analysis_job(
         else:
             job_store.add_event(job_id, phase, data)
 
+    # Reported immediately, before anything else - building AnalysisService
+    # (get_analysis_service(), below) can take ~10-15s on the first request
+    # in a fresh process (loading GLiNER/embedding/sentiment models, see
+    # container.py's lazy singletons) and *no* on_phase event fires during
+    # that construction. Without this, the job sits at status "queued" with
+    # an empty event list for up to 15s - indistinguishable from being
+    # stuck - before the frontend sees anything at all.
+    on_phase("initializing", {})
+
     try:
         analysis_service = get_analysis_service()
 
         init_seconds = time.monotonic() - start
 
-        if init_seconds > 0.5:
-            # Only the first request in a fresh process pays this - it's
-            # the lazy AnalysisService/embedding/GLiNER/sentiment model
-            # loading (see container.py), not scraping. Logged separately
-            # so it isn't mistaken for the "scraping" phase being slow.
-            logger.info(
-                "[analyze %s] service initialized (+%.2fs, one-time cold start)",
-                job_id[:8], init_seconds,
-            )
-
-        last = time.monotonic()
+        on_phase("initialized", {"seconds": round(init_seconds, 2)})
 
         analysis_service.analyze(url, force_refresh=force_refresh, on_phase=on_phase)
     except Exception as exc:

@@ -70,6 +70,16 @@ export function useAnalysisJob(
         }
 
         await pollOnce(data.jobId);
+
+        // The effect can be cleaned up (component unmounted, url/forceRefresh
+        // changed, or React 18 dev-mode Strict Mode's double-invoke) while
+        // the await above was in flight. Without this check, the interval
+        // created below would never be cleared by anything - the cleanup
+        // function below already ran (it only exists once per effect
+        // invocation), so this would poll forever in the background,
+        // disconnected from the component and from the job's actual state.
+        if (cancelled) return;
+
         intervalId = setInterval(() => pollOnce(data.jobId), POLL_INTERVAL_MS);
       } catch (err) {
         if (!cancelled) {
