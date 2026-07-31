@@ -32,6 +32,7 @@ export interface AnalysisResult {
   url: string;
   title?: string;
   error?: string;
+  cached?: boolean;
   keywords?: string[];
   entities?: Record<string, string[]>;
   topics?: TopicPrediction[];

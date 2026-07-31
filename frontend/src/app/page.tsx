@@ -7,6 +7,7 @@ import { ScoreBar } from "@/components/ScoreBar";
 
 export default function AnalyzerPage() {
   const [input, setInput] = useState("");
+  const [forceRefresh, setForceRefresh] = useState(false);
   const [results, setResults] = useState<AnalysisResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +30,7 @@ export default function AnalyzerPage() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls }),
+        body: JSON.stringify({ urls, forceRefresh }),
       });
 
       const data = await response.json();
@@ -62,10 +63,18 @@ export default function AnalyzerPage() {
             "https://example.com/article-one\nhttps://example.com/article-two"
           }
         />
-        <div>
+        <div className="form-row">
           <button type="submit" disabled={loading}>
             {loading ? "Analyzing..." : "Analyze"}
           </button>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={forceRefresh}
+              onChange={(event) => setForceRefresh(event.target.checked)}
+            />
+            Force refresh (skip cache)
+          </label>
         </div>
       </form>
 
@@ -94,7 +103,10 @@ function ResultCard({ result }: { result: AnalysisResult }) {
 
   return (
     <div className="card">
-      <h2>{result.title || "(untitled)"}</h2>
+      <h2>
+        {result.title || "(untitled)"}
+        {result.cached && <span className="cached-tag">cached</span>}
+      </h2>
       <span className="card-url">{result.url}</span>
 
       {result.validity && (

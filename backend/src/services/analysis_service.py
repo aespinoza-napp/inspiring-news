@@ -2,6 +2,7 @@ from src.config.settings import settings
 from src.models.core.enriched_article import EnrichedArticle
 from src.models.fact_checker.fact_check import Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
+from src.services.analysis_cache import AnalysisCache
 from src.services.fact_checker.fact_checker import FactChecker
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
 from src.services.scraper.extractor import ExtractorService
@@ -20,6 +21,11 @@ class AnalysisService:
     Runs a single arbitrary URL through the full pipeline: scrape -> enrich
     -> validate -> fact-check, and shapes the result for the frontend.
 
+    Results are cached by URL (see AnalysisCache) - a repeat request for
+    the same URL returns the stored result instead of re-scraping and
+    re-running a real SearXNG search + LLM call per claim. Pass
+    force_refresh=True to bypass the cache and re-run the pipeline.
+
     `fact_checker` has no default: it owns a VectorRepository backed by a
     single-process Qdrant client, and this app must only ever have one of
     those (opening a second one against the same on-disk collection can
@@ -32,12 +38,30 @@ class AnalysisService:
         fact_checker: FactChecker,
         extractor: ExtractorService | None = None,
         enrichment_pipeline: NewsEnrichmentPipeline | None = None,
+        cache: AnalysisCache | None = None,
     ):
         self.fact_checker = fact_checker
         self.extractor = extractor or ExtractorService()
         self.enrichment_pipeline = enrichment_pipeline or NewsEnrichmentPipeline(settings)
+        self.cache = cache or AnalysisCache()
 
-    def analyze(self, url: str) -> dict:
+    def analyze(self, url: str, force_refresh: bool = False) -> dict:
+
+        if not force_refresh:
+
+            cached = self.cache.get(url)
+
+            if cached is not None:
+                return {**cached, "cached": True}
+
+        result = self._run_pipeline(url)
+
+        if "error" not in result:
+            self.cache.set(url, result)
+
+        return {**result, "cached": False}
+
+    def _run_pipeline(self, url: str) -> dict:
 
         try:
             news = self.extractor.extract(EvidenceScraper.GENERIC_SOURCE, url)

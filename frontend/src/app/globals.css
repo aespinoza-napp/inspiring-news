@@ -125,6 +125,34 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.cached-tag {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--border);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
 .error-banner {
   margin-top: 1rem;
   padding: 0.75rem 1rem;

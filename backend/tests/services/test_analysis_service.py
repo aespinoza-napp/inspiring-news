@@ -24,7 +24,19 @@ def make_news(**kwargs) -> News:
     return News(**defaults)
 
 
-def make_service(extract_return, article, report) -> AnalysisService:
+class FakeCache:
+
+    def __init__(self):
+        self.store = {}
+
+    def get(self, url):
+        return self.store.get(url)
+
+    def set(self, url, result):
+        self.store[url] = result
+
+
+def make_service(extract_return, article, report, cache=None) -> AnalysisService:
 
     extractor = Mock()
     extractor.extract.return_value = extract_return
@@ -39,6 +51,7 @@ def make_service(extract_return, article, report) -> AnalysisService:
         fact_checker=fact_checker,
         extractor=extractor,
         enrichment_pipeline=enrichment_pipeline,
+        cache=cache if cache is not None else FakeCache(),
     )
 
 
@@ -61,6 +74,7 @@ def test_analyze_returns_error_on_extractor_exception():
         fact_checker=Mock(),
         extractor=extractor,
         enrichment_pipeline=Mock(),
+        cache=FakeCache(),
     )
 
     result = service.analyze("https://example.com/a")
@@ -163,3 +177,89 @@ def test_analyze_falls_back_to_raw_claims_when_validation_failed():
             "evidenceCount": 0,
         }
     ]
+
+
+def _successful_report(article) -> FactCheckReport:
+
+    return FactCheckReport(
+        article_id=article.id,
+        validation_passed=True,
+        topic_ok=True,
+        positive_ok=True,
+        duplicate=False,
+        claims_total=0,
+        claims_selected=0,
+    )
+
+
+def test_analyze_returns_cached_result_without_running_pipeline():
+
+    cache = FakeCache()
+    cache.store["https://example.com/a"] = {"url": "https://example.com/a", "title": "Cached"}
+
+    extractor = Mock()
+    enrichment_pipeline = Mock()
+    fact_checker = Mock()
+
+    service = AnalysisService(
+        fact_checker=fact_checker,
+        extractor=extractor,
+        enrichment_pipeline=enrichment_pipeline,
+        cache=cache,
+    )
+
+    result = service.analyze("https://example.com/a")
+
+    assert result["title"] == "Cached"
+    assert result["cached"] is True
+
+    extractor.extract.assert_not_called()
+    enrichment_pipeline.process.assert_not_called()
+    fact_checker.run.assert_not_called()
+
+
+def test_analyze_caches_successful_result_for_next_call():
+
+    article = create_article()
+    cache = FakeCache()
+
+    service = make_service(make_news(), article, _successful_report(article), cache=cache)
+
+    first = service.analyze("https://example.com/a")
+
+    assert first["cached"] is False
+    assert cache.get("https://example.com/a") is not None
+
+    second = service.analyze("https://example.com/a")
+
+    assert second["cached"] is True
+    # Only the first call should have touched the pipeline.
+    service.extractor.extract.assert_called_once()
+
+
+def test_analyze_does_not_cache_errors():
+
+    cache = FakeCache()
+
+    service = make_service(extract_return=None, article=None, report=None, cache=cache)
+
+    service.analyze("https://example.com/a")
+
+    assert cache.get("https://example.com/a") is None
+
+
+def test_analyze_force_refresh_bypasses_and_overwrites_cache():
+
+    article = create_article()
+    cache = FakeCache()
+    cache.store["https://example.com/a"] = {"url": "https://example.com/a", "title": "Stale"}
+
+    service = make_service(make_news(), article, _successful_report(article), cache=cache)
+
+    result = service.analyze("https://example.com/a", force_refresh=True)
+
+    assert result["cached"] is False
+    assert result["title"] != "Stale"
+    service.extractor.extract.assert_called_once()
+
+    assert cache.get("https://example.com/a")["title"] != "Stale"

@@ -12,6 +12,7 @@ router = APIRouter()
 
 class AnalyzeRequest(BaseModel):
     urls: list[str]
+    forceRefresh: bool = False
 
 
 class CorrectRequest(BaseModel):
@@ -23,7 +24,7 @@ def analyze(request: AnalyzeRequest):
 
     return {
         "results": [
-            analysis_service.analyze(url)
+            analysis_service.analyze(url, force_refresh=request.forceRefresh)
             for url in request.urls
         ]
     }
