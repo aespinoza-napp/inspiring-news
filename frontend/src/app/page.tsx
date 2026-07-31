@@ -1,16 +1,177 @@
-import React from 'react';
+"use client";
 
-export default async function Dashboard() {
-  const stats = await fetch('http://localhost:8000/api/health').then(res => res.json());
+import { useState } from "react";
+import { AnalysisResult, AnalyzeResponse } from "@/lib/types";
+import { VerdictBadge } from "@/components/VerdictBadge";
+import { ScoreBar } from "@/components/ScoreBar";
+
+export default function AnalyzerPage() {
+  const [input, setInput] = useState("");
+  const [results, setResults] = useState<AnalysisResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+
+    const urls = input
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (urls.length === 0) return;
+
+    setLoading(true);
+    setError(null);
+    setResults([]);
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urls }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed (${response.status})`);
+      }
+
+      const data: AnalyzeResponse = await response.json();
+      setResults(data.results);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">News Intel Dashboard</h1>
-      <div className="mt-4 p-4 border rounded shadow">
-        <p>System Status: <span className={stats.status === 'ok' ? 'text-green-500' : 'text-red-500'}>{stats.status}</span></p>
-        <p>Database: {stats.db_connection}</p>
+    <>
+      <h1>News Analyzer</h1>
+      <p className="subtitle">
+        Paste one or more article URLs (one per line) to run them through the
+        full pipeline: scraping, enrichment, validation and fact-checking.
+      </p>
+
+      <form onSubmit={handleSubmit}>
+        <textarea
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+          placeholder={
+            "https://example.com/article-one\nhttps://example.com/article-two"
+          }
+        />
+        <div>
+          <button type="submit" disabled={loading}>
+            {loading ? "Analyzing..." : "Analyze"}
+          </button>
+        </div>
+      </form>
+
+      {error && <div className="error-banner">{error}</div>}
+
+      {results.map((result) => (
+        <ResultCard key={result.url} result={result} />
+      ))}
+    </>
+  );
+}
+
+function ResultCard({ result }: { result: AnalysisResult }) {
+  if (result.error) {
+    return (
+      <div className="card">
+        <span className="card-url">{result.url}</span>
+        <div className="error-banner">{result.error}</div>
       </div>
-      {/* Add logic to list articles from Neo4j here */}
+    );
+  }
+
+  const entityCount = result.entities
+    ? Object.values(result.entities).reduce((n, v) => n + v.length, 0)
+    : 0;
+
+  return (
+    <div className="card">
+      <h2>{result.title || "(untitled)"}</h2>
+      <span className="card-url">{result.url}</span>
+
+      {result.validity && (
+        <div className="validity-row">
+          <span
+            className={`badge ${
+              result.validity.isValid ? "badge-true" : "badge-false"
+            }`}
+          >
+            {result.validity.isValid ? "Valid" : "Invalid"}
+          </span>
+          {result.validity.isDuplicate && (
+            <span className="badge badge-misleading">Duplicate</span>
+          )}
+          {!result.validity.hasTopic && (
+            <span className="badge badge-unverified">No matching topic</span>
+          )}
+        </div>
+      )}
+
+      {result.keywords && result.keywords.length > 0 && (
+        <>
+          <div className="section-label">
+            Keywords ({result.keywords.length})
+          </div>
+          <div className="chip-row">
+            {result.keywords.map((keyword) => (
+              <span className="chip" key={keyword}>
+                {keyword}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+
+      {entityCount > 0 && result.entities && (
+        <>
+          <div className="section-label">Entities ({entityCount})</div>
+          <div className="chip-row">
+            {Object.entries(result.entities).flatMap(([label, values]) =>
+              values.map((value) => (
+                <span className="chip" key={`${label}-${value}`}>
+                  {value} <em>({label})</em>
+                </span>
+              ))
+            )}
+          </div>
+        </>
+      )}
+
+      {result.topics && result.topics.length > 0 && (
+        <>
+          <div className="section-label">Topics ({result.topics.length})</div>
+          {result.topics.map((topic) => (
+            <ScoreBar
+              key={topic.topic}
+              label={topic.topic}
+              value={topic.confidence * 100}
+            />
+          ))}
+        </>
+      )}
+
+      {result.claims && result.claims.length > 0 && (
+        <>
+          <div className="section-label">Claims ({result.claims.length})</div>
+          {result.claims.map((claim, index) => (
+            <div className="claim" key={index}>
+              <p className="claim-text">{claim.text}</p>
+              <div className="claim-meta">
+                <VerdictBadge verdict={claim.verdict} />{" "}
+                confidence {Math.round(claim.confidence * 100)}%
+                {claim.explanation && <> - {claim.explanation}</>}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }

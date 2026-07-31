@@ -1,0 +1,292 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --border: #e4e4e4;
+  --surface: #fafafa;
+  --accent: #2563eb;
+
+  --true: #1a7f37;
+  --false: #c92a2a;
+  --misleading: #c9770a;
+  --unverified: #6b6b6b;
+
+  --radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --fg: #ededed;
+    --muted: #9a9a9a;
+    --border: #2a2a2a;
+    --surface: #1a1a1a;
+    --accent: #6ea8fe;
+
+    --true: #4caf6d;
+    --false: #e5605a;
+    --misleading: #e0a44b;
+    --unverified: #9a9a9a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-weight: 600;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.site-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin: 0 0 2rem;
+}
+
+textarea {
+  width: 100%;
+  min-height: 8rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+textarea:focus,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-banner {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--false) 12%, transparent);
+  color: var(--false);
+  font-size: 0.9rem;
+}
+
+.card {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.card h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+
+.card-url {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 1rem 0 0.5rem;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge-true {
+  background: var(--true);
+}
+
+.badge-false {
+  background: var(--false);
+}
+
+.badge-misleading {
+  background: var(--misleading);
+}
+
+.badge-unverified {
+  background: var(--unverified);
+}
+
+.validity-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.claim {
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.claim:first-child {
+  border-top: none;
+}
+
+.claim-text {
+  margin: 0.25rem 0;
+}
+
+.claim-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.score-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.35rem 0;
+}
+
+.score-bar-label {
+  min-width: 8rem;
+  font-size: 0.85rem;
+}
+
+.score-bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.score-bar-value {
+  min-width: 2.5rem;
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.metric-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.metric-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.metric-summary {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0.4rem 0;
+}
+
+.metric-issues {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}

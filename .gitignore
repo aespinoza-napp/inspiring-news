@@ -219,3 +219,10 @@ __marimo__/
 
 # SearXNG local instance config (contains a generated secret_key)
 docker/searxng/settings.yml
+
+# Node / Next.js (frontend/)
+node_modules/
+.next/
+next-env.d.ts
+tsconfig.tsbuildinfo
+.env.local
