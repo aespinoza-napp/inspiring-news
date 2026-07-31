@@ -47,7 +47,15 @@ from src.workflows.enrichment import NewsEnrichmentPipeline
 # In-memory, no I/O - safe to construct eagerly, unlike everything below.
 job_store = JobStore()
 
-_lock = threading.Lock()
+# RLock, not Lock: get_analysis_service() acquires this and then, while
+# still holding it, calls get_vector_repository()/get_enrichment_pipeline()
+# - which also acquire it. A plain Lock isn't reentrant, so that's a
+# guaranteed self-deadlock on the very first call (reproduced live: the
+# job's "initializing" phase fired, then everything hung forever - no
+# "initialized", no timeout, nothing, because the thread was blocked
+# waiting on a lock it already held). RLock allows the same thread to
+# re-acquire it.
+_lock = threading.RLock()
 
 _vector_repository: VectorRepository | None = None
 _analysis_service: AnalysisService | None = None

@@ -82,3 +82,38 @@ def test_get_text_corrector_builds_exactly_once_under_concurrency(monkeypatch):
     assert len({id(result) for result in results}) == 1
 
     _reset("_text_corrector")
+
+
+def test_get_analysis_service_does_not_deadlock():
+    """
+    Regression test for a real, live-reproduced deadlock: an earlier
+    version of this fix used a plain threading.Lock() for _lock.
+    get_analysis_service() acquires _lock and then, *while still holding
+    it*, calls get_vector_repository() and get_enrichment_pipeline() -
+    which also acquire _lock. A plain Lock is not reentrant, so that is
+    a guaranteed self-deadlock on the very first call: the thread blocks
+    forever waiting on a lock it already holds. Symptom in the browser
+    was a job stuck forever on "initializing" - no timeout, no error,
+    nothing. _lock must stay an RLock (reentrant) for this nested-call
+    shape to work at all.
+
+    Runs get_analysis_service() in a background thread and asserts it
+    actually returns within a generous timeout, so a regression back to
+    a plain Lock fails this test instead of hanging the suite.
+    """
+
+    _reset("_vector_repository", "_analysis_service", "_enrichment_pipeline")
+
+    result = {}
+
+    def worker():
+        result["service"] = container.get_analysis_service()
+
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+    thread.join(timeout=120)
+
+    assert not thread.is_alive(), "get_analysis_service() deadlocked"
+    assert "service" in result
+
+    _reset("_vector_repository", "_analysis_service", "_enrichment_pipeline")
