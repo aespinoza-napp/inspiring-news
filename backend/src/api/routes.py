@@ -1,10 +1,11 @@
 from datetime import datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 
-from src.container import analysis_service, pipeline, text_corrector
+from src.container import get_analysis_service, job_store, pipeline, text_corrector
 from src.models.core.news import News
+from src.services.job_runner import run_analysis_job
 from src.workflows.news_pipeline import NewsPipeline
 
 router = APIRouter()
@@ -19,14 +20,64 @@ class CorrectRequest(BaseModel):
     text: str
 
 
+class CreateAnalysisJobRequest(BaseModel):
+    url: str
+    forceRefresh: bool = False
+
+
 @router.post("/analyze")
 def analyze(request: AnalyzeRequest):
 
+    service = get_analysis_service()
+
     return {
         "results": [
-            analysis_service.analyze(url, force_refresh=request.forceRefresh)
+            service.analyze(url, force_refresh=request.forceRefresh)
             for url in request.urls
         ]
+    }
+
+
+@router.post("/analyze/jobs", status_code=202)
+def create_analysis_job(request: CreateAnalysisJobRequest, background_tasks: BackgroundTasks):
+    """
+    Starts an analysis run in the background and returns immediately with
+    a job id. Poll GET /analyze/jobs/{jobId} (e.g. every 1s) to follow its
+    progress phase by phase instead of blocking on one long request.
+    """
+
+    job = job_store.create(request.url)
+
+    background_tasks.add_task(
+        run_analysis_job,
+        job_store,
+        get_analysis_service(),
+        job.job_id,
+        request.url,
+        request.forceRefresh,
+    )
+
+    return {"jobId": job.job_id}
+
+
+@router.get("/analyze/jobs/{job_id}")
+def get_analysis_job(job_id: str):
+
+    job = job_store.get(job_id)
+
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return {
+        "jobId": job.job_id,
+        "url": job.url,
+        "status": job.status,
+        "events": [
+            {"phase": event.phase, "data": event.data, "at": event.at}
+            for event in job.events
+        ],
+        "result": job.result,
+        "error": job.error,
     }
 
 

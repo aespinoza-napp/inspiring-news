@@ -1,3 +1,5 @@
+from typing import Callable, Optional
+
 from src.models.core.claim import Claim
 from src.models.core.enriched_article import EnrichedArticle
 from src.models.fact_checker.fact_check import FactCheck, Verdict
@@ -12,6 +14,12 @@ from src.services.fact_checker.validation_pipeline import (
 )
 from src.services.fact_checker.verification.confidence_scorer import ConfidenceScorer
 from src.services.fact_checker.verification.llm_verification import LLMVerifier
+
+OnPhase = Callable[[str, dict], None]
+
+
+def _noop(phase: str, data: dict) -> None:
+    pass
 
 _VERDICT_SEVERITY = {
     Verdict.TRUE: 0,
@@ -45,15 +53,35 @@ class FactChecker:
         self.verifier = verifier or LLMVerifier()
         self.confidence_scorer = confidence_scorer or ConfidenceScorer()
 
-    def run(self, article: EnrichedArticle) -> FactCheckReport:
+    def run(
+        self,
+        article: EnrichedArticle,
+        on_phase: Optional[OnPhase] = None,
+    ) -> FactCheckReport:
+
+        report_phase = on_phase or _noop
+
+        report_phase("validating", {})
 
         validation = self.validation_pipeline.validate(article)
 
+        report_phase("validated", {
+            "topicOk": validation.topic_ok,
+            "positiveOk": validation.positive_ok,
+            "duplicate": validation.duplicate,
+            "passed": validation.passed,
+        })
+
         if not validation.passed:
+
+            reason = self._reason(validation)
+
+            report_phase("skipped", {"reason": reason})
+
             return FactCheckReport(
                 article_id=article.id,
                 validation_passed=False,
-                skipped_reason=self._reason(validation),
+                skipped_reason=reason,
                 topic_ok=validation.topic_ok,
                 positive_ok=validation.positive_ok,
                 duplicate=validation.duplicate,
@@ -61,11 +89,18 @@ class FactChecker:
                 claims_selected=0,
             )
 
+        report_phase("selecting_claims", {})
+
         selected = self.claim_selector.select(article.claims or [])
 
-        claim_checks = [self._check_claim(claim) for claim in selected]
+        report_phase("claims_selected", {"count": len(selected)})
 
-        return FactCheckReport(
+        claim_checks = [
+            self._check_claim(claim, report_phase)
+            for claim in selected
+        ]
+
+        report = FactCheckReport(
             article_id=article.id,
             validation_passed=True,
             topic_ok=validation.topic_ok,
@@ -78,13 +113,29 @@ class FactChecker:
             overall_confidence=self._aggregate_confidence(claim_checks),
         )
 
-    def _check_claim(self, claim: Claim) -> FactCheck:
+        report_phase("fact_check_done", {
+            "overallVerdict": report.overall_verdict,
+            "overallConfidence": report.overall_confidence,
+        })
+
+        return report
+
+    def _check_claim(self, claim: Claim, report_phase: OnPhase) -> FactCheck:
 
         evidence = self.evidence_retriever.retrieve(claim)
         ranked = self.ranker.rank(claim, evidence)
         llm_result = self.verifier.verify(claim, ranked)
 
-        return self.confidence_scorer.score(claim, ranked, llm_result)
+        check = self.confidence_scorer.score(claim, ranked, llm_result)
+
+        report_phase("claim_checked", {
+            "claim": check.claim,
+            "verdict": check.verdict,
+            "confidence": check.confidence,
+            "explanation": check.explanation,
+        })
+
+        return check
 
     @staticmethod
     def _aggregate_verdict(claim_checks: list[FactCheck]) -> Verdict:

@@ -1,3 +1,5 @@
+from typing import Callable, Optional
+
 from src.config.settings import settings
 from src.models.core.enriched_article import EnrichedArticle
 from src.models.fact_checker.fact_check import Verdict
@@ -7,6 +9,12 @@ from src.services.fact_checker.fact_checker import FactChecker
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
 from src.services.scraper.extractor import ExtractorService
 from src.workflows.enrichment import NewsEnrichmentPipeline
+
+OnPhase = Callable[[str, dict], None]
+
+
+def _noop(phase: str, data: dict) -> None:
+    pass
 
 _VERDICT_SEVERITY = {
     Verdict.TRUE: 0,
@@ -45,42 +53,76 @@ class AnalysisService:
         self.enrichment_pipeline = enrichment_pipeline or NewsEnrichmentPipeline(settings)
         self.cache = cache or AnalysisCache()
 
-    def analyze(self, url: str, force_refresh: bool = False) -> dict:
+    def analyze(
+        self,
+        url: str,
+        force_refresh: bool = False,
+        on_phase: Optional[OnPhase] = None,
+    ) -> dict:
+
+        report_phase = on_phase or _noop
 
         if not force_refresh:
 
             cached = self.cache.get(url)
 
             if cached is not None:
-                return {**cached, "cached": True}
+                final = {**cached, "cached": True}
+                report_phase("cache_hit", final)
+                return final
 
-        result = self._run_pipeline(url)
+        result = self._run_pipeline(url, report_phase)
 
-        if "error" not in result:
-            self.cache.set(url, result)
+        final = {**result, "cached": False}
 
-        return {**result, "cached": False}
+        if "error" in result:
+            return final
 
-    def _run_pipeline(self, url: str) -> dict:
+        self.cache.set(url, result)
+
+        report_phase("done", final)
+
+        return final
+
+    def _run_pipeline(self, url: str, report_phase: OnPhase) -> dict:
+
+        report_phase("scraping", {"url": url})
 
         try:
             news = self.extractor.extract(EvidenceScraper.GENERIC_SOURCE, url)
         except Exception as exc:
-            return {"url": url, "error": f"Failed to fetch article: {exc}"}
+            error = {"url": url, "error": f"Failed to fetch article: {exc}"}
+            report_phase("failed", error)
+            return error
 
         if news is None:
-            return {"url": url, "error": "Could not extract article content from this URL."}
+            error = {"url": url, "error": "Could not extract article content from this URL."}
+            report_phase("failed", error)
+            return error
+
+        report_phase("scraped", {"title": news.title, "url": news.url})
+
+        report_phase("enriching", {})
 
         article = self.enrichment_pipeline.process(news)
 
-        report = self.fact_checker.run(article)
+        topics = [topic.model_dump() for topic in (article.topics or [])]
+
+        report_phase("enriched", {
+            "title": article.title,
+            "keywords": article.keywords,
+            "entities": article.entities,
+            "topics": topics,
+        })
+
+        report = self.fact_checker.run(article, on_phase=report_phase)
 
         return {
             "url": url,
             "title": article.title,
             "keywords": article.keywords,
             "entities": article.entities,
-            "topics": [topic.model_dump() for topic in (article.topics or [])],
+            "topics": topics,
             "claims": self._build_claims(article, report),
             "validity": {
                 "isValid": report.validation_passed,

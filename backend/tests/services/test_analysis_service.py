@@ -263,3 +263,76 @@ def test_analyze_force_refresh_bypasses_and_overwrites_cache():
     service.extractor.extract.assert_called_once()
 
     assert cache.get("https://example.com/a")["title"] != "Stale"
+
+
+def test_analyze_reports_phases_in_order():
+
+    article = create_article(title="Phased article")
+    report = _successful_report(article)
+
+    fact_checker = Mock()
+
+    def run_with_phases(article, on_phase=None):
+        if on_phase:
+            on_phase("validating", {})
+            on_phase("fact_check_done", {"overallVerdict": report.overall_verdict})
+        return report
+
+    fact_checker.run.side_effect = run_with_phases
+
+    extractor = Mock()
+    extractor.extract.return_value = make_news()
+
+    enrichment_pipeline = Mock()
+    enrichment_pipeline.process.return_value = article
+
+    service = AnalysisService(
+        fact_checker=fact_checker,
+        extractor=extractor,
+        enrichment_pipeline=enrichment_pipeline,
+        cache=FakeCache(),
+    )
+
+    events = []
+
+    service.analyze("https://example.com/a", on_phase=lambda phase, data: events.append(phase))
+
+    assert events == [
+        "scraping",
+        "scraped",
+        "enriching",
+        "enriched",
+        "validating",
+        "fact_check_done",
+        "done",
+    ]
+
+
+def test_analyze_reports_cache_hit_instead_of_pipeline_phases():
+
+    cache = FakeCache()
+    cache.store["https://example.com/a"] = {"url": "https://example.com/a", "title": "Cached"}
+
+    service = AnalysisService(
+        fact_checker=Mock(),
+        extractor=Mock(),
+        enrichment_pipeline=Mock(),
+        cache=cache,
+    )
+
+    events = []
+
+    service.analyze("https://example.com/a", on_phase=lambda phase, data: events.append(phase))
+
+    assert events == ["cache_hit"]
+
+
+def test_analyze_reports_failed_phase_on_extraction_error():
+
+    service = make_service(extract_return=None, article=None, report=None)
+
+    events = []
+
+    service.analyze("https://example.com/a", on_phase=lambda phase, data: events.append(phase))
+
+    assert events == ["scraping", "failed"]
