@@ -1,10 +1,7 @@
-from datetime import datetime
-
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 
-from src.container import get_analysis_service, get_pipeline, get_text_corrector, job_store
-from src.models.core.news import News
+from src.container import get_analysis_service, get_text_corrector, job_store
 from src.services.job_runner import run_analysis_job
 
 router = APIRouter()
@@ -92,28 +89,3 @@ def get_analysis_job(job_id: str):
 def correct(request: CorrectRequest):
 
     return get_text_corrector().correct(request.text)
-
-
-
-@router.post("/news")
-def process_news(news: News):
-
-    return get_pipeline().execute(news)
-
-
-@router.get("/example")
-def example():
-
-    news = News(
-        title="NASA discovers new planet",
-        source_id="cnn",
-        url="https://cnn.com/example",
-        published_at=datetime.now(),
-        content=(
-            "NASA discovered a new planet. "
-            "Scientists are excited. "
-            "This fake announcement spread online."
-        ),
-    )
-
-    return get_pipeline().execute(news)

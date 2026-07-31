@@ -2,7 +2,9 @@
 
 A lightweight backend for ingesting, enriching, fact-checking and storing news articles.
 
-The project is designed around a modular pipeline where every processing stage has a single responsibility. The current implementation uses mocked NLP and fact-checking logic to validate the architecture before integrating real LLMs, search engines and Neo4j.
+The project is designed around a modular pipeline where every processing stage has a single responsibility.
+
+> **This README describes the project's original scaffold and is out of date** (mocked NLP/fact-checking, a `NewsPipeline`/`agents/` layer that no longer exists, a project structure that doesn't match `src/`). For the actual current architecture, endpoints, and test setup, see `CLAUDE.md` at the repo root instead.
 
 ---
 

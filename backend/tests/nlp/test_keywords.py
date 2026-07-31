@@ -1,7 +1,5 @@
 
 from src.processors.nlp.keywords import KeywordExtractor
-from src.agents.fact_checker import FactChecker
-from src.models.core.claim import Claim
 import logging
 
 
@@ -19,6 +17,4 @@ def test_keyword_extractor():
     )
 
     assert isinstance(result, list)
-    assert len(result) > 0
-
-test_keyword_extractor()
+    assert len(result) > 0
