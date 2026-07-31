@@ -7,6 +7,7 @@ import feedparser
 
 from src.models.core.source import NewsSource
 from src.config.topic_url_patterns import TOPIC_URL_PATTERNS
+from src.config.topics import TOPICS
 from .base import DiscoveryStrategy
 
 
@@ -34,6 +35,12 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         "/live/"
     )
 
+    _ALL_TOPIC_URL_PATTERNS = {
+        pattern
+        for patterns in TOPIC_URL_PATTERNS.values()
+        for pattern in patterns
+    }
+
     def discover(
         self,
         source: NewsSource,
@@ -52,6 +59,9 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
             for topic in topics
         }
 
+        keywords = self._keywords_for(normalized_topics)
+        url_patterns = self._url_patterns_for(normalized_topics)
+
         for entry in feed.entries:
 
             link = getattr(entry, "link", None)
@@ -62,21 +72,53 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
             if not self._is_article(link):
                 continue
 
-            if not self._matches_topics(entry, normalized_topics):
+            matches_url = any(
+                pattern in link.lower()
+                for pattern in url_patterns
+            )
+
+            if not matches_url and not self._matches_keywords(entry, keywords):
                 continue
 
             urls.append(link)
 
         return list(dict.fromkeys(urls))
 
-    def _matches_topics(
+    def _keywords_for(self, topics: set[str]) -> set[str]:
+        """
+        Expands topic ids (e.g. "space") into their configured keyword
+        vocabulary (e.g. "nasa", "mars", ...). Matching the bare topic id
+        against article text is unreliable - the id itself rarely appears
+        verbatim in a title or summary.
+        """
+
+        return {
+            keyword.lower()
+            for topic in topics
+            if topic in TOPICS
+            for keyword in TOPICS[topic].keywords
+        }
+
+    def _url_patterns_for(self, topics: set[str]) -> set[str]:
+
+        return {
+            pattern
+            for topic in topics
+            for pattern in TOPIC_URL_PATTERNS.get(topic, ())
+        }
+
+    def _matches_keywords(
         self,
         entry,
-        topics: set[str],
+        keywords: set[str],
     ) -> bool:
         """
-        Returns True if the RSS entry matches one of the requested topics.
+        Returns True if the RSS entry's title/summary/categories mention
+        one of the requested topics' keywords.
         """
+
+        if not keywords:
+            return False
 
         title = getattr(entry, "title", "")
         summary = getattr(entry, "summary", "")
@@ -91,18 +133,28 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         ).lower()
 
         return any(
-            topic in searchable
-            for topic in topics
+            keyword in searchable
+            for keyword in keywords
         )
 
     def _is_article(
         self,
         url: str,
     ) -> bool:
+        """
+        A link "looks like" an article if its path matches one of the
+        generic article patterns, or one of the topic-specific URL
+        patterns from any configured topic (a "/space/" or "/medicine/"
+        segment is essentially always an article, not a homepage/about
+        page - regardless of which topic the caller currently asked for).
+        """
 
         url = url.lower()
 
         return any(
             pattern in url
             for pattern in self.ARTICLE_PATTERNS
+        ) or any(
+            pattern in url
+            for pattern in self._ALL_TOPIC_URL_PATTERNS
         )
