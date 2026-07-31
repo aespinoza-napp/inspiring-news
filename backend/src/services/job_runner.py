@@ -1,7 +1,11 @@
+import logging
+import time
 from typing import Callable
 
 from src.services.analysis_service import AnalysisService
 from src.services.job_store import JobStore
+
+logger = logging.getLogger(__name__)
 
 # Phases AnalysisService.analyze() treats as a final outcome - see
 # analysis_service.py: "done" (pipeline ran to completion), "cache_hit"
@@ -29,9 +33,31 @@ def run_analysis_job(
     background thread - not eagerly in the route handler, where a
     failure would 500 the request itself instead of landing here as a
     clean job_store.fail().
+
+    Every phase transition is logged with how long that phase took and
+    the running total, so a slow run's bottleneck (scraping vs. a
+    specific claim's SearXNG search vs. the LLM call) is visible in the
+    server console instead of just "it's slow" - see logging setup in
+    src/main.py for why this actually shows up (INFO is not the default
+    level).
     """
 
+    start = time.monotonic()
+    last = start
+
     def on_phase(phase: str, data: dict) -> None:
+
+        nonlocal last
+
+        now = time.monotonic()
+        step_seconds = now - last
+        total_seconds = now - start
+        last = now
+
+        logger.info(
+            "[analyze %s] %s (+%.2fs, total %.2fs) url=%s",
+            job_id[:8], phase, step_seconds, total_seconds, url,
+        )
 
         if phase in _SUCCESS_PHASES:
             job_store.complete(job_id, data)
@@ -42,6 +68,25 @@ def run_analysis_job(
 
     try:
         analysis_service = get_analysis_service()
+
+        init_seconds = time.monotonic() - start
+
+        if init_seconds > 0.5:
+            # Only the first request in a fresh process pays this - it's
+            # the lazy AnalysisService/embedding/GLiNER/sentiment model
+            # loading (see container.py), not scraping. Logged separately
+            # so it isn't mistaken for the "scraping" phase being slow.
+            logger.info(
+                "[analyze %s] service initialized (+%.2fs, one-time cold start)",
+                job_id[:8], init_seconds,
+            )
+
+        last = time.monotonic()
+
         analysis_service.analyze(url, force_refresh=force_refresh, on_phase=on_phase)
     except Exception as exc:
+        total_seconds = time.monotonic() - start
+        logger.warning(
+            "[analyze %s] failed after %.2fs: %s", job_id[:8], total_seconds, exc
+        )
         job_store.fail(job_id, str(exc))
