@@ -6,9 +6,6 @@ from tests.factories import create_article
 import tempfile
 import pytest
 
-from src.database.qdrant import QdrantDatabase
-from src.repositories.vector_repository import VectorRepository
-
 
 def test_save_article(repository):
 
@@ -24,8 +21,6 @@ def test_save_article(repository):
 
 def test_get_article(repository):
 
-    repository.clear()
-
     article = create_article(
         id="11111111-1111-1111-1111-111111111111"
     )
@@ -33,7 +28,7 @@ def test_get_article(repository):
     repository.save(article)
 
     saved = repository.get("11111111-1111-1111-1111-111111111111")
-    
+
     assert saved is not None
 
     assert saved.id == article.id
@@ -45,9 +40,12 @@ def test_get_article(repository):
     assert len(saved.embedding) == len(article.embedding)
 
 
-def test_search_returns_article(repository):
+def test_get_missing_article_returns_none(repository):
 
-    repository.clear()
+    assert repository.get("does-not-exist") is None
+
+
+def test_search_returns_article(repository):
 
     article = create_article()
 
@@ -65,8 +63,6 @@ def test_search_returns_article(repository):
 
 def test_delete_article(repository):
 
-    repository.clear()
-
     article = create_article()
 
     repository.save(article)
@@ -76,3 +72,17 @@ def test_delete_article(repository):
     assert not repository.exists(article.id)
 
     assert repository.count() == 0
+
+
+def test_clear_removes_all_articles(repository):
+
+    repository.save(create_article(id="11111111-1111-1111-1111-111111111111"))
+    repository.save(create_article(id="22222222-2222-2222-2222-222222222222"))
+
+    assert repository.count() == 2
+
+    repository.clear()
+
+    assert repository.count() == 0
+    assert not repository.exists("11111111-1111-1111-1111-111111111111")
+    assert not repository.exists("22222222-2222-2222-2222-222222222222")

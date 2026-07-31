@@ -17,8 +17,6 @@ def test_pipeline_accepts_valid_article(repository):
 
 def test_pipeline_rejects_duplicate(repository):
 
-    repository.clear()
-
     repository.save(
         create_article(
             id="11111111-1111-1111-1111-111111111111",
