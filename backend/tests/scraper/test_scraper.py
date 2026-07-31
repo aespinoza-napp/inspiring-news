@@ -1,52 +1,57 @@
-from pathlib import Path
+from unittest.mock import Mock
 
-from src.config.settings import settings
-from src.repositories.local_repository import LocalRepository
-from src.repositories.source_repository import SourceRepository
 from src.services.scraper.scraper import Scraper
-from src.models.core.news import News
 
-def test_scraper_pipeline():
+from tests.builders.source_builder import build_source
+
+
+def make_scraper(discover_return=None, extract_return=None) -> Scraper:
 
     scraper = Scraper()
 
-    storage = LocalRepository(model=News, folder=settings.RAW_PATH)
+    scraper.discovery = Mock()
+    scraper.discovery.discover.return_value = discover_return or []
 
-    repository = SourceRepository().list()
+    scraper.extractor = Mock()
+    scraper.extractor.extract.return_value = extract_return
 
-    discovered = 0
-    extracted = 0
-    stored = 0
-    print(len(repository))
-    for source in repository:
+    return scraper
 
-        urls = scraper.discover(
-            source,
-            topics=["space", "technology", "ia"],
-        )
-        discovered += len(urls)
-        for url in urls:
 
-            news = scraper.extract(
-                source,
-                url,
-            )
+def test_discover_delegates_to_discovery_service():
 
-            if news is None:
-                continue
+    source = build_source()
 
-            extracted += 1
+    scraper = make_scraper(discover_return=["https://bbc.com/a", "https://bbc.com/b"])
 
-            storage.save(news)
+    urls = scraper.discover(source, topics=["space"])
 
-            stored += 1
+    assert urls == ["https://bbc.com/a", "https://bbc.com/b"]
 
-    print()
+    scraper.discovery.discover.assert_called_once_with(
+        source=source,
+        topics=["space"],
+    )
 
-    print(f"Discovered : {discovered}")
-    print(f"Extracted  : {extracted}")
-    print(f"Stored     : {stored}")
 
-    assert stored > 0
+def test_extract_delegates_to_extractor_service():
 
-test_scraper_pipeline()
+    source = build_source()
+
+    fake_news = Mock()
+    scraper = make_scraper(extract_return=fake_news)
+
+    result = scraper.extract(source, "https://bbc.com/a")
+
+    assert result is fake_news
+
+    scraper.extractor.extract.assert_called_once_with(source, "https://bbc.com/a")
+
+
+def test_extract_returns_none_when_extractor_finds_nothing():
+
+    source = build_source()
+
+    scraper = make_scraper(extract_return=None)
+
+    assert scraper.extract(source, "https://bbc.com/a") is None

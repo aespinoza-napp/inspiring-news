@@ -1,22 +1,15 @@
 import feedparser
 
-from src.models.core.source import NewsSource, SourceType
 from src.services.scraper.strategies.rss import RSSDiscoveryStrategy
 
+from tests.builders.source_builder import build_source
 
-def make_source(**kwargs) -> NewsSource:
 
-    defaults = dict(
-        id="test",
-        name="Test Source",
-        base_url="https://example.com",
-        rss_url="https://example.com/rss.xml",
-        source_type=SourceType.NEWS,
-    )
+def make_source(**kwargs):
 
-    defaults.update(kwargs)
+    kwargs.setdefault("rss_url", "https://example.com/rss.xml")
 
-    return NewsSource(**defaults)
+    return build_source(**kwargs)
 
 
 def entry(link: str, title: str, summary: str = "") -> feedparser.FeedParserDict:

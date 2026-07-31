@@ -1,18 +1,9 @@
 import json
 from unittest.mock import Mock, patch
 
-from src.models.core.source import NewsSource, SourceType
 from src.services.scraper.strategies.trafilatura import TrafilaturaStrategy, _parse_date
 
-
-def make_source() -> NewsSource:
-
-    return NewsSource(
-        id="test",
-        name="Test Source",
-        base_url="https://example.com",
-        source_type=SourceType.NEWS,
-    )
+from tests.builders.source_builder import build_source
 
 
 def test_parse_date_returns_none_when_missing():
@@ -41,7 +32,7 @@ def test_extract_leaves_published_at_none_when_date_missing():
     with patch("src.services.scraper.strategies.trafilatura.requests.get", return_value=_mock_response("<html></html>")), \
          patch("src.services.scraper.strategies.trafilatura.trafilatura.extract", return_value=payload):
 
-        result = TrafilaturaStrategy().extract(make_source(), "https://example.com/a")
+        result = TrafilaturaStrategy().extract(build_source(), "https://example.com/a")
 
     assert result is not None
     assert result.published_at is None
@@ -54,7 +45,7 @@ def test_extract_leaves_title_none_when_missing():
     with patch("src.services.scraper.strategies.trafilatura.requests.get", return_value=_mock_response("<html></html>")), \
          patch("src.services.scraper.strategies.trafilatura.trafilatura.extract", return_value=payload):
 
-        result = TrafilaturaStrategy().extract(make_source(), "https://example.com/a")
+        result = TrafilaturaStrategy().extract(build_source(), "https://example.com/a")
 
     assert result is not None
     assert result.title is None
@@ -67,6 +58,6 @@ def test_extract_returns_none_on_request_failure():
         side_effect=ConnectionError("boom"),
     ):
 
-        result = TrafilaturaStrategy().extract(make_source(), "https://example.com/a")
+        result = TrafilaturaStrategy().extract(build_source(), "https://example.com/a")
 
     assert result is None

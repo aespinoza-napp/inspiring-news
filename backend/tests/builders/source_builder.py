@@ -6,8 +6,9 @@ from src.models.core.source import NewsSource
 def build_source(**kwargs):
 
     defaults = {
+        "id": "bbc",
         "name": "BBC",
-        "url": "https://bbc.com",
+        "base_url": "https://bbc.com",
         "rss_url": "https://bbc.com/rss.xml",
     }
 
