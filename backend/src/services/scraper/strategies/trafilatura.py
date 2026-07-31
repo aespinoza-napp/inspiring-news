@@ -4,7 +4,6 @@ import json
 
 import requests
 import trafilatura
-import datetime
 
 from src.models.scraper.extraction import ExtractionResult
 from src.models.core.source import NewsSource
@@ -12,8 +11,13 @@ from src.models.core.source import NewsSource
 from .base import ExtractionStrategy
 
 def _parse_date(date_str: str | None) -> str | None:
+    """
+    Returns the article's published date, or None when trafilatura
+    couldn't find one. Never fabricates "today" - a missing date must
+    stay missing, not silently become incorrect data.
+    """
     if not date_str:
-        return datetime.datetime.now().strftime("%Y-%m-%d")
+        return None
     try:
         return date_str.split("T")[0]
     except Exception:
@@ -63,7 +67,7 @@ class TrafilaturaStrategy(ExtractionStrategy):
 
             return ExtractionResult(
                 source_id=source.id,
-                title=data.get("title", ""),
+                title=data.get("title") or None,
                 body=body,
                 summary=data.get("description"),
                 author=data.get("author"),
@@ -71,6 +75,6 @@ class TrafilaturaStrategy(ExtractionStrategy):
                 lead_image=data.get("image"),
             )
 
-        except Exception:
-            print(f"Error extracting {url} with TrafilaturaStrategy: {str(Exception)}")
+        except Exception as exc:
+            print(f"Error extracting {url} with TrafilaturaStrategy: {exc}")
             return None

@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class ExtractionResult(BaseModel):
     source_id: str
-    title: str = None
+    title: Optional[str] = None
     body: str
 
     summary: Optional[str] = None

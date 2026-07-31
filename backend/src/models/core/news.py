@@ -18,7 +18,7 @@ class News(BaseModel):
 
     author: Optional[str] = None
 
-    published_at: datetime
+    published_at: Optional[datetime] = None
 
     content: str
 
