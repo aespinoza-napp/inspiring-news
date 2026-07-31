@@ -12,6 +12,10 @@
   --unverified: #6b6b6b;
 
   --radius: 8px;
+  --radius-sm: 4px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 1px rgba(0, 0, 0, 0.03);
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +31,8 @@
     --false: #e5605a;
     --misleading: #e0a44b;
     --unverified: #9a9a9a;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -56,6 +62,56 @@ a:hover {
   text-decoration: underline;
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- motion ---------- */
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- layout ---------- */
+
 .site-header {
   display: flex;
   align-items: center;
@@ -73,6 +129,25 @@ a:hover {
   gap: 1.5rem;
 }
 
+.nav-link {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.nav-link:hover {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.nav-link.is-active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+
 .site-main {
   max-width: 760px;
   margin: 0 auto;
@@ -81,12 +156,27 @@ a:hover {
 
 h1 {
   font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   margin: 0 0 0.5rem;
 }
 
 .subtitle {
   color: var(--muted);
   margin: 0 0 2rem;
+  max-width: 60ch;
+}
+
+/* ---------- forms ---------- */
+
+.field-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
 }
 
 textarea {
@@ -100,15 +190,18 @@ textarea {
   font-family: inherit;
   font-size: 0.95rem;
   resize: vertical;
+  transition: border-color 0.15s var(--ease);
 }
 
-textarea:focus,
-button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+textarea:hover {
+  border-color: color-mix(in srgb, var(--fg) 25%, var(--border));
 }
 
 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
   margin-top: 1rem;
   padding: 0.6rem 1.4rem;
   border: none;
@@ -118,6 +211,15 @@ button {
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
+  transition: opacity 0.15s var(--ease), transform 0.1s var(--ease);
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 button:disabled {
@@ -142,6 +244,21 @@ button:disabled {
   cursor: pointer;
 }
 
+/* ---------- spinner ---------- */
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ---------- status / misc ---------- */
+
 .cached-tag {
   margin-left: 0.5rem;
   padding: 0.1rem 0.5rem;
@@ -162,16 +279,21 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+/* ---------- cards ---------- */
+
 .card {
   margin-top: 1.5rem;
   padding: 1.25rem 1.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
+  box-shadow: var(--shadow);
+  animation: fadeSlideIn 0.35s var(--ease) both;
 }
 
 .card h2 {
   font-size: 1.05rem;
+  font-weight: 600;
   margin: 0 0 0.25rem;
 }
 
@@ -185,10 +307,11 @@ button:disabled {
 
 .section-label {
   font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
-  margin: 1rem 0 0.5rem;
+  margin: 1.25rem 0 0.6rem;
 }
 
 .chip-row {
@@ -203,6 +326,33 @@ button:disabled {
   background: var(--bg);
   border: 1px solid var(--border);
   font-size: 0.8rem;
+  animation: fadeSlideIn 0.3s var(--ease) both;
+}
+
+.entity-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.entity-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  animation: fadeSlideIn 0.3s var(--ease) both;
+}
+
+.entity-group-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-sm);
+  flex: none;
 }
 
 .badge {
@@ -230,40 +380,170 @@ button:disabled {
   background: var(--unverified);
 }
 
+.badge-not-checked {
+  background: transparent;
+  border: 1px dashed var(--muted);
+  color: var(--muted);
+  padding: 0.14rem 0.5rem;
+}
+
+.validity-block {
+  margin: 0.5rem 0 0;
+}
+
 .validity-row {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.phase-trail {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin: 0.75rem 0;
-}
-
-.phase-step {
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  font-size: 0.75rem;
+.validity-reasons {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
   color: var(--muted);
 }
 
-.phase-step-active {
-  color: var(--accent);
+/* ---------- phase stepper ---------- */
+
+.stepper-wrap {
+  margin: 1rem 0;
+}
+
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.stepper-connector {
+  flex: 1 1 auto;
+  min-width: 10px;
+  height: 2px;
+  margin-top: 7px;
+  background: var(--border);
+  transition: background 0.3s var(--ease);
+}
+
+.stepper-connector.is-complete {
+  background: var(--accent);
+}
+
+.stepper-dot {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.stepper-step.is-complete .stepper-dot {
+  background: var(--accent);
   border-color: var(--accent);
 }
 
+.stepper-step.is-active .stepper-dot {
+  border-color: var(--accent);
+  animation: pulseRing 1.6s ease-out infinite;
+}
+
+.stepper-step.is-error .stepper-dot {
+  background: var(--false);
+  border-color: var(--false);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.stepper-step.is-skipped .stepper-dot {
+  border-style: dashed;
+  border-color: var(--muted);
+}
+
+.stepper-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.stepper-step.is-active .stepper-label,
+.stepper-step.is-complete .stepper-label {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.stepper-step.is-error .stepper-label {
+  color: var(--false);
+  font-weight: 600;
+}
+
+.stepper-note {
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+.stepper-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.stepper-status-cached {
+  color: var(--muted);
+}
+
+/* ---------- claims ---------- */
+
 .claim {
-  padding: 0.6rem 0;
+  padding: 0.65rem 0 0.65rem 0.75rem;
   border-top: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  animation: fadeSlideIn 0.3s var(--ease) both;
 }
 
 .claim:first-child {
   border-top: none;
+}
+
+.claim-verdict-true {
+  border-left-color: var(--true);
+}
+
+.claim-verdict-false {
+  border-left-color: var(--false);
+}
+
+.claim-verdict-misleading {
+  border-left-color: var(--misleading);
+}
+
+.claim-verdict-unverified {
+  border-left-color: var(--unverified);
+}
+
+.claim-verdict-none {
+  border-left-style: dashed;
+  border-left-color: var(--muted);
+  opacity: 0.85;
 }
 
 .claim-text {
@@ -271,15 +551,31 @@ button:disabled {
 }
 
 .claim-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
   color: var(--muted);
   font-size: 0.82rem;
 }
+
+.claims-note {
+  margin: 0 0 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--unverified) 10%, transparent);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* ---------- score bars ---------- */
 
 .score-bar-row {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   margin: 0.35rem 0;
+  animation: fadeSlideIn 0.3s var(--ease) both;
 }
 
 .score-bar-label {
@@ -298,6 +594,7 @@ button:disabled {
 .score-bar-fill {
   height: 100%;
   background: var(--accent);
+  transition: width 0.5s var(--ease);
 }
 
 .score-bar-value {
@@ -306,6 +603,8 @@ button:disabled {
   font-size: 0.85rem;
   color: var(--muted);
 }
+
+/* ---------- corrector ---------- */
 
 .metric-grid {
   display: grid;
@@ -317,8 +616,23 @@ button:disabled {
 .metric-card {
   padding: 1rem 1.1rem;
   border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
+  box-shadow: var(--shadow);
+  animation: fadeSlideIn 0.35s var(--ease) both;
+}
+
+.metric-card-good {
+  border-left-color: var(--true);
+}
+
+.metric-card-warn {
+  border-left-color: var(--misleading);
+}
+
+.metric-card-bad {
+  border-left-color: var(--false);
 }
 
 .metric-title {
@@ -338,4 +652,24 @@ button:disabled {
   padding-left: 1.1rem;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 480px) {
+  .site-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .site-main {
+    padding: 1.75rem 1rem 3rem;
+  }
+
+  .score-bar-label {
+    min-width: 6rem;
+  }
+
+  .stepper-label {
+    font-size: 0.62rem;
+  }
 }

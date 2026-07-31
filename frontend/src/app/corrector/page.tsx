@@ -60,19 +60,28 @@ export default function CorrectorPage() {
       </p>
 
       <form onSubmit={handleSubmit}>
+        <label className="field-label" htmlFor="corrector-input">
+          Text to evaluate
+        </label>
         <textarea
+          id="corrector-input"
           value={text}
           onChange={(event) => setText(event.target.value)}
           placeholder="Paste your text here..."
         />
         <div>
           <button type="submit" disabled={loading}>
-            {loading ? "Evaluating..." : "Evaluate"}
+            {loading && <span className="spinner" aria-hidden="true" />}
+            {loading ? "Evaluating…" : "Evaluate"}
           </button>
         </div>
       </form>
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
+      )}
 
       {report && (
         <div className="metric-grid">
@@ -80,7 +89,7 @@ export default function CorrectorPage() {
             const metric = report[key];
 
             return (
-              <div className="metric-card" key={key}>
+              <div className={`metric-card ${scoreTierClass(metric.score)}`} key={key}>
                 <div className="metric-title">{label}</div>
                 <ScoreBar label="Score" value={metric.score} />
                 <p className="metric-summary">{metric.summary}</p>
@@ -98,4 +107,10 @@ export default function CorrectorPage() {
       )}
     </>
   );
+}
+
+function scoreTierClass(score: number): string {
+  if (score >= 70) return "metric-card-good";
+  if (score >= 40) return "metric-card-warn";
+  return "metric-card-bad";
 }

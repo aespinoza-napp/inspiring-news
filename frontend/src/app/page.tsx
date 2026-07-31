@@ -4,33 +4,12 @@ import { useState } from "react";
 import {
   AnalysisJob,
   ClaimResult,
-  PhaseEvent,
   TopicPrediction,
 } from "@/lib/types";
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { ScoreBar } from "@/components/ScoreBar";
+import { PhaseStepper } from "@/components/PhaseStepper";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
-
-const PHASE_LABELS: Record<string, string> = {
-  scraping: "Scraping article",
-  scraped: "Article fetched",
-  enriching: "Extracting keywords, entities & topics",
-  enriched: "Enrichment complete",
-  validating: "Checking topic & positivity",
-  validated: "Validation complete",
-  skipped: "Fact-check skipped",
-  selecting_claims: "Selecting claims to verify",
-  claims_selected: "Claims selected",
-  claim_checked: "Claim verified",
-  fact_check_done: "Fact-check complete",
-  cache_hit: "Loaded from cache",
-  done: "Done",
-  failed: "Failed",
-};
-
-function phaseLabel(phase: string): string {
-  return PHASE_LABELS[phase] ?? phase;
-}
 
 export default function AnalyzerPage() {
   const [input, setInput] = useState("");
@@ -60,7 +39,11 @@ export default function AnalyzerPage() {
       </p>
 
       <form onSubmit={handleSubmit}>
+        <label className="field-label" htmlFor="urls-input">
+          Article URLs
+        </label>
         <textarea
+          id="urls-input"
           value={input}
           onChange={(event) => setInput(event.target.value)}
           placeholder={
@@ -94,7 +77,9 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
     return (
       <div className="card">
         <span className="card-url">{url}</span>
-        <div className="error-banner">{error}</div>
+        <div className="error-banner" role="alert">
+          {error}
+        </div>
       </div>
     );
   }
@@ -103,47 +88,64 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
     return (
       <div className="card">
         <span className="card-url">{url}</span>
-        <div className="phase-trail">
-          <span className="phase-step phase-step-active">Starting...</span>
+        <div className="stepper-status" role="status">
+          <span className="spinner" aria-hidden="true" />
+          <span>Starting…</span>
         </div>
       </div>
     );
   }
 
-  if (job.status === "failed") {
-    return (
-      <div className="card">
-        <span className="card-url">{url}</span>
-        <div className="error-banner">{job.error ?? "Analysis failed."}</div>
-      </div>
-    );
-  }
-
   const partial = summarizeJob(job);
+  const isFailed = job.status === "failed";
   const isRunning = job.status === "queued" || job.status === "running";
+  const cached = job.result?.cached ?? false;
+  const sortedTopics = [...partial.topics].sort(
+    (a, b) => b.confidence - a.confidence
+  );
+  const validity = job.result?.validity;
+  const claimsChecked = job.result?.factCheck?.claimsChecked ?? 0;
+  const showUncheckedNote =
+    !!validity && !validity.isValid && claimsChecked === 0 && partial.claims.length > 0;
 
   return (
     <div className="card">
       <h2>
-        {partial.title || "(untitled)"}
-        {job.result?.cached && <span className="cached-tag">cached</span>}
+        {partial.title ||
+          (isFailed ? "Analysis failed" : isRunning ? "Analyzing…" : "(untitled)")}
+        {cached && <span className="cached-tag">Cached</span>}
       </h2>
       <span className="card-url">{url}</span>
 
-      <PhaseTrail events={job.events} isRunning={isRunning} />
+      {cached ? (
+        <div className="stepper-status stepper-status-cached">
+          Loaded instantly from cache
+        </div>
+      ) : (
+        <PhaseStepper events={job.events} status={job.status} />
+      )}
 
-      {job.result?.validity && (
-        <div className="validity-row">
-          <span
-            className={`badge ${job.result.validity.isValid ? "badge-true" : "badge-false"}`}
-          >
-            {job.result.validity.isValid ? "Valid" : "Invalid"}
-          </span>
-          {job.result.validity.isDuplicate && (
-            <span className="badge badge-misleading">Duplicate</span>
-          )}
-          {!job.result.validity.hasTopic && (
-            <span className="badge badge-unverified">No matching topic</span>
+      {isFailed && (
+        <div className="error-banner" role="alert">
+          {job.error ?? "Analysis failed."}
+        </div>
+      )}
+
+      {validity && (
+        <div className="validity-block">
+          <div className="validity-row">
+            <span className={`badge ${validity.isValid ? "badge-true" : "badge-false"}`}>
+              {validity.isValid ? "Valid" : "Invalid"}
+            </span>
+            {validity.isDuplicate && (
+              <span className="badge badge-misleading">Duplicate</span>
+            )}
+            {!validity.hasTopic && (
+              <span className="badge badge-unverified">No matching topic</span>
+            )}
+          </div>
+          {!validity.isValid && validity.reasons.length > 0 && (
+            <p className="validity-reasons">Why: {validity.reasons.join(", ")}</p>
           )}
         </div>
       )}
@@ -164,22 +166,27 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
       {partial.entityCount > 0 && (
         <>
           <div className="section-label">Entities ({partial.entityCount})</div>
-          <div className="chip-row">
-            {Object.entries(partial.entities).flatMap(([label, values]) =>
-              values.map((value) => (
-                <span className="chip" key={`${label}-${value}`}>
-                  {value} <em>({label})</em>
-                </span>
-              ))
-            )}
+          <div className="entity-groups">
+            {Object.entries(partial.entities).map(([label, values]) => (
+              <div className="entity-group" key={label}>
+                <span className="entity-group-tag">{label}</span>
+                <div className="chip-row">
+                  {values.map((value) => (
+                    <span className="chip" key={`${label}-${value}`}>
+                      {value}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </>
       )}
 
-      {partial.topics.length > 0 && (
+      {sortedTopics.length > 0 && (
         <>
-          <div className="section-label">Topics ({partial.topics.length})</div>
-          {partial.topics.map((topic) => (
+          <div className="section-label">Topics ({sortedTopics.length})</div>
+          {sortedTopics.map((topic) => (
             <ScoreBar key={topic.topic} label={topic.topic} value={topic.confidence * 100} />
           ))}
         </>
@@ -191,34 +198,26 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
             Claims ({partial.claims.length}
             {job.result?.factCheck ? `/${job.result.factCheck.claimsChecked}` : ""})
           </div>
+          {showUncheckedNote && (
+            <p className="claims-note">
+              This article didn&apos;t pass validation, so these claims were
+              not fact-checked.
+            </p>
+          )}
           {partial.claims.map((claim, index) => (
-            <div className="claim" key={index}>
+            <div
+              className={`claim claim-verdict-${(claim.verdict ?? "none").toLowerCase()}`}
+              key={`${claim.text}-${index}`}
+            >
               <p className="claim-text">{claim.text}</p>
               <div className="claim-meta">
-                <VerdictBadge verdict={claim.verdict} />{" "}
-                confidence {Math.round(claim.confidence * 100)}%
-                {claim.explanation && <> - {claim.explanation}</>}
+                <VerdictBadge verdict={claim.verdict} />
+                <span>confidence {Math.round(claim.confidence * 100)}%</span>
+                {claim.explanation && <span>{claim.explanation}</span>}
               </div>
             </div>
           ))}
         </>
-      )}
-    </div>
-  );
-}
-
-function PhaseTrail({ events, isRunning }: { events: PhaseEvent[]; isRunning: boolean }) {
-  if (events.length === 0 && !isRunning) return null;
-
-  return (
-    <div className="phase-trail">
-      {events.map((event, index) => (
-        <span className="phase-step" key={index}>
-          {phaseLabel(event.phase)}
-        </span>
-      ))}
-      {isRunning && (
-        <span className="phase-step phase-step-active">Working...</span>
       )}
     </div>
   );
