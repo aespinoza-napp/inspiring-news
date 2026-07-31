@@ -28,7 +28,15 @@ class CreateAnalysisJobRequest(BaseModel):
 @router.post("/analyze")
 def analyze(request: AnalyzeRequest):
 
-    service = get_analysis_service()
+    try:
+        service = get_analysis_service()
+    except Exception as exc:
+        return {
+            "results": [
+                {"url": url, "error": f"Analysis service unavailable: {exc}"}
+                for url in request.urls
+            ]
+        }
 
     return {
         "results": [
@@ -51,7 +59,7 @@ def create_analysis_job(request: CreateAnalysisJobRequest, background_tasks: Bac
     background_tasks.add_task(
         run_analysis_job,
         job_store,
-        get_analysis_service(),
+        get_analysis_service,  # factory, not called here - see job_runner.py
         job.job_id,
         request.url,
         request.forceRefresh,

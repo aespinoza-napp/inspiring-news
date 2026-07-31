@@ -13,10 +13,17 @@ class QdrantDatabase:
     # is killed and a new one spawned on every file change - if the new
     # process tries to open the lock before the old one has fully released
     # it, QdrantClient raises a RuntimeError ("already accessed by another
-    # instance"). That's a timing race, not a real conflict, so retry
-    # briefly instead of crashing the whole app on every reload.
-    LOCK_RETRY_ATTEMPTS = 5
-    LOCK_RETRY_DELAY_SECONDS = 0.5
+    # instance"). That's usually a timing race, not a real conflict, so
+    # retry instead of crashing outright. This now runs lazily on first
+    # use (see container.py) rather than at import time, and for
+    # POST /analyze/jobs specifically it happens inside the background
+    # task (see job_runner.py) - not on the request thread - so it's safe
+    # to wait considerably longer here than a user would ever tolerate on
+    # a blocking request. 2.5s (the original budget) was observed to be
+    # too short for a real-world lock release in practice; ~15s gives the
+    # previous process much more room to actually let go.
+    LOCK_RETRY_ATTEMPTS = 15
+    LOCK_RETRY_DELAY_SECONDS = 1.0
 
     def __init__(
         self,
