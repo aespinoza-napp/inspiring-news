@@ -32,12 +32,13 @@ export default function AnalyzerPage() {
         body: JSON.stringify({ urls }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
+        throw new Error(data?.error ?? `Request failed (${response.status})`);
       }
 
-      const data: AnalyzeResponse = await response.json();
-      setResults(data.results);
+      setResults((data as AnalyzeResponse).results);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {

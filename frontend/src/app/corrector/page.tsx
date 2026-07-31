@@ -36,11 +36,13 @@ export default function CorrectorPage() {
         body: JSON.stringify({ text }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
+        throw new Error(data?.error ?? `Request failed (${response.status})`);
       }
 
-      setReport(await response.json());
+      setReport(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
