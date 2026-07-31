@@ -6,36 +6,6 @@ from src.agents.fact_checker import FactChecker
 from src.workflows.news_pipeline import NewsPipeline
 from src.processors.nlp.sentiment import SentimentAnalyzer
 
-repository = LocalRepository(model=News, folder=settings.PROCESSED_PATH)
-
-nlp = NLPProcessor()
-
-fact_checker = FactChecker()
-
-sentiment_analyzer = SentimentAnalyzer(settings)
-
-pipeline = NewsPipeline(
-    repository=repository,
-    nlp=nlp,
-    fact_checker=fact_checker,
-    sentiment_analyzer=sentiment_analyzer
-)
-
-# ---------------------------------------------------------------------
-# Real analyzer/fact-checker pipeline (backs /analyze and /correct) -
-# independent of the mock pipeline above, which stays untouched.
-#
-# vector_repository/real_fact_checker/analysis_service are constructed
-# lazily (on first actual use), not at import time. QdrantClient's local
-# mode takes an exclusive file lock, and under `uvicorn --reload` this
-# module gets re-imported on every file save; opening the lock eagerly
-# here meant *every reload* raced to grab it, and a slow-releasing prior
-# worker (or literally anything else briefly touching the same storage
-# dir) crashed the entire app on import - not just the one feature that
-# needed Qdrant. Deferring construction means the app always starts, and
-# only a request that actually needs Qdrant can fail if it's briefly busy.
-# ---------------------------------------------------------------------
-
 from src.database.qdrant import QdrantDatabase
 from src.repositories.vector_repository import VectorRepository
 from src.services.analysis_service import AnalysisService
@@ -44,16 +14,53 @@ from src.services.fact_checker.fact_checker import FactChecker as RealFactChecke
 from src.services.job_store import JobStore
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
-enrichment_pipeline = NewsEnrichmentPipeline(settings)
+# ---------------------------------------------------------------------
+# Everything below is constructed lazily (on first actual use), not at
+# import time. NLPProcessor/NewsEnrichmentPipeline/SentimentAnalyzer/
+# TextCorrector all eagerly load transformer models (GLiNER, the
+# sentiment classifier, sentence-transformers for embeddings) on
+# construction - several seconds of real work each. `uvicorn --reload`
+# re-imports this module (in a fresh subprocess) on every file save, so
+# building any of this eagerly at module level meant *every single
+# reload* re-paid the full model-loading cost before the app could even
+# start serving - the dominant cost of local iteration.
+#
+# VectorRepository additionally has the QdrantClient local-storage lock
+# problem (see get_vector_repository below): eager construction meant
+# every reload also raced to grab an exclusive file lock.
+#
+# Deferring construction to first use means `uvicorn --reload` restarts
+# are near-instant; only the first request that actually needs a given
+# service pays its loading cost, once, and it's cached for the rest of
+# that process's life (until the next reload).
+# ---------------------------------------------------------------------
 
-text_corrector = TextCorrector()
+repository = LocalRepository(model=News, folder=settings.PROCESSED_PATH)
 
-# In-memory, no I/O - safe to construct eagerly, unlike the Qdrant-backed
-# services below.
+# In-memory, no I/O - safe to construct eagerly, unlike everything else here.
 job_store = JobStore()
 
+_pipeline: NewsPipeline | None = None
 _vector_repository: VectorRepository | None = None
 _analysis_service: AnalysisService | None = None
+_enrichment_pipeline: NewsEnrichmentPipeline | None = None
+_text_corrector: TextCorrector | None = None
+
+
+def get_pipeline() -> NewsPipeline:
+    """The old mock pipeline behind /news and /example."""
+
+    global _pipeline
+
+    if _pipeline is None:
+        _pipeline = NewsPipeline(
+            repository=repository,
+            nlp=NLPProcessor(),
+            fact_checker=FactChecker(),
+            sentiment_analyzer=SentimentAnalyzer(settings),
+        )
+
+    return _pipeline
 
 
 def get_vector_repository() -> VectorRepository:
@@ -66,6 +73,16 @@ def get_vector_repository() -> VectorRepository:
     return _vector_repository
 
 
+def get_enrichment_pipeline() -> NewsEnrichmentPipeline:
+
+    global _enrichment_pipeline
+
+    if _enrichment_pipeline is None:
+        _enrichment_pipeline = NewsEnrichmentPipeline(settings)
+
+    return _enrichment_pipeline
+
+
 def get_analysis_service() -> AnalysisService:
 
     global _analysis_service
@@ -73,7 +90,17 @@ def get_analysis_service() -> AnalysisService:
     if _analysis_service is None:
         _analysis_service = AnalysisService(
             fact_checker=RealFactChecker(get_vector_repository()),
-            enrichment_pipeline=enrichment_pipeline,
+            enrichment_pipeline=get_enrichment_pipeline(),
         )
 
     return _analysis_service
+
+
+def get_text_corrector() -> TextCorrector:
+
+    global _text_corrector
+
+    if _text_corrector is None:
+        _text_corrector = TextCorrector()
+
+    return _text_corrector

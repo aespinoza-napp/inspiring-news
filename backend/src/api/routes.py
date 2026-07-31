@@ -3,10 +3,9 @@ from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 
-from src.container import get_analysis_service, job_store, pipeline, text_corrector
+from src.container import get_analysis_service, get_pipeline, get_text_corrector, job_store
 from src.models.core.news import News
 from src.services.job_runner import run_analysis_job
-from src.workflows.news_pipeline import NewsPipeline
 
 router = APIRouter()
 
@@ -92,14 +91,14 @@ def get_analysis_job(job_id: str):
 @router.post("/correct")
 def correct(request: CorrectRequest):
 
-    return text_corrector.correct(request.text)
+    return get_text_corrector().correct(request.text)
 
 
 
 @router.post("/news")
 def process_news(news: News):
 
-    return pipeline.execute(news)
+    return get_pipeline().execute(news)
 
 
 @router.get("/example")
@@ -117,4 +116,4 @@ def example():
         ),
     )
 
-    return pipeline.execute(news)
+    return get_pipeline().execute(news)
