@@ -29,8 +29,11 @@ class Settings(BaseSettings):
     NEO4J_USER: str = "neo4j"
     NEO4J_PASSWORD: SecretStr
 
+    # Multilingual (covers the en/es/... mix of currently configured
+    # sources) - twitter-roberta-base-sentiment-latest is English-only and
+    # would silently produce meaningless scores for non-English articles.
     SENTIMENT_MODEL: str = (
-        "cardiffnlp/twitter-roberta-base-sentiment-latest"
+        "cardiffnlp/twitter-xlm-roberta-base-sentiment"
     )
 
     # Qdrant settings
