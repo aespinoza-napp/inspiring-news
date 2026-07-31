@@ -10,7 +10,15 @@ export async function GET(
   let response: Response;
 
   try {
-    response = await fetch(`${BACKEND_URL}/analyze/jobs/${params.jobId}`);
+    // no-store: this is polled every second to follow job progress. Next.js
+    // caches GET fetches by default (its Data Cache), which would otherwise
+    // serve the first response forever - reproduced live: polling kept
+    // returning 200 with the same stale "initializing" snapshot even after
+    // the backend had finished the job (and, after a backend restart, even
+    // after the backend no longer recognized the job id at all).
+    response = await fetch(`${BACKEND_URL}/analyze/jobs/${params.jobId}`, {
+      cache: "no-store",
+    });
   } catch {
     return NextResponse.json(
       {
