@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# SearXNG local instance config (contains a generated secret_key)
+docker/searxng/settings.yml

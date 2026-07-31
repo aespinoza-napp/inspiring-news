@@ -1,0 +1,14 @@
+use_default_settings: true
+
+general:
+  instance_name: "Inspiring News Fact-Checker"
+
+search:
+  formats:
+    - html
+    - json   # required: SearxngClient (backend/src/services/search.py) calls ?format=json
+
+server:
+  # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+  secret_key: "REPLACE_WITH_A_RANDOM_SECRET"
+  limiter: false   # internal-only instance; re-enable + add Valkey/Redis if ever exposed publicly

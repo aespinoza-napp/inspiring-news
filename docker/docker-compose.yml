@@ -9,11 +9,25 @@ services:
     environment:
       - NEO4J_AUTH=neo4j/password
 
+  searxng:
+    image: searxng/searxng:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+
   backend:
     build: ./backend
     ports:
       - "8000:8000"
     env_file:
       - ./backend/.env
+    environment:
+      # Container-to-container DNS name, overrides the .env default of
+      # localhost (which only works when the backend runs on the host).
+      - SEARXNG_URL=http://searxng:8080
     depends_on:
       - neo4j
+      - searxng

@@ -1,6 +1,8 @@
 from datetime import datetime
 
+from src.models.claim import Claim
 from src.models.enriched_article import EnrichedArticle
+from src.models.evidence import Evidence, EvidenceOrigin
 from src.models.quality import Quality
 from src.models.sentiment_result import SentimentResult
 from src.models.topic_prediction import TopicPrediction
@@ -51,3 +53,30 @@ def create_article(**kwargs) -> EnrichedArticle:
     article = article.model_copy(update=kwargs)
 
     return article
+
+
+def create_claim(**kwargs) -> Claim:
+
+    claim = Claim(
+        text="NASA discovered water on Mars in 2024.",
+        entities={"ORG": ["NASA"]},
+        confidence=0.8,
+    )
+
+    claim = claim.model_copy(update=kwargs)
+
+    return claim
+
+
+def create_evidence(**kwargs) -> Evidence:
+
+    evidence = Evidence(
+        url="https://example.com/article",
+        title="Example evidence article",
+        snippet="This is a snippet of evidence.",
+        origin=EvidenceOrigin.WEB,
+    )
+
+    evidence = evidence.model_copy(update=kwargs)
+
+    return evidence

@@ -46,6 +46,29 @@ class Settings(BaseSettings):
     DUPLICATE_THRESHOLD: float = 0.90
     RELATEDNESS_THRESHOLD: float = 0.80
 
+    # SearXNG (self-hosted meta-search, used for fact-check evidence retrieval)
+    SEARXNG_URL: str = "http://localhost:8080"
+    SEARXNG_TIMEOUT: float = 10.0
+    SEARXNG_MAX_RESULTS: int = 8
+
+    # LLM (OpenAI-compatible chat completions; defaults to a local Ollama
+    # instance so verification is free/open-source by default. Swapping to
+    # Groq/OpenRouter/Together/real OpenAI is a settings-only change.
+    LLM_BASE_URL: str = "http://localhost:11434/v1"
+    LLM_API_KEY: SecretStr = SecretStr("ollama")
+    LLM_MODEL: str = "llama3.1"
+    LLM_TIMEOUT: float = 60.0
+
+    # Claim selection
+    MAX_CLAIMS_PER_ARTICLE: int = 5
+    CLAIM_DEDUP_THRESHOLD: float = 0.92
+
+    # Evidence retrieval / ranking
+    EVIDENCE_FETCH_CANDIDATES: int = 8
+    MAX_EVIDENCE_PER_CLAIM: int = 5
+    EVIDENCE_RECENCY_HALF_LIFE_DAYS: float = 365.0
+    MIN_EVIDENCE_FOR_VERDICT: int = 1
+
 
 settings = Settings()
 
