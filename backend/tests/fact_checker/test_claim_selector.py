@@ -8,7 +8,10 @@ def test_select_empty_claims_returns_empty():
 
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
 
-    assert selector.select([]) == []
+    result = selector.select([])
+
+    assert result.selected == []
+    assert result.rejected == []
 
 
 def test_select_orders_by_confidence_descending():
@@ -21,7 +24,7 @@ def test_select_orders_by_confidence_descending():
 
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
 
-    selected = selector.select(claims)
+    selected = selector.select(claims).selected
 
     assert [c.text for c in selected] == [
         "High confidence claim.",
@@ -40,11 +43,18 @@ def test_select_caps_at_max_claims(monkeypatch):
         for i in range(5)
     ]
 
-    selected = selector.select(claims)
+    result = selector.select(claims)
 
-    assert len(selected) == 2
-    assert selected[0].text == "Claim number 0."
-    assert selected[1].text == "Claim number 1."
+    assert len(result.selected) == 2
+    assert result.selected[0].text == "Claim number 0."
+    assert result.selected[1].text == "Claim number 1."
+
+    assert [c.text for c in result.rejected] == [
+        "Claim number 2.",
+        "Claim number 3.",
+        "Claim number 4.",
+    ]
+    assert all(c.reason == "exceeds_max_claims_cap" for c in result.rejected)
 
 
 def test_select_drops_near_duplicate_claims():
@@ -65,12 +75,15 @@ def test_select_drops_near_duplicate_claims():
 
     selector = ClaimSelector(embeddings=embeddings)
 
-    selected = selector.select(claims)
+    result = selector.select(claims)
 
-    assert [c.text for c in selected] == [
+    assert [c.text for c in result.selected] == [
         "NASA discovered water on Mars.",
         "A completely unrelated claim.",
     ]
+
+    assert [c.text for c in result.rejected] == ["NASA found water on Mars."]
+    assert result.rejected[0].reason == "semantic_duplicate"
 
 
 def test_select_skips_blank_claim_text():
@@ -82,6 +95,6 @@ def test_select_skips_blank_claim_text():
 
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
 
-    selected = selector.select(claims)
+    selected = selector.select(claims).selected
 
     assert [c.text for c in selected] == ["A real claim."]

@@ -6,12 +6,37 @@ export interface TopicPrediction {
 
 export type Verdict = "TRUE" | "FALSE" | "MISLEADING" | "UNVERIFIED";
 
+export type PipelineStage =
+  | "admission_filter"
+  | "claim_selection"
+  | "evidence_retrieval"
+  | "evidence_ranking"
+  | "llm_verification"
+  | "confidence_recalibration"
+  | "aggregation";
+
+export type EvidenceOrigin = "web" | "internal";
+
+export interface RejectedSource {
+  url: string;
+  title: string;
+  origin: EvidenceOrigin;
+  stage: PipelineStage;
+  reason: string;
+  score: number | null;
+}
+
 export interface ClaimResult {
   text: string;
   confidence: number;
   verdict: Verdict | null;
   explanation: string | null;
   evidenceCount: number;
+  rejectedSources?: RejectedSource[];
+  reachedStage?: PipelineStage;
+  stageNote?: string | null;
+  rawVerdict?: Verdict | null;
+  rawConfidence?: number | null;
 }
 
 export interface ValidityInfo {
@@ -21,6 +46,7 @@ export interface ValidityInfo {
   reasons: string[];
   impactScore?: number;
   impactReasons?: string[];
+  failedStage?: PipelineStage | null;
 }
 
 export interface SentimentScores {

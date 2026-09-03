@@ -5,6 +5,9 @@ Shared fakes for fact-checker tests. Not a test module itself (no
 
 import hashlib
 
+from src.services.fact_checker.ranking.ranking_retrieval import RankingResult
+from src.services.fact_checker.retrieval.evidence_retriever import RetrievalResult
+
 
 class FakeEmbeddingService:
     """
@@ -116,14 +119,14 @@ class FakeEvidenceRetriever:
         self.evidence_by_claim = evidence_by_claim or {}
 
     def retrieve(self, claim):
-        return self.evidence_by_claim.get(claim.text, [])
+        return RetrievalResult(kept=self.evidence_by_claim.get(claim.text, []))
 
 
 class FakeRanker:
     """Identity pass-through - orchestrator tests don't need real ranking."""
 
     def rank(self, claim, evidence):
-        return evidence
+        return RankingResult(kept=evidence)
 
 
 class FakeVerifier:

@@ -9,6 +9,7 @@ import {
   TopicPrediction,
 } from "@/lib/types";
 import { VerdictBadge } from "@/components/VerdictBadge";
+import { StageBadge } from "@/components/StageBadge";
 import { ScoreBar } from "@/components/ScoreBar";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
@@ -154,6 +155,11 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
               Impact score {Math.round((validity.impactScore ?? 0) * 100)}/100 — {validity.impactReasons.join(", ")}
             </p>
           )}
+          {!validity.isValid && validity.failedStage && (
+            <p className="validity-reasons">
+              <StageBadge stage={validity.failedStage} />
+            </p>
+          )}
         </div>
       )}
 
@@ -247,6 +253,36 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
                 <span>confidence {Math.round(claim.confidence * 100)}%</span>
                 {claim.explanation && <span>{claim.explanation}</span>}
               </div>
+              {claim.reachedStage && (
+                <div className="claim-meta">
+                  <StageBadge stage={claim.reachedStage} />
+                  {claim.stageNote && <span>{claim.stageNote}</span>}
+                </div>
+              )}
+              {claim.rawVerdict && claim.rawVerdict !== claim.verdict && (
+                <p className="claims-note">
+                  The LLM originally said {claim.rawVerdict} (
+                  {Math.round((claim.rawConfidence ?? 0) * 100)}% confidence) — recalibration
+                  changed the final verdict to {claim.verdict ?? "UNVERIFIED"}.
+                </p>
+              )}
+              {!!claim.rejectedSources?.length && (
+                <details>
+                  <summary className="validity-reasons">
+                    Rejected sources ({claim.rejectedSources.length})
+                  </summary>
+                  <ul className="metric-issues">
+                    {claim.rejectedSources.map((source, sourceIndex) => (
+                      <li key={`${source.url}-${sourceIndex}`}>
+                        <a href={source.url} target="_blank" rel="noreferrer">
+                          {source.title || source.url}
+                        </a>{" "}
+                        — {source.origin}, {source.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
           ))}
         </>

@@ -1,12 +1,22 @@
 import math
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from src.config.settings import settings
 from src.models.core.claim import Claim
-from src.models.fact_checker.evidence import Evidence
+from src.models.fact_checker.evidence import Evidence, RejectedEvidence
+from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.source_repository import SourceRepository
 from src.services.embeddings.service import EmbeddingService
+
+
+@dataclass
+class RankingResult:
+
+    kept: list[Evidence]
+
+    rejected: list[RejectedEvidence] = field(default_factory=list)
 
 
 class EvidenceRanker:
@@ -29,10 +39,10 @@ class EvidenceRanker:
             source_repository or SourceRepository()
         )
 
-    def rank(self, claim: Claim, evidence: list[Evidence]) -> list[Evidence]:
+    def rank(self, claim: Claim, evidence: list[Evidence]) -> RankingResult:
 
         if not evidence:
-            return []
+            return RankingResult(kept=[])
 
         claim_embedding = self.embeddings.encode(claim.text)
 
@@ -45,7 +55,25 @@ class EvidenceRanker:
 
         scored.sort(key=lambda item: item.relevance_score, reverse=True)
 
-        return scored[:settings.MAX_EVIDENCE_PER_CLAIM]
+        kept = scored[:settings.MAX_EVIDENCE_PER_CLAIM]
+        cut = scored[settings.MAX_EVIDENCE_PER_CLAIM:]
+
+        rejected = [
+            RejectedEvidence(
+                url=item.url,
+                title=item.title,
+                origin=item.origin,
+                stage=PipelineStage.EVIDENCE_RANKING,
+                reason=(
+                    f"cut by final ranking cap (rank {rank} of {len(scored)}, "
+                    f"top {settings.MAX_EVIDENCE_PER_CLAIM} kept)"
+                ),
+                score=item.relevance_score,
+            )
+            for rank, item in enumerate(cut, start=len(kept) + 1)
+        ]
+
+        return RankingResult(kept=kept, rejected=rejected)
 
     def _score(self, evidence: Evidence, claim_embedding) -> float:
 

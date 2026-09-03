@@ -74,13 +74,14 @@ def test_retrieve_merges_web_and_internal_evidence():
 
     result = retriever.retrieve(claim)
 
-    urls = {item.url for item in result}
+    urls = {item.url for item in result.kept}
     assert urls == {"https://a.com", "https://b.com", "https://internal.com"}
+    assert result.rejected == []
 
     assert len(scraper.enrich_calls) == 1
     assert all(item.origin == EvidenceOrigin.WEB for item in scraper.enrich_calls[0])
 
-    internal_result = next(item for item in result if item.origin == EvidenceOrigin.INTERNAL)
+    internal_result = next(item for item in result.kept if item.origin == EvidenceOrigin.INTERNAL)
     assert internal_result.content is None  # untouched by the scraper
 
 
@@ -94,7 +95,10 @@ def test_retrieve_returns_empty_when_no_candidates():
         embeddings=FakeEmbeddingService(),
     )
 
-    assert retriever.retrieve(create_claim()) == []
+    result = retriever.retrieve(create_claim())
+
+    assert result.kept == []
+    assert result.rejected == []
 
 
 def test_retrieve_only_scrapes_top_web_candidates(monkeypatch):
@@ -124,8 +128,12 @@ def test_retrieve_only_scrapes_top_web_candidates(monkeypatch):
         embeddings=embeddings,
     )
 
-    retriever.retrieve(claim)
+    result = retriever.retrieve(claim)
 
     assert len(scraper.enrich_calls[0]) == 2
     scraped_urls = {item.url for item in scraper.enrich_calls[0]}
     assert scraped_urls == {"https://0.com", "https://1.com"}
+
+    rejected_urls = {item.url for item in result.rejected}
+    assert rejected_urls == {"https://2.com", "https://3.com"}
+    assert all(item.stage == "evidence_retrieval" for item in result.rejected)

@@ -2,7 +2,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-from src.models.fact_checker.evidence import Evidence
+from src.models.fact_checker.evidence import Evidence, RejectedEvidence
+from src.models.fact_checker.pipeline_stage import PipelineStage
 
 
 class Verdict(str, Enum):
@@ -27,3 +28,13 @@ class FactCheck(BaseModel):
     cited_evidence_indices: list[int] = Field(default_factory=list)
 
     evidence_count: int = 0
+
+    rejected_sources: list[RejectedEvidence] = Field(default_factory=list)
+
+    reached_stage: PipelineStage = PipelineStage.AGGREGATION
+
+    stage_note: str | None = None
+
+    raw_verdict: Verdict | None = None
+
+    raw_confidence: float | None = None

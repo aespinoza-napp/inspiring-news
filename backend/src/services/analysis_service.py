@@ -2,8 +2,10 @@ from typing import Callable, Optional
 
 from src.config.settings import settings
 from src.models.core.enriched_article import EnrichedArticle
+from src.models.fact_checker.evidence import RejectedEvidence
 from src.models.fact_checker.fact_check import Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
+from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.services.analysis_cache import AnalysisCache
 from src.services.fact_checker.fact_checker import FactChecker
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
@@ -137,6 +139,7 @@ class AnalysisService:
                 "reasons": report.skipped_reason.split(",") if report.skipped_reason else [],
                 "impactScore": report.impact_score,
                 "impactReasons": report.impact_reasons,
+                "failedStage": report.failed_stage,
             },
             "factCheck": {
                 "overallVerdict": report.overall_verdict,
@@ -183,35 +186,78 @@ class AnalysisService:
         report: FactCheckReport,
     ) -> list[dict]:
 
-        if report.claim_checks:
+        if not report.validation_passed:
 
-            checks = sorted(
-                report.claim_checks,
-                key=lambda check: _VERDICT_SEVERITY[check.verdict],
-                reverse=True,
-            )
-
+            # The article never got past the admission filter, so nothing
+            # was selected or checked - show the raw extracted claims,
+            # all tagged as having failed at that first gate.
             return [
                 {
-                    "text": check.claim,
-                    "confidence": check.confidence,
-                    "verdict": check.verdict,
-                    "explanation": check.explanation,
-                    "evidenceCount": check.evidence_count,
+                    "text": claim.text,
+                    "confidence": claim.confidence,
+                    "verdict": None,
+                    "explanation": None,
+                    "evidenceCount": 0,
+                    "rejectedSources": [],
+                    "reachedStage": PipelineStage.ADMISSION_FILTER,
+                    "stageNote": report.skipped_reason,
+                    "rawVerdict": None,
+                    "rawConfidence": None,
                 }
-                for check in checks
+                for claim in (article.claims or [])
             ]
 
-        # Validation failed (or nothing was selected for checking) - fall
-        # back to the raw extracted claims so the UI still has something
-        # to show, clearly unverified.
-        return [
+        checks = sorted(
+            report.claim_checks,
+            key=lambda check: _VERDICT_SEVERITY[check.verdict],
+            reverse=True,
+        )
+
+        checked = [
             {
-                "text": claim.text,
-                "confidence": claim.confidence,
+                "text": check.claim,
+                "confidence": check.confidence,
+                "verdict": check.verdict,
+                "explanation": check.explanation,
+                "evidenceCount": check.evidence_count,
+                "rejectedSources": self._build_rejected_sources(check.rejected_sources),
+                "reachedStage": check.reached_stage,
+                "stageNote": check.stage_note,
+                "rawVerdict": check.raw_verdict,
+                "rawConfidence": check.raw_confidence,
+            }
+            for check in checks
+        ]
+
+        unselected = [
+            {
+                "text": rejected.text,
+                "confidence": rejected.confidence,
                 "verdict": None,
                 "explanation": None,
                 "evidenceCount": 0,
+                "rejectedSources": [],
+                "reachedStage": PipelineStage.CLAIM_SELECTION,
+                "stageNote": rejected.reason,
+                "rawVerdict": None,
+                "rawConfidence": None,
             }
-            for claim in (article.claims or [])
+            for rejected in report.unselected_claims
+        ]
+
+        return checked + unselected
+
+    @staticmethod
+    def _build_rejected_sources(sources: list[RejectedEvidence]) -> list[dict]:
+
+        return [
+            {
+                "url": source.url,
+                "title": source.title,
+                "origin": source.origin,
+                "stage": source.stage,
+                "reason": source.reason,
+                "score": source.score,
+            }
+            for source in sources
         ]

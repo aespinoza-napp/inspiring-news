@@ -1,6 +1,16 @@
+from dataclasses import dataclass, field
+
 from src.config.settings import settings
-from src.models.core.claim import Claim
+from src.models.core.claim import Claim, RejectedClaim
 from src.services.embeddings.service import EmbeddingService
+
+
+@dataclass
+class ClaimSelectionResult:
+
+    selected: list[Claim]
+
+    rejected: list[RejectedClaim] = field(default_factory=list)
 
 
 class ClaimSelector:
@@ -13,10 +23,10 @@ class ClaimSelector:
 
         self.embeddings = embeddings or EmbeddingService()
 
-    def select(self, claims: list[Claim]) -> list[Claim]:
+    def select(self, claims: list[Claim]) -> ClaimSelectionResult:
 
         if not claims:
-            return []
+            return ClaimSelectionResult(selected=[])
 
         ordered = sorted(
             claims,
@@ -26,26 +36,29 @@ class ClaimSelector:
 
         selected: list[Claim] = []
         selected_embeddings = []
+        rejected: list[RejectedClaim] = []
 
         for claim in ordered:
-
-            if len(selected) >= self.MAX_CLAIMS:
-                break
 
             text = claim.text.strip()
 
             if not text:
                 continue
 
+            if len(selected) >= self.MAX_CLAIMS:
+                rejected.append(RejectedClaim(text=claim.text, confidence=claim.confidence, reason="exceeds_max_claims_cap"))
+                continue
+
             embedding = self.embeddings.encode(text)
 
             if self._is_duplicate(embedding, selected_embeddings):
+                rejected.append(RejectedClaim(text=claim.text, confidence=claim.confidence, reason="semantic_duplicate"))
                 continue
 
             selected.append(claim)
             selected_embeddings.append(embedding)
 
-        return selected
+        return ClaimSelectionResult(selected=selected, rejected=rejected)
 
     def _is_duplicate(self, embedding, existing) -> bool:
 

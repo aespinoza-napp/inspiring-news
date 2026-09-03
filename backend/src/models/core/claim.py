@@ -9,3 +9,13 @@ class Claim(BaseModel):
     entities: dict[str, list[str]]
 
     confidence: float
+
+
+class RejectedClaim(BaseModel):
+    """An extracted claim that never reached verification."""
+
+    text: str
+
+    confidence: float
+
+    reason: str

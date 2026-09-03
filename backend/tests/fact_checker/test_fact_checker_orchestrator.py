@@ -25,6 +25,7 @@ def test_run_short_circuits_when_validation_fails(repository):
     assert "topic_not_relevant" in report.skipped_reason
     assert report.claims_selected == 0
     assert report.claim_checks == []
+    assert report.failed_stage == "admission_filter"
 
 
 def test_run_produces_worst_case_wins_overall_verdict(repository):
@@ -81,6 +82,97 @@ def test_run_produces_worst_case_wins_overall_verdict(repository):
     # One false claim should dominate the article-level verdict.
     assert report.overall_verdict == Verdict.FALSE
     assert 0.0 < report.overall_confidence <= 1.0
+
+
+def test_run_tracks_reached_stage_for_each_claim(repository):
+
+    claim_ok = create_claim(text="A claim with cited evidence.", confidence=0.9)
+    claim_no_evidence = create_claim(text="A claim with no evidence.", confidence=0.8)
+
+    article = create_article(claims=[claim_ok, claim_no_evidence])
+
+    embeddings = FakeEmbeddingService(vectors={
+        claim_ok.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        claim_no_evidence.text: [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    })
+
+    cited = create_evidence(url="https://a.com", relevance_score=0.9)
+    not_cited = create_evidence(url="https://b.com", relevance_score=0.4)
+
+    checker = FactChecker(
+        repository,
+        claim_selector=ClaimSelector(embeddings=embeddings),
+        evidence_retriever=FakeEvidenceRetriever({
+            claim_ok.text: [cited, not_cited],
+        }),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({
+            claim_ok.text: LLMVerificationResult(
+                verdict=Verdict.TRUE,
+                confidence=0.9,
+                explanation="Confirmed.",
+                cited_evidence=[0],
+            ),
+            claim_no_evidence.text: LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="LLM verification unavailable or returned invalid output.",
+                cited_evidence=[],
+            ),
+        }),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    report = checker.run(article)
+
+    checks = {check.claim: check for check in report.claim_checks}
+
+    ok_check = checks[claim_ok.text]
+    assert ok_check.reached_stage == "aggregation"
+    assert ok_check.stage_note is None
+    assert ok_check.raw_verdict == Verdict.TRUE
+    assert [source.url for source in ok_check.rejected_sources] == ["https://b.com"]
+    assert ok_check.rejected_sources[0].stage == "llm_verification"
+
+    no_evidence_check = checks[claim_no_evidence.text]
+    assert no_evidence_check.reached_stage == "confidence_recalibration"
+    assert "No evidence" in no_evidence_check.stage_note
+    assert no_evidence_check.verdict == Verdict.UNVERIFIED
+
+
+def test_run_records_claims_dropped_during_selection(repository):
+
+    kept_claim = create_claim(text="Kept claim.", confidence=0.9)
+    dropped_claim = create_claim(text="Dropped claim.", confidence=0.5)
+
+    article = create_article(claims=[kept_claim, dropped_claim])
+
+    selector = ClaimSelector(embeddings=FakeEmbeddingService())
+    selector.MAX_CLAIMS = 1
+
+    checker = FactChecker(
+        repository,
+        claim_selector=selector,
+        evidence_retriever=FakeEvidenceRetriever({
+            kept_claim.text: [create_evidence(url="https://a.com", relevance_score=0.9)],
+        }),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({
+            kept_claim.text: LLMVerificationResult(
+                verdict=Verdict.TRUE,
+                confidence=0.9,
+                explanation="Confirmed.",
+                cited_evidence=[0],
+            ),
+        }),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    report = checker.run(article)
+
+    assert report.claims_selected == 1
+    assert [c.text for c in report.unselected_claims] == ["Dropped claim."]
+    assert report.unselected_claims[0].reason == "exceeds_max_claims_cap"
 
 
 def test_run_with_no_claims_returns_unverified_overall(repository):

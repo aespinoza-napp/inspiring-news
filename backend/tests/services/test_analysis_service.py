@@ -4,6 +4,7 @@ from unittest.mock import Mock
 from src.models.core.news import News
 from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
+from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.services.analysis_service import AnalysisService
 
 from tests.factories import create_article, create_claim
@@ -130,6 +131,7 @@ def test_analyze_shapes_successful_result_with_sorted_claims():
 
     # worst verdict (FALSE) sorted first
     assert [c["verdict"] for c in result["claims"]] == [Verdict.FALSE, Verdict.TRUE]
+    assert all(c["reachedStage"] == "aggregation" for c in result["claims"])
 
     assert result["validity"] == {
         "isValid": True,
@@ -138,6 +140,7 @@ def test_analyze_shapes_successful_result_with_sorted_claims():
         "reasons": [],
         "impactScore": 0.0,
         "impactReasons": [],
+        "failedStage": None,
     }
 
     assert result["sentiment"]["label"] == "neutral"
@@ -146,6 +149,50 @@ def test_analyze_shapes_successful_result_with_sorted_claims():
 
     assert result["factCheck"]["overallVerdict"] == Verdict.FALSE
     assert result["factCheck"]["claimsChecked"] == 2
+
+
+def test_analyze_includes_claims_dropped_during_selection():
+
+    from src.models.core.claim import RejectedClaim
+
+    article = create_article()
+
+    checks = [
+        FactCheck(
+            verdict=Verdict.TRUE,
+            explanation="Confirmed.",
+            confidence=0.9,
+            claim="A checked claim.",
+            evidence_count=1,
+        ),
+    ]
+
+    report = FactCheckReport(
+        article_id=article.id,
+        validation_passed=True,
+        topic_ok=True,
+        positive_ok=True,
+        duplicate=False,
+        claims_total=2,
+        claims_selected=1,
+        claim_checks=checks,
+        unselected_claims=[
+            RejectedClaim(text="A dropped claim.", confidence=0.4, reason="exceeds_max_claims_cap"),
+        ],
+        overall_verdict=Verdict.TRUE,
+        overall_confidence=0.9,
+    )
+
+    service = make_service(make_news(), article, report)
+
+    result = service.analyze("https://example.com/a")
+
+    assert [c["text"] for c in result["claims"]] == ["A checked claim.", "A dropped claim."]
+
+    dropped = result["claims"][1]
+    assert dropped["verdict"] is None
+    assert dropped["reachedStage"] == "claim_selection"
+    assert dropped["stageNote"] == "exceeds_max_claims_cap"
 
 
 def test_analyze_falls_back_to_raw_claims_when_validation_failed():
@@ -181,6 +228,11 @@ def test_analyze_falls_back_to_raw_claims_when_validation_failed():
             "verdict": None,
             "explanation": None,
             "evidenceCount": 0,
+            "rejectedSources": [],
+            "reachedStage": PipelineStage.ADMISSION_FILTER,
+            "stageNote": "topic_not_relevant",
+            "rawVerdict": None,
+            "rawConfidence": None,
         }
     ]
 

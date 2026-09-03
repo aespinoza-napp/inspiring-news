@@ -3,7 +3,9 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from src.models.core.claim import RejectedClaim
 from src.models.fact_checker.fact_check import FactCheck, Verdict
+from src.models.fact_checker.pipeline_stage import PipelineStage
 
 
 class FactCheckReport(BaseModel):
@@ -25,6 +27,10 @@ class FactCheckReport(BaseModel):
     impact_reasons: list[str] = Field(default_factory=list)
 
     duplicate: bool = False
+
+    failed_stage: Optional[PipelineStage] = None
+
+    unselected_claims: list[RejectedClaim] = Field(default_factory=list)
 
     claims_total: int = 0
 

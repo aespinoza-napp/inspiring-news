@@ -15,7 +15,10 @@ def test_rank_empty_evidence_returns_empty():
         source_repository=FakeSourceRepository([]),
     )
 
-    assert ranker.rank(create_claim(), []) == []
+    result = ranker.rank(create_claim(), [])
+
+    assert result.kept == []
+    assert result.rejected == []
 
 
 def test_rank_orders_by_semantic_similarity():
@@ -32,7 +35,7 @@ def test_rank_orders_by_semantic_similarity():
 
     ranker = EvidenceRanker(embeddings=embeddings, source_repository=FakeSourceRepository([]))
 
-    ranked = ranker.rank(claim, [low, high])
+    ranked = ranker.rank(claim, [low, high]).kept
 
     assert [item.url for item in ranked] == ["https://a.com", "https://b.com"]
 
@@ -51,7 +54,7 @@ def test_rank_prefers_more_recent_evidence():
 
     ranker = EvidenceRanker(embeddings=embeddings, source_repository=FakeSourceRepository([]))
 
-    ranked = ranker.rank(create_claim(), [older, newer])
+    ranked = ranker.rank(create_claim(), [older, newer]).kept
 
     assert [item.url for item in ranked] == ["https://new.com", "https://old.com"]
 
@@ -78,7 +81,7 @@ def test_rank_prefers_known_reliable_domain():
         source_repository=FakeSourceRepository([known_source]),
     )
 
-    ranked = ranker.rank(create_claim(), [unknown, known])
+    ranked = ranker.rank(create_claim(), [unknown, known]).kept
 
     assert [item.url for item in ranked] == ["https://known.com/article", "https://unknown.com/article"]
 
@@ -101,6 +104,9 @@ def test_rank_truncates_to_max_evidence_per_claim(monkeypatch):
 
     ranker = EvidenceRanker(embeddings=embeddings, source_repository=FakeSourceRepository([]))
 
-    ranked = ranker.rank(claim, evidence)
+    result = ranker.rank(claim, evidence)
 
-    assert [item.url for item in ranked] == ["https://0.com", "https://1.com"]
+    assert [item.url for item in result.kept] == ["https://0.com", "https://1.com"]
+    assert [item.url for item in result.rejected] == ["https://2.com", "https://3.com"]
+    assert all(item.stage == "evidence_ranking" for item in result.rejected)
+    assert all(item.score is not None for item in result.rejected)

@@ -2,8 +2,10 @@ from typing import Callable, Optional
 
 from src.models.core.claim import Claim
 from src.models.core.enriched_article import EnrichedArticle
+from src.models.fact_checker.evidence import Evidence, RejectedEvidence
 from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
+from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
 from src.services.fact_checker.claim_selector import ClaimSelector
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
@@ -13,7 +15,10 @@ from src.services.fact_checker.validation_pipeline import (
     ValidationPipelineResult,
 )
 from src.services.fact_checker.verification.confidence_scorer import ConfidenceScorer
-from src.services.fact_checker.verification.llm_verification import LLMVerifier
+from src.services.fact_checker.verification.llm_verification import (
+    LLMVerificationResult,
+    LLMVerifier,
+)
 
 OnPhase = Callable[[str, dict], None]
 
@@ -89,13 +94,15 @@ class FactChecker:
                 impact_score=validation.impact_score,
                 impact_reasons=validation.impact_reasons,
                 duplicate=validation.duplicate,
+                failed_stage=PipelineStage.ADMISSION_FILTER,
                 claims_total=len(article.claims or []),
                 claims_selected=0,
             )
 
         report_phase("selecting_claims", {})
 
-        selected = self.claim_selector.select(article.claims or [])
+        selection = self.claim_selector.select(article.claims or [])
+        selected = selection.selected
 
         report_phase("claims_selected", {"count": len(selected)})
 
@@ -115,6 +122,7 @@ class FactChecker:
             claims_total=len(article.claims or []),
             claims_selected=len(selected),
             claim_checks=claim_checks,
+            unselected_claims=selection.rejected,
             overall_verdict=self._aggregate_verdict(claim_checks),
             overall_confidence=self._aggregate_confidence(claim_checks),
         )
@@ -128,11 +136,36 @@ class FactChecker:
 
     def _check_claim(self, claim: Claim, report_phase: OnPhase) -> FactCheck:
 
-        evidence = self.evidence_retriever.retrieve(claim)
-        ranked = self.ranker.rank(claim, evidence)
+        retrieval = self.evidence_retriever.retrieve(claim)
+        ranking = self.ranker.rank(claim, retrieval.kept)
+        ranked = ranking.kept
+
         llm_result = self.verifier.verify(claim, ranked)
 
         check = self.confidence_scorer.score(claim, ranked, llm_result)
+
+        not_cited = [
+            RejectedEvidence(
+                url=item.url,
+                title=item.title,
+                origin=item.origin,
+                stage=PipelineStage.LLM_VERIFICATION,
+                reason="retrieved and ranked, but not cited by the LLM",
+                score=item.relevance_score,
+            )
+            for index, item in enumerate(ranked)
+            if index not in llm_result.cited_evidence
+        ]
+
+        reached_stage, stage_note = self._trace(ranked, llm_result, check)
+
+        check = check.model_copy(update={
+            "rejected_sources": retrieval.rejected + ranking.rejected + not_cited,
+            "reached_stage": reached_stage,
+            "stage_note": stage_note,
+            "raw_verdict": llm_result.verdict,
+            "raw_confidence": llm_result.confidence,
+        })
 
         report_phase("claim_checked", {
             "claim": check.claim,
@@ -142,6 +175,28 @@ class FactChecker:
         })
 
         return check
+
+    def _trace(
+        self,
+        ranked: list[Evidence],
+        llm_result: LLMVerificationResult,
+        check: FactCheck,
+    ) -> tuple[PipelineStage, Optional[str]]:
+
+        if len(ranked) < self.confidence_scorer.MIN_EVIDENCE:
+            return (
+                PipelineStage.CONFIDENCE_RECALIBRATION,
+                "No evidence could be retrieved for this claim; verdict forced to UNVERIFIED.",
+            )
+
+        if check.verdict != llm_result.verdict:
+            return (
+                PipelineStage.CONFIDENCE_RECALIBRATION,
+                f"LLM verdict {llm_result.verdict.value} cited no evidence; "
+                "downgraded to UNVERIFIED with a low confidence ceiling.",
+            )
+
+        return PipelineStage.AGGREGATION, None
 
     @staticmethod
     def _aggregate_verdict(claim_checks: list[FactCheck]) -> Verdict:
