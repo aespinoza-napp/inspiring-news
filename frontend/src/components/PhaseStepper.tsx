@@ -162,7 +162,7 @@ export function PhaseStepper({
   );
 }
 
-function CheckIcon() {
+export function CheckIcon() {
   return (
     <svg viewBox="0 0 16 16" width="9" height="9" aria-hidden="true">
       <path

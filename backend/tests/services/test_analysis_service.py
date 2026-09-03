@@ -151,6 +151,49 @@ def test_analyze_shapes_successful_result_with_sorted_claims():
     assert result["factCheck"]["claimsChecked"] == 2
 
 
+def test_analyze_exposes_evidence_with_cited_flag():
+
+    from tests.factories import create_evidence
+
+    article = create_article()
+
+    cited_evidence = create_evidence(url="https://cited.com", relevance_score=0.9)
+    other_evidence = create_evidence(url="https://ignored.com", relevance_score=0.4)
+
+    checks = [
+        FactCheck(
+            verdict=Verdict.TRUE,
+            explanation="Confirmed.",
+            confidence=0.9,
+            claim="A checked claim.",
+            evidence=[cited_evidence, other_evidence],
+            cited_evidence_indices=[0],
+            evidence_count=2,
+        ),
+    ]
+
+    report = FactCheckReport(
+        article_id=article.id,
+        validation_passed=True,
+        topic_ok=True,
+        positive_ok=True,
+        duplicate=False,
+        claims_total=1,
+        claims_selected=1,
+        claim_checks=checks,
+        overall_verdict=Verdict.TRUE,
+        overall_confidence=0.9,
+    )
+
+    service = make_service(make_news(), article, report)
+
+    result = service.analyze("https://example.com/a")
+
+    evidence = result["claims"][0]["evidence"]
+    assert [item["url"] for item in evidence] == ["https://cited.com", "https://ignored.com"]
+    assert [item["cited"] for item in evidence] == [True, False]
+
+
 def test_analyze_includes_claims_dropped_during_selection():
 
     from src.models.core.claim import RejectedClaim
@@ -228,6 +271,7 @@ def test_analyze_falls_back_to_raw_claims_when_validation_failed():
             "verdict": None,
             "explanation": None,
             "evidenceCount": 0,
+            "evidence": [],
             "rejectedSources": [],
             "reachedStage": PipelineStage.ADMISSION_FILTER,
             "stageNote": "topic_not_relevant",

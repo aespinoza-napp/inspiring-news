@@ -26,12 +26,23 @@ export interface RejectedSource {
   score: number | null;
 }
 
+export interface EvidenceItem {
+  url: string;
+  title: string;
+  origin: EvidenceOrigin;
+  relevanceScore: number | null;
+  sourceReliability: number | null;
+  publishedAt: string | null;
+  cited: boolean;
+}
+
 export interface ClaimResult {
   text: string;
   confidence: number;
   verdict: Verdict | null;
   explanation: string | null;
   evidenceCount: number;
+  evidence?: EvidenceItem[];
   rejectedSources?: RejectedSource[];
   reachedStage?: PipelineStage;
   stageNote?: string | null;

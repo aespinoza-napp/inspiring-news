@@ -11,6 +11,13 @@
   --misleading: #c9770a;
   --unverified: #6b6b6b;
 
+  /* Ordinal ramp (one hue, monotone lightness): how far a source got
+     through the evidence funnel before the LLM step - lightest for an
+     early reject, full accent for a source the LLM actually cited. */
+  --funnel-1: color-mix(in oklch, var(--accent) 28%, var(--bg));
+  --funnel-2: color-mix(in oklch, var(--accent) 52%, var(--bg));
+  --funnel-3: color-mix(in oklch, var(--accent) 76%, var(--bg));
+
   --radius: 8px;
   --radius-sm: 4px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 1px rgba(0, 0, 0, 0.03);
@@ -31,6 +38,10 @@
     --false: #e5605a;
     --misleading: #e0a44b;
     --unverified: #9a9a9a;
+
+    /* --funnel-* isn't redefined here: it's a color-mix() of --accent and
+       --bg, both already overridden above, so it resolves to the dark
+       values automatically. */
 
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.2);
   }
@@ -652,6 +663,135 @@ button:disabled {
   padding-left: 1.1rem;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+/* ---------- stage timeline (per-claim) ---------- */
+
+.stage-timeline {
+  margin: 0.5rem 0;
+}
+
+.stepper-mini {
+  gap: 0;
+}
+
+.stepper-mini .stepper-dot {
+  width: 12px;
+  height: 12px;
+}
+
+.stepper-mini .stepper-label {
+  font-size: 0.6rem;
+}
+
+.stepper-mini .stepper-connector {
+  margin-top: 5px;
+}
+
+.stage-timeline-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.stage-timeline-note strong {
+  color: var(--fg);
+}
+
+/* ---------- sources plot ---------- */
+
+.sources-plot {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.source-bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin: 0.3rem 0 0.6rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.source-bar-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.source-bar-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.source-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.35rem 0;
+  animation: fadeSlideIn 0.3s var(--ease) both;
+}
+
+.source-bar-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.source-bar-title {
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-bar-meta {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.source-bar-track {
+  width: 6rem;
+  flex: none;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.source-bar-fill {
+  display: block;
+  height: 100%;
+  transition: width 0.5s var(--ease);
+}
+
+.source-bar-fill-cited {
+  background: var(--accent);
+}
+
+.source-bar-fill-considered {
+  background: var(--funnel-3);
+}
+
+.source-bar-fill-rejected_ranking {
+  background: var(--funnel-2);
+}
+
+.source-bar-fill-rejected_retrieval {
+  background: var(--funnel-1);
+}
+
+.source-bar-value {
+  min-width: 2rem;
+  text-align: right;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- responsive ---------- */

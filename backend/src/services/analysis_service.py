@@ -3,7 +3,7 @@ from typing import Callable, Optional
 from src.config.settings import settings
 from src.models.core.enriched_article import EnrichedArticle
 from src.models.fact_checker.evidence import RejectedEvidence
-from src.models.fact_checker.fact_check import Verdict
+from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.services.analysis_cache import AnalysisCache
@@ -198,6 +198,7 @@ class AnalysisService:
                     "verdict": None,
                     "explanation": None,
                     "evidenceCount": 0,
+                    "evidence": [],
                     "rejectedSources": [],
                     "reachedStage": PipelineStage.ADMISSION_FILTER,
                     "stageNote": report.skipped_reason,
@@ -220,6 +221,7 @@ class AnalysisService:
                 "verdict": check.verdict,
                 "explanation": check.explanation,
                 "evidenceCount": check.evidence_count,
+                "evidence": self._build_evidence(check),
                 "rejectedSources": self._build_rejected_sources(check.rejected_sources),
                 "reachedStage": check.reached_stage,
                 "stageNote": check.stage_note,
@@ -236,6 +238,7 @@ class AnalysisService:
                 "verdict": None,
                 "explanation": None,
                 "evidenceCount": 0,
+                "evidence": [],
                 "rejectedSources": [],
                 "reachedStage": PipelineStage.CLAIM_SELECTION,
                 "stageNote": rejected.reason,
@@ -246,6 +249,24 @@ class AnalysisService:
         ]
 
         return checked + unselected
+
+    @staticmethod
+    def _build_evidence(check: FactCheck) -> list[dict]:
+
+        cited = set(check.cited_evidence_indices)
+
+        return [
+            {
+                "url": item.url,
+                "title": item.title,
+                "origin": item.origin,
+                "relevanceScore": item.relevance_score,
+                "sourceReliability": item.source_reliability,
+                "publishedAt": item.published_at,
+                "cited": index in cited,
+            }
+            for index, item in enumerate(check.evidence)
+        ]
 
     @staticmethod
     def _build_rejected_sources(sources: list[RejectedEvidence]) -> list[dict]:
