@@ -4,6 +4,8 @@ import { useState } from "react";
 import {
   AnalysisJob,
   ClaimResult,
+  QualityScores,
+  SentimentScores,
   TopicPrediction,
 } from "@/lib/types";
 import { VerdictBadge } from "@/components/VerdictBadge";
@@ -147,6 +149,11 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
           {!validity.isValid && validity.reasons.length > 0 && (
             <p className="validity-reasons">Why: {validity.reasons.join(", ")}</p>
           )}
+          {!!validity.impactReasons?.length && (
+            <p className="validity-reasons">
+              Impact score {Math.round((validity.impactScore ?? 0) * 100)}/100 — {validity.impactReasons.join(", ")}
+            </p>
+          )}
         </div>
       )}
 
@@ -192,6 +199,31 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
         </>
       )}
 
+      {partial.sentiment && (
+        <>
+          <div className="section-label">
+            Sentiment ({partial.sentiment.label})
+          </div>
+          <ScoreBar label="Positive" value={partial.sentiment.positive * 100} />
+          <ScoreBar label="Neutral" value={partial.sentiment.neutral * 100} />
+          <ScoreBar label="Negative" value={partial.sentiment.negative * 100} />
+          <ScoreBar label="Subjectivity" value={partial.sentiment.subjectivity * 100} />
+        </>
+      )}
+
+      {partial.quality && (
+        <>
+          <div className="section-label">Impact &amp; quality scores</div>
+          <ScoreBar label="Constructiveness" value={partial.quality.constructiveness * 100} />
+          <ScoreBar label="Inspirational value" value={partial.quality.inspirationalScore * 100} />
+          <ScoreBar label="Hopefulness" value={partial.quality.hopefulness * 100} />
+          <ScoreBar label="Objectivity" value={partial.quality.objectivity * 100} />
+          <ScoreBar label="Societal impact" value={partial.quality.societalImpact * 100} />
+          <ScoreBar label="Readability" value={partial.quality.readability * 100} />
+          <ScoreBar label="Novelty" value={partial.quality.novelty * 100} />
+        </>
+      )}
+
       {partial.claims.length > 0 && (
         <>
           <div className="section-label">
@@ -229,6 +261,8 @@ interface PartialResult {
   entities: Record<string, string[]>;
   entityCount: number;
   topics: TopicPrediction[];
+  sentiment: SentimentScores | null;
+  quality: QualityScores | null;
   claims: ClaimResult[];
 }
 
@@ -241,6 +275,8 @@ function summarizeJob(job: AnalysisJob): PartialResult {
       entities,
       entityCount: Object.values(entities).reduce((n, v) => n + v.length, 0),
       topics: job.result.topics ?? [],
+      sentiment: job.result.sentiment ?? null,
+      quality: job.result.quality ?? null,
       claims: job.result.claims ?? [],
     };
   }
@@ -261,6 +297,8 @@ function summarizeJob(job: AnalysisJob): PartialResult {
     entities,
     entityCount: Object.values(entities).reduce((n, v) => n + v.length, 0),
     topics: (enrichedEvent?.data.topics as TopicPrediction[]) ?? [],
+    sentiment: (enrichedEvent?.data.sentiment as SentimentScores) ?? null,
+    quality: (enrichedEvent?.data.quality as QualityScores) ?? null,
     claims: claimEvents.map((event) => ({
       text: event.data.claim as string,
       confidence: event.data.confidence as number,

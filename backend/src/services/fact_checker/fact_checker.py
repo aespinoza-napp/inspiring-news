@@ -70,6 +70,8 @@ class FactChecker:
             "positiveOk": validation.positive_ok,
             "duplicate": validation.duplicate,
             "passed": validation.passed,
+            "impactScore": validation.impact_score,
+            "impactReasons": validation.impact_reasons,
         })
 
         if not validation.passed:
@@ -84,6 +86,8 @@ class FactChecker:
                 skipped_reason=reason,
                 topic_ok=validation.topic_ok,
                 positive_ok=validation.positive_ok,
+                impact_score=validation.impact_score,
+                impact_reasons=validation.impact_reasons,
                 duplicate=validation.duplicate,
                 claims_total=len(article.claims or []),
                 claims_selected=0,
@@ -105,6 +109,8 @@ class FactChecker:
             validation_passed=True,
             topic_ok=validation.topic_ok,
             positive_ok=validation.positive_ok,
+            impact_score=validation.impact_score,
+            impact_reasons=validation.impact_reasons,
             duplicate=validation.duplicate,
             claims_total=len(article.claims or []),
             claims_selected=len(selected),

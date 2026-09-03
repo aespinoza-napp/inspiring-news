@@ -24,6 +24,10 @@ class ValidationPipelineResult:
 
     duplicate: bool
 
+    impact_score: float
+
+    impact_reasons: list[str]
+
 
 class ValidationPipeline:
 
@@ -56,4 +60,6 @@ class ValidationPipeline:
             topic_ok=topic_ok,
             positive_ok=positive.passed,
             duplicate=duplicate.duplicate,
+            impact_score=positive.score,
+            impact_reasons=positive.reasons,
         )

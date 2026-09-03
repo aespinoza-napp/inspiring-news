@@ -19,6 +19,29 @@ export interface ValidityInfo {
   isDuplicate: boolean;
   hasTopic: boolean;
   reasons: string[];
+  impactScore?: number;
+  impactReasons?: string[];
+}
+
+export interface SentimentScores {
+  label: string;
+  positive: number;
+  neutral: number;
+  negative: number;
+  polarity: number;
+  subjectivity: number;
+  confidence: number;
+  emotionalIntensity: number;
+}
+
+export interface QualityScores {
+  readability: number;
+  objectivity: number;
+  constructiveness: number;
+  inspirationalScore: number;
+  hopefulness: number;
+  societalImpact: number;
+  novelty: number;
 }
 
 export interface FactCheckSummary {
@@ -36,6 +59,8 @@ export interface AnalysisResult {
   keywords?: string[];
   entities?: Record<string, string[]>;
   topics?: TopicPrediction[];
+  sentiment?: SentimentScores;
+  quality?: QualityScores;
   claims?: ClaimResult[];
   validity?: ValidityInfo;
   factCheck?: FactCheckSummary;

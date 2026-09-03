@@ -20,6 +20,10 @@ class FactCheckReport(BaseModel):
 
     positive_ok: bool = True
 
+    impact_score: float = 0.0
+
+    impact_reasons: list[str] = Field(default_factory=list)
+
     duplicate: bool = False
 
     claims_total: int = 0

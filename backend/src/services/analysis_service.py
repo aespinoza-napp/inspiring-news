@@ -107,12 +107,16 @@ class AnalysisService:
         article = self.enrichment_pipeline.process(news)
 
         topics = [topic.model_dump() for topic in (article.topics or [])]
+        sentiment = self._build_sentiment(article)
+        quality = self._build_quality(article)
 
         report_phase("enriched", {
             "title": article.title,
             "keywords": article.keywords,
             "entities": article.entities,
             "topics": topics,
+            "sentiment": sentiment,
+            "quality": quality,
         })
 
         report = self.fact_checker.run(article, on_phase=report_phase)
@@ -123,12 +127,16 @@ class AnalysisService:
             "keywords": article.keywords,
             "entities": article.entities,
             "topics": topics,
+            "sentiment": sentiment,
+            "quality": quality,
             "claims": self._build_claims(article, report),
             "validity": {
                 "isValid": report.validation_passed,
                 "isDuplicate": report.duplicate,
                 "hasTopic": report.topic_ok,
                 "reasons": report.skipped_reason.split(",") if report.skipped_reason else [],
+                "impactScore": report.impact_score,
+                "impactReasons": report.impact_reasons,
             },
             "factCheck": {
                 "overallVerdict": report.overall_verdict,
@@ -136,6 +144,37 @@ class AnalysisService:
                 "claimsTotal": report.claims_total,
                 "claimsChecked": report.claims_selected,
             },
+        }
+
+    @staticmethod
+    def _build_sentiment(article: EnrichedArticle) -> dict:
+
+        sentiment = article.sentiment
+
+        return {
+            "label": sentiment.label,
+            "positive": sentiment.positive,
+            "neutral": sentiment.neutral,
+            "negative": sentiment.negative,
+            "polarity": sentiment.polarity,
+            "subjectivity": sentiment.subjectivity,
+            "confidence": sentiment.confidence,
+            "emotionalIntensity": sentiment.emotional_intensity,
+        }
+
+    @staticmethod
+    def _build_quality(article: EnrichedArticle) -> dict:
+
+        quality = article.quality
+
+        return {
+            "readability": quality.readability,
+            "objectivity": quality.objectivity,
+            "constructiveness": quality.constructiveness,
+            "inspirationalScore": quality.inspirational_score,
+            "hopefulness": quality.hopefulness,
+            "societalImpact": quality.societal_impact,
+            "novelty": quality.novelty,
         }
 
     def _build_claims(

@@ -136,7 +136,13 @@ def test_analyze_shapes_successful_result_with_sorted_claims():
         "isDuplicate": False,
         "hasTopic": True,
         "reasons": [],
+        "impactScore": 0.0,
+        "impactReasons": [],
     }
+
+    assert result["sentiment"]["label"] == "neutral"
+    assert result["sentiment"]["emotionalIntensity"] == 0.2
+    assert result["quality"]["constructiveness"] == 0.8
 
     assert result["factCheck"]["overallVerdict"] == Verdict.FALSE
     assert result["factCheck"]["claimsChecked"] == 2
