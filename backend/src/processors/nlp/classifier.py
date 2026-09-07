@@ -95,4 +95,4 @@ class TopicClassifier(BaseProcessor):
             for (topic, confidence), probability
             in zip(similarities, probabilities)
 
-        ]
+        ]

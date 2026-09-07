@@ -12,7 +12,7 @@ class NewsEnrichmentPipeline:
 
     def __init__(self, cfg):
 
-        self.keywords = KeywordExtractor()
+        #self.keywords = KeywordExtractor()
 
         self.entities = EntityExtractor()
 
@@ -48,7 +48,7 @@ class NewsEnrichmentPipeline:
             
             published_at=article.published_at,
 
-            keywords=self.keywords.process(article.content),
+            #keywords=self.keywords.process(article.content),
 
             entities=self.entities.process(article.content),
 
@@ -65,4 +65,4 @@ class NewsEnrichmentPipeline:
             embedding_model=self.embedding.service.model_name,
 
             embedding_dimension=len(embedding),
-        )
+        )

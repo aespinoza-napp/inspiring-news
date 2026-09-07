@@ -26,7 +26,7 @@ class EnrichedArticle(BaseModel):
 
     #################################################
 
-    keywords: list[str]
+    keywords: Optional[list[str]] = None
 
     entities: dict[str, list[str]]
 
@@ -44,4 +44,4 @@ class EnrichedArticle(BaseModel):
 
     embedding_model: str
 
-    embedding_dimension: int
+    embedding_dimension: int
