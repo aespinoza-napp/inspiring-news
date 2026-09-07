@@ -15,6 +15,8 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
     """Discover article URLs from an RSS feed."""
 
     ARTICLE_PATTERNS = (
+        "/article/",
+        "/articles/",
         "/story/",
         "/stories/",
         "/world/",
@@ -56,7 +58,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
 
         normalized_topics = {
             topic.lower().strip()
-            for topic in topics
+            for topic in (topics or [])
         }
 
         keywords = self._keywords_for(normalized_topics)
@@ -147,9 +149,22 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         patterns from any configured topic (a "/space/" or "/medicine/"
         segment is essentially always an article, not a homepage/about
         page - regardless of which topic the caller currently asked for).
+
+        Video pages are rejected outright, even if their path also
+        contains an article-shaped segment. Some sources (e.g. CNN)
+        nest video URLs under the same category segments as real
+        articles (.../videos/world/...), so an unqualified substring
+        match on "/world/" would let a video page through - and video
+        pages extract as player/caption UI chrome, not article prose,
+        which produced nonsense "claims" downstream (verified live:
+        ClaimExtractor scored a caption fragment like "3:05 �
+        Source:" at 0.90 confidence).
         """
 
         url = url.lower()
+
+        if "/video/" in url or "/videos/" in url:
+            return False
 
         return any(
             pattern in url
