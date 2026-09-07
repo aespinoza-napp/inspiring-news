@@ -28,6 +28,42 @@ def test_run_short_circuits_when_validation_fails(repository):
     assert report.failed_stage == "admission_filter"
 
 
+def test_run_persists_article_so_a_later_duplicate_is_detected(repository):
+    """
+    Nothing else in the app ever calls VectorRepository.save() - confirmed
+    by grepping src/ for ".save(" - so without FactChecker.run() persisting
+    a successfully-checked article itself, DuplicateValidator and
+    VectorRetriever (internal-corpus evidence) permanently query an empty
+    collection: re-analyzing the exact same article twice never gets
+    flagged as a duplicate, no matter how many times it's run.
+    """
+
+    checker = FactChecker(
+        repository,
+        evidence_retriever=FakeEvidenceRetriever({}),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({}),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    first = create_article(id="11111111-1111-1111-1111-111111111111", claims=[])
+    report_one = checker.run(first)
+
+    assert report_one.validation_passed is True
+    assert report_one.duplicate is False
+    assert repository.count() == 1
+
+    # Same embedding (the factory default), different id - a genuine
+    # near-duplicate submission, exactly like re-analyzing the same URL.
+    second = create_article(id="22222222-2222-2222-2222-222222222222", claims=[])
+    report_two = checker.run(second)
+
+    assert report_two.validation_passed is False
+    assert report_two.duplicate is True
+    # A rejected duplicate must not also get persisted a second time.
+    assert repository.count() == 1
+
+
 def test_run_produces_worst_case_wins_overall_verdict(repository):
 
     claim_false = create_claim(text="Claim that turns out false.", confidence=0.9)

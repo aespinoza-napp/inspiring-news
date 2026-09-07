@@ -1,3 +1,4 @@
+from logging import getLogger
 from typing import Callable, Optional
 
 from src.models.core.claim import Claim
@@ -19,6 +20,8 @@ from src.services.fact_checker.verification.llm_verification import (
     LLMVerificationResult,
     LLMVerifier,
 )
+
+logger = getLogger(__name__)
 
 OnPhase = Callable[[str, dict], None]
 
@@ -51,6 +54,7 @@ class FactChecker:
         verifier: LLMVerifier | None = None,
         confidence_scorer: ConfidenceScorer | None = None,
     ):
+        self.repository = repository
         self.validation_pipeline = validation_pipeline or ValidationPipeline(repository)
         self.claim_selector = claim_selector or ClaimSelector()
         self.evidence_retriever = evidence_retriever or EvidenceRetriever(repository)
@@ -110,6 +114,20 @@ class FactChecker:
             self._check_claim(claim, report_phase)
             for claim in selected
         ]
+
+        # Persist the article now that its own claim-checks are done (not
+        # before - EvidenceRetriever's internal-corpus lookup would
+        # otherwise sometimes surface this very article as "evidence" for
+        # its own claims). Nothing else in the app calls
+        # VectorRepository.save() at all, so without this every duplicate
+        # check and every internal-evidence lookup was permanently
+        # querying an empty collection - confirmed live: DuplicateValidator
+        # never flagged a duplicate even when re-validating the exact same
+        # article object twice in a row.
+        try:
+            self.repository.save(article)
+        except Exception:
+            logger.warning("Failed to persist article %s to the vector store", article.id, exc_info=True)
 
         report = FactCheckReport(
             article_id=article.id,
