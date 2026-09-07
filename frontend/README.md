@@ -1,5 +1,12 @@
 # Content Tools
 
+> **La sección "Contrato esperado del backend" de abajo está desactualizada** (el endpoint real que usa
+> la página `/` es `POST /analyze/jobs` + polling de `GET /analyze/jobs/{jobId}`, no una llamada
+> síncrona a `/analyze`, y la forma de la respuesta ha cambiado bastante desde entonces). Para el
+> contrato actual, la fuente de verdad es `src/lib/types.ts` (que además ya está declarado como algo a
+> mantener sincronizado con el backend). Ver `CLAUDE.md` en la raíz del repo, y
+> `src/app/api/README.md`/`src/components/README.md` para el resto del frontend.
+
 Next.js (App Router + TypeScript) con dos páginas:
 
 - `/` — Analizador de noticias: pega una o varias URLs, devuelve keywords (≤10),

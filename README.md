@@ -2,6 +2,12 @@
 
 Automated news pipeline: Scraping -> Fact-checking -> Sentiment -> Social Media Formatting -> Neo4j Graph Storage.
 
+> **This README describes the project's original scaffold and is out of date** — fact-checking is real
+> (local LLM + SearXNG + Qdrant, not the "next step" described below), Neo4j is configured but unused
+> by the actual pipeline, and there's no "social media formatting" stage. For the real architecture,
+> see `CLAUDE.md` at the repo root, and the `README.md` in each subdirectory (`backend/src/...`,
+> `frontend/src/...`, `docker/`) for that part specifically.
+
 ## Features
 - **Backend**: FastAPI with `uv` for lightning-fast dependency management.
 - **Scraper Agent**: Robust news extraction.
