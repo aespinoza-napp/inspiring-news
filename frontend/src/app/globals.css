@@ -190,6 +190,25 @@ h1 {
   margin: 0 0 0.5rem;
 }
 
+/* The one existing input[type="checkbox"] is styled by the browser and
+   sits inside .checkbox-label, so it is untouched by this selector. */
+input[type="text"] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.15s var(--ease);
+}
+
+input[type="text"]:hover {
+  border-color: color-mix(in srgb, var(--fg) 25%, var(--border));
+}
+
 textarea {
   width: 100%;
   min-height: 8rem;

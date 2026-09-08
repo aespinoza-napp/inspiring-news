@@ -3,8 +3,11 @@ import threading
 from src.config.settings import settings
 
 from src.database.qdrant import QdrantDatabase
+from src.repositories.datalake_repository import DataLakeRepository
 from src.repositories.vector_repository import VectorRepository
 from src.services.analysis_service import AnalysisService
+from src.services.claim_service import ClaimService
+from src.services.enrichment_service import EnrichmentService
 from src.services.corrector.text_corrector import TextCorrector
 from src.services.fact_checker.fact_checker import FactChecker
 from src.services.job_store import JobStore
@@ -61,6 +64,10 @@ _vector_repository: VectorRepository | None = None
 _analysis_service: AnalysisService | None = None
 _enrichment_pipeline: NewsEnrichmentPipeline | None = None
 _text_corrector: TextCorrector | None = None
+_datalake_repository: DataLakeRepository | None = None
+_fact_checker: FactChecker | None = None
+_claim_service: ClaimService | None = None
+_enrichment_service: EnrichmentService | None = None
 
 
 def get_vector_repository() -> VectorRepository:
@@ -87,6 +94,82 @@ def get_enrichment_pipeline() -> NewsEnrichmentPipeline:
     return _enrichment_pipeline
 
 
+def get_datalake_repository() -> DataLakeRepository:
+    """
+    Shared handle on the three-layer lake (raw/processed/exploitation).
+    Cheap to build (it only ensures directories exist), but a singleton
+    anyway so the pipeline that writes records and the endpoints that
+    read them always agree on one backend - and so swapping the backend
+    for a real database later is a one-line change here rather than at
+    every call site.
+    """
+
+    global _datalake_repository
+
+    if _datalake_repository is None:
+        with _lock:
+            if _datalake_repository is None:
+                _datalake_repository = DataLakeRepository()
+
+    return _datalake_repository
+
+
+def get_fact_checker() -> FactChecker:
+    """
+    Shared FactChecker. A singleton because it owns the VectorRepository
+    (single Qdrant client per process) and an EmbeddingService, and
+    because /analyze and /verify-claim must run the identical verifier -
+    two instances would be two chances to drift.
+    """
+
+    global _fact_checker
+
+    if _fact_checker is None:
+        with _lock:
+            if _fact_checker is None:
+                _fact_checker = FactChecker(get_vector_repository())
+
+    return _fact_checker
+
+
+def get_claim_service() -> ClaimService:
+    """
+    Backs POST /verify-claim. Lazy for the usual reason: reaching it
+    builds the FactChecker, which opens Qdrant and loads the embedding
+    model.
+    """
+
+    global _claim_service
+
+    if _claim_service is None:
+        with _lock:
+            if _claim_service is None:
+                _claim_service = ClaimService(
+                    fact_checker=get_fact_checker(),
+                    # Shares the enrichment pipeline's already-loaded
+                    # GLiNER rather than loading a second copy of it.
+                    entity_extractor=get_enrichment_pipeline().entities,
+                )
+
+    return _claim_service
+
+
+def get_enrichment_service() -> EnrichmentService:
+    """
+    Backs POST /enrich. Wraps the same NewsEnrichmentPipeline singleton
+    the article pipeline uses - no second set of transformer models.
+    """
+
+    global _enrichment_service
+
+    if _enrichment_service is None:
+        with _lock:
+            if _enrichment_service is None:
+                _enrichment_service = EnrichmentService(get_enrichment_pipeline())
+
+    return _enrichment_service
+
+
 def get_analysis_service() -> AnalysisService:
 
     global _analysis_service
@@ -95,8 +178,9 @@ def get_analysis_service() -> AnalysisService:
         with _lock:
             if _analysis_service is None:
                 _analysis_service = AnalysisService(
-                    fact_checker=FactChecker(get_vector_repository()),
+                    fact_checker=get_fact_checker(),
                     enrichment_pipeline=get_enrichment_pipeline(),
+                    lake=get_datalake_repository() if settings.LAKE_ENABLED else None,
                 )
 
     return _analysis_service
