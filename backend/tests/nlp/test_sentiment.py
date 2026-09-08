@@ -44,5 +44,3 @@ def test_sentiment_analysis():
     assert 0 <= result.confidence <= 1
 
     assert 0 <= result.emotional_intensity <= 1
-
-test_sentiment_analysis()

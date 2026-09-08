@@ -19,6 +19,8 @@ from collections import defaultdict
 
 from gliner import GLiNER
 
+from src.config.settings import settings
+
 from .base import BaseProcessor
 
 #from src.config.topics import TOPICS
@@ -42,7 +44,7 @@ class EntityExtractor(BaseProcessor):
     def __init__(
         self,
         labels: list[str] | None = None,
-        threshold: float = 0.5,
+        threshold: float | None = None,
         model_name: str = "urchade/gliner_small-v2.1",
     ):
 
@@ -53,9 +55,16 @@ class EntityExtractor(BaseProcessor):
 
         self.labels = labels or DEFAULT_LABELS
 
-        self.threshold = threshold
+        # Instance default, overridable per call - see process().
+        self.threshold = (
+            threshold if threshold is not None else settings.ENTITY_THRESHOLD
+        )
 
-    def process(self, text: str) -> dict[str, list[str]]:
+    def process(
+        self,
+        text: str,
+        threshold: float | None = None,
+    ) -> dict[str, list[str]]:
 
         if not text:
             return {}
@@ -63,7 +72,7 @@ class EntityExtractor(BaseProcessor):
         predictions = self.model.predict_entities(
             text,
             labels=self.labels,
-            threshold=self.threshold,
+            threshold=threshold if threshold is not None else self.threshold,
         )
 
         entities = defaultdict(set)

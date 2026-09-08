@@ -20,17 +20,19 @@ def test_list_sources():
     repository = SourceRepository()
 
     sources = repository.list()
-    print(sources)
+
     assert len(sources) >= 4
 
     ids = {source.id for source in sources}
 
-    assert ids == {
-        "cnn",
-        "bbc",
-        "reuters",
-        "nasa",
-    }
+    # A superset assertion, not equality: adding a source is a YAML file
+    # under data/sources/, and an equality check turned every such
+    # addition into a spurious test failure.
+    assert {"cnn", "bbc", "reuters", "nasa"} <= ids
+
+    # Ids must be unique - two YAML files claiming the same id would
+    # silently shadow each other in SourceRepository.get().
+    assert len(ids) == len(sources)
 
 def test_get_unknown_source():
 

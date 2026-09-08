@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 
+from src.config.settings import settings
 from src.models.core.claim import Claim
 from src.processors.nlp.entities import EntityExtractor
 
@@ -65,9 +66,15 @@ class ClaimExtractor(BaseProcessor):
 
     NUMBER_PATTERN = re.compile(r"\d+(?:[.,]\d+)?")
 
+    # "%" is matched outside the \b(...)\b group: it is not a word
+    # character, so inside that group it could never match at all
+    # ("35%." has no word boundary after the "%"). That silently cost
+    # every percentage sentence 0.10 of its score - enough to push
+    # "The treatment increased survival by 35%." below the 0.50 claim
+    # threshold and drop the claim entirely.
     MEASUREMENT_PATTERN = re.compile(
-        r"\b("
-        r"%|percent|km|m|cm|kg|g|tons?|"
+        r"%|\b("
+        r"percent|km|m|cm|kg|g|tons?|"
         r"million|billion|euros?|dollars?|people"
         r")\b",
         re.IGNORECASE,
@@ -75,29 +82,44 @@ class ClaimExtractor(BaseProcessor):
 
     QUOTE_PATTERN = re.compile(r"[\"“”']")
 
-    def __init__(self):
+    def __init__(self, min_confidence: float | None = None):
 
         self.entity_extractor = EntityExtractor()
+
+        # Instance default, overridable per call - see process().
+        self.min_confidence = (
+            min_confidence
+            if min_confidence is not None
+            else settings.CLAIM_MIN_CONFIDENCE
+        )
 
     ##########################################################
 
     def process(
         self,
         text: str,
+        min_confidence: float | None = None,
+        entity_threshold: float | None = None,
     ) -> list[Claim]:
+
+        minimum = (
+            min_confidence
+            if min_confidence is not None
+            else self.min_confidence
+        )
 
         claims = []
 
         for sentence in self._split_sentences(text):
 
-            entities = self.entity_extractor.process(sentence)
+            entities = self.entity_extractor.process(sentence, entity_threshold)
 
             confidence = self._score(
                 sentence,
                 entities,
             )
 
-            if confidence < 0.50:
+            if confidence < minimum:
                 continue
 
             claims.append(
@@ -194,4 +216,4 @@ class ClaimExtractor(BaseProcessor):
         # Upper bound
         ##################################################
 
-        return min(score, 1.0)
+        return min(score, 1.0)

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from src.config.thresholds import PipelineThresholds
 from src.models.core.news import News
 from src.models.core.source import NewsSource
 
@@ -24,6 +25,7 @@ class ExtractorService:
         self,
         source: NewsSource,
         url: str,
+        thresholds: PipelineThresholds | None = None,
     ) -> News | None:
 
         for strategy in self.strategies:
@@ -36,7 +38,7 @@ class ExtractorService:
             if extracted is None:
                 continue
 
-            if not ExtractionValidator.is_valid(extracted):
+            if not ExtractionValidator.is_valid(extracted, thresholds):
                 continue
 
             news = News(

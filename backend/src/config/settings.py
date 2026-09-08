@@ -25,6 +25,17 @@ class Settings(BaseSettings):
 
     CACHE_PATH: Path = STORAGE_PATH / "cache"
 
+    # Three-layer storage lake (raw -> processed -> exploitation).
+    # Deliberately *not* the legacy RAW_PATH/PROCESSED_PATH scratch
+    # directories above: those hold bare News/EnrichedArticle JSON
+    # written ad hoc by scripts and tests, while the lake holds
+    # lineage-stamped records and must not be mixed with them.
+    LAKE_PATH: Path = STORAGE_PATH / "lake"
+
+    # Whether the pipeline writes to the lake at all. Off makes
+    # AnalysisService pure (no side effects) for tests/dry runs.
+    LAKE_ENABLED: bool = True
+
     NEO4J_URI: str = "bolt://localhost:7687"
     NEO4J_USER: str = "neo4j"
     NEO4J_PASSWORD: SecretStr
@@ -44,6 +55,33 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = (
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
+
+    # -----------------------------------------------------------------
+    # Pipeline thresholds
+    #
+    # These are the *defaults*. A single run can override any of them
+    # per request (see src/config/thresholds.py and the `thresholds`
+    # field on POST /analyze and POST /analyze/jobs); anything the
+    # caller leaves out falls back to the value below.
+    #
+    # Read them through a PipelineThresholds instance, never as a class
+    # attribute evaluated at import time - `MIN_X = settings.MIN_X` in a
+    # class body freezes the value when the module is first imported,
+    # which is why per-run overrides (and even plain env changes under
+    # some import orders) had no effect before.
+    # -----------------------------------------------------------------
+
+    # Enrichment
+    TOPIC_CLASSIFIER_THRESHOLD: float = 0.35
+    ENTITY_THRESHOLD: float = 0.50
+    CLAIM_MIN_CONFIDENCE: float = 0.50
+
+    # Extraction: shortest body accepted as a real article, in characters
+    MIN_BODY_LENGTH: int = 500
+
+    # Admission filter
+    TOPIC_MIN_CONFIDENCE: float = 0.35
+    POSITIVE_IMPACT_MIN_SCORE: float = 0.30
 
     # Similarity threshold for duplicate detection
     DUPLICATE_THRESHOLD: float = 0.90
@@ -93,6 +131,7 @@ for folder in (
     settings.FACT_CHECK_PATH,
     settings.GRAPH_PATH,
     settings.CACHE_PATH,
+    settings.LAKE_PATH,
 ):
     folder.mkdir(
         parents=True,

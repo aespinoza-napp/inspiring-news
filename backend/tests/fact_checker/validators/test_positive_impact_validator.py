@@ -80,36 +80,43 @@ def test_high_negative_sentiment_fails():
     assert not result.passed
 
 
-def test_low_constructiveness_fails():
+def test_low_constructiveness_is_flagged_but_not_a_hard_fail():
+    """
+    Low constructiveness is a *reason*, not a hard fail - the hard-fail
+    check for it is deliberately commented out in the validator (it
+    rejected too many real articles). It still costs the article score,
+    which is the assertion that actually pins the behaviour down; if the
+    hard fail is ever restored, this test is the one to flip back.
+    """
 
     validator = PositiveImpactValidator()
 
-    quality = create_quality(
-        constructiveness=0.10,
-    )
+    baseline = validator.validate(create_sentiment(), create_quality())
 
     result = validator.validate(
         create_sentiment(),
-        quality,
+        create_quality(constructiveness=0.10),
     )
 
-    assert not result.passed
+    assert result.passed
+    assert "Low constructiveness" in result.reasons
+    assert result.score < baseline.score
 
 
-def test_low_inspirational_score_fails():
+def test_low_inspirational_score_is_flagged_but_not_a_hard_fail():
 
     validator = PositiveImpactValidator()
 
-    quality = create_quality(
-        inspirational_score=0.10,
-    )
+    baseline = validator.validate(create_sentiment(), create_quality())
 
     result = validator.validate(
         create_sentiment(),
-        quality,
+        create_quality(inspirational_score=0.10),
     )
 
-    assert not result.passed
+    assert result.passed
+    assert "Low inspirational value" in result.reasons
+    assert result.score < baseline.score
 
 
 def test_low_objectivity_fails():
@@ -153,3 +160,52 @@ def test_neutral_constructive_article_passes():
     )
 
     assert result.passed
+
+
+def test_score_is_normalised_to_the_zero_one_range():
+    """
+    The raw weighted sum runs to 3.50, so before normalisation the
+    returned score was clamped to exactly 1.0 for almost every article -
+    a constant, carrying no information, and making the MIN_SCORE gate
+    unreachable. A perfect article should score 1.0; a merely good one
+    should score below it.
+    """
+
+    validator = PositiveImpactValidator()
+
+    perfect = validator.validate(
+        create_sentiment(positive=1.0, neutral=0.0, negative=0.0, subjectivity=0.0),
+        create_quality(
+            constructiveness=1.0,
+            inspirational_score=1.0,
+            hopefulness=1.0,
+            objectivity=1.0,
+            societal_impact=1.0,
+            readability=1.0,
+        ),
+    )
+
+    good = validator.validate(create_sentiment(), create_quality())
+
+    assert perfect.score == 1.0
+    assert 0.0 < good.score < 1.0
+
+
+def test_score_never_leaves_the_zero_one_range_for_a_bleak_article():
+
+    validator = PositiveImpactValidator()
+
+    result = validator.validate(
+        create_sentiment(positive=0.0, neutral=0.0, negative=1.0, subjectivity=1.0),
+        create_quality(
+            constructiveness=0.0,
+            inspirational_score=0.0,
+            hopefulness=0.0,
+            objectivity=0.0,
+            societal_impact=0.0,
+            readability=0.0,
+        ),
+    )
+
+    assert result.score == 0.0
+    assert not result.passed

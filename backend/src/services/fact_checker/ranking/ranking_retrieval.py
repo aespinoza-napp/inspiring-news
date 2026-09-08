@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from src.config.settings import settings
+from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, RejectedEvidence
 from src.models.fact_checker.pipeline_stage import PipelineStage
@@ -39,7 +40,14 @@ class EvidenceRanker:
             source_repository or SourceRepository()
         )
 
-    def rank(self, claim: Claim, evidence: list[Evidence]) -> RankingResult:
+    def rank(
+        self,
+        claim: Claim,
+        evidence: list[Evidence],
+        thresholds: PipelineThresholds | None = None,
+    ) -> RankingResult:
+
+        max_evidence = (thresholds or PipelineThresholds()).max_evidence_per_claim
 
         if not evidence:
             return RankingResult(kept=[])
@@ -55,8 +63,8 @@ class EvidenceRanker:
 
         scored.sort(key=lambda item: item.relevance_score, reverse=True)
 
-        kept = scored[:settings.MAX_EVIDENCE_PER_CLAIM]
-        cut = scored[settings.MAX_EVIDENCE_PER_CLAIM:]
+        kept = scored[:max_evidence]
+        cut = scored[max_evidence:]
 
         rejected = [
             RejectedEvidence(
@@ -66,7 +74,7 @@ class EvidenceRanker:
                 stage=PipelineStage.EVIDENCE_RANKING,
                 reason=(
                     f"cut by final ranking cap (rank {rank} of {len(scored)}, "
-                    f"top {settings.MAX_EVIDENCE_PER_CLAIM} kept)"
+                    f"top {max_evidence} kept)"
                 ),
                 score=item.relevance_score,
             )

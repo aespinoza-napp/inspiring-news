@@ -6,13 +6,14 @@ from src.processors.nlp.sentiment import SentimentAnalyzer
 from src.processors.nlp.quality import QualityAnalyzer
 from src.processors.nlp.embeddings import EmbeddingProcessor
 
+from src.config.thresholds import PipelineThresholds
 from src.models.core.enriched_article import EnrichedArticle
 
 class NewsEnrichmentPipeline:
 
     def __init__(self, cfg):
 
-        #self.keywords = KeywordExtractor()
+        self.keywords = KeywordExtractor()
 
         self.entities = EntityExtractor()
 
@@ -28,7 +29,12 @@ class NewsEnrichmentPipeline:
 
     ####################################################
 
-    def process(self, article):
+    def process(self, article, thresholds: PipelineThresholds | None = None):
+
+        # Thresholds arrive per call, not per construction: this pipeline
+        # is a long-lived singleton (it holds GLiNER, the topic
+        # classifier and the sentiment model) shared by every request.
+        thresholds = thresholds or PipelineThresholds()
 
         embedding = self.embedding.process(article.content)
 
@@ -48,13 +54,23 @@ class NewsEnrichmentPipeline:
             
             published_at=article.published_at,
 
-            #keywords=self.keywords.process(article.content),
+            keywords=self.keywords.process(article.content),
 
-            entities=self.entities.process(article.content),
+            entities=self.entities.process(
+                article.content,
+                thresholds.entity_threshold,
+            ),
 
-            topics=self.topics.process(article.content),
+            topics=self.topics.process(
+                article.content,
+                thresholds.topic_classifier_threshold,
+            ),
 
-            claims=self.claims.process(article.content),
+            claims=self.claims.process(
+                article.content,
+                thresholds.claim_min_confidence,
+                thresholds.entity_threshold,
+            ),
 
             sentiment=self.sentiment.process(article.content),
 

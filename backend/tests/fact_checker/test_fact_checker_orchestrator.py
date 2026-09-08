@@ -1,3 +1,4 @@
+from src.config.thresholds import PipelineThresholds
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.claim_selector import ClaimSelector
 from src.services.fact_checker.fact_checker import FactChecker
@@ -184,7 +185,6 @@ def test_run_records_claims_dropped_during_selection(repository):
     article = create_article(claims=[kept_claim, dropped_claim])
 
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
-    selector.MAX_CLAIMS = 1
 
     checker = FactChecker(
         repository,
@@ -204,7 +204,12 @@ def test_run_records_claims_dropped_during_selection(repository):
         confidence_scorer=ConfidenceScorer(),
     )
 
-    report = checker.run(article)
+    # The cap is a per-run threshold now, so it can be exercised the way
+    # a real caller sets it rather than by reassigning a class attribute.
+    report = checker.run(
+        article,
+        thresholds=PipelineThresholds(max_claims_per_article=1),
+    )
 
     assert report.claims_selected == 1
     assert [c.text for c in report.unselected_claims] == ["Dropped claim."]

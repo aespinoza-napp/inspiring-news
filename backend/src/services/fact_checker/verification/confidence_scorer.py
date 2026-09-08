@@ -1,4 +1,5 @@
 from src.config.settings import settings
+from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence
 from src.models.fact_checker.fact_check import FactCheck, Verdict
@@ -7,8 +8,10 @@ from src.services.fact_checker.verification.llm_verification import LLMVerificat
 
 class ConfidenceScorer:
 
-    MIN_EVIDENCE = settings.MIN_EVIDENCE_FOR_VERDICT
-
+    # MIN_EVIDENCE now comes from the run's thresholds, not a class
+    # attribute frozen at import time. The weights stay environment-only:
+    # they must sum to 1.0, and letting a request set one member of the
+    # pair alone would silently de-normalise the score.
     LLM_WEIGHT = settings.CONFIDENCE_LLM_WEIGHT
     EVIDENCE_WEIGHT = settings.CONFIDENCE_EVIDENCE_WEIGHT
 
@@ -17,11 +20,14 @@ class ConfidenceScorer:
         claim: Claim,
         evidence: list[Evidence],
         llm_result: LLMVerificationResult,
+        thresholds: PipelineThresholds | None = None,
     ) -> FactCheck:
+
+        thresholds = thresholds or PipelineThresholds()
 
         # Hard rule, not a weight: no evidence means we cannot verify the
         # claim at all, regardless of what the LLM says.
-        if len(evidence) < self.MIN_EVIDENCE:
+        if len(evidence) < thresholds.min_evidence_for_verdict:
             return FactCheck(
                 verdict=Verdict.UNVERIFIED,
                 explanation="No evidence could be retrieved for this claim; verdict forced to UNVERIFIED.",
@@ -56,7 +62,11 @@ class ConfidenceScorer:
             evidence_count=len(evidence),
         )
 
-    def _evidence_quality(self, evidence: list[Evidence], cited: list[int]) -> float:
+    def _evidence_quality(
+        self,
+        evidence: list[Evidence],
+        cited: list[int],
+    ) -> float:
 
         if not evidence:
             return 0.0

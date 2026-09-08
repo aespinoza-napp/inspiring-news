@@ -33,5 +33,3 @@ def test_entity_extraction():
     assert "Apple" in flattened
 
     assert "Barcelona" in flattened
-
-test_entity_extraction()

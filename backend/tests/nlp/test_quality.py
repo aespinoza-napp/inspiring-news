@@ -68,5 +68,3 @@ def test_article_quality():
     #assert quality["inspirational_score"] > 0.5
     #assert quality["societal_impact"] > 0.3
     #assert quality["novelty"] == 0.82
-
-test_article_quality()

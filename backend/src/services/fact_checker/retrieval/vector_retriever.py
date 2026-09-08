@@ -1,4 +1,4 @@
-from src.config.settings import settings
+from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
 from src.repositories.vector_repository import VectorRepository
@@ -20,8 +20,6 @@ class VectorRetriever:
     claim and surfaces them as internal corroborating evidence.
     """
 
-    RELATEDNESS_THRESHOLD = settings.RELATEDNESS_THRESHOLD
-
     def __init__(
         self,
         repository: VectorRepository,
@@ -30,7 +28,14 @@ class VectorRetriever:
         self.repository = repository
         self.embeddings = embeddings or EmbeddingService()
 
-    def retrieve(self, claim: Claim, limit: int = 5) -> list[Evidence]:
+    def retrieve(
+        self,
+        claim: Claim,
+        limit: int = 5,
+        thresholds: PipelineThresholds | None = None,
+    ) -> list[Evidence]:
+
+        minimum = (thresholds or PipelineThresholds()).relatedness_threshold
 
         embedding = self.embeddings.encode(claim.text)
 
@@ -48,5 +53,5 @@ class VectorRetriever:
                 relevance_score=result.similarity,
             )
             for result in results
-            if result.similarity >= self.RELATEDNESS_THRESHOLD
+            if result.similarity >= minimum
         ]

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from src.config.settings import settings
+from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim, RejectedClaim
 from src.services.embeddings.service import EmbeddingService
 
@@ -15,15 +15,17 @@ class ClaimSelectionResult:
 
 class ClaimSelector:
 
-    MAX_CLAIMS = settings.MAX_CLAIMS_PER_ARTICLE
-
-    DEDUP_THRESHOLD = settings.CLAIM_DEDUP_THRESHOLD
-
     def __init__(self, embeddings: EmbeddingService | None = None):
 
         self.embeddings = embeddings or EmbeddingService()
 
-    def select(self, claims: list[Claim]) -> ClaimSelectionResult:
+    def select(
+        self,
+        claims: list[Claim],
+        thresholds: PipelineThresholds | None = None,
+    ) -> ClaimSelectionResult:
+
+        thresholds = thresholds or PipelineThresholds()
 
         if not claims:
             return ClaimSelectionResult(selected=[])
@@ -45,13 +47,17 @@ class ClaimSelector:
             if not text:
                 continue
 
-            if len(selected) >= self.MAX_CLAIMS:
+            if len(selected) >= thresholds.max_claims_per_article:
                 rejected.append(RejectedClaim(text=claim.text, confidence=claim.confidence, reason="exceeds_max_claims_cap"))
                 continue
 
             embedding = self.embeddings.encode(text)
 
-            if self._is_duplicate(embedding, selected_embeddings):
+            if self._is_duplicate(
+                embedding,
+                selected_embeddings,
+                thresholds.claim_dedup_threshold,
+            ):
                 rejected.append(RejectedClaim(text=claim.text, confidence=claim.confidence, reason="semantic_duplicate"))
                 continue
 
@@ -60,9 +66,9 @@ class ClaimSelector:
 
         return ClaimSelectionResult(selected=selected, rejected=rejected)
 
-    def _is_duplicate(self, embedding, existing) -> bool:
+    def _is_duplicate(self, embedding, existing, dedup_threshold: float) -> bool:
 
         return any(
-            self.embeddings.similarity(embedding, other) >= self.DEDUP_THRESHOLD
+            self.embeddings.similarity(embedding, other) >= dedup_threshold
             for other in existing
         )

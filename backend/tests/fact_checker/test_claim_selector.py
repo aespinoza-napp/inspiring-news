@@ -1,3 +1,4 @@
+from src.config.thresholds import PipelineThresholds
 from src.services.fact_checker.claim_selector import ClaimSelector
 
 from tests.factories import create_claim
@@ -33,17 +34,25 @@ def test_select_orders_by_confidence_descending():
     ]
 
 
-def test_select_caps_at_max_claims(monkeypatch):
+def test_select_caps_at_max_claims():
+    """
+    The cap arrives per call now. It used to be a class attribute frozen
+    from settings at import time, which this test could only exercise by
+    reaching in and reassigning it - meaning it never covered the path a
+    real caller takes.
+    """
 
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
-    selector.MAX_CLAIMS = 2
 
     claims = [
         create_claim(text=f"Claim number {i}.", confidence=0.9 - i * 0.01)
         for i in range(5)
     ]
 
-    result = selector.select(claims)
+    result = selector.select(
+        claims,
+        PipelineThresholds(max_claims_per_article=2),
+    )
 
     assert len(result.selected) == 2
     assert result.selected[0].text == "Claim number 0."

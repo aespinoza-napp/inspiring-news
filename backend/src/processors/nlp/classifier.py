@@ -4,6 +4,7 @@ from typing import List
 
 import numpy as np
 
+from src.config.settings import settings
 from src.config.topics import TOPICS
 from src.models.nlp.topic_prediction import TopicPrediction
 from src.services.embeddings.service import EmbeddingService
@@ -17,12 +18,19 @@ class TopicClassifier(BaseProcessor):
 
     def __init__(
         self,
-        threshold: float = 0.35,
+        threshold: float | None = None,
     ):
 
         self.embedding_service = EmbeddingService()
 
-        self.threshold = threshold
+        # Instance default, overridable per call - see process(). The
+        # classifier is a long-lived singleton shared by every request,
+        # so a per-run threshold cannot live on the instance.
+        self.threshold = (
+            threshold
+            if threshold is not None
+            else settings.TOPIC_CLASSIFIER_THRESHOLD
+        )
 
         if TopicClassifier._topic_embeddings is None:
 
@@ -43,7 +51,13 @@ class TopicClassifier(BaseProcessor):
                     self.embedding_service.encode(topic_text)
                 )
 
-    def process(self, text: str) -> List[TopicPrediction]:
+    def process(
+        self,
+        text: str,
+        threshold: float | None = None,
+    ) -> List[TopicPrediction]:
+
+        minimum = threshold if threshold is not None else self.threshold
 
         article_embedding = self.embedding_service.encode(text)
 
@@ -58,7 +72,7 @@ class TopicClassifier(BaseProcessor):
                 )
             )
 
-            if similarity >= self.threshold:
+            if similarity >= minimum:
 
                 similarities.append(
                     (

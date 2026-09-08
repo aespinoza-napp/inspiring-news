@@ -20,7 +20,7 @@ class FakeVectorRetriever:
     def __init__(self, evidence):
         self.evidence = evidence
 
-    def retrieve(self, claim):
+    def retrieve(self, claim, limit=5, thresholds=None):
         return self.evidence
 
 

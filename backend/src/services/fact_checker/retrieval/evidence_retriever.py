@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from src.config.settings import settings
+from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceOrigin, RejectedEvidence
 from src.models.fact_checker.pipeline_stage import PipelineStage
@@ -35,10 +35,21 @@ class EvidenceRetriever:
         self.scraper = scraper or EvidenceScraper()
         self.vector_retriever = vector_retriever or VectorRetriever(repository, self.embeddings)
 
-    def retrieve(self, claim: Claim) -> RetrievalResult:
+    def retrieve(
+        self,
+        claim: Claim,
+        thresholds: PipelineThresholds | None = None,
+    ) -> RetrievalResult:
+
+        thresholds = thresholds or PipelineThresholds()
+
+        max_evidence = thresholds.max_evidence_per_claim
 
         web_evidence = self.search_provider.search(claim)
-        internal_evidence = self.vector_retriever.retrieve(claim)
+        internal_evidence = self.vector_retriever.retrieve(
+            claim,
+            thresholds=thresholds,
+        )
 
         candidates = web_evidence + internal_evidence
 
@@ -64,8 +75,8 @@ class EvidenceRetriever:
             if evidence.origin == EvidenceOrigin.WEB
         ]
 
-        top_web = web_ranked[:settings.MAX_EVIDENCE_PER_CLAIM]
-        cut_web = web_ranked[settings.MAX_EVIDENCE_PER_CLAIM:]
+        top_web = web_ranked[:max_evidence]
+        cut_web = web_ranked[max_evidence:]
 
         scraped = self.scraper.enrich(top_web)
 
@@ -83,7 +94,7 @@ class EvidenceRetriever:
                 stage=PipelineStage.EVIDENCE_RETRIEVAL,
                 reason=(
                     f"cut by pre-rank funnel (rank {rank} of {len(web_ranked)}, "
-                    f"top {settings.MAX_EVIDENCE_PER_CLAIM} kept)"
+                    f"top {max_evidence} kept)"
                 ),
                 score=scores[id(evidence)],
             )

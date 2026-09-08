@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from src.config.thresholds import PipelineThresholds
 from src.models.core.enriched_article import EnrichedArticle
 from src.repositories.vector_repository import VectorRepository
 from src.services.fact_checker.validators.topic_validator import TopicValidator
@@ -40,16 +41,23 @@ class ValidationPipeline:
         self.duplicate_validator = DuplicateValidator(repository)
 
 
-    def validate(self, article: EnrichedArticle):
+    def validate(
+        self,
+        article: EnrichedArticle,
+        thresholds: PipelineThresholds | None = None,
+    ):
 
-        topic_ok = self.topic_validator.validate(article)
+        thresholds = thresholds or PipelineThresholds()
+
+        topic_ok = self.topic_validator.validate(article, thresholds)
 
         positive = self.positive_validator.validate(
             article.sentiment,
             article.quality,
+            thresholds,
         )
 
-        duplicate = self.duplicate_validator.validate(article)
+        duplicate = self.duplicate_validator.validate(article, thresholds)
 
         return ValidationPipelineResult(
             passed=(
@@ -62,4 +70,4 @@ class ValidationPipeline:
             duplicate=duplicate.duplicate,
             impact_score=positive.score,
             impact_reasons=positive.reasons,
-        )
+        )

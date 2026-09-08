@@ -1,3 +1,4 @@
+from src.config.thresholds import PipelineThresholds
 from src.models.core.enriched_article import EnrichedArticle
 from src.models.fact_checker.duplicate_result import DuplicateResult
 from src.repositories.vector_repository import VectorRepository
@@ -5,10 +6,12 @@ from src.config.settings import settings
 
 
 class DuplicateValidator:
-
-    DUPLICATE_THRESHOLD = settings.DUPLICATE_THRESHOLD
-
-    RELATEDNESS_THRESHOLD = settings.RELATEDNESS_THRESHOLD
+    """
+    Thresholds come from the run's PipelineThresholds, not from class
+    attributes: `X = settings.X` in a class body is evaluated once at
+    import time, which froze the value for the life of the process and
+    made per-run overrides impossible.
+    """
 
 
     def __init__(
@@ -22,7 +25,10 @@ class DuplicateValidator:
     def validate(
         self,
         article: EnrichedArticle,
+        thresholds: PipelineThresholds | None = None,
     ) -> DuplicateResult:
+
+        thresholds = thresholds or PipelineThresholds()
 
 
         results = self.repository.search(
@@ -54,7 +60,7 @@ class DuplicateValidator:
 
         similarity = best.similarity
 
-        if similarity >= self.DUPLICATE_THRESHOLD:
+        if similarity >= thresholds.duplicate_threshold:
 
             return DuplicateResult(
                 duplicate=True,
@@ -64,7 +70,7 @@ class DuplicateValidator:
             )
 
 
-        if similarity >= self.RELATEDNESS_THRESHOLD:
+        if similarity >= thresholds.relatedness_threshold:
 
             return DuplicateResult(
                 duplicate=False,
@@ -79,4 +85,4 @@ class DuplicateValidator:
             similarity=similarity,
             matched_article_id=None,
             reason="Article is unrelated",
-        )
+        )

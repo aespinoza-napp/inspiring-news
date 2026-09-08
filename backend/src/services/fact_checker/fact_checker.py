@@ -1,6 +1,7 @@
 from logging import getLogger
 from typing import Callable, Optional
 
+from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.core.enriched_article import EnrichedArticle
 from src.models.fact_checker.evidence import Evidence, RejectedEvidence
@@ -66,13 +67,16 @@ class FactChecker:
         self,
         article: EnrichedArticle,
         on_phase: Optional[OnPhase] = None,
+        thresholds: PipelineThresholds | None = None,
     ) -> FactCheckReport:
 
         report_phase = on_phase or _noop
 
+        thresholds = thresholds or PipelineThresholds()
+
         report_phase("validating", {})
 
-        validation = self.validation_pipeline.validate(article)
+        validation = self.validation_pipeline.validate(article, thresholds)
 
         report_phase("validated", {
             "topicOk": validation.topic_ok,
@@ -105,13 +109,13 @@ class FactChecker:
 
         report_phase("selecting_claims", {})
 
-        selection = self.claim_selector.select(article.claims or [])
+        selection = self.claim_selector.select(article.claims or [], thresholds)
         selected = selection.selected
 
         report_phase("claims_selected", {"count": len(selected)})
 
         claim_checks = [
-            self._check_claim(claim, report_phase)
+            self._check_claim(claim, report_phase, thresholds)
             for claim in selected
         ]
 
@@ -152,15 +156,46 @@ class FactChecker:
 
         return report
 
-    def _check_claim(self, claim: Claim, report_phase: OnPhase) -> FactCheck:
+    def check_claim(
+        self,
+        claim: Claim,
+        on_phase: Optional[OnPhase] = None,
+        thresholds: PipelineThresholds | None = None,
+    ) -> FactCheck:
+        """
+        Verify one claim on its own: retrieve evidence, rank it, ask the
+        LLM, then recalibrate the confidence.
 
-        retrieval = self.evidence_retriever.retrieve(claim)
-        ranking = self.ranker.rank(claim, retrieval.kept)
+        Public because a single claim is a useful unit by itself, not
+        only as a step inside an article run - POST /verify-claim calls
+        exactly this, so the standalone checker and the pipeline cannot
+        drift apart in what they consider verified.
+
+        Note this skips the admission filter (topic/positivity/duplicate)
+        and claim selection entirely: those judge an *article*, and a
+        bare claim has neither.
+        """
+
+        return self._check_claim(
+            claim,
+            on_phase or _noop,
+            thresholds or PipelineThresholds(),
+        )
+
+    def _check_claim(
+        self,
+        claim: Claim,
+        report_phase: OnPhase,
+        thresholds: PipelineThresholds,
+    ) -> FactCheck:
+
+        retrieval = self.evidence_retriever.retrieve(claim, thresholds)
+        ranking = self.ranker.rank(claim, retrieval.kept, thresholds)
         ranked = ranking.kept
 
         llm_result = self.verifier.verify(claim, ranked)
 
-        check = self.confidence_scorer.score(claim, ranked, llm_result)
+        check = self.confidence_scorer.score(claim, ranked, llm_result, thresholds)
 
         not_cited = [
             RejectedEvidence(
@@ -175,7 +210,9 @@ class FactChecker:
             if index not in llm_result.cited_evidence
         ]
 
-        reached_stage, stage_note = self._trace(ranked, llm_result, check)
+        reached_stage, stage_note = self._trace(
+            ranked, llm_result, check, thresholds
+        )
 
         check = check.model_copy(update={
             "rejected_sources": retrieval.rejected + ranking.rejected + not_cited,
@@ -199,9 +236,10 @@ class FactChecker:
         ranked: list[Evidence],
         llm_result: LLMVerificationResult,
         check: FactCheck,
+        thresholds: PipelineThresholds,
     ) -> tuple[PipelineStage, Optional[str]]:
 
-        if len(ranked) < self.confidence_scorer.MIN_EVIDENCE:
+        if len(ranked) < thresholds.min_evidence_for_verdict:
             return (
                 PipelineStage.CONFIDENCE_RECALIBRATION,
                 "No evidence could be retrieved for this claim; verdict forced to UNVERIFIED.",
