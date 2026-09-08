@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnalysisJob } from "@/lib/types";
+import { AnalysisJob, ThresholdOverrides } from "@/lib/types";
 
 const POLL_INTERVAL_MS = 1000;
 
@@ -13,12 +13,19 @@ interface UseAnalysisJobResult {
 /**
  * Kicks off a background analysis job for `url` and polls its status
  * every second until it reaches a terminal state (done/failed). Restarts
- * whenever `url`/`forceRefresh` change, and stops polling on unmount.
+ * whenever `url`/`forceRefresh`/`thresholds` change, and stops polling on
+ * unmount.
+ *
+ * `thresholds` overrides individual pipeline thresholds for this run only;
+ * omit it (or omit any field) to use the backend's configured defaults.
  */
 export function useAnalysisJob(
   url: string,
-  forceRefresh: boolean
+  forceRefresh: boolean,
+  thresholds?: ThresholdOverrides
 ): UseAnalysisJobResult {
+  const thresholdsKey = JSON.stringify(thresholds ?? null);
+
   const [job, setJob] = useState<AnalysisJob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +64,7 @@ export function useAnalysisJob(
         const response = await fetch("/api/jobs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url, forceRefresh }),
+          body: JSON.stringify({ url, forceRefresh, thresholds }),
         });
 
         const data = await response.json();
@@ -96,7 +103,10 @@ export function useAnalysisJob(
       cancelled = true;
       if (intervalId) clearInterval(intervalId);
     };
-  }, [url, forceRefresh]);
+    // thresholdsKey, not `thresholds`: a caller passing an object
+    // literal creates a new identity on every render, which would
+    // restart the job in an endless loop.
+  }, [url, forceRefresh, thresholdsKey]);
 
   return { job, error };
 }

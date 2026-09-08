@@ -15,7 +15,14 @@ enrichment pipeline stops populating that validation or claim selection
 still expects.
 """
 from src.config.settings import settings
+from src.config.thresholds import PipelineThresholds
+from src.models.storage.lineage import DataLayer
+from src.repositories.datalake_repository import DataLakeRepository
+from src.repositories.lake_backend import JsonFileLakeBackend
+from src.models.core.enriched_article import EnrichedArticle
 from src.models.core.news import News
+from src.models.fact_checker.fact_check import Verdict
+from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.services.fact_checker.claim_selector import ClaimSelector
 from src.services.fact_checker.validation_pipeline import ValidationPipeline
 from src.workflows.enrichment import NewsEnrichmentPipeline
@@ -75,10 +82,76 @@ def test_real_enrichment_feeds_real_validation_and_claim_selection(repository):
     selection = selector.select(article.claims or [])
 
     assert len(selection.selected) > 0
-    assert len(selection.selected) <= ClaimSelector.MAX_CLAIMS
+    assert len(selection.selected) <= PipelineThresholds().max_claims_per_article
 
     # Every extracted claim's entities were themselves drawn from the
     # same GLiNER pass - sanity-check the shape survives the round trip.
     for claim in selection.selected:
         assert isinstance(claim.text, str) and claim.text.strip()
         assert 0.0 <= claim.confidence <= 1.0
+
+
+def test_real_enrichment_output_survives_the_round_trip_into_all_three_layers(tmp_path):
+    """
+    The persist stage is the only place a real EnrichedArticle is
+    serialised whole and read back. Faked articles (tests/factories.py)
+    have tidy values; a real one has numpy-derived floats, a 1024-float
+    embedding, GLiNER entity dicts and YAKE keywords. This is the test
+    that would catch one of those failing to survive model_dump/JSON.
+    """
+
+    news = make_news()
+
+    article = NewsEnrichmentPipeline(settings).process(news)
+
+    report = FactCheckReport(
+        article_id=article.id,
+        validation_passed=True,
+        topic_ok=True,
+        positive_ok=True,
+        duplicate=False,
+        claims_total=len(article.claims or []),
+        claims_selected=0,
+        overall_verdict=Verdict.UNVERIFIED,
+    )
+
+    lake = DataLakeRepository(backend=JsonFileLakeBackend(tmp_path))
+
+    run = lake.start_run(news.url)
+
+    written = lake.persist_all(run, news, article, report)
+
+    # Layer 1 holds the untouched fetch.
+    raw = lake.get(DataLayer.RAW, written.raw_record_id)
+    assert raw["article"]["content"] == ARTICLE_BODY
+
+    # Layer 2 round-trips the full enrichment, embedding included, and
+    # re-validates as an EnrichedArticle.
+    processed = lake.get(DataLayer.PROCESSED, written.processed_record_id)
+    restored = EnrichedArticle.model_validate(processed["article"])
+
+    assert restored.id == article.id
+    assert restored.keywords == article.keywords
+    assert restored.entities == article.entities
+    assert len(restored.embedding) == settings.EMBEDDING_DIMENSION
+    assert restored.sentiment.label == article.sentiment.label
+    assert restored.quality.readability == article.quality.readability
+
+    # Layer 3 is the flat serving document - no embedding, decision made.
+    exploitation = lake.get(DataLayer.EXPLOITATION, written.exploitation_record_id)
+
+    assert "embedding" not in exploitation
+    assert exploitation["title"] == article.title
+    assert exploitation["keywords"] == article.keywords
+    assert exploitation["publishable"] is True
+    assert exploitation["embedding_dimension"] == settings.EMBEDDING_DIMENSION
+
+    # And the whole chain is walkable from the article id alone.
+    trace = lake.trace(article.id)
+
+    assert [entry["layer"] for entry in trace["manifest"]] == [
+        "raw",
+        "processed",
+        "exploitation",
+    ]
+    assert all(entry["run_id"] == run.run_id for entry in trace["manifest"])

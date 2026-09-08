@@ -22,7 +22,7 @@ def test_run_analysis_job_records_phases_and_completes():
     store = JobStore()
     job = store.create("https://example.com/a")
 
-    def fake_analyze(url, force_refresh=False, on_phase=None):
+    def fake_analyze(url, force_refresh=False, on_phase=None, thresholds=None):
         on_phase("scraping", {"url": url})
         on_phase("enriched", {"keywords": ["a"]})
         on_phase("done", {"url": url, "title": "Final"})
@@ -74,7 +74,7 @@ def test_run_analysis_job_records_failure_from_failed_phase():
     store = JobStore()
     job = store.create("https://example.com/a")
 
-    def fake_analyze(url, force_refresh=False, on_phase=None):
+    def fake_analyze(url, force_refresh=False, on_phase=None, thresholds=None):
         on_phase("scraping", {"url": url})
         on_phase("failed", {"url": url, "error": "Could not extract content"})
         return {"url": url, "error": "Could not extract content"}

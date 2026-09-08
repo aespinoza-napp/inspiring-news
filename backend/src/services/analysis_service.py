@@ -1,16 +1,24 @@
+from logging import getLogger
 from typing import Callable, Optional
 
 from src.config.settings import settings
+from src.config.thresholds import PipelineThresholds
 from src.models.core.enriched_article import EnrichedArticle
 from src.models.fact_checker.evidence import RejectedEvidence
 from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
+from src.models.core.news import News
+from src.models.storage.lineage import DataLayer, RunContext
+from src.models.storage.records import ProcessedRecord, RawRecord
+from src.repositories.datalake_repository import DataLakeRepository, content_hash
 from src.services.analysis_cache import AnalysisCache
 from src.services.fact_checker.fact_checker import FactChecker
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
 from src.services.scraper.extractor import ExtractorService
 from src.workflows.enrichment import NewsEnrichmentPipeline
+
+logger = getLogger(__name__)
 
 OnPhase = Callable[[str, dict], None]
 
@@ -49,49 +57,79 @@ class AnalysisService:
         extractor: ExtractorService | None = None,
         enrichment_pipeline: NewsEnrichmentPipeline | None = None,
         cache: AnalysisCache | None = None,
+        lake: DataLakeRepository | None = None,
     ):
         self.fact_checker = fact_checker
         self.extractor = extractor or ExtractorService()
         self.enrichment_pipeline = enrichment_pipeline or NewsEnrichmentPipeline(settings)
         self.cache = cache or AnalysisCache()
 
+        # `lake` has no default, like `fact_checker`: it is the only
+        # other collaborator here that writes outside the process, and a
+        # default would mean every test constructing an AnalysisService
+        # silently wrote records into the real data directory. The app
+        # passes the container singleton (see container.py); None simply
+        # switches the persist stage off.
+        self.lake = lake
+
     def analyze(
         self,
         url: str,
         force_refresh: bool = False,
         on_phase: Optional[OnPhase] = None,
+        thresholds: PipelineThresholds | None = None,
     ) -> dict:
+        """
+        `thresholds` is the effective threshold set for this one run.
+        None means "use the environment defaults" (settings.*), which is
+        what PipelineThresholds() resolves to.
+        """
 
         report_phase = on_phase or _noop
 
+        thresholds = thresholds or PipelineThresholds()
+
         if not force_refresh:
 
-            cached = self.cache.get(url)
+            # Keyed by URL *and* thresholds: the same URL analysed with a
+            # different admission threshold is a different result, and
+            # serving the cached one would silently ignore the caller's
+            # override.
+            cached = self.cache.get(url, thresholds)
 
             if cached is not None:
                 final = {**cached, "cached": True}
                 report_phase("cache_hit", final)
                 return final
 
-        result = self._run_pipeline(url, report_phase)
+        result = self._run_pipeline(url, report_phase, thresholds)
 
         final = {**result, "cached": False}
 
         if "error" in result:
             return final
 
-        self.cache.set(url, result)
+        self.cache.set(url, result, thresholds)
 
         report_phase("done", final)
 
         return final
 
-    def _run_pipeline(self, url: str, report_phase: OnPhase) -> dict:
+    def _run_pipeline(
+        self,
+        url: str,
+        report_phase: OnPhase,
+        thresholds: PipelineThresholds,
+    ) -> dict:
 
-        report_phase("scraping", {"url": url})
+        report_phase("scraping", {"url": url, "thresholds": thresholds.model_dump()})
 
         try:
-            news = self.extractor.extract(EvidenceScraper.GENERIC_SOURCE, url)
+            news = self.extractor.extract(
+                EvidenceScraper.GENERIC_SOURCE,
+                url,
+                thresholds,
+            )
         except Exception as exc:
             error = {"url": url, "error": f"Failed to fetch article: {exc}"}
             report_phase("failed", error)
@@ -104,9 +142,14 @@ class AnalysisService:
 
         report_phase("scraped", {"title": news.title, "url": news.url})
 
+        # Layer 1, immediately: what was extracted is worth keeping even
+        # if every later stage fails.
+        run = self._start_run(url, thresholds, report_phase)
+        raw = self._store_raw(run, news, report_phase)
+
         report_phase("enriching", {})
 
-        article = self.enrichment_pipeline.process(news)
+        article = self.enrichment_pipeline.process(news, thresholds)
 
         topics = [topic.model_dump() for topic in (article.topics or [])]
         sentiment = self._build_sentiment(article)
@@ -121,10 +164,27 @@ class AnalysisService:
             "quality": quality,
         })
 
-        report = self.fact_checker.run(article, on_phase=report_phase)
+        # Layer 2, before fact-checking: the enrichment (metadata,
+        # embedding) is durable from here on, so a SearXNG outage or an
+        # LLM timeout during verification no longer throws away the whole
+        # NLP pass.
+        processed = self._store_processed(run, raw, article, report_phase)
+
+        report = self.fact_checker.run(
+            article,
+            on_phase=report_phase,
+            thresholds=thresholds,
+        )
+
+        # Layer 3, and the report attached back onto layer 2.
+        storage = self._store_verified(
+            run, raw, processed, article, report, report_phase
+        )
 
         return {
             "url": url,
+            "storage": storage,
+            "thresholds": thresholds.model_dump(),
             "title": article.title,
             "keywords": article.keywords,
             "entities": article.entities,
@@ -148,6 +208,171 @@ class AnalysisService:
                 "claimsChecked": report.claims_selected,
             },
         }
+
+    # ------------------------------------------------------------------
+    # Storage
+    #
+    # One write per stage, as that stage completes, rather than one write
+    # of everything at the end:
+    #
+    #   extract  -> raw/
+    #   enrich   -> processed/          (metadata + embedding)
+    #   verify   -> exploitation/       (+ the report back onto processed)
+    #
+    # Every one of these is fail-soft and independent. Storage is a side
+    # effect of analysis: a full disk must not discard a result that
+    # already cost a scrape, an enrichment and one LLM call per claim.
+    # Each failure is reported as its own phase event and logged, so it
+    # is visible rather than silent, and a failure at one layer does not
+    # stop the next from being written (the later record simply loses its
+    # parent link).
+    # ------------------------------------------------------------------
+
+    def _start_run(
+        self,
+        url: str,
+        thresholds: PipelineThresholds,
+        report_phase: OnPhase,
+    ) -> RunContext | None:
+
+        if self.lake is None:
+            return None
+
+        try:
+            return self.lake.start_run(url, thresholds)
+        except Exception as exc:
+            logger.warning("Could not start a lake run for %s", url, exc_info=True)
+            report_phase("store_failed", {"layer": None, "error": str(exc)})
+            return None
+
+    def _store_raw(
+        self,
+        run: RunContext | None,
+        news: News,
+        report_phase: OnPhase,
+    ) -> RawRecord | None:
+
+        return self._store(
+            run,
+            DataLayer.RAW,
+            report_phase,
+            lambda: self.lake.persist_raw(run, news),
+        )
+
+    def _store_processed(
+        self,
+        run: RunContext | None,
+        raw: RawRecord | None,
+        article: EnrichedArticle,
+        report_phase: OnPhase,
+    ) -> ProcessedRecord | None:
+
+        return self._store(
+            run,
+            DataLayer.PROCESSED,
+            report_phase,
+            lambda: self.lake.persist_processed(run, article, parent=raw),
+        )
+
+    def _store_verified(
+        self,
+        run: RunContext | None,
+        raw: RawRecord | None,
+        processed: ProcessedRecord | None,
+        article: EnrichedArticle,
+        report: FactCheckReport,
+        report_phase: OnPhase,
+    ) -> dict | None:
+        """
+        The verification stage's write. Two records, not one: the flat
+        serving document in exploitation/, and the processed record
+        rewritten with the report attached so the evidence and the
+        rejected candidates - far too bulky for a serving document - stay
+        in the layer meant to hold them.
+        """
+
+        # No lake configured at all -> no storage section in the result.
+        # A lake that failed to open a run is a different thing, and must
+        # not look like "storage is switched off": say so explicitly.
+        if self.lake is None:
+            return None
+
+        if run is None:
+            return {
+                "persisted": False,
+                "error": "Could not start a storage run; see the store_failed event.",
+                "records": {layer.value: None for layer in DataLayer},
+            }
+
+        processed = self._store(
+            run,
+            DataLayer.PROCESSED,
+            report_phase,
+            lambda: self.lake.persist_processed(
+                run, article, parent=raw, report=report
+            ),
+        ) or processed
+
+        exploitation = self._store(
+            run,
+            DataLayer.EXPLOITATION,
+            report_phase,
+            lambda: self.lake.persist_exploitation(
+                run, article, report=report, parent=processed
+            ),
+        )
+
+        records = {
+            DataLayer.RAW.value: raw.record_id if raw else None,
+            DataLayer.PROCESSED.value: processed.record_id if processed else None,
+            DataLayer.EXPLOITATION.value: (
+                exploitation.record_id if exploitation else None
+            ),
+        }
+
+        storage = {
+            "persisted": all(records.values()),
+            "runId": run.run_id,
+            "contentHash": content_hash(article.body),
+            "publishable": exploitation.publishable if exploitation else False,
+            "records": records,
+        }
+
+        report_phase("stored", storage)
+
+        return storage
+
+    def _store(
+        self,
+        run: RunContext | None,
+        layer: DataLayer,
+        report_phase: OnPhase,
+        write,
+    ):
+
+        if run is None or self.lake is None:
+            return None
+
+        report_phase("storing", {"layer": layer.value})
+
+        try:
+            record = write()
+        except Exception as exc:
+            logger.warning(
+                "Failed to write the %s layer for run %s",
+                layer.value,
+                run.run_id,
+                exc_info=True,
+            )
+            report_phase("store_failed", {"layer": layer.value, "error": str(exc)})
+            return None
+
+        report_phase(
+            "stored_layer",
+            {"layer": layer.value, "recordId": record.record_id},
+        )
+
+        return record
 
     @staticmethod
     def _build_sentiment(article: EnrichedArticle) -> dict:

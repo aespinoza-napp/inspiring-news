@@ -2,6 +2,7 @@ import logging
 import time
 from typing import Callable
 
+from src.config.thresholds import PipelineThresholds
 from src.services.analysis_service import AnalysisService
 from src.services.job_store import JobStore
 
@@ -19,6 +20,7 @@ def run_analysis_job(
     job_id: str,
     url: str,
     force_refresh: bool = False,
+    thresholds: PipelineThresholds | None = None,
 ) -> None:
     """
     Runs AnalysisService.analyze() for one URL, writing each phase into
@@ -73,7 +75,14 @@ def run_analysis_job(
     # that construction. Without this, the job sits at status "queued" with
     # an empty event list for up to 15s - indistinguishable from being
     # stuck - before the frontend sees anything at all.
-    on_phase("initializing", {})
+    on_phase(
+        "initializing",
+        {
+            "thresholdOverrides": (
+                thresholds.overridden_from_defaults() if thresholds else {}
+            )
+        },
+    )
 
     try:
         analysis_service = get_analysis_service()
@@ -82,7 +91,12 @@ def run_analysis_job(
 
         on_phase("initialized", {"seconds": round(init_seconds, 2)})
 
-        analysis_service.analyze(url, force_refresh=force_refresh, on_phase=on_phase)
+        analysis_service.analyze(
+            url,
+            force_refresh=force_refresh,
+            on_phase=on_phase,
+            thresholds=thresholds,
+        )
     except Exception as exc:
         total_seconds = time.monotonic() - start
         logger.warning(

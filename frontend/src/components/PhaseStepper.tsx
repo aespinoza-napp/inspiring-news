@@ -28,11 +28,16 @@ const CURRENT_PHASE_LABELS: Record<string, string> = {
   claims_selected: "Claims selected",
   claim_checked: "Checking claims…",
   fact_check_done: "Fact-check complete",
+  storing: "Storing…",
+  stored_layer: "Stored",
+  stored: "All layers stored",
+  store_failed: "A storage layer failed — the analysis itself succeeded",
 };
 
 /**
  * Renders the job's phase events (see useAnalysisJob) as a five-stage
- * progress timeline: Fetch -> Enrich -> Validate -> Fact-check -> Done.
+ * progress timeline: Fetch -> Enrich -> Validate -> Fact-check -> Store
+ * -> Done.
  * Several fine-grained backend phases collapse into each stage (e.g.
  * "scraping"/"scraped" both belong to "Fetch"); the stage is "active"
  * while its start phase has fired but not yet its end phase.
@@ -59,6 +64,23 @@ export function PhaseStepper({
   const claimsCheckedCount = events.filter(
     (event) => event.phase === "claim_checked"
   ).length;
+
+  // Storage is no longer one step at the end - the backend writes raw
+  // after the fetch, processed after enrichment, then exploitation after
+  // verification. While that is in flight, show which layers have landed;
+  // once the final "stored" event arrives, show the editorial outcome.
+  const storedEvent = events.find((event) => event.phase === "stored");
+  const storedLayers = events.filter(
+    (event) => event.phase === "stored_layer"
+  ).length;
+
+  const storageNote = storedEvent
+    ? (storedEvent.data.publishable as boolean | undefined)
+      ? "publishable"
+      : "held back"
+    : storedLayers > 0
+    ? `${storedLayers}/4 writes`
+    : undefined;
 
   const stages: Stage[] = [
     {
@@ -108,6 +130,21 @@ export function PhaseStepper({
         !isSkipped && claimsSelectedCount
           ? `${claimsCheckedCount}/${claimsSelectedCount} claims`
           : undefined,
+    },
+    {
+      // Persisting is fail-soft on the backend: a storage error is
+      // reported as "persist_failed" and the analysis still completes,
+      // so this stage shows an error without failing the whole run.
+      id: "store",
+      label: "Store",
+      status: has("store_failed")
+        ? "error"
+        : has("stored")
+        ? "complete"
+        : has("storing")
+        ? "active"
+        : "pending",
+      note: storageNote,
     },
     {
       id: "done",
