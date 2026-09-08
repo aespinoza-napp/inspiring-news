@@ -1,13 +1,26 @@
-version: '3.8'
-
 services:
   neo4j:
-    image: neo4j:latest
+    image: neo4j:5  # pinned - "latest" will bite you eventually
     ports:
       - "7474:7474"
       - "7687:7687"
     environment:
       - NEO4J_AUTH=neo4j/password
+      # Without these, Neo4j's JVM auto-sizes heap + page cache based on
+      # available host RAM - dangerous on an 8GB machine that's also
+      # holding a local LLM in memory. Capped small since this is a dev
+      # graph, not production scale.
+      - NEO4J_server_memory_heap_initial__size=512m
+      - NEO4J_server_memory_heap_max__size=512m
+      - NEO4J_server_memory_pagecache_size=256m
+    mem_limit: 1g
+    healthcheck:
+      # backend depends on Bolt being ready, not just the container
+      # existing - without this, first boot can race and fail.
+      test: ["CMD", "wget", "-O", "/dev/null", "http://localhost:7474"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   searxng:
     image: searxng/searxng:latest
@@ -17,17 +30,61 @@ services:
       - ./searxng:/etc/searxng:rw
     environment:
       - SEARXNG_BASE_URL=http://localhost:8080/
+    mem_limit: 256m
 
   backend:
-    build: ./backend
+    build:
+      # The context is backend/, not this directory and not the repo
+      # root: the Dockerfile only ever needs the backend, and a repo-root
+      # context would also ship frontend/node_modules and .git - slow
+      # enough to dominate the build when running from WSL against
+      # /mnt/c. See backend/.dockerignore for what else is excluded.
+      context: ../backend
+      dockerfile: ../docker/backend.Dockerfile
     ports:
       - "8000:8000"
     env_file:
-      - ./backend/.env
+      # Relative to THIS file, so it must climb out of docker/ - the
+      # backend's .env lives at backend/.env. Copy it from
+      # backend/.env-example first; compose refuses to start if the file
+      # is missing.
+      - ../backend/.env
     environment:
-      # Container-to-container DNS name, overrides the .env default of
-      # localhost (which only works when the backend runs on the host).
+      # These three override .env values that are correct for running the
+      # backend on the host but wrong inside a container, where
+      # "localhost" is the container itself.
+      #
+      # Container-to-container DNS names for the two compose services:
       - SEARXNG_URL=http://searxng:8080
+      - NEO4J_URI=bolt://neo4j:7687
+      # Ollama is NOT part of this compose file - it runs on the host
+      # (see CLAUDE.md's LLMClient note), so the container reaches it
+      # through Docker's host gateway rather than its own localhost.
+      - LLM_BASE_URL=http://host.docker.internal:11434/v1
+    extra_hosts:
+      # host.docker.internal resolves natively on Docker Desktop, but not
+      # on plain Linux/WSL engines - this makes the LLM_BASE_URL above
+      # work on both.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Runtime data written by the pipeline: the local Qdrant store, the
+      # analysis cache and the three-layer lake (raw/processed/
+      # exploitation). Named volumes, so the fact-check corpus and the
+      # lake survive `docker compose down` - without this every restart
+      # starts from an empty vector collection, and duplicate detection
+      # has nothing to compare against.
+      - backend-data:/app/data
+      # The transformer models (GLiNER, embeddings, sentiment) download
+      # on first use - several GB. Cached here so that cost is paid once,
+      # not on every container start.
+      - model-cache:/models
     depends_on:
-      - neo4j
-      - searxng
+      neo4j:
+        condition: service_healthy
+      searxng:
+        condition: service_started
+    mem_limit: 1g
+
+volumes:
+  backend-data:
+  model-cache:

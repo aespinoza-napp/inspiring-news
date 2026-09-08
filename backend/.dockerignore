@@ -1,0 +1,28 @@
+# Build context for docker/backend.Dockerfile.
+#
+# Keeping this tight matters more than usual here: the compose file is
+# typically run from WSL against /mnt/c, where sending a large context
+# across the filesystem boundary is slow enough to dominate the build.
+
+# The host virtualenv - platform-specific and rebuilt in the image by
+# `uv sync` anyway. By far the largest thing in this directory.
+.venv/
+
+# Runtime data: the local Qdrant store, the analysis cache, the
+# three-layer lake and scraped samples. The container gets its own via
+# the volumes in docker-compose.yml; copying the host's in would both
+# bloat the image and bake one machine's state into it.
+data/
+
+__pycache__/
+*.py[codz]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets: .env is supplied at runtime via env_file, never baked into
+# the image (an image layer is readable by anyone who can pull it).
+.env
+
+.git/
+.gitignore

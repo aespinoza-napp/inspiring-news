@@ -30,6 +30,7 @@ Automated news pipeline: Scraping -> Fact-checking -> Sentiment -> Social Media 
 
 ## Setup Docker
 ```bash
+    cd docker
     docker-compose up --build
 ```
 
