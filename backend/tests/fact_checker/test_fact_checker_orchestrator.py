@@ -287,14 +287,36 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
     checker.run(article, on_phase=lambda phase, data: events.append((phase, data)))
 
     phases = [phase for phase, _ in events]
+
+    # Four events per claim, not one. Retrieval and the LLM call are the
+    # slowest steps in the pipeline, and a single `claim_checked` at the
+    # end left a polling client with nothing to show for the whole of it.
     assert phases == [
         "validating",
         "validated",
         "selecting_claims",
         "claims_selected",
+        "retrieving_evidence",
+        "evidence_retrieved",
+        "verifying_claim",
         "claim_checked",
         "fact_check_done",
     ]
+
+    by_phase = dict(events)
+
+    # Each per-claim event names its claim, so a client checking five
+    # claims can tell which one it is watching.
+    for phase in (
+        "retrieving_evidence",
+        "evidence_retrieved",
+        "verifying_claim",
+        "claim_checked",
+    ):
+        assert by_phase[phase]["claim"] == claim.text
+
+    assert by_phase["evidence_retrieved"]["found"] == 1
+    assert by_phase["verifying_claim"]["evidence"] == 1
 
     claim_checked_data = dict(events[phases.index("claim_checked")][1])
     assert claim_checked_data["verdict"] == Verdict.TRUE

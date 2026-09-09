@@ -68,7 +68,7 @@ class FakeExtractorService:
     def __init__(self, news_by_url: dict | None = None):
         self.news_by_url = news_by_url or {}
 
-    def extract(self, source, url):
+    def extract(self, source, url, thresholds=None):
         result = self.news_by_url.get(url)
         if isinstance(result, Exception):
             raise result
@@ -137,3 +137,115 @@ class FakeVerifier:
 
     def verify(self, claim, evidence):
         return self.result_by_claim[claim.text]
+
+
+# ----------------------------------------------------------------------
+# Retrieval collaborators
+#
+# These lived as private copies inside
+# tests/fact_checker/retrieval/test_evidence_retriever.py. Every one of
+# them drifted out of signature with the real collaborator when
+# thresholds became per-call, and each was found only by a TypeError in
+# an unrelated test run. They are shared now, and
+# tests/test_fake_contracts.py pins their signatures to the real classes.
+# ----------------------------------------------------------------------
+
+
+class FakeSearchProvider:
+    """Canned web evidence, ignoring the query."""
+
+    def __init__(self, evidence=None):
+        self.evidence = evidence or []
+        self.calls = []
+
+    def search(self, claim, thresholds=None):
+        self.calls.append((claim, thresholds))
+        return list(self.evidence)
+
+
+class FakeVectorRetriever:
+    """Canned internal-corpus evidence."""
+
+    def __init__(self, evidence=None):
+        self.evidence = evidence or []
+        self.calls = []
+
+    def retrieve(self, claim, limit: int = 5, thresholds=None):
+        self.calls.append((claim, limit, thresholds))
+        return list(self.evidence)
+
+
+class FakeEvidenceScraper:
+    """
+    Stands in for EvidenceScraper: marks what it was asked to enrich so
+    a test can assert *which* candidates were scraped, and stamps the
+    content so the enrichment is visible in the result.
+    """
+
+    def __init__(self):
+        self.enrich_calls = []
+
+    def enrich(self, evidence):
+        self.enrich_calls.append(evidence)
+        return [
+            item.model_copy(update={"content": f"scraped:{item.url}"})
+            for item in evidence
+        ]
+
+
+class FakeConfidenceScorer:
+    """Returns a canned FactCheck, for tests about orchestration only."""
+
+    def __init__(self, check):
+        self.check = check
+        self.calls = []
+
+    def score(self, claim, evidence, llm_result, thresholds=None):
+        self.calls.append((claim, evidence, llm_result, thresholds))
+        return self.check
+
+
+# ----------------------------------------------------------------------
+# Enrichment collaborators
+# ----------------------------------------------------------------------
+
+
+class FakeSentimentAnalyzer:
+
+    def __init__(self, result):
+        self.result = result
+
+    def process(self, text: str):
+        return self.result
+
+
+class FakeQualityAnalyzer:
+
+    def __init__(self, readability_score: float, quality_dict: dict):
+        self.readability_score = readability_score
+        self.quality_dict = quality_dict
+
+    def readability(self, text: str, lexicon=None) -> float:
+        return self.readability_score
+
+    def process(
+        self,
+        text: str,
+        *,
+        sentiment=None,
+        entities=None,
+        novelty=None,
+        language=None,
+    ) -> dict:
+        return dict(self.quality_dict)
+
+
+class FakeEntityExtractor:
+
+    def __init__(self, entities=None):
+        self.entities = entities if entities is not None else {}
+        self.calls = []
+
+    def process(self, text, threshold=None):
+        self.calls.append((text, threshold))
+        return dict(self.entities)

@@ -459,3 +459,123 @@ def test_every_configured_source_language_has_a_lexicon():
         f"Sources declare {unsupported}, which has no lexicon in "
         "src/config/lexicons.py - those articles would be scored as English."
     )
+
+
+# ----------------------------------------------------------------------
+# Tests must not write over tracked sample data
+# ----------------------------------------------------------------------
+
+TRACKED_SAMPLE_PATHS = {"PROCESSED_PATH", "RAW_PATH"}
+
+
+def _tracked_folder(call: "ast.Call") -> str | None:
+    """The tracked settings path a LocalRepository(...) call points at."""
+
+    if getattr(call.func, "id", None) != "LocalRepository":
+        return None
+
+    for keyword in call.keywords:
+
+        if keyword.arg != "folder":
+            continue
+
+        value = keyword.value
+
+        if (
+            isinstance(value, ast.Attribute)
+            and getattr(value.value, "id", None) == "settings"
+            and value.attr in TRACKED_SAMPLE_PATHS
+        ):
+            return value.attr
+
+    return None
+
+
+def test_no_test_saves_into_the_tracked_sample_directories():
+    """
+    `backend/data/raw` and `backend/data/processed` hold nine committed
+    sample files each. A test that saves through a LocalRepository over
+    either rewrites tracked files on every run.
+
+    This has happened twice: `tests/nlp/test_pipeline.py` did it and was
+    fixed, and `tests/nlp/test_all_news.py` was still doing it - invisible
+    only because that file sat behind an `--ignore` flag somebody had to
+    remember to pass.
+
+    *Reading* from those paths is fine and is what both tests
+    legitimately do. AST rather than a line window, so that the
+    read-only repository and the tmp_path one a few lines below it are
+    told apart - a regex over nearby lines flagged exactly that pair.
+    """
+
+    offenders = []
+
+    for path in TESTS.rglob("test_*.py"):
+
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+
+        # Variables bound to a repository over a tracked directory.
+        tracked_names: dict[str, int] = {}
+
+        for node in ast.walk(tree):
+
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
+
+                folder = _tracked_folder(node.value)
+
+                if folder:
+                    for target in node.targets:
+                        if isinstance(target, ast.Name):
+                            tracked_names[target.id] = node.lineno
+
+            # LocalRepository(folder=settings.X).save(...) in one go.
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "save"
+                and isinstance(node.func.value, ast.Call)
+                and _tracked_folder(node.func.value)
+            ):
+                offenders.append(
+                    f"{path.relative_to(TESTS).as_posix()}:{node.lineno}"
+                )
+
+        for node in ast.walk(tree):
+
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "save"
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id in tracked_names
+            ):
+                offenders.append(
+                    f"{path.relative_to(TESTS).as_posix()}:{node.lineno} "
+                    f"({node.func.value.id} is bound to a tracked directory "
+                    f"at line {tracked_names[node.func.value.id]})"
+                )
+
+    assert offenders == [], (
+        "Save through a LocalRepository over tmp_path instead - these "
+        "write over committed sample data:\n  " + "\n  ".join(sorted(offenders))
+    )
+
+
+def test_the_slow_marker_is_registered():
+    """
+    An unregistered marker is silently a no-op under
+    `-m 'not slow'`, which would put the slow tests back into every run.
+    """
+
+    import tomllib
+
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+
+    config = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+
+    pytest_config = config["tool"]["pytest"]["ini_options"]
+
+    assert any(
+        marker.startswith("slow:") for marker in pytest_config["markers"]
+    )
+    assert "not slow" in pytest_config["addopts"]

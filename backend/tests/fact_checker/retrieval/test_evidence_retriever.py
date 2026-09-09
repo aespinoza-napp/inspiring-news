@@ -3,38 +3,12 @@ from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
 from src.services.fact_checker.retrieval.evidence_retriever import EvidenceRetriever
 
 from tests.factories import create_claim
-from tests.fact_checker.fakes import FakeEmbeddingService
-
-
-class FakeSearchProvider:
-
-    def __init__(self, evidence):
-        self.evidence = evidence
-
-    def search(self, claim, thresholds=None):
-        return self.evidence
-
-
-class FakeVectorRetriever:
-
-    def __init__(self, evidence):
-        self.evidence = evidence
-
-    def retrieve(self, claim, limit=5, thresholds=None):
-        return self.evidence
-
-
-class FakeScraper:
-
-    def __init__(self):
-        self.enrich_calls = []
-
-    def enrich(self, evidence):
-        self.enrich_calls.append(evidence)
-        return [
-            item.model_copy(update={"content": f"scraped:{item.url}"})
-            for item in evidence
-        ]
+from tests.fact_checker.fakes import (
+    FakeEmbeddingService,
+    FakeEvidenceScraper,
+    FakeSearchProvider,
+    FakeVectorRetriever,
+)
 
 
 def test_retrieve_merges_web_and_internal_evidence():
@@ -62,7 +36,7 @@ def test_retrieve_merges_web_and_internal_evidence():
         "B. unrelated": [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     })
 
-    scraper = FakeScraper()
+    scraper = FakeEvidenceScraper()
 
     retriever = EvidenceRetriever(
         repository=None,
@@ -90,7 +64,7 @@ def test_retrieve_returns_empty_when_no_candidates():
     retriever = EvidenceRetriever(
         repository=None,
         search_provider=FakeSearchProvider([]),
-        scraper=FakeScraper(),
+        scraper=FakeEvidenceScraper(),
         vector_retriever=FakeVectorRetriever([]),
         embeddings=FakeEmbeddingService(),
     )
@@ -118,7 +92,7 @@ def test_retrieve_only_scrapes_top_web_candidates(monkeypatch):
 
     embeddings = FakeEmbeddingService(vectors=vectors)
 
-    scraper = FakeScraper()
+    scraper = FakeEvidenceScraper()
 
     retriever = EvidenceRetriever(
         repository=None,

@@ -12,13 +12,14 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ```bash
 ./scripts/check.sh          # backend tests + frontend typecheck
 ./scripts/check.sh fast     # invariants only, seconds, no models loaded
+./scripts/check.sh slow     # the full model stack over data/raw, minutes
 ```
 
-`make check` / `make fast` do the same. Use it rather than composing your
-own: `pytest` needs `--ignore=tests/nlp/test_all_news.py` (that module
-reads scraped articles nothing in the suite creates) and the frontend is
-typechecked from a different directory. **This is the definition of
-"done".**
+`make check` / `make fast` / `make slow` do the same. Use these rather
+than composing your own: the frontend is typechecked from a different
+directory, and the slow tests are excluded by a registered `slow` marker
+(`addopts` in `pyproject.toml`) rather than by a path flag nobody
+remembers. **`./scripts/check.sh` is the definition of "done".**
 
 ## Repository layout
 
@@ -75,6 +76,13 @@ the declared exception, deliberately.
 8. **Both `en` and `es` keep complete lexicons.** Adding a source in a
    third language fails the suite rather than silently scoring it as
    English.
+9. **No test saves through a `LocalRepository` over `data/raw` or
+   `data/processed`.** Both hold committed sample files; saving there
+   rewrites tracked data on every run. Read from them freely; write to
+   `tmp_path`.
+10. **Every shared fake in `tests/fact_checker/fakes.py` has a contract
+    entry** in `tests/test_fake_contracts.py`, so a fake cannot drift
+    out of signature with the collaborator it stands in for.
 
 ## Known dead / known broken
 

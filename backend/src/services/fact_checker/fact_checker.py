@@ -189,9 +189,33 @@ class FactChecker:
         thresholds: PipelineThresholds,
     ) -> FactCheck:
 
+        # The four sub-stages below are the slowest in the whole pipeline -
+        # a live SearXNG search, scraping the top hits, and one LLM call -
+        # and they used to emit nothing until `claim_checked` at the very
+        # end. A five-claim article therefore showed the client four
+        # updates spread over a minute of apparent silence. CLAUDE.md's
+        # rule is per stage, not per method.
+
+        report_phase("retrieving_evidence", {"claim": claim.text})
+
         retrieval = self.evidence_retriever.retrieve(claim, thresholds)
+
+        report_phase("evidence_retrieved", {
+            "claim": claim.text,
+            "found": len(retrieval.kept),
+            "rejected": len(retrieval.rejected),
+        })
+
         ranking = self.ranker.rank(claim, retrieval.kept, thresholds)
         ranked = ranking.kept
+
+        # Ranking is embedding arithmetic over a handful of items, fast
+        # enough not to deserve its own pair of events - but the LLM call
+        # after it is the single longest step, so it gets one.
+        report_phase("verifying_claim", {
+            "claim": claim.text,
+            "evidence": len(ranked),
+        })
 
         llm_result = self.verifier.verify(claim, ranked)
 

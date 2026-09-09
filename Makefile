@@ -2,7 +2,7 @@
 # script is the source of truth - it runs anywhere bash does, including
 # Git Bash on Windows where make usually is not installed.
 
-.PHONY: check fast backend frontend
+.PHONY: check fast slow backend frontend
 
 check:
 	@./scripts/check.sh all
@@ -15,3 +15,6 @@ backend:
 
 frontend:
 	@./scripts/check.sh frontend
+
+slow:
+	@./scripts/check.sh slow

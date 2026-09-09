@@ -26,7 +26,10 @@ const CURRENT_PHASE_LABELS: Record<string, string> = {
   skipped: "Fact-check skipped — article did not pass validation",
   selecting_claims: "Selecting claims to verify…",
   claims_selected: "Claims selected",
-  claim_checked: "Checking claims…",
+  retrieving_evidence: "Searching for evidence…",
+  evidence_retrieved: "Evidence found",
+  verifying_claim: "Asking the model to judge the claim…",
+  claim_checked: "Claim checked",
   fact_check_done: "Fact-check complete",
   storing: "Storing…",
   stored_layer: "Stored",
@@ -123,6 +126,8 @@ export function PhaseStepper({
         ? "complete"
         : has("selecting_claims") ||
           has("claims_selected") ||
+          has("retrieving_evidence") ||
+          has("verifying_claim") ||
           has("claim_checked")
         ? "active"
         : "pending",

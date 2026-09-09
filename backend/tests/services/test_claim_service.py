@@ -7,19 +7,9 @@ from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.services.claim_service import ClaimService
 
 from tests.factories import create_evidence
+from tests.fact_checker.fakes import FakeEntityExtractor
 
 CLAIM = "NASA discovered water on Mars in 2024."
-
-
-class FakeEntityExtractor:
-
-    def __init__(self, entities=None):
-        self.entities = entities if entities is not None else {"organization": ["NASA"]}
-        self.calls = []
-
-    def process(self, text, threshold=None):
-        self.calls.append((text, threshold))
-        return self.entities
 
 
 def make_check(**kwargs) -> FactCheck:
@@ -45,7 +35,7 @@ def make_service(check=None, entity_extractor=None):
 
     return ClaimService(
         fact_checker=fact_checker,
-        entity_extractor=entity_extractor or FakeEntityExtractor(),
+        entity_extractor=entity_extractor or FakeEntityExtractor({"organization": ["NASA"]}),
     )
 
 
@@ -56,7 +46,7 @@ def make_service(check=None, entity_extractor=None):
 
 def test_entities_are_extracted_with_the_shared_extractor():
 
-    extractor = FakeEntityExtractor()
+    extractor = FakeEntityExtractor({"organization": ["NASA"]})
 
     service = make_service(entity_extractor=extractor)
 
@@ -68,7 +58,7 @@ def test_entities_are_extracted_with_the_shared_extractor():
 
 def test_the_entity_threshold_is_passed_through():
 
-    extractor = FakeEntityExtractor()
+    extractor = FakeEntityExtractor({"organization": ["NASA"]})
 
     make_service(entity_extractor=extractor).verify(
         CLAIM,

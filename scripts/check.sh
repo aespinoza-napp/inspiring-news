@@ -15,15 +15,16 @@
 #   ./scripts/check.sh fast       invariants only - seconds, no models
 #   ./scripts/check.sh backend    backend only
 #   ./scripts/check.sh frontend   frontend only
+#   ./scripts/check.sh slow       the slow model-stack tests, only
 
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="${1:-all}"
 
-# Excluded from routine runs: depends on backend/data/raw already holding
-# real scraped articles, which nothing in the current suite creates.
-PYTEST_ARGS=(--ignore=tests/nlp/test_all_news.py -q)
+# The `slow` marker is excluded by pyproject's addopts, so no flag to
+# remember here. `./scripts/check.sh slow` runs those instead.
+PYTEST_ARGS=(-q)
 
 failures=0
 
@@ -58,6 +59,15 @@ run_backend() {
   fi
 }
 
+run_slow() {
+  step "Slow tests (full model stack over data/raw)"
+  if (cd "$ROOT/backend" && uv run pytest -m slow -q); then
+    pass "slow tests"
+  else
+    fail "slow tests"
+  fi
+}
+
 run_frontend() {
   step "Frontend typecheck"
   if (cd "$ROOT/frontend" && npx tsc --noEmit); then
@@ -69,11 +79,12 @@ run_frontend() {
 
 case "$TARGET" in
   fast)     run_fast ;;
+  slow)     run_slow ;;
   backend)  run_backend ;;
   frontend) run_frontend ;;
   all)      run_backend; run_frontend ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | backend | frontend" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | backend | frontend" >&2
     exit 2
     ;;
 esac

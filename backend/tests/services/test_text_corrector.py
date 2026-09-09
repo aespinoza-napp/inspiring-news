@@ -1,32 +1,11 @@
 from src.models.nlp.sentiment_result import SentimentResult
 from src.services.corrector.text_corrector import TextCorrector
 
-from tests.fact_checker.fakes import FakeLLMClient
-
-
-class FakeSentimentAnalyzer:
-
-    def __init__(self, result: SentimentResult):
-        self.result = result
-
-    def process(self, text: str) -> SentimentResult:
-        return self.result
-
-
-class FakeQualityAnalyzer:
-
-    def __init__(self, readability_score: float, quality_dict: dict):
-        self.readability_score = readability_score
-        self.quality_dict = quality_dict
-
-    def readability(self, text: str, lexicon=None) -> float:
-        return self.readability_score
-
-    def process(
-        self, text: str, sentiment=None, entities=None,
-        novelty=None, language=None,
-    ) -> dict:
-        return self.quality_dict
+from tests.fact_checker.fakes import (
+    FakeLLMClient,
+    FakeQualityAnalyzer,
+    FakeSentimentAnalyzer,
+)
 
 
 POSITIVE_SENTIMENT = SentimentResult(

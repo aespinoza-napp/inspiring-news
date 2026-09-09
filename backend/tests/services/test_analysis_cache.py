@@ -136,9 +136,9 @@ def test_the_same_thresholds_hit_the_same_entry(tmp_path):
 
 def test_thresholds_equal_to_the_defaults_key_the_same_as_no_thresholds(tmp_path):
     """
-    Only *differences* from the environment defaults enter the key, so a
-    caller who explicitly restates a default still hits the plain entry
-    rather than forcing a redundant re-run.
+    `None` and an unmodified PipelineThresholds are the same run, so they
+    must reach the same entry - the key is built from the effective
+    values either way.
     """
 
     cache = AnalysisCache(directory=tmp_path)
@@ -146,6 +146,46 @@ def test_thresholds_equal_to_the_defaults_key_the_same_as_no_thresholds(tmp_path
     cache.set("https://example.com/a", {"title": "Default run"})
 
     assert cache.get("https://example.com/a", PipelineThresholds()) is not None
+
+
+def test_changing_an_env_default_invalidates_the_entry(tmp_path, monkeypatch):
+    """
+    The hole the effective-value key closes.
+
+    Keying on the *deviation* from the defaults meant a default run
+    before an .env change and a default run after it both recorded "no
+    overrides" and hashed identically - so the second was served an
+    answer computed under the old threshold, with nothing in the
+    response saying so. The response shape had not changed, so
+    SCHEMA_VERSION could not catch it either.
+    """
+
+    from src.config.settings import settings
+
+    cache = AnalysisCache(directory=tmp_path)
+
+    monkeypatch.setattr(settings, "DUPLICATE_THRESHOLD", 0.90)
+    cache.set("https://example.com/a", {"computed_under": 0.90}, PipelineThresholds())
+
+    monkeypatch.setattr(settings, "DUPLICATE_THRESHOLD", 0.96)
+
+    assert cache.get("https://example.com/a", PipelineThresholds()) is None
+
+
+def test_a_forced_refresh_rewrites_the_entry_for_its_own_key(tmp_path):
+    """
+    force_refresh bypasses the *read*, not the write - the point is to
+    replace a stale entry, not to stop caching.
+    """
+
+    cache = AnalysisCache(directory=tmp_path)
+
+    tuned = PipelineThresholds(max_claims_per_article=2)
+
+    cache.set("https://example.com/a", {"run": "first"}, tuned)
+    cache.set("https://example.com/a", {"run": "second"}, tuned)
+
+    assert cache.get("https://example.com/a", tuned)["run"] == "second"
 
 
 def test_two_different_overrides_get_two_different_entries(tmp_path):

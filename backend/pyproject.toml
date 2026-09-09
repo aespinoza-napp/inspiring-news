@@ -34,6 +34,14 @@ dependencies = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+# Excluded by default, and by marker rather than by `--ignore=<path>`:
+# the flag had to be remembered on every invocation, and forgetting it
+# ran a test that wrote over committed sample fixtures. Run them with
+# `./scripts/check.sh slow`.
+addopts = "-m 'not slow'"
+markers = [
+    "slow: loads the full model stack over the whole data/raw corpus (minutes, not seconds)",
+]
 filterwarnings = [
     "ignore:Using `httpx` with `starlette.testclient` is deprecated",
 ]

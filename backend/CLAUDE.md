@@ -43,7 +43,10 @@ classifier, sentiment, quality, embeddings — into an `EnrichedArticle`.
   This is the guardrail that stops a cheap local model bluffing — don't
   weaken it.
 - Every stage takes an optional `on_phase(phase, data)` callback. This
-  backs the job-polling API.
+  backs the job-polling API. Claim checking emits four events per claim
+  (`retrieving_evidence`, `evidence_retrieved`, `verifying_claim`,
+  `claim_checked`) because those sub-stages are the slowest in the
+  pipeline — a live search, a scrape and one LLM call.
 
 ## Language
 
@@ -111,9 +114,14 @@ for the whole suite, so nothing depends on `.env` or the environment.
 
 `tests/test_invariants.py` enforces the root `CLAUDE.md` invariants.
 
+`tests/test_fake_contracts.py` asserts every shared fake accepts what the
+real collaborator accepts — five fakes drifted at once when thresholds
+became per-call, each found by a `TypeError` days later.
+
 `tests/test_connection.py` skips when Neo4j is not running.
 `tests/nlp/test_pipeline.py` skips when `data/raw` is empty — it enriches
 whatever real article sorts first there, so it can only assert what holds
 for *any* article. Assertions about a specific article belong in
 `tests/test_real_pipeline_integration.py`, which uses committed input.
-`tests/nlp/test_all_news.py` is excluded from routine runs.
+`tests/nlp/test_all_news.py` carries the `slow` marker (the full model
+stack over the whole corpus) and runs via `./scripts/check.sh slow`.

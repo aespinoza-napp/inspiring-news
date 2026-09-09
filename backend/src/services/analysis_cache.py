@@ -78,21 +78,29 @@ class AnalysisCache:
         thresholds: PipelineThresholds | None = None,
     ) -> Path:
         """
-        The key is the URL *plus* any thresholds that differ from the
-        environment defaults. A run with a custom admission threshold is
-        a different analysis of the same URL, and must not be served the
-        default run's cached answer (nor overwrite it). A default run
-        keys on the URL alone, so existing entries stay reachable.
+        The key is the URL plus the run's **effective** threshold values.
+
+        It used to be the URL plus only the thresholds that *differed*
+        from the environment defaults, so that a default run kept keying
+        on the URL alone and existing entries stayed reachable. That is
+        unsound: the deviation is measured against whatever the defaults
+        happen to be right now. Change DUPLICATE_THRESHOLD in `.env` from
+        0.90 to 0.96 and a default run before and a default run after
+        both record "no overrides" and hash to the same key - so the
+        second run is served an answer computed under the old threshold,
+        with nothing in the response saying so. The schema version does
+        not change either, because the response *shape* did not.
+
+        Hashing the effective values closes that. The cost is that an
+        env change now invalidates the affected entries, which is the
+        correct behaviour and cheap - it is a cache.
         """
 
-        material = url.strip()
-
-        overridden = (
-            thresholds.overridden_from_defaults() if thresholds else {}
+        effective = (
+            (thresholds or PipelineThresholds()).model_dump()
         )
 
-        if overridden:
-            material += "|" + json.dumps(overridden, sort_keys=True)
+        material = url.strip() + "|" + json.dumps(effective, sort_keys=True)
 
         key = hashlib.sha256(material.encode("utf-8")).hexdigest()
 
