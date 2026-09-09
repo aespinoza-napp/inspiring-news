@@ -4,7 +4,7 @@
   "url": "https://www.cnn.com/videos/world/2023/04/02/russian-military-blogger-vladlen-tatarsky-killed-cafe-explosion-chance-vpx.cnn",
   "title": "",
   "body": "Video Ad Feedback\n  Video shows moment of deadly explosion at cafe in Russia\n                \n                        \n                              \n                        A well-known Russian military blogger, Vladlen Tatarsky, was killed in an explosion at a cafe in St. Petersburg, authorities said. CNN's Matthew Chance reports. \n                    \n                            \n                                        \n        \n            \n            \n        3:05\n                            \n                                 • Source:\n                \n                    CNN\n        \n                    \n                \n      \n          CNN in Russia\n      \n      11 videos\n    \n    Video Ad Feedback\n  Video shows moment of deadly explosion at cafe in Russia\n                \n                    \n                Video Ad Feedback\n  Hear what Russians are telling Frederik Pleitgen about Trump and Zelensky\n                \n                    \n                Video Ad Feedback\n  See Russia state TV’s coverage of Trump’s call with Putin\n                \n                    \n                Video Ad Feedback\n  How Assad's fall may affect Russian influence in Syria\n                \n                    \n                Video Ad Feedback\n  Navalny's body arrived at church to clapping and chanting from mourners\n                \n                    \n                Video Ad Feedback\n  Navalny's mother claims Russian agents are 'blackmailing' her\n                \n                    \n                Video Ad Feedback\n  Hear why someone left a sledgehammer at a Prigozhin memorial\n                \n                    \n                Video Ad Feedback\n  CNN goes to Red Square to gauge Russians' opinion on Putin after the rebellion\n                \n                    \n                Video Ad Feedback\n  Russian priest says he's helped 'thousands' of Ukrainian refugees get to Europe\n                \n                    \n                ",
-  "language": null,
+  "language": "en",
   "published_at": "2026-07-30T00:00:00",
   "keywords": [
     "Vladlen Tatarsky",
@@ -109,22 +109,22 @@
     }
   ],
   "sentiment": {
-    "label": "neutral",
-    "positive": 0.0113,
-    "neutral": 0.6274,
-    "negative": 0.3612,
-    "polarity": -0.3499,
+    "label": "negative",
+    "positive": 0.1215,
+    "neutral": 0.3944,
+    "negative": 0.4841,
+    "polarity": -0.3625,
     "subjectivity": 0.09,
-    "confidence": 0.6274,
-    "emotional_intensity": 0.3499
+    "confidence": 0.4841,
+    "emotional_intensity": 0.3625
   },
   "quality": {
-    "readability": 0.1755,
+    "readability": 0.2008,
     "objectivity": 0.1333,
     "constructiveness": 0.0,
-    "inspirational_score": 0.175,
+    "inspirational_score": 0.0425,
     "hopefulness": 0.0,
-    "societal_impact": 0.2,
+    "societal_impact": 0.4,
     "novelty": 0.5
   },
   "embedding": [

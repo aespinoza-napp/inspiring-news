@@ -71,6 +71,27 @@ class Settings(BaseSettings):
     # some import orders) had no effect before.
     # -----------------------------------------------------------------
 
+    # -----------------------------------------------------------------
+    # Fetch guard (SSRF)
+    #
+    # Every fetch is server-side with a URL from outside the process, so
+    # without this the service proxies into whatever network it runs on -
+    # including the compose network that holds Neo4j and SearXNG, and any
+    # cloud metadata endpoint. Off is for offline tests only.
+    # -----------------------------------------------------------------
+    URL_GUARD_ENABLED: bool = True
+
+    # Hostnames exempt from the private-address check. Empty by default;
+    # an escape hatch for a staging host on a private network, so nobody
+    # reaches for URL_GUARD_ENABLED=false to solve that.
+    URL_GUARD_ALLOWED_HOSTS: list[str] = []
+
+    # When set, /storage/* requires this value in an X-API-Key header.
+    # Unset leaves those endpoints open, which is fine on localhost and
+    # not fine anywhere else - src/main.py logs a warning at startup so
+    # that choice is never silent.
+    STORAGE_API_KEY: SecretStr | None = None
+
     # Enrichment
     TOPIC_CLASSIFIER_THRESHOLD: float = 0.35
     ENTITY_THRESHOLD: float = 0.50

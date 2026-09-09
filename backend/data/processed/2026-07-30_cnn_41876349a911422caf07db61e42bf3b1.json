@@ -4,7 +4,7 @@
   "url": "https://www.cnn.com/2023/04/03/tech/china-micron-probe-us-chip-war-intl-hnk/index.html",
   "title": "",
   "body": "China has launched a cybersecurity probe into Micron Technology, one of America’s largest memory chip makers, in apparent retaliation after US allies in Asia and Europe announced new restrictions on the sale of key technology to Beijing.\nThe Cyberspace Administration of China (CAC) will review products sold by Micron in the country, according to a statement by the watchdog late on Friday.\nThe move is aimed at “ensuring the security of key information infrastructure supply chains, preventing cybersecurity risks caused by hidden product problems, and maintaining national security,” it noted.\nIt came on the same day that Japan, a US ally, said it would restrict the export of advanced chip manufacturing equipment to countries including China, following similar moves by the United States and the Netherlands.\nWashington and its allies have announced curbs on China’s semiconductor industry, which strike at the heart of Beijing’s bid to become a tech superpower.\nLast month, the Netherlands also unveiled new restrictions on overseas sales of semiconductor technology, citing the need to protect national security. In October, the United States banned Chinese companies from buying advanced chips and chipmaking equipment without a license.\nMicron told CNN it was aware of the review.\n“We are in communication with the CAC and are cooperating fully,” it said, adding that it stands by the security of its products. “Micron’s product shipments, engineering, manufacturing, sales and other functions are operating as normal.”\nRisks expected\nShares in Micron sank 4.4% on Wall Street Friday following the news, the biggest drop in more than three months. On Monday, they closed another 1.2% lower. Micron derives more than 10% of its revenue from China.\nIn an earlier filing, the Idaho-based company had warned of such risks.\n“The Chinese government may restrict us from participating in the China market or may prevent us from competing effectively with Chinese companies,” it said last week.\nChina has strongly criticized restrictions on tech exports, saying last month it “firmly opposes” such measures.\nIn efforts to boost growth and job creation, Beijing is seeking to woo foreign investments as it grapples with mounting economic challenges. The newly minted premier Li Qiang and several top economic officials have been rolling out the welcome wagon for global CEOs and promising they would “provide a good environment and services.”\nBut Beijing has also exerted growing pressure on foreign companies to bring them into line with its agenda.\nLast month, authorities closed the Beijing office of Mintz Group, a US corporate intelligence firm, and detained five local staff.\nDays earlier, they suspended Deloitte’s operations in Beijing for three months and imposed a fine of $31 million over alleged lapses in its work auditing a state-owned distressed debt manager.\nCNN’s Michelle Toh, Junko Ogura, Sandi Sidhu and Chris Lau contributed to the article.",
-  "language": null,
+  "language": "en",
   "published_at": "2026-07-30T00:00:00",
   "keywords": [
     "Europe announced",
@@ -77,6 +77,19 @@
       "confidence": 0.5
     },
     {
+      "text": "The Cyberspace Administration of China (CAC) will review products sold by Micron in the country, according to a statement by the watchdog late on Friday.",
+      "entities": {
+        "country": [
+          "China",
+          "country"
+        ],
+        "company": [
+          "Micron"
+        ]
+      },
+      "confidence": 0.5
+    },
+    {
       "text": "It came on the same day that Japan, a US ally, said it would restrict the export of advanced chip manufacturing equipment to countries including China, following similar moves by the United States and the Netherlands.",
       "entities": {
         "country": [
@@ -130,7 +143,7 @@
           "news"
         ]
       },
-      "confidence": 0.75
+      "confidence": 0.65
     },
     {
       "text": "Micron derives more than 10% of its revenue from China.",
@@ -142,7 +155,7 @@
           "China"
         ]
       },
-      "confidence": 0.5
+      "confidence": 0.6
     },
     {
       "text": "“The Chinese government may restrict us from participating in the China market or may prevent us from competing effectively with Chinese companies,” it said last week.",
@@ -158,31 +171,6 @@
       "confidence": 0.7
     },
     {
-      "text": "China has strongly criticized restrictions on tech exports, saying last month it “firmly opposes” such measures.",
-      "entities": {
-        "country": [
-          "China"
-        ]
-      },
-      "confidence": 0.55
-    },
-    {
-      "text": "The newly minted premier Li Qiang and several top economic officials have been rolling out the welcome wagon for global CEOs and promising they would “provide a good environment and services.”\nBut Beijing has also exerted growing pressure on foreign companies to bring them into line with its agenda.",
-      "entities": {
-        "person": [
-          "Li Qiang"
-        ],
-        "company": [
-          "foreign companies",
-          "global CEOs"
-        ],
-        "city": [
-          "Beijing"
-        ]
-      },
-      "confidence": 0.55
-    },
-    {
       "text": "Days earlier, they suspended Deloitte’s operations in Beijing for three months and imposed a fine of $31 million over alleged lapses in its work auditing a state-owned distressed debt manager.",
       "entities": {
         "company": [
@@ -192,26 +180,26 @@
           "Beijing"
         ]
       },
-      "confidence": 0.6
+      "confidence": 0.8
     }
   ],
   "sentiment": {
     "label": "neutral",
-    "positive": 0.0404,
-    "neutral": 0.8614,
-    "negative": 0.0983,
-    "polarity": -0.0579,
+    "positive": 0.1931,
+    "neutral": 0.4043,
+    "negative": 0.4026,
+    "polarity": -0.2096,
     "subjectivity": 0.349,
-    "confidence": 0.8614,
-    "emotional_intensity": 0.0579
+    "confidence": 0.4043,
+    "emotional_intensity": 0.2096
   },
   "quality": {
-    "readability": 0.405,
-    "objectivity": 0.2,
-    "constructiveness": 0.75,
-    "inspirational_score": 0.44,
-    "hopefulness": 0.2,
-    "societal_impact": 0.2,
+    "readability": 0.4142,
+    "objectivity": 0.0,
+    "constructiveness": 0.7143,
+    "inspirational_score": 0.3419,
+    "hopefulness": 0.3,
+    "societal_impact": 0.8,
     "novelty": 0.5
   },
   "embedding": [

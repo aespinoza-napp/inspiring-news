@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "permissions": {
+    "allow": [
+      "Bash(./scripts/check.sh*)",
+      "Bash(make check)",
+      "Bash(make fast)",
+      "Bash(uv run pytest*)",
+      "Bash(uv sync)",
+      "Bash(npx tsc*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ]
+  },
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'case \"$CLAUDE_FILE_PATHS\" in *backend/src/*|*backend/tests/*) cd \"$CLAUDE_PROJECT_DIR\" && ./scripts/check.sh fast ;; esac'",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}

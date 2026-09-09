@@ -8,6 +8,7 @@ from src.processors.nlp.embeddings import EmbeddingProcessor
 
 from src.config.thresholds import PipelineThresholds
 from src.models.core.enriched_article import EnrichedArticle
+from src.processors.nlp.language import LanguageDetector
 
 class NewsEnrichmentPipeline:
 
@@ -36,7 +37,20 @@ class NewsEnrichmentPipeline:
         # classifier and the sentiment model) shared by every request.
         thresholds = thresholds or PipelineThresholds()
 
+        # Detect here too rather than trusting the caller: /enrich and any
+        # News built by hand have no extractor to have set it.
+        language = getattr(article, "language", None) or LanguageDetector.detect(
+            article.content
+        )
+
         embedding = self.embedding.process(article.content)
+
+        # Computed before the constructor call so it can be handed to
+        # QualityAnalyzer, whose `inspiration` metric weights sentiment
+        # positivity at 0.35. It accepted a `sentiment` argument that the
+        # pipeline never passed, so inspiration was scored against a
+        # hardcoded 0.5 for every article ever analysed.
+        sentiment = self.sentiment.process(article.content)
 
         return EnrichedArticle(
 
@@ -50,11 +64,11 @@ class NewsEnrichmentPipeline:
 
             body=article.content,
 
-            #language=article.language,
+            language=language,
             
             published_at=article.published_at,
 
-            keywords=self.keywords.process(article.content),
+            keywords=self.keywords.process(article.content, language),
 
             entities=self.entities.process(
                 article.content,
@@ -70,11 +84,16 @@ class NewsEnrichmentPipeline:
                 article.content,
                 thresholds.claim_min_confidence,
                 thresholds.entity_threshold,
+                language=language,
             ),
 
-            sentiment=self.sentiment.process(article.content),
+            sentiment=sentiment,
 
-            quality=self.quality.process(article.content),
+            quality=self.quality.process(
+                article.content,
+                sentiment=sentiment,
+                language=language,
+            ),
 
             embedding=embedding.tolist(),
 

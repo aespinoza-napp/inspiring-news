@@ -120,6 +120,15 @@ class PipelineThresholds(BaseModel):
         le=1.0,
     )
 
+    # How many search hits to ask SearXNG for per claim, before the
+    # pre-rank funnel cuts them down to max_evidence_per_claim. Tunable
+    # because widening recall is the first thing to try when a claim
+    # comes back UNVERIFIED for lack of evidence.
+    evidence_fetch_candidates: int = Field(
+        default_factory=lambda: settings.EVIDENCE_FETCH_CANDIDATES,
+        ge=1,
+    )
+
     max_evidence_per_claim: int = Field(
         default_factory=lambda: settings.MAX_EVIDENCE_PER_CLAIM,
         ge=1,
@@ -189,6 +198,7 @@ class ThresholdOverrides(BaseModel):
     relatedness_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
 
     max_claims_per_article: Optional[int] = Field(None, ge=1)
+    evidence_fetch_candidates: Optional[int] = Field(None, ge=1)
     claim_dedup_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     max_evidence_per_claim: Optional[int] = Field(None, ge=1)
     min_evidence_for_verdict: Optional[int] = Field(None, ge=0)

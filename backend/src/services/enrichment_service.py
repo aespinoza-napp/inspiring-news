@@ -42,6 +42,7 @@ class EnrichmentService:
         text: str,
         title: str | None = None,
         url: str | None = None,
+        language: str | None = None,
         on_phase: Optional[OnPhase] = None,
         thresholds: PipelineThresholds | None = None,
     ) -> dict:
@@ -53,7 +54,7 @@ class EnrichmentService:
         report_phase("enriching", {"thresholds": thresholds.model_dump()})
 
         article = self.pipeline.process(
-            self._as_news(text, title, url),
+            self._as_news(text, title, url, language),
             thresholds,
         )
 
@@ -64,7 +65,12 @@ class EnrichmentService:
         return result
 
     @staticmethod
-    def _as_news(text: str, title: str | None, url: str | None) -> News:
+    def _as_news(
+        text: str,
+        title: str | None,
+        url: str | None,
+        language: str | None = None,
+    ) -> News:
         """
         NewsEnrichmentPipeline takes a News, so pasted text is wrapped in
         a synthetic one. source_id "manual" and a generated id mark it as
@@ -78,6 +84,10 @@ class EnrichmentService:
             source_id="manual",
             url=url or "about:blank",
             title=title,
+            # None means "detect it" - NewsEnrichmentPipeline falls back
+            # to LanguageDetector. An explicit value is for the caller who
+            # knows better than a stopword count (a short fragment, say).
+            language=language,
             content=text,
         )
 
@@ -89,6 +99,7 @@ class EnrichmentService:
 
         return {
             "title": article.title,
+            "language": article.language,
             "keywords": article.keywords or [],
             "entities": article.entities or {},
             "topics": [topic.model_dump() for topic in (article.topics or [])],

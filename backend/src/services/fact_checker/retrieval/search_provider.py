@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.config.settings import settings
+from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
 from src.services.search import SearxngClient
@@ -12,11 +12,17 @@ class SearchProvider:
 
         self.client = client or SearxngClient()
 
-    def search(self, claim: Claim) -> list[Evidence]:
+    def search(
+        self,
+        claim: Claim,
+        thresholds: PipelineThresholds | None = None,
+    ) -> list[Evidence]:
+
+        thresholds = thresholds or PipelineThresholds()
 
         raw_results = self.client.search(
             claim.text.strip(),
-            max_results=settings.EVIDENCE_FETCH_CANDIDATES,
+            max_results=thresholds.evidence_fetch_candidates,
         )
 
         evidence = []

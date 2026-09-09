@@ -29,8 +29,8 @@ class FakeEnrichmentService:
     def __init__(self):
         self.calls = []
 
-    def enrich(self, text, title=None, url=None, on_phase=None, thresholds=None):
-        self.calls.append((text, title, url, thresholds))
+    def enrich(self, text, title=None, url=None, language=None, on_phase=None, thresholds=None):
+        self.calls.append((text, title, url, thresholds, language))
         return {"keywords": ["mars"], "claims": [], "entities": {}}
 
 
@@ -162,7 +162,7 @@ def test_enrich_forwards_the_optional_title_and_url(monkeypatch):
         },
     )
 
-    text, title, url, _ = service.calls[0]
+    text, title, url, _thresholds, _language = service.calls[0]
 
     assert (text, title, url) == ("Some text.", "A title", "https://example.com/a")
 
@@ -220,3 +220,25 @@ def test_an_unavailable_enricher_is_a_503(monkeypatch):
     response = client.post("/enrich", json={"text": "Some text."})
 
     assert response.status_code == 503
+
+
+def test_enrich_forwards_an_explicit_language(monkeypatch):
+    """
+    Omitting it lets the pipeline detect; supplying it is for the caller
+    who knows better than a stopword count on a short fragment.
+    """
+
+    service = use_enrich(monkeypatch)
+
+    client.post("/enrich", json={"text": "Un texto corto.", "language": "es"})
+
+    assert service.calls[0][4] == "es"
+
+
+def test_enrich_defaults_language_to_none_so_it_is_detected(monkeypatch):
+
+    service = use_enrich(monkeypatch)
+
+    client.post("/enrich", json={"text": "Some text."})
+
+    assert service.calls[0][4] is None

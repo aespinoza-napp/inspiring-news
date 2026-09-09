@@ -1,7 +1,9 @@
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 import src.api.routes as routes
+from src.config.settings import settings
 from src.main import app
 from src.models.storage.lineage import DataLayer
 from src.repositories.datalake_repository import DataLakeRepository
@@ -107,3 +109,59 @@ def test_trace_of_an_unknown_article_is_empty_rather_than_a_404(lake):
 
     assert body["manifest"] == []
     assert all(records == [] for records in body["layers"].values())
+
+
+# ----------------------------------------------------------------------
+# Authentication
+#
+# These endpoints return whole article bodies and the full lineage of
+# every run. Open by default is the local-dev choice (src/main.py warns
+# at startup); setting STORAGE_API_KEY closes them.
+# ----------------------------------------------------------------------
+
+
+def test_storage_is_open_when_no_key_is_configured(lake, monkeypatch):
+
+    monkeypatch.setattr(settings, "STORAGE_API_KEY", None)
+
+    assert client.get("/storage/raw").status_code == 200
+
+
+def test_a_configured_key_is_required(lake, monkeypatch):
+
+    monkeypatch.setattr(settings, "STORAGE_API_KEY", SecretStr("s3cret"))
+
+    assert client.get("/storage/raw").status_code == 401
+    assert client.get("/storage/exploitation").status_code == 401
+    assert client.get("/storage/raw/records/anything").status_code == 401
+    assert client.get("/storage/trace/anything").status_code == 401
+
+
+def test_the_right_key_is_accepted(lake, monkeypatch):
+
+    monkeypatch.setattr(settings, "STORAGE_API_KEY", SecretStr("s3cret"))
+
+    response = client.get("/storage/raw", headers={"X-API-Key": "s3cret"})
+
+    assert response.status_code == 200
+
+
+def test_a_wrong_key_is_rejected(lake, monkeypatch):
+
+    monkeypatch.setattr(settings, "STORAGE_API_KEY", SecretStr("s3cret"))
+
+    response = client.get("/storage/raw", headers={"X-API-Key": "guess"})
+
+    assert response.status_code == 401
+
+
+def test_the_analysis_endpoints_are_not_behind_the_storage_key(monkeypatch):
+    """
+    The key guards stored content, not the ability to run an analysis -
+    locking /analyze would break the frontend for no security gain.
+    """
+
+    monkeypatch.setattr(settings, "STORAGE_API_KEY", SecretStr("s3cret"))
+
+    # 422 (bad body), not 401 - the request reached validation.
+    assert client.post("/enrich", json={}).status_code == 422

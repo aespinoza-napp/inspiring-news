@@ -4,7 +4,7 @@
   "url": "https://www.bbc.co.uk/sport/football/articles/cy8eglx37gdo?at_medium=RSS&at_campaign=rss",
   "title": "",
   "body": "The winner who played for Tuchel - potential Newcastle boss Jaissle\n- Published\nMatthias Jaissle is the surprise favourite to take over as Newcastle head coach as Eddie Howe's replacement - and would arrive with a strong recent record of success.\nHowe, 48, is set to leave St James' Park after nearly five years. He had been in charge since November 2021 when he replaced Steve Bruce and took the Magpies to their first domestic trophy in 70 years by winning the Carabao Cup in 2025.\nFormer RB Salzburg boss Jaissle, currently in charge of Saudi Arabian side Al-Ahli, is now expected to come in.\nThe 38-year-old German was a centre-half, progressing through the Stuttgart youth system before playing senior football for Hoffenheim from 2007 to 2014.\nHe represented Germany at Under-21 level, but was forced to retire through injury at the age of 25.\nJaissle took his first coaching steps as assistant manager of Danish club Brondby between 2017 and 2019. He then took over RB Salzburg's Under-18 academy team before becoming a head coach for the first time at Liefering in Austria's second tier.\nHe guided them to a second-placed finish, the club's joint best-ever position, and that achievement helped him become RB Salzburg manager in 2021, replacing Jesse Marsch, who would later manage Leeds United and then Canada at the 2026 World Cup.\nIn two seasons with RB Salzburg, Jaissle won the Austrian Bundesliga twice and also the Austrian Cup once.\nTheir team included Benjamin Sesko and Brenden Aaronson, who now play in the Premier League with Manchester United and Leeds United respectively, and German forward Karim Adeyemi, now at Barcelona.\nJaissle joined Saudi club Al-Ahli in 2023 and led them to consecutive Asian Champions League titles in 2025 and 2026. Such success would have been noted by Newcastle's Saudi ownership in the event of Howe leaving St James' Park.\nMagpies supporters will be encouraged by Jaissle's methods - his teams play high-pressing attacking football. He demands they show intensity and force turnovers as high up the pitch as possible.\nAl-Ahli's side include England striker Ivan Toney, Brazil defender Roger Ibanez and former Chelsea goalkeeper Edouard Mendy.\nEngland boss Thomas Tuchel was a youth coach at Stuttgart when Jaissle was a player there and the pair spoke before Toney was included in the Three Lions' World Cup squad this summer.\n\"I had fantastic feedback from his club coach, who was my player and I have a close connection with him,\" said Tuchel after naming his squad.\nNewcastle fans would be hoping Jaissle could also help convince 30-year-old Toney to return to the Premier League after two years playing in Saudi Arabia.\nLast summer, striker Alexander Isak moved to Liverpool at the end of the transfer window for a British record of Â£125m and Newcastle then lost two key players this summer - Sandro Tonali to Tottenham and Anthony Gordon to Barcelona, while Arsenal are chasing captain Bruno Guimaraes.\nNewcastle finished 12th in the Premier League last season, missing out on European football for 2026-27, and lost 4-1 to Championship side Bristol City in a pre-season friendly on Wednesday.\nThe Magpies begin their league campaign at home against Liverpool on Sunday, 23 August.\nFollow Newcastle United on BBC Sounds\nPre-match, post-match and topical Magpies content\nSubscribe and listen for everything you love about Newcastle",
-  "language": null,
+  "language": "en",
   "published_at": "2026-07-30T00:00:00",
   "keywords": [
     "Published Matthias",
@@ -97,7 +97,7 @@
           "Carabao Cup"
         ]
       },
-      "confidence": 0.85
+      "confidence": 0.65
     },
     {
       "text": "The 38-year-old German was a centre-half, progressing through the Stuttgart youth system before playing senior football for Hoffenheim from 2007 to 2014.",
@@ -264,7 +264,7 @@
           "British"
         ]
       },
-      "confidence": 0.7
+      "confidence": 0.5
     },
     {
       "text": "Newcastle finished 12th in the Premier League last season, missing out on European football for 2026-27, and lost 4-1 to Championship side Bristol City in a pre-season friendly on Wednesday.",
@@ -300,20 +300,20 @@
     }
   ],
   "sentiment": {
-    "label": "positive",
-    "positive": 0.6415,
-    "neutral": 0.3542,
-    "negative": 0.0043,
-    "polarity": 0.6372,
+    "label": "negative",
+    "positive": 0.2273,
+    "neutral": 0.3723,
+    "negative": 0.4005,
+    "polarity": -0.1732,
     "subjectivity": 0.3182,
-    "confidence": 0.6415,
-    "emotional_intensity": 0.6372
+    "confidence": 0.4005,
+    "emotional_intensity": 0.1732
   },
   "quality": {
     "readability": 0.5094,
     "objectivity": 1.0,
-    "constructiveness": 0.0,
-    "inspirational_score": 0.215,
+    "constructiveness": 0.3333,
+    "inspirational_score": 0.2195,
     "hopefulness": 0.2,
     "societal_impact": 1.0,
     "novelty": 0.5

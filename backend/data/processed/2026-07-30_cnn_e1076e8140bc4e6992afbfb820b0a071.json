@@ -4,7 +4,7 @@
   "url": "https://www.cnn.com/videos/world/2023/04/03/soldiers-russia-ukraine-war-david-mckenzie-pkg-ovn-intl-ldn-vpx.cnn",
   "title": "",
   "body": "Video Ad Feedback\n  'Scary, cold, hungry and lonely': Volunteer soldier shares experience on front line\n                \n                        A young volunteer soldier, Akula, who signed up for the war at the beginning of the Russian invasion is now dealing with the trauma of war. He spoke to CNN's David McKenzie about his time on the front lines and how it has affected his mental health. \n                    \n                            \n                                        \n        \n            \n            \n        3:28\n                            \n                                 • Source:\n                \n                    CNN\n        \n                    \n                \n      \n          Russia-Ukraine conflict\n      \n      15 videos\n    \n    Video Ad Feedback\n  'Scary, cold, hungry and lonely': Volunteer soldier shares experience on front line\n                \n                    \n                Video Ad Feedback\n  'Putin is a political animal who can sense fear,' says Ukraine FM\n                \n                    \n                Video Ad Feedback\n  Russian media praises MTG for trying to derail Ukraine aid bill\n                \n                    \n                Video Ad Feedback\n  See timelapse of Ukraine's fragile front line as it waits for US aid\n                \n                    \n                Video Ad Feedback\n  Zelensky tells CNN the US needs to send aid to avoid Putin from starting WWIII\n                \n                    \n                Video Ad Feedback\n  Ex-defense secretary: How Putin may base his actions on a Trump presidency\n                \n                    \n                Video Ad Feedback\n  Retired colonel says this is one of the 'big problems' amid Russia's recent gains\n                \n                    \n                Video Ad Feedback\n  Video appears to show Ukrainian drone strike on Russian oil refinery\n                \n                    \n                Video Ad Feedback\n  Ukraine destroying Musk's Starlink systems being used by Russia\n                \n                    \n                Video Ad Feedback\n  Hear what Putin said about US court cases involving Trump after reelection win in Russia\n                \n                    \n                Video Ad Feedback\n  Putin's critics have been silenced but the election still matters. Here's why\n                \n                    \n                Video Ad Feedback\n  CNN joins Ukrainian medivac team under cover of darkness\n                \n                    \n                Video Ad Feedback\n  Putin's propaganda machine trolls and scapegoats the US\n                \n                    \n                Video Ad Feedback\n  Ukraine struggles to hold the line facing heavy fire from Russian advance\n                \n                    \n                Video Ad Feedback\n  'He has no idea what's coming': Biden sends message to Putin (2022)\n                \n                    \n                ",
-  "language": null,
+  "language": "en",
   "published_at": "2026-07-30T00:00:00",
   "keywords": [
     "Feedback",
@@ -140,20 +140,20 @@
     }
   ],
   "sentiment": {
-    "label": "neutral",
-    "positive": 0.0316,
-    "neutral": 0.7051,
-    "negative": 0.2633,
-    "polarity": -0.2317,
+    "label": "negative",
+    "positive": 0.1294,
+    "neutral": 0.3274,
+    "negative": 0.5432,
+    "polarity": -0.4138,
     "subjectivity": 0.4114,
-    "confidence": 0.7051,
-    "emotional_intensity": 0.2317
+    "confidence": 0.5432,
+    "emotional_intensity": 0.4138
   },
   "quality": {
     "readability": 0.0,
-    "objectivity": 0.2,
+    "objectivity": 0.0,
     "constructiveness": 0.0,
-    "inspirational_score": 0.265,
+    "inspirational_score": 0.1353,
     "hopefulness": 0.0,
     "societal_impact": 0.4,
     "novelty": 0.5

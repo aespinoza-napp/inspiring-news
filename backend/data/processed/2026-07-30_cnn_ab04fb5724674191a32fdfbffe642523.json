@@ -4,7 +4,7 @@
   "url": "https://www.cnn.com/2023/04/03/health/autism-lithium-study/index.html",
   "title": "",
   "body": "A new study found a moderately higher risk of autism spectrum disorder in children born to pregnant people exposed to tap water with higher levels of lithium, but experts caution that this association does not show a direct link between the two.\nAbout 1 in 36 children in the US is diagnosed with autism spectrum disorder (ASD) each year, according to data from the US Centers for Disease Control and Prevention.\nScientists still don’t know the exact cause of autism, a developmental disorder. Genetics may be a factor, but some have been looking at potential environmental causes, too.\nCases may be on the rise, but that is also unclear. One study published this year on cases in the New York-New Jersey area found that autism diagnosis rates tripled among certain age groups between 2000 and 2016. A 2021 report found similar increases in cases, but the CDC says the increased number of cases is most likely linked to more doctors screening for the condition.\nLithium is an alkali metal that can be found naturally in some food and ground water. It’s used in batteries, grease and air conditioners, as well as in the treatment of bipolar disorder and some blood disorders. Its levels in US drinking water are not regulated, according to the US Geological Survey.\nA new study, published Monday in the journal JAMA Pediatrics, found a small association between lithium and autism diagnosis in Denmark, where the researchers say the level of lithium in drinking water is similar to that in American water systems.\nThe researchers checked a database of people with psychiatric disorders for children born between 2000 and 2013 to find information on 8,842 cases of ASD and 43,864 participants who did not have ASD. They then measured the concentration of lithium in 151 public waterworks that served more than half of the Danish population and mapped out where pregnant people lived in relation.\nAs lithium levels in water increased, there was a modest increased risk of an ASD diagnosis. Specifically, compared with people at the lowest exposure level, those who had the second and third highest exposure during pregnancy had a 24% to 26% higher risk of ASD diagnosed in children. The group with the highest exposure had a 46% higher risk than those at the lowest level of exposure.\nThe researchers could not tell how much water the pregnant people drank, but they picked Denmark in part because residents there consume some of the lowest amounts of bottled water in Europe.\nExperts say it’s important to note that the research can’t show that lithium exposure leads directly to an autism diagnosis.\nFurther study is required, said study co-author Dr. Beate Ritz, a professor of neurology in the David Geffen School of Medicine at UCLA, and a professor of epidemiology and environmental health at the UCLA Fielding School of Public Health.\n“Any drinking water contaminants that may affect the developing human brain deserve intense scrutiny,” Ritz said in a news release. She added that the research would need to be replicated in other countries to look for a similar connection.\nThe implications of the findings are complex as far as public health policy is concerned, according to an editorial published alongside the study. Lithium levels in water, at concentrations that the study associated with a potential ASD risk, have also been linked with health benefits such as lower rates of hospitalization for psychiatric disorders and suicide.\n“If all these of associations are valid, the wisdom of Solomon will be required to develop guidelines for lithium in drinking water that are maximally protective of the entire population,” wrote Dr. David C. Bellinger, a professor of neurology and psychology at Harvard Medical School. “Until the basic biology of ASD is better understood, it will be difficult to distinguish causal from spurious associations.”\nDr. Max Wiznitzer, director of the Rainbow Autism Center at University Hospitals Rainbow Babies and Children’s Hospital in Cleveland, points to other research on the effects of lithium on pregnant people who take it for mental health disorders. Those studies – which look at people exposed to much higher levels than are found in drinking water – do not show a connection with autism spectrum disorder.\n“It’s an interesting association, but causation is definitely not proven,” said Wiznitzer, who was not involved in the new research. “We have to see if there’s a viable and biologically plausible mechanism by which a small amount of lithium in the water supply can somehow do this, yet pharmacologic dosing of lithium in women with bipolar disorder has not been reported to be causing increased risk of ASD.”\nOther studies have also suggested connections between ASD and environmental exposures to things like pesticides, air pollution and phthalates. But none of them points to any of these factors as a direct cause of the disorder.\nGet CNN Health's weekly newsletter\nSign up here to get The Results Are In with Dr. Sanjay Gupta every Tuesday from the CNN Health team.\nA link between environmental exposure and ASD is hard to prove, Wiznitzer said. With research showing that increased exposure to air pollution raises the risk of giving birth to a child with ASD, for example, he often wonders whether pollution is the determining factor or if it’s just the populations who live in more polluted areas.\n“There’s a lot of speculation about about environmental factors, but how many of them are truly causally associated?” Wiznitzer said. “We are bombarded with a variety of environmental stressors in our everyday lives. We have to figure out how to basically safely navigate them, and this is probably not one that’s high on our list.”",
-  "language": null,
+  "language": "en",
   "published_at": "2026-07-30T00:00:00",
   "keywords": [
     "ASD",
@@ -131,7 +131,7 @@
           "Centers for Disease Control and Prevention"
         ]
       },
-      "confidence": 0.5
+      "confidence": 0.7
     },
     {
       "text": "One study published this year on cases in the New York-New Jersey area found that autism diagnosis rates tripled among certain age groups between 2000 and 2016.",
@@ -153,6 +153,15 @@
         ]
       },
       "confidence": 0.85
+    },
+    {
+      "text": "Its levels in US drinking water are not regulated, according to the US Geological Survey.",
+      "entities": {
+        "country": [
+          "US"
+        ]
+      },
+      "confidence": 0.5
     },
     {
       "text": "A new study, published Monday in the journal JAMA Pediatrics, found a small association between lithium and autism diagnosis in Denmark, where the researchers say the level of lithium in drinking water is similar to that in American water systems.",
@@ -287,20 +296,20 @@
   ],
   "sentiment": {
     "label": "neutral",
-    "positive": 0.0161,
-    "neutral": 0.6041,
-    "negative": 0.3798,
-    "polarity": -0.3636,
+    "positive": 0.1604,
+    "neutral": 0.4433,
+    "negative": 0.3963,
+    "polarity": -0.236,
     "subjectivity": 0.4555,
-    "confidence": 0.6041,
-    "emotional_intensity": 0.3636
+    "confidence": 0.4433,
+    "emotional_intensity": 0.236
   },
   "quality": {
-    "readability": 0.4048,
-    "objectivity": 0.3333,
-    "constructiveness": 0.8571,
-    "inspirational_score": 0.4521,
-    "hopefulness": 0.1,
+    "readability": 0.4066,
+    "objectivity": 0.0667,
+    "constructiveness": 0.9474,
+    "inspirational_score": 0.5304,
+    "hopefulness": 0.2,
     "societal_impact": 1.0,
     "novelty": 0.5
   },

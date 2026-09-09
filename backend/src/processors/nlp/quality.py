@@ -1,106 +1,21 @@
 from __future__ import annotations
 
 import re
+import threading
 
 import textstat
+
+from src.config.lexicons import Lexicon, count_matches, lexicon_for
 
 from .base import BaseProcessor
 
 
-SPECULATIVE = {
-    "may",
-    "might",
-    "could",
-    "perhaps",
-    "possibly",
-    "likely",
-    "apparently",
-    "allegedly",
-}
-
-EMOTIONAL = {
-    "amazing",
-    "incredible",
-    "shocking",
-    "terrible",
-    "catastrophic",
-    "unbelievable",
-}
-
-FIRST_PERSON = {
-    "i",
-    "we",
-    "our",
-    "my",
-}
-
-CONSTRUCTIVE = {
-    "developed",
-    "created",
-    "improved",
-    "innovation",
-    "initiative",
-    "project",
-    "solution",
-    "research",
-    "discover",
-    "restored",
-    "reduced",
-    "increase",
-    "collaboration",
-    "technology",
-    "treatment",
-    "vaccine",
-}
-
-NEGATIVE = {
-    "war",
-    "attack",
-    "conflict",
-    "crisis",
-    "collapse",
-    "disaster",
-    "problem",
-}
-
-HOPE = {
-    "recover",
-    "recovery",
-    "improve",
-    "growth",
-    "restore",
-    "save",
-    "protect",
-    "conservation",
-    "breakthrough",
-    "success",
-    "cure",
-    "treatment",
-    "vaccine",
-}
-
-HUMAN = {
-    "student",
-    "teacher",
-    "doctor",
-    "scientist",
-    "researcher",
-    "volunteer",
-    "community",
-    "family",
-}
-
-GLOBAL = {
-    "world",
-    "global",
-    "international",
-    "millions",
-    "thousands",
-    "un",
-    "who",
-    "eu",
-    "nasa",
-}
+# textstat.set_lang() mutates module-global state, and this analyzer runs
+# inside FastAPI's background threadpool - two concurrent analyses of
+# articles in different languages would otherwise race, and one would be
+# scored with the other's readability formula. The lock covers only the
+# set-and-measure pair, which is microseconds.
+_TEXTSTAT_LOCK = threading.Lock()
 
 
 class QualityAnalyzer(BaseProcessor):
@@ -114,35 +29,47 @@ class QualityAnalyzer(BaseProcessor):
         sentiment=None,
         entities=None,
         novelty=None,
+        language: str | None = None,
     ):
+        """
+        `language` picks the word lists and the readability formula. It
+        defaults to English, so existing callers keep working - but
+        passing it is what stops a Spanish article scoring 0 on every
+        keyword metric and being rejected by the admission filter for it.
+        """
+
+        lexicon = lexicon_for(language)
 
         return {
 
             "readability":
-                self.readability(text),
+                self.readability(text, lexicon),
 
             "objectivity":
                 self.objectivity(
                     text,
                     entities,
+                    lexicon,
                 ),
 
             "constructiveness":
-                self.constructiveness(text),
+                self.constructiveness(text, lexicon),
 
             "hopefulness":
-                self.hopefulness(text),
+                self.hopefulness(text, lexicon),
 
             "societal_impact":
                 self.societal_impact(
                     text,
                     entities,
+                    lexicon,
                 ),
 
             "inspirational_score":
                 self.inspiration(
                     text,
                     sentiment,
+                    lexicon,
                 ),
 
             "novelty":
@@ -160,9 +87,16 @@ class QualityAnalyzer(BaseProcessor):
 
     #######################################################
 
-    def readability(self, text):
+    def readability(self, text, lexicon: Lexicon | None = None):
 
-        score = textstat.flesch_reading_ease(text)
+        lexicon = lexicon or lexicon_for(None)
+
+        with _TEXTSTAT_LOCK:
+            # Spanish uses the Fernandez-Huerta variant of Flesch; running
+            # the English formula over Spanish text produced a number that
+            # looked plausible and meant nothing.
+            textstat.set_lang(lexicon.language)
+            score = textstat.flesch_reading_ease(text)
 
         return round(
 
@@ -176,19 +110,15 @@ class QualityAnalyzer(BaseProcessor):
 
     #######################################################
 
-    def constructiveness(self, text):
+    def constructiveness(self, text, lexicon: Lexicon | None = None):
+
+        lexicon = lexicon or lexicon_for(None)
 
         words = self._words(text)
 
-        positive = sum(
-            w in CONSTRUCTIVE
-            for w in words
-        )
+        positive = count_matches(words, lexicon.constructive)
 
-        negative = sum(
-            w in NEGATIVE
-            for w in words
-        )
+        negative = count_matches(words, lexicon.negative)
 
         return round(
 
@@ -200,14 +130,13 @@ class QualityAnalyzer(BaseProcessor):
 
     #######################################################
 
-    def hopefulness(self, text):
+    def hopefulness(self, text, lexicon: Lexicon | None = None):
+
+        lexicon = lexicon or lexicon_for(None)
 
         words = self._words(text)
 
-        count = sum(
-            w in HOPE
-            for w in words
-        )
+        count = count_matches(words, lexicon.hope)
 
         return round(
 
@@ -225,16 +154,16 @@ class QualityAnalyzer(BaseProcessor):
         self,
         text,
         entities,
+        lexicon: Lexicon | None = None,
     ):
+
+        lexicon = lexicon or lexicon_for(None)
 
         words = self._words(text)
 
         score = 0
 
-        score += sum(
-            w in GLOBAL
-            for w in words
-        )
+        score += count_matches(words, lexicon.societal)
 
         if entities:
 
@@ -259,24 +188,18 @@ class QualityAnalyzer(BaseProcessor):
         self,
         text,
         entities,
+        lexicon: Lexicon | None = None,
     ):
+
+        lexicon = lexicon or lexicon_for(None)
 
         words = self._words(text)
 
-        speculative = sum(
-            w in SPECULATIVE
-            for w in words
-        )
+        speculative = count_matches(words, lexicon.speculative)
 
-        emotional = sum(
-            w in EMOTIONAL
-            for w in words
-        )
+        emotional = count_matches(words, lexicon.emotional)
 
-        first_person = sum(
-            w in FIRST_PERSON
-            for w in words
-        )
+        first_person = count_matches(words, lexicon.first_person)
 
         factual = 0
 
@@ -322,18 +245,18 @@ class QualityAnalyzer(BaseProcessor):
         self,
         text,
         sentiment,
+        lexicon: Lexicon | None = None,
     ):
+
+        lexicon = lexicon or lexicon_for(None)
 
         words = self._words(text)
 
-        human = sum(
-            w in HUMAN
-            for w in words
-        )
+        human = count_matches(words, lexicon.human)
 
-        hope = self.hopefulness(text)
+        hope = self.hopefulness(text, lexicon)
 
-        constructive = self.constructiveness(text)
+        constructive = self.constructiveness(text, lexicon)
 
         positivity = 0.5
 

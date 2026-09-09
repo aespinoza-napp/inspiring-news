@@ -40,7 +40,11 @@ class ConfidenceScorer:
 
         confidence = max(0.0, min(
             llm_result.confidence * self.LLM_WEIGHT
-            + self._evidence_quality(evidence, llm_result.cited_evidence) * self.EVIDENCE_WEIGHT,
+            + self._evidence_quality(
+                evidence,
+                llm_result.cited_evidence,
+                thresholds.max_evidence_per_claim,
+            ) * self.EVIDENCE_WEIGHT,
             1.0,
         ))
 
@@ -66,6 +70,7 @@ class ConfidenceScorer:
         self,
         evidence: list[Evidence],
         cited: list[int],
+        max_evidence: int,
     ) -> float:
 
         if not evidence:
@@ -73,6 +78,13 @@ class ConfidenceScorer:
 
         avg_relevance = sum(item.relevance_score or 0.0 for item in evidence) / len(evidence)
         citation_ratio = len(cited) / len(evidence)
-        quantity_factor = min(len(evidence) / settings.MAX_EVIDENCE_PER_CLAIM, 1.0)
+
+        # max_evidence is the run's threshold, not settings.*: this used to
+        # read the environment default, so a run overriding
+        # max_evidence_per_claim retrieved and ranked the right number of
+        # items and then scored their quantity against a cap it never
+        # used - 2/5 = 0.4 instead of 1.0, silently depressing the
+        # confidence of every claim in that run.
+        quantity_factor = min(len(evidence) / max_evidence, 1.0)
 
         return avg_relevance * 0.5 + citation_ratio * 0.3 + quantity_factor * 0.2

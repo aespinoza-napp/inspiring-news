@@ -2,6 +2,7 @@ from typing import Optional
 
 from src.config.thresholds import PipelineThresholds
 from src.models.core.news import News
+from src.processors.nlp.language import LanguageDetector
 from src.models.core.source import NewsSource
 
 from .strategies.trafilatura import TrafilaturaStrategy
@@ -44,6 +45,15 @@ class ExtractorService:
             news = News(
                 source_id=source.id,
                 url=url,
+                # Detected from the body, with the source's declared
+                # language as the fallback for text too short or too
+                # ambiguous to call. The body is what gets scored, so the
+                # body is what decides - a Spanish article syndicated by
+                # an "en" source must still be scored in Spanish.
+                language=LanguageDetector.detect(
+                    extracted.body,
+                    fallback=source.language,
+                ),
                 title=extracted.title,
                 author=extracted.author,
                 published_at=extracted.published_at,

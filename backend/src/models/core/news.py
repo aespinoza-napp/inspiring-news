@@ -20,6 +20,12 @@ class News(BaseModel):
 
     published_at: Optional[datetime] = None
 
+    # Detected from the body at extraction time, falling back to the
+    # source's declared language. Drives which lexicon and which
+    # readability formula the enrichment stage uses - without it the
+    # whole NLP stack silently scored every article as English.
+    language: Optional[str] = None
+
     content: str
 
     image_url: Optional[str] = None

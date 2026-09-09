@@ -1,6 +1,7 @@
+import secrets
 from logging import getLogger
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from src.container import (
@@ -11,6 +12,7 @@ from src.container import (
     get_text_corrector,
     job_store,
 )
+from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
 from src.models.storage.lineage import DataLayer
 from src.services.job_runner import run_analysis_job
@@ -18,6 +20,31 @@ from src.services.job_runner import run_analysis_job
 logger = getLogger(__name__)
 
 router = APIRouter()
+
+
+def require_storage_key(x_api_key: str | None = Header(default=None)) -> None:
+    """
+    Guards the /storage/* endpoints, which return whole article bodies
+    and the full lineage of every run.
+
+    Open when STORAGE_API_KEY is unset - the local-dev default, and
+    src/main.py logs a warning at startup so that is never a silent
+    choice. Compared with secrets.compare_digest so a wrong key cannot be
+    recovered by timing the response.
+    """
+
+    expected = settings.STORAGE_API_KEY
+
+    if expected is None:
+        return
+
+    if not x_api_key or not secrets.compare_digest(
+        x_api_key, expected.get_secret_value()
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="A valid X-API-Key header is required for storage endpoints.",
+        )
 
 
 class AnalyzeRequest(BaseModel):
@@ -44,6 +71,9 @@ class EnrichRequest(BaseModel):
     text: str = Field(min_length=1)
     title: str | None = None
     url: str | None = None
+    # Omit to let the pipeline detect it. "en" and "es" are the two
+    # supported lexicons; anything else is scored with the English one.
+    language: str | None = Field(default=None, max_length=8)
     thresholds: ThresholdOverrides | None = None
 
 
@@ -202,6 +232,7 @@ def enrich(request: EnrichRequest):
         request.text,
         title=request.title,
         url=request.url,
+        language=request.language,
         thresholds=thresholds,
     )
 
@@ -214,7 +245,7 @@ def enrich(request: EnrichRequest):
 # ---------------------------------------------------------------------
 
 
-@router.get("/storage/{layer}")
+@router.get("/storage/{layer}", dependencies=[Depends(require_storage_key)])
 def list_records(layer: DataLayer, limit: int = 50):
 
     return {
@@ -223,7 +254,10 @@ def list_records(layer: DataLayer, limit: int = 50):
     }
 
 
-@router.get("/storage/{layer}/records/{record_id}")
+@router.get(
+    "/storage/{layer}/records/{record_id}",
+    dependencies=[Depends(require_storage_key)],
+)
 def get_record(layer: DataLayer, record_id: str):
 
     record = get_datalake_repository().get(layer, record_id)
@@ -234,7 +268,7 @@ def get_record(layer: DataLayer, record_id: str):
     return record
 
 
-@router.get("/storage/trace/{article_id}")
+@router.get("/storage/trace/{article_id}", dependencies=[Depends(require_storage_key)])
 def trace_article(article_id: str):
     """
     The full lineage chain for one article: its record in each layer,

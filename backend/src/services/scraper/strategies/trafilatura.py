@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import json
 
+from logging import getLogger
+
 import requests
 import trafilatura
 
 from src.models.scraper.extraction import ExtractionResult
 from src.models.core.source import NewsSource
+from src.services.scraper.url_guard import BlockedURL, check_url
 
 from .base import ExtractionStrategy
+
+logger = getLogger(__name__)
 
 def _parse_date(date_str: str | None) -> str | None:
     """
@@ -27,6 +32,11 @@ class TrafilaturaStrategy(ExtractionStrategy):
 
     TIMEOUT = 20
 
+    # requests follows redirects itself, which would walk straight past
+    # the guard - a public URL can 302 to 127.0.0.1. Hops are followed
+    # here instead, one at a time, re-checking each.
+    MAX_REDIRECTS = 5
+
     def extract(
         self,
         source: NewsSource,
@@ -35,16 +45,7 @@ class TrafilaturaStrategy(ExtractionStrategy):
 
         try:
 
-            response = requests.get(
-                url,
-                timeout=self.TIMEOUT,
-                headers={
-                    "User-Agent": (
-                        "Mozilla/5.0 "
-                        "InspiringNewsBot/1.0"
-                    )
-                },
-            )
+            response = self._get(url)
 
             response.raise_for_status()
             extracted = trafilatura.extract(
@@ -75,6 +76,41 @@ class TrafilaturaStrategy(ExtractionStrategy):
                 lead_image=data.get("image"),
             )
 
-        except Exception as exc:
-            print(f"Error extracting {url} with TrafilaturaStrategy: {exc}")
+        except BlockedURL as exc:
+            # Not an unexpected failure - the guard did its job. Logged at
+            # warning so a blocked fetch is visible without a stack trace.
+            logger.warning("Refused to fetch %s: %s", url, exc)
             return None
+
+        except Exception as exc:
+            logger.warning(
+                "Error extracting %s with TrafilaturaStrategy: %s", url, exc
+            )
+            return None
+
+    def _get(self, url: str) -> requests.Response:
+        """
+        Fetch, following redirects manually so every hop passes the
+        guard. Raises BlockedURL for any hop that does not.
+        """
+
+        for _ in range(self.MAX_REDIRECTS + 1):
+
+            response = requests.get(
+                check_url(url),
+                timeout=self.TIMEOUT,
+                allow_redirects=False,
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 "
+                        "InspiringNewsBot/1.0"
+                    )
+                },
+            )
+
+            if not response.is_redirect:
+                return response
+
+            url = requests.compat.urljoin(url, response.headers["location"])
+
+        raise BlockedURL(f"Too many redirects starting at {url!r}.")

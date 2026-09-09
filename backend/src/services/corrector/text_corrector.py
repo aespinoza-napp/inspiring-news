@@ -1,6 +1,8 @@
 from src.config.settings import settings
 from src.models.corrector.correction_metric import CorrectionMetric
 from src.models.nlp.quality import Quality
+from src.config.lexicons import lexicon_for
+from src.processors.nlp.language import LanguageDetector
 from src.processors.nlp.quality import QualityAnalyzer
 from src.processors.nlp.sentiment import SentimentAnalyzer
 from src.services.fact_checker.validators.positive_impact_validator import (
@@ -53,30 +55,39 @@ class TextCorrector:
 
     def correct(self, text: str) -> dict[str, CorrectionMetric]:
 
+        # Both deterministic metrics are keyword/formula based, so both
+        # need the text's language or they silently score Spanish input
+        # against English word lists and the English Flesch formula.
+        language = LanguageDetector.detect(text)
+
         metrics = {
-            "readability": self._readability(text),
-            "coverageVerification": self._coverage(text),
+            "readability": self._readability(text, language),
+            "coverageVerification": self._coverage(text, language),
         }
 
         metrics.update(self._llm_metrics(text))
 
         return metrics
 
-    def _readability(self, text: str) -> CorrectionMetric:
+    def _readability(self, text: str, language: str = "en") -> CorrectionMetric:
 
-        score = self.quality_analyzer.readability(text) * 100
+        score = self.quality_analyzer.readability(
+            text, lexicon_for(language)
+        ) * 100
 
         return CorrectionMetric(
             score=round(score, 1),
             summary="Flesch reading ease scaled to 0-100 (higher = easier to read).",
         )
 
-    def _coverage(self, text: str) -> CorrectionMetric:
+    def _coverage(self, text: str, language: str = "en") -> CorrectionMetric:
 
         sentiment = self.sentiment_analyzer.process(text)
 
         quality = Quality(
-            **self.quality_analyzer.process(text, sentiment=sentiment)
+            **self.quality_analyzer.process(
+                text, sentiment=sentiment, language=language
+            )
         )
 
         result = self.positive_validator.validate(sentiment, quality)

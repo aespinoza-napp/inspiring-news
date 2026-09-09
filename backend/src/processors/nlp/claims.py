@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 
+from src.config.lexicons import Lexicon, count_matches, lexicon_for
 from src.config.settings import settings
 from src.models.core.claim import Claim
 from src.processors.nlp.entities import EntityExtractor
@@ -10,77 +11,33 @@ from .base import BaseProcessor
 
 
 class ClaimExtractor(BaseProcessor):
+    """
+    Scores each sentence for check-worthiness and keeps the ones above
+    the threshold.
 
-    REPORTING_VERBS = {
-        "announce",
-        "announced",
-        "say",
-        "said",
-        "report",
-        "reported",
-        "confirm",
-        "confirmed",
-        "discover",
-        "discovered",
-        "find",
-        "found",
-        "reveal",
-        "revealed",
-        "publish",
-        "published",
-        "launch",
-        "launched",
-        "approve",
-        "approved",
-        "win",
-        "won",
-        "identify",
-        "identified",
-        "detect",
-        "detected",
-        "increase",
-        "increased",
-        "reduce",
-        "reduced",
-        "improve",
-        "improved",
-        "show",
-        "showed",
-        "demonstrate",
-        "demonstrated",
-        "indicate",
-        "indicated",
-        "estimate",
-        "estimated",
-    }
+    The signals (a named entity, a figure, a date, a unit, a reporting
+    verb, a quote, enough length) are language-neutral; the *vocabulary*
+    for two of them is not, and comes from the run's Lexicon. Before
+    that, REPORTING_VERBS and the month names were English-only, so a
+    Spanish article scored 0.20 lower on almost every sentence and
+    yielded next to no claims - leaving the fact-checker nothing to
+    check on 7 of the 12 configured sources.
+    """
 
-    DATE_PATTERN = re.compile(
-        r"\b("
-        r"\d{4}"
-        r"|january|february|march|april|may|june|july|"
-        r"august|september|october|november|december|"
-        r"today|yesterday|tomorrow"
-        r")\b",
-        re.IGNORECASE,
-    )
+    WORD = re.compile(r"\b[^\W\d_]+\b", re.UNICODE)
 
     NUMBER_PATTERN = re.compile(r"\d+(?:[.,]\d+)?")
 
-    # "%" is matched outside the \b(...)\b group: it is not a word
-    # character, so inside that group it could never match at all
-    # ("35%." has no word boundary after the "%"). That silently cost
-    # every percentage sentence 0.10 of its score - enough to push
-    # "The treatment increased survival by 35%." below the 0.50 claim
-    # threshold and drop the claim entirely.
-    MEASUREMENT_PATTERN = re.compile(
-        r"%|\b("
-        r"percent|km|m|cm|kg|g|tons?|"
-        r"million|billion|euros?|dollars?|people"
-        r")\b",
-        re.IGNORECASE,
-    )
+    YEAR_PATTERN = re.compile(r"\b\d{4}\b")
 
-    QUOTE_PATTERN = re.compile(r"[\"“”']")
+    # "%" is matched on its own, never inside a \b(...)\b group: it is not
+    # a word character, so within one it could never match at all ("35%."
+    # has no word boundary after the "%"). That silently cost every
+    # percentage sentence 0.10 of its score - enough to push "The
+    # treatment increased survival by 35%." below the claim threshold.
+    PERCENT_PATTERN = re.compile(r"%")
+
+    QUOTE_PATTERN = re.compile("[\"“”«»']")
 
     def __init__(self, min_confidence: float | None = None):
 
@@ -100,6 +57,7 @@ class ClaimExtractor(BaseProcessor):
         text: str,
         min_confidence: float | None = None,
         entity_threshold: float | None = None,
+        language: str | None = None,
     ) -> list[Claim]:
 
         minimum = (
@@ -107,6 +65,8 @@ class ClaimExtractor(BaseProcessor):
             if min_confidence is not None
             else self.min_confidence
         )
+
+        lexicon = lexicon_for(language)
 
         claims = []
 
@@ -117,6 +77,7 @@ class ClaimExtractor(BaseProcessor):
             confidence = self._score(
                 sentence,
                 entities,
+                lexicon,
             )
 
             if confidence < minimum:
@@ -150,15 +111,28 @@ class ClaimExtractor(BaseProcessor):
 
     ##########################################################
 
+    def _words(self, sentence: str) -> list[str]:
+
+        return [word.lower() for word in self.WORD.findall(sentence)]
+
+    ##########################################################
+
     def _score(
         self,
         sentence: str,
         entities,
+        lexicon: Lexicon | None = None,
     ) -> float:
 
-        score = 0.0
+        lexicon = lexicon or lexicon_for(None)
 
-        sentence_lower = sentence.lower()
+        # Tokenised once and matched on whole words. The reporting-verb
+        # check used to be a substring test over the raw sentence, so
+        # "win" fired on "window" and "winter", and "m" (a unit) fired on
+        # every word containing an m.
+        words = self._words(sentence)
+
+        score = 0.0
 
         ##################################################
         # Named entities
@@ -175,27 +149,32 @@ class ClaimExtractor(BaseProcessor):
             score += 0.20
 
         ##################################################
-        # Dates
+        # Dates - a four-digit year, a month name, or a
+        # relative day, in the article's own language
         ##################################################
 
-        if self.DATE_PATTERN.search(sentence):
+        if (
+            self.YEAR_PATTERN.search(sentence)
+            or count_matches(words, lexicon.month_names)
+            or count_matches(words, lexicon.relative_dates)
+        ):
             score += 0.15
 
         ##################################################
         # Measurements
         ##################################################
 
-        if self.MEASUREMENT_PATTERN.search(sentence):
+        if (
+            self.PERCENT_PATTERN.search(sentence)
+            or count_matches(words, lexicon.measurement_words)
+        ):
             score += 0.10
 
         ##################################################
         # Reporting verbs
         ##################################################
 
-        if any(
-            verb in sentence_lower
-            for verb in self.REPORTING_VERBS
-        ):
+        if count_matches(words, lexicon.reporting_verbs):
             score += 0.20
 
         ##################################################

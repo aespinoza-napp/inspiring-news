@@ -45,7 +45,7 @@ class EvidenceRetriever:
 
         max_evidence = thresholds.max_evidence_per_claim
 
-        web_evidence = self.search_provider.search(claim)
+        web_evidence = self.search_provider.search(claim, thresholds)
         internal_evidence = self.vector_retriever.retrieve(
             claim,
             thresholds=thresholds,

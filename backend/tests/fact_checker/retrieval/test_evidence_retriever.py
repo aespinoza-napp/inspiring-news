@@ -11,7 +11,7 @@ class FakeSearchProvider:
     def __init__(self, evidence):
         self.evidence = evidence
 
-    def search(self, claim):
+    def search(self, claim, thresholds=None):
         return self.evidence
 
 

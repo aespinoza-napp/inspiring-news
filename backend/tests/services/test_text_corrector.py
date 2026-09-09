@@ -19,10 +19,13 @@ class FakeQualityAnalyzer:
         self.readability_score = readability_score
         self.quality_dict = quality_dict
 
-    def readability(self, text: str) -> float:
+    def readability(self, text: str, lexicon=None) -> float:
         return self.readability_score
 
-    def process(self, text: str, sentiment=None, entities=None, novelty=None) -> dict:
+    def process(
+        self, text: str, sentiment=None, entities=None,
+        novelty=None, language=None,
+    ) -> dict:
         return self.quality_dict
 
 

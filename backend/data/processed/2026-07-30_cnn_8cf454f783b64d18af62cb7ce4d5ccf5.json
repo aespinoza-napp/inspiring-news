@@ -4,7 +4,7 @@
   "url": "https://www.cnn.com/2023/04/03/sport/summer-mcintosh-world-record-canada-swimmer-spt-intl/index.html",
   "title": "",
   "body": "Sixteen-year-old Summer McIntosh broke the world record for the 400m individual medley at the Canadian swimming trials on Saturday – just days after breaking the world record for the 400m freestyle.\nMcIntosh finished the 400m individual medley in a time of 4:25.87, breaking the mark set at the 2016 Rio Olympics by Hungarian swimmer Katinka Hosszú with a time of 4:26.36.\nThe result continues the teenager’s brilliant week after she broke the 400m freestyle world record last Tuesday – breaking defending Olympic champion Ariarne Titmus’ previous record of 3:56.40, which was set last May, in a time of 3:56.08.\nSpeaking after her latest triumph, McIntosh shared her emotions.\n“That’s the first time I really vividly heard the crowd during my race,” McIntosh said, per Reuters.\n“It’s amazing to have all my family and friends in the stands, cheering me on. It really helped me in the last 100 meters.”\nThe Canadian teen made her Olympic debut aged 14 at Tokyo 2020, where she finished fourth in the 200-meter freestyle.\nShe bagged gold in the 200m butterfly and 400m medley at the world championships in 2022, as well as two golds at the Commonwealth Games in the 200m and 400m medleys.\nShe now trains in Florida under coach Brent Arckey with the Sarasota Sharks team.",
-  "language": null,
+  "language": "en",
   "published_at": "2026-07-30T00:00:00",
   "keywords": [
     "world record",
@@ -127,20 +127,20 @@
     }
   ],
   "sentiment": {
-    "label": "positive",
-    "positive": 0.7166,
-    "neutral": 0.2795,
-    "negative": 0.0039,
-    "polarity": 0.7127,
+    "label": "neutral",
+    "positive": 0.3001,
+    "neutral": 0.388,
+    "negative": 0.3118,
+    "polarity": -0.0117,
     "subjectivity": 0.3767,
-    "confidence": 0.7166,
-    "emotional_intensity": 0.7127
+    "confidence": 0.388,
+    "emotional_intensity": 0.0117
   },
   "quality": {
-    "readability": 0.6041,
+    "readability": 0.6121,
     "objectivity": 1.0,
     "constructiveness": 0.0,
-    "inspirational_score": 0.205,
+    "inspirational_score": 0.135,
     "hopefulness": 0.0,
     "societal_impact": 0.8,
     "novelty": 0.5
