@@ -3,8 +3,10 @@
 
 FROM python:3.12-slim
 
-# Matches backend/.python-version. The project declares >=3.9 but uses
-# `X | None` annotations throughout, which need 3.10+.
+# Matches backend/.python-version and pyproject's requires-python, which
+# are both 3.12. They used to disagree - pyproject claimed >=3.9 - and
+# that disagreement is what made this build fail: resolving for 3.9 split
+# the lock in two and handed 3.12 a torch that depends on cuda-toolkit.
 
 # uv is the project's dependency manager (see CLAUDE.md); copied from
 # its own published image rather than pip-installed, so the version is
@@ -27,8 +29,14 @@ RUN apt-get update \
 
 WORKDIR /app
 
+# UV_HTTP_TIMEOUT: torch is a ~200MB single wheel even CPU-only. uv's
+# 30s default is a stall timeout rather than a total one, but it is
+# tight enough on a slow connection to fail a build that would otherwise
+# finish. Declared above the instruction, not inside it - a comment in
+# the middle of a line continuation is a Dockerfile trap.
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
+    UV_HTTP_TIMEOUT=180 \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 

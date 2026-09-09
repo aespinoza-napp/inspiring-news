@@ -3,7 +3,13 @@ name = "backend"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.9"
+# 3.12, matching backend/.python-version and the python:3.12-slim base
+# image. It said >=3.9, which was never true - the code uses `X | None`
+# annotations (3.10+) and tests/test_invariants.py imports tomllib
+# (3.11+). It was also expensive: resolving for 3.9 split the lock into
+# two torch versions, and the one chosen for 3.10+ was torch 2.13, which
+# pulls cuda-toolkit and ~2.5GB of nvidia wheels.
+requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.15.0",
     "fastapi>=0.128.8",
@@ -31,6 +37,35 @@ dependencies = [
     "uvicorn>=0.39.0",
     "yake>=0.4.8",
 ]
+[tool.uv.sources]
+# CPU-only torch inside the container.
+#
+# On Linux, PyPI's torch depends on cuda-toolkit, which drags in the full
+# nvidia stack - cublas, cudnn, cusolver, nccl, ~2.5GB of wheels for a
+# GPU the container does not have and that no code here asks for (there
+# is no `.cuda()`, no `device=` and no `.to()` anywhere in src/). The
+# docker build died downloading exactly one of them:
+#
+#     Failed to download `nvidia-cusolver==12.0.4.66`
+#     Failed to download distribution due to network timeout
+#
+# Raising UV_HTTP_TIMEOUT would only have made the wrong download
+# succeed slowly. The CPU wheel is ~200MB instead.
+#
+# Scoped to Linux on purpose: Windows and macOS torch on PyPI is already
+# CPU-only, so pointing them at this index would force every developer to
+# re-download torch for no change in what they get.
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+# explicit: this index serves ONLY the packages named above. Without it
+# uv would prefer it for every dependency it happens to carry.
+explicit = true
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
