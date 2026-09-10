@@ -5,7 +5,16 @@ services:
       - "7474:7474"
       - "7687:7687"
     environment:
-      - NEO4J_AUTH=neo4j/password
+      # Must match NEO4J_PASSWORD in backend/.env - GraphClient
+      # (backend/src/database/neo4j_client.py) is dead code today, so
+      # nothing surfaces the mismatch yet, but the moment something
+      # calls it, a wrong password here looks exactly like the
+      # intermittent "sometimes it works" failures this file's other
+      # comments describe. Two hardcoded copies of the same secret is
+      # not ideal, but the alternative (Compose ${VAR} interpolation
+      # from a new docker/.env) is more machinery for a credential
+      # nothing currently uses.
+      - NEO4J_AUTH=neo4j/aEm7V1HyGck1B3VXYNzY
       # Without these, Neo4j's JVM auto-sizes heap + page cache based on
       # available host RAM - dangerous on an 8GB machine that's also
       # holding a local LLM in memory. Capped small since this is a dev
@@ -31,6 +40,21 @@ services:
     environment:
       - SEARXNG_BASE_URL=http://localhost:8080/
     mem_limit: 256m
+    healthcheck:
+      # "service_started" (the old depends_on condition below) only
+      # meant the container process existed, not that SearXNG's HTTP
+      # server was accepting connections yet - SearXNG is itself a
+      # Python app with real startup time. A backend request that hits
+      # evidence retrieval before this is ready fails intermittently,
+      # which looks exactly like "sometimes docker works, sometimes
+      # not" even though the container came up fine. format=json
+      # requires docker/searxng/settings.yml's `formats: [..., json]`,
+      # already enabled - it's what SearxngClient itself calls.
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8080/search?q=test&format=json"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   backend:
     build:
@@ -82,8 +106,18 @@ services:
       neo4j:
         condition: service_healthy
       searxng:
-        condition: service_started
+        condition: service_healthy
     mem_limit: 1g
+    # Gives the process real time to release Qdrant's exclusive
+    # storage-directory lock (backend/src/database/qdrant.py) on SIGTERM
+    # before Compose escalates to SIGKILL. Without this, an unclean stop
+    # (an OOM kill under mem_limit, `docker kill`, a hard host shutdown)
+    # can leave the lock held, and the next `up` has to burn through the
+    # 15x1s retry loop there - and can still lose. This is the best-fit
+    # explanation for "sometimes docker executes and sometimes not" at
+    # the request level: the container starts fine, but the first call
+    # that touches VectorRepository fails.
+    stop_grace_period: 30s
 
 volumes:
   backend-data:

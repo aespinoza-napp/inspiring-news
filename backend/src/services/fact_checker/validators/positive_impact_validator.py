@@ -59,7 +59,7 @@ class PositiveImpactValidator:
 
         if sentiment.negative > 0.70:
             reasons.append("Strong negative sentiment")
-        
+
         hard_fail = (
             #quality.constructiveness < 0.20
             #quality.inspirational_score < 0.15
