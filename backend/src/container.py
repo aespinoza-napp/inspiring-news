@@ -15,22 +15,26 @@ from src.workflows.enrichment import NewsEnrichmentPipeline
 
 # ---------------------------------------------------------------------
 # Everything below is constructed lazily (on first actual use), not at
-# import time. NewsEnrichmentPipeline/TextCorrector both eagerly load
-# transformer models (GLiNER, the sentiment classifier, sentence-
-# transformers for embeddings) on construction - several seconds of
-# real work each. `uvicorn --reload` re-imports this module (in a fresh
-# subprocess) on every file save, so building any of this eagerly at
-# module level meant *every single reload* re-paid the full model-
-# loading cost before the app could even start serving - the dominant
-# cost of local iteration.
+# import time.
 #
-# VectorRepository additionally has the QdrantClient local-storage lock
-# problem (see get_vector_repository below): eager construction meant
-# every reload also raced to grab an exclusive file lock.
+# The original reason has narrowed: NewsEnrichmentPipeline/TextCorrector
+# used to eagerly load transformer models (GLiNER, the sentiment
+# classifier, sentence-transformers) on construction - several seconds
+# of real work each, re-paid on every `uvicorn --reload`. Those models
+# now live in the inference/ service and are reached over HTTP
+# (src/services/inference_client.py), so EntityExtractor,
+# SentimentAnalyzer and EmbeddingService are cheap objects wrapping an
+# httpx client. What remains genuinely expensive here is
+# VectorRepository, which additionally has the QdrantClient
+# local-storage lock problem (see get_vector_repository below): eager
+# construction meant every reload also raced to grab an exclusive file
+# lock. TopicClassifier is the other one worth deferring - it encodes
+# every configured TOPICS entry at construction, which is now a burst
+# of real HTTP calls rather than local matrix work.
 #
 # Deferring construction to first use means `uvicorn --reload` restarts
 # are near-instant; only the first request that actually needs a given
-# service pays its loading cost, once, and it's cached for the rest of
+# service pays its setup cost, once, and it's cached for the rest of
 # that process's life (until the next reload).
 #
 # The lazy-init checks below are guarded by a lock (double-checked
@@ -135,8 +139,7 @@ def get_fact_checker() -> FactChecker:
 def get_claim_service() -> ClaimService:
     """
     Backs POST /verify-claim. Lazy for the usual reason: reaching it
-    builds the FactChecker, which opens Qdrant and loads the embedding
-    model.
+    builds the FactChecker, which opens Qdrant.
     """
 
     global _claim_service
@@ -146,8 +149,11 @@ def get_claim_service() -> ClaimService:
             if _claim_service is None:
                 _claim_service = ClaimService(
                     fact_checker=get_fact_checker(),
-                    # Shares the enrichment pipeline's already-loaded
-                    # GLiNER rather than loading a second copy of it.
+                    # Shares the enrichment pipeline's EntityExtractor.
+                    # This mattered more when that meant sharing a loaded
+                    # GLiNER; now they share an inference/ HTTP client
+                    # and, more usefully, the same configured labels and
+                    # default threshold.
                     entity_extractor=get_enrichment_pipeline().entities,
                 )
 
@@ -157,7 +163,8 @@ def get_claim_service() -> ClaimService:
 def get_enrichment_service() -> EnrichmentService:
     """
     Backs POST /enrich. Wraps the same NewsEnrichmentPipeline singleton
-    the article pipeline uses - no second set of transformer models.
+    the article pipeline uses, so /enrich and /analyze cannot derive
+    different things from the same text.
     """
 
     global _enrichment_service

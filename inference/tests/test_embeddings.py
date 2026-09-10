@@ -8,9 +8,8 @@ from src.embeddings import EmbeddingModel
 
 def test_embedding_model_reports_a_real_dimension():
     """
-    backend's own test_embedding_model_dimension_matches_configured_dimension
-    (in backend/tests/services/test_...) is what actually cross-checks
-    this dimension against EMBEDDING_DIMENSION and PipelineThresholds - a
+    backend/tests/services/test_embedding_dimension_live.py is what
+    actually cross-checks this dimension against EMBEDDING_DIMENSION - a
     concern this service doesn't own. This just confirms the model loads
     and reports something sane.
     """

@@ -84,7 +84,7 @@ def test_get_text_corrector_builds_exactly_once_under_concurrency(monkeypatch):
     _reset("_text_corrector")
 
 
-def test_get_analysis_service_does_not_deadlock():
+def test_get_analysis_service_does_not_deadlock(require_inference):
     """
     Regression test for a real, live-reproduced deadlock: an earlier
     version of this fix used a plain threading.Lock() for _lock.
@@ -100,6 +100,14 @@ def test_get_analysis_service_does_not_deadlock():
     Runs get_analysis_service() in a background thread and asserts it
     actually returns within a generous timeout, so a regression back to
     a plain Lock fails this test instead of hanging the suite.
+
+    require_inference: get_enrichment_pipeline() builds a real
+    NewsEnrichmentPipeline, whose TopicClassifier eagerly encodes every
+    TOPICS entry at construction - a real call to inference/ since the
+    ML split. Without this the worker thread's exception (inference
+    unreachable) is silently swallowed by threading.Thread and this test
+    fails on "service" never landing in `result`, not on the deadlock
+    this test actually exists to catch.
     """
 
     _reset("_vector_repository", "_analysis_service", "_enrichment_pipeline")

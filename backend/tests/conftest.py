@@ -35,6 +35,38 @@ def example_sources():
 
 
 @pytest.fixture
+def require_inference():
+    """
+    Skips, rather than fails, when the inference/ service isn't
+    reachable at settings.INFERENCE_URL - same reasoning as
+    test_connection.py's Neo4j skip: a test that needs a real GLiNER/
+    sentiment/embedding model now needs a real *service* since the
+    split, and an unrelated red test in every local run (nobody starts
+    `docker compose up inference` or a second `uv run uvicorn` just to
+    run `pytest`) trains people to ignore the suite.
+
+    Real-model behavior itself (does the embedding model actually
+    cluster similar text, does GLiNER actually find "Apple") is tested
+    where the model lives now - inference/tests/. What still needs
+    checking from backend/ is that its own classes correctly *use* a
+    real inference service - e.g. TopicClassifier's semantic ranking
+    end to end, or the EMBEDDING_DIMENSION agreement check.
+    """
+
+    import httpx
+
+    try:
+        response = httpx.get(f"{live_settings.INFERENCE_URL}/healthz", timeout=2.0)
+        if response.status_code != 200:
+            pytest.skip(
+                f"inference service at {live_settings.INFERENCE_URL} is not "
+                f"warm yet (status {response.status_code})"
+            )
+    except httpx.HTTPError as exc:
+        pytest.skip(f"inference service is not reachable at {live_settings.INFERENCE_URL}: {exc}")
+
+
+@pytest.fixture
 def repository():
 
     with tempfile.TemporaryDirectory() as path:

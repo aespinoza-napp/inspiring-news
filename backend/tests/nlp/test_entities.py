@@ -1,35 +1,70 @@
+"""
+EntityExtractor is now an Adapter over InferenceClient - GLiNER itself
+moved to inference/tests/test_entities.py, which tests the real model.
+This tests the adapter: it calls the client with the right arguments
+and degrades to {} rather than raising when the client returns None.
+"""
+
 from src.processors.nlp.entities import EntityExtractor
 
 
-def test_entity_extraction():
+class _StubClient:
 
-    extractor = EntityExtractor()
+    def __init__(self, result=None):
+        self.result = result
+        self.calls = []
 
-    text = """
-    Apple announced a new iPhone during an event in
-    Barcelona. Tim Cook presented the device.
+    def entities(self, text, threshold=None, labels=None):
+        self.calls.append((text, threshold, labels))
+        return self.result
+
+
+def test_process_delegates_to_the_client_with_the_effective_threshold():
+
+    client = _StubClient(result={"company": ["Apple"], "city": ["Barcelona"]})
+
+    extractor = EntityExtractor(threshold=0.42, client=client)
+
+    entities = extractor.process("Apple announced a product in Barcelona.")
+
+    assert entities == {"company": ["Apple"], "city": ["Barcelona"]}
+
+    [(text, threshold, labels)] = client.calls
+    assert text == "Apple announced a product in Barcelona."
+    assert threshold == 0.42
+    assert labels == extractor.labels
+
+
+def test_a_per_call_threshold_overrides_the_instance_default():
+
+    client = _StubClient(result={})
+
+    extractor = EntityExtractor(threshold=0.5, client=client)
+
+    extractor.process("some text", threshold=0.9)
+
+    [(_, threshold, _)] = client.calls
+    assert threshold == 0.9
+
+
+def test_degrades_to_empty_dict_when_the_client_returns_none():
+    """
+    Mirrors LLMClient's None-on-failure contract: ClaimExtractor's
+    scoring already treats "no entities" as one weak signal among
+    several, not a hard failure, so an inference outage should weaken a
+    sentence's score rather than take down the whole enrichment pass.
     """
 
-    entities = extractor.process(text)
-    print(f"Extracted entities: {entities}")
-    print(f"Processor {extractor.name} extracted {len(entities)} entities")
-    print(entities)
+    extractor = EntityExtractor(client=_StubClient(result=None))
 
-    assert isinstance(entities, dict)
+    assert extractor.process("some text") == {}
 
-    total = sum(
-        len(v)
-        for v in entities.values()
-    )
 
-    assert total > 0
+def test_empty_text_short_circuits_without_calling_the_client():
 
-    flattened = [
-        entity
-        for values in entities.values()
-        for entity in values
-    ]
+    client = _StubClient(result={"person": ["someone"]})
 
-    assert "Apple" in flattened
+    extractor = EntityExtractor(client=client)
 
-    assert "Barcelona" in flattened
+    assert extractor.process("") == {}
+    assert client.calls == []

@@ -21,7 +21,15 @@ from src.repositories.local_repository import LocalRepository
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
 
-def test_enrichment_pipeline(tmp_path):
+def test_enrichment_pipeline(tmp_path, require_inference):
+    """
+    require_inference: since the ML split, NewsEnrichmentPipeline's
+    entities/sentiment/embedding stages call the inference/ service over
+    HTTP rather than loading models in-process - this test now needs
+    that service reachable and warm, same as it always needed a real
+    article under data/raw. Skips rather than fails when it isn't
+    running, per conftest.py's require_inference.
+    """
 
     settings = Settings()
 

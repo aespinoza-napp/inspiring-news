@@ -2,7 +2,13 @@ from src.config.topics import TOPICS
 from src.processors.nlp.classifier import TopicClassifier
 
 
-def test_topic_classifier():
+def test_topic_classifier(require_inference):
+    """
+    Needs a real embedding model (via a real, reachable inference/
+    service) to mean anything - a fake's hash-derived vectors can't
+    exercise real semantic similarity. Skips rather than fails when
+    inference isn't running; see conftest.py's require_inference.
+    """
 
     classifier = TopicClassifier()
 
@@ -41,7 +47,7 @@ def test_topic_classifier():
     assert abs(sum(p.probability for p in predictions) - 1.0) < 1e-3
 
 
-def test_off_topic_text_returns_no_predictions():
+def test_off_topic_text_returns_no_predictions(require_inference):
 
     classifier = TopicClassifier(threshold=0.99)
 

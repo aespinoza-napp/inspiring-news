@@ -10,9 +10,10 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ## Verify with one command
 
 ```bash
-./scripts/check.sh          # backend tests + frontend typecheck
-./scripts/check.sh fast     # invariants only, seconds, no models loaded
-./scripts/check.sh slow     # the full model stack over data/raw, minutes
+./scripts/check.sh           # backend + inference tests + frontend typecheck
+./scripts/check.sh fast      # invariants only, seconds, no models loaded
+./scripts/check.sh inference # the real models, in their own service
+./scripts/check.sh slow      # the whole data/raw corpus, minutes
 ```
 
 `make check` / `make fast` / `make slow` do the same. Use these rather
@@ -21,13 +22,23 @@ directory, and the slow tests are excluded by a registered `slow` marker
 (`addopts` in `pyproject.toml`) rather than by a path flag nobody
 remembers. **`./scripts/check.sh` is the definition of "done".**
 
+Backend tests that need a real model skip when `inference/` isn't
+running (`backend/tests/conftest.py::require_inference`) — `check.sh`
+does not start it. To actually exercise those, bring it up first:
+`docker compose up inference`, or `cd inference && uv run uvicorn
+src.main:app --port 8001`.
+
 ## Repository layout
 
 - `backend/` — Python/FastAPI scraping, enrichment and fact-checking
   pipeline. See `backend/CLAUDE.md`.
+- `inference/` — model server owning GLiNER, the sentiment classifier
+  and the embedding model. Backend reaches it over HTTP; it knows
+  nothing about topics, thresholds or scoring. See `inference/README.md`.
 - `frontend/` — Next.js 14 (App Router + TypeScript) UI. See
   `frontend/CLAUDE.md`.
-- `docker/` — compose (Neo4j, SearXNG, backend) and `backend.Dockerfile`.
+- `docker/` — compose (Neo4j, SearXNG, inference, backend) and the two
+  Dockerfiles.
 - `docs/decisions/` — why things are the way they are.
 
 ## Navigation
@@ -35,6 +46,7 @@ remembers. **`./scripts/check.sh` is the definition of "done".**
 | Looking for | Go to |
 |---|---|
 | Pipeline stages, entry points, container | `backend/CLAUDE.md` |
+| Why the models live in their own service | `docs/decisions/inference.md` |
 | Per-run thresholds, how overrides resolve | `docs/decisions/thresholds.md` |
 | The three storage layers and lineage | `docs/decisions/storage.md` |
 | Why a given rule exists; what broke before | `docs/decisions/incidents.md` |
@@ -83,10 +95,15 @@ the declared exception, deliberately.
 10. **Every shared fake in `tests/fact_checker/fakes.py` has a contract
     entry** in `tests/test_fake_contracts.py`, so a fake cannot drift
     out of signature with the collaborator it stands in for.
+11. **`backend/src/` never imports `torch`, `transformers`, `gliner` or
+    `sentence_transformers`.** Those models live in `inference/` and are
+    reached over HTTP. Re-adding a local import silently puts ~2GB of
+    wheels and a model load back into the API container — the exact
+    thing the split removed.
 
 ## Known dead / known broken
 
-The code invites three confident wrong conclusions. It is cheaper to
+The code invites several confident wrong conclusions. It is cheaper to
 write them down than to have each be rediscovered.
 
 - **There is no ingestion pipeline.** `Scraper`, `DiscoveryService`,
@@ -108,8 +125,16 @@ write them down than to have each be rediscovered.
 - **`TopicPrediction.probability` carries no signal.** It is a softmax
   over raw cosine similarities across ~22 topics, so it comes back
   near-uniform (0.049 top vs 0.044 bottom). Use `confidence`.
-- **The Docker image has not been run.** All build stages succeed; the
-  container has never been started end to end.
+- **The `backend` container has not been run.** All build stages
+  succeed and it has never been started end to end. The `inference`
+  container *has* — built, brought up, reached `healthy`, and served
+  real `/entities`, `/sentiment` and `/embeddings` requests.
+- **`SENTIMENT_MODEL` and `EMBEDDING_MODEL` in `backend/.env` are
+  documentary.** The models load in `inference/`, from
+  `inference/src/config.py`'s own defaults. Editing the backend values
+  changes nothing — a real trap the split introduced. `EMBEDDING_DIMENSION`
+  *is* still live (it sizes the Qdrant collection), which is why
+  `tests/services/test_embedding_dimension_live.py` exists.
 
 ## Conventions
 

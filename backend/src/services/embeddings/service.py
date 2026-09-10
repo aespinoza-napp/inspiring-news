@@ -1,11 +1,24 @@
+"""
+The sentence-transformer model itself moved to inference/src/embeddings.py
+- this class is now an Adapter over InferenceClient. `similarity()` did
+NOT move: it's pure numpy dot-product arithmetic on two already-computed
+vectors, needs no model, and every caller (TopicClassifier,
+EvidenceRanker, VectorRetriever, ...) still calls it directly on
+vectors they already have.
+
+The `__new__`-based process-wide singleton stays too - one shared
+InferenceClient/httpx connection pool per process is still worth having,
+even though there's no model weight to avoid reloading anymore.
+"""
+
 from __future__ import annotations
 
 from typing import Iterable
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 from src.config.settings import settings
+from src.services.inference_client import InferenceClient
 
 
 class EmbeddingService:
@@ -18,22 +31,11 @@ class EmbeddingService:
 
             cls._instance = super().__new__(cls)
 
-            cls._instance._model = None
+            cls._instance._client = InferenceClient()
+
+            cls._instance._dimension = None
 
         return cls._instance
-
-    #########################################################
-
-    @property
-    def model(self):
-
-        if self._model is None:
-
-            self._model = SentenceTransformer(
-                settings.EMBEDDING_MODEL
-            )
-
-        return self._model
 
     #########################################################
     @property
@@ -42,17 +44,24 @@ class EmbeddingService:
 
     #########################################################
 
-
     def encode(
         self,
         text: str,
     ) -> np.ndarray:
+        """
+        Raises InferenceUnavailable (propagated from InferenceClient) on
+        failure. Duplicate detection, evidence ranking and topic
+        classification all feed on this vector - a silently missing or
+        zeroed embedding would corrupt one of those decisions rather
+        than just weaken a signal, so this does not degrade the way
+        EntityExtractor does.
+        """
 
-        return self.model.encode(
-            text,
-            normalize_embeddings=True,
-            convert_to_numpy=True,
-        )
+        vector, dimension = self._client.encode(text)
+
+        self._dimension = dimension
+
+        return np.array(vector)
 
     #########################################################
 
@@ -61,11 +70,11 @@ class EmbeddingService:
         texts: Iterable[str],
     ) -> np.ndarray:
 
-        return self.model.encode(
-            list(texts),
-            normalize_embeddings=True,
-            convert_to_numpy=True,
-        )
+        vectors, dimension = self._client.encode_many(list(texts))
+
+        self._dimension = dimension
+
+        return np.array(vectors)
 
     #########################################################
 
@@ -85,6 +94,16 @@ class EmbeddingService:
     #########################################################
 
     @property
-    def dimension(self):
+    def dimension(self) -> int:
+        """
+        Cached from the last encode()/encode_many() call rather than a
+        dedicated round-trip - VectorRepository checks this on every
+        collection-size verification, and this service has no model
+        loaded locally to ask directly anymore. Triggers one real call
+        if nothing has been encoded yet this process.
+        """
 
-        return self.model.get_sentence_embedding_dimension()
+        if self._dimension is None:
+            self.encode("dimension probe")
+
+        return self._dimension

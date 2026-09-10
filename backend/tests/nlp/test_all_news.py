@@ -19,6 +19,12 @@ Two things were wrong with it before, both hidden by that exclusion:
    `failed` tally that nothing asserted against, so the only condition
    that could actually fail the test was "not a single article
    processed". It could not detect the thing it was written to detect.
+
+"The full model stack" now means the inference/ service reachable at
+INFERENCE_URL, not models loaded in this process - `./scripts/check.sh
+slow` alone is not enough after the ML split; start
+`docker compose up inference` (or a local `uv run uvicorn` there)
+first, same as `slow` already assumed real data under data/raw.
 """
 
 import pytest
@@ -31,7 +37,7 @@ from src.workflows.enrichment import NewsEnrichmentPipeline
 
 
 @pytest.mark.slow
-def test_every_raw_article_survives_enrichment(tmp_path):
+def test_every_raw_article_survives_enrichment(tmp_path, require_inference):
 
     settings = Settings()
 
@@ -90,7 +96,7 @@ def test_every_raw_article_survives_enrichment(tmp_path):
 
 
 @pytest.mark.slow
-def test_topics_and_claims_are_found_for_at_least_some_articles(tmp_path):
+def test_topics_and_claims_are_found_for_at_least_some_articles(tmp_path, require_inference):
     """
     Deliberately weaker than per-article: topics and claims are content
     dependent, and a football report legitimately matches none of the

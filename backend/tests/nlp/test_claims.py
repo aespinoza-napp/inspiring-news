@@ -1,7 +1,18 @@
+"""
+ClaimExtractor calls EntityExtractor.process() per sentence, which -
+since the ML split - is a real HTTP call to inference/ rather than an
+in-process GLiNER call. Tests that call .process() on non-empty text
+need require_inference and skip when that service isn't reachable
+(conftest.py). test_percentage_contributes_to_the_score calls the
+scoring internals directly with pre-supplied entities, and
+test_empty_text_yields_no_claims never reaches a sentence to extract
+entities from - neither needs it.
+"""
+
 from src.processors.nlp.claims import ClaimExtractor
 
 
-def test_claim_extractor():
+def test_claim_extractor(require_inference):
 
     extractor = ClaimExtractor()
 
@@ -33,7 +44,7 @@ def test_claim_extractor():
     assert all(0.0 < claim.confidence <= 1.0 for claim in claims)
 
 
-def test_claim_with_numbers():
+def test_claim_with_numbers(require_inference):
 
     extractor = ClaimExtractor()
 
@@ -58,7 +69,7 @@ def test_percentage_contributes_to_the_score():
     assert with_percent > without_percent
 
 
-def test_non_factual_text():
+def test_non_factual_text(require_inference):
 
     extractor = ClaimExtractor()
 

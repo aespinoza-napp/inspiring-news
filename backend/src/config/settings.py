@@ -40,9 +40,12 @@ class Settings(BaseSettings):
     NEO4J_USER: str = "neo4j"
     NEO4J_PASSWORD: SecretStr
 
-    # Multilingual (covers the en/es/... mix of currently configured
-    # sources) - twitter-roberta-base-sentiment-latest is English-only and
-    # would silently produce meaningless scores for non-English articles.
+    # Documentary, not load-bearing: the model itself now loads inside
+    # inference/ (inference/src/config.py's own SENTIMENT_MODEL), not
+    # here. Kept so a human reading .env still sees what's running.
+    # Changing this value does NOT change behavior - change
+    # inference/src/config.py's default (or that service's own env) and
+    # rebuild/restart it instead.
     SENTIMENT_MODEL: str = (
         "cardiffnlp/twitter-xlm-roberta-base-sentiment"
     )
@@ -50,11 +53,25 @@ class Settings(BaseSettings):
     # Qdrant settings
     QDRANT_PATH: Path = Path("data/vector_db")
 
+    # Still load-bearing: VectorRepository sizes the Qdrant collection
+    # from this, independent of which embedding model actually produces
+    # the vectors (see backend/tests/services/test_embeddings.py's
+    # config-drift test for why the two must actually agree).
     EMBEDDING_DIMENSION: int = 1024
 
+    # Documentary only, same caveat as SENTIMENT_MODEL above - the model
+    # loads in inference/src/config.py now.
     EMBEDDING_MODEL: str = (
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
+
+    # The model server for GLiNER/sentiment/embeddings (inference/) -
+    # see backend/src/services/inference_client.py. Defaults to
+    # localhost for running both services on the host during local dev,
+    # same pattern as LLM_BASE_URL below; docker-compose.yml overrides
+    # this to the container DNS name.
+    INFERENCE_URL: str = "http://localhost:8001"
+    INFERENCE_TIMEOUT: float = 30.0
 
     # -----------------------------------------------------------------
     # Pipeline thresholds

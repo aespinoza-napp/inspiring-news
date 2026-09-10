@@ -100,6 +100,7 @@ NON_THRESHOLD_SETTINGS = {
     "FACT_CHECK_PATH", "GRAPH_PATH",
     "EMBEDDING_MODEL", "EMBEDDING_DIMENSION", "SENTIMENT_MODEL",
     "LLM_MODEL", "LLM_BASE_URL", "LLM_API_KEY", "LLM_TIMEOUT",
+    "INFERENCE_URL", "INFERENCE_TIMEOUT",
     "SEARXNG_URL", "SEARXNG_TIMEOUT", "SEARXNG_MAX_RESULTS",
     "NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD",
     "RANKING_SEMANTIC_WEIGHT", "RANKING_RECENCY_WEIGHT",
@@ -579,3 +580,73 @@ def test_the_slow_marker_is_registered():
         marker.startswith("slow:") for marker in pytest_config["markers"]
     )
     assert "not slow" in pytest_config["addopts"]
+
+
+# ----------------------------------------------------------------------
+# The ML models stay in inference/
+# ----------------------------------------------------------------------
+
+ML_LIBRARIES = {"torch", "transformers", "gliner", "sentence_transformers"}
+
+
+def test_the_backend_does_not_import_a_model_library():
+    """
+    GLiNER, the sentiment classifier and the embedding model live in
+    inference/ and are reached over HTTP (src/services/inference_client.py).
+    A local import here doesn't fail loudly - it quietly puts ~2GB of
+    wheels back into the backend image and a multi-second model load
+    back into the request path, which is exactly what the split removed.
+
+    Checked by AST rather than by grep so a library named inside a
+    comment or a docstring (this file's own list, for one) isn't
+    mistaken for an import.
+    """
+
+    offenders = []
+
+    for path in PYTHON_FILES:
+
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+
+        for node in ast.walk(tree):
+
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                names = [node.module or ""]
+            else:
+                continue
+
+            for name in names:
+                if name.split(".")[0] in ML_LIBRARIES:
+                    offenders.append(f"{relative(path)}:{node.lineno}  {name}")
+
+    assert offenders == [], (
+        "These belong in inference/, reached through InferenceClient:\n  "
+        + "\n  ".join(offenders)
+    )
+
+
+def test_the_dependency_list_carries_no_model_library():
+    """
+    The import check above passes trivially if someone adds the
+    dependency back without importing it yet. Both must stay clean, or
+    the image regrows quietly.
+    """
+
+    import tomllib
+
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+
+    config = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+
+    declared = {
+        # "gliner==0.2.28" -> "gliner"; the lock pins the version.
+        re.split(r"[=<>!~\[]", dependency)[0].strip().replace("-", "_")
+        for dependency in config["project"]["dependencies"]
+    }
+
+    assert declared & ML_LIBRARIES == set(), (
+        f"backend/pyproject.toml declares {sorted(declared & ML_LIBRARIES)} - "
+        "those moved to inference/pyproject.toml."
+    )

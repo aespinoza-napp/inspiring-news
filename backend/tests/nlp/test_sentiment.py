@@ -1,46 +1,73 @@
-from src.config.settings import Settings
+"""
+SentimentAnalyzer is now an Adapter over InferenceClient - the real
+model (and its @user/http normalization) moved to
+inference/tests/test_sentiment.py. This tests the adapter: it builds a
+SentimentResult from whatever the client returns, and propagates
+failure rather than degrading (see sentiment.py's docstring for why:
+PositiveImpactValidator reads this as a core admission signal).
+"""
+
+import pytest
+
 from src.processors.nlp.sentiment import SentimentAnalyzer
+from src.services.inference_client import InferenceUnavailable
 
 
-def test_sentiment_analysis():
+class _StubClient:
 
-    analyzer = SentimentAnalyzer(
-        Settings()
-    )
+    def __init__(self, result=None, error=None):
+        self.result = result
+        self.error = error
+        self.calls = []
 
-    text = """
-    Scientists developed a revolutionary treatment that
-    significantly improves the survival rate of children
-    with a rare disease.
+    def sentiment(self, text):
+        self.calls.append(text)
+        if self.error:
+            raise self.error
+        return self.result
+
+
+RESULT = {
+    "label": "positive",
+    "positive": 0.70,
+    "neutral": 0.25,
+    "negative": 0.05,
+    "polarity": 0.65,
+    "subjectivity": 0.3,
+    "confidence": 0.70,
+    "emotional_intensity": 0.65,
+}
+
+
+def test_process_builds_a_sentiment_result_from_the_client_response():
+
+    analyzer = SentimentAnalyzer(client=_StubClient(result=RESULT))
+
+    result = analyzer.process("Scientists announced a breakthrough treatment.")
+
+    assert result.label == "positive"
+    assert result.positive == 0.70
+    assert result.negative == 0.05
+
+
+def test_accepts_and_ignores_a_legacy_cfg_positional_argument():
+    """
+    Every call site still passes SentimentAnalyzer(cfg) or
+    SentimentAnalyzer(settings) - accepted so none of them needed to
+    change, even though cfg no longer selects a model to load locally.
     """
 
-    result = analyzer.process(text)
+    class FakeSettings:
+        SENTIMENT_MODEL = "irrelevant-now"
 
-    print(result)
+    analyzer = SentimentAnalyzer(FakeSettings(), client=_StubClient(result=RESULT))
 
-    assert result.label in [
-        "positive",
-        "neutral",
-        "negative",
-    ]
+    assert analyzer.process("text").label == "positive"
 
-    assert 0 <= result.positive <= 1
 
-    assert 0 <= result.neutral <= 1
+def test_raises_when_the_client_fails_rather_than_degrading():
 
-    assert 0 <= result.negative <= 1
+    analyzer = SentimentAnalyzer(client=_StubClient(error=InferenceUnavailable("down")))
 
-    assert abs(
-        result.positive
-        + result.neutral
-        + result.negative
-        - 1
-    ) < 0.01
-
-    assert -1 <= result.polarity <= 1
-
-    assert 0 <= result.subjectivity <= 1
-
-    assert 0 <= result.confidence <= 1
-
-    assert 0 <= result.emotional_intensity <= 1
+    with pytest.raises(InferenceUnavailable):
+        analyzer.process("text")

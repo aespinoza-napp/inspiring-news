@@ -13,6 +13,12 @@ with fixed, offline input - no live network, no SearXNG, no LLM, so it
 stays fast and deterministic, but it would have caught e.g. a field the
 enrichment pipeline stops populating that validation or claim selection
 still expects.
+
+Since the ML split, "real GLiNER/sentiment/embedding models" means
+calling the inference/ service over HTTP rather than loading them
+in-process - both tests below use conftest.py's require_inference and
+skip rather than fail when that service isn't reachable, the same
+tradeoff test_connection.py already makes for Neo4j.
 """
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
@@ -54,7 +60,7 @@ def make_news() -> News:
     )
 
 
-def test_real_enrichment_feeds_real_validation_and_claim_selection(repository):
+def test_real_enrichment_feeds_real_validation_and_claim_selection(repository, require_inference):
 
     pipeline = NewsEnrichmentPipeline(settings)
     validation = ValidationPipeline(repository)
@@ -91,7 +97,7 @@ def test_real_enrichment_feeds_real_validation_and_claim_selection(repository):
         assert 0.0 <= claim.confidence <= 1.0
 
 
-def test_real_enrichment_output_survives_the_round_trip_into_all_three_layers(tmp_path):
+def test_real_enrichment_output_survives_the_round_trip_into_all_three_layers(tmp_path, require_inference):
     """
     The persist stage is the only place a real EnrichedArticle is
     serialised whole and read back. Faked articles (tests/factories.py)

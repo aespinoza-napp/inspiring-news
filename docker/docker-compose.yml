@@ -59,10 +59,9 @@ services:
   inference:
     # Model server for GLiNER, the sentiment classifier and the
     # sentence-transformer embedding model - what backend/ used to load
-    # in-process. See inference/README.md and docs/decisions/. Not yet
-    # depended on by `backend` - see backend's `depends_on` below; this
-    # service builds and runs standalone first, wired in once
-    # backend/src/services/inference_client.py exists.
+    # in-process. See inference/README.md and docs/decisions/. backend
+    # reaches this over HTTP via src/services/inference_client.py -
+    # see backend's `environment`/`depends_on` below.
     build:
       context: ../inference
       dockerfile: ../docker/inference.Dockerfile
@@ -70,11 +69,26 @@ services:
       # Moved from `backend` below - the transformer models now live
       # here, not in the API/orchestration container.
       - model-cache:/models
-    # BAAI/bge-m3 (the embedding model backend/.env actually configures)
-    # is ~2.2GB on its own; GLiNER-small and the sentiment model add
-    # roughly another 1-1.5GB combined resident. 4g is a floor, not a
-    # tuned ceiling - watch `docker stats` under real load.
-    mem_limit: 4g
+    # Measured with `docker stats`, warm and idle: 3.58GiB resident with
+    # all three models loaded (BAAI/bge-m3 dominates at ~2.2GB). 4g put
+    # that at 89% of the cap before serving a single request, so 6g -
+    # inference allocates per request on top of the resident weights,
+    # and being OOM-killed here is not a graceful degradation.
+    #
+    # Worth knowing what this number implies about the old layout:
+    # before the split these same models loaded inside `backend`, which
+    # has always been capped at 1g (see below). ~3.6GB of models under
+    # a 1GB cap means the kernel would OOM-kill that container the
+    # moment a request triggered the lazy model load - i.e. on the
+    # first real /analyze, not at boot, which matches "the container
+    # starts fine and then sometimes doesn't work". Not directly
+    # observed (per CLAUDE.md the backend container had never been run
+    # end to end until this change), so: a definite latent bug and a
+    # strong candidate for the reported flakiness rather than a
+    # confirmed diagnosis. An OOM kill is also the least graceful
+    # shutdown there is, which is exactly how Qdrant's lock gets left
+    # stale - see backend's stop_grace_period below.
+    mem_limit: 6g
     healthcheck:
       # 200 only once every model is actually loaded (src/main.py),
       # not merely "the process started" - this is what lets backend's
@@ -91,9 +105,10 @@ services:
       # start_period doesn't just log a warning here - Compose's
       # `depends_on: condition: service_healthy` treats a container that
       # reports unhealthy *before* start_period elapses as a failed
-      # dependency and refuses to start backend at all, which would make
-      # every fresh `docker compose up --build` fail outright on exactly
-      # the download this healthcheck exists to wait for.
+      # dependency and refuses to start backend at all (backend now
+      # waits on exactly this, below), which would make every fresh
+      # `docker compose up --build` fail outright on exactly the
+      # download this healthcheck exists to wait for.
       start_period: 900s
       retries: 5
 
@@ -119,9 +134,10 @@ services:
       # backend on the host but wrong inside a container, where
       # "localhost" is the container itself.
       #
-      # Container-to-container DNS names for the two compose services:
+      # Container-to-container DNS names for the compose services:
       - SEARXNG_URL=http://searxng:8080
       - NEO4J_URI=bolt://neo4j:7687
+      - INFERENCE_URL=http://inference:8001
       # Ollama is NOT part of this compose file - it runs on the host
       # (see CLAUDE.md's LLMClient note), so the container reaches it
       # through Docker's host gateway rather than its own localhost.
@@ -146,7 +162,20 @@ services:
         condition: service_healthy
       searxng:
         condition: service_healthy
-    mem_limit: 1g
+      # 900s start_period on inference's own healthcheck (above) means
+      # this can legitimately block a first `docker compose up` for
+      # several minutes on a cold model-cache volume - turning what used
+      # to be an in-process, per-request model-load stall into an
+      # up-front, one-time wait before backend accepts any traffic at
+      # all, rather than the first /analyze call silently eating it.
+      inference:
+        condition: service_healthy
+    # No model weights held here anymore (see `inference` above), so
+    # 1g is no longer a cap this container can blow through on its
+    # first real request. Measured warm: 230MiB of 512m (45%). Qdrant's
+    # own memory use scales with corpus size, so re-check `docker
+    # stats` before treating this as a permanent ceiling.
+    mem_limit: 512m
     # Gives the process real time to release Qdrant's exclusive
     # storage-directory lock (backend/src/database/qdrant.py) on SIGTERM
     # before Compose escalates to SIGKILL. Without this, an unclean stop

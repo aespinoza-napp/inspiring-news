@@ -16,6 +16,20 @@ uv run pytest tests/nlp/test_claims.py::test_name -v
 
 Prefer `./scripts/check.sh` from the repo root for a full run.
 
+**Running locally now takes two processes.** GLiNER, the sentiment
+model and the embedding model live in `inference/`, not here, so the
+backend needs that service reachable at `settings.INFERENCE_URL`
+(default `http://localhost:8001`, same host-dev default pattern as
+`LLM_BASE_URL`):
+
+```bash
+cd inference && uv run uvicorn src.main:app --port 8001   # first
+cd backend   && uv run uvicorn src.main:app --reload      # then
+```
+
+Tests that need real models skip rather than fail when that service
+isn't running - see `tests/conftest.py`'s `require_inference`.
+
 `backend/.env` is required (`Settings` reads it via `pydantic-settings`);
 `backend/.env-example` lists every key. `NEO4J_PASSWORD` has no default
 and raises on startup even though nothing reads Neo4j. `Settings` creates
@@ -26,6 +40,15 @@ the `data/*` directories on import as a side effect.
 `src/workflows/enrichment.py` (`NewsEnrichmentPipeline`) runs the NLP
 stack in `src/processors/nlp/` — keywords, entities, claims, topic
 classifier, sentiment, quality, embeddings — into an `EnrichedArticle`.
+Three of those (entities, sentiment, embeddings) are **Adapters over
+`inference/`**, not local models: `EntityExtractor`, `SentimentAnalyzer`
+and `EmbeddingService` keep their original signatures but delegate to
+`src/services/inference_client.py`. Error handling differs per
+component on purpose — entities degrade to `{}` (one weak signal among
+several in claim scoring), sentiment and embeddings **raise**
+`InferenceUnavailable` (they feed the admission gate and duplicate
+detection, where a silently empty result corrupts a decision).
+`yake` keywords and `textstat` quality stay local — no model to move.
 `src/services/fact_checker/` then validates and checks it:
 
 - `validation_pipeline.py` → `topic_validator`, `positive_impact_validator`,
@@ -118,10 +141,22 @@ for the whole suite, so nothing depends on `.env` or the environment.
 real collaborator accepts — five fakes drifted at once when thresholds
 became per-call, each found by a `TypeError` days later.
 
+`conftest.py::require_inference` skips any test needing a real model
+when `inference/` isn't reachable — the same tradeoff
+`tests/test_connection.py` already makes for Neo4j. Real *model*
+behaviour is tested in `inference/tests/` now; what these still cover is
+backend correctly using a real inference service (`TopicClassifier`'s
+semantic ranking, `EMBEDDING_DIMENSION` agreement, the full pipeline
+handoff). Adapter behaviour itself — right endpoint, right arguments,
+degrade-vs-raise — is tested with stubs and needs nothing running
+(`tests/nlp/test_entities.py`, `test_sentiment.py`, `test_embeddings.py`,
+`tests/services/test_inference_client.py`).
+
 `tests/test_connection.py` skips when Neo4j is not running.
 `tests/nlp/test_pipeline.py` skips when `data/raw` is empty — it enriches
 whatever real article sorts first there, so it can only assert what holds
 for *any* article. Assertions about a specific article belong in
 `tests/test_real_pipeline_integration.py`, which uses committed input.
-`tests/nlp/test_all_news.py` carries the `slow` marker (the full model
-stack over the whole corpus) and runs via `./scripts/check.sh slow`.
+`tests/nlp/test_all_news.py` carries the `slow` marker (the whole corpus
+through the full stack) and runs via `./scripts/check.sh slow` — which
+now also needs `inference/` up.

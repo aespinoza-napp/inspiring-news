@@ -1,0 +1,24 @@
+# Build context for docker/inference.Dockerfile.
+#
+# Mirrors backend/.dockerignore, and matters more here than there: the
+# host virtualenv in this directory holds torch and the transformers
+# stack. Without this line, `COPY . .` shipped a Windows/host .venv into
+# a Linux image on top of the one `uv sync` had just built - measured:
+# 6.89GB with it, 3.7GB without.
+.venv/
+
+# Downloaded model weights, if anything ever caches them here rather
+# than in HF_HOME (/models, a named volume - see docker-compose.yml).
+models/
+
+__pycache__/
+*.py[codz]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets are supplied at runtime, never baked into a layer.
+.env
+
+.git/
+.gitignore

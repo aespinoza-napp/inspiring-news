@@ -2,18 +2,20 @@
 #
 # The one verification command. `make check`, or ./scripts/check.sh.
 #
-# It exists so nobody - human or agent - has to rediscover that pytest
-# needs --ignore=tests/nlp/test_all_news.py (that module reads real
-# scraped articles nothing in the suite populates, so it fails on a clean
-# checkout for reasons unrelated to your change), or that the frontend is
-# typechecked from a different directory.
+# It exists so nobody - human or agent - has to rediscover that the slow
+# model-stack tests are excluded by a registered `slow` marker (not a
+# flag to remember), that a growing set of backend tests need the
+# inference/ service reachable and skip - rather than fail - when it
+# isn't (see backend/tests/conftest.py's require_inference), or that the
+# frontend is typechecked from a different directory.
 #
 # One command means one habit and one unambiguous answer to "am I done".
 #
 # Usage:
-#   ./scripts/check.sh            backend + frontend
+#   ./scripts/check.sh            backend + inference + frontend
 #   ./scripts/check.sh fast       invariants only - seconds, no models
 #   ./scripts/check.sh backend    backend only
+#   ./scripts/check.sh inference  inference only - real models, no mocks
 #   ./scripts/check.sh frontend   frontend only
 #   ./scripts/check.sh slow       the slow model-stack tests, only
 
@@ -68,6 +70,15 @@ run_slow() {
   fi
 }
 
+run_inference() {
+  step "Inference service tests (real models, no mocks)"
+  if (cd "$ROOT/inference" && uv run pytest -q); then
+    pass "inference tests"
+  else
+    fail "inference tests"
+  fi
+}
+
 run_frontend() {
   step "Frontend typecheck"
   if (cd "$ROOT/frontend" && npx tsc --noEmit); then
@@ -78,13 +89,14 @@ run_frontend() {
 }
 
 case "$TARGET" in
-  fast)     run_fast ;;
-  slow)     run_slow ;;
-  backend)  run_backend ;;
-  frontend) run_frontend ;;
-  all)      run_backend; run_frontend ;;
+  fast)      run_fast ;;
+  slow)      run_slow ;;
+  backend)   run_backend ;;
+  inference) run_inference ;;
+  frontend)  run_frontend ;;
+  all)       run_backend; run_inference; run_frontend ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | slow | backend | frontend" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | backend | inference | frontend" >&2
     exit 2
     ;;
 esac
