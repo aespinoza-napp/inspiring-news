@@ -16,13 +16,21 @@ Automated news pipeline: Scraping -> Fact-checking -> Sentiment -> Social Media 
 - **Frontend**: Next.js 14 visualization.
 
 ## Setup Local
-1. **Backend**:
+1. **Inference** (GLiNER, sentiment and embedding models — the backend
+   calls this over HTTP and fails on `/analyze` without it, e.g. a
+   `WinError 10061`/connection-refused error):
+```bash
+   cd inference
+   uv sync
+   uv run uvicorn src.main:app --port 8001
+```
+2. **Backend**:
 ```bash
    cd backend
    uv sync
    uv run uvicorn src.main:app --reload
 ```
-2.  Frontend:
+3.  Frontend:
 ```bash
     cd frontend
     npm install && npm run dev
@@ -33,6 +41,8 @@ Automated news pipeline: Scraping -> Fact-checking -> Sentiment -> Social Media 
     cd docker
     docker-compose up --build
 ```
+Starts `inference` automatically as part of the stack — no manual step
+needed. First boot can take several minutes while its models download.
 
 ## Health Check
 
