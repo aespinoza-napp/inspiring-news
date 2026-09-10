@@ -56,6 +56,47 @@ services:
       retries: 10
       start_period: 10s
 
+  inference:
+    # Model server for GLiNER, the sentiment classifier and the
+    # sentence-transformer embedding model - what backend/ used to load
+    # in-process. See inference/README.md and docs/decisions/. Not yet
+    # depended on by `backend` - see backend's `depends_on` below; this
+    # service builds and runs standalone first, wired in once
+    # backend/src/services/inference_client.py exists.
+    build:
+      context: ../inference
+      dockerfile: ../docker/inference.Dockerfile
+    volumes:
+      # Moved from `backend` below - the transformer models now live
+      # here, not in the API/orchestration container.
+      - model-cache:/models
+    # BAAI/bge-m3 (the embedding model backend/.env actually configures)
+    # is ~2.2GB on its own; GLiNER-small and the sentiment model add
+    # roughly another 1-1.5GB combined resident. 4g is a floor, not a
+    # tuned ceiling - watch `docker stats` under real load.
+    mem_limit: 4g
+    healthcheck:
+      # 200 only once every model is actually loaded (src/main.py),
+      # not merely "the process started" - this is what lets backend's
+      # `depends_on: inference: condition: service_healthy` (once wired
+      # in) block real traffic until the models are warm, instead of the
+      # old in-process behaviour where the first request after boot ate
+      # the model-load cost itself.
+      test: ["CMD", "curl", "-fsS", "http://localhost:8001/healthz"]
+      interval: 10s
+      timeout: 5s
+      # Measured, not guessed: a genuinely cold model-cache volume (all
+      # three models downloading from scratch - BAAI/bge-m3 alone is
+      # ~2.2GB) took ~11 minutes to go healthy in testing. A shorter
+      # start_period doesn't just log a warning here - Compose's
+      # `depends_on: condition: service_healthy` treats a container that
+      # reports unhealthy *before* start_period elapses as a failed
+      # dependency and refuses to start backend at all, which would make
+      # every fresh `docker compose up --build` fail outright on exactly
+      # the download this healthcheck exists to wait for.
+      start_period: 900s
+      retries: 5
+
   backend:
     build:
       # The context is backend/, not this directory and not the repo
@@ -98,10 +139,8 @@ services:
       # starts from an empty vector collection, and duplicate detection
       # has nothing to compare against.
       - backend-data:/app/data
-      # The transformer models (GLiNER, embeddings, sentiment) download
-      # on first use - several GB. Cached here so that cost is paid once,
-      # not on every container start.
-      - model-cache:/models
+      # model-cache moved to the `inference` service above - the
+      # transformer models live there now, not here.
     depends_on:
       neo4j:
         condition: service_healthy

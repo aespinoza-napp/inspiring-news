@@ -1,0 +1,47 @@
+[project]
+name = "inference"
+version = "0.1.0"
+description = "Model server for the transformer models backend/ used to load in-process: GLiNER, sentiment, sentence-transformer embeddings."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.128.8",
+    "uvicorn>=0.39.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.11.0",
+    # Pinned to exactly what backend/uv.lock resolved before this split
+    # (not >=), rather than left open: transformers>=5 needs `tiktoken`
+    # to read GLiNER's tokenizer files and breaks model loading outright
+    # - caught by this service's own test suite, not assumed. Pinning
+    # keeps behavior identical to what the pipeline already verified,
+    # since these two services now load the same models independently.
+    "gliner==0.2.28",
+    # torch stays an open floor, not pinned exact like the others: it
+    # resolves differently per platform (see [tool.uv.sources] below),
+    # and pinning a single exact version here would fight that.
+    "torch>=2.8.0",
+    "transformers==4.57.6",
+    "sentence-transformers==5.6.1",
+    "scipy==1.18.0",
+    "textblob==0.20.0",
+    "pytest>=8.4.2",
+    "httpx>=0.28.1",
+]
+
+[tool.uv.sources]
+# CPU-only torch - identical rationale and identical fix to
+# backend/pyproject.toml (commit 418eb73): nothing here does `.cuda()`,
+# and PyPI's torch on Linux otherwise pulls the full cuda-toolkit stack
+# (~2.5GB of nvidia wheels) for a GPU this container does not have.
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
