@@ -124,4 +124,11 @@ def test_get_analysis_service_does_not_deadlock(require_inference):
     assert not thread.is_alive(), "get_analysis_service() deadlocked"
     assert "service" in result
 
+    # Closes the real on-disk Qdrant client this test built (via the real
+    # get_vector_repository()) before it's reset below - otherwise it's
+    # only garbage-collected at interpreter shutdown, when QdrantClient's
+    # own __del__ can no longer import what it needs to close cleanly and
+    # prints a harmless but confusing "Exception ignored" trace.
+    container._vector_repository.client.close()
+
     _reset("_vector_repository", "_analysis_service", "_enrichment_pipeline")
