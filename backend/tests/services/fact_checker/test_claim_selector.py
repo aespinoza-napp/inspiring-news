@@ -2,7 +2,7 @@ from src.config.thresholds import PipelineThresholds
 from src.services.fact_checker.claim_selector import ClaimSelector
 
 from tests.factories import create_claim
-from tests.fact_checker.fakes import FakeEmbeddingService
+from tests.services.fact_checker.fakes import FakeEmbeddingService
 
 
 def test_select_empty_claims_returns_empty():

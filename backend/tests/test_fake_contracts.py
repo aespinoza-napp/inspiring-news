@@ -35,7 +35,7 @@ from src.services.scraper.extractor import ExtractorService
 from src.services.search import SearxngClient
 from src.repositories.source_repository import SourceRepository
 
-from tests.fact_checker import fakes
+from tests.services.fact_checker import fakes
 
 # (fake class, real class, method name)
 CONTRACTS = [

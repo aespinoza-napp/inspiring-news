@@ -6,7 +6,7 @@ from src.services.fact_checker.verification.confidence_scorer import ConfidenceS
 from src.services.fact_checker.verification.llm_verification import LLMVerificationResult
 
 from tests.factories import create_article, create_claim, create_evidence
-from tests.fact_checker.fakes import (
+from tests.services.fact_checker.fakes import (
     FakeEmbeddingService,
     FakeEvidenceRetriever,
     FakeRanker,

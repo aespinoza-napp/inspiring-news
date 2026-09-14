@@ -5,7 +5,7 @@ tests the adapter and EmbeddingProcessor's thin wrapper over it, with a
 stub client so it stays fast and needs nothing running.
 
 EMBEDDING_DIMENSION agreement with the real model is checked separately
-in tests/services/test_embedding_dimension_live.py, which needs a real,
+in tests/services/embeddings/test_embedding_dimension_live.py, which needs a real,
 reachable inference service and skips when there isn't one - a stub
 here can't meaningfully assert that agreement.
 

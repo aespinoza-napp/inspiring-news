@@ -1,6 +1,6 @@
 """
-Moved from backend/tests/nlp/test_sentiment.py - this is where the real
-sentiment model lives now.
+Moved from backend/tests/processors/nlp/test_sentiment.py - this is
+where the real sentiment model lives now.
 """
 
 from src.sentiment import SentimentModel

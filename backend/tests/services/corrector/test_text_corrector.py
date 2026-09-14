@@ -1,7 +1,7 @@
 from src.models.nlp.sentiment_result import SentimentResult
 from src.services.corrector.text_corrector import TextCorrector
 
-from tests.fact_checker.fakes import (
+from tests.services.fact_checker.fakes import (
     FakeLLMClient,
     FakeQualityAnalyzer,
     FakeSentimentAnalyzer,

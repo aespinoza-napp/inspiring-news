@@ -4,7 +4,7 @@ from src.models.core.news import News
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
 
 from tests.factories import create_evidence
-from tests.fact_checker.fakes import FakeExtractorService
+from tests.services.fact_checker.fakes import FakeExtractorService
 
 
 def test_enrich_populates_content_from_scraped_news():

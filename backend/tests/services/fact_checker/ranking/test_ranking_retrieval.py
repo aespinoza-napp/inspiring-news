@@ -5,7 +5,7 @@ from src.models.core.source import NewsSource, SourceType
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
 
 from tests.factories import create_claim, create_evidence
-from tests.fact_checker.fakes import FakeEmbeddingService, FakeSourceRepository
+from tests.services.fact_checker.fakes import FakeEmbeddingService, FakeSourceRepository
 
 
 def test_rank_empty_evidence_returns_empty():

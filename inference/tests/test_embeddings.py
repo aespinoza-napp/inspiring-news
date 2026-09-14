@@ -1,6 +1,6 @@
 """
-Moved from backend/tests/nlp/test_embeddings.py - this is where the
-real sentence-transformer lives now.
+Moved from backend/tests/processors/nlp/test_embeddings.py - this is
+where the real sentence-transformer lives now.
 """
 
 from src.embeddings import EmbeddingModel
@@ -8,7 +8,7 @@ from src.embeddings import EmbeddingModel
 
 def test_embedding_model_reports_a_real_dimension():
     """
-    backend/tests/services/test_embedding_dimension_live.py is what
+    backend/tests/services/embeddings/test_embedding_dimension_live.py is what
     actually cross-checks this dimension against EMBEDDING_DIMENSION - a
     concern this service doesn't own. This just confirms the model loads
     and reports something sane.

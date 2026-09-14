@@ -100,11 +100,11 @@ before pytest controls execution at all.
 
 This has bitten three times:
 
-1. `tests/scraper/test_scraper.py` did live network scraping just by
-   being imported.
-2. `tests/nlp/test_pipeline.py` silently overwrote a committed sample
-   fixture under `data/processed/` on every collection.
-3. Worst: `tests/nlp/{test_claims,test_classifier,test_entities,`
+1. `tests/services/scraper/test_scraper.py` did live network scraping
+   just by being imported.
+2. `tests/processors/nlp/test_pipeline.py` silently overwrote a
+   committed sample fixture under `data/processed/` on every collection.
+3. Worst: `tests/processors/nlp/{test_claims,test_classifier,test_entities,`
    `test_quality,test_sentiment}.py` all ended with bare calls, and
    because two of those assertions failed, **collection aborted and the
    entire suite refused to run** — 155 unrelated tests included. The
@@ -199,7 +199,7 @@ Fixed by `src/config/lexicons.py` (per-language word sets, prefix
 matching because Spanish is far more inflected) and
 `src/processors/nlp/language.py` (stopword-frequency detection).
 
-**What holds it in place:** `tests/nlp/test_language.py`, plus
+**What holds it in place:** `tests/processors/nlp/test_language.py`, plus
 `tests/test_invariants.py::test_every_configured_source_language_has_a_lexicon`
 — adding a source in a third language fails the suite rather than
 silently scoring it as English.
@@ -222,4 +222,4 @@ trusted, because a perfectly ordinary hostname can have an A record of
 `127.0.0.1`. Redirects are followed manually so every hop is re-checked;
 `requests` would otherwise walk straight past the guard.
 
-**What holds it in place:** `tests/scraper/test_url_guard.py`.
+**What holds it in place:** `tests/services/scraper/test_url_guard.py`.

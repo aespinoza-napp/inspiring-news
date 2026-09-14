@@ -10,7 +10,7 @@ from src.repositories.datalake_repository import DataLakeRepository
 from src.repositories.lake_backend import JsonFileLakeBackend
 
 from tests.factories import create_article
-from tests.storage.test_datalake_repository import make_news, make_report
+from tests.repositories.test_datalake_repository import make_news, make_report
 
 client = TestClient(app)
 

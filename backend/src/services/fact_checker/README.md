@@ -25,6 +25,6 @@ Every stage also fires the `on_phase(phase, data)` callback threaded through `Fa
 `CLAUDE.md`: don't add a stage without also calling it, since that's what backs the job-polling API's
 live progress.
 
-Tests for this directory live in `backend/tests/fact_checker/`, mirroring this layout 1:1, with fakes
-for every external dependency in `backend/tests/fact_checker/fakes.py` (no live SearXNG/LLM/Qdrant
-needed to run them).
+Tests for this directory live in `backend/tests/services/fact_checker/`, mirroring this layout 1:1, with
+fakes for every external dependency in `backend/tests/services/fact_checker/fakes.py` (no live
+SearXNG/LLM/Qdrant needed to run them).

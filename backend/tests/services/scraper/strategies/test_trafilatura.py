@@ -40,7 +40,7 @@ def guard_off(monkeypatch):
     """
     These tests exercise extraction, not the SSRF guard - and leaving it
     on would make them resolve example.com over real DNS. The guard has
-    its own suite in tests/scraper/test_url_guard.py.
+    its own suite in tests/services/scraper/test_url_guard.py.
     """
 
     monkeypatch.setattr(settings, "URL_GUARD_ENABLED", False)

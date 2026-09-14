@@ -92,7 +92,7 @@ the declared exception, deliberately.
    `data/processed`.** Both hold committed sample files; saving there
    rewrites tracked data on every run. Read from them freely; write to
    `tmp_path`.
-10. **Every shared fake in `tests/fact_checker/fakes.py` has a contract
+10. **Every shared fake in `tests/services/fact_checker/fakes.py` has a contract
     entry** in `tests/test_fake_contracts.py`, so a fake cannot drift
     out of signature with the collaborator it stands in for.
 11. **`backend/src/` never imports `torch`, `transformers`, `gliner` or
@@ -134,7 +134,7 @@ write them down than to have each be rediscovered.
   `inference/src/config.py`'s own defaults. Editing the backend values
   changes nothing — a real trap the split introduced. `EMBEDDING_DIMENSION`
   *is* still live (it sizes the Qdrant collection), which is why
-  `tests/services/test_embedding_dimension_live.py` exists.
+  `tests/services/embeddings/test_embedding_dimension_live.py` exists.
 
 ## Conventions
 

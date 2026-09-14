@@ -2,7 +2,7 @@ from src.services.fact_checker.retrieval.search_provider import SearchProvider
 from src.models.fact_checker.evidence import EvidenceOrigin
 
 from tests.factories import create_claim
-from tests.fact_checker.fakes import FakeSearxngClient
+from tests.services.fact_checker.fakes import FakeSearxngClient
 
 
 def test_search_maps_raw_results_to_evidence():

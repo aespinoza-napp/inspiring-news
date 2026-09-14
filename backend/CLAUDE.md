@@ -10,8 +10,8 @@ Dependency management is `uv`. Run from `backend/`.
 ```bash
 uv sync                                   # install
 uv run uvicorn src.main:app --reload      # http://localhost:8000, /docs
-uv run pytest tests/nlp/test_claims.py    # one file
-uv run pytest tests/nlp/test_claims.py::test_name -v
+uv run pytest tests/processors/nlp/test_claims.py    # one file
+uv run pytest tests/processors/nlp/test_claims.py::test_name -v
 ```
 
 Prefer `./scripts/check.sh` from the repo root for a full run.
@@ -128,8 +128,8 @@ startup so it is never a silent choice.
 ## Tests
 
 `tests/` mirrors `src/` by subsystem. `tests/factories.py` builds
-populated models; `tests/fact_checker/fakes.py` fakes every external
-dependency; Qdrant tests use a temporary on-disk database
+populated models; `tests/services/fact_checker/fakes.py` fakes every
+external dependency; Qdrant tests use a temporary on-disk database
 (`conftest.py::repository`).
 
 `conftest.py::pinned_settings` pins every setting to its declared default
@@ -143,20 +143,21 @@ became per-call, each found by a `TypeError` days later.
 
 `conftest.py::require_inference` skips any test needing a real model
 when `inference/` isn't reachable — the same tradeoff
-`tests/test_connection.py` already makes for Neo4j. Real *model*
-behaviour is tested in `inference/tests/` now; what these still cover is
-backend correctly using a real inference service (`TopicClassifier`'s
-semantic ranking, `EMBEDDING_DIMENSION` agreement, the full pipeline
-handoff). Adapter behaviour itself — right endpoint, right arguments,
-degrade-vs-raise — is tested with stubs and needs nothing running
-(`tests/nlp/test_entities.py`, `test_sentiment.py`, `test_embeddings.py`,
+`tests/database/test_connection.py` already makes for Neo4j. Real
+*model* behaviour is tested in `inference/tests/` now; what these still
+cover is backend correctly using a real inference service
+(`TopicClassifier`'s semantic ranking, `EMBEDDING_DIMENSION` agreement,
+the full pipeline handoff). Adapter behaviour itself — right endpoint,
+right arguments, degrade-vs-raise — is tested with stubs and needs
+nothing running (`tests/processors/nlp/test_entities.py`,
+`test_sentiment.py`, `test_embeddings.py`,
 `tests/services/test_inference_client.py`).
 
-`tests/test_connection.py` skips when Neo4j is not running.
-`tests/nlp/test_pipeline.py` skips when `data/raw` is empty — it enriches
-whatever real article sorts first there, so it can only assert what holds
-for *any* article. Assertions about a specific article belong in
-`tests/test_real_pipeline_integration.py`, which uses committed input.
-`tests/nlp/test_all_news.py` carries the `slow` marker (the whole corpus
-through the full stack) and runs via `./scripts/check.sh slow` — which
-now also needs `inference/` up.
+`tests/database/test_connection.py` skips when Neo4j is not running.
+`tests/processors/nlp/test_pipeline.py` skips when `data/raw` is empty —
+it enriches whatever real article sorts first there, so it can only
+assert what holds for *any* article. Assertions about a specific
+article belong in `tests/test_real_pipeline_integration.py`, which uses
+committed input. `tests/processors/nlp/test_all_news.py` carries the
+`slow` marker (the whole corpus through the full stack) and runs via
+`./scripts/check.sh slow` — which now also needs `inference/` up.

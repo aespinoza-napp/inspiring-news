@@ -7,7 +7,7 @@ from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.services.claim_service import ClaimService
 
 from tests.factories import create_evidence
-from tests.fact_checker.fakes import FakeEntityExtractor
+from tests.services.fact_checker.fakes import FakeEntityExtractor
 
 CLAIM = "NASA discovered water on Mars in 2024."
 

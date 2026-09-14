@@ -143,7 +143,7 @@ class FakeVerifier:
 # Retrieval collaborators
 #
 # These lived as private copies inside
-# tests/fact_checker/retrieval/test_evidence_retriever.py. Every one of
+# tests/services/fact_checker/retrieval/test_evidence_retriever.py. Every one of
 # them drifted out of signature with the real collaborator when
 # thresholds became per-call, and each was found only by a TypeError in
 # an unrelated test run. They are shared now, and

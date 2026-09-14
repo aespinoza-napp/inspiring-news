@@ -1,9 +1,10 @@
 """
-Moved from backend/tests/nlp/test_entities.py - this is where the real
-GLiNER model lives now. backend/tests/nlp/test_entities.py tests the
-HTTP-adapter behaviour instead (mocked transport), and relies on
-tests/fact_checker/fakes.py's FakeEntityExtractor for everything
-downstream.
+Moved from backend/tests/processors/nlp/test_entities.py - this is
+where the real GLiNER model lives now.
+backend/tests/processors/nlp/test_entities.py tests the HTTP-adapter
+behaviour instead (mocked transport), and relies on
+tests/services/fact_checker/fakes.py's FakeEntityExtractor for
+everything downstream.
 """
 
 from src.entities import EntityModel

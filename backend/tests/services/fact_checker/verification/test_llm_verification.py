@@ -2,7 +2,7 @@ from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.verification.llm_verification import LLMVerifier
 
 from tests.factories import create_claim, create_evidence
-from tests.fact_checker.fakes import FakeLLMClient
+from tests.services.fact_checker.fakes import FakeLLMClient
 
 
 def test_verify_returns_normalized_result_on_valid_response():

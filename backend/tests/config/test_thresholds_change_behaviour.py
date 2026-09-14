@@ -22,7 +22,7 @@ from src.services.fact_checker.validators.topic_validator import TopicValidator
 from src.services.scraper.extraction_validator import ExtractionValidator
 
 from tests.factories import create_article, create_claim
-from tests.fact_checker.fakes import FakeEmbeddingService
+from tests.services.fact_checker.fakes import FakeEmbeddingService
 
 
 # ----------------------------------------------------------------------

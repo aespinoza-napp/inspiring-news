@@ -2,7 +2,7 @@ from src.models.fact_checker.evidence import EvidenceOrigin
 from src.services.fact_checker.retrieval.vector_retriever import VectorRetriever
 
 from tests.factories import create_article, create_claim
-from tests.fact_checker.fakes import FakeEmbeddingService
+from tests.services.fact_checker.fakes import FakeEmbeddingService
 
 
 def test_retrieve_returns_related_article_as_internal_evidence(repository):

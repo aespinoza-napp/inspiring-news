@@ -364,8 +364,8 @@ SETTINGS_IN_ASSERT = re.compile(r"^\s*assert\b.*\bsettings\.([A-Z][A-Z0-9_]*)")
 # hazard this rule exists for, and that is what these files do not do.
 SETTINGS_ASSERTION_EXCEPTIONS = {
     "config/test_thresholds.py",
-    "test_threshold_routes.py",
-    "test_claim_and_enrich_routes.py",
+    "api/test_threshold_routes.py",
+    "api/test_claim_and_enrich_routes.py",
 }
 
 
@@ -498,8 +498,9 @@ def test_no_test_saves_into_the_tracked_sample_directories():
     sample files each. A test that saves through a LocalRepository over
     either rewrites tracked files on every run.
 
-    This has happened twice: `tests/nlp/test_pipeline.py` did it and was
-    fixed, and `tests/nlp/test_all_news.py` was still doing it - invisible
+    This has happened twice: `tests/processors/nlp/test_pipeline.py` did
+    it and was fixed, and `tests/processors/nlp/test_all_news.py` was
+    still doing it - invisible
     only because that file sat behind an `--ignore` flag somebody had to
     remember to pass.
 
