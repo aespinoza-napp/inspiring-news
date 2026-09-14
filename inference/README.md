@@ -16,6 +16,19 @@ uv run uvicorn src.main:app --port 8001
 uv run pytest
 ```
 
+**Windows:** the first run downloads GLiNER, the sentiment model and the
+embedding model into the Hugging Face cache, which symlinks blobs by
+default. Creating a symlink needs a privilege a normal account doesn't
+have unless Developer Mode is on, so the download can fail with
+`OSError: [WinError 1314]` right after the weights finish downloading -
+`/healthz` then stays 503 forever. Either turn on Developer Mode
+(Settings → Privacy & security → For developers), or skip symlinks
+entirely for this cache:
+```powershell
+$env:HF_HUB_DISABLE_SYMLINKS = "1"
+uv run uvicorn src.main:app --port 8001
+```
+
 ## Endpoints
 
 - `POST /entities` - `{"text", "threshold"?, "labels"?}` → `{"entities": {...}}`
