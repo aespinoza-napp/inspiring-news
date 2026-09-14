@@ -15,6 +15,32 @@ Automated news pipeline: Scraping -> Fact-checking -> Sentiment -> Social Media 
 - **Graph DB**: Neo4j relationships based on keywords and metadata.
 - **Frontend**: Next.js 14 visualization.
 
+## Environment setup
+
+Copy the example env files — every value in them is a working default,
+so this is enough to run the code with no edits:
+```bash
+    cp backend/.env-example backend/.env
+    cp frontend/.env.local.example frontend/.env.local
+    cp docker/searxng/settings.yml.example docker/searxng/settings.yml
+```
+`inference/` needs no `.env` — every setting in `inference/src/config.py`
+already has a default.
+
+`backend/.env`'s `NEO4J_PASSWORD` is required by `Settings` (no default)
+even though nothing reads Neo4j today (see `CLAUDE.md`'s "Known dead /
+known broken") — the example value is enough, it doesn't need to match
+anything real.
+
+Two more services the backend talks to at runtime, neither started by
+`uv run`:
+- **SearXNG** (evidence retrieval) — via Docker even for an otherwise
+  local run: `cd docker && docker-compose up searxng`.
+- **Ollama** (LLM verification), open-source and free by default:
+  `ollama pull llama3.1` once, then `ollama serve`. Point `LLM_BASE_URL`
+  / `LLM_API_KEY` / `LLM_MODEL` in `backend/.env` at a hosted provider
+  instead if you'd rather not run a local model.
+
 ## Setup Local
 1. **Inference** (GLiNER, sentiment and embedding models — the backend
    calls this over HTTP and fails on `/analyze` without it, e.g. a
@@ -43,6 +69,8 @@ Automated news pipeline: Scraping -> Fact-checking -> Sentiment -> Social Media 
 ```
 Starts `inference` automatically as part of the stack — no manual step
 needed. First boot can take several minutes while its models download.
+Ollama still runs on the host (see the LLM note above), not as a compose
+service.
 
 ## Health Check
 
