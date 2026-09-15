@@ -1,4 +1,60 @@
-use_default_settings: true
+use_default_settings:
+  engines:
+    # Explicit allowlist, not the full default roster (~40 engines).
+    #
+    # Every engine SearXNG enables by default is queried on every claim
+    # the fact-checker verifies, and most of them either cannot answer or
+    # are actively blocked from this network. Measured, one engine at a
+    # time, against a freshly-restarted instance:
+    #
+    #   bing        10 results     google       10 results
+    #   brave       20 results     yep          20 results
+    #   bing news   10 results
+    #
+    #   duckduckgo  timeout / CAPTCHA / HTTP 403
+    #   startpage   HTTP connection error (and a JSON parse error before that)
+    #   qwant       CAPTCHA
+    #   google news CAPTCHA
+    #   yahoo       parsing error
+    #   wikidata    engine timeout on every call
+    #   mwmbl       answered once, then timed out on every later call
+    #
+    # Keeping the broken ones cost more than the log spam they produced:
+    # each one burns its slice of the per-search budget and holds the
+    # request open for the full engine timeout, so every claim in every
+    # article waited on engines that were never going to answer. Worse,
+    # the handful that *do* work were then hammered hard enough to be
+    # suspended for rate-limiting ("Suspended: too many requests"), at
+    # which point a search returned zero results and every claim came
+    # back UNVERIFIED - the fact-checker silently became a no-op.
+    #
+    # bing/google/brave/yep are four independent indexes, which is also
+    # what the fact-checker wants: corroboration from sources that do not
+    # share a crawler.
+    #
+    # Re-measure before trusting this list on a different network - these
+    # are blocked/allowed by where the container runs, not by SearXNG.
+    keep_only:
+      - bing
+      - google
+      - brave
+      - yep
+      - bing news
+
+# keep_only (above) narrows the roster; it does not switch anything on.
+# bing, google and yep all ship `disabled: true` in SearXNG's defaults,
+# meaning "available, but off unless a user enables it in preferences" -
+# and the fact-checker is not a user with preferences, it calls the JSON
+# API anonymously. Without these overrides the allowlist collapsed to the
+# two engines that happen to be on by default (brave, bing news), so a
+# single rate-limit suspension on brave took the whole search to zero.
+engines:
+  - name: bing
+    disabled: false
+  - name: google
+    disabled: false
+  - name: yep
+    disabled: false
 
 general:
   instance_name: "Inspiring News Fact-Checker"
@@ -7,6 +63,14 @@ search:
   formats:
     - html
     - json   # required: SearxngClient (backend/src/services/search.py) calls ?format=json
+
+outgoing:
+  # Default is 3.0s. Too aggressive here: an engine that answers slowly
+  # is recorded as a failure, and enough recorded failures suspend it -
+  # so a short timeout does not just lose one slow answer, it removes
+  # that engine from the pool for a while.
+  request_timeout: 8.0
+  max_request_timeout: 15.0
 
 server:
   # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
