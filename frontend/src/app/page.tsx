@@ -14,10 +14,12 @@ import { SourcesPlot } from "@/components/SourcesPlot";
 import { ScoreBar } from "@/components/ScoreBar";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
+import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
 
 export default function AnalyzerPage() {
   const [input, setInput] = useState("");
   const [forceRefresh, setForceRefresh] = useState(false);
+  const [bulkMode, setBulkMode] = useState(false);
   const [urls, setUrls] = useState<string[]>([]);
 
   function handleSubmit(event: React.FormEvent) {
@@ -64,11 +66,62 @@ export default function AnalyzerPage() {
             />
             Force refresh (skip cache)
           </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={bulkMode}
+              onChange={(event) => setBulkMode(event.target.checked)}
+            />
+            Bulk mode (one batch submission, with overall progress)
+          </label>
         </div>
       </form>
 
-      {urls.map((url) => (
-        <JobCard key={`${url}:${forceRefresh}`} url={url} forceRefresh={forceRefresh} />
+      {bulkMode ? (
+        <BulkResults
+          key={`${urls.join("\n")}:${forceRefresh}`}
+          urls={urls}
+          forceRefresh={forceRefresh}
+        />
+      ) : (
+        urls.map((url) => (
+          <JobCard key={`${url}:${forceRefresh}`} url={url} forceRefresh={forceRefresh} />
+        ))
+      )}
+    </>
+  );
+}
+
+function BulkResults({ urls, forceRefresh }: { urls: string[]; forceRefresh: boolean }) {
+  const { jobsByUrl, error } = useBatchAnalysisJobs(urls, forceRefresh);
+
+  if (urls.length === 0) return null;
+
+  if (error) {
+    return (
+      <div className="error-banner" role="alert">
+        {error}
+      </div>
+    );
+  }
+
+  const jobs = urls.map((url) => jobsByUrl[url] ?? null);
+  const doneCount = jobs.filter((job) => job?.status === "done").length;
+  const failedCount = jobs.filter((job) => job?.status === "failed").length;
+
+  return (
+    <>
+      <div className="batch-summary" role="status">
+        <span className="badge badge-true">
+          {doneCount} of {urls.length} done
+        </span>
+        {failedCount > 0 && (
+          <span className="badge badge-false">{failedCount} failed</span>
+        )}
+      </div>
+
+      {urls.map((url, index) => (
+        <JobCardView key={`${url}:${index}`} url={url} job={jobs[index]} error={null} />
       ))}
     </>
   );
@@ -77,6 +130,18 @@ export default function AnalyzerPage() {
 function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) {
   const { job, error } = useAnalysisJob(url, forceRefresh);
 
+  return <JobCardView url={url} job={job} error={error} />;
+}
+
+function JobCardView({
+  url,
+  job,
+  error,
+}: {
+  url: string;
+  job: AnalysisJob | null;
+  error: string | null;
+}) {
   if (error) {
     return (
       <div className="card">

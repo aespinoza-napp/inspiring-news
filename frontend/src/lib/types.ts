@@ -174,6 +174,33 @@ export interface AnalysisJob {
   error: string | null;
 }
 
+/**
+ * POST /analyze/jobs/batch - bulk form of POST /analyze/jobs. One entry
+ * per input url, in input order; two urls that dedupe onto the same
+ * backend job (identical url, or one already in flight) share a jobId.
+ */
+export interface BatchJobRef {
+  url: string;
+  jobId: string;
+}
+
+export interface CreateAnalysisJobsBatchResponse {
+  jobs: BatchJobRef[];
+}
+
+/**
+ * GET /analyze/jobs/batch?ids=... - one entry per requested job id.
+ * "not_found" only happens after a backend restart (the in-memory job
+ * store is single-process and does not survive one).
+ */
+export type BatchJobStatusEntry =
+  | AnalysisJob
+  | { jobId: string; status: "not_found" };
+
+export interface AnalysisJobsBatchStatusResponse {
+  jobs: BatchJobStatusEntry[];
+}
+
 export interface CorrectionMetric {
   score: number;
   summary: string;
