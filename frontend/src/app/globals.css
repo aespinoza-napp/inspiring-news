@@ -12,6 +12,27 @@
   --misleading: #c9770a;
   --unverified: #6b6b6b;
 
+  /* The gradient's middle pivot for the sentiment gauge - deliberately
+     not gray: the gauge reads red/amber/green like a status light,
+     rather than fading to a neutral gray nothing-to-see-here color in
+     the one place on the page that most wants to look alive. */
+  --sentiment-neutral: #b8860b;
+
+  /* Categorical palette, 8 slots, fixed order - identity color for a set
+     of things shown together (topics, quality-radar axes), never cycled
+     and never reassigned by index. This is the dataviz skill's validated
+     default instance, used unchanged: it clears the adjacent-pair CVD
+     (Delta E >= 8) and normal-vision (Delta E >= 15) floors in both light
+     and dark, so it's reused as-is rather than re-derived. */
+  --series-1: #2a78d6; /* blue */
+  --series-2: #eb6834; /* orange */
+  --series-3: #1baf7a; /* aqua */
+  --series-4: #eda100; /* yellow */
+  --series-5: #e87ba4; /* magenta */
+  --series-6: #008300; /* green */
+  --series-7: #4a3aa7; /* violet */
+  --series-8: #e34948; /* red */
+
   /* Ordinal ramp (one hue, monotone lightness): how far a source got
      through the evidence funnel before the LLM step - lightest for an
      early reject, full accent for a source the LLM actually cited. */
@@ -40,6 +61,19 @@
     --false: #e5605a;
     --misleading: #e0a44b;
     --unverified: #9a9a9a;
+
+    --sentiment-neutral: #d9ab3d;
+
+    /* Same eight hues, stepped for the dark surface - not a separate
+       palette. Still the skill's validated default instance. */
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
 
     /* --funnel-* isn't redefined here: it's a color-mix() of --accent and
        --bg, both already overridden above, so it resolves to the dark
@@ -630,6 +664,13 @@ button:disabled {
   font-size: 0.85rem;
 }
 
+.score-bar-swatch {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+}
+
 .score-bar-track {
   flex: 1;
   height: 8px;
@@ -997,4 +1038,296 @@ button:disabled {
 
 .comparison-list li {
   margin-bottom: 0.15rem;
+}
+
+/* ---------- topics row ----------
+   Two columns, one question: "what is this article about". The radar
+   is the score (how confidently each of the top 5 topics matched), the
+   keyword bars are the *why* behind the winning one (the classifier
+   scores on whole-article embedding similarity, which never explains
+   itself on its own) - kept side by side, equal width, because they're
+   read together as one claim-and-evidence pair, not compared against
+   each other. Both share the same fixed topic->color assignment
+   (topicColorIndex) so a keyword's dot always matches its topic's dot
+   in the radar beside it. Sentiment and quality are a separate
+   question ("how does it read") and live in their own row below,
+   rather than in this one - four unrelated chart types sharing one row
+   optimizes for "fits the viewport" over "scans in the right groups". */
+
+.topics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin: 1.25rem 0;
+}
+
+.topics-col {
+  min-width: 0;
+}
+
+.topic-keywords {
+  margin-top: 0.4rem;
+}
+
+/* ---------- metrics row (sentiment / quality) ----------
+   The second question: "how does this article read". Sentiment (a
+   single polarity reading) and quality (seven labeled axes) are both
+   evaluative signals about the same article, so they're grouped here -
+   quality gets extra width (1.6fr vs 1fr) since it has more to show.
+   Stretched (not top-aligned) so the sentiment gauge - vertical from
+   tablet width up - can use the same height as quality next to it
+   instead of a short bar with empty space below it. */
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 1.5rem;
+  align-items: stretch;
+  margin: 1.25rem 0;
+}
+
+.metrics-col {
+  min-width: 0;
+}
+
+.metrics-col-wide .radar-svg {
+  max-width: 480px;
+}
+
+@media (max-width: 640px) {
+  .topics-row,
+  .metrics-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- sentiment gauge ----------
+   One bipolar meter (negative<->positive) instead of four separate
+   bars - polarity is a diverging quantity, so it gets the diverging
+   treatment. The track is a permanent traffic-light gradient (false ->
+   a warm amber pivot -> true) rather than a gray bar with a colored
+   fill grown over it - gray read as "nothing to see here" in the one
+   place that most wants to look alive, and amber (not gray) is the
+   neutral pole so the whole track stays in color. */
+
+.gauge {
+  margin-top: 0.4rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gauge-label {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.gauge-meta {
+  margin-left: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.gauge-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.gauge-track {
+  position: relative;
+  margin-top: 0.65rem;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--false),
+    var(--sentiment-neutral) 50%,
+    var(--true)
+  );
+  box-shadow: var(--shadow);
+}
+
+.gauge-center-tick {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--bg);
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.gauge-thumb {
+  position: absolute;
+  top: 50%;
+  left: var(--thumb-pos);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 3px solid var(--fg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+  transition: left 0.5s var(--ease);
+  z-index: 2;
+}
+
+.gauge-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.gauge-scale span:first-child { color: var(--false); }
+.gauge-scale span:last-child { color: var(--true); }
+.gauge-scale span:nth-child(2) { color: var(--sentiment-neutral); }
+
+.gauge-secondary {
+  margin: 0.7rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* From tablet width up, the gauge turns vertical and stretches to fill
+   the row's height (matched by `.metrics-row`'s `align-items: stretch`)
+   instead of staying a short horizontal sliver with empty space below
+   it next to the taller quality radar. `--thumb-pos` (set once in the
+   component) is read as `bottom` here instead of `left` - the value
+   doesn't change, only which axis it drives. */
+@media (min-width: 641px) {
+  .metrics-row .gauge-body {
+    flex: 1;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    min-height: 220px;
+  }
+
+  .metrics-row .gauge-track {
+    width: 14px;
+    height: auto;
+    margin-top: 0;
+    background: linear-gradient(
+      to top,
+      var(--false),
+      var(--sentiment-neutral) 50%,
+      var(--true)
+    );
+  }
+
+  .metrics-row .gauge-center-tick {
+    left: -4px;
+    right: -4px;
+    top: 50%;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+  }
+
+  .metrics-row .gauge-thumb {
+    top: auto;
+    left: 50%;
+    bottom: var(--thumb-pos);
+    transform: translate(-50%, 50%);
+    transition: bottom 0.5s var(--ease);
+  }
+
+  .metrics-row .gauge-scale {
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    margin-top: 0;
+  }
+}
+
+/* ---------- quality radar ----------
+   Seven dimensions on one chart instead of seven bars scanned one at a
+   time - a radar reads the overall shape at a glance. Each axis carries
+   its own identity color from the shared categorical palette (spoke,
+   vertex and label all match), and the filled shape blends a few of
+   those hues into one gradient instead of a flat single-hue wash. Given
+   the widest column in the row - seven labels need the room. A table
+   view (the legend list) sits underneath for anything the shape alone
+   doesn't convey. */
+
+.radar-svg {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.radar-ring {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.radar-axis {
+  stroke-width: 1;
+  opacity: 0.45;
+}
+
+.radar-shape {
+  stroke: var(--fg);
+  stroke-opacity: 0.25;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.radar-vertex {
+  stroke: var(--bg);
+  stroke-width: 1.5;
+}
+
+.radar-label {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.radar-legend {
+  margin: 0.7rem 0 0;
+  display: grid;
+  gap: 0.25rem 0.75rem;
+}
+
+.radar-legend-cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.radar-legend-cols-1 {
+  grid-template-columns: 1fr;
+}
+
+.radar-legend-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.radar-legend-row dt {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--fg);
+}
+
+.radar-legend-swatch {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.radar-legend-row dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }

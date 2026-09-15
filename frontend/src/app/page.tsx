@@ -11,7 +11,10 @@ import {
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { StageTimeline } from "@/components/StageTimeline";
 import { SourcesPlot } from "@/components/SourcesPlot";
-import { ScoreBar } from "@/components/ScoreBar";
+import { SentimentGauge } from "@/components/SentimentGauge";
+import { QualityRadar } from "@/components/QualityRadar";
+import { TopicRadar } from "@/components/TopicRadar";
+import { TopicKeywordList } from "@/components/TopicKeywordList";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
 import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
@@ -227,19 +230,6 @@ function JobCardView({
         </div>
       )}
 
-      {partial.keywords.length > 0 && (
-        <>
-          <div className="section-label">Keywords ({partial.keywords.length})</div>
-          <div className="chip-row">
-            {partial.keywords.map((keyword) => (
-              <span className="chip" key={keyword}>
-                {keyword}
-              </span>
-            ))}
-          </div>
-        </>
-      )}
-
       {partial.entityCount > 0 && (
         <>
           <div className="section-label">Entities ({partial.entityCount})</div>
@@ -261,37 +251,36 @@ function JobCardView({
       )}
 
       {sortedTopics.length > 0 && (
-        <>
-          <div className="section-label">Topics ({sortedTopics.length})</div>
-          {sortedTopics.map((topic) => (
-            <ScoreBar key={topic.topic} label={topic.topic} value={topic.confidence * 100} />
-          ))}
-        </>
-      )}
-
-      {partial.sentiment && (
-        <>
-          <div className="section-label">
-            Sentiment ({partial.sentiment.label})
+        <div className="topics-row">
+          <div className="topics-col">
+            <div className="section-label">Top topics ({sortedTopics.length} matched)</div>
+            <TopicRadar topics={sortedTopics} />
           </div>
-          <ScoreBar label="Positive" value={partial.sentiment.positive * 100} />
-          <ScoreBar label="Neutral" value={partial.sentiment.neutral * 100} />
-          <ScoreBar label="Negative" value={partial.sentiment.negative * 100} />
-          <ScoreBar label="Subjectivity" value={partial.sentiment.subjectivity * 100} />
-        </>
+          <div className="topics-col">
+            <div className="section-label">Keywords for {sortedTopics[0].topic}</div>
+            <TopicKeywordList
+              topic={sortedTopics[0].topic}
+              articleKeywords={partial.keywords}
+            />
+          </div>
+        </div>
       )}
 
-      {partial.quality && (
-        <>
-          <div className="section-label">Impact &amp; quality scores</div>
-          <ScoreBar label="Constructiveness" value={partial.quality.constructiveness * 100} />
-          <ScoreBar label="Inspirational value" value={partial.quality.inspirationalScore * 100} />
-          <ScoreBar label="Hopefulness" value={partial.quality.hopefulness * 100} />
-          <ScoreBar label="Objectivity" value={partial.quality.objectivity * 100} />
-          <ScoreBar label="Societal impact" value={partial.quality.societalImpact * 100} />
-          <ScoreBar label="Readability" value={partial.quality.readability * 100} />
-          <ScoreBar label="Novelty" value={partial.quality.novelty * 100} />
-        </>
+      {(partial.sentiment || partial.quality) && (
+        <div className="metrics-row">
+          {partial.sentiment && (
+            <div className="metrics-col">
+              <div className="section-label">Sentiment</div>
+              <SentimentGauge sentiment={partial.sentiment} />
+            </div>
+          )}
+          {partial.quality && (
+            <div className="metrics-col metrics-col-wide">
+              <div className="section-label">Impact &amp; quality</div>
+              <QualityRadar quality={partial.quality} />
+            </div>
+          )}
+        </div>
       )}
 
       {partial.claims.length > 0 && (
