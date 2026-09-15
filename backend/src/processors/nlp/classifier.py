@@ -101,12 +101,17 @@ class TopicClassifier(BaseProcessor):
         return [
 
             TopicPrediction(
-                topic=topic,
+                # TOPICS[topic_id].name, not the bare topic_id: this used
+                # to hand "fact_checking"/"mental_health" straight to the
+                # caller instead of "Fact Checking"/"Mental Health" - the
+                # display name every other Topic field (description,
+                # keywords) already exists for, just never read here.
+                topic=TOPICS[topic_id].name,
                 confidence=round(confidence, 4),
                 probability=round(float(probability), 4),
             )
 
-            for (topic, confidence), probability
+            for (topic_id, confidence), probability
             in zip(similarities, probabilities)
 
         ]
