@@ -85,6 +85,7 @@ class NewsEnrichmentPipeline:
                 thresholds.claim_min_confidence,
                 thresholds.entity_threshold,
                 language=language,
+                opinion_max_score=thresholds.opinion_max_score,
             ),
 
             sentiment=sentiment,

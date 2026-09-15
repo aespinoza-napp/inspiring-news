@@ -41,3 +41,10 @@ class FactCheckReport(BaseModel):
     overall_verdict: Verdict = Verdict.UNVERIFIED
 
     overall_confidence: float = 0.0
+
+    # True when the article yielded fewer anchor claims than
+    # anchor_claims_min. The verdict still stands for what was checked,
+    # but it rests on one assertion rather than on the two-to-four an
+    # article's credibility is supposed to be judged by - which is a
+    # caveat on the whole report, not on any single claim.
+    below_anchor_floor: bool = False

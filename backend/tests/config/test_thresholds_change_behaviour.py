@@ -160,18 +160,18 @@ def make_claims(count: int) -> list[Claim]:
     ]
 
 
-def test_max_claims_per_article_caps_the_selection():
+def test_anchor_claims_max_caps_the_selection():
 
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
 
     claims = make_claims(5)
 
     assert (
-        len(selector.select(claims, PipelineThresholds(max_claims_per_article=2)).selected)
+        len(selector.select(claims, PipelineThresholds(anchor_claims_max=2)).selected)
         == 2
     )
     assert (
-        len(selector.select(claims, PipelineThresholds(max_claims_per_article=4)).selected)
+        len(selector.select(claims, PipelineThresholds(anchor_claims_max=4)).selected)
         == 4
     )
 
@@ -181,13 +181,19 @@ def test_claims_cut_by_the_cap_are_reported_as_rejected_not_dropped():
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
 
     result = selector.select(
-        make_claims(5), PipelineThresholds(max_claims_per_article=2)
+        make_claims(5), PipelineThresholds(anchor_claims_max=2)
     )
 
     assert len(result.selected) == 2
-    assert len(result.rejected) == 3
-    assert all(
-        rejected.reason == "exceeds_max_claims_cap" for rejected in result.rejected
+
+    # Nothing vanishes between input and output: every claim is either
+    # selected or accounted for with a reason. That is the property this
+    # test is for - which reason applies to which claim depends on the
+    # stand-in embeddings and is not the point.
+    assert len(result.selected) + len(result.rejected) == 5
+    assert all(rejected.reason for rejected in result.rejected)
+    assert any(
+        rejected.reason == "outside_anchor_band" for rejected in result.rejected
     )
 
 
@@ -219,5 +225,5 @@ def test_claim_selection_falls_back_to_defaults_when_not_given():
 
     assert (
         len(selector.select(claims).selected)
-        == PipelineThresholds().max_claims_per_article
+        == PipelineThresholds().anchor_claims_max
     )

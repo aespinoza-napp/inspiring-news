@@ -88,7 +88,7 @@ def test_real_enrichment_feeds_real_validation_and_claim_selection(repository, r
     selection = selector.select(article.claims or [])
 
     assert len(selection.selected) > 0
-    assert len(selection.selected) <= PipelineThresholds().max_claims_per_article
+    assert len(selection.selected) <= PipelineThresholds().anchor_claims_max
 
     # Every extracted claim's entities were themselves drawn from the
     # same GLiNER pass - sanity-check the shape survives the round trip.

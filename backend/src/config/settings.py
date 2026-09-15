@@ -122,6 +122,12 @@ class Settings(BaseSettings):
     ENTITY_THRESHOLD: float = 0.50
     CLAIM_MIN_CONFIDENCE: float = 0.50
 
+    # Above this, a sentence reads as opinion/interpretation and is not
+    # extracted as a claim at all. Deliberately permissive: news prose is
+    # full of mild evaluative language, and a low ceiling here throws away
+    # checkable sentences that merely sound enthusiastic.
+    OPINION_MAX_SCORE: float = 0.50
+
     # Extraction: shortest body accepted as a real article, in characters
     MIN_BODY_LENGTH: int = 500
 
@@ -147,8 +153,14 @@ class Settings(BaseSettings):
     LLM_TIMEOUT: float = 60.0
 
     # Claim selection
-    MAX_CLAIMS_PER_ARTICLE: int = 5
     CLAIM_DEDUP_THRESHOLD: float = 0.92
+
+    # The anchor band - how many load-bearing claims actually get verified.
+    ANCHOR_CLAIMS_MIN: int = 2
+    ANCHOR_CLAIMS_MAX: int = 4
+
+    # Distinct domains needed before a claim counts as corroborated.
+    MIN_INDEPENDENT_DOMAINS: int = 2
 
     # Evidence retrieval / ranking
     EVIDENCE_FETCH_CANDIDATES: int = 8

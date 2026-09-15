@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import re
 
-from src.config.lexicons import Lexicon, count_matches, lexicon_for
+from src.config.lexicons import Lexicon, count_matches, lexicon_for, matches
 from src.config.settings import settings
-from src.models.core.claim import Claim
+from src.models.core.claim import Claim, ClaimFacts
 from src.processors.nlp.entities import EntityExtractor
 
 from .base import BaseProcessor
@@ -39,6 +39,15 @@ class ClaimExtractor(BaseProcessor):
 
     QUOTE_PATTERN = re.compile("[\"“”«»']")
 
+    # A number with its percent sign attached, so `_facts` reports "35%"
+    # rather than a bare 35 that means nothing on its own in a query.
+    PERCENT_FIGURE = re.compile(r"\d+(?:[.,]\d+)?\s*%")
+
+    # The *contents* of a quotation, for retaining what was said. The
+    # single-character QUOTE_PATTERN above only answers "is there a quote
+    # here at all", which is all _score needs.
+    QUOTED_SPAN = re.compile(r"[\"“«]([^\"”»]{3,300})[\"”»]")
+
     def __init__(self, min_confidence: float | None = None):
 
         self.entity_extractor = EntityExtractor()
@@ -58,12 +67,19 @@ class ClaimExtractor(BaseProcessor):
         min_confidence: float | None = None,
         entity_threshold: float | None = None,
         language: str | None = None,
+        opinion_max_score: float | None = None,
     ) -> list[Claim]:
 
         minimum = (
             min_confidence
             if min_confidence is not None
             else self.min_confidence
+        )
+
+        opinion_ceiling = (
+            opinion_max_score
+            if opinion_max_score is not None
+            else settings.OPINION_MAX_SCORE
         )
 
         lexicon = lexicon_for(language)
@@ -83,15 +99,92 @@ class ClaimExtractor(BaseProcessor):
             if confidence < minimum:
                 continue
 
+            # Checked after the confidence floor, not before: scoring
+            # opinion means another pass over the sentence, and most
+            # sentences are already discarded by the line above.
+            opinion = self._opinion_score(sentence, lexicon)
+
+            if opinion > opinion_ceiling:
+                continue
+
             claims.append(
                 Claim(
                     text=sentence,
                     entities=entities,
                     confidence=round(confidence, 2),
+                    facts=self._facts(sentence, lexicon),
+                    opinion_score=round(opinion, 2),
                 )
             )
 
         return claims
+
+    ##########################################################
+
+    def _opinion_score(self, sentence: str, lexicon: Lexicon) -> float:
+        """
+        How much of the sentence is evaluation rather than assertion,
+        normalised by length so a long paragraph is not condemned by one
+        stray adjective.
+
+        Reuses `speculative` and `first_person` alongside the dedicated
+        `opinion` set: a hedge ("could", "podría") and a first-person
+        framing are opinion markers too, they were simply already in the
+        lexicon under a different name for the objectivity score.
+        """
+
+        words = self._words(sentence)
+
+        if not words:
+            return 0.0
+
+        hits = (
+            count_matches(words, lexicon.opinion)
+            + count_matches(words, lexicon.speculative)
+            + count_matches(words, lexicon.first_person)
+        )
+
+        # Saturating rather than linear: three opinion markers in a
+        # sentence is already decisive, and thirty words of otherwise
+        # factual prose should not dilute that back below the ceiling.
+        return min(hits / 3.0, 1.0)
+
+    ##########################################################
+
+    def _facts(self, sentence: str, lexicon: Lexicon) -> ClaimFacts:
+        """
+        The checkable components, kept as data. Every pattern here is
+        already being run by _score to decide check-worthiness - this
+        retains what it found instead of only counting it.
+        """
+
+        dates = self.YEAR_PATTERN.findall(sentence)
+
+        words = self._words(sentence)
+
+        dates += [word for word in words if matches(word, lexicon.month_names)]
+
+        return ClaimFacts(
+            # Percentages first so "35%" survives as one token rather than
+            # being reported as the bare number 35.
+            figures=self._figures(sentence),
+            dates=dates,
+            quotes=self.QUOTED_SPAN.findall(sentence),
+        )
+
+    ##########################################################
+
+    def _figures(self, sentence: str) -> list[str]:
+
+        figures = self.PERCENT_FIGURE.findall(sentence)
+
+        covered = set(figures)
+
+        for number in self.NUMBER_PATTERN.findall(sentence):
+            if not any(number in figure for figure in covered):
+                figures.append(number)
+
+        return figures
 
     ##########################################################
 

@@ -13,7 +13,11 @@ from src.models.storage.lineage import DataLayer, RunContext
 from src.models.storage.records import ProcessedRecord, RawRecord
 from src.repositories.datalake_repository import DataLakeRepository, content_hash
 from src.services.analysis_cache import AnalysisCache
-from src.services.fact_checker.fact_checker import FactChecker
+# _VERDICT_SEVERITY is imported, not restated: it orders claims
+# worst-first for display, and the second copy that used to live here
+# drifted the moment a verdict was added to the enum - the sort then
+# raises KeyError on the verdict the copy has never heard of.
+from src.services.fact_checker.fact_checker import _VERDICT_SEVERITY, FactChecker
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
 from src.services.scraper.extractor import ExtractorService
 from src.workflows.enrichment import NewsEnrichmentPipeline
@@ -25,13 +29,6 @@ OnPhase = Callable[[str, dict], None]
 
 def _noop(phase: str, data: dict) -> None:
     pass
-
-_VERDICT_SEVERITY = {
-    Verdict.TRUE: 0,
-    Verdict.UNVERIFIED: 1,
-    Verdict.MISLEADING: 2,
-    Verdict.FALSE: 3,
-}
 
 
 class AnalysisService:
@@ -206,6 +203,7 @@ class AnalysisService:
                 "overallConfidence": report.overall_confidence,
                 "claimsTotal": report.claims_total,
                 "claimsChecked": report.claims_selected,
+                "belowAnchorFloor": report.below_anchor_floor,
             },
         }
 
@@ -429,6 +427,9 @@ class AnalysisService:
                     "stageNote": report.skipped_reason,
                     "rawVerdict": None,
                     "rawConfidence": None,
+                    "agreements": [],
+                    "discrepancies": [],
+                    "independentDomains": 0,
                 }
                 for claim in (article.claims or [])
             ]
@@ -452,6 +453,9 @@ class AnalysisService:
                 "stageNote": check.stage_note,
                 "rawVerdict": check.raw_verdict,
                 "rawConfidence": check.raw_confidence,
+                "agreements": check.agreements,
+                "discrepancies": check.discrepancies,
+                "independentDomains": check.independent_domains,
             }
             for check in checks
         ]
@@ -469,6 +473,9 @@ class AnalysisService:
                 "stageNote": rejected.reason,
                 "rawVerdict": None,
                 "rawConfidence": None,
+                "agreements": [],
+                "discrepancies": [],
+                "independentDomains": 0,
             }
             for rejected in report.unselected_claims
         ]
@@ -489,6 +496,16 @@ class AnalysisService:
                 "sourceReliability": item.source_reliability,
                 "publishedAt": item.published_at,
                 "cited": index in cited,
+                "domain": item.domain,
+                "engines": item.engines,
+                # The arithmetic behind relevanceScore, so the UI can say
+                # why this source outranked the next one instead of just
+                # showing that it did.
+                "semanticScore": item.semantic_score,
+                "recencyScore": item.recency_score,
+                "reliabilityScore": item.reliability_score,
+                "stance": item.stance,
+                "quote": item.quote,
             }
             for index, item in enumerate(check.evidence)
         ]

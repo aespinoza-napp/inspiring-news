@@ -7,7 +7,7 @@ orchestrator — start there. Everything else in this directory is a stage it ca
 | Stage | File | What it does |
 |---|---|---|
 | 1. Admission filter | `validation_pipeline.py` + `validators/` | `topic_validator.py`, `positive_impact_validator.py`, `duplicate_validator.py` — all three must pass before anything else runs |
-| 2. Claim selection | `claim_selector.py` | Picks the top claims by confidence, drops near-duplicates by embedding similarity, caps at `settings.MAX_CLAIMS_PER_ARTICLE` |
+| 2. Claim selection | `claim_selector.py` | Scores each claim for how load-bearing it is (centrality to the article thesis, overlap with its main subjects, specificity), drops near-duplicates by embedding similarity, keeps the top `anchor_claims_max` |
 | 3. Evidence retrieval | `retrieval/` | `search_provider.py` (SearXNG), `vector_retriever.py` (internal Qdrant corpus), `scraper.py` (full-text fetch for top web hits), orchestrated by `evidence_retriever.py` |
 | 4. Evidence ranking | `ranking/ranking_retrieval.py` | Scores by semantic similarity + recency + source reliability (`settings.RANKING_*`) |
 | 5. LLM verification | `verification/llm_verification.py` | One `LLMClient` call per claim, returns a verdict + cited evidence indices |

@@ -184,7 +184,19 @@ def test_run_records_claims_dropped_during_selection(repository):
 
     article = create_article(claims=[kept_claim, dropped_claim])
 
-    selector = ClaimSelector(embeddings=FakeEmbeddingService())
+    # Selection ranks by how load-bearing a claim is, not by extraction
+    # confidence, so which one survives has to be pinned through the
+    # thing that actually decides it: closeness to the article's thesis.
+    on_thesis = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    off_thesis = [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    thesis = f"{article.title}. {article.body[:400]}".strip()
+
+    selector = ClaimSelector(embeddings=FakeEmbeddingService(vectors={
+        thesis: on_thesis,
+        kept_claim.text: on_thesis,
+        dropped_claim.text: off_thesis,
+    }))
 
     checker = FactChecker(
         repository,
@@ -208,12 +220,12 @@ def test_run_records_claims_dropped_during_selection(repository):
     # a real caller sets it rather than by reassigning a class attribute.
     report = checker.run(
         article,
-        thresholds=PipelineThresholds(max_claims_per_article=1),
+        thresholds=PipelineThresholds(anchor_claims_max=1),
     )
 
     assert report.claims_selected == 1
     assert [c.text for c in report.unselected_claims] == ["Dropped claim."]
-    assert report.unselected_claims[0].reason == "exceeds_max_claims_cap"
+    assert report.unselected_claims[0].reason == "outside_anchor_band"
 
 
 def test_run_with_no_claims_returns_unverified_overall(repository):

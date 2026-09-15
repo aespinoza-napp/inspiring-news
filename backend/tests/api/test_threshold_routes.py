@@ -77,7 +77,7 @@ def test_omitted_thresholds_still_fall_back_to_defaults(monkeypatch):
     thresholds = service.calls[0]
 
     assert thresholds.topic_min_confidence == settings.TOPIC_MIN_CONFIDENCE
-    assert thresholds.max_claims_per_article == settings.MAX_CLAIMS_PER_ARTICLE
+    assert thresholds.anchor_claims_max == settings.ANCHOR_CLAIMS_MAX
 
 
 def test_every_url_in_a_batch_gets_the_same_thresholds(monkeypatch):
@@ -88,12 +88,12 @@ def test_every_url_in_a_batch_gets_the_same_thresholds(monkeypatch):
         "/analyze",
         json={
             "urls": ["https://example.com/a", "https://example.com/b"],
-            "thresholds": {"max_claims_per_article": 2},
+            "thresholds": {"anchor_claims_max": 2},
         },
     )
 
     assert len(service.calls) == 2
-    assert all(call.max_claims_per_article == 2 for call in service.calls)
+    assert all(call.anchor_claims_max == 2 for call in service.calls)
 
 
 def test_an_out_of_range_threshold_is_a_422_not_a_broken_run(monkeypatch):
@@ -174,7 +174,7 @@ def test_an_invalid_job_threshold_is_rejected_before_the_job_is_created(monkeypa
 
     response = client.post(
         "/analyze/jobs",
-        json={"url": "https://example.com/a", "thresholds": {"max_claims_per_article": 0}},
+        json={"url": "https://example.com/a", "thresholds": {"anchor_claims_max": 0}},
     )
 
     assert response.status_code == 422

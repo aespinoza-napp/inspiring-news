@@ -55,9 +55,7 @@ class EvidenceRanker:
         claim_embedding = self.embeddings.encode(claim.text)
 
         scored = [
-            item.model_copy(update={
-                "relevance_score": self._score(item, claim_embedding),
-            })
+            item.model_copy(update=self._score(item, claim_embedding))
             for item in evidence
         ]
 
@@ -83,7 +81,15 @@ class EvidenceRanker:
 
         return RankingResult(kept=kept, rejected=rejected)
 
-    def _score(self, evidence: Evidence, claim_embedding) -> float:
+    def _score(self, evidence: Evidence, claim_embedding) -> dict:
+        """
+        The composite score *and* the three factors that produced it.
+
+        The factors used to be summed and discarded, which left the
+        interface with a single opaque number and no way to answer the
+        only question a reader actually has about a ranking: why is this
+        source above that one. Same arithmetic, nothing thrown away.
+        """
 
         text = (evidence.content or f"{evidence.title}. {evidence.snippet}")[:2000]
 
@@ -94,11 +100,19 @@ class EvidenceRanker:
 
         semantic = max(0.0, min(semantic, 1.0))
 
-        return (
-            semantic * self.SEMANTIC_WEIGHT
-            + self._recency_score(evidence.published_at) * self.RECENCY_WEIGHT
-            + self._reliability(evidence) * self.RELIABILITY_WEIGHT
-        )
+        recency = self._recency_score(evidence.published_at)
+        reliability = self._reliability(evidence)
+
+        return {
+            "semantic_score": semantic,
+            "recency_score": recency,
+            "reliability_score": reliability,
+            "relevance_score": (
+                semantic * self.SEMANTIC_WEIGHT
+                + recency * self.RECENCY_WEIGHT
+                + reliability * self.RELIABILITY_WEIGHT
+            ),
+        }
 
     def _recency_score(self, published_at) -> float:
 

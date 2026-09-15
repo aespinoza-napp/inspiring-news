@@ -9,6 +9,7 @@ test_empty_text_yields_no_claims never reaches a sentence to extract
 entities from - neither needs it.
 """
 
+from src.config.lexicons import lexicon_for
 from src.processors.nlp.claims import ClaimExtractor
 
 
@@ -81,3 +82,77 @@ def test_non_factual_text(require_inference):
 def test_empty_text_yields_no_claims():
 
     assert ClaimExtractor().process("") == []
+
+
+# ----------------------------------------------------------------------
+# Fact vs. opinion, and the facts kept as data
+#
+# These call the scoring internals directly with pre-supplied entities,
+# so they need no inference service - same reasoning as
+# test_percentage_contributes_to_the_score above.
+# ----------------------------------------------------------------------
+
+
+def test_opinion_sentences_score_above_factual_ones_in_english():
+    """
+    Nothing can be retrieved that confirms or refutes "this is a
+    wonderful step" - putting it through retrieval only spends a search
+    and an LLM call to arrive at UNVERIFIED.
+    """
+
+    extractor = ClaimExtractor()
+    lexicon = lexicon_for("en")
+
+    factual = extractor._opinion_score(
+        "The grid ran on 50% renewable power in 2024.", lexicon
+    )
+    opinion = extractor._opinion_score(
+        "We believe this is a wonderful and important step forward.", lexicon
+    )
+
+    assert factual < opinion
+    assert factual <= 0.34
+
+
+def test_opinion_sentences_score_above_factual_ones_in_spanish():
+    """
+    The Spanish lexicon has to carry this as completely as the English
+    one. Seven of the twelve configured sources publish in Spanish, and
+    a lexicon that only really works in English silently applies the
+    filter to a minority of the corpus.
+    """
+
+    extractor = ClaimExtractor()
+    lexicon = lexicon_for("es")
+
+    factual = extractor._opinion_score(
+        "La red funcionó con un 50% de energía renovable en 2024.", lexicon
+    )
+    opinion = extractor._opinion_score(
+        "Creemos que es un avance maravilloso e importante.", lexicon
+    )
+
+    assert factual < opinion
+    assert factual <= 0.34
+
+
+def test_facts_retain_figures_dates_and_quotes():
+    """
+    Every pattern here was already being run to decide check-worthiness;
+    the values were counted and thrown away. They are the most
+    discriminative terms available when building a search query.
+    """
+
+    extractor = ClaimExtractor()
+
+    facts = extractor._facts(
+        'The minister said "we reached the target" after emissions fell 40% in 2024.',
+        lexicon_for("en"),
+    )
+
+    assert "40%" in facts.figures
+    # The percentage is kept whole - a bare "40" is an ignorable common
+    # token in a web search, "40%" is not.
+    assert "40" not in facts.figures
+    assert "2024" in facts.dates
+    assert facts.quotes == ["we reached the target"]

@@ -50,9 +50,16 @@ class FakeSearxngClient:
     def __init__(self, results: list[dict] | None = None):
         self.results = results or []
         self.queries: list[str] = []
+        self.languages: list[str | None] = []
 
-    def search(self, query: str, max_results: int | None = None) -> list[dict]:
+    def search(
+        self,
+        query: str,
+        max_results: int | None = None,
+        language: str | None = None,
+    ) -> list[dict]:
         self.queries.append(query)
+        self.languages.append(language)
         limit = max_results or len(self.results)
         return self.results[:limit]
 
@@ -117,8 +124,10 @@ class FakeEvidenceRetriever:
 
     def __init__(self, evidence_by_claim: dict | None = None):
         self.evidence_by_claim = evidence_by_claim or {}
+        self.calls = []
 
-    def retrieve(self, claim, thresholds=None):
+    def retrieve(self, claim, thresholds=None, context=None, language=None):
+        self.calls.append((claim, thresholds, context, language))
         return RetrievalResult(kept=self.evidence_by_claim.get(claim.text, []))
 
 
@@ -158,8 +167,8 @@ class FakeSearchProvider:
         self.evidence = evidence or []
         self.calls = []
 
-    def search(self, claim, thresholds=None):
-        self.calls.append((claim, thresholds))
+    def search(self, claim, thresholds=None, context=None, language=None):
+        self.calls.append((claim, thresholds, context, language))
         return list(self.evidence)
 
 

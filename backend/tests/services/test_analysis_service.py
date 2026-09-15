@@ -288,6 +288,12 @@ def test_analyze_falls_back_to_raw_claims_when_validation_failed():
             "stageNote": "topic_not_relevant",
             "rawVerdict": None,
             "rawConfidence": None,
+            # Present and empty rather than absent: every claim the API
+            # returns carries the same keys whether it was checked or
+            # not, so the client never has to branch on their existence.
+            "agreements": [],
+            "discrepancies": [],
+            "independentDomains": 0,
         }
     ]
 

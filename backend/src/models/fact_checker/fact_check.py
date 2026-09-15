@@ -8,6 +8,11 @@ from src.models.fact_checker.pipeline_stage import PipelineStage
 
 class Verdict(str, Enum):
     TRUE = "TRUE"
+    # The central assertion holds but at least one source contradicts a
+    # detail of it. Real verification lands here far more often than on
+    # either absolute, and collapsing it into TRUE or MISLEADING loses
+    # exactly the part a reader needs.
+    PARTIALLY_TRUE = "PARTIALLY_TRUE"
     FALSE = "FALSE"
     MISLEADING = "MISLEADING"
     UNVERIFIED = "UNVERIFIED"
@@ -38,3 +43,15 @@ class FactCheck(BaseModel):
     raw_verdict: Verdict | None = None
 
     raw_confidence: float | None = None
+
+    # What the sources confirm, and where they diverge - derived from the
+    # per-source stances rather than from the LLM's prose, so the two
+    # cannot disagree with each other.
+    agreements: list[str] = Field(default_factory=list)
+
+    discrepancies: list[str] = Field(default_factory=list)
+
+    # How many distinct domains back this claim. The count that matters
+    # for corroboration: evidence_count can be five copies of one wire
+    # story, which is one source, not five.
+    independent_domains: int = 0

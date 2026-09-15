@@ -53,6 +53,14 @@ class Lexicon:
     relative_dates: frozenset[str]
     measurement_words: frozenset[str]
 
+    # Markers of opinion or interpretation rather than checkable fact:
+    # evaluative adjectives, hedges, and normative/deontic verbs. Used to
+    # keep "this is a hopeful step for the sector" out of the claim set,
+    # since nothing can be retrieved that confirms or refutes it.
+    # `speculative` and `first_person` above feed this too - they are
+    # already opinion signals, just scored for a different purpose.
+    opinion: frozenset[str]
+
     # Stopwords used only by the language detector, never for scoring.
     stopwords: frozenset[str] = field(default_factory=frozenset)
 
@@ -110,6 +118,16 @@ ENGLISH = Lexicon(
         "august", "september", "october", "november", "december",
     ),
     relative_dates=_s("today", "yesterday", "tomorrow"),
+    opinion=_s(
+        "should", "must", "ought", "need", "needs", "deserve*",
+        "believ*", "think*", "feel", "feels", "hope", "hopes",
+        "unfortunate*", "fortunate*", "sadly", "luckily", "clearly",
+        "obviously", "surely", "arguably", "undoubtedly",
+        "important", "essential", "crucial", "vital", "remarkable",
+        "impressive", "disappointing", "worrying", "welcome",
+        "best", "worst", "better", "worse", "good", "bad", "great",
+        "beautiful", "wonderful", "inspiring", "encouraging",
+    ),
     measurement_words=_s(
         "percent", "km", "m", "cm", "kg", "g", "ton", "tons", "tonnes",
         "million", "millions", "billion", "billions", "euro", "euros",
@@ -184,6 +202,16 @@ SPANISH = Lexicon(
         "diciembre",
     ),
     relative_dates=_s("hoy", "ayer", "mañana", "manana", "anoche"),
+    opinion=_s(
+        "deber*", "habría", "habria", "merec*", "cre*", "piens*",
+        "opin*", "espera*", "ojalá", "ojala",
+        "lamentablemente", "afortunadamente", "tristemente",
+        "claramente", "evidentemente", "obviamente", "sin duda",
+        "important*", "esencial*", "crucial*", "fundamental*",
+        "notable*", "impresionante*", "decepcionante*", "preocupante*",
+        "mejor*", "peor*", "buen*", "mal*", "gran", "grande*",
+        "hermos*", "maravillos*", "inspirador*", "alentador*",
+    ),
     measurement_words=_s(
         "ciento", "por ciento", "km", "m", "cm", "kg", "g", "tonelada",
         "toneladas", "millón", "millon", "millones", "mil", "miles",

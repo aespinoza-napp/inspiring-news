@@ -21,17 +21,27 @@ class SearxngClient:
         self,
         query: str,
         max_results: int | None = None,
+        language: str | None = None,
     ) -> list[dict]:
 
         limit = max_results or settings.SEARXNG_MAX_RESULTS
 
+        params = {
+            "q": query,
+            "format": "json",
+        }
+
+        # 7 of the 12 configured sources publish in Spanish, and until
+        # this was passed every query was answered as if it were English -
+        # so a Spanish claim competed against the English-language web for
+        # the same handful of result slots.
+        if language:
+            params["language"] = language
+
         try:
             response = httpx.get(
                 f"{self.base_url}/search",
-                params={
-                    "q": query,
-                    "format": "json",
-                },
+                params=params,
                 timeout=self.timeout,
                 headers={
                     "User-Agent": "InspiringNewsBot/1.0 (fact-checker)"
