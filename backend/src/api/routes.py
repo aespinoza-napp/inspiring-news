@@ -1,7 +1,7 @@
 import secrets
 from logging import getLogger
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from src.container import (
@@ -9,6 +9,7 @@ from src.container import (
     get_claim_service,
     get_datalake_repository,
     get_enrichment_service,
+    get_job_queue,
     get_text_corrector,
     job_store,
 )
@@ -83,6 +84,12 @@ class CreateAnalysisJobRequest(BaseModel):
     thresholds: ThresholdOverrides | None = None
 
 
+class CreateAnalysisJobsBatchRequest(BaseModel):
+    urls: list[str]
+    forceRefresh: bool = False
+    thresholds: ThresholdOverrides | None = None
+
+
 @router.post("/analyze")
 def analyze(request: AnalyzeRequest):
 
@@ -122,41 +129,74 @@ def analyze(request: AnalyzeRequest):
     return {"results": results}
 
 
-@router.post("/analyze/jobs", status_code=202)
-def create_analysis_job(request: CreateAnalysisJobRequest, background_tasks: BackgroundTasks):
+def _start_job(url: str, force_refresh: bool, thresholds: PipelineThresholds) -> tuple[str, bool]:
     """
-    Starts an analysis run in the background and returns immediately with
-    a job id. Poll GET /analyze/jobs/{jobId} (e.g. every 1s) to follow its
-    progress phase by phase instead of blocking on one long request.
+    Shared by the single and batch job routes: dedupes onto any job
+    already in flight for this exact URL, otherwise creates one and
+    submits it to the bounded job queue (see src/services/job_queue.py).
+    Returns (jobId, reused).
+    """
+
+    job, reused = job_store.get_or_create(url)
+
+    if not reused:
+        get_job_queue().submit(
+            run_analysis_job,
+            job_store,
+            get_analysis_service,  # factory, not called here - see job_runner.py
+            job.job_id,
+            url,
+            force_refresh,
+            thresholds,
+        )
+
+    return job.job_id, reused
+
+
+@router.post("/analyze/jobs", status_code=202)
+def create_analysis_job(request: CreateAnalysisJobRequest):
+    """
+    Starts an analysis run on the bounded job queue and returns
+    immediately with a job id. Poll GET /analyze/jobs/{jobId} (e.g. every
+    1s) to follow its progress phase by phase instead of blocking on one
+    long request. A second call for a URL already in flight reuses that
+    job instead of starting a duplicate run.
     """
 
     # Resolved here, on the request thread, so an out-of-range override
     # is a 422 on the POST rather than a job that starts and then fails.
     thresholds = PipelineThresholds.resolve(request.thresholds)
 
-    job = job_store.create(request.url)
+    job_id, _ = _start_job(request.url, request.forceRefresh, thresholds)
 
-    background_tasks.add_task(
-        run_analysis_job,
-        job_store,
-        get_analysis_service,  # factory, not called here - see job_runner.py
-        job.job_id,
-        request.url,
-        request.forceRefresh,
-        thresholds,
-    )
-
-    return {"jobId": job.job_id}
+    return {"jobId": job_id}
 
 
-@router.get("/analyze/jobs/{job_id}")
-def get_analysis_job(job_id: str):
+@router.post("/analyze/jobs/batch", status_code=202)
+def create_analysis_jobs_batch(request: CreateAnalysisJobsBatchRequest):
+    """
+    Bulk form of POST /analyze/jobs: submits every URL onto the same
+    bounded job queue and returns a job id per URL, in input order, so a
+    client can poll them (individually, or via GET /analyze/jobs/batch)
+    as a single parallel workflow instead of one request per URL.
 
-    job = job_store.get(job_id)
+    Duplicate URLs in the same batch - or a URL already in flight from an
+    earlier call - reuse the existing job's id rather than running the
+    pipeline twice for it; the response still carries one entry per input
+    URL so the caller can see which ones were deduped.
+    """
 
-    if job is None:
-        raise HTTPException(status_code=404, detail="Job not found")
+    thresholds = PipelineThresholds.resolve(request.thresholds)
 
+    jobs = [
+        {"url": url, "jobId": _start_job(url, request.forceRefresh, thresholds)[0]}
+        for url in request.urls
+    ]
+
+    return {"jobs": jobs}
+
+
+def _job_view(job) -> dict:
     return {
         "jobId": job.job_id,
         "url": job.url,
@@ -168,6 +208,41 @@ def get_analysis_job(job_id: str):
         "result": job.result,
         "error": job.error,
     }
+
+
+@router.get("/analyze/jobs/batch")
+def get_analysis_jobs_batch(ids: str):
+    """
+    Polls several jobs in one round trip: ids is a comma-separated list
+    of job ids, as returned by POST /analyze/jobs/batch. Unknown ids
+    come back as {"status": "not_found"} entries rather than failing the
+    whole request - a batch is expected to still have jobs in flight
+    while others have already been polled to completion elsewhere.
+    """
+
+    job_ids = [job_id for job_id in ids.split(",") if job_id]
+
+    results = []
+
+    for job_id in job_ids:
+        job = job_store.get(job_id)
+        if job is None:
+            results.append({"jobId": job_id, "status": "not_found"})
+        else:
+            results.append(_job_view(job))
+
+    return {"jobs": results}
+
+
+@router.get("/analyze/jobs/{job_id}")
+def get_analysis_job(job_id: str):
+
+    job = job_store.get(job_id)
+
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return _job_view(job)
 
 
 @router.post("/correct")

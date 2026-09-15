@@ -15,6 +15,14 @@ class JobStore:
     def __init__(self):
         self._jobs: dict[str, Job] = {}
         self._lock = threading.Lock()
+        # url -> job_id, for as long as that job is queued/running. Lets
+        # get_or_create() dedupe two near-simultaneous requests for the
+        # same URL onto one job instead of both running the full
+        # pipeline (duplicate scraping/enrichment/Qdrant writes) - the
+        # same shape of race container.py's singleton-construction lock
+        # fixed, but for the analysis run itself rather than service
+        # construction.
+        self._in_flight: dict[str, str] = {}
 
     def create(self, url: str) -> Job:
 
@@ -24,6 +32,30 @@ class JobStore:
             self._jobs[job.job_id] = job
 
         return job
+
+    def get_or_create(self, url: str) -> tuple[Job, bool]:
+        """
+        Returns (job, reused). If a job for this exact URL is already
+        queued/running, returns it instead of starting a duplicate;
+        otherwise creates and registers a new one. Both branches happen
+        under one lock acquisition so two callers racing on the same URL
+        cannot both observe "nothing in flight" and both create one.
+        """
+
+        with self._lock:
+
+            existing_id = self._in_flight.get(url)
+
+            if existing_id is not None:
+                existing = self._jobs.get(existing_id)
+                if existing is not None:
+                    return existing, True
+
+            job = Job(job_id=uuid4().hex, url=url)
+            self._jobs[job.job_id] = job
+            self._in_flight[url] = job.job_id
+
+            return job, False
 
     def get(self, job_id: str) -> Job | None:
 
@@ -56,6 +88,8 @@ class JobStore:
             job.status = JobStatus.DONE
             job.updated_at = datetime.now()
 
+            self._clear_in_flight(job)
+
     def fail(self, job_id: str, error: str) -> None:
 
         with self._lock:
@@ -68,3 +102,11 @@ class JobStore:
             job.error = error
             job.status = JobStatus.FAILED
             job.updated_at = datetime.now()
+
+            self._clear_in_flight(job)
+
+    def _clear_in_flight(self, job: Job) -> None:
+        """Caller must hold self._lock."""
+
+        if self._in_flight.get(job.url) == job.job_id:
+            del self._in_flight[job.url]

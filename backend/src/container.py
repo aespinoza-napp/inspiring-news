@@ -10,6 +10,7 @@ from src.services.claim_service import ClaimService
 from src.services.enrichment_service import EnrichmentService
 from src.services.corrector.text_corrector import TextCorrector
 from src.services.fact_checker.fact_checker import FactChecker
+from src.services.job_queue import AnalysisJobQueue
 from src.services.job_store import JobStore
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
@@ -72,6 +73,7 @@ _datalake_repository: DataLakeRepository | None = None
 _fact_checker: FactChecker | None = None
 _claim_service: ClaimService | None = None
 _enrichment_service: EnrichmentService | None = None
+_job_queue: AnalysisJobQueue | None = None
 
 
 def get_vector_repository() -> VectorRepository:
@@ -191,6 +193,24 @@ def get_analysis_service() -> AnalysisService:
                 )
 
     return _analysis_service
+
+
+def get_job_queue() -> AnalysisJobQueue:
+    """
+    Bounds concurrent /analyze/jobs runs (single or batch) at
+    settings.ANALYSIS_MAX_CONCURRENCY. Sized from settings here, at
+    construction time - not frozen into a class body - so it still
+    picks up per-process env/.env values, it just can't change mid-run.
+    """
+
+    global _job_queue
+
+    if _job_queue is None:
+        with _lock:
+            if _job_queue is None:
+                _job_queue = AnalysisJobQueue(settings.ANALYSIS_MAX_CONCURRENCY)
+
+    return _job_queue
 
 
 def get_text_corrector() -> TextCorrector:

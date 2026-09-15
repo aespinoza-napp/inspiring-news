@@ -73,6 +73,14 @@ class Settings(BaseSettings):
     INFERENCE_URL: str = "http://localhost:8001"
     INFERENCE_TIMEOUT: float = 30.0
 
+    # How many /analyze/jobs runs (single or batch) may execute at once.
+    # A process resource limit, not a per-run pipeline threshold - each
+    # run still does real scraping, inference/ HTTP calls, a SearXNG
+    # search and an LLM call, so unbounded concurrency here is what
+    # overloads those, not the pipeline logic itself. See
+    # src/services/job_queue.py.
+    ANALYSIS_MAX_CONCURRENCY: int = 3
+
     # -----------------------------------------------------------------
     # Pipeline thresholds
     #
