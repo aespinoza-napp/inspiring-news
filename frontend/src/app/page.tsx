@@ -306,6 +306,12 @@ function JobCardView({
               not fact-checked.
             </p>
           )}
+          {job.result?.factCheck?.belowAnchorFloor && (
+            <p className="claims-note">
+              Fewer load-bearing claims were found than this run asks for, so
+              the verdict rests on less than a full set of anchors.
+            </p>
+          )}
           {partial.claims.map((claim, index) => (
             <div
               className={`claim claim-verdict-${(claim.verdict ?? "none").toLowerCase()}`}
@@ -327,10 +333,48 @@ function JobCardView({
                   changed the final verdict to {claim.verdict ?? "UNVERIFIED"}.
                 </p>
               )}
+              <ClaimComparison claim={claim} />
               <SourcesPlot claim={claim} />
             </div>
           ))}
         </>
+      )}
+    </div>
+  );
+}
+
+function ClaimComparison({ claim }: { claim: ClaimResult }) {
+  const agreements = claim.agreements ?? [];
+  const discrepancies = claim.discrepancies ?? [];
+
+  if (agreements.length === 0 && discrepancies.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="comparison-block">
+      {agreements.length > 0 && (
+        <div className="comparison-agreements">
+          <p className="comparison-group-title">
+            Confirmed by {claim.independentDomains ?? agreements.length} source
+            {(claim.independentDomains ?? agreements.length) === 1 ? "" : "s"}
+          </p>
+          <ul className="comparison-list">
+            {agreements.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {discrepancies.length > 0 && (
+        <div className="comparison-discrepancies">
+          <p className="comparison-group-title">Where sources differ</p>
+          <ul className="comparison-list">
+            {discrepancies.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

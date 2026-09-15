@@ -7,6 +7,7 @@
   --accent: #2563eb;
 
   --true: #1a7f37;
+  --partially-true: #7a8b1f;
   --false: #c92a2a;
   --misleading: #c9770a;
   --unverified: #6b6b6b;
@@ -35,6 +36,7 @@
     --accent: #6ea8fe;
 
     --true: #4caf6d;
+    --partially-true: #a8b84a;
     --false: #e5605a;
     --misleading: #e0a44b;
     --unverified: #9a9a9a;
@@ -405,6 +407,10 @@ button:disabled {
   background: var(--true);
 }
 
+.badge-partially_true {
+  background: var(--partially-true);
+}
+
 .badge-false {
   background: var(--false);
 }
@@ -563,6 +569,10 @@ button:disabled {
 
 .claim-verdict-true {
   border-left-color: var(--true);
+}
+
+.claim-verdict-partially_true {
+  border-left-color: var(--partially-true);
 }
 
 .claim-verdict-false {
@@ -838,4 +848,153 @@ button:disabled {
   .stepper-label {
     font-size: 0.62rem;
   }
+}
+
+/* ---------- source rationale ----------
+   Why a source is ranked where it is: the three factors the ranker
+   combined, what the source says about the claim, and the span it was
+   judged on. Collapsed by default - a claim can touch a dozen sources
+   and expanding them all at once buries the claim itself. */
+
+.source-row-group {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.source-row-group:last-child {
+  border-bottom: none;
+}
+
+.source-why {
+  margin: 0;
+  padding: 0.1rem 0.45rem;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
+.source-why:hover:not(:disabled) {
+  color: var(--fg);
+  opacity: 1;
+}
+
+.stance-chip {
+  margin-left: 0.4rem;
+  padding: 0.02rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.stance-supports { color: var(--true); }
+.stance-contradicts { color: var(--false); }
+.stance-unrelated { color: var(--muted); }
+
+.source-detail {
+  padding: 0.5rem 0 0.7rem;
+  animation: fadeSlideIn 0.2s var(--ease) both;
+}
+
+.source-factors {
+  margin: 0 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.source-factor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.source-factor dt {
+  min-width: 8rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.source-factor-weight {
+  opacity: 0.7;
+}
+
+.source-factor dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.source-factor-track {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.source-factor-fill {
+  display: block;
+  height: 100%;
+  background: var(--funnel-3);
+}
+
+.source-factor-value {
+  min-width: 2rem;
+  text-align: right;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.source-quote {
+  margin: 0 0 0.4rem;
+  padding: 0.35rem 0 0.35rem 0.7rem;
+  border-left: 2px solid var(--border);
+  color: var(--fg);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.source-detail-note {
+  margin: 0 0 0.3rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* ---------- agreements / discrepancies ---------- */
+
+.comparison-block {
+  margin: 0.6rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comparison-group-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.2rem;
+}
+
+.comparison-agreements .comparison-group-title { color: var(--true); }
+.comparison-discrepancies .comparison-group-title { color: var(--false); }
+
+.comparison-list {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.comparison-list li {
+  margin-bottom: 0.15rem;
 }

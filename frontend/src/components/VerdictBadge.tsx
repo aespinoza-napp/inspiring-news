@@ -2,6 +2,7 @@ import { Verdict } from "@/lib/types";
 
 const LABELS: Record<Verdict, string> = {
   TRUE: "True",
+  PARTIALLY_TRUE: "Partly true",
   FALSE: "False",
   MISLEADING: "Misleading",
   UNVERIFIED: "Unverified",
