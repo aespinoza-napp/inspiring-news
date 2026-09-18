@@ -22,7 +22,7 @@ def test_defaults_come_from_settings():
     assert thresholds.min_body_length == settings.MIN_BODY_LENGTH
     assert thresholds.duplicate_threshold == settings.DUPLICATE_THRESHOLD
     assert thresholds.relatedness_threshold == settings.RELATEDNESS_THRESHOLD
-    assert thresholds.max_claims_per_article == settings.MAX_CLAIMS_PER_ARTICLE
+    assert thresholds.anchor_claims_max == settings.ANCHOR_CLAIMS_MAX
     assert thresholds.claim_dedup_threshold == settings.CLAIM_DEDUP_THRESHOLD
     assert thresholds.max_evidence_per_claim == settings.MAX_EVIDENCE_PER_CLAIM
     assert thresholds.min_evidence_for_verdict == settings.MIN_EVIDENCE_FOR_VERDICT
@@ -66,7 +66,7 @@ def test_an_override_wins_and_the_rest_fall_back_to_defaults():
 
     # Everything else is untouched.
     assert resolved.topic_min_confidence == settings.TOPIC_MIN_CONFIDENCE
-    assert resolved.max_claims_per_article == settings.MAX_CLAIMS_PER_ARTICLE
+    assert resolved.anchor_claims_max == settings.ANCHOR_CLAIMS_MAX
 
 
 def test_several_overrides_apply_together():
@@ -74,12 +74,12 @@ def test_several_overrides_apply_together():
     resolved = PipelineThresholds.resolve(
         ThresholdOverrides(
             topic_classifier_threshold=0.10,
-            max_claims_per_article=1,
+            anchor_claims_max=1,
         )
     )
 
     assert resolved.topic_classifier_threshold == 0.10
-    assert resolved.max_claims_per_article == 1
+    assert resolved.anchor_claims_max == 1
 
 
 def test_an_explicit_none_is_not_an_override():
@@ -120,19 +120,19 @@ def test_a_default_run_reports_no_overrides():
 def test_only_the_changed_fields_are_reported():
 
     resolved = PipelineThresholds.resolve(
-        ThresholdOverrides(positive_impact_min_score=0.85, max_claims_per_article=2)
+        ThresholdOverrides(positive_impact_min_score=0.85, anchor_claims_max=2)
     )
 
     assert resolved.overridden_from_defaults() == {
         "positive_impact_min_score": 0.85,
-        "max_claims_per_article": 2,
+        "anchor_claims_max": 2,
     }
 
 
 def test_a_value_that_merely_restates_the_default_is_not_an_override():
 
     resolved = PipelineThresholds.resolve(
-        ThresholdOverrides(max_claims_per_article=settings.MAX_CLAIMS_PER_ARTICLE)
+        ThresholdOverrides(anchor_claims_max=settings.ANCHOR_CLAIMS_MAX)
     )
 
     assert resolved.overridden_from_defaults() == {}
@@ -149,7 +149,7 @@ def test_a_value_that_merely_restates_the_default_is_not_an_override():
         ("positive_impact_min_score", 1.5),
         ("positive_impact_min_score", -0.1),
         ("topic_classifier_threshold", 2.0),
-        ("max_claims_per_article", 0),
+        ("anchor_claims_max", 0),
         ("max_evidence_per_claim", 0),
         ("min_body_length", -1),
         ("min_evidence_for_verdict", -1),

@@ -124,13 +124,13 @@ def test_the_same_thresholds_hit_the_same_entry(tmp_path):
 
     cache = AnalysisCache(directory=tmp_path)
 
-    tuned = PipelineThresholds(max_claims_per_article=2)
+    tuned = PipelineThresholds(anchor_claims_max=2)
 
     cache.set("https://example.com/a", {"title": "Tuned"}, tuned)
 
     assert cache.get(
         "https://example.com/a",
-        PipelineThresholds(max_claims_per_article=2),
+        PipelineThresholds(anchor_claims_max=2),
     )["title"] == "Tuned"
 
 
@@ -180,7 +180,7 @@ def test_a_forced_refresh_rewrites_the_entry_for_its_own_key(tmp_path):
 
     cache = AnalysisCache(directory=tmp_path)
 
-    tuned = PipelineThresholds(max_claims_per_article=2)
+    tuned = PipelineThresholds(anchor_claims_max=2)
 
     cache.set("https://example.com/a", {"run": "first"}, tuned)
     cache.set("https://example.com/a", {"run": "second"}, tuned)

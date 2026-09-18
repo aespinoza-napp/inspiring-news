@@ -4,7 +4,16 @@ export interface TopicPrediction {
   probability: number;
 }
 
-export type Verdict = "TRUE" | "FALSE" | "MISLEADING" | "UNVERIFIED";
+export type Verdict =
+  | "TRUE"
+  /** Central assertion holds, but a source contradicts a detail of it. */
+  | "PARTIALLY_TRUE"
+  | "FALSE"
+  | "MISLEADING"
+  | "UNVERIFIED";
+
+/** What one specific source says about a claim. */
+export type EvidenceStance = "supports" | "contradicts" | "unrelated";
 
 export type PipelineStage =
   | "admission_filter"
@@ -31,15 +40,23 @@ export interface EvidenceItem {
   title: string;
   origin: EvidenceOrigin;
   relevanceScore: number | null;
-  /**
-   * Breakdown of relevanceScore's weighted components (semantic, recency,
-   * reliability) plus this item's rank among its siblings - answers "why
-   * did this outrank that one", not just the combined number.
-   */
-  relevanceNote: string | null;
   sourceReliability: number | null;
   publishedAt: string | null;
   cited: boolean;
+  /** Registrable domain - two items sharing one are not independent. */
+  domain?: string | null;
+  /** Which SearXNG engines surfaced this result. */
+  engines?: string[];
+  /**
+   * The three factors behind relevanceScore. Retained so the UI can say
+   * why one source outranked another instead of only that it did.
+   */
+  semanticScore?: number | null;
+  recencyScore?: number | null;
+  reliabilityScore?: number | null;
+  stance?: EvidenceStance | null;
+  /** Only set when the span was found verbatim in the source. */
+  quote?: string | null;
 }
 
 export interface ClaimResult {
@@ -47,8 +64,6 @@ export interface ClaimResult {
   confidence: number;
   verdict: Verdict | null;
   explanation: string | null;
-  /** The literal query SearchProvider sent to SearXNG for this claim. */
-  searchQuery?: string | null;
   evidenceCount: number;
   evidence?: EvidenceItem[];
   rejectedSources?: RejectedSource[];
@@ -56,6 +71,11 @@ export interface ClaimResult {
   stageNote?: string | null;
   rawVerdict?: Verdict | null;
   rawConfidence?: number | null;
+  /** What the sources confirm, and where they diverge. */
+  agreements?: string[];
+  discrepancies?: string[];
+  /** Distinct domains backing this claim, not raw evidence count. */
+  independentDomains?: number;
 }
 
 export interface ValidityInfo {
@@ -94,6 +114,12 @@ export interface FactCheckSummary {
   overallConfidence: number;
   claimsTotal: number;
   claimsChecked: number;
+  /**
+   * The article yielded fewer anchor claims than the run required, so
+   * the verdict rests on less than it should. A caveat on the whole
+   * report rather than on any single claim.
+   */
+  belowAnchorFloor?: boolean;
 }
 
 /**
@@ -106,13 +132,17 @@ export interface ThresholdOverrides {
   topic_classifier_threshold?: number;
   entity_threshold?: number;
   claim_min_confidence?: number;
+  opinion_max_score?: number;
   min_body_length?: number;
   topic_min_confidence?: number;
   positive_impact_min_score?: number;
   duplicate_threshold?: number;
   relatedness_threshold?: number;
-  max_claims_per_article?: number;
+  anchor_claims_min?: number;
+  anchor_claims_max?: number;
+  min_independent_domains?: number;
   claim_dedup_threshold?: number;
+  evidence_fetch_candidates?: number;
   max_evidence_per_claim?: number;
   min_evidence_for_verdict?: number;
 }
@@ -180,6 +210,33 @@ export interface AnalysisJob {
   events: PhaseEvent[];
   result: AnalysisResult | null;
   error: string | null;
+}
+
+/**
+ * POST /analyze/jobs/batch - bulk form of POST /analyze/jobs. One entry
+ * per input url, in input order; two urls that dedupe onto the same
+ * backend job (identical url, or one already in flight) share a jobId.
+ */
+export interface BatchJobRef {
+  url: string;
+  jobId: string;
+}
+
+export interface CreateAnalysisJobsBatchResponse {
+  jobs: BatchJobRef[];
+}
+
+/**
+ * GET /analyze/jobs/batch?ids=... - one entry per requested job id.
+ * "not_found" only happens after a backend restart (the in-memory job
+ * store is single-process and does not survive one).
+ */
+export type BatchJobStatusEntry =
+  | AnalysisJob
+  | { jobId: string; status: "not_found" };
+
+export interface AnalysisJobsBatchStatusResponse {
+  jobs: BatchJobStatusEntry[];
 }
 
 export interface CorrectionMetric {

@@ -59,59 +59,6 @@ def test_retrieve_merges_web_and_internal_evidence():
     assert internal_result.content is None  # untouched by the scraper
 
 
-def test_retrieve_reports_the_web_search_query_through_on_phase():
-    """
-    Traceability check: EvidenceRetriever reports the query its
-    SearchProvider builds before the search happens, via on_phase - this
-    is what lets a live run show what actually went out over the wire
-    (FakeSearchProvider.build_query() here stands in for the real
-    entity-anchored SearchProvider.build_query(); see
-    test_search_provider.py for what that one actually returns).
-    """
-
-    claim = create_claim(text="  NASA confirmed water on Mars.  ")
-
-    retriever = EvidenceRetriever(
-        repository=None,
-        search_provider=FakeSearchProvider([]),
-        scraper=FakeEvidenceScraper(),
-        vector_retriever=FakeVectorRetriever([]),
-        embeddings=FakeEmbeddingService(),
-    )
-
-    events = []
-
-    result = retriever.retrieve(
-        claim, on_phase=lambda phase, data: events.append((phase, data)),
-    )
-
-    assert events == [
-        (
-            "web_search_dispatched",
-            {"claim": claim.text, "query": "NASA confirmed water on Mars."},
-        ),
-    ]
-    assert result.query == "NASA confirmed water on Mars."
-
-
-def test_retrieve_carries_the_query_on_the_result_even_with_no_candidates():
-
-    claim = create_claim(text="  NASA confirmed water on Mars.  ")
-
-    retriever = EvidenceRetriever(
-        repository=None,
-        search_provider=FakeSearchProvider([]),
-        scraper=FakeEvidenceScraper(),
-        vector_retriever=FakeVectorRetriever([]),
-        embeddings=FakeEmbeddingService(),
-    )
-
-    result = retriever.retrieve(claim)
-
-    assert result.query == "NASA confirmed water on Mars."
-    assert result.kept == []
-
-
 def test_retrieve_returns_empty_when_no_candidates():
 
     retriever = EvidenceRetriever(

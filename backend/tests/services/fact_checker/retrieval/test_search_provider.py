@@ -1,4 +1,5 @@
 from src.services.fact_checker.retrieval.search_provider import SearchProvider
+from src.models.core.claim import ClaimFacts
 from src.models.fact_checker.evidence import EvidenceOrigin
 
 from tests.factories import create_claim
@@ -32,18 +33,12 @@ def test_search_maps_raw_results_to_evidence():
     assert evidence.published_at.year == 2024
 
 
-def test_search_anchors_the_query_on_the_claims_entities():
+def test_search_queries_by_identifying_terms_not_the_raw_sentence():
     """
-    Traceability check for what actually leaves the process: the query
-    is built from `claim.entities`, not the full sentence. A single-word
-    entity goes in bare; a multi-word one is quoted so SearXNG's
-    underlying engines treat it as one phrase instead of splitting
-    "the two countries" across unrelated pages.
-
-    This replaced sending the raw grammatical sentence (stopwords,
-    articles and all) as a bag of words - see git history on this test
-    for what that looked like and why it was suspected of hurting
-    recall.
+    The raw claim sentence used to be the query. It is a poor one: a
+    search engine matches it as a bag of words, so the terms that
+    actually pin the event down - the organisation, the figure, the year
+    - are diluted by the prose around them.
     """
 
     client = FakeSearxngClient(results=[])
@@ -51,79 +46,75 @@ def test_search_anchors_the_query_on_the_claims_entities():
     provider = SearchProvider(client=client)
 
     claim = create_claim(
-        text=(
-            "According to officials, the new trade agreement between the "
-            "two countries will reduce tariffs starting next year."
-        ),
-        entities={"ORG": ["the two countries"], "PERSON": ["Jane Doe"]},
+        text="  NASA discovered water on Mars in 2024, covering 40% of the pole.  ",
+        entities={"ORG": ["NASA"]},
     )
+    claim = claim.model_copy(update={
+        "facts": ClaimFacts(figures=["40%"], dates=["2024"]),
+    })
 
     provider.search(claim)
 
-    assert client.queries == ['"the two countries" "Jane Doe"']
+    affirmative = client.queries[0]
+
+    assert "NASA" in affirmative
+    # Quoted, so the engine matches it verbatim instead of treating the
+    # most checkable part of the claim as an ignorable common token.
+    assert '"40%"' in affirmative
+    assert "2024" in affirmative
+    assert "discovered water on Mars" not in affirmative
 
 
-def test_search_includes_figures_the_entity_extractor_does_not_capture():
+def test_search_also_runs_a_refutation_query():
     """
-    EntityExtractor's DEFAULT_LABELS (src/processors/nlp/entities.py) has
-    no "date" or "number" label, so a percentage or a year never shows up
-    in claim.entities even though it is often what pins a claim to one
-    real event rather than a similar-sounding one. FIGURE_PATTERN pulls
-    those out of the claim text directly and appends them to the
-    entity-anchored query.
-    """
-
-    client = FakeSearxngClient(results=[])
-
-    provider = SearchProvider(client=client)
-
-    claim = create_claim(
-        text="The treaty, signed in 2024, will cut tariffs by 15%.",
-        entities={"ORG": ["the treaty"]},
-    )
-
-    provider.search(claim)
-
-    assert client.queries == ['"the treaty" 2024 15%']
-
-
-def test_search_dedupes_terms_case_insensitively():
-
-    client = FakeSearxngClient(results=[])
-
-    provider = SearchProvider(client=client)
-
-    claim = create_claim(
-        text="NASA and nasa both confirmed the 2024 mission.",
-        entities={"ORG": ["NASA"], "PRODUCT": ["nasa"]},
-    )
-
-    provider.search(claim)
-
-    assert client.queries == ["NASA 2024"]
-
-
-def test_search_falls_back_to_the_full_sentence_with_no_entities_or_figures():
-    """
-    EntityExtractor degrades to `{}` on an inference outage rather than
-    raising (see entities.py) - a claim can legitimately reach here with
-    no entities and no figures in its text. An empty query would still
-    be sent to SearXNG otherwise, so this falls back to the full
-    sentence instead of searching for nothing.
+    Every query built from a claim is phrased affirmatively, which biases
+    retrieval toward documents that agree with it. Without a second pass
+    that can surface a contradiction, the retrieval step can only ever
+    confirm.
     """
 
     client = FakeSearxngClient(results=[])
 
     provider = SearchProvider(client=client)
 
-    claim = create_claim(
-        text="  Officials confirmed the deal will proceed as planned.  ",
-        entities={},
-    )
+    provider.search(create_claim(entities={"ORG": ["NASA"]}), language="es")
 
-    provider.search(claim)
+    assert len(client.queries) == 2
+    assert "desmentido" in client.queries[1]
+    assert client.languages == ["es", "es"]
 
-    assert client.queries == ["Officials confirmed the deal will proceed as planned."]
+
+def test_search_dedupes_the_same_url_across_both_queries():
+
+    client = FakeSearxngClient(results=[
+        {"url": "https://example.com/a", "title": "A"},
+    ])
+
+    provider = SearchProvider(client=client)
+
+    results = provider.search(create_claim(entities={"ORG": ["NASA"]}))
+
+    # Both passes returned it; it is one piece of evidence, not two.
+    assert len(client.queries) == 2
+    assert len(results) == 1
+
+
+def test_search_records_domain_and_engines():
+
+    client = FakeSearxngClient(results=[
+        {
+            "url": "https://www.example.com/a",
+            "title": "A",
+            "engines": ["bing", "brave"],
+        },
+    ])
+
+    provider = SearchProvider(client=client)
+
+    results = provider.search(create_claim())
+
+    assert results[0].domain == "example.com"
+    assert results[0].engines == ["bing", "brave"]
 
 
 def test_search_skips_entries_missing_url_or_title():

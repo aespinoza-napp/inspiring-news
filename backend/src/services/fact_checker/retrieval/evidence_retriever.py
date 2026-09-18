@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Callable, Optional
 
 from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
@@ -7,12 +6,11 @@ from src.models.fact_checker.evidence import Evidence, EvidenceOrigin, RejectedE
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
 from src.services.embeddings.service import EmbeddingService
+from src.services.fact_checker.claim_selector import ArticleContext
 
 from .scraper import EvidenceScraper
 from .search_provider import SearchProvider
 from .vector_retriever import VectorRetriever
-
-OnPhase = Callable[[str, dict], None]
 
 
 @dataclass
@@ -21,10 +19,6 @@ class RetrievalResult:
     kept: list[Evidence]
 
     rejected: list[RejectedEvidence] = field(default_factory=list)
-
-    # The literal SearXNG query this retrieval used - "" when the claim
-    # never reached a web search at all (e.g. a fake retriever in tests).
-    query: str = ""
 
 
 class EvidenceRetriever:
@@ -46,26 +40,20 @@ class EvidenceRetriever:
         self,
         claim: Claim,
         thresholds: PipelineThresholds | None = None,
-        on_phase: Optional[OnPhase] = None,
+        context: ArticleContext | None = None,
+        language: str | None = None,
     ) -> RetrievalResult:
 
         thresholds = thresholds or PipelineThresholds()
 
         max_evidence = thresholds.max_evidence_per_claim
 
-        # Built once and reported before the request goes out, so what
-        # actually gets searched is visible in the pipeline trace rather
-        # than only inferable from the claim text - see build_query()'s
-        # own docstring for why the two can diverge.
-        query = self.search_provider.build_query(claim)
-
-        if on_phase:
-            on_phase("web_search_dispatched", {
-                "claim": claim.text,
-                "query": query,
-            })
-
-        web_evidence = self.search_provider.search(claim, thresholds)
+        web_evidence = self.search_provider.search(
+            claim,
+            thresholds,
+            context=context,
+            language=language,
+        )
         internal_evidence = self.vector_retriever.retrieve(
             claim,
             thresholds=thresholds,
@@ -74,7 +62,7 @@ class EvidenceRetriever:
         candidates = web_evidence + internal_evidence
 
         if not candidates:
-            return RetrievalResult(kept=[], query=query)
+            return RetrievalResult(kept=[])
 
         claim_embedding = self.embeddings.encode(claim.text)
 
@@ -94,6 +82,8 @@ class EvidenceRetriever:
             for evidence in prescored
             if evidence.origin == EvidenceOrigin.WEB
         ]
+
+        web_ranked, same_domain = self._one_per_domain(web_ranked)
 
         top_web = web_ranked[:max_evidence]
         cut_web = web_ranked[max_evidence:]
@@ -119,9 +109,51 @@ class EvidenceRetriever:
                 score=scores[id(evidence)],
             )
             for rank, evidence in enumerate(cut_web, start=len(top_web) + 1)
-        ]
+        ] + same_domain
 
-        return RetrievalResult(kept=scraped + internal, rejected=rejected, query=query)
+        return RetrievalResult(kept=scraped + internal, rejected=rejected)
+
+    def _one_per_domain(
+        self,
+        evidence: list[Evidence],
+    ) -> tuple[list[Evidence], list[RejectedEvidence]]:
+        """
+        Keeps the best-scoring hit per domain.
+
+        Corroboration is the whole point of retrieving several sources,
+        and a wire story republished by five outlets is one source wearing
+        five hats. Without this the evidence set fills up with copies of
+        the same text, the LLM sees five agreeing documents, and the
+        confidence scorer counts five independent confirmations of
+        something exactly one newsroom reported.
+
+        `evidence` is already sorted best-first, so the first hit seen for
+        a domain is the one worth keeping.
+        """
+
+        kept: list[Evidence] = []
+        seen: set[str] = set()
+        dropped: list[RejectedEvidence] = []
+
+        for item in evidence:
+
+            domain = item.domain or item.url
+
+            if domain in seen:
+                dropped.append(RejectedEvidence(
+                    url=item.url,
+                    title=item.title,
+                    origin=item.origin,
+                    stage=PipelineStage.EVIDENCE_RETRIEVAL,
+                    reason=f"same domain as a higher-ranked source ({domain})",
+                    score=item.relevance_score,
+                ))
+                continue
+
+            seen.add(domain)
+            kept.append(item)
+
+        return kept, dropped
 
     def _quick_score(self, evidence: Evidence, claim_embedding) -> float:
 

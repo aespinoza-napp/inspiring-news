@@ -66,19 +66,10 @@ detection, where a silently empty result corrupts a decision).
   This is the guardrail that stops a cheap local model bluffing — don't
   weaken it.
 - Every stage takes an optional `on_phase(phase, data)` callback. This
-  backs the job-polling API. Claim checking emits six events per claim
-  (`retrieving_evidence`, `web_search_dispatched`, `evidence_retrieved`,
-  `evidence_ranked`, `verifying_claim`, `claim_checked`) because those
-  sub-stages are the slowest in the pipeline — a live search, a scrape
-  and one LLM call. `web_search_dispatched` (fired by
-  `EvidenceRetriever.retrieve`, not `FactChecker`) carries the literal
-  query `SearchProvider.build_query()` sent to SearXNG — see its
-  docstring for why that is not `claim.text`. `evidence_ranked` (fired
-  by `EvidenceRanker.rank`) carries each kept item's `Evidence.
-  relevance_note`, a breakdown of the weighted semantic/recency/
-  reliability score that explains why it outranked what got cut — the
-  same note is on the persisted `FactCheck.evidence` and on cut items'
-  `RejectedEvidence.reason`, not only in the live event.
+  backs the job-polling API. Claim checking emits four events per claim
+  (`retrieving_evidence`, `evidence_retrieved`, `verifying_claim`,
+  `claim_checked`) because those sub-stages are the slowest in the
+  pipeline — a live search, a scrape and one LLM call.
 
 ## Language
 

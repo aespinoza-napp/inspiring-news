@@ -108,6 +108,7 @@ NON_THRESHOLD_SETTINGS = {
     "CONFIDENCE_LLM_WEIGHT", "CONFIDENCE_EVIDENCE_WEIGHT",
     "EVIDENCE_RECENCY_HALF_LIFE_DAYS",
     "URL_GUARD_ENABLED", "URL_GUARD_ALLOWED_HOSTS", "STORAGE_API_KEY",
+    "ANALYSIS_MAX_CONCURRENCY",
 }
 
 # These two files are where the thresholds are defined and defaulted, so
@@ -210,6 +211,20 @@ def test_the_two_threshold_models_expose_the_same_fields():
 # never rewrites the entry, so a stale one cannot heal on its own.
 ANALYZE_RESPONSE_SHAPE = {
     3: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
+    # 4 has the same *top-level* keys as 3, and still had to be a new
+    # version: the fact-checking restructure added fields inside `claims`
+    # (agreements, discrepancies, independentDomains), inside each
+    # evidence item (stance, quote, domain, engines and the three ranking
+    # factors) and inside `factCheck` (belowAnchorFloor). A v3 entry is
+    # missing all of them, and since the cache never expires and a hit
+    # never rewrites its entry, it would go on serving a response with no
+    # per-source detail in it forever. This test only compares the top
+    # level, so it would not have caught that on its own.
+    4: {
         "url", "storage", "thresholds", "title", "keywords", "entities",
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",

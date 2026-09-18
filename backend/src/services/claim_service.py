@@ -118,7 +118,6 @@ class ClaimService:
             "verdict": check.verdict,
             "confidence": check.confidence,
             "explanation": check.explanation,
-            "searchQuery": check.search_query,
             "evidenceCount": check.evidence_count,
             "evidence": [
                 {
@@ -127,10 +126,16 @@ class ClaimService:
                     "snippet": item.snippet,
                     "origin": item.origin,
                     "relevanceScore": item.relevance_score,
-                    "relevanceNote": item.relevance_note,
                     "sourceReliability": item.source_reliability,
                     "publishedAt": item.published_at,
                     "cited": index in cited,
+                    "domain": item.domain,
+                    "engines": item.engines,
+                    "semanticScore": item.semantic_score,
+                    "recencyScore": item.recency_score,
+                    "reliabilityScore": item.reliability_score,
+                    "stance": item.stance,
+                    "quote": item.quote,
                 }
                 for index, item in enumerate(check.evidence)
             ],
@@ -149,5 +154,8 @@ class ClaimService:
             "stageNote": check.stage_note,
             "rawVerdict": check.raw_verdict,
             "rawConfidence": check.raw_confidence,
+            "agreements": check.agreements,
+            "discrepancies": check.discrepancies,
+            "independentDomains": check.independent_domains,
             "thresholds": thresholds.model_dump(),
         }

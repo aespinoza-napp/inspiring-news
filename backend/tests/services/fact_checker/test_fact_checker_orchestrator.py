@@ -2,9 +2,6 @@ from src.config.thresholds import PipelineThresholds
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.claim_selector import ClaimSelector
 from src.services.fact_checker.fact_checker import FactChecker
-from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
-from src.services.fact_checker.retrieval.evidence_retriever import EvidenceRetriever
-from src.services.fact_checker.retrieval.search_provider import SearchProvider
 from src.services.fact_checker.verification.confidence_scorer import ConfidenceScorer
 from src.services.fact_checker.verification.llm_verification import LLMVerificationResult
 
@@ -12,11 +9,7 @@ from tests.factories import create_article, create_claim, create_evidence
 from tests.services.fact_checker.fakes import (
     FakeEmbeddingService,
     FakeEvidenceRetriever,
-    FakeEvidenceScraper,
     FakeRanker,
-    FakeSearxngClient,
-    FakeSourceRepository,
-    FakeVectorRetriever,
     FakeVerifier,
 )
 
@@ -191,7 +184,19 @@ def test_run_records_claims_dropped_during_selection(repository):
 
     article = create_article(claims=[kept_claim, dropped_claim])
 
-    selector = ClaimSelector(embeddings=FakeEmbeddingService())
+    # Selection ranks by how load-bearing a claim is, not by extraction
+    # confidence, so which one survives has to be pinned through the
+    # thing that actually decides it: closeness to the article's thesis.
+    on_thesis = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    off_thesis = [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    thesis = f"{article.title}. {article.body[:400]}".strip()
+
+    selector = ClaimSelector(embeddings=FakeEmbeddingService(vectors={
+        thesis: on_thesis,
+        kept_claim.text: on_thesis,
+        dropped_claim.text: off_thesis,
+    }))
 
     checker = FactChecker(
         repository,
@@ -215,12 +220,12 @@ def test_run_records_claims_dropped_during_selection(repository):
     # a real caller sets it rather than by reassigning a class attribute.
     report = checker.run(
         article,
-        thresholds=PipelineThresholds(max_claims_per_article=1),
+        thresholds=PipelineThresholds(anchor_claims_max=1),
     )
 
     assert report.claims_selected == 1
     assert [c.text for c in report.unselected_claims] == ["Dropped claim."]
-    assert report.unselected_claims[0].reason == "exceeds_max_claims_cap"
+    assert report.unselected_claims[0].reason == "outside_anchor_band"
 
 
 def test_run_with_no_claims_returns_unverified_overall(repository):
@@ -298,10 +303,6 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
     # Four events per claim, not one. Retrieval and the LLM call are the
     # slowest steps in the pipeline, and a single `claim_checked` at the
     # end left a polling client with nothing to show for the whole of it.
-    # This is FakeEvidenceRetriever/FakeRanker, which ignore the on_phase
-    # they're handed - the real EvidenceRetriever/EvidenceRanker fire two
-    # more of their own ("web_search_dispatched", "evidence_ranked"), see
-    # test_run_reports_the_real_retrieval_and_ranking_sub_phases below.
     assert phases == [
         "validating",
         "validated",
@@ -313,83 +314,6 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
         "claim_checked",
         "fact_check_done",
     ]
-
-
-def test_run_reports_the_real_retrieval_and_ranking_sub_phases(repository):
-    """
-    Traceability check: with the real EvidenceRetriever and EvidenceRanker
-    wired in (not the orchestrator-level fakes above), the pipeline trace
-    for one claim carries the exact web query that was searched and a
-    summary of how the kept evidence was ranked - not just "retrieving"/
-    "retrieved" bookends with no detail in between.
-    """
-
-    claim = create_claim(text="A checkable claim.", confidence=0.9, entities={"ORG": ["NASA"]})
-
-    article = create_article(claims=[claim])
-
-    embeddings = FakeEmbeddingService(vectors={
-        claim.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    })
-
-    searxng = FakeSearxngClient(results=[
-        {"url": "https://a.com", "title": "A", "content": "NASA confirmed it."},
-    ])
-
-    checker = FactChecker(
-        repository,
-        claim_selector=ClaimSelector(embeddings=embeddings),
-        evidence_retriever=EvidenceRetriever(
-            repository,
-            search_provider=SearchProvider(client=searxng),
-            scraper=FakeEvidenceScraper(),
-            vector_retriever=FakeVectorRetriever([]),
-            embeddings=embeddings,
-        ),
-        ranker=EvidenceRanker(
-            embeddings=embeddings,
-            source_repository=FakeSourceRepository([]),
-        ),
-        verifier=FakeVerifier({
-            claim.text: LLMVerificationResult(
-                verdict=Verdict.TRUE,
-                confidence=0.9,
-                explanation="Confirmed.",
-                cited_evidence=[0],
-            ),
-        }),
-        confidence_scorer=ConfidenceScorer(),
-    )
-
-    events = []
-
-    report = checker.run(article, on_phase=lambda phase, data: events.append((phase, data)))
-
-    phases = [phase for phase, _ in events]
-
-    assert phases == [
-        "validating",
-        "validated",
-        "selecting_claims",
-        "claims_selected",
-        "retrieving_evidence",
-        "web_search_dispatched",
-        "evidence_retrieved",
-        "evidence_ranked",
-        "verifying_claim",
-        "claim_checked",
-        "fact_check_done",
-    ]
-
-    search_event = next(data for phase, data in events if phase == "web_search_dispatched")
-    assert search_event["query"] == "NASA"  # entity-anchored, not the full sentence
-
-    ranked_event = next(data for phase, data in events if phase == "evidence_ranked")
-    assert ranked_event["kept"][0]["url"] == "https://a.com"
-
-    check = report.claim_checks[0]
-    assert check.search_query == "NASA"
-    assert check.evidence[0].relevance_note is not None
 
     by_phase = dict(events)
 

@@ -42,15 +42,6 @@ TOPICS = {
         ],
     ),
 
-    "fact_checking": Topic(
-        name="Fact Checking",
-        description="Verification of information, misinformation, fake news, myths and evidence-based journalism.",
-        keywords=[
-            "fact check", "misinformation",
-            "fake news", "myth", "debunked"
-        ],
-    ),
-
     # ==========================
     # Science
     # ==========================

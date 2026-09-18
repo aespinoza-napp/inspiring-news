@@ -1,5 +1,6 @@
 from src.config.thresholds import PipelineThresholds
-from src.services.fact_checker.claim_selector import ClaimSelector
+from src.models.core.claim import ClaimFacts
+from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelector
 
 from tests.factories import create_claim
 from tests.services.fact_checker.fakes import FakeEmbeddingService
@@ -15,31 +16,75 @@ def test_select_empty_claims_returns_empty():
     assert result.rejected == []
 
 
-def test_select_orders_by_confidence_descending():
+def test_select_ranks_the_claim_central_to_the_article_first():
+    """
+    Selection answers "which claims is this article's credibility resting
+    on", not "which sentences scored highest for check-worthiness". A
+    high-confidence aside must lose to a claim that carries the article's
+    own thesis.
+    """
+
+    on_thesis = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    off_thesis = [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    context = ArticleContext(title="Spain reached 50% renewable power")
+
+    embeddings = FakeEmbeddingService(vectors={
+        context.thesis(): on_thesis,
+        "Spain's grid ran on 50% renewables.": on_thesis,
+        "The press office moved to a new building.": off_thesis,
+    })
 
     claims = [
-        create_claim(text="Low confidence claim.", confidence=0.5),
-        create_claim(text="High confidence claim.", confidence=0.9),
-        create_claim(text="Medium confidence claim.", confidence=0.7),
+        # Higher extraction confidence, but not what the article is about.
+        create_claim(
+            text="The press office moved to a new building.",
+            confidence=0.95,
+            entities={},
+        ),
+        create_claim(
+            text="Spain's grid ran on 50% renewables.",
+            confidence=0.6,
+            entities={},
+        ),
     ]
+
+    selector = ClaimSelector(embeddings=embeddings)
+
+    selected = selector.select(claims, context=context).selected
+
+    assert [c.text for c in selected] == [
+        "Spain's grid ran on 50% renewables.",
+        "The press office moved to a new building.",
+    ]
+
+
+def test_select_scores_concrete_claims_above_vague_ones():
+    """
+    Specificity is part of being load-bearing: a claim carrying a figure
+    and a date can actually be checked, an unquantified assertion mostly
+    cannot.
+    """
 
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
 
-    selected = selector.select(claims).selected
+    vague = create_claim(text="Emissions fell across the sector.", entities={})
+    concrete = create_claim(
+        text="Emissions fell 40% in 2024.",
+        entities={},
+    ).model_copy(update={"facts": ClaimFacts(figures=["40%"], dates=["2024"])})
 
-    assert [c.text for c in selected] == [
-        "High confidence claim.",
-        "Medium confidence claim.",
-        "Low confidence claim.",
-    ]
+    selected = selector.select([vague, concrete]).selected
+
+    assert selected[0].text == "Emissions fell 40% in 2024."
+    assert selected[0].anchor_score > selected[1].anchor_score
 
 
-def test_select_caps_at_max_claims():
+def test_select_caps_at_the_anchor_band():
     """
-    The cap arrives per call now. It used to be a class attribute frozen
-    from settings at import time, which this test could only exercise by
-    reaching in and reassigning it - meaning it never covered the path a
-    real caller takes.
+    The band arrives per call. Verifying the two-to-four claims the
+    article rests on is the point - checking the five highest-scoring
+    sentences is what this replaced.
     """
 
     selector = ClaimSelector(embeddings=FakeEmbeddingService())
@@ -51,19 +96,12 @@ def test_select_caps_at_max_claims():
 
     result = selector.select(
         claims,
-        PipelineThresholds(max_claims_per_article=2),
+        PipelineThresholds(anchor_claims_max=2),
     )
 
     assert len(result.selected) == 2
-    assert result.selected[0].text == "Claim number 0."
-    assert result.selected[1].text == "Claim number 1."
-
-    assert [c.text for c in result.rejected] == [
-        "Claim number 2.",
-        "Claim number 3.",
-        "Claim number 4.",
-    ]
-    assert all(c.reason == "exceeds_max_claims_cap" for c in result.rejected)
+    assert len(result.rejected) == 3
+    assert all(c.reason == "outside_anchor_band" for c in result.rejected)
 
 
 def test_select_drops_near_duplicate_claims():

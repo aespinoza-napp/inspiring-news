@@ -11,13 +11,18 @@ import {
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { StageTimeline } from "@/components/StageTimeline";
 import { SourcesPlot } from "@/components/SourcesPlot";
-import { ScoreBar } from "@/components/ScoreBar";
+import { SentimentGauge } from "@/components/SentimentGauge";
+import { QualityRadar } from "@/components/QualityRadar";
+import { TopicRadar } from "@/components/TopicRadar";
+import { TopicKeywordList } from "@/components/TopicKeywordList";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
+import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
 
 export default function AnalyzerPage() {
   const [input, setInput] = useState("");
   const [forceRefresh, setForceRefresh] = useState(false);
+  const [bulkMode, setBulkMode] = useState(false);
   const [urls, setUrls] = useState<string[]>([]);
 
   function handleSubmit(event: React.FormEvent) {
@@ -64,11 +69,62 @@ export default function AnalyzerPage() {
             />
             Force refresh (skip cache)
           </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={bulkMode}
+              onChange={(event) => setBulkMode(event.target.checked)}
+            />
+            Bulk mode (one batch submission, with overall progress)
+          </label>
         </div>
       </form>
 
-      {urls.map((url) => (
-        <JobCard key={`${url}:${forceRefresh}`} url={url} forceRefresh={forceRefresh} />
+      {bulkMode ? (
+        <BulkResults
+          key={`${urls.join("\n")}:${forceRefresh}`}
+          urls={urls}
+          forceRefresh={forceRefresh}
+        />
+      ) : (
+        urls.map((url) => (
+          <JobCard key={`${url}:${forceRefresh}`} url={url} forceRefresh={forceRefresh} />
+        ))
+      )}
+    </>
+  );
+}
+
+function BulkResults({ urls, forceRefresh }: { urls: string[]; forceRefresh: boolean }) {
+  const { jobsByUrl, error } = useBatchAnalysisJobs(urls, forceRefresh);
+
+  if (urls.length === 0) return null;
+
+  if (error) {
+    return (
+      <div className="error-banner" role="alert">
+        {error}
+      </div>
+    );
+  }
+
+  const jobs = urls.map((url) => jobsByUrl[url] ?? null);
+  const doneCount = jobs.filter((job) => job?.status === "done").length;
+  const failedCount = jobs.filter((job) => job?.status === "failed").length;
+
+  return (
+    <>
+      <div className="batch-summary" role="status">
+        <span className="badge badge-true">
+          {doneCount} of {urls.length} done
+        </span>
+        {failedCount > 0 && (
+          <span className="badge badge-false">{failedCount} failed</span>
+        )}
+      </div>
+
+      {urls.map((url, index) => (
+        <JobCardView key={`${url}:${index}`} url={url} job={jobs[index]} error={null} />
       ))}
     </>
   );
@@ -77,6 +133,18 @@ export default function AnalyzerPage() {
 function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) {
   const { job, error } = useAnalysisJob(url, forceRefresh);
 
+  return <JobCardView url={url} job={job} error={error} />;
+}
+
+function JobCardView({
+  url,
+  job,
+  error,
+}: {
+  url: string;
+  job: AnalysisJob | null;
+  error: string | null;
+}) {
   if (error) {
     return (
       <div className="card">
@@ -162,19 +230,6 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
         </div>
       )}
 
-      {partial.keywords.length > 0 && (
-        <>
-          <div className="section-label">Keywords ({partial.keywords.length})</div>
-          <div className="chip-row">
-            {partial.keywords.map((keyword) => (
-              <span className="chip" key={keyword}>
-                {keyword}
-              </span>
-            ))}
-          </div>
-        </>
-      )}
-
       {partial.entityCount > 0 && (
         <>
           <div className="section-label">Entities ({partial.entityCount})</div>
@@ -196,37 +251,36 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
       )}
 
       {sortedTopics.length > 0 && (
-        <>
-          <div className="section-label">Topics ({sortedTopics.length})</div>
-          {sortedTopics.map((topic) => (
-            <ScoreBar key={topic.topic} label={topic.topic} value={topic.confidence * 100} />
-          ))}
-        </>
-      )}
-
-      {partial.sentiment && (
-        <>
-          <div className="section-label">
-            Sentiment ({partial.sentiment.label})
+        <div className="topics-row">
+          <div className="topics-col">
+            <div className="section-label">Top topics ({sortedTopics.length} matched)</div>
+            <TopicRadar topics={sortedTopics} />
           </div>
-          <ScoreBar label="Positive" value={partial.sentiment.positive * 100} />
-          <ScoreBar label="Neutral" value={partial.sentiment.neutral * 100} />
-          <ScoreBar label="Negative" value={partial.sentiment.negative * 100} />
-          <ScoreBar label="Subjectivity" value={partial.sentiment.subjectivity * 100} />
-        </>
+          <div className="topics-col">
+            <div className="section-label">Keywords for {sortedTopics[0].topic}</div>
+            <TopicKeywordList
+              topic={sortedTopics[0].topic}
+              articleKeywords={partial.keywords}
+            />
+          </div>
+        </div>
       )}
 
-      {partial.quality && (
-        <>
-          <div className="section-label">Impact &amp; quality scores</div>
-          <ScoreBar label="Constructiveness" value={partial.quality.constructiveness * 100} />
-          <ScoreBar label="Inspirational value" value={partial.quality.inspirationalScore * 100} />
-          <ScoreBar label="Hopefulness" value={partial.quality.hopefulness * 100} />
-          <ScoreBar label="Objectivity" value={partial.quality.objectivity * 100} />
-          <ScoreBar label="Societal impact" value={partial.quality.societalImpact * 100} />
-          <ScoreBar label="Readability" value={partial.quality.readability * 100} />
-          <ScoreBar label="Novelty" value={partial.quality.novelty * 100} />
-        </>
+      {(partial.sentiment || partial.quality) && (
+        <div className="metrics-row">
+          {partial.sentiment && (
+            <div className="metrics-col">
+              <div className="section-label">Sentiment</div>
+              <SentimentGauge sentiment={partial.sentiment} />
+            </div>
+          )}
+          {partial.quality && (
+            <div className="metrics-col metrics-col-wide">
+              <div className="section-label">Impact &amp; quality</div>
+              <QualityRadar quality={partial.quality} />
+            </div>
+          )}
+        </div>
       )}
 
       {partial.claims.length > 0 && (
@@ -239,6 +293,12 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
             <p className="claims-note">
               This article didn&apos;t pass validation, so these claims were
               not fact-checked.
+            </p>
+          )}
+          {job.result?.factCheck?.belowAnchorFloor && (
+            <p className="claims-note">
+              Fewer load-bearing claims were found than this run asks for, so
+              the verdict rests on less than a full set of anchors.
             </p>
           )}
           {partial.claims.map((claim, index) => (
@@ -262,10 +322,48 @@ function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) 
                   changed the final verdict to {claim.verdict ?? "UNVERIFIED"}.
                 </p>
               )}
+              <ClaimComparison claim={claim} />
               <SourcesPlot claim={claim} />
             </div>
           ))}
         </>
+      )}
+    </div>
+  );
+}
+
+function ClaimComparison({ claim }: { claim: ClaimResult }) {
+  const agreements = claim.agreements ?? [];
+  const discrepancies = claim.discrepancies ?? [];
+
+  if (agreements.length === 0 && discrepancies.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="comparison-block">
+      {agreements.length > 0 && (
+        <div className="comparison-agreements">
+          <p className="comparison-group-title">
+            Confirmed by {claim.independentDomains ?? agreements.length} source
+            {(claim.independentDomains ?? agreements.length) === 1 ? "" : "s"}
+          </p>
+          <ul className="comparison-list">
+            {agreements.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {discrepancies.length > 0 && (
+        <div className="comparison-discrepancies">
+          <p className="comparison-group-title">Where sources differ</p>
+          <ul className="comparison-list">
+            {discrepancies.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

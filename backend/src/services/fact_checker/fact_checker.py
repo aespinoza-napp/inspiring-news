@@ -9,7 +9,7 @@ from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
-from src.services.fact_checker.claim_selector import ClaimSelector
+from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelector
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
 from src.services.fact_checker.retrieval.evidence_retriever import EvidenceRetriever
 from src.services.fact_checker.validation_pipeline import (
@@ -30,11 +30,16 @@ OnPhase = Callable[[str, dict], None]
 def _noop(phase: str, data: dict) -> None:
     pass
 
+# How bad each verdict is for the article, since the article takes its
+# worst claim's verdict. PARTIALLY_TRUE sits above TRUE but below
+# UNVERIFIED: a claim whose detail is off has still been checked, which
+# is strictly more than can be said for one nothing could be found for.
 _VERDICT_SEVERITY = {
     Verdict.TRUE: 0,
-    Verdict.UNVERIFIED: 1,
-    Verdict.MISLEADING: 2,
-    Verdict.FALSE: 3,
+    Verdict.PARTIALLY_TRUE: 1,
+    Verdict.UNVERIFIED: 2,
+    Verdict.MISLEADING: 3,
+    Verdict.FALSE: 4,
 }
 
 
@@ -109,13 +114,25 @@ class FactChecker:
 
         report_phase("selecting_claims", {})
 
-        selection = self.claim_selector.select(article.claims or [], thresholds)
+        context = self._context(article)
+
+        selection = self.claim_selector.select(
+            article.claims or [],
+            thresholds,
+            context=context,
+        )
         selected = selection.selected
 
         report_phase("claims_selected", {"count": len(selected)})
 
         claim_checks = [
-            self._check_claim(claim, report_phase, thresholds)
+            self._check_claim(
+                claim,
+                report_phase,
+                thresholds,
+                context=context,
+                language=article.language,
+            )
             for claim in selected
         ]
 
@@ -147,11 +164,13 @@ class FactChecker:
             unselected_claims=selection.rejected,
             overall_verdict=self._aggregate_verdict(claim_checks),
             overall_confidence=self._aggregate_confidence(claim_checks),
+            below_anchor_floor=len(selected) < thresholds.anchor_claims_min,
         )
 
         report_phase("fact_check_done", {
             "overallVerdict": report.overall_verdict,
             "overallConfidence": report.overall_confidence,
+            "belowAnchorFloor": report.below_anchor_floor,
         })
 
         return report
@@ -182,11 +201,30 @@ class FactChecker:
             thresholds or PipelineThresholds(),
         )
 
+    @staticmethod
+    def _context(article: EnrichedArticle) -> ArticleContext:
+        """
+        The article's thesis and main subjects, for claim selection and
+        for restoring the subject a per-sentence claim lost.
+        """
+
+        return ArticleContext(
+            title=article.title or "",
+            # The opening of the body stands in for the lead. Nothing
+            # upstream marks one, and the first few hundred characters of
+            # a news article are the lead often enough to be useful here.
+            lead=(article.body or "")[:400],
+            keywords=article.keywords or [],
+            entities=article.entities or {},
+        )
+
     def _check_claim(
         self,
         claim: Claim,
         report_phase: OnPhase,
         thresholds: PipelineThresholds,
+        context: ArticleContext | None = None,
+        language: str | None = None,
     ) -> FactCheck:
 
         # The four sub-stages below are the slowest in the whole pipeline -
@@ -198,25 +236,20 @@ class FactChecker:
 
         report_phase("retrieving_evidence", {"claim": claim.text})
 
-        # on_phase is threaded into both calls below so the sub-steps that
-        # actually decide what gets searched and why one item outranked
-        # another (the "web_search_dispatched" and "evidence_ranked"
-        # events) fire from the code that computes them, not from a
-        # second guess made here after the fact.
         retrieval = self.evidence_retriever.retrieve(
-            claim, thresholds, on_phase=report_phase,
+            claim,
+            thresholds,
+            context=context,
+            language=language,
         )
 
         report_phase("evidence_retrieved", {
             "claim": claim.text,
-            "query": retrieval.query,
             "found": len(retrieval.kept),
             "rejected": len(retrieval.rejected),
         })
 
-        ranking = self.ranker.rank(
-            claim, retrieval.kept, thresholds, on_phase=report_phase,
-        )
+        ranking = self.ranker.rank(claim, retrieval.kept, thresholds)
         ranked = ranking.kept
 
         # Ranking is embedding arithmetic over a handful of items, fast
@@ -249,7 +282,6 @@ class FactChecker:
         )
 
         check = check.model_copy(update={
-            "search_query": retrieval.query or None,
             "rejected_sources": retrieval.rejected + ranking.rejected + not_cited,
             "reached_stage": reached_stage,
             "stage_note": stage_note,

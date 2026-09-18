@@ -82,7 +82,7 @@ class Lineage(BaseModel):
     # that are just "whatever .env says", and a tuned run is obvious at
     # a glance. Empty means the run used the configured defaults.
     # `int | float`, not plain `float`: a count knob such as
-    # max_claims_per_article would otherwise be coerced to 2.0 in the
+    # anchor_claims_max would otherwise be coerced to 2.0 in the
     # stored record, quietly changing an integer setting's type in the
     # one place whose job is to record faithfully what a run used.
     threshold_overrides: dict[str, int | float] = Field(default_factory=dict)

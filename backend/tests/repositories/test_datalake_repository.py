@@ -584,7 +584,7 @@ def test_two_runs_with_different_thresholds_are_distinguishable_in_the_trace(lak
 
     tuned_run = lake.start_run(
         "https://bbc.com/test",
-        PipelineThresholds(max_claims_per_article=1),
+        PipelineThresholds(anchor_claims_max=1),
     )
     lake.persist_all(tuned_run, make_news(), create_article(body=BODY), make_report())
 
@@ -596,7 +596,7 @@ def test_two_runs_with_different_thresholds_are_distinguishable_in_the_trace(lak
     }
 
     assert overrides[default_run.run_id] == {}
-    assert overrides[tuned_run.run_id] == {"max_claims_per_article": 1}
+    assert overrides[tuned_run.run_id] == {"anchor_claims_max": 1}
 
 
 def test_an_integer_threshold_stays_an_integer_in_the_lineage(lake):
@@ -608,7 +608,7 @@ def test_an_integer_threshold_stays_an_integer_in_the_lineage(lake):
 
     run = lake.start_run(
         "https://bbc.com/test",
-        PipelineThresholds(max_claims_per_article=2),
+        PipelineThresholds(anchor_claims_max=2),
     )
 
     written = lake.persist_all(
@@ -617,7 +617,7 @@ def test_an_integer_threshold_stays_an_integer_in_the_lineage(lake):
 
     stored = lake.get(DataLayer.RAW, written.raw_record_id)
 
-    assert stored["lineage"]["threshold_overrides"] == {"max_claims_per_article": 2}
+    assert stored["lineage"]["threshold_overrides"] == {"anchor_claims_max": 2}
     assert isinstance(
-        stored["lineage"]["threshold_overrides"]["max_claims_per_article"], int
+        stored["lineage"]["threshold_overrides"]["anchor_claims_max"], int
     )

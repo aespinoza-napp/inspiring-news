@@ -12,6 +12,19 @@ class EvidenceOrigin(str, Enum):
     INTERNAL = "internal"
 
 
+class EvidenceStance(str, Enum):
+    """
+    What this particular source says about the claim, as judged during
+    LLM verification. Distinct from the claim's own verdict: a claim can
+    be PARTIALLY_TRUE precisely because its sources disagree, and that
+    disagreement is only visible per source.
+    """
+
+    SUPPORTS = "supports"
+    CONTRADICTS = "contradicts"
+    UNRELATED = "unrelated"
+
+
 class RejectedEvidence(BaseModel):
     """
     A candidate that was found (via SearXNG or the internal vector
@@ -55,7 +68,35 @@ class Evidence(BaseModel):
 
     relevance_score: Optional[float] = None
 
-    # Human-readable breakdown of relevance_score - set by EvidenceRanker
-    # so it is visible *why* this item outranked another one (which
-    # weighted component won), not just the combined number.
-    relevance_note: Optional[str] = None
+    # Registrable domain, used to judge whether two pieces of evidence are
+    # actually independent. Five outlets running the same wire story are
+    # five URLs but nothing like five confirmations.
+    domain: Optional[str] = None
+
+    # Which SearXNG engines surfaced this result. Free in the JSON
+    # response, and the cheapest available signal that two hits came from
+    # genuinely different indexes rather than one.
+    engines: list[str] = Field(default_factory=list)
+
+    # ---- ranking breakdown --------------------------------------------
+    #
+    # EvidenceRanker combines these three into relevance_score. They are
+    # retained rather than discarded so the interface can answer "why was
+    # this ranked above that one" with the actual arithmetic instead of a
+    # single opaque number.
+
+    semantic_score: Optional[float] = None
+
+    recency_score: Optional[float] = None
+
+    reliability_score: Optional[float] = None
+
+    # ---- verification ---------------------------------------------------
+
+    stance: Optional[EvidenceStance] = None
+
+    # The span of this source the LLM says it relied on. Only ever set
+    # when the span was found verbatim in the source text - see
+    # LLMVerifier, which drops quotes it cannot locate rather than
+    # forwarding a model's paraphrase as if it were a quotation.
+    quote: Optional[str] = None

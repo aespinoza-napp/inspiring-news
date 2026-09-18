@@ -1,9 +1,30 @@
+import time
+
 from fastapi.testclient import TestClient
 
 import src.api.routes as routes
 from src.main import app
 
 client = TestClient(app)
+
+
+def _poll_until_finished(job_id: str, timeout: float = 5.0) -> dict:
+    """
+    POST /analyze/jobs now runs on the bounded job queue (a real
+    ThreadPoolExecutor - see src/services/job_queue.py), not
+    BackgroundTasks, so the job is no longer guaranteed done by the time
+    the POST response comes back. Poll instead of asserting immediately.
+    """
+
+    deadline = time.monotonic() + timeout
+
+    while time.monotonic() < deadline:
+        body = client.get(f"/analyze/jobs/{job_id}").json()
+        if body["status"] in ("done", "failed"):
+            return body
+        time.sleep(0.01)
+
+    raise AssertionError(f"job {job_id} did not finish within {timeout}s")
 
 
 class FakeAnalysisService:
@@ -38,11 +59,7 @@ def test_create_and_poll_analysis_job(monkeypatch):
 
     job_id = create_response.json()["jobId"]
 
-    status_response = client.get(f"/analyze/jobs/{job_id}")
-
-    assert status_response.status_code == 200
-
-    body = status_response.json()
+    body = _poll_until_finished(job_id)
 
     assert body["status"] == "done"
     assert body["result"] == {"url": "https://example.com/a", "title": "Fake title", "cached": False}
@@ -79,11 +96,7 @@ def test_create_job_returns_202_even_when_service_construction_fails(monkeypatch
 
     job_id = create_response.json()["jobId"]
 
-    status_response = client.get(f"/analyze/jobs/{job_id}")
-
-    assert status_response.status_code == 200
-
-    body = status_response.json()
+    body = _poll_until_finished(job_id)
 
     assert body["status"] == "failed"
     assert "already accessed" in body["error"]

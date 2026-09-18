@@ -40,7 +40,6 @@ from tests.services.fact_checker import fakes
 # (fake class, real class, method name)
 CONTRACTS = [
     (fakes.FakeSearchProvider, SearchProvider, "search"),
-    (fakes.FakeSearchProvider, SearchProvider, "build_query"),
     (fakes.FakeVectorRetriever, VectorRetriever, "retrieve"),
     (fakes.FakeEvidenceScraper, EvidenceScraper, "enrich"),
     (fakes.FakeEvidenceRetriever, EvidenceRetriever, "retrieve"),

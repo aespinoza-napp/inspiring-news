@@ -67,6 +67,17 @@ class PipelineThresholds(BaseModel):
         le=1.0,
     )
 
+    # Above this opinion score, a sentence is treated as interpretation
+    # rather than a checkable assertion and never becomes a Claim. There
+    # is no evidence that can confirm or refute "a hopeful step for the
+    # sector", so putting one through retrieval only spends a search and
+    # an LLM call to arrive at UNVERIFIED.
+    opinion_max_score: float = Field(
+        default_factory=lambda: settings.OPINION_MAX_SCORE,
+        ge=0.0,
+        le=1.0,
+    )
+
     # ---- extraction ---------------------------------------------------
 
     # Shortest extracted body (characters) accepted as a real article.
@@ -108,8 +119,27 @@ class PipelineThresholds(BaseModel):
 
     # ---- fact-checking ------------------------------------------------
 
-    max_claims_per_article: int = Field(
-        default_factory=lambda: settings.MAX_CLAIMS_PER_ARTICLE,
+    # The anchor band: how many load-bearing claims to verify. This
+    # replaced max_claims_per_article outright rather than sitting beside
+    # it - two caps on the same list is a knob that silently does
+    # nothing, and the selector now ranks by how load-bearing a claim is
+    # rather than by sentence-level check-worthiness, so the old name
+    # described the wrong thing as well as the wrong number.
+    anchor_claims_min: int = Field(
+        default_factory=lambda: settings.ANCHOR_CLAIMS_MIN,
+        ge=1,
+    )
+
+    anchor_claims_max: int = Field(
+        default_factory=lambda: settings.ANCHOR_CLAIMS_MAX,
+        ge=1,
+    )
+
+    # How many distinct domains must back a claim before it counts as
+    # corroborated. Raw evidence count cannot do this job: five
+    # syndications of one wire story are one source.
+    min_independent_domains: int = Field(
+        default_factory=lambda: settings.MIN_INDEPENDENT_DOMAINS,
         ge=1,
     )
 
@@ -189,6 +219,7 @@ class ThresholdOverrides(BaseModel):
     topic_classifier_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     entity_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     claim_min_confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
+    opinion_max_score: Optional[float] = Field(None, ge=0.0, le=1.0)
 
     min_body_length: Optional[int] = Field(None, ge=0)
 
@@ -197,7 +228,9 @@ class ThresholdOverrides(BaseModel):
     duplicate_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     relatedness_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
 
-    max_claims_per_article: Optional[int] = Field(None, ge=1)
+    anchor_claims_min: Optional[int] = Field(None, ge=1)
+    anchor_claims_max: Optional[int] = Field(None, ge=1)
+    min_independent_domains: Optional[int] = Field(None, ge=1)
     evidence_fetch_candidates: Optional[int] = Field(None, ge=1)
     claim_dedup_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     max_evidence_per_claim: Optional[int] = Field(None, ge=1)
