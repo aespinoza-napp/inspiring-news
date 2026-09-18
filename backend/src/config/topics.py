@@ -17,10 +17,15 @@ TOPICS = {
 
     "community": Topic(
         name="Community & Social Impact",
-        description="Community initiatives, volunteering, NGOs, social innovation, inclusion, solidarity and civic engagement.",
+        description="Community initiatives, volunteering, NGOs, social innovation, inclusion, solidarity, disaster relief and civic engagement.",
         keywords=[
             "community", "volunteer", "charity",
-            "social impact", "nonprofit", "activism"
+            "social impact", "nonprofit", "activism",
+            # Added after classifying real articles (e.g. Colombia earthquake
+            # relief) that were miscategorized on-site as "medio ambiente"
+            # but are actually humanitarian/community stories, not climate.
+            "humanitarian aid", "disaster relief", "earthquake",
+            "solidarity", "fundraising"
         ],
     ),
 
@@ -35,10 +40,12 @@ TOPICS = {
 
     "cities": Topic(
         name="Cities & Society",
-        description="Urban development, smart cities, mobility, housing, quality of life and public services.",
+        description="Urban development, smart cities, mobility, housing, homelessness, quality of life and public services.",
         keywords=[
             "city", "urban", "housing",
-            "mobility", "community", "transport"
+            "mobility", "community", "transport",
+            # Added after "Housing First Finlandia" article
+            "homelessness", "housing first", "affordable housing"
         ],
     ),
 
@@ -57,21 +64,30 @@ TOPICS = {
 
     "technology": Topic(
         name="Technology",
-        description="Computing, cybersecurity, software engineering, robotics and emerging technologies.",
+        description="Computing, cybersecurity, software engineering, robotics, artificial intelligence and emerging technologies.",
         keywords=[
             "technology", "software",
             "robotics", "cybersecurity",
-            "cloud", "automation"
+            "cloud", "automation",
+            # Major gap found: AI is one of the site's most recurring topics
+            # ("La IA ya ganó un Nobel...", "5 usos positivos de la IA...")
+            # yet had zero AI-related keywords before this.
+            "artificial intelligence", "AI", "machine learning",
+            "algorithm", "neural network",
+            # From the EU replaceable-battery article
+            "right to repair", "repairability"
         ],
     ),
 
     "research": Topic(
         name="Scientific Research",
-        description="Scientific discoveries, academic research, innovation, laboratories and multidisciplinary science.",
+        description="Scientific discoveries, academic research, innovation, laboratories, cartography and multidisciplinary science.",
         keywords=[
             "research", "discovery",
             "science", "innovation",
-            "breakthrough"
+            "breakthrough",
+            # From the "Equal Earth" cartographer article
+            "cartography", "map", "geography"
         ],
     ),
 
@@ -81,7 +97,7 @@ TOPICS = {
         keywords=[
             "biology", "DNA",
             "genetics", "microbiology",
-            "evolution"
+            "evolution", "microbiome"
         ],
     ),
 
@@ -91,21 +107,25 @@ TOPICS = {
 
     "climate": Topic(
         name="Climate",
-        description="Climate change, decarbonisation, emissions, environmental policy and climate adaptation.",
+        description="Climate change, decarbonisation, emissions, environmental policy, climate activism and climate adaptation.",
         keywords=[
             "climate change", "global warming",
             "carbon", "net zero",
-            "emissions"
+            "emissions",
+            # From the Francisco Vera profile
+            "climate activist", "youth activism"
         ],
     ),
 
     "nature": Topic(
         name="Nature & Biodiversity",
-        description="Wildlife, biodiversity, conservation, ecosystems and protected natural areas.",
+        description="Wildlife, biodiversity, conservation, ecosystems, marine life and protected natural areas.",
         keywords=[
             "wildlife", "biodiversity",
             "ecosystem", "species",
-            "conservation"
+            "conservation",
+            # From the Cristina Zenato shark-conservation article
+            "shark", "marine life", "ocean conservation"
         ],
     ),
 
@@ -121,13 +141,16 @@ TOPICS = {
 
     "sustainability": Topic(
         name="Sustainability",
-        description="Circular economy, sustainable production, responsible consumption and green innovation.",
+        description="Circular economy, sustainable production, plastic and microplastic pollution, responsible consumption and green innovation.",
         keywords=[
             "sustainability",
             "circular economy",
             "recycling",
             "green technology",
-            "eco-friendly"
+            "eco-friendly",
+            # From the CSIC nanoplastics-cleaning-particle article
+            "microplastics", "nanoplastics", "water pollution",
+            "plastic pollution"
         ],
     ),
 
@@ -160,11 +183,17 @@ TOPICS = {
 
     "entertainment": Topic(
         name="Entertainment",
-        description="Cinema, television, music, festivals and cultural productions.",
+        description="Cinema, television, music, festivals, animation, internet culture, viral trends and cultural productions.",
         keywords=[
             "movie", "film",
             "music", "concert",
-            "festival"
+            "festival",
+            # From "Spider-Man Brand New Day" and the coyote/Wile E. Coyote
+            # cultural-analysis piece
+            "animation", "cartoon", "pop culture", "comic",
+            # From "farmear aura" — viral public-space trend piece; the
+            # existing topics had nothing for internet/social-media trends
+            "viral trend", "internet culture", "social media trend"
         ],
     ),
 
@@ -192,13 +221,16 @@ TOPICS = {
 
     "inspiration": Topic(
         name="Inspirational Stories",
-        description="Success stories, acts of kindness, role models, inspiring people and positive social initiatives.",
+        description="Success stories, acts of kindness, role models, inspiring people, activism and positive social initiatives.",
         keywords=[
             "success",
             "kindness",
             "volunteer",
             "achievement",
-            "role model"
+            "role model",
+            # Recurring pattern across profiles like Francisco Vera and
+            # Cristina Zenato: individual activists/advocates as protagonists
+            "activist", "advocate", "humanitarian"
         ],
     ),
 
@@ -208,25 +240,30 @@ TOPICS = {
 
     "medicine": Topic(
         name="Medicine",
-        description="Healthcare, diseases, vaccines, treatments, clinical research and medical innovation.",
+        description="Healthcare, diseases, vaccines, treatments, clinical research, hospital innovation and medical innovation.",
         keywords=[
             "medicine",
             "healthcare",
             "vaccine",
             "therapy",
-            "clinical trial"
+            "clinical trial",
+            # From the King's College rooftop-ICU-garden article and the
+            # Juegaterapia pediatric-cancer article
+            "hospital innovation", "pediatric", "cancer treatment"
         ],
     ),
 
     "mental_health": Topic(
         name="Mental Health",
-        description="Psychology, emotional wellbeing, neuroscience, stress management and mental health research.",
+        description="Psychology, emotional wellbeing, neuroscience, online behaviour, stress management and mental health research.",
         keywords=[
             "mental health",
             "psychology",
             "wellbeing",
             "mindfulness",
-            "depression"
+            "depression",
+            # From "Por qué la gente es más agresiva en internet"
+            "online behavior", "internet aggression", "social media psychology"
         ],
     ),
 
