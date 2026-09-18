@@ -14,7 +14,7 @@ import { SourcesPlot } from "@/components/SourcesPlot";
 import { SentimentGauge } from "@/components/SentimentGauge";
 import { QualityRadar } from "@/components/QualityRadar";
 import { TopicRadar } from "@/components/TopicRadar";
-import { TopicKeywordList } from "@/components/TopicKeywordList";
+import { ArticleKeywords } from "@/components/ArticleKeywords";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
 import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
@@ -250,19 +250,20 @@ function JobCardView({
         </>
       )}
 
-      {sortedTopics.length > 0 && (
+      {(sortedTopics.length > 0 || partial.keywords.length > 0) && (
         <div className="topics-row">
-          <div className="topics-col">
-            <div className="section-label">Top topics ({sortedTopics.length} matched)</div>
-            <TopicRadar topics={sortedTopics} />
-          </div>
-          <div className="topics-col">
-            <div className="section-label">Keywords for {sortedTopics[0].topic}</div>
-            <TopicKeywordList
-              topic={sortedTopics[0].topic}
-              articleKeywords={partial.keywords}
-            />
-          </div>
+          {sortedTopics.length > 0 && (
+            <div className="topics-col">
+              <div className="section-label">Top topics ({sortedTopics.length} matched)</div>
+              <TopicRadar topics={sortedTopics} />
+            </div>
+          )}
+          {partial.keywords.length > 0 && (
+            <div className="topics-col">
+              <div className="section-label">Article keywords</div>
+              <ArticleKeywords keywords={partial.keywords} />
+            </div>
+          )}
         </div>
       )}
 
