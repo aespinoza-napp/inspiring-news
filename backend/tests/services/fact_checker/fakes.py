@@ -118,14 +118,14 @@ class FakeEvidenceRetriever:
     def __init__(self, evidence_by_claim: dict | None = None):
         self.evidence_by_claim = evidence_by_claim or {}
 
-    def retrieve(self, claim, thresholds=None):
+    def retrieve(self, claim, thresholds=None, on_phase=None):
         return RetrievalResult(kept=self.evidence_by_claim.get(claim.text, []))
 
 
 class FakeRanker:
     """Identity pass-through - orchestrator tests don't need real ranking."""
 
-    def rank(self, claim, evidence, thresholds=None):
+    def rank(self, claim, evidence, thresholds=None, on_phase=None):
         return RankingResult(kept=evidence)
 
 
@@ -158,9 +158,12 @@ class FakeSearchProvider:
         self.evidence = evidence or []
         self.calls = []
 
-    def search(self, claim, thresholds=None):
+    def search(self, claim, thresholds=None, on_phase=None):
         self.calls.append((claim, thresholds))
         return list(self.evidence)
+
+    def build_query(self, claim):
+        return claim.text.strip()
 
 
 class FakeVectorRetriever:

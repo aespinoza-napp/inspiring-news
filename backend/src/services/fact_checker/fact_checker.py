@@ -198,15 +198,25 @@ class FactChecker:
 
         report_phase("retrieving_evidence", {"claim": claim.text})
 
-        retrieval = self.evidence_retriever.retrieve(claim, thresholds)
+        # on_phase is threaded into both calls below so the sub-steps that
+        # actually decide what gets searched and why one item outranked
+        # another (the "web_search_dispatched" and "evidence_ranked"
+        # events) fire from the code that computes them, not from a
+        # second guess made here after the fact.
+        retrieval = self.evidence_retriever.retrieve(
+            claim, thresholds, on_phase=report_phase,
+        )
 
         report_phase("evidence_retrieved", {
             "claim": claim.text,
+            "query": retrieval.query,
             "found": len(retrieval.kept),
             "rejected": len(retrieval.rejected),
         })
 
-        ranking = self.ranker.rank(claim, retrieval.kept, thresholds)
+        ranking = self.ranker.rank(
+            claim, retrieval.kept, thresholds, on_phase=report_phase,
+        )
         ranked = ranking.kept
 
         # Ranking is embedding arithmetic over a handful of items, fast
@@ -239,6 +249,7 @@ class FactChecker:
         )
 
         check = check.model_copy(update={
+            "search_query": retrieval.query or None,
             "rejected_sources": retrieval.rejected + ranking.rejected + not_cited,
             "reached_stage": reached_stage,
             "stage_note": stage_note,

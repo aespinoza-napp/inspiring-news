@@ -31,6 +31,12 @@ export interface EvidenceItem {
   title: string;
   origin: EvidenceOrigin;
   relevanceScore: number | null;
+  /**
+   * Breakdown of relevanceScore's weighted components (semantic, recency,
+   * reliability) plus this item's rank among its siblings - answers "why
+   * did this outrank that one", not just the combined number.
+   */
+  relevanceNote: string | null;
   sourceReliability: number | null;
   publishedAt: string | null;
   cited: boolean;
@@ -41,6 +47,8 @@ export interface ClaimResult {
   confidence: number;
   verdict: Verdict | null;
   explanation: string | null;
+  /** The literal query SearchProvider sent to SearXNG for this claim. */
+  searchQuery?: string | null;
   evidenceCount: number;
   evidence?: EvidenceItem[];
   rejectedSources?: RejectedSource[];

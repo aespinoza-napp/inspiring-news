@@ -168,7 +168,11 @@ def test_analyze_exposes_evidence_with_cited_flag():
 
     article = create_article()
 
-    cited_evidence = create_evidence(url="https://cited.com", relevance_score=0.9)
+    cited_evidence = create_evidence(
+        url="https://cited.com",
+        relevance_score=0.9,
+        relevance_note="semantic 0.90×0.6 + recency 1.00×0.25 + reliability 0.72×0.15 = 0.94 — ranked #1 of 2",
+    )
     other_evidence = create_evidence(url="https://ignored.com", relevance_score=0.4)
 
     checks = [
@@ -177,6 +181,7 @@ def test_analyze_exposes_evidence_with_cited_flag():
             explanation="Confirmed.",
             confidence=0.9,
             claim="A checked claim.",
+            search_query='"NASA" 2024',
             evidence=[cited_evidence, other_evidence],
             cited_evidence_indices=[0],
             evidence_count=2,
@@ -200,9 +205,13 @@ def test_analyze_exposes_evidence_with_cited_flag():
 
     result = service.analyze("https://example.com/a")
 
+    assert result["claims"][0]["searchQuery"] == '"NASA" 2024'
+
     evidence = result["claims"][0]["evidence"]
     assert [item["url"] for item in evidence] == ["https://cited.com", "https://ignored.com"]
     assert [item["cited"] for item in evidence] == [True, False]
+    assert evidence[0]["relevanceNote"].startswith("semantic 0.90")
+    assert evidence[1]["relevanceNote"] is None
 
 
 def test_analyze_includes_claims_dropped_during_selection():
@@ -281,6 +290,7 @@ def test_analyze_falls_back_to_raw_claims_when_validation_failed():
             "confidence": 0.7,
             "verdict": None,
             "explanation": None,
+            "searchQuery": None,
             "evidenceCount": 0,
             "evidence": [],
             "rejectedSources": [],

@@ -124,6 +124,24 @@ def test_the_verdict_and_explanation_are_reported():
     assert result["evidenceCount"] == 1
 
 
+def test_search_query_and_relevance_note_pass_through():
+
+    check = make_check(
+        search_query='"NASA" 2024',
+        evidence=[
+            create_evidence(
+                url="https://a.example",
+                relevance_note="semantic 0.90×0.6 + recency 1.00×0.25 + reliability 0.72×0.15 = 0.94 — ranked #1 of 1",
+            ),
+        ],
+    )
+
+    result = make_service(check=check).verify(CLAIM)
+
+    assert result["searchQuery"] == '"NASA" 2024'
+    assert result["evidence"][0]["relevanceNote"].startswith("semantic 0.90")
+
+
 def test_evidence_is_flagged_as_cited_or_not():
 
     check = make_check(

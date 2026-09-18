@@ -23,6 +23,12 @@ class FactCheck(BaseModel):
 
     claim: str | None = None
 
+    # The literal query SearchProvider sent to SearXNG for this claim -
+    # see SearchProvider.build_query(). None only for a claim checked
+    # with no web evidence at all (e.g. min_evidence_for_verdict short-
+    # circuits before a search would even matter).
+    search_query: str | None = None
+
     evidence: list[Evidence] = Field(default_factory=list)
 
     cited_evidence_indices: list[int] = Field(default_factory=list)

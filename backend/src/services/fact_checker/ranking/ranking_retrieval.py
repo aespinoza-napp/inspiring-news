@@ -1,6 +1,7 @@
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from typing import Callable, Optional
 from urllib.parse import urlparse
 
 from src.config.settings import settings
@@ -10,6 +11,8 @@ from src.models.fact_checker.evidence import Evidence, RejectedEvidence
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.source_repository import SourceRepository
 from src.services.embeddings.service import EmbeddingService
+
+OnPhase = Callable[[str, dict], None]
 
 
 @dataclass
@@ -45,6 +48,7 @@ class EvidenceRanker:
         claim: Claim,
         evidence: list[Evidence],
         thresholds: PipelineThresholds | None = None,
+        on_phase: Optional[OnPhase] = None,
     ) -> RankingResult:
 
         max_evidence = (thresholds or PipelineThresholds()).max_evidence_per_claim
@@ -54,16 +58,26 @@ class EvidenceRanker:
 
         claim_embedding = self.embeddings.encode(claim.text)
 
-        scored = [
-            item.model_copy(update={
-                "relevance_score": self._score(item, claim_embedding),
-            })
-            for item in evidence
-        ]
+        scored = []
+
+        for item in evidence:
+
+            score, breakdown = self._score(item, claim_embedding)
+
+            scored.append(item.model_copy(update={
+                "relevance_score": score,
+                "relevance_note": breakdown,
+            }))
 
         scored.sort(key=lambda item: item.relevance_score, reverse=True)
 
-        kept = scored[:max_evidence]
+        kept = [
+            item.model_copy(update={
+                "relevance_note": f"{item.relevance_note} — ranked #{rank} of {len(scored)}",
+            })
+            for rank, item in enumerate(scored[:max_evidence], start=1)
+        ]
+
         cut = scored[max_evidence:]
 
         rejected = [
@@ -73,17 +87,32 @@ class EvidenceRanker:
                 origin=item.origin,
                 stage=PipelineStage.EVIDENCE_RANKING,
                 reason=(
-                    f"cut by final ranking cap (rank {rank} of {len(scored)}, "
-                    f"top {max_evidence} kept)"
+                    f"{item.relevance_note} — cut by final ranking cap "
+                    f"(rank {rank} of {len(scored)}, top {max_evidence} kept)"
                 ),
                 score=item.relevance_score,
             )
             for rank, item in enumerate(cut, start=len(kept) + 1)
         ]
 
+        if on_phase:
+            on_phase("evidence_ranked", {
+                "claim": claim.text,
+                "kept": [
+                    {
+                        "url": item.url,
+                        "title": item.title,
+                        "score": item.relevance_score,
+                        "note": item.relevance_note,
+                    }
+                    for item in kept
+                ],
+                "rejectedCount": len(rejected),
+            })
+
         return RankingResult(kept=kept, rejected=rejected)
 
-    def _score(self, evidence: Evidence, claim_embedding) -> float:
+    def _score(self, evidence: Evidence, claim_embedding) -> tuple[float, str]:
 
         text = (evidence.content or f"{evidence.title}. {evidence.snippet}")[:2000]
 
@@ -94,11 +123,23 @@ class EvidenceRanker:
 
         semantic = max(0.0, min(semantic, 1.0))
 
-        return (
+        recency = self._recency_score(evidence.published_at)
+        reliability = self._reliability(evidence)
+
+        combined = (
             semantic * self.SEMANTIC_WEIGHT
-            + self._recency_score(evidence.published_at) * self.RECENCY_WEIGHT
-            + self._reliability(evidence) * self.RELIABILITY_WEIGHT
+            + recency * self.RECENCY_WEIGHT
+            + reliability * self.RELIABILITY_WEIGHT
         )
+
+        breakdown = (
+            f"semantic {semantic:.2f}×{self.SEMANTIC_WEIGHT} + "
+            f"recency {recency:.2f}×{self.RECENCY_WEIGHT} + "
+            f"reliability {reliability:.2f}×{self.RELIABILITY_WEIGHT} "
+            f"= {combined:.2f}"
+        )
+
+        return combined, breakdown
 
     def _recency_score(self, published_at) -> float:
 

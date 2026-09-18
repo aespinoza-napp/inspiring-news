@@ -118,6 +118,7 @@ class ClaimService:
             "verdict": check.verdict,
             "confidence": check.confidence,
             "explanation": check.explanation,
+            "searchQuery": check.search_query,
             "evidenceCount": check.evidence_count,
             "evidence": [
                 {
@@ -126,6 +127,7 @@ class ClaimService:
                     "snippet": item.snippet,
                     "origin": item.origin,
                     "relevanceScore": item.relevance_score,
+                    "relevanceNote": item.relevance_note,
                     "sourceReliability": item.source_reliability,
                     "publishedAt": item.published_at,
                     "cited": index in cited,

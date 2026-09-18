@@ -54,3 +54,8 @@ class Evidence(BaseModel):
     origin: EvidenceOrigin
 
     relevance_score: Optional[float] = None
+
+    # Human-readable breakdown of relevance_score - set by EvidenceRanker
+    # so it is visible *why* this item outranked another one (which
+    # weighted component won), not just the combined number.
+    relevance_note: Optional[str] = None
