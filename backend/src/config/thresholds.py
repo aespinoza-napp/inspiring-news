@@ -102,6 +102,12 @@ class PipelineThresholds(BaseModel):
         le=1.0,
     )
 
+    # Whether low objectivity / strong negative sentiment reject an
+    # article outright, rather than only costing it score.
+    positive_impact_hard_fail_enabled: bool = Field(
+        default_factory=lambda: settings.POSITIVE_IMPACT_HARD_FAIL_ENABLED,
+    )
+
     # At/above this similarity to a stored article, it is a duplicate.
     duplicate_threshold: float = Field(
         default_factory=lambda: settings.DUPLICATE_THRESHOLD,
@@ -225,6 +231,7 @@ class ThresholdOverrides(BaseModel):
 
     topic_min_confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
     positive_impact_min_score: Optional[float] = Field(None, ge=0.0, le=1.0)
+    positive_impact_hard_fail_enabled: Optional[bool] = Field(None)
     duplicate_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     relatedness_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
 

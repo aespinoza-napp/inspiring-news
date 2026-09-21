@@ -29,7 +29,8 @@ class PositiveImpactValidator:
         thresholds: PipelineThresholds | None = None,
     ) -> ValidationResult:
 
-        minimum = (thresholds or PipelineThresholds()).positive_impact_min_score
+        resolved = thresholds or PipelineThresholds()
+        minimum = resolved.positive_impact_min_score
 
         reasons = []
 
@@ -60,9 +61,9 @@ class PositiveImpactValidator:
         if sentiment.negative > 0.70:
             reasons.append("Strong negative sentiment")
 
-        hard_fail = (
-            #quality.constructiveness < 0.20
-            #quality.inspirational_score < 0.15
+        # constructiveness/inspirational-score hard fails are deliberately
+        # never applied - see test_low_constructiveness_is_flagged_but_not_a_hard_fail.
+        hard_fail = resolved.positive_impact_hard_fail_enabled and (
             quality.objectivity < 0.25
             or sentiment.negative > 0.70
         )

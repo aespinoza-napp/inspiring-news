@@ -226,9 +226,11 @@ def test_every_threshold_is_actually_overridable_end_to_end():
 
         current = getattr(defaults, name)
 
-        # A legal, different value: ints step up, floats move toward the
-        # middle of [0, 1] without leaving it.
-        if isinstance(current, int) and not isinstance(current, bool):
+        # A legal, different value: bools flip, ints step up, floats move
+        # toward the middle of [0, 1] without leaving it.
+        if isinstance(current, bool):
+            candidate = not current
+        elif isinstance(current, int):
             candidate = current + 1
         else:
             candidate = round(current / 2, 4) if current > 0.02 else 0.5

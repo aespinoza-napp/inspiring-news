@@ -1,3 +1,4 @@
+from src.config.thresholds import PipelineThresholds
 from src.models.nlp.quality import Quality
 from src.models.nlp.sentiment_result import SentimentResult
 
@@ -133,6 +134,28 @@ def test_low_objectivity_fails():
     )
 
     assert not result.passed
+
+
+def test_hard_fail_can_be_disabled_via_thresholds():
+
+    validator = PositiveImpactValidator()
+
+    sentiment = create_sentiment(
+        positive=0.05,
+        neutral=0.10,
+        negative=0.85,
+        polarity=-0.80,
+        label="negative",
+    )
+
+    result = validator.validate(
+        sentiment,
+        create_quality(),
+        thresholds=PipelineThresholds(positive_impact_hard_fail_enabled=False),
+    )
+
+    assert result.passed
+    assert "Strong negative sentiment" in result.reasons
 
 
 def test_neutral_constructive_article_passes():
