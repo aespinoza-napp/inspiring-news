@@ -1,0 +1,198 @@
+% ============================================================
+% Section: Selection and justification of the evaluation dataset
+% Requires: \usepackage{cite} or natbib/biblatex in the main
+%           document preamble, and the references.bib file
+%           (included at the end of this file) added to the
+%           project bibliography.
+% ============================================================
+
+\section{Selection and Justification of the Evaluation Dataset}
+\label{sec:dataset-selection}
+
+In order to quantitatively evaluate the performance of the
+fact-verification system proposed in this work, a reference dataset
+(\textit{benchmark}) is required against which standard
+classification metrics (precision, recall, and $F_1$) can be
+measured relative to a verified \textit{ground truth}. This section
+describes the process followed to select such a dataset, justifying
+why the most widely cited benchmark in the automated fact-checking
+literature --- FEVER \cite{thorne2018fever} --- was discarded in
+favour of X-Fact \cite{gupta2021xfact}, and how this decision is
+directly motivated by the architecture of the developed system.
+
+\subsection{The Closed-Retrieval Paradigm: FEVER}
+\label{subsec:fever}
+
+FEVER (\textit{Fact Extraction and VERification}) \cite{thorne2018fever}
+is, to date, the most influential dataset in automated
+fact-verification research. It consists of 185,445 claims generated
+through the controlled alteration of sentences extracted from
+Wikipedia, each subsequently labelled by human annotators ---
+without knowledge of the original sentence --- as
+\texttt{SUPPORTED}, \texttt{REFUTED}, or \texttt{NOT ENOUGH INFO}.
+For each supported or refuted claim, the sentence or set of
+sentences from Wikipedia constituting the necessary evidence for
+that verdict is additionally recorded.
+
+The aspect of FEVER most relevant to this work is its
+\textbf{closed-domain retrieval paradigm}: both the claim and its
+correct evidence originate from a fixed, bounded corpus --- a static
+dump of English Wikipedia --- and systems evaluated against this
+benchmark typically index that same corpus to perform evidence
+retrieval. The original paper itself characterises the task as the
+combination of three subtasks evaluated jointly: document selection,
+sentence selection within those documents, and final verdict
+classification, all operating over the same closed corpus.
+
+Direct multilingual extensions of FEVER also exist, such as XFEVER,
+which automatically translate (via DeepL) the original claim-evidence
+pairs into other languages, including Spanish. However, these
+extensions inherit the same structural limitation as the original
+dataset: the \textit{correct} evidence remains defined as a specific
+sentence within a closed, translated corpus, rather than as any
+valid evidence available on the open web.
+
+\subsection{Why FEVER Is Not Suitable for This Work}
+\label{subsec:discard-justification}
+
+The system developed in this thesis --- described in detail in
+Chapter~\ref{ch:methodology} --- does not perform verification
+against a closed corpus. Its architecture is organised into six
+sequential stages:
+
+\begin{enumerate}
+    \item \textbf{Admission}: ingestion and decomposition of the
+    news article into atomic, verifiable claims.
+    \item \textbf{Selection}: entity extraction and formulation of
+    search queries from each claim.
+    \item \textbf{Retrieval}: retrieval of candidate documents via
+    SearXNG, a metasearch engine that queries multiple search
+    engines over the open web in real time.
+    \item \textbf{Ranking}: ordering of the retrieved sources by
+    relevance to the claim.
+    \item \textbf{LLM check}: reasoning over the ranked evidence by a
+    language model (Llama 3.1, run locally via Ollama) to produce a
+    preliminary verdict.
+    \item \textbf{Recalibration}: adjustment of the verdict and its
+    associated confidence, propagating the result to the article's
+    overall verdict.
+\end{enumerate}
+
+This architecture --- referred to throughout this work as the
+\textbf{proposed method} --- therefore performs
+\textbf{open-domain retrieval}: no fixed corpus exists against which
+claims are compared; instead, evidence is searched for \textit{on
+the fly} on the live web at verification time, exactly as a human
+fact-checker would.
+
+Evaluating this system against FEVER or its multilingual variants
+would introduce a serious methodological mismatch, for two reasons:
+
+\begin{itemize}
+    \item \textbf{Invalid-evidence bias.} The system could locate,
+    through SearXNG, evidence that is perfectly valid and sufficient
+    in a source other than the predefined Wikipedia sentence, and
+    still be penalised for not matching the expected evidence
+    verbatim. The resulting metric would systematically underestimate
+    the system's true performance.
+    \item \textbf{Partial evaluation of the architecture.} Since
+    FEVER fixes the source corpus in advance, evaluation against this
+    benchmark would measure almost exclusively the \textit{LLM check}
+    stage, leaving the \textit{Selection}, \textit{Retrieval}, and
+    \textit{Ranking} stages unevaluated --- precisely the stages that
+    constitute the most original, and also the most fragile,
+    contribution of the system, as discussed in
+    Chapter~\ref{ch:results}.
+\end{itemize}
+
+For these reasons, FEVER/XFEVER was discarded as the primary
+evaluation benchmark: not out of convenience or expected performance,
+but because the dataset's own design assumes a (closed) retrieval
+paradigm incompatible with the (open) retrieval paradigm underlying
+the proposed system.
+
+\subsection{X-Fact as an Open-Retrieval Benchmark}
+\label{subsec:xfact}
+
+As an alternative, \textbf{X-Fact} \cite{gupta2021xfact} was
+selected: the largest publicly available multilingual dataset for
+the verification of naturally occurring, real-world claims. X-Fact
+contains 31,189 claims across 25 languages --- including Spanish ---
+drawn from professional fact-checking organisations and labelled by
+expert fact-checkers using a fine-grained veracity scale (not limited
+to FEVER's supported/refuted/not-enough-info triad).
+
+The decisive structural difference with respect to FEVER is that
+X-Fact's claims are \textbf{real-world claims} made in public
+discourse (statements by public figures, news headlines, viral
+posts), not synthetic sentences derived from Wikipedia, and their
+verification --- both by the original human fact-checkers and by the
+baseline models proposed by the authors --- relies on evidence
+retrieved via search engines over the open web, not against a
+predefined closed corpus. The authors themselves report that their
+best baseline model, which combines the claim text with metadata and
+evidence retrieved through a search engine, achieves an $F_1$ of
+approximately 40\%, positioning X-Fact as a challenging benchmark
+even for systems that already operate under the same open-retrieval
+paradigm as the method proposed in this work.
+
+This alignment of paradigms --- open retrieval in the evaluation
+dataset and open retrieval in the evaluated system --- is what makes
+X-Fact a methodologically coherent choice: it allows the full
+pipeline (Selection, Retrieval, Ranking, and LLM check jointly) to be
+measured, not only its final reasoning stage, and situates the
+results obtained within a framework comparable to the state of the
+art reported by Gupta and Srikumar \cite{gupta2021xfact} for the
+Spanish-language subset.
+
+\subsection{Domain Limitation and a Custom Validation Set}
+\label{subsec:custom-gold-set}
+
+Nevertheless, X-Fact does not fully capture the nature of this
+work's application domain either. Its claims originate predominantly
+from political discourse and controversial public statements, while
+the developed system is applied to editorial articles from a
+positive-news outlet, with claims combining verifiable facts
+(figures, dates, events) with analytical or cultural
+interpretations --- a type of claim virtually absent from X-Fact and
+which, as documented in Chapter~\ref{ch:results}, exposes a real
+limitation of the system in its current version.
+
+For this reason, the quantitative evaluation in this work relies on
+\textbf{two complementary sources}: X-Fact \cite{gupta2021xfact}, as
+a standardised benchmark enabling comparison of the proposed method
+against the state of the art in multilingual, open-retrieval fact
+verification; and a custom validation set, built from claims
+extracted from real articles published by the outlet under study and
+manually labelled, specifically designed to expose and measure the
+system's behaviour on interpretive claims --- the real use case for
+which the system was conceived, and one that no existing academic
+benchmark adequately covers.
+
+% ============================================================
+% Corresponding BibTeX entries (add to references.bib)
+% ============================================================
+% @inproceedings{thorne2018fever,
+%   title     = {{FEVER}: a Large-scale Dataset for Fact Extraction and {VER}ification},
+%   author    = {Thorne, James and Vlachos, Andreas and Christodoulopoulos, Christos and Mittal, Arpit},
+%   booktitle = {Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long Papers)},
+%   pages     = {809--819},
+%   year      = {2018},
+%   address   = {New Orleans, Louisiana},
+%   publisher = {Association for Computational Linguistics},
+%   doi       = {10.18653/v1/N18-1074},
+%   note      = {arXiv:1803.05355},
+%   url       = {https://arxiv.org/abs/1803.05355}
+% }
+%
+% @inproceedings{gupta2021xfact,
+%   title     = {{X-Fact}: A New Benchmark Dataset for Multilingual Fact Checking},
+%   author    = {Gupta, Ashim and Srikumar, Vivek},
+%   booktitle = {Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 2: Short Papers)},
+%   pages     = {675--682},
+%   year      = {2021},
+%   address   = {Online},
+%   publisher = {Association for Computational Linguistics},
+%   doi       = {10.18653/v1/2021.acl-short.86},
+%   url       = {https://aclanthology.org/2021.acl-short.86}
+% }
