@@ -1703,3 +1703,21 @@ summary.trace-label {
 .topic-keywords-note {
   margin: 0.6rem 0 0;
 }
+
+/* A claim still being checked, in place of its verdict row. Claims are
+   verified concurrently, so several of these can be spinning at once
+   while other claims below them already show a verdict. */
+.claim-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.section-label-note {
+  margin-left: 0.5rem;
+  font-weight: 400;
+  color: var(--muted);
+}

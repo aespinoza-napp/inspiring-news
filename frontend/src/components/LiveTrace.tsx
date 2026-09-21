@@ -1,4 +1,5 @@
 import { ClaimStep, ClaimTrace, JobTrace, TraceRejected, TraceSource } from "@/lib/liveTrace";
+import { QueryKind } from "@/lib/types";
 import { VerdictBadge } from "@/components/VerdictBadge";
 
 const STEP_LABELS: Record<ClaimStep, string> = {
@@ -73,9 +74,16 @@ function ClaimTraceCard({ claim }: { claim: ClaimTrace }) {
         <div className="trace-block">
           <h4 className="trace-label">Searched on SearXNG</h4>
           <ul className="trace-queries">
-            {claim.queries.map((query) => (
+            {claim.queries.map((query, index) => (
               <li key={query}>
                 <code>{query}</code>
+                {/* The anchor query alone retrieves the claim's subject;
+                    the proposition query is what asks about the assertion
+                    itself. Which is which is the difference between a
+                    real source and a page that merely shares a name. */}
+                {claim.queryKinds[index] && (
+                  <span className="trace-tag">{QUERY_KIND_LABELS[claim.queryKinds[index]]}</span>
+                )}
               </li>
             ))}
           </ul>
@@ -187,6 +195,11 @@ function FoundRow({ source }: { source: TraceSource }) {
             {engine}
           </span>
         ))}
+        {source.foundBy.map((kind) => (
+          <span key={kind} className="trace-tag">
+            {QUERY_KIND_LABELS[kind]}
+          </span>
+        ))}
         {source.quickScore !== null && (
           <span className="trace-muted">match {percent(source.quickScore)}</span>
         )}
@@ -198,6 +211,15 @@ function FoundRow({ source }: { source: TraceSource }) {
     </li>
   );
 }
+
+// What each of a claim's queries is asking. Short enough to sit in a
+// chip, because the useful thing is telling them apart at a glance.
+const QUERY_KIND_LABELS: Record<QueryKind, string> = {
+  anchor: "who & what",
+  proposition: "what it claims",
+  refutation: "counter-evidence",
+};
+
 
 function RatedRow({ source }: { source: TraceSource }) {
   const reliability = source.reliabilityKnown
@@ -219,6 +241,11 @@ function RatedRow({ source }: { source: TraceSource }) {
       <div className="trace-ratings">
         <Rating label="Relevance" value={source.relevanceScore} strong />
         <Rating label="Wording match" value={source.semanticScore} />
+        {/* What "wording match" cannot see: whether the claim's own
+            terms are on the page at all. A page titled "What does ACME
+            mean?" matches a claim mentioning ACME almost perfectly by
+            embedding and contains none of what the claim asserts. */}
+        <Rating label="Claim terms" value={source.lexicalScore} />
         <Rating label="Recency" value={source.recencyScore} />
         <Rating
           label="Source reliability"
@@ -226,6 +253,14 @@ function RatedRow({ source }: { source: TraceSource }) {
           note={reliability}
         />
       </div>
+
+      {source.pertinenceScore !== null && (
+        <p className="trace-muted trace-fine">
+          Addresses the claim: {percent(source.pertinenceScore)}. Below the
+          run&apos;s floor a source is cut before the model sees it, however
+          reliable or recent it is.
+        </p>
+      )}
 
       {!source.reliabilityKnown && (
         <p className="trace-muted trace-fine">

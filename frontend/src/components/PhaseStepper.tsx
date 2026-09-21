@@ -166,10 +166,24 @@ export function PhaseStepper({
   ];
 
   const lastEvent = events[events.length - 1];
+
+  // While claims are being checked, the last event belongs to whichever
+  // of them happened to emit most recently - they run concurrently - so
+  // a label taken from it flickers between "Searching the web…" and
+  // "Sources rated" without describing the run. How many are done does
+  // describe it. Every other stage is still sequential, so outside that
+  // window the last event is exactly right.
+  const checkingClaims =
+    claimsSelectedCount !== null &&
+    claimsSelectedCount > 1 &&
+    !has("fact_check_done");
+
   const statusLine = isFailed
     ? "Failed"
     : isDone
     ? "Complete"
+    : checkingClaims
+    ? `Checking ${claimsSelectedCount} claims — ${claimsCheckedCount} done`
     : lastEvent
     ? CURRENT_PHASE_LABELS[lastEvent.phase] ?? lastEvent.phase
     : "Starting…";

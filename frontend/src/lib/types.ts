@@ -37,6 +37,13 @@ export type PipelineStage =
 
 export type EvidenceOrigin = "web" | "internal";
 
+/**
+ * Which question one of a claim's search queries asks. The anchor query
+ * alone retrieves the claim's subject, which is how a claim mentioning
+ * ACME came back with pages on the Greek etymology of the word.
+ */
+export type QueryKind = "anchor" | "proposition" | "refutation";
+
 export interface RejectedSource {
   url: string;
   title: string;
@@ -59,10 +66,26 @@ export interface EvidenceItem {
   /** Which SearXNG engines surfaced this result. */
   engines?: string[];
   /**
-   * The three factors behind relevanceScore. Retained so the UI can say
+   * Which of the claim's queries returned this page. A hit only the
+   * anchor query found is about the claim's subject; one the proposition
+   * query found too is about what the claim actually asserts.
+   */
+  foundBy?: QueryKind[];
+  /** Reciprocal-rank fusion score - how much those queries agreed. */
+  fusionScore?: number | null;
+  /**
+   * The four factors behind relevanceScore. Retained so the UI can say
    * why one source outranked another instead of only that it did.
    */
   semanticScore?: number | null;
+  /** How much of the claim's own vocabulary the source contains. */
+  lexicalScore?: number | null;
+  /**
+   * Whether the source addresses the claim at all, as opposed to how
+   * highly it ranks among those that do. Below the run's threshold a
+   * source is cut before verification and appears under rejectedSources.
+   */
+  pertinenceScore?: number | null;
   recencyScore?: number | null;
   reliabilityScore?: number | null;
   /**

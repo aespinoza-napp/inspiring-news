@@ -16,6 +16,7 @@ import { QualityRadar } from "@/components/QualityRadar";
 import { TopicRadar } from "@/components/TopicRadar";
 import { TopicKeywords } from "@/components/TopicKeywords";
 import { PhaseStepper } from "@/components/PhaseStepper";
+import { buildTrace, ClaimStep } from "@/lib/liveTrace";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
 import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
 
@@ -176,6 +177,7 @@ function JobCardView({
     (a, b) => b.confidence - a.confidence
   );
   const validity = job.result?.validity;
+  const checkedCount = partial.claims.filter((claim) => !claim.step).length;
   const claimsChecked = job.result?.factCheck?.claimsChecked ?? 0;
   const showUncheckedNote =
     !!validity && !validity.isValid && claimsChecked === 0 && partial.claims.length > 0;
@@ -287,6 +289,11 @@ function JobCardView({
           <div className="section-label">
             Claims ({partial.claims.length}
             {job.result?.factCheck ? `/${job.result.factCheck.claimsChecked}` : ""})
+            {isRunning && checkedCount < partial.claims.length && (
+              <span className="section-label-note">
+                {checkedCount}/{partial.claims.length} checked
+              </span>
+            )}
           </div>
           {showUncheckedNote && (
             <p className="claims-note">
@@ -306,11 +313,19 @@ function JobCardView({
               key={`${claim.text}-${index}`}
             >
               <p className="claim-text">{claim.text}</p>
-              <div className="claim-meta">
-                <VerdictBadge verdict={claim.verdict} />
-                <span>confidence {Math.round(claim.confidence * 100)}%</span>
-                {claim.explanation && <span>{claim.explanation}</span>}
-              </div>
+              {claim.step ? (
+                // Still being checked. Its own progress, not the job's:
+                // claims run concurrently, so one can be judged while
+                // another is still searching, and a single job-wide line
+                // could only describe one of them.
+                <ClaimProgress step={claim.step} />
+              ) : (
+                <div className="claim-meta">
+                  <VerdictBadge verdict={claim.verdict} />
+                  <span>confidence {Math.round(claim.confidence * 100)}%</span>
+                  {claim.explanation && <span>{claim.explanation}</span>}
+                </div>
+              )}
               {claim.reachedStage && (
                 <StageTimeline reachedStage={claim.reachedStage} stageNote={claim.stageNote} />
               )}
@@ -376,7 +391,8 @@ interface PartialResult {
   topics: TopicPrediction[];
   sentiment: SentimentScores | null;
   quality: QualityScores | null;
-  claims: ClaimResult[];
+  /** `step` is set only while a claim is still being checked. */
+  claims: (ClaimResult & { step?: ClaimStep | null })[];
 }
 
 function summarizeJob(job: AnalysisJob): PartialResult {
@@ -396,10 +412,18 @@ function summarizeJob(job: AnalysisJob): PartialResult {
 
   const enrichedEvent = job.events.find((event) => event.phase === "enriched");
   const scrapedEvent = job.events.find((event) => event.phase === "scraped");
-  const claimEvents = job.events.filter((event) => event.phase === "claim_checked");
 
   const entities =
     (enrichedEvent?.data.entities as Record<string, string[]>) ?? {};
+
+  // The same fold the Live screen uses, rather than a second pass over
+  // the same events that matches the same phase literals. It already
+  // knows how to read interleaved per-claim events - the backend checks
+  // claims concurrently, so a claim can be judged while another is still
+  // searching - and it gives every selected claim a row the moment
+  // `claims_selected` arrives, which is what turns a minute of silence
+  // into a list filling in.
+  const trace = buildTrace(job.events);
 
   return {
     title:
@@ -412,12 +436,36 @@ function summarizeJob(job: AnalysisJob): PartialResult {
     topics: (enrichedEvent?.data.topics as TopicPrediction[]) ?? [],
     sentiment: (enrichedEvent?.data.sentiment as SentimentScores) ?? null,
     quality: (enrichedEvent?.data.quality as QualityScores) ?? null,
-    claims: claimEvents.map((event) => ({
-      text: event.data.claim as string,
-      confidence: event.data.confidence as number,
-      verdict: event.data.verdict as ClaimResult["verdict"],
-      explanation: event.data.explanation as string | null,
-      evidenceCount: 0,
+    claims: trace.claims.map((claim) => ({
+      text: claim.claim,
+      confidence: claim.confidence ?? 0,
+      verdict: claim.verdict,
+      explanation: claim.explanation,
+      evidenceCount: claim.ranked.length,
+      // Only while it is still being worked on; a finished claim shows
+      // its verdict instead.
+      step: claim.step === "done" ? null : claim.step,
     })),
   };
+}
+
+// What each per-claim step is called while it is happening. Matched to
+// liveTrace's ClaimStep rather than to the backend phases directly, so
+// there is one place that reads the phase literals.
+const CLAIM_STEP_LABELS: Record<ClaimStep, string> = {
+  searching: "Searching for evidence…",
+  found: "Sources found",
+  scraping: "Reading the sources…",
+  ranking: "Rating the sources…",
+  judging: "Asking the model to judge it…",
+  done: "Checked",
+};
+
+function ClaimProgress({ step }: { step: ClaimStep }) {
+  return (
+    <div className="claim-progress" role="status">
+      <span className="spinner" aria-hidden="true" />
+      <span>{CLAIM_STEP_LABELS[step]}</span>
+    </div>
+  );
 }
