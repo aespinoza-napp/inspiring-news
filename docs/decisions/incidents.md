@@ -223,3 +223,69 @@ trusted, because a perfectly ordinary hostname can have an A record of
 `requests` would otherwise walk straight past the guard.
 
 **What holds it in place:** `tests/services/scraper/test_url_guard.py`.
+
+---
+
+## A re-analysed URL was rejected as a duplicate of itself
+
+Every extraction builds a new `News` with a fresh `uuid4` id, and
+`FactChecker.run` stores each accepted article in Qdrant under that id.
+`DuplicateValidator` only skipped a stored match when its **id** equalled
+the article's — so a second analysis of the same URL (a forced refresh, or
+*any* changed threshold, since thresholds are part of the cache key) found
+its own earlier copy at similarity 1.0 and came back `duplicate_article`.
+The first run passed and the second did not, for the identical article.
+Reproduced against a temporary Qdrant before it was fixed.
+
+The same blind spot had a quieter twin: `VectorRetriever` had no exclusion
+at all, so on a re-run the article's earlier copy came back as "internal
+evidence" for its own claims — the article corroborating itself. And the
+copies accumulated, one per run, crowding the top-5 of every search.
+
+The fix is by **URL**, because the URL is the only identity that survives
+between runs: `VectorRepository.search(..., exclude_url=)` drops that URL
+*inside* the query (filtering afterwards would leave fewer than `limit`
+real neighbours), `DuplicateValidator` and `VectorRetriever` both use it
+(the latter through `ArticleContext.url`), and `VectorRepository.save`
+replaces any point already stored for that URL, so the collection holds one
+per URL. A *different* URL with the same content is still a duplicate —
+that is the point of the check.
+
+Not solved: URLs are compared as strings. `?utm_source=` variants and
+trailing slashes are different URLs here.
+
+**What holds it in place:**
+`test_reanalysing_the_same_url_is_not_a_duplicate_of_itself`,
+`test_a_same_url_copy_does_not_hide_a_real_duplicate`,
+`test_reanalysing_the_same_url_is_accepted_and_replaces_the_stored_copy` and
+`test_retrieve_skips_the_article_the_claim_came_from`. Fixtures that mean
+"a different article" need a different `url` — the factory's default is the
+same for all of them.
+
+---
+
+## The Neo4j password was committed in `docker-compose.yml`
+
+`NEO4J_AUTH=neo4j/<password>` was written in plain text in the compose file
+and pushed to GitHub. Nothing reads Neo4j, which hid it. It now comes from
+`NEO4J_PASSWORD` in `backend/.env` (`${NEO4J_PASSWORD:?...}`), so compose
+must be run with `--env-file ../backend/.env` (`scripts/dev.sh` does).
+
+The old value is in git history: treat it as compromised and rotate it.
+Rewriting history is a separate, destructive decision and was not made.
+
+**What holds it in place:** the `:?` in the compose file, which stops
+`docker compose` with a message rather than starting Neo4j with no
+password. Nothing tests it.
+
+---
+
+## The LLM client retried behind our back
+
+`LLMClient.complete_json` retries once. The OpenAI SDK underneath also
+retries timeouts and connection errors **twice** by default, so a slow
+local model could hold one claim for `6 x LLM_TIMEOUT` and then report
+"LLM verification unavailable". The client is built with `max_retries=0`;
+retries live in `complete_json` only.
+
+**What holds it in place:** `test_the_sdk_is_not_allowed_to_retry_on_its_own`.

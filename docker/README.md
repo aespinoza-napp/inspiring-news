@@ -19,7 +19,7 @@ since it defaults to a local Ollama instance running on the host (see `CLAUDE.md
 cd docker
 cp searxng/settings.yml.example searxng/settings.yml   # first time only
 cp ../backend/.env-example ../backend/.env             # first time only, then edit
-docker compose up --build
+docker compose --env-file ../backend/.env up --build
 ```
 
 Both copy steps are required, not optional: `.env` is listed under `env_file`, and compose refuses to
@@ -55,9 +55,12 @@ Two named volumes, both deliberate:
 
 `docker compose down -v` deletes both — including the lake.
 
-## Known wrinkle
+## Neo4j credentials
 
-The `neo4j` service hardcodes `NEO4J_AUTH=neo4j/password`, which will not match `NEO4J_PASSWORD` in
-your `.env` unless you happen to have set it to `password`. Nothing breaks, because nothing in the
-pipeline actually reads from Neo4j — but the credentials genuinely are inconsistent, so don't spend
-time debugging it if you notice.
+The `neo4j` service takes its password from `NEO4J_PASSWORD` in `backend/.env`, so the two cannot
+disagree. Compose only interpolates from the shell or an env file, which is why every command above
+passes `--env-file ../backend/.env` — without it compose stops with `set NEO4J_PASSWORD`.
+
+The compose file used to contain the password in plain text, so it is in git history. Whatever value
+was committed there is compromised: pick a new one in `backend/.env`, and recreate the Neo4j data
+(`NEO4J_AUTH` only applies when the database is first created).

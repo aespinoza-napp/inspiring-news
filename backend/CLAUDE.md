@@ -48,7 +48,7 @@ component on purpose — entities degrade to `{}` (one weak signal among
 several in claim scoring), sentiment and embeddings **raise**
 `InferenceUnavailable` (they feed the admission gate and duplicate
 detection, where a silently empty result corrupts a decision).
-`yake` keywords and `textstat` quality stay local — no model to move.
+`TopicClassifier` also scores each matched topic's own keywords (`src/config/topics.py`) against the article by embedding similarity and counts literal mentions (`TopicPrediction.keywords`); the keyword vectors are embedded once per process in one batched call. `yake` keywords and `textstat` quality stay local — no model to move.
 `src/services/fact_checker/` then validates and checks it:
 
 - `validation_pipeline.py` → `topic_validator`, `positive_impact_validator`,
@@ -66,10 +66,21 @@ detection, where a silently empty result corrupts a decision).
   This is the guardrail that stops a cheap local model bluffing — don't
   weaken it.
 - Every stage takes an optional `on_phase(phase, data)` callback. This
-  backs the job-polling API. Claim checking emits four events per claim
-  (`retrieving_evidence`, `evidence_retrieved`, `verifying_claim`,
-  `claim_checked`) because those sub-stages are the slowest in the
-  pipeline — a live search, a scrape and one LLM call.
+  backs the job-polling API and the Live screen. Claim checking emits, in
+  order: `retrieving_evidence`, `searching_web` (the queries, **before**
+  the search runs), `web_results` (every hit with its engines),
+  `scraping_sources` / `sources_scraped`, `evidence_retrieved`,
+  `evidence_ranked` (each source's relevance and the three factors behind
+  it), `verifying_claim`, `claim_checked` (verdict plus each source's
+  stance, quote and whether it was cited). The first, and the events inside
+  `EvidenceRetriever.retrieve`, exist because those sub-stages are the
+  slowest in the pipeline. Per-source detail goes through
+  `fact_checker/progress.py::source_summary`, which never includes a
+  scraped body — events are held in memory, polled every second and
+  journalled.
+- `Evidence.reliability_known` says whether `reliability_score` is a rating
+  we hold for that domain or just `RANKING_DEFAULT_RELIABILITY`. Do not
+  draw an unrated 0.5 like a real one.
 
 ## Language
 
@@ -87,8 +98,9 @@ English rather than raising. See `docs/decisions/incidents.md`.
 | Endpoint | Notes |
 |---|---|
 | `POST /analyze` | Synchronous, N URLs. Catches per URL, not per batch. |
-| `POST /analyze/jobs` + `GET /analyze/jobs/{id}` | What the frontend uses. `job_store.py` is in-memory, single-process. `job_runner.py` bridges `on_phase` into it and logs per-phase timing at INFO. |
-| `POST /verify-claim` | One claim, no article. Runs `FactChecker.check_claim()` — the pipeline's own stage made public so the two cannot drift. Skips the admission filter and claim selection: those judge an *article*. |
+| `POST /analyze/jobs` + `GET /analyze/jobs/{id}` | What the frontend uses. `job_store.py` is in-memory, single-process. `job_runner.py` bridges `on_phase` into it and logs per-phase timing at INFO. Every event is also appended to the job journal (`docs/decisions/storage.md`), and `GET /{id}` falls back to it after a restart. |
+| `GET /analyze/jobs` | What is running and what ran recently, for the Live screen: active jobs with every event, finished ones as a summary (`events: []`, `result: null`, `eventCount`). In-memory jobs only. Behind `STORAGE_API_KEY` when set — it enumerates every job id, which used to be an unguessable capability. |
+| `POST /verify-claim` | One claim, no article. Runs `FactChecker.check_claim()` — the pipeline's own stage made public so the two cannot drift. Skips the admission filter and claim selection: those judge an *article*. Still answers synchronously, but is registered as a `kind: "claim"` job so the Live screen shows it and the journal keeps it. |
 | `POST /enrich` | NLP stage alone over supplied text. **Side-effect free** — nothing written to the lake. |
 | `POST /correct` | `readability` and `coverageVerification` are deterministic; the other 5 come from one LLM call. |
 | `GET /storage/*` | Read the lake. Behind `STORAGE_API_KEY` when set. |

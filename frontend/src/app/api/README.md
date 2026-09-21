@@ -9,9 +9,13 @@ backend (`backend/src/api/routes.py`), not here.
 |---|---|---|
 | `analyze/route.ts` | `POST /analyze` | Not currently used by either page — the synchronous, blocks-until-done endpoint. Kept for direct API use |
 | `jobs/route.ts` | `POST /analyze/jobs` | `useAnalysisJob` — starts a background job, returns `{ jobId }` immediately |
+| `jobs/route.ts` (GET) | `GET /analyze/jobs` | `useLiveJobs` (the `/live` page) — every job running or recent. **Also `cache: "no-store"`.** Forwards `STORAGE_API_KEY` as `X-API-Key` when the frontend server has one |
+| `jobs/batch/route.ts` | `POST` / `GET /analyze/jobs/batch` | `useBatchAnalysisJobs` — the Analyzer's bulk mode |
 | `jobs/[jobId]/route.ts` | `GET /analyze/jobs/{jobId}` | `useAnalysisJob` — polled every second for progress. **Must keep `cache: "no-store"`** on its `fetch()` — see `CLAUDE.md`, this bit the project once already (stale cached responses made the UI look permanently stuck) |
 | `correct/route.ts` | `POST /correct` | `/corrector` page |
+| `verify-claim/route.ts` | `POST /verify-claim` | `/claim` page |
+| `enrich/route.ts` | `POST /enrich` | `/enrich` page |
 
-All four use `127.0.0.1`, never `localhost`, for `BACKEND_URL`'s default — see the comment in
+All of them use `127.0.0.1`, never `localhost`, for `BACKEND_URL`'s default — see the comment in
 `analyze/route.ts` for why (Node can resolve `localhost` to the IPv6 loopback first, which fails
 against uvicorn's IPv4-only default).

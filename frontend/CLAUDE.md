@@ -15,7 +15,7 @@ The typecheck is the gate.
 
 ## Shape
 
-Four pages. Every one talks to the backend **only** through the
+Five pages. Every one talks to the backend **only** through the
 server-side route handlers in `src/app/api/`, which keeps `BACKEND_URL`
 off the client. See `.env.local.example` — it is `http://127.0.0.1:8000`,
 not `localhost`, because Node can resolve `localhost` to the IPv6
@@ -23,7 +23,8 @@ loopback first and fail to reach uvicorn's IPv4-only default.
 
 | Page | What it does |
 |---|---|
-| `/` (`app/page.tsx`) | Paste article URLs; each gets a `JobCard` driven by `lib/useAnalysisJob.ts` |
+| `/` (`app/page.tsx`) | Paste article URLs; each gets a `JobCard` driven by `lib/useAnalysisJob.ts`. Shows the topic radar next to the *topic's own keywords* (`TopicKeywords`), not the article's yake keywords |
+| `/live` | A second screen: every job the backend is running or ran recently, from any client. Per claim: the SearXNG queries, every source found and the engines behind it, the rating each received, and the verdict — filling in as events arrive. `lib/useLiveJobs.ts` polls `GET /api/jobs`; `lib/liveTrace.ts` folds events into that view |
 | `/claim` | One claim → verdict, evidence, sources rejected, and the LLM's pre-recalibration answer |
 | `/enrich` | Text → topics, keywords, entities, claims, sentiment, quality, embedding shape |
 | `/corrector` | Text → the 7 corrector metrics |
@@ -46,6 +47,10 @@ Both are real incidents; `docs/decisions/incidents.md` has the detail.
 
 Neither is covered by a test. They are held in place by comments.
 
+The same two rules apply to the Live screen: `app/api/jobs/route.ts`'s GET
+is `cache: "no-store"`, and `useLiveJobs` reschedules its timer only behind
+`cancelled`.
+
 ## PhaseStepper
 
 `components/PhaseStepper.tsx` renders the job's phase events as six
@@ -55,6 +60,19 @@ breaks a stage. The Store stage tracks staged writes: `storing` /
 `stored_layer` fire per layer (four writes in a clean run — raw,
 processed, processed again with the report, exploitation) and the final
 `stored` event carries the editorial outcome.
+
+## The Live screen
+
+`lib/liveTrace.ts` is a pure fold from `PhaseEvent[]` to a per-claim trace.
+It matches phase names as string literals against the backend, like
+`PhaseStepper`, and is deliberately tolerant: a missing field leaves a gap
+rather than throwing, because the events also come out of the journal and a
+viewer that crashes on one odd event shows nothing for a run still going.
+
+Source URLs come from web search results, so `components/LiveTrace.tsx`
+only turns `http(s)` URLs into links (`safeHref`). Keep it that way.
+`reliabilityKnown: false` is rendered as "unrated" — it is the default for
+an unrated domain, not a rating.
 
 ## Design system
 

@@ -8,11 +8,11 @@ orchestrator — start there. Everything else in this directory is a stage it ca
 |---|---|---|
 | 1. Admission filter | `validation_pipeline.py` + `validators/` | `topic_validator.py`, `positive_impact_validator.py`, `duplicate_validator.py` — all three must pass before anything else runs |
 | 2. Claim selection | `claim_selector.py` | Scores each claim for how load-bearing it is (centrality to the article thesis, overlap with its main subjects, specificity), drops near-duplicates by embedding similarity, keeps the top `anchor_claims_max` |
-| 3. Evidence retrieval | `retrieval/` | `search_provider.py` (SearXNG), `vector_retriever.py` (internal Qdrant corpus), `scraper.py` (full-text fetch for top web hits), orchestrated by `evidence_retriever.py` |
+| 3. Evidence retrieval | `retrieval/` | `query_builder.py` (affirmative + refutation queries), `search_provider.py` (SearXNG; http(s) results only), `vector_retriever.py` (internal Qdrant corpus, never the article's own URL), `scraper.py` (full-text fetch for top web hits), orchestrated by `evidence_retriever.py`. Sequential today |
 | 4. Evidence ranking | `ranking/ranking_retrieval.py` | Scores by semantic similarity + recency + source reliability (`settings.RANKING_*`) |
-| 5. LLM verification | `verification/llm_verification.py` | One `LLMClient` call per claim, returns a verdict + cited evidence indices |
+| 5. LLM verification | `verification/llm_verification.py` | One `LLMClient` call per claim: a verdict, cited evidence indices, and per source a stance and a quote that is kept only if it appears verbatim in the source |
 | 6. Confidence recalibration | `verification/confidence_scorer.py` | Forces `UNVERIFIED` when there's no evidence or nothing was cited — the safeguard that lets a cheap/local model be used without it hallucinating a confident verdict |
-| 7. Aggregation | `fact_checker.py::_aggregate_verdict` | Worst-case-wins across a claim's checks (`FALSE > MISLEADING > UNVERIFIED > TRUE`) |
+| 7. Aggregation | `fact_checker.py::_aggregate_verdict` | Worst-case-wins across a claim's checks (`FALSE > MISLEADING > UNVERIFIED > PARTIALLY_TRUE > TRUE`) |
 
 Every stage records **which claims it rejected and why** (`PipelineStage` enum in
 `src/models/fact_checker/pipeline_stage.py`), not just which ones passed — `ClaimSelector.select()`,
@@ -23,7 +23,9 @@ and what was discarded along the way (see `StageTimeline`/`SourcesPlot` in the f
 
 Every stage also fires the `on_phase(phase, data)` callback threaded through `FactChecker.run()` — see
 `CLAUDE.md`: don't add a stage without also calling it, since that's what backs the job-polling API's
-live progress.
+live progress. The events emitted per claim (queries, every source found, per-source ratings, the verdict
+with each source's stance) are built by `progress.py::source_summary`, which never includes a scraped
+body. They feed the frontend's Live screen and the on-disk job journal.
 
 Tests for this directory live in `backend/tests/services/fact_checker/`, mirroring this layout 1:1, with
 fakes for every external dependency in `backend/tests/services/fact_checker/fakes.py` (no live

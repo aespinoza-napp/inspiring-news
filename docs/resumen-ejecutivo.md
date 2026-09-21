@@ -28,7 +28,7 @@ El sistema se construye en tres fases acumulativas:
 
 | Fase | Estado |
 |---|---|
-| Pipeline y verificación | Diseñada y en construcción |
+| Pipeline y verificación | En construcción: funciona de extremo a extremo cuando se le entrega la URL de una noticia; aún sin ingesta automática y sin evaluar la precisión de los modelos |
 | Sistema de recomendación | En diseño — siguiente hito |
 | Aplicación móvil | Planeada |
 
@@ -44,4 +44,5 @@ El sistema se construye en tres fases acumulativas:
 Este resumen se apoya en dos documentos con mayor nivel de detalle:
 
 - `idea-de-negocio.md` — visión, propuesta de valor, principios rectores y diferenciadores del producto.
+- `roadmap.md` — el plan por fases y sprints con el estado real de cada tarea, contrastado con el código.
 - `arquitectura-tecnica.md` — arquitectura técnica completa, tecnología utilizada y lógica de diseño de cada fase.

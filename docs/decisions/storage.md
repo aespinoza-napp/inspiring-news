@@ -93,5 +93,34 @@ The lazy-init checks are guarded by `_lock`, a `threading.RLock()` — it must s
 
 `get_fact_checker()` is a singleton shared by `/analyze` and `/verify-claim`: it owns the `VectorRepository` (one Qdrant client per process) and an `EmbeddingService`, and two instances would be two chances for the two entry points to reach different verdicts. `get_claim_service()` likewise borrows `get_enrichment_pipeline().entities` rather than loading a second GLiNER.
 
+## The job journal
+
+The lake keeps *results*. Everything a run does on the way — the queries it
+sent, every source that came back, the rating each one got — used to exist
+only as phase events in `JobStore`'s memory, so a crash, a restart or a run
+that failed halfway lost exactly the part needed to understand a bad
+verdict. `src/services/job_journal.py` (`JobJournal`) appends each of them
+to `data/lake/journal/<job_id>.jsonl` **as it happens**: one line per
+`created` / `event` / `result` / `error`, so a run that dies keeps
+everything up to that point.
+
+- It is written from `JobStore`, the single place every job event passes
+  through, outside its lock. Fail-soft: a full disk must not stop the
+  analysis it records.
+- `JobStore.get` falls back to it for a job this process no longer holds,
+  so `GET /analyze/jobs/{id}` still answers after a restart. A file with no
+  terminal line is reported as **failed: interrupted**, never left looking
+  like it might still be running.
+- The id in that URL comes from the client, so it is matched against
+  `[0-9a-f]{32}` before it can reach a path.
+- Like the lake, it has **no default**: `src/main.py` attaches it in the
+  FastAPI *lifespan*, which `TestClient(app)` does not run unless used as a
+  context manager. Do not build one into the container — every API test
+  would start writing into the real lake.
+- Not journalled: `/analyze` (synchronous, no phases) and anything before
+  a job exists.
+- `JobStore.list()` (behind `GET /analyze/jobs`) lists only jobs held in
+  memory. Earlier runs are readable by id, not browsable.
+
 Neo4j (`src/database/neo4j_client.py`, `docker-compose.yml`) is configured but nothing in the real pipeline uses it — `settings.NEO4J_PASSWORD` is required at startup purely as inherited scaffold config, not because anything reads from Neo4j.
 

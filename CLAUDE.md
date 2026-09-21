@@ -45,6 +45,7 @@ src.main:app --port 8001`.
 
 | Looking for | Go to |
 |---|---|
+| The plan, and what is actually done | `docs/roadmap.md` |
 | Pipeline stages, entry points, container | `backend/CLAUDE.md` |
 | Why the models live in their own service | `docs/decisions/inference.md` |
 | Per-run thresholds, how overrides resolve | `docs/decisions/thresholds.md` |
@@ -135,6 +136,26 @@ write them down than to have each be rediscovered.
   changes nothing — a real trap the split introduced. `EMBEDDING_DIMENSION`
   *is* still live (it sizes the Qdrant collection), which is why
   `tests/services/embeddings/test_embedding_dimension_live.py` exists.
+
+## Known slow / known unverified
+
+Found by the 2026-09-21 audit and not yet fixed; `docs/roadmap.md` lists them
+under Phase 1.
+
+- **Claims are verified one at a time**, and each does two searches, up to
+  five sequential page scrapes, ~20 single-text embedding calls and one LLM
+  call. This is the suspected bottleneck; it has not been measured. The job
+  journal's timestamps make that possible.
+- **The local Qdrant client has no locking** and is used by up to three job
+  threads at once (`ANALYSIS_MAX_CONCURRENCY`). Untested under load.
+- **The article verdict is worst-claim-wins**, so one `UNVERIFIED` outweighs
+  any number of `TRUE`. `overall_confidence` averages across verdicts.
+- **`JobStore` never evicts**, and the analysis cache never expires (and caches
+  rejections).
+- **URLs are compared as plain strings** for duplicate detection.
+- **Only the 12 configured domains have a real reliability rating**; every
+  other domain gets the default and is flagged `reliability_known: false`.
+- **The LLM's accuracy has never been measured** against labelled data.
 
 ## Conventions
 

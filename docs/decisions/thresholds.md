@@ -36,11 +36,16 @@ existing call sites keep working.
 
 Two consequences worth knowing:
 
-- **The analysis cache keys on the thresholds too** (only those differing
-  from the defaults, so a plain run still keys on the URL alone). The same
-  URL under a different admission bar is a different analysis; serving the
-  default run's cached answer would make it look like the override had
-  been applied when it never was.
+- **The analysis cache keys on the thresholds too** — on the run's
+  *effective* values, not only the ones that differ from the defaults. The
+  older scheme (URL alone for a default run) was unsound: change a default
+  in `.env` and a default run before and after hashed to the same key, so
+  the second was served an answer computed under the old value. Changing a
+  default now invalidates the affected entries, which is correct and cheap
+  for a cache. The same URL under a different bar is a different analysis;
+  serving the default run's cached answer would make it look like the
+  override had been applied when it never was. (Consequence: adding a new
+  threshold field changes every key once.)
 - **The lake records them.** `Lineage.threshold_overrides` carries exactly
   what a run changed, so a stored record's numbers stay reproducible — the
   same article yields a different verdict under a different bar.

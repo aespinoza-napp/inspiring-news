@@ -1,73 +1,34 @@
-# Content Tools
+# Frontend
 
-> **La sección "Contrato esperado del backend" de abajo está desactualizada** (el endpoint real que usa
-> la página `/` es `POST /analyze/jobs` + polling de `GET /analyze/jobs/{jobId}`, no una llamada
-> síncrona a `/analyze`, y la forma de la respuesta ha cambiado bastante desde entonces). Para el
-> contrato actual, la fuente de verdad es `src/lib/types.ts` (que además ya está declarado como algo a
-> mantener sincronizado con el backend). Ver `CLAUDE.md` en la raíz del repo, y
-> `src/app/api/README.md`/`src/components/README.md` para el resto del frontend.
+Next.js 14 (App Router, TypeScript) internal tools for the backend. Not the
+user-facing app — that is Phase 5 of [`docs/roadmap.md`](../docs/roadmap.md) and
+does not exist yet.
 
-Next.js (App Router + TypeScript) con dos páginas:
+**The working reference is [`CLAUDE.md`](CLAUDE.md) in this directory.** The
+request/response contract that used to be written out here went out of date; the
+source of truth is [`src/lib/types.ts`](src/lib/types.ts), which mirrors the
+backend.
 
-- `/` — Analizador de noticias: pega una o varias URLs, devuelve keywords (≤10),
-  entities (≤4), topics (≤6), claims (≤10) y validez (no duplicado + al menos un tema).
-- `/corrector` — Evalúa un texto en 7 métricas: Grammar, Fact Consistency,
-  Coverage Verification, SEO, Readability, Hallucination Index, Writing Style.
+## Pages
 
-Next.js hace de proxy server-side (`app/api/analyze`, `app/api/correct`) hacia
-tu backend, para no exponer su URL/credenciales al navegador.
+| Page | What it does |
+|---|---|
+| `/` | Paste article URLs and follow each run phase by phase |
+| `/live` | A second screen: every run in progress or recent, from any client — what was searched, which sources came back, how each was rated, the verdict |
+| `/claim` | Verify one claim on its own |
+| `/enrich` | Run only the NLP stage over pasted text |
+| `/corrector` | Score a text on 7 editorial metrics |
 
-## Poner en marcha
+Every page talks to the backend only through the server-side route handlers in
+`src/app/api/`, which keeps `BACKEND_URL` out of the browser.
+
+## Run
 
 ```bash
 npm install
-cp .env.local.example .env.local   # y rellena BACKEND_URL
-npm run dev
+cp .env.local.example .env.local   # BACKEND_URL, and STORAGE_API_KEY if the backend sets one
+npm run dev                        # http://localhost:3000
+npx tsc --noEmit                   # the typecheck — the only automated gate
 ```
 
-## Contrato esperado del backend
-
-**POST `{BACKEND_URL}/analyze`**
-```json
-// request
-{ "urls": ["https://...", "https://..."] }
-
-// response
-{
-  "results": [
-    {
-      "url": "https://...",
-      "title": "opcional",
-      "keywords": ["..."],
-      "entities": ["..."],
-      "topics": ["..."],
-      "claims": ["..."],
-      "validity": {
-        "isValid": true,
-        "isDuplicate": false,
-        "hasTopic": true,
-        "reasons": []
-      }
-    }
-  ]
-}
-```
-
-**POST `{BACKEND_URL}/correct`**
-```json
-// request
-{ "text": "..." }
-
-// response — una entrada por métrica, score 0-100
-{
-  "grammar": { "score": 92, "summary": "...", "issues": ["..."] },
-  "factConsistency": { "score": 80, "summary": "..." },
-  "coverageVerification": { "score": 75, "summary": "..." },
-  "seo": { "score": 68, "summary": "..." },
-  "readability": { "score": 88, "summary": "..." },
-  "hallucinationIndex": { "score": 95, "summary": "..." },
-  "style": { "score": 84, "summary": "..." }
-}
-```
-
-Ajusta `lib/types.ts` si tu backend devuelve campos distintos.
+There is no linter configured and no test runner.

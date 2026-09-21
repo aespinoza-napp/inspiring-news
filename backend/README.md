@@ -1,172 +1,41 @@
-# News Intelligence Backend
+# Backend
 
-A lightweight backend for ingesting, enriching, fact-checking and storing news articles.
+The FastAPI service: scraping and extraction, the NLP enrichment pipeline, the
+fact-checking pipeline, the job API and the storage lake.
 
-The project is designed around a modular pipeline where every processing stage has a single responsibility.
+**The working reference is [`CLAUDE.md`](CLAUDE.md) in this directory** — the
+pipeline stages and their entry points, every endpoint, the storage layout, how
+to run it and what its tests cover. This README used to describe the original
+scaffold (a mocked `NewsPipeline`, an `agents/` layer) that no longer exists, and
+was replaced rather than patched.
 
-> **This README describes the project's original scaffold and is out of date** (mocked NLP/fact-checking, a `NewsPipeline`/`agents/` layer that no longer exists, a project structure that doesn't match `src/`). For the actual current architecture, endpoints, and test setup, see `CLAUDE.md` at the repo root instead.
-
----
-
-# Architecture
-
-```text
-                 +------------------+
-                 |   FastAPI API    |
-                 +---------+--------+
-                           |
-                           |
-                           v
-                 +------------------+
-                 |   NewsPipeline   |
-                 +---------+--------+
-                           |
-        +------------------+------------------+
-        |                  |                  |
-        v                  v                  v
-+---------------+   +---------------+   +---------------+
-| NLP Processor |   | Fact Checker  |   | Local Storage |
-+---------------+   +---------------+   +---------------+
-                           |
-                           v
-                    JSON Repository
-```
-
-The project follows a layered architecture.
-
-| Layer      | Responsibility                    |
-| ---------- | --------------------------------- |
-| API        | Receives HTTP requests            |
-| Workflow   | Coordinates the complete pipeline |
-| Processors | Deterministic NLP transformations |
-| Agents     | Intelligent reasoning components  |
-| Database   | Storage abstraction               |
-| Services   | External integrations             |
-
----
-
-# Project structure
-
-```text
-backend/
-
-├── data/
-│   └── news/
-│
-├── src/
-│   ├── agents/
-│   │   ├── scraper.py
-│   │   └── fact_checker.py
-│   │
-│   ├── api/
-│   │   ├── routes.py
-│   │   └── scraper.py
-│   │
-│   ├── database/
-│   │   ├── repository.py
-│   │   ├── local_repository.py
-│   │   └── neo4j_client.py
-│   │
-│   ├── models/
-│   │   ├── news.py
-│   │   ├── claim.py
-│   │   └── fact_check.py
-│   │
-│   ├── processors/
-│   │   └── nlp.py
-│   │
-│   ├── services/
-│   │
-│   ├── workflows/
-│   │   └── news_pipeline.py
-│   │
-│   ├── config.py
-│   ├── container.py
-│   └── main.py
-│
-├── dags/
-│   └── news_pipeline_dag.py
-│
-└── tests/
-```
-
----
-
-# Current pipeline
-
-1. Receive a news article.
-2. Extract claims.
-3. Extract entities.
-4. Compute sentiment.
-5. Fact-check every claim.
-6. Store the enriched article locally.
-
----
-
-# Example stored document
-
-Every processed article is saved as
-
-```text
-data/news/
-
-cnn_2026-07-02_a8f03d2a.json
-```
-
-Example
-
-```json
-{
-  "id": "...",
-  "title": "...",
-  "source": "cnn",
-  "url": "...",
-  "published_at": "...",
-  "claims": [],
-  "fact_checks": [],
-  "sentiment": 0.42
-}
-```
-
----
-
-# Running the project
-
-Install dependencies
+## Run
 
 ```bash
 uv sync
+uv run uvicorn src.main:app --reload        # http://localhost:8000/docs
 ```
 
-Run the API
+It needs `inference/` reachable at `INFERENCE_URL` (default `http://localhost:8001`),
+SearXNG for evidence, and an OpenAI-compatible LLM endpoint (Ollama by default).
+`backend/.env` is required; copy `.env-example`.
 
-```bash
-uv run uvicorn src.main:app --reload
-```
+## Layout
 
-Swagger
+| Path | What is in it |
+|---|---|
+| `src/api/routes.py` | Every endpoint |
+| `src/workflows/enrichment.py` | The NLP stack that builds an `EnrichedArticle` |
+| `src/services/fact_checker/` | Admission filter, claim selection, evidence retrieval, ranking, LLM verification |
+| `src/services/analysis_service.py` | One URL through everything, and the storage writes |
+| `src/services/job_*.py` | The job store, queue, runner and the on-disk journal |
+| `src/config/` | Settings, per-run thresholds, topics, language lexicons |
+| `src/repositories/` | Qdrant (`vector_repository`) and the three-layer lake |
+| `data/sources/` | One YAML per news source |
+| `tests/` | Mirrors `src/`; see `tests/README.md` |
 
-```
-http://localhost:8000/docs
-```
+## What does not work
 
----
-
-# Running tests
-
-```bash
-uv run pytest
-```
-
----
-
-# Future work
-
-* spaCy entity extraction
-* LangChain integration
-* Google Search retrieval
-* Neo4j persistence
-* OpenAI / Gemini fact checking
-* Embeddings
-* Airflow scheduling
-* Knowledge Graph generation
+Read `CLAUDE.md`'s "Known dead / known broken" before assuming something is
+live: there is no ingestion pipeline, the Playwright and BeautifulSoup
+strategies are placeholders, and nothing reads Neo4j.

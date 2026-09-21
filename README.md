@@ -1,83 +1,98 @@
-# News Intelligence Graph System
+# Inspiring News
 
-Automated news pipeline: Scraping -> Fact-checking -> Sentiment -> Social Media Formatting -> Neo4j Graph Storage.
+A pipeline that takes a news article, works out whether it is on-topic and
+constructive, extracts the claims it makes, and checks each one against
+evidence found on the web — with a verdict per claim that names the sources
+behind it.
 
-> **This README describes the project's original scaffold and is out of date** — fact-checking is real
-> (local LLM + SearXNG + Qdrant, not the "next step" described below), Neo4j is configured but unused
-> by the actual pipeline, and there's no "social media formatting" stage. For the real architecture,
-> see `CLAUDE.md` at the repo root, and the `README.md` in each subdirectory (`backend/src/...`,
-> `frontend/src/...`, `docker/`) for that part specifically.
+**Where things stand:** the analysis pipeline and its internal tools work end
+to end when the supporting services are running. There is no automatic
+ingestion (an article enters only when someone posts its URL), no user-facing
+app, no graph database in use, and the AI models have not been benchmarked.
+The plan and its honest status are in [`docs/roadmap.md`](docs/roadmap.md).
 
-## Features
-- **Backend**: FastAPI with `uv` for lightning-fast dependency management.
-- **Scraper Agent**: Robust news extraction.
-- **NLP Engine**: Sentiment analysis and fact-checking status.
-- **Graph DB**: Neo4j relationships based on keywords and metadata.
-- **Frontend**: Next.js 14 visualization.
+## What it does
 
-## Environment setup
-
-Copy the example env files — every value in them is a working default,
-so this is enough to run the code with no edits:
-```bash
-    cp backend/.env-example backend/.env
-    cp frontend/.env.local.example frontend/.env.local
-    cp docker/searxng/settings.yml.example docker/searxng/settings.yml
 ```
-`inference/` needs no `.env` — every setting in `inference/src/config.py`
-already has a default.
-
-`backend/.env`'s `NEO4J_PASSWORD` is required by `Settings` (no default)
-even though nothing reads Neo4j today (see `CLAUDE.md`'s "Known dead /
-known broken") — the example value is enough, it doesn't need to match
-anything real.
-
-Two more services the backend talks to at runtime, neither started by
-`uv run`:
-- **SearXNG** (evidence retrieval) — via Docker even for an otherwise
-  local run: `cd docker && docker-compose up searxng`.
-- **Ollama** (LLM verification), open-source and free by default:
-  `ollama pull llama3.1` once, then `ollama serve`. Point `LLM_BASE_URL`
-  / `LLM_API_KEY` / `LLM_MODEL` in `backend/.env` at a hosted provider
-  instead if you'd rather not run a local model.
-
-## Setup Local
-1. **Inference** (GLiNER, sentiment and embedding models — the backend
-   calls this over HTTP and fails on `/analyze` without it, e.g. a
-   `WinError 10061`/connection-refused error):
-```bash
-   cd inference
-   uv sync
-   uv run uvicorn src.main:app --port 8001
-```
-2. **Backend**:
-```bash
-   cd backend
-   uv sync
-   uv run uvicorn src.main:app --reload
-```
-3.  Frontend:
-```bash
-    cd frontend
-    npm install && npm run dev
+URL -> extract -> enrich -> admission filter -> select claims -> retrieve evidence
+                                                              -> rank -> LLM verdict
+                                                              -> recalibrate confidence
 ```
 
-## Setup Docker
+- **Extract** the article text (Trafilatura).
+- **Enrich**: keywords, entities, topics, sentiment, editorial-quality scores,
+  claims, and an embedding. English and Spanish.
+- **Admission filter**: on-topic, positive impact, not a duplicate.
+- **Fact-check**: for the few claims the article rests on, search the web
+  (SearXNG) and the stored corpus, rank what comes back, ask an LLM to judge
+  each claim citing its sources, then downgrade any verdict the evidence does
+  not support.
+- **Store** every stage (raw → processed → exploitation) and journal every
+  step of every run.
+
+## The parts
+
+| Directory | What it is |
+|---|---|
+| `backend/` | FastAPI: the pipeline, the job API, storage. See `backend/CLAUDE.md` |
+| `inference/` | Model server for entity extraction, sentiment and embeddings |
+| `frontend/` | Next.js 14 internal tools: analyzer, live view, claim check, enrichment, corrector |
+| `docker/` | Compose stack: Neo4j (unused), SearXNG, inference, backend |
+| `docs/` | The roadmap, technical architecture and the reasoning behind design choices |
+
+`CLAUDE.md` at the repo root is the map for working in the code: what must not
+be broken, what is known to be dead or broken, and where each subsystem is
+documented.
+
+## Running it
+
+Copy the example env files. Every value in them is a working default:
+
 ```bash
-    cd docker
-    docker-compose up --build
+cp backend/.env-example backend/.env
+cp frontend/.env.local.example frontend/.env.local
+cp docker/searxng/settings.yml.example docker/searxng/settings.yml
 ```
-Starts `inference` automatically as part of the stack — no manual step
-needed. First boot can take several minutes while its models download.
-Ollama still runs on the host (see the LLM note above), not as a compose
-service.
 
-## Health Check
+`backend/.env`'s `NEO4J_PASSWORD` is required by the settings even though
+nothing reads Neo4j. Compose also reads it, so docker commands take
+`--env-file ../backend/.env`.
 
-Access http://localhost:8000/health to verify Neo4j and API connectivity.
+Three things run outside `uv`:
 
+- **SearXNG**, for evidence: `cd docker && docker compose --env-file ../backend/.env up searxng`
+- **Ollama**, the default LLM: `ollama pull llama3.1` once, then `ollama serve`.
+  Point `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` at a hosted provider instead
+  if you prefer.
+- **`inference/`**, without which `/analyze` fails with a connection error.
 
-### Next Steps for you:
-1.  **Fact-Checking**: To make it real, connect the `fact_check` method to the **OpenAI API** or **SearchApi** to compare headlines with official sources.
-2.  **Scraping Logic**: Implement `BeautifulSoup` inside the scraper agent to target specific news RSS feeds.
-3.  **Keywords**: Use `spacy` or `RAKE` (Rapid Automatic Keyword Extraction) to populate the metadata.
+### Local
+
+```bash
+cd inference && uv sync && uv run uvicorn src.main:app --port 8001   # first
+cd backend   && uv sync && uv run uvicorn src.main:app --reload      # then
+cd frontend  && npm install && npm run dev                           # http://localhost:3000
+```
+
+### Docker
+
+```bash
+./scripts/dev.sh          # compose stack, then the frontend
+```
+
+or `cd docker && docker compose --env-file ../backend/.env up --build`. The
+first boot can take several minutes while the models download. Ollama stays on
+the host. **The `backend` container has been built but never run end to end.**
+
+The API documentation is at `http://localhost:8000/docs`. There is no
+`/health` endpoint.
+
+## Checking your work
+
+```bash
+./scripts/check.sh          # backend + inference tests + frontend typecheck
+./scripts/check.sh fast     # the invariants only, in seconds
+```
+
+There is no CI, linter or formatter, and no frontend test runner: the
+typecheck is the only frontend gate.
