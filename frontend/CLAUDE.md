@@ -23,7 +23,7 @@ loopback first and fail to reach uvicorn's IPv4-only default.
 
 | Page | What it does |
 |---|---|
-| `/` (`app/page.tsx`) | Paste article URLs; each gets a `JobCard` driven by `lib/useAnalysisJob.ts`. Shows the topic radar next to the *topic's own keywords* (`TopicKeywords`), not the article's yake keywords |
+| `/` (`app/page.tsx`) | Paste article URLs; each gets a `JobCard` driven by `lib/useAnalysisJob.ts`. Shows the topic radar next to the *topic's own keywords* (`TopicKeywords`), not the article's yake keywords. Claims appear as rows the moment they are selected and each fills in with its own verdict as it finishes — it folds events with `lib/liveTrace.ts`, the same fold `/live` uses, rather than matching the phase literals a second time |
 | `/live` | A second screen: every job the backend is running or ran recently, from any client. Per claim: the SearXNG queries, every source found and the engines behind it, the rating each received, and the verdict — filling in as events arrive. `lib/useLiveJobs.ts` polls `GET /api/jobs`; `lib/liveTrace.ts` folds events into that view |
 | `/claim` | One claim → verdict, evidence, sources rejected, and the LLM's pre-recalibration answer |
 | `/enrich` | Text → topics, keywords, entities, claims, sentiment, quality, embedding shape |
@@ -51,6 +51,23 @@ The same two rules apply to the Live screen: `app/api/jobs/route.ts`'s GET
 is `cache: "no-store"`, and `useLiveJobs` reschedules its timer only behind
 `cancelled`.
 
+## Per-claim events interleave
+
+The backend fact-checks an article's claims **concurrently**, so one
+claim can be judged while another is still searching. Anything reading
+`PhaseEvent[]` has to be order-insensitive per claim. Two things from the
+backend make that workable, and both must keep being used:
+
+- **`claims_selected` carries the whole claim set** (`claims: [{index,
+  text, anchorScore}]`) before any claim has been checked. Create the
+  rows from it. Rows created from whichever per-claim event arrived first
+  reshuffle themselves as the run progresses.
+- **Every per-claim event carries `claimIndex`** as well as `claim`.
+  `liveTrace.ts` reads the index first and falls back to the text,
+  because runs replayed out of the journal may predate the index.
+
+See `docs/decisions/concurrency.md`.
+
 ## PhaseStepper
 
 `components/PhaseStepper.tsx` renders the job's phase events as six
@@ -60,6 +77,12 @@ breaks a stage. The Store stage tracks staged writes: `storing` /
 `stored_layer` fire per layer (four writes in a clean run — raw,
 processed, processed again with the report, exploitation) and the final
 `stored` event carries the editorial outcome.
+
+It works from the *set* of phases seen and counts `claim_checked` events,
+which is why concurrent claims did not break it. Its one ordered read is
+the status line: while claims are in flight that becomes "checking N
+claims, M done", because there the last event belongs to whichever claim
+emitted most recently and describes nothing.
 
 ## The Live screen
 

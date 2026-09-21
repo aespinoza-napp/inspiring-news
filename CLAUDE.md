@@ -50,6 +50,8 @@ src.main:app --port 8001`.
 | Why the models live in their own service | `docs/decisions/inference.md` |
 | Per-run thresholds, how overrides resolve | `docs/decisions/thresholds.md` |
 | The three storage layers and lineage | `docs/decisions/storage.md` |
+| How claims run in parallel; the resource ceilings | `docs/decisions/concurrency.md` |
+| What is searched for; why a source is cut | `docs/decisions/retrieval.md` |
 | Why a given rule exists; what broke before | `docs/decisions/incidents.md` |
 | Pages, polling hook, API proxies | `frontend/CLAUDE.md` |
 | Running the stack | `docker/README.md` |
@@ -96,7 +98,18 @@ the declared exception, deliberately.
 10. **Every shared fake in `tests/services/fact_checker/fakes.py` has a contract
     entry** in `tests/test_fake_contracts.py`, so a fake cannot drift
     out of signature with the collaborator it stands in for.
-11. **`backend/src/` never imports `torch`, `transformers`, `gliner` or
+11. **Results of a fan-out come back in input order.** Use
+    `bounded_map`, not a bare `ThreadPoolExecutor`: an evidence list in
+    completion order re-points every LLM citation at a different source,
+    which is a wrong answer rather than a crash. *Enforced by*
+    `tests/services/test_concurrency.py`.
+12. **Concurrency ceilings are `settings`, never `PipelineThresholds`.**
+    They cap how hard this process leans on SearXNG, `inference/`, the
+    LLM and other people's web servers, all shared by every concurrent
+    run - a per-request override lets one caller raise the load everyone
+    else is subject to. Same standing as `ANALYSIS_MAX_CONCURRENCY`;
+    listed in `NON_THRESHOLD_SETTINGS`.
+13. **`backend/src/` never imports `torch`, `transformers`, `gliner` or
     `sentence_transformers`.** Those models live in `inference/` and are
     reached over HTTP. Re-adding a local import silently puts ~2GB of
     wheels and a model load back into the API container — the exact
@@ -137,17 +150,29 @@ write them down than to have each be rediscovered.
   *is* still live (it sizes the Qdrant collection), which is why
   `tests/services/embeddings/test_embedding_dimension_live.py` exists.
 
+## Concurrency
+
+Claims are fact-checked **concurrently**; each claim's own stages stay
+**sequential** (retrieval feeds ranking feeds the LLM). Read
+`docs/decisions/concurrency.md` before touching any of it. The three
+rules that matter everywhere:
+
+- **A resource permit is only ever held around a leaf call.** The
+  ceilings live in `src/services/concurrency.py`, applied inside the
+  client that talks to each service. Acquiring one and then waiting on
+  work that needs the same resource is the bounded-pool deadlock.
+- **`bounded_map` returns results in input order.** Evidence indices are
+  what the LLM cites by number and what `cited_evidence_indices` means;
+  completion order would silently re-point every citation.
+- **`on_phase` is called from several threads and is serialised for
+  you** by `FactChecker._serialised`. Per-claim events interleave, and
+  every one carries `claimIndex` as well as `claim`.
+
 ## Known slow / known unverified
 
-Found by the 2026-09-21 audit and not yet fixed; `docs/roadmap.md` lists them
-under Phase 1.
+Found by the 2026-09-21 audit; `docs/roadmap.md` tracks them under
+Phase 1.
 
-- **Claims are verified one at a time**, and each does two searches, up to
-  five sequential page scrapes, ~20 single-text embedding calls and one LLM
-  call. This is the suspected bottleneck; it has not been measured. The job
-  journal's timestamps make that possible.
-- **The local Qdrant client has no locking** and is used by up to three job
-  threads at once (`ANALYSIS_MAX_CONCURRENCY`). Untested under load.
 - **The article verdict is worst-claim-wins**, so one `UNVERIFIED` outweighs
   any number of `TRUE`. `overall_confidence` averages across verdicts.
 - **`JobStore` never evicts**, and the analysis cache never expires (and caches
@@ -155,7 +180,16 @@ under Phase 1.
 - **URLs are compared as plain strings** for duplicate detection.
 - **Only the 12 configured domains have a real reliability rating**; every
   other domain gets the default and is flagged `reliability_known: false`.
-- **The LLM's accuracy has never been measured** against labelled data.
+- **The LLM's accuracy has never been measured** against labelled data — and
+  the pertinence gate's default threshold is reasoned, not fitted, for the
+  same reason (`docs/decisions/retrieval.md`).
+- **Nothing measures whether a source is on-point about the *right*
+  subject.** The pertinence gate is embedding and term arithmetic: it
+  catches a page about something else, not a page about the same subject
+  making a different claim.
+- **The end-to-end speedup is not measured.** The parallel work is
+  covered by tests that assert overlap, not by a benchmark. The job
+  journal's timestamps make a real before/after possible.
 
 ## Conventions
 

@@ -7,7 +7,7 @@ described; anything less is `[ ]` with a note saying exactly how far it got.
 - **As of:** 2026-09-21 — Phase 1, Sprint 2 (Sep 15–28).
 - **Hours** are the planned budget. There is no time log in the repo, so
   nothing here claims hours actually spent.
-- **Verification used for "done"** is `./scripts/check.sh`: 504 backend tests
+- **Verification used for "done"** is `./scripts/check.sh`: 542 backend tests
   passed (11 skipped because they need `inference/` or Neo4j running, 2 slow
   ones deselected), 9 inference tests passed against the real models, and the
   frontend typechecks. The `slow` corpus test was not part of that pass. There
@@ -75,7 +75,7 @@ Legend: `[x]` done · `[ ]` not done · 🟡 partly done (what is left is stated
 ### Sprint 2 (Sep 15–28) · 70h — Testing & bugfixing  ← **current sprint**
 
 - [x] 🧪 Full regression pass — `./scripts/check.sh` (numbers above). The `slow` full-corpus test was not run.
-- [ ] 🟡 🔁 Concurrency test: parallel `/analyze/jobs` requests — done for job creation, deduplication and the container's lazy construction (`tests/api/test_analysis_jobs_concurrency.py`, `tests/test_container.py`). **Not covered:** three jobs using the one local Qdrant client at the same time. Qdrant's local mode has no internal locking, so this is an open risk, not a passed test.
+- [x] 🔁 Concurrency test: parallel `/analyze/jobs` requests — job creation, deduplication and the container's lazy construction (`tests/api/test_analysis_jobs_concurrency.py`, `tests/test_container.py`), plus the fan-out itself (`tests/services/test_concurrency.py`, `tests/services/fact_checker/test_fact_checker_concurrency.py`). `VectorRepository` now serialises every call behind its own lock, so the shared local Qdrant client is no longer reached from several threads at once. **Still not load-tested** against a real multi-job run.
 - [ ] 📉 Load-test `/analyze` sync endpoint (timeouts, long scrapes) — not started
 - [ ] 🟡 🧰 Harden error handling around `LLMClient` timeouts/failures — done: the OpenAI SDK's hidden retries are off (a slow model could hold one claim for 6 × `LLM_TIMEOUT`, now at most 2 ×). Left: tune the 60 s default, add backoff, and make "the LLM was unreachable" distinguishable from a genuine `UNVERIFIED` in the result.
 - [ ] 🟡 📝 Document pipeline architecture (diagram + README updates) — the text is current as of Sep 21 (`CLAUDE.md`, `docs/decisions/`, `docs/arquitectura-tecnica.md`, every README). **No diagram yet.**
@@ -87,9 +87,12 @@ Fixed:
 - [x] Neo4j password committed in `docker-compose.yml` — moved to `backend/.env`. **The old value is still in git history and must be rotated by hand.**
 - [x] Job history was lost on restart or failure — every job event is now journalled to disk as it happens, and `/live` shows runs in progress
 
-Open — best done in this sprint or the next, and **before Phase 4**, because benchmarking runs many claims through the verifier and the first two make that slow and unmeasurable:
-- [ ] 🐢 **The main bottleneck: claims are verified one at a time**, and each does two searches, up to five sequential page scrapes, roughly 20 single-text embedding calls and one LLM call. Not yet measured — the job journal's timestamps now make that possible. Likely fixes, in order: batch the embedding calls (`encode_many` already exists), scrape and search in parallel, verify claims in parallel (only helps if the LLM server allows it).
-- [ ] 🧷 Local Qdrant client is used from up to three threads with no locking — reproduce under load, then decide whether to move to a Qdrant server
+Also fixed (Sep 21, second pass — `docs/decisions/concurrency.md`, `docs/decisions/retrieval.md`):
+- [x] 🐢 **The main bottleneck: claims were verified one at a time.** All three fixes are in, in the order they were worth making: the embedding calls are batched (`encode_many`, which already existed and nothing used), a claim's queries and page fetches run in parallel, and claims run in parallel. Ceilings per external service live in `src/services/concurrency.py` so the fan-out cannot multiply into a stampede. **Not benchmarked:** the tests assert that work overlaps, not how much faster a real run is. The journal's timestamps still make that measurement possible and it has not been taken.
+- [x] 🧷 Local Qdrant client used from several threads with no locking — `VectorRepository` holds an `RLock` for the whole of every call. Moving to a Qdrant server is now a scaling decision rather than a correctness one.
+- [x] 🎯 **Retrieval asked what a claim was about, never what it said.** A claim mentioning ACME was returned FALSE at 83% citing three pages on the Greek etymology of the word. Now: three queries per claim (anchor / proposition / refutation) fused by reciprocal rank; a lexical term-coverage factor in ranking beside the embedding one; and a per-run **pertinence gate** that cuts a source before the LLM sees it, so that claim comes back `UNVERIFIED` instead. **Unmeasured:** the threshold default is reasoned, not fitted — there is still no labelled set.
+
+Open — best done in this sprint or the next, and **before Phase 4**, because benchmarking runs many claims through the verifier:
 - [ ] ⚖️ The article verdict is "worst claim wins", so a single `UNVERIFIED` (the common outcome with a small local model) outweighs any number of `TRUE`; `overall_confidence` averages confidences of different verdicts. Separate "how much could be checked" from "what was found".
 - [ ] 🗑️ `JobStore` keeps every job in memory forever (now safe to evict, since the journal has them)
 - [ ] ⏳ The analysis cache never expires, and it also caches rejections; fact-check verdicts depend on today's web
@@ -112,8 +115,8 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 ### Sprint 4 (Oct 13–26) · 70h — Enrichment & fact-checking improvements
 
 - [ ] 🟡 🧠 Improve claim selection heuristics — the anchor-claim redesign (rank by how load-bearing a claim is, drop near-duplicates, keep 2–4) is done. Left: tuning the dedupe and confidence thresholds against real data.
-- [ ] 🟡 🌐 Alternative evidence retrieval strategies — SearXNG queries were improved (built from entities, figures and dates, plus a refutation query). No second source of evidence exists yet.
-- [ ] ⚖️ Tune `RANKING_*` and `CONFIDENCE_*` weightings with real data — no labelled evaluation set exists in the repo
+- [ ] 🟡 🌐 Alternative evidence retrieval strategies — SearXNG queries are now a planned set (anchor / proposition / refutation) fused by reciprocal rank, and off-target sources are cut by the pertinence gate (`docs/decisions/retrieval.md`). No second *source* of evidence exists yet, and nothing asks the model whether a source is on-point about the right subject.
+- [ ] ⚖️ Tune `RANKING_*`, `CONFIDENCE_*` and `EVIDENCE_MIN_PERTINENCE` with real data — no labelled evaluation set exists in the repo. `RANKING_LEXICAL_WEIGHT` was carved out of the other three by reasoning, not measurement.
 - [ ] 🟡 🏷️ Improve topic classifier accuracy — keyword coverage was widened from misclassified real articles. There is no labelled set to measure accuracy on.
 - [ ] 🧪 Regression tests for new ranking/confidence behavior
 

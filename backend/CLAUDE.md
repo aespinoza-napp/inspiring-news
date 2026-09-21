@@ -54,30 +54,58 @@ detection, where a silently empty result corrupts a decision).
 - `validation_pipeline.py` → `topic_validator`, `positive_impact_validator`,
   `duplicate_validator` (a Qdrant similarity search).
 - `fact_checker.py` (`FactChecker`) orchestrates: validate (short-circuit
-  on failure) → `claim_selector.py` → `retrieval/evidence_retriever.py`
-  (SearXNG web hits via `retrieval/search_provider.py` merged with
-  internal corpus hits from `retrieval/vector_retriever.py`;
-  `retrieval/scraper.py` fetches full text for top web hits) →
-  `ranking/ranking_retrieval.py` → `verification/llm_verification.py` →
+  on failure) → `claim_selector.py` → then, **per claim and in this
+  order**, `retrieval/evidence_retriever.py` (SearXNG web hits via
+  `retrieval/search_provider.py` merged with internal corpus hits from
+  `retrieval/vector_retriever.py`; `retrieval/scraper.py` fetches full
+  text for top web hits) → `ranking/ranking_retrieval.py` →
+  `verification/llm_verification.py` →
   `verification/confidence_scorer.py`. Result: a `FactCheckReport`,
   aggregated worst-case-wins (`FALSE > MISLEADING > UNVERIFIED > TRUE`).
+- **Claims run concurrently; a claim's own stages do not.** Each stage
+  consumes what the previous one produced, so there is nothing to
+  overlap inside a claim. Between claims there is nothing shared.
+  `docs/decisions/concurrency.md` has the ceilings, the deadlock rule and
+  why `bounded_map` preserves input order (evidence indices are what the
+  LLM cites by number).
+- `retrieval/query_builder.py` plans **three** queries per claim — anchor
+  (who and what), proposition (what is being asserted) and refutation —
+  run concurrently and fused by reciprocal rank. The anchor query alone
+  retrieves the claim's *subject*, which is how a claim mentioning ACME
+  came back FALSE at 83% citing pages on the Greek etymology of the word.
+  `services/fact_checker/terms.py` is shared by query building and by
+  lexical ranking on purpose: one judgement of what a claim is about.
+- **The pertinence gate**, in `EvidenceRanker.rank`, cuts a source that
+  does not address the claim *before* the LLM sees it, so it cannot be
+  cited, counted or corroborated. Per-run
+  (`evidence_min_pertinence`) because it is the knob that trades a
+  confident wrong answer for an honest `UNVERIFIED`.
+  `docs/decisions/retrieval.md`.
 - `ConfidenceScorer` **forces `UNVERIFIED`** when no evidence was
   retrieved or the LLM cited nothing, keeping the raw verdict visible.
   This is the guardrail that stops a cheap local model bluffing — don't
   weaken it.
 - Every stage takes an optional `on_phase(phase, data)` callback. This
-  backs the job-polling API and the Live screen. Claim checking emits, in
-  order: `retrieving_evidence`, `searching_web` (the queries, **before**
-  the search runs), `web_results` (every hit with its engines),
-  `scraping_sources` / `sources_scraped`, `evidence_retrieved`,
-  `evidence_ranked` (each source's relevance and the three factors behind
-  it), `verifying_claim`, `claim_checked` (verdict plus each source's
-  stance, quote and whether it was cited). The first, and the events inside
+  backs the job-polling API and the Live screen. Claim checking emits,
+  in order **within one claim**: `retrieving_evidence`, `searching_web`
+  (the queries and what each one asks, **before** the search runs),
+  `web_results` (every hit with its engines), `scraping_sources` /
+  `sources_scraped`, `evidence_retrieved`, `evidence_ranked` (each
+  source's relevance and the four factors behind it), `verifying_claim`,
+  `claim_checked` (verdict plus each source's stance, quote and whether
+  it was cited). The first, and the events inside
   `EvidenceRetriever.retrieve`, exist because those sub-stages are the
   slowest in the pipeline. Per-source detail goes through
   `fact_checker/progress.py::source_summary`, which never includes a
   scraped body — events are held in memory, polled every second and
   journalled.
+- **Across claims those events interleave**, because the claims run at
+  once. Two things make a client's life possible and both are
+  load-bearing: `claims_selected` carries the whole claim set with
+  indices before any check starts, and every per-claim event carries
+  `claimIndex` as well as `claim`. The callback itself is serialised for
+  you (`FactChecker._serialised`) so the job runner's phase timers and
+  the journal's list append keep their single-threaded contract.
 - `Evidence.reliability_known` says whether `reliability_score` is a rating
   we hold for that domain or just `RANKING_DEFAULT_RELIABILITY`. Do not
   draw an unrated 0.5 like a real one.
