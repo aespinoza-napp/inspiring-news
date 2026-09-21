@@ -201,11 +201,36 @@ class Settings(BaseSettings):
     EVIDENCE_RECENCY_HALF_LIFE_DAYS: float = 365.0
     MIN_EVIDENCE_FOR_VERDICT: int = 1
 
+    # The pertinence floor: below this, a source is topically related but
+    # does not address the assertion, and is cut before the LLM ever sees
+    # it. Deliberately low - this is a floor against off-target retrieval,
+    # not a relevance ranking, and cutting real evidence here turns a
+    # checkable claim into UNVERIFIED.
+    EVIDENCE_MIN_PERTINENCE: float = 0.25
+
     # EvidenceRanker scoring weights (must sum to 1.0)
-    RANKING_SEMANTIC_WEIGHT: float = 0.60
-    RANKING_RECENCY_WEIGHT: float = 0.25
+    #
+    # RANKING_LEXICAL_WEIGHT is the newest of the four and the reason the
+    # other three moved. Embedding similarity alone ranks a page *about
+    # the same subject* as highly as one that addresses the assertion: a
+    # claim mentioning ACME retrieved three pages explaining what the word
+    # "acme" means in Greek, all at high cosine, and the model cited them
+    # as confirmation. Lexical coverage of the claim's own discriminative
+    # terms is what those pages have none of.
+    RANKING_SEMANTIC_WEIGHT: float = 0.45
+    RANKING_LEXICAL_WEIGHT: float = 0.20
+    RANKING_RECENCY_WEIGHT: float = 0.20
     RANKING_RELIABILITY_WEIGHT: float = 0.15
     RANKING_DEFAULT_RELIABILITY: float = 0.5
+
+    # How semantic and lexical agreement combine into the single
+    # "does this source actually address the claim" figure that the
+    # pertinence gate thresholds. Its own normalised pair, kept apart
+    # from the ranking weights because it answers a different question:
+    # ranking orders sources, pertinence decides whether a source is
+    # allowed to support a verdict at all.
+    PERTINENCE_SEMANTIC_WEIGHT: float = 0.5
+    PERTINENCE_LEXICAL_WEIGHT: float = 0.5
 
     # ConfidenceScorer weights (must sum to 1.0)
     CONFIDENCE_LLM_WEIGHT: float = 0.7

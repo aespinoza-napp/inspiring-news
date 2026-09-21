@@ -118,6 +118,10 @@ NON_THRESHOLD_SETTINGS = {
     "QUERY_MAX_CONCURRENCY", "SEARXNG_MAX_CONCURRENCY",
     "SCRAPE_MAX_CONCURRENCY", "INFERENCE_MAX_CONCURRENCY",
     "LLM_MAX_CONCURRENCY",
+    # Normalised weight groups - same reasoning as the ranking weights
+    # above: a caller setting one member alone de-normalises the score.
+    "RANKING_LEXICAL_WEIGHT",
+    "PERTINENCE_SEMANTIC_WEIGHT", "PERTINENCE_LEXICAL_WEIGHT",
 }
 
 # These two files are where the thresholds are defined and defaulted, so
@@ -252,6 +256,20 @@ ANALYZE_RESPONSE_SHAPE = {
     # v5 entry lacks it, and the page would show no topic keywords for any
     # article already cached - forever, since the cache never expires.
     6: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
+    # 7, same top-level keys again. Evidence items gained `foundBy` and
+    # `fusionScore` (which of the claim's queries returned this page, and
+    # how much they agreed), `lexicalScore` (how much of the claim's own
+    # vocabulary the source contains) and `pertinenceScore` (whether it
+    # addresses the claim at all). A v6 entry has none of them, so the
+    # sources panel could not say why a source was kept or cut - and,
+    # worse, a v6 entry was produced *before* the pertinence gate
+    # existed, so its evidence set may include sources this version
+    # would have refused to show the model at all.
+    7: {
         "url", "storage", "thresholds", "title", "keywords", "entities",
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",

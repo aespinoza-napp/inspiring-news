@@ -64,6 +64,18 @@ class Lexicon:
     # Stopwords used only by the language detector, never for scoring.
     stopwords: frozenset[str] = field(default_factory=frozenset)
 
+    # Words that are not stopwords but are worthless *as search terms*:
+    # journalistic connective tissue ("according to", "after", "said")
+    # and generic nouns that match every news page ever written. They are
+    # kept apart from `stopwords` because that set is tuned to tell the
+    # two languages apart for the detector, and padding it with shared
+    # vocabulary would make it worse at the one job it has.
+    #
+    # Used by the query planner to decide which of a claim's words carry
+    # its assertion, and by the lexical ranker to decide which terms a
+    # source has to contain to count as addressing it.
+    query_noise: frozenset[str] = field(default_factory=frozenset)
+
 
 def _s(*words: str) -> frozenset[str]:
     return frozenset(words)
@@ -138,6 +150,17 @@ ENGLISH = Lexicon(
         "with", "was", "on", "are", "by", "this", "be", "from", "at",
         "have", "has", "not", "but", "they", "we", "you", "were",
         "their", "its", "an",
+    ),
+    query_noise=_s(
+        "said", "says", "according", "after", "before", "during",
+        "while", "when", "where", "which", "there", "then", "than",
+        "also", "about", "into", "over", "under", "through", "between",
+        "such", "these", "those", "other", "more", "most", "some",
+        "many", "much", "very", "just", "only", "still", "already",
+        "year", "years", "time", "times", "day", "days", "week",
+        "month", "months", "news", "report", "reports", "reported",
+        "article", "story", "case", "part", "way", "thing", "things",
+        "people", "world", "today", "yesterday", "however", "because",
     ),
 )
 
@@ -223,6 +246,19 @@ SPANISH = Lexicon(
         "un", "una", "por", "con", "para", "se", "su", "sus", "al",
         "lo", "como", "más", "pero", "ha", "han", "fue", "esta",
         "este", "sobre", "también",
+    ),
+    query_noise=_s(
+        "dijo", "dice", "dicen", "según", "segun", "tras", "durante",
+        "mientras", "cuando", "donde", "cual", "cuales", "entonces",
+        "además", "ademas", "entre", "hacia", "desde", "hasta",
+        "otros", "otras", "otro", "otra", "estos", "estas", "esos",
+        "esas", "mucho", "muchos", "mucha", "muchas", "poco", "pocos",
+        "solo", "sólo", "aún", "aun", "todavía", "todavia", "ya",
+        "año", "años", "anos", "tiempo", "vez", "veces", "día", "dias",
+        "días", "semana", "mes", "meses", "noticia", "noticias",
+        "informe", "artículo", "articulo", "caso", "parte", "forma",
+        "manera", "cosa", "cosas", "gente", "mundo", "hoy", "ayer",
+        "embargo", "porque", "aunque", "ello", "misma", "mismo",
     ),
 )
 

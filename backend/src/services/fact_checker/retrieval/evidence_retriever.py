@@ -1,20 +1,31 @@
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
+from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceOrigin, RejectedEvidence
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
+from src.services.concurrency import bounded_map
 from src.services.embeddings.service import EmbeddingService
 from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.progress import source_summary
+from src.services.fact_checker.terms import claim_terms, coverage
 
 from .scraper import EvidenceScraper
 from .search_provider import SearchProvider
 from .vector_retriever import VectorRetriever
 
 OnPhase = Callable[[str, dict], None]
+
+# How semantic and lexical agreement combine in the cheap pre-rank score.
+# The same split the pertinence gate uses, on purpose: the funnel decides
+# which pages are worth the cost of fetching, and it should be deciding
+# that by the same measure the gate will later judge them on, or it
+# spends its five fetches on pages already destined to be cut.
+QUICK_SEMANTIC_WEIGHT = settings.PERTINENCE_SEMANTIC_WEIGHT
+QUICK_LEXICAL_WEIGHT = settings.PERTINENCE_LEXICAL_WEIGHT
 
 
 def _noop(phase: str, data: dict) -> None:
@@ -30,6 +41,10 @@ class RetrievalResult:
 
     # What was actually sent to the search engine for this claim.
     queries: list[str] = field(default_factory=list)
+
+    # The claim's own vector, computed once here and handed on to the
+    # ranker rather than encoded again a few lines later.
+    claim_embedding: Optional[object] = None
 
 
 class EvidenceRetriever:
@@ -65,24 +80,43 @@ class EvidenceRetriever:
         # Announced before the search runs, not after: the search is the
         # slow part, and this is what lets a second screen show what is
         # being looked up while the answer is still pending.
-        queries = self.search_provider.queries_for(claim, context, language)
+        plan = self.search_provider.plan(claim, context, language)
+        queries = [query.text for query in plan]
 
         report("searching_web", {
             "claim": claim.text,
             "queries": queries,
+            # Which question each query asks (anchor / proposition /
+            # refutation), so the live view can show that the claim's
+            # assertion was looked up and not only its subject.
+            "queryKinds": [query.kind.value for query in plan],
             "candidates": thresholds.evidence_fetch_candidates,
         })
 
-        web_evidence = self.search_provider.search(
-            claim,
-            thresholds,
-            context=context,
-            language=language,
-        )
-        internal_evidence = self.vector_retriever.retrieve(
-            claim,
-            thresholds=thresholds,
-            exclude_url=context.url if context and context.url else None,
+        # The claim's embedding, the web search and the internal-corpus
+        # lookup are three independent waits, and the internal lookup used
+        # to sit behind the web search for no reason at all. The encode
+        # goes first because both scorers below need it and it is the
+        # cheapest of the three.
+        claim_embedding = self.embeddings.encode(claim.text)
+
+        web_evidence, internal_evidence = bounded_map(
+            lambda fetch: fetch(),
+            [
+                lambda: self.search_provider.search(
+                    claim,
+                    thresholds,
+                    context=context,
+                    language=language,
+                ),
+                lambda: self.vector_retriever.retrieve(
+                    claim,
+                    thresholds=thresholds,
+                    exclude_url=context.url if context and context.url else None,
+                ),
+            ],
+            max_workers=2,
+            thread_name_prefix="evidence-source",
         )
 
         candidates = web_evidence + internal_evidence
@@ -95,14 +129,13 @@ class EvidenceRetriever:
                 "internalCount": 0,
                 "results": [],
             })
-            return RetrievalResult(kept=[], queries=queries)
+            return RetrievalResult(
+                kept=[],
+                queries=queries,
+                claim_embedding=claim_embedding,
+            )
 
-        claim_embedding = self.embeddings.encode(claim.text)
-
-        scores = {
-            id(evidence): self._quick_score(evidence, claim_embedding)
-            for evidence in candidates
-        }
+        scores = self._quick_scores(claim, candidates, claim_embedding, language)
 
         prescored = sorted(
             candidates,
@@ -177,6 +210,7 @@ class EvidenceRetriever:
             kept=scraped + internal,
             rejected=rejected,
             queries=queries,
+            claim_embedding=claim_embedding,
         )
 
     def _one_per_domain(
@@ -221,14 +255,54 @@ class EvidenceRetriever:
 
         return kept, dropped
 
-    def _quick_score(self, evidence: Evidence, claim_embedding) -> float:
+    def _quick_scores(
+        self,
+        claim: Claim,
+        candidates: list[Evidence],
+        claim_embedding,
+        language: str | None,
+    ) -> dict[int, float]:
+        """
+        The cheap "is this worth fetching" score for every candidate, in
+        one batched embedding call.
 
-        text = f"{evidence.title}. {evidence.snippet}".strip()
+        This used to be one `encode()` per candidate inside a dict
+        comprehension - sixteen sequential HTTP round trips to inference/
+        before a single page had been fetched, for a service that
+        embeds the whole batch in one pass. It was the largest avoidable
+        wait in the pipeline and it was invisible, because each call on
+        its own is fast.
 
-        if not text:
-            return 0.0
+        Lexical coverage is folded in for the same reason the ranker
+        weighs it: a title and snippet naming the claim's subject look
+        like a perfect match to an embedding, and the funnel would spend
+        all five fetches on them.
+        """
 
-        return self.embeddings.similarity(
-            claim_embedding,
-            self.embeddings.encode(text),
+        texts = [
+            f"{evidence.title}. {evidence.snippet}".strip()
+            for evidence in candidates
+        ]
+
+        anchors, content = claim_terms(claim, language)
+
+        scorable = [index for index, text in enumerate(texts) if text]
+
+        vectors = (
+            self.embeddings.encode_many([texts[index] for index in scorable])
+            if scorable
+            else []
         )
+
+        semantic = dict(zip(scorable, vectors))
+
+        return {
+            id(evidence): (
+                self.embeddings.similarity(claim_embedding, semantic[index])
+                * QUICK_SEMANTIC_WEIGHT
+                + coverage(texts[index], anchors, content) * QUICK_LEXICAL_WEIGHT
+                if index in semantic
+                else 0.0
+            )
+            for index, evidence in enumerate(candidates)
+        }

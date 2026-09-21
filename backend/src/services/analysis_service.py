@@ -504,10 +504,16 @@ class AnalysisService:
                 "cited": index in cited,
                 "domain": item.domain,
                 "engines": item.engines,
+                "foundBy": item.found_by,
+                "fusionScore": item.fusion_score,
                 # The arithmetic behind relevanceScore, so the UI can say
                 # why this source outranked the next one instead of just
                 # showing that it did.
                 "semanticScore": item.semantic_score,
+                "lexicalScore": item.lexical_score,
+                # Whether this source addresses the claim at all, as
+                # opposed to how highly it ranks among those that do.
+                "pertinenceScore": item.pertinence_score,
                 "recencyScore": item.recency_score,
                 "reliabilityScore": item.reliability_score,
                 "reliabilityKnown": item.reliability_known,

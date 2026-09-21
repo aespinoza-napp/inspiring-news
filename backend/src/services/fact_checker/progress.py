@@ -26,10 +26,18 @@ def source_summary(item: Evidence, cited: bool | None = None) -> dict:
         "origin": item.origin,
         "domain": item.domain,
         "engines": item.engines,
+        # Which of the claim's queries found this page, and how much
+        # they agreed. A hit only the anchor query returned is about the
+        # claim's subject; one the proposition query returned too is
+        # about what the claim asserts.
+        "foundBy": item.found_by,
+        "fusionScore": item.fusion_score,
         "snippet": (item.snippet or "")[:SNIPPET_CHARS],
         "publishedAt": item.published_at.isoformat() if item.published_at else None,
         "relevanceScore": item.relevance_score,
         "semanticScore": item.semantic_score,
+        "lexicalScore": item.lexical_score,
+        "pertinenceScore": item.pertinence_score,
         "recencyScore": item.recency_score,
         "reliabilityScore": item.reliability_score,
         "reliabilityKnown": item.reliability_known,

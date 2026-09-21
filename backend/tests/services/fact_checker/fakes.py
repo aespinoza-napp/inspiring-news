@@ -7,6 +7,7 @@ import hashlib
 
 from src.services.fact_checker.ranking.ranking_retrieval import RankingResult
 from src.services.fact_checker.retrieval.evidence_retriever import RetrievalResult
+from src.services.fact_checker.retrieval.query_builder import PlannedQuery, QueryKind
 
 
 class FakeEmbeddingService:
@@ -134,7 +135,14 @@ class FakeEvidenceRetriever:
 class FakeRanker:
     """Identity pass-through - orchestrator tests don't need real ranking."""
 
-    def rank(self, claim, evidence, thresholds=None):
+    def rank(
+        self,
+        claim,
+        evidence,
+        thresholds=None,
+        claim_embedding=None,
+        language=None,
+    ):
         return RankingResult(kept=evidence)
 
 
@@ -167,8 +175,11 @@ class FakeSearchProvider:
         self.evidence = evidence or []
         self.calls = []
 
+    def plan(self, claim, context=None, language=None):
+        return [PlannedQuery(f"query for {claim.text}", QueryKind.ANCHOR)]
+
     def queries_for(self, claim, context=None, language=None):
-        return [f"query for {claim.text}"]
+        return [query.text for query in self.plan(claim, context, language)]
 
     def search(self, claim, thresholds=None, context=None, language=None):
         self.calls.append((claim, thresholds, context, language))

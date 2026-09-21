@@ -177,6 +177,21 @@ class PipelineThresholds(BaseModel):
         ge=0,
     )
 
+    # How much a source has to actually address the assertion - not just
+    # its subject - to be allowed into the evidence set at all. Anything
+    # below is cut at ranking with a reason, and therefore cannot be
+    # counted, cited or corroborated.
+    #
+    # Per-run because it is the knob that trades a confident wrong answer
+    # for an honest UNVERIFIED: raise it when a run is citing sources that
+    # are merely on-topic, lower it when claims come back unverified with
+    # plausible sources sitting in the cut list.
+    evidence_min_pertinence: float = Field(
+        default_factory=lambda: settings.EVIDENCE_MIN_PERTINENCE,
+        ge=0.0,
+        le=1.0,
+    )
+
     # ------------------------------------------------------------------
 
     @classmethod
@@ -242,3 +257,4 @@ class ThresholdOverrides(BaseModel):
     claim_dedup_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     max_evidence_per_claim: Optional[int] = Field(None, ge=1)
     min_evidence_for_verdict: Optional[int] = Field(None, ge=0)
+    evidence_min_pertinence: Optional[float] = Field(None, ge=0.0, le=1.0)

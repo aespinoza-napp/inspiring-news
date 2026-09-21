@@ -89,7 +89,15 @@ class ClaimSelector:
 
         context = context or ArticleContext()
 
-        scored = self._score_all(claims, context)
+        # Every embedding this method needs, in one batched call: the
+        # article's thesis and each claim's text. It used to encode each
+        # claim twice - once to score it against the thesis, once again
+        # in the loop below to dedupe it - each as its own HTTP round
+        # trip to inference/. A ten-claim article paid twenty-one
+        # sequential calls before any evidence was looked up.
+        embeddings = self._embed(claims, context)
+
+        scored = self._score_all(claims, context, embeddings)
 
         ordered = sorted(
             scored,
@@ -116,7 +124,7 @@ class ClaimSelector:
                 ))
                 continue
 
-            embedding = self.embeddings.encode(text)
+            embedding = embeddings[text]
 
             if self._is_duplicate(
                 embedding,
@@ -137,25 +145,58 @@ class ClaimSelector:
 
     ##########################################################
 
+    def _embed(
+        self,
+        claims: list[Claim],
+        context: ArticleContext,
+    ) -> dict[str, object]:
+        """
+        `text -> vector` for the thesis and every claim, from one call.
+
+        Keyed by text rather than by position because the loop above
+        works on a re-sorted copy of the list and looks its claims up by
+        the stripped text it already has in hand.
+        """
+
+        thesis = context.thesis()
+
+        texts = [claim.text.strip() for claim in claims]
+
+        wanted = [text for text in dict.fromkeys(texts) if text]
+
+        if thesis:
+            wanted.append(thesis)
+
+        if not wanted:
+            return {}
+
+        vectors = self.embeddings.encode_many(wanted)
+
+        return dict(zip(wanted, vectors))
+
     def _score_all(
         self,
         claims: list[Claim],
         context: ArticleContext,
+        embeddings: dict[str, object],
     ) -> list[Claim]:
 
         thesis = context.thesis()
 
-        # One encode for the article, not one per claim.
-        thesis_embedding = (
-            self.embeddings.encode(thesis) if thesis else None
-        )
+        thesis_embedding = embeddings.get(thesis) if thesis else None
 
         subjects = context.subjects()
 
         return [
             claim.model_copy(update={
                 "anchor_score": round(
-                    self._anchor_score(claim, thesis_embedding, subjects), 3
+                    self._anchor_score(
+                        claim,
+                        thesis_embedding,
+                        subjects,
+                        embeddings.get(claim.text.strip()),
+                    ),
+                    3,
                 ),
             })
             for claim in claims
@@ -166,15 +207,16 @@ class ClaimSelector:
         claim: Claim,
         thesis_embedding,
         subjects: set[str],
+        claim_embedding,
     ) -> float:
 
         centrality = 0.0
 
-        if thesis_embedding is not None:
+        if thesis_embedding is not None and claim_embedding is not None:
             centrality = max(0.0, min(
                 self.embeddings.similarity(
                     thesis_embedding,
-                    self.embeddings.encode(claim.text),
+                    claim_embedding,
                 ),
                 1.0,
             ))

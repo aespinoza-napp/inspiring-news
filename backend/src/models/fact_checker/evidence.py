@@ -78,6 +78,18 @@ class Evidence(BaseModel):
     # genuinely different indexes rather than one.
     engines: list[str] = Field(default_factory=list)
 
+    # Which of the claim's queries returned this page (QueryKind values:
+    # anchor / proposition / refutation). A hit only the anchor query
+    # found is about the claim's *subject*; one the proposition query
+    # found too is about what the claim actually asserts. That difference
+    # is what an etymology page and a real source look like from here.
+    found_by: list[str] = Field(default_factory=list)
+
+    # Reciprocal-rank fusion score across those queries - how much they
+    # agreed this page was worth returning. Decides which candidates are
+    # expensive enough to scrape, before any of them has been read.
+    fusion_score: Optional[float] = None
+
     # ---- ranking breakdown --------------------------------------------
     #
     # EvidenceRanker combines these three into relevance_score. They are
@@ -86,6 +98,12 @@ class Evidence(BaseModel):
     # single opaque number.
 
     semantic_score: Optional[float] = None
+
+    # How many of the claim's own discriminative terms this source
+    # contains. The counterweight to semantic_score, which cannot tell a
+    # page that addresses the assertion from one that merely shares its
+    # subject - see services/fact_checker/terms.py.
+    lexical_score: Optional[float] = None
 
     recency_score: Optional[float] = None
 
@@ -96,6 +114,13 @@ class Evidence(BaseModel):
     # about it. A default 0.5 shown next to a real 0.9 reads as a verdict
     # on the source that nobody ever made.
     reliability_known: bool = False
+
+    # Semantic and lexical agreement combined: whether this source
+    # addresses the claim at all, as opposed to how highly it ranks among
+    # those that do. Below the run's evidence_min_pertinence a source is
+    # cut before verification, so it can never be cited, counted, or
+    # treated as corroboration.
+    pertinence_score: Optional[float] = None
 
     # ---- verification ---------------------------------------------------
 
