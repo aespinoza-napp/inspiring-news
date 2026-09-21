@@ -377,6 +377,25 @@ def test_src_stays_a_namespace_package():
 # ----------------------------------------------------------------------
 
 
+# Every local name a phase event is emitted through. `report` and
+# `phase` were added when the fact-checker started wrapping the raw
+# callback - to stamp the claim index onto each event, and to serialise
+# calls now that claims run concurrently. Without them the wrapper would
+# have been a hole straight through this rule: the literals moved onto
+# the wrapper, and only the forwarding call kept the old name.
+PHASE_EMITTERS = {"report_phase", "on_phase", "report", "phase"}
+
+# Files allowed to pass a phase name they were *given* rather than one
+# they name. These are the forwarding calls inside those wrappers: the
+# literal was already checked at the wrapper's own call site, and
+# demanding one here would mean no wrapper could exist at all. A file
+# earns a place here by forwarding a name, never by computing one - the
+# test below holds it to that.
+PHASE_FORWARDING_FILES = {
+    "services/fact_checker/fact_checker.py",
+}
+
+
 def test_every_on_phase_caller_passes_a_string_literal_phase():
     """
     CLAUDE.md: don't add a pipeline stage without also calling on_phase.
@@ -389,6 +408,9 @@ def test_every_on_phase_caller_passes_a_string_literal_phase():
 
     for path in PYTHON_FILES:
 
+        if relative(path) in PHASE_FORWARDING_FILES:
+            continue
+
         tree = ast.parse(path.read_text(encoding="utf-8"))
 
         for node in ast.walk(tree):
@@ -400,7 +422,7 @@ def test_every_on_phase_caller_passes_a_string_literal_phase():
                 node.func, "attr", None
             )
 
-            if name not in {"report_phase", "on_phase"}:
+            if name not in PHASE_EMITTERS:
                 continue
 
             if node.args and not isinstance(node.args[0], ast.Constant):
@@ -409,6 +431,64 @@ def test_every_on_phase_caller_passes_a_string_literal_phase():
     assert offenders == [], (
         "Phase names must be string literals so they can be grepped and "
         "matched by the frontend:\n  " + "\n  ".join(offenders)
+    )
+
+
+def test_a_phase_forwarding_file_still_names_its_own_phases():
+    """
+    The exemption above is for forwarding a name, not for inventing one.
+    An exempt file must still emit every phase of its own as a literal,
+    and its forwarding calls must pass a plain parameter - otherwise the
+    exemption quietly becomes "this file is not checked".
+    """
+
+    offenders = []
+
+    for name in PHASE_FORWARDING_FILES:
+
+        path = SRC / name
+
+        assert path.exists(), f"{name} is exempted but does not exist"
+
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+
+        literals = 0
+        forwarded = 0
+
+        for node in ast.walk(tree):
+
+            if not isinstance(node, ast.Call):
+                continue
+
+            called = getattr(node.func, "id", None) or getattr(
+                node.func, "attr", None
+            )
+
+            if called not in PHASE_EMITTERS or not node.args:
+                continue
+
+            if isinstance(node.args[0], ast.Constant):
+                literals += 1
+            elif isinstance(node.args[0], ast.Name):
+                forwarded += 1
+            else:
+                # Neither a literal nor a name handed in from elsewhere:
+                # an expression, which is exactly what cannot be grepped.
+                offenders.append(f"{name}:{node.lineno}")
+
+        assert literals > 0, (
+            f"{name} is exempted from the literal rule but emits no literal "
+            "phases at all - remove it from PHASE_FORWARDING_FILES"
+        )
+
+        assert forwarded > 0, (
+            f"{name} no longer forwards a phase name - remove it from "
+            "PHASE_FORWARDING_FILES"
+        )
+
+    assert offenders == [], (
+        "A forwarded phase name must be a plain parameter, not a computed "
+        "expression:\n  " + "\n  ".join(offenders)
     )
 
 

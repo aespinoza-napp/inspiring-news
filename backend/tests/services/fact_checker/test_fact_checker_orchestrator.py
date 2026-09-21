@@ -339,6 +339,9 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
     # end left a polling client with nothing to show for the whole of it.
     # (A real EvidenceRetriever adds searching_web, web_results and the
     # scraping pair between the first two; this test injects a fake.)
+    #
+    # One claim, so the order is still exact. With several the per-claim
+    # events interleave by design - see the concurrency tests below.
     assert phases == [
         "validating",
         "validated",
@@ -354,8 +357,9 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
 
     by_phase = dict(events)
 
-    # Each per-claim event names its claim, so a client checking five
-    # claims can tell which one it is watching.
+    # Each per-claim event names its claim *and* its position in the
+    # selected set, so a client watching five interleaved claims can tell
+    # which one each event belongs to without re-deriving it from the text.
     for phase in (
         "retrieving_evidence",
         "evidence_retrieved",
@@ -364,6 +368,15 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
         "claim_checked",
     ):
         assert by_phase[phase]["claim"] == claim.text
+        assert by_phase[phase]["claimIndex"] == 0
+
+    # The full set of claims arrives with the count, before any of them
+    # has been checked: concurrent checks have no order to arrive in, so
+    # a client that learned each claim's text from its first event would
+    # shuffle its own rows as the run progressed.
+    assert [entry["text"] for entry in by_phase["claims_selected"]["claims"]] == [
+        claim.text
+    ]
 
     assert by_phase["evidence_retrieved"]["found"] == 1
     assert by_phase["verifying_claim"]["evidence"] == 1

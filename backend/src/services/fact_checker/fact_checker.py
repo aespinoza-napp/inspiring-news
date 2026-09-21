@@ -1,6 +1,8 @@
+import threading
 from logging import getLogger
 from typing import Callable, Optional
 
+from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.core.enriched_article import EnrichedArticle
@@ -9,6 +11,7 @@ from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
+from src.services.concurrency import bounded_map
 from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelector
 from src.services.fact_checker.progress import source_summary
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
@@ -31,6 +34,32 @@ OnPhase = Callable[[str, dict], None]
 def _noop(phase: str, data: dict) -> None:
     pass
 
+
+def _serialised(on_phase: OnPhase) -> OnPhase:
+    """
+    Wraps a phase callback so only one thread is inside it at a time.
+
+    Claims are now checked concurrently, so `on_phase` is called from
+    several threads at once. Every caller writing one would otherwise
+    have to be thread-safe itself - and they are not: the job runner's
+    callback keeps `last`/`start` timers in a closure to log how long
+    each phase took, and the journal appends to a list. Serialising here
+    keeps the callback's existing single-threaded contract intact rather
+    than pushing a new requirement out to everyone who passes one.
+
+    It does *not* serialise the work - only the reporting of it, which is
+    a dict and a list append.
+    """
+
+    lock = threading.Lock()
+
+    def report(phase: str, data: dict) -> None:
+        with lock:
+            on_phase(phase, data)
+
+    return report
+
+
 # How bad each verdict is for the article, since the article takes its
 # worst claim's verdict. PARTIALLY_TRUE sits above TRUE but below
 # UNVERIFIED: a claim whose detail is off has still been checked, which
@@ -49,6 +78,14 @@ class FactChecker:
     Top-level orchestrator: validates an EnrichedArticle, and - only if
     validation passes - selects its most check-worthy claims and verifies
     each one against retrieved evidence, producing a FactCheckReport.
+
+    Claims are verified **concurrently**; each claim's own stages stay
+    strictly **sequential**. That split is deliberate and is the only
+    parallelism that makes sense here: retrieval feeds ranking, ranking
+    feeds the LLM, and the LLM's answer is what gets recalibrated, so
+    within a claim there is nothing to overlap. Between claims there is
+    nothing shared at all - which is why a four-claim article used to
+    take four times as long as it needed to.
     """
 
     def __init__(
@@ -76,7 +113,7 @@ class FactChecker:
         thresholds: PipelineThresholds | None = None,
     ) -> FactCheckReport:
 
-        report_phase = on_phase or _noop
+        report_phase = _serialised(on_phase or _noop)
 
         thresholds = thresholds or PipelineThresholds()
 
@@ -124,28 +161,47 @@ class FactChecker:
         )
         selected = selection.selected
 
-        report_phase("claims_selected", {"count": len(selected)})
+        # The claim texts ride along with the count. They are all known
+        # at this point and the client needs them all at once: with the
+        # checks running concurrently there is no longer an order in
+        # which claims appear, so a screen that waited to learn each
+        # claim's text from its first event would shuffle its own rows as
+        # the run progressed. Sent up front, the client draws the final
+        # set of rows immediately and fills each one in place.
+        report_phase("claims_selected", {
+            "count": len(selected),
+            "claims": [
+                {"index": index, "text": claim.text, "anchorScore": claim.anchor_score}
+                for index, claim in enumerate(selected)
+            ],
+        })
 
-        claim_checks = [
-            self._check_claim(
-                claim,
+        claim_checks = bounded_map(
+            lambda indexed: self._check_claim(
+                indexed[1],
                 report_phase,
                 thresholds,
                 context=context,
                 language=article.language,
-            )
-            for claim in selected
-        ]
+                claim_index=indexed[0],
+            ),
+            list(enumerate(selected)),
+            max_workers=settings.CLAIM_MAX_CONCURRENCY,
+            thread_name_prefix="claim-check",
+        )
 
         # Persist the article now that its own claim-checks are done (not
         # before - EvidenceRetriever's internal-corpus lookup would
         # otherwise sometimes surface this very article as "evidence" for
-        # its own claims). Nothing else in the app calls
-        # VectorRepository.save() at all, so without this every duplicate
-        # check and every internal-evidence lookup was permanently
-        # querying an empty collection - confirmed live: DuplicateValidator
-        # never flagged a duplicate even when re-validating the exact same
-        # article object twice in a row.
+        # its own claims). That ordering is also why this is not inside
+        # the fan-out above: it is a barrier, and every claim must be
+        # past its retrieval before it runs.
+        #
+        # Nothing else in the app calls VectorRepository.save() at all,
+        # so without this every duplicate check and every internal-evidence
+        # lookup was permanently querying an empty collection - confirmed
+        # live: DuplicateValidator never flagged a duplicate even when
+        # re-validating the exact same article object twice in a row.
         try:
             self.repository.save(article)
         except Exception:
@@ -227,7 +283,23 @@ class FactChecker:
         thresholds: PipelineThresholds,
         context: ArticleContext | None = None,
         language: str | None = None,
+        claim_index: int = 0,
     ) -> FactCheck:
+        """
+        One claim, end to end, in order: retrieve, rank, ask, recalibrate.
+
+        Sequential by necessity, not by omission - each stage consumes
+        what the one before it produced. The concurrency is between
+        calls to this method, not inside it.
+
+        `claim_index` is this claim's position in the selected set. Every
+        event carries it because the events of several claims now
+        interleave on the wire, and matching them up by claim text alone
+        means the client re-derives an identity the server already has.
+        """
+
+        def phase(name: str, data: dict) -> None:
+            report_phase(name, {"claim": claim.text, "claimIndex": claim_index, **data})
 
         # The four sub-stages below are the slowest in the whole pipeline -
         # a live SearXNG search, scraping the top hits, and one LLM call -
@@ -236,32 +308,41 @@ class FactChecker:
         # updates spread over a minute of apparent silence. CLAUDE.md's
         # rule is per stage, not per method.
 
-        report_phase("retrieving_evidence", {"claim": claim.text})
+        phase("retrieving_evidence", {})
 
         retrieval = self.evidence_retriever.retrieve(
             claim,
             thresholds,
             context=context,
             language=language,
-            on_phase=report_phase,
+            on_phase=lambda name, data: report_phase(
+                name, {"claimIndex": claim_index, **data}
+            ),
         )
 
-        report_phase("evidence_retrieved", {
-            "claim": claim.text,
+        phase("evidence_retrieved", {
             "found": len(retrieval.kept),
             "rejected": len(retrieval.rejected),
             "queries": retrieval.queries,
             "rejectedSources": self._rejected_summary(retrieval.rejected),
         })
 
-        ranking = self.ranker.rank(claim, retrieval.kept, thresholds)
+        ranking = self.ranker.rank(
+            claim,
+            retrieval.kept,
+            thresholds,
+            # Already computed during retrieval; re-encoding it here was
+            # a second round trip to inference/ for the same answer.
+            claim_embedding=retrieval.claim_embedding,
+            language=language,
+        )
         ranked = ranking.kept
 
-        # The rating each source received: relevance and the three factors
+        # The rating each source received: relevance and the four factors
         # behind it, including how much its reliability figure is a real
-        # rating rather than the default.
-        report_phase("evidence_ranked", {
-            "claim": claim.text,
+        # rating rather than the default, and whether it addresses the
+        # claim at all rather than merely its subject.
+        phase("evidence_ranked", {
             "sources": [source_summary(item) for item in ranked],
             "cut": self._rejected_summary(ranking.rejected),
         })
@@ -269,10 +350,7 @@ class FactChecker:
         # Ranking is embedding arithmetic over a handful of items, fast
         # enough not to deserve its own pair of events - but the LLM call
         # after it is the single longest step, so it gets one.
-        report_phase("verifying_claim", {
-            "claim": claim.text,
-            "evidence": len(ranked),
-        })
+        phase("verifying_claim", {"evidence": len(ranked)})
 
         llm_result = self.verifier.verify(claim, ranked)
 
@@ -305,7 +383,7 @@ class FactChecker:
 
         cited = set(check.cited_evidence_indices)
 
-        report_phase("claim_checked", {
+        phase("claim_checked", {
             "claim": check.claim,
             "verdict": check.verdict,
             "confidence": check.confidence,
