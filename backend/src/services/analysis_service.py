@@ -106,7 +106,13 @@ class AnalysisService:
         if "error" in result:
             return final
 
-        self.cache.set(url, result, thresholds)
+        # Fail-soft like every storage write below: a full disk must not
+        # turn a finished run - one that already paid for a scrape, an
+        # enrichment and an LLM call per claim - into a failed job.
+        try:
+            self.cache.set(url, result, thresholds)
+        except Exception:
+            logger.warning("Could not cache the result for %s", url, exc_info=True)
 
         report_phase("done", final)
 
@@ -504,6 +510,7 @@ class AnalysisService:
                 "semanticScore": item.semantic_score,
                 "recencyScore": item.recency_score,
                 "reliabilityScore": item.reliability_score,
+                "reliabilityKnown": item.reliability_known,
                 "stance": item.stance,
                 "quote": item.quote,
             }

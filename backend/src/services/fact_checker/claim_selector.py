@@ -19,6 +19,9 @@ class ArticleContext:
 
     lead: str = ""
 
+    # Lets internal-evidence retrieval skip the article's own stored copy.
+    url: str = ""
+
     keywords: list[str] = field(default_factory=list)
 
     entities: dict[str, list[str]] = field(default_factory=dict)

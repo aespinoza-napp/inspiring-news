@@ -1066,10 +1066,6 @@ button:disabled {
   min-width: 0;
 }
 
-.article-keywords {
-  margin-top: 0.4rem;
-}
-
 /* ---------- metrics row (sentiment / quality) ----------
    The second question: "how does this article read". Sentiment (a
    single polarity reading) and quality (seven labeled axes) are both
@@ -1330,4 +1326,380 @@ button:disabled {
   margin: 0;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- live screen ----------
+   A second screen for watching verification happen. A run is one card; each
+   claim inside it fills in as its phase events arrive: what was searched,
+   which sources came back, how each was rated, what the model concluded. */
+
+.live-empty {
+  margin-top: 1.5rem;
+  color: var(--muted);
+}
+
+.live-job-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.live-job-title {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.live-job-title h2 {
+  margin: 0 0 0.15rem;
+  overflow-wrap: anywhere;
+}
+
+.live-job-title .card-url {
+  margin-bottom: 0;
+}
+
+.live-kind {
+  flex: none;
+  padding: 0.12rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.live-kind-claim {
+  color: var(--series-7);
+  background: color-mix(in srgb, var(--series-7) 14%, transparent);
+}
+
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.live-status-done {
+  color: var(--true);
+}
+
+.live-status-failed {
+  color: var(--false);
+}
+
+.live-job-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+}
+
+.live-toggle {
+  margin: 0;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.live-toggle:hover {
+  color: var(--fg);
+}
+
+.trace {
+  margin-top: 0.5rem;
+}
+
+.trace-note {
+  margin: 0.75rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--muted) 10%, transparent);
+  font-size: 0.85rem;
+}
+
+.trace-muted {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.trace-fine {
+  margin: 0.2rem 0 0;
+  font-size: 0.7rem;
+}
+
+.trace-claim {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  animation: fadeSlideIn 0.3s var(--ease) both;
+}
+
+.trace-claim-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.trace-claim-text {
+  flex: 1;
+  min-width: 12rem;
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.trace-claim-verdict,
+.trace-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.trace-block {
+  margin-top: 0.85rem;
+}
+
+.trace-label {
+  margin: 0 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+summary.trace-label {
+  cursor: pointer;
+}
+
+.trace-queries {
+  margin: 0 0 0.3rem;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.trace-queries code {
+  display: block;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.trace-sources,
+.trace-rejected {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trace-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  font-size: 0.82rem;
+  animation: fadeSlideIn 0.25s var(--ease) both;
+}
+
+.trace-source:last-child {
+  border-bottom: none;
+}
+
+.trace-source-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 12rem;
+  overflow-wrap: anywhere;
+}
+
+.trace-source-title strong {
+  flex: none;
+  font-weight: 600;
+}
+
+.trace-source a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.trace-source a:hover {
+  text-decoration: underline;
+}
+
+.trace-source-meta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.trace-tag {
+  padding: 0.02rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.66rem;
+  color: var(--muted);
+}
+
+.trace-tag-ok {
+  color: var(--true);
+  border-color: currentColor;
+}
+
+.trace-tag-warn {
+  color: var(--misleading);
+  border-color: currentColor;
+}
+
+/* A rated source spans the whole row: title, then its ratings beneath. */
+.trace-source-rated {
+  align-items: flex-start;
+}
+
+.trace-ratings {
+  flex-basis: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem 1.25rem;
+}
+
+.trace-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.trace-rating-label {
+  flex: none;
+  width: 7.5rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.trace-rating-track {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.trace-rating-fill {
+  display: block;
+  height: 100%;
+  background: var(--funnel-2);
+  transition: width 0.3s var(--ease);
+}
+
+.trace-rating-fill.is-strong {
+  background: var(--accent);
+}
+
+.trace-rating-value {
+  flex: none;
+  min-width: 3.2rem;
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.trace-source-rated .source-quote {
+  flex-basis: 100%;
+}
+
+.trace-explanation {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+}
+
+.trace-comparison {
+  margin-top: 0.5rem;
+}
+
+.trace-comparison ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .trace-ratings {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- topic keywords ---------- */
+
+.topic-keywords {
+  margin-top: 0.4rem;
+}
+
+.topic-keywords-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.7rem;
+}
+
+.topic-keywords-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.topic-keywords-tab:hover {
+  color: var(--fg);
+}
+
+.topic-keywords-tab.is-active {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
+.topic-keywords-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.topic-keywords-note {
+  margin: 0.6rem 0 0;
 }

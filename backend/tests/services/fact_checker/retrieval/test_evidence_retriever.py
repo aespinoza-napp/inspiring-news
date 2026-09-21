@@ -111,3 +111,113 @@ def test_retrieve_only_scrapes_top_web_candidates(monkeypatch):
     rejected_urls = {item.url for item in result.rejected}
     assert rejected_urls == {"https://2.com", "https://3.com"}
     assert all(item.stage == "evidence_retrieval" for item in result.rejected)
+
+
+def _retriever(web, internal=None):
+
+    provider = FakeSearchProvider(web)
+    vectors = FakeVectorRetriever(internal or [])
+
+    retriever = EvidenceRetriever(
+        repository=None,
+        search_provider=provider,
+        scraper=FakeEvidenceScraper(),
+        vector_retriever=vectors,
+        embeddings=FakeEmbeddingService(),
+    )
+
+    return retriever, provider, vectors
+
+
+def test_retrieve_reports_what_is_searched_and_what_comes_back():
+
+    web = [
+        Evidence(url="https://a.com", title="A", snippet="one", origin=EvidenceOrigin.WEB, domain="a.com"),
+        Evidence(url="https://b.com", title="B", snippet="two", origin=EvidenceOrigin.WEB, domain="b.com"),
+    ]
+
+    retriever, _, _ = _retriever(web)
+
+    claim = create_claim(text="target claim")
+
+    events = []
+
+    result = retriever.retrieve(claim, on_phase=lambda phase, data: events.append((phase, data)))
+
+    assert [phase for phase, _ in events] == [
+        "searching_web",
+        "web_results",
+        "scraping_sources",
+        "sources_scraped",
+    ]
+
+    by_phase = dict(events)
+
+    assert by_phase["searching_web"]["queries"] == ["query for target claim"]
+    assert by_phase["web_results"]["queries"] == ["query for target claim"]
+    assert result.queries == ["query for target claim"]
+
+    assert by_phase["web_results"]["webCount"] == 2
+
+    found = by_phase["web_results"]["results"]
+
+    assert {item["url"] for item in found} == {"https://a.com", "https://b.com"}
+    assert all("quickScore" in item and "domain" in item for item in found)
+
+    scores = [item["quickScore"] for item in found]
+    assert scores == sorted(scores, reverse=True)
+
+    assert all(source["scraped"] for source in by_phase["sources_scraped"]["sources"])
+
+
+def test_the_search_is_announced_before_it_runs():
+    """
+    The search is the slow step; the announcement is what lets another
+    screen show what is being looked up while the answer is pending.
+    """
+
+    retriever, provider, _ = _retriever([
+        Evidence(url="https://a.com", title="A", snippet="one", origin=EvidenceOrigin.WEB),
+    ])
+
+    searches_done_when_announced = []
+
+    def on_phase(phase, data):
+        if phase == "searching_web":
+            searches_done_when_announced.append(len(provider.calls))
+
+    retriever.retrieve(create_claim(), on_phase=on_phase)
+
+    assert searches_done_when_announced == [0]
+    assert len(provider.calls) == 1
+
+
+def test_an_empty_search_still_reports_what_was_searched():
+
+    retriever, _, _ = _retriever([])
+
+    events = []
+
+    result = retriever.retrieve(
+        create_claim(text="nothing out there"),
+        on_phase=lambda phase, data: events.append((phase, data)),
+    )
+
+    assert [phase for phase, _ in events] == ["searching_web", "web_results"]
+    assert dict(events)["web_results"]["results"] == []
+    assert result.queries == ["query for nothing out there"]
+
+
+def test_the_articles_own_url_is_excluded_from_internal_evidence():
+
+    from src.services.fact_checker.claim_selector import ArticleContext
+
+    retriever, _, vectors = _retriever([])
+
+    retriever.retrieve(
+        create_claim(),
+        context=ArticleContext(url="https://example.com/the-article"),
+    )
+    retriever.retrieve(create_claim())
+
+    assert vectors.exclude_urls == ["https://example.com/the-article", None]

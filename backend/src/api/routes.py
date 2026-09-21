@@ -1,7 +1,7 @@
 import secrets
 from logging import getLogger
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from src.container import (
@@ -15,6 +15,7 @@ from src.container import (
 )
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
+from src.models.core.job import JobStatus
 from src.models.storage.lineage import DataLayer
 from src.services.job_runner import run_analysis_job
 
@@ -196,17 +197,51 @@ def create_analysis_jobs_batch(request: CreateAnalysisJobsBatchRequest):
     return {"jobs": jobs}
 
 
-def _job_view(job) -> dict:
+def _job_view(job, with_events: bool = True, with_result: bool = True) -> dict:
     return {
         "jobId": job.job_id,
         "url": job.url,
+        "kind": job.kind,
         "status": job.status,
         "events": [
             {"phase": event.phase, "data": event.data, "at": event.at}
             for event in job.events
-        ],
-        "result": job.result,
+        ] if with_events else [],
+        "eventCount": len(job.events),
+        "result": job.result if with_result else None,
         "error": job.error,
+        "createdAt": job.created_at,
+        "updatedAt": job.updated_at,
+    }
+
+
+@router.get("/analyze/jobs", dependencies=[Depends(require_storage_key)])
+def list_analysis_jobs(limit: int = Query(default=20, ge=1, le=100)):
+    """
+    What is running now and what ran recently, for a second screen that
+    wants to watch verification happen without having started it.
+
+    Active jobs come first and carry every event, so the viewer can draw
+    the searches, sources and ratings as they arrive. Finished jobs are
+    summarised without their events or their result (a long run is
+    hundreds of KB, and this is polled every second) - fetch one by id for
+    the full record. Only jobs this process holds are listed; earlier runs
+    stay readable by id from the journal.
+
+    Behind the same optional key as /storage/*: a job id used to be a
+    capability nobody could guess, and this lists every one of them along
+    with the URLs and claims people submitted.
+    """
+
+    return {
+        "jobs": [
+            _job_view(
+                job,
+                with_events=job.status in (JobStatus.QUEUED, JobStatus.RUNNING),
+                with_result=False,
+            )
+            for job in job_store.list(limit)
+        ]
     }
 
 
@@ -277,7 +312,23 @@ def verify_claim(request: VerifyClaimRequest):
             detail=f"Claim verification unavailable: {exc}",
         )
 
-    return service.verify(request.claim, thresholds=thresholds)
+    # Registered as a job so a second screen can watch the verification
+    # and the journal keeps it, even though this request still answers
+    # synchronously.
+    job = job_store.create(request.claim, kind="claim")
+
+    def on_phase(phase: str, data: dict) -> None:
+
+        if phase == "done":
+            job_store.complete(job.job_id, data)
+        else:
+            job_store.add_event(job.job_id, phase, data)
+
+    try:
+        return service.verify(request.claim, on_phase=on_phase, thresholds=thresholds)
+    except Exception as exc:
+        job_store.fail(job.job_id, str(exc))
+        raise
 
 
 @router.post("/enrich")

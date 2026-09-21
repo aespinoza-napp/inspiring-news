@@ -21,7 +21,7 @@ class AnalysisCache:
     by AnalysisService.analyze() changes shape.
     """
 
-    SCHEMA_VERSION = 4
+    SCHEMA_VERSION = 6
 
     def __init__(self, directory: Path | None = None):
 

@@ -134,6 +134,7 @@ class ClaimService:
                     "semanticScore": item.semantic_score,
                     "recencyScore": item.recency_score,
                     "reliabilityScore": item.reliability_score,
+                    "reliabilityKnown": item.reliability_known,
                     "stance": item.stance,
                     "quote": item.quote,
                 }

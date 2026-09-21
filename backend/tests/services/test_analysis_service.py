@@ -864,3 +864,34 @@ def test_storage_reports_a_record_id_per_layer_on_a_clean_run(tmp_path):
 
     assert result["storage"]["persisted"] is True
     assert all(records[layer] for layer in ("raw", "processed", "exploitation"))
+
+
+class ExplodingCache(FakeCache):
+
+    def set(self, url, result, thresholds=None):
+        raise OSError("No space left on device")
+
+
+def test_a_failing_cache_write_does_not_fail_a_finished_run():
+    """
+    The run has already paid for a scrape, an enrichment and an LLM call
+    per claim. Losing the cache entry costs a re-run later; losing the
+    result costs it now.
+    """
+
+    article = create_article()
+
+    service = make_service(
+        make_news(), article, _successful_report(article), cache=ExplodingCache()
+    )
+
+    phases = []
+
+    result = service.analyze(
+        "https://example.com/a",
+        on_phase=lambda phase, data: phases.append(phase),
+    )
+
+    assert "error" not in result
+    assert result["cached"] is False
+    assert phases[-1] == "done"

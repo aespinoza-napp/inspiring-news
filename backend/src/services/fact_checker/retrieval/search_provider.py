@@ -27,6 +27,27 @@ class SearchProvider:
 
         self.client = client or SearxngClient()
 
+    def queries_for(
+        self,
+        claim: Claim,
+        context: ArticleContext | None = None,
+        language: str | None = None,
+    ) -> list[str]:
+        """
+        The queries `search` will send, in order. Public so the live view
+        can show what is being searched *before* the search returns,
+        from the same code that runs it rather than a copy that drifts.
+        """
+
+        queries = [build_query(claim, context)]
+
+        refutation = build_refutation_query(claim, context, language)
+
+        if refutation:
+            queries.append(refutation)
+
+        return [query for query in queries if query]
+
     def search(
         self,
         claim: Claim,
@@ -39,12 +60,7 @@ class SearchProvider:
 
         candidates = thresholds.evidence_fetch_candidates
 
-        queries = [build_query(claim, context)]
-
-        refutation = build_refutation_query(claim, context, language)
-
-        if refutation:
-            queries.append(refutation)
+        queries = self.queries_for(claim, context, language)
 
         evidence: list[Evidence] = []
 
@@ -54,9 +70,6 @@ class SearchProvider:
         seen: set[str] = set()
 
         for query in queries:
-
-            if not query:
-                continue
 
             for item in self.client.search(
                 query,
@@ -68,6 +81,12 @@ class SearchProvider:
                 title = item.get("title")
 
                 if not url or not title or url in seen:
+                    continue
+
+                # A search result is untrusted input. Anything that is not
+                # a web page (javascript:, file:, data:) is not evidence,
+                # cannot be scraped, and must never reach a link in the UI.
+                if not url.lower().startswith(("http://", "https://")):
                     continue
 
                 seen.add(url)

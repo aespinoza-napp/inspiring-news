@@ -107,6 +107,7 @@ class EvidenceRanker:
             "semantic_score": semantic,
             "recency_score": recency,
             "reliability_score": reliability,
+            "reliability_known": self._reliability_known(evidence),
             "relevance_score": (
                 semantic * self.SEMANTIC_WEIGHT
                 + recency * self.RECENCY_WEIGHT
@@ -134,6 +135,15 @@ class EvidenceRanker:
         domain = urlparse(evidence.url).netloc.replace("www.", "")
 
         return self._reliability_by_domain.get(domain, self.DEFAULT_RELIABILITY)
+
+    def _reliability_known(self, evidence: Evidence) -> bool:
+
+        if evidence.source_reliability is not None:
+            return True
+
+        domain = urlparse(evidence.url).netloc.replace("www.", "")
+
+        return domain in self._reliability_by_domain
 
     def _load_domain_reliability(self, source_repository: SourceRepository) -> dict[str, float]:
 

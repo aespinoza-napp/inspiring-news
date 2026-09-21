@@ -32,6 +32,10 @@ class Job(BaseModel):
 
     url: str
 
+    # "article" for a full URL run; "claim" for a single claim checked on
+    # its own (POST /verify-claim), where `url` holds the claim text.
+    kind: str = "article"
+
     status: JobStatus = JobStatus.QUEUED
 
     events: list[PhaseEvent] = Field(default_factory=list)

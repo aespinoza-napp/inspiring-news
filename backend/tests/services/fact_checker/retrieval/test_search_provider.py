@@ -144,3 +144,21 @@ def test_search_handles_unparsable_date():
     results = provider.search(create_claim())
 
     assert results[0].published_at is None
+
+
+def test_search_ignores_results_that_are_not_web_pages():
+    """
+    Results are untrusted. A `javascript:` or `file:` URL is not evidence
+    and would otherwise be scraped and rendered as a link.
+    """
+
+    client = FakeSearxngClient(results=[
+        {"url": "javascript:alert(1)", "title": "Hostile", "content": "x"},
+        {"url": "file:///etc/passwd", "title": "Local file", "content": "x"},
+        {"url": "data:text/html,<b>x</b>", "title": "Inline", "content": "x"},
+        {"url": "HTTPS://example.com/ok", "title": "Fine", "content": "x"},
+    ])
+
+    results = SearchProvider(client=client).search(create_claim())
+
+    assert [item.url for item in results] == ["HTTPS://example.com/ok"]

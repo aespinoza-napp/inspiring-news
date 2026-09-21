@@ -49,6 +49,11 @@ def create_sentiment(
     )
 
 
+# These two tests are about the hard-fail gate itself, so they switch it on
+# rather than inheriting whatever the environment default happens to be.
+HARD_FAIL_ON = PipelineThresholds(positive_impact_hard_fail_enabled=True)
+
+
 def test_positive_article_passes():
 
     validator = PositiveImpactValidator()
@@ -76,6 +81,7 @@ def test_high_negative_sentiment_fails():
     result = validator.validate(
         sentiment,
         create_quality(),
+        HARD_FAIL_ON,
     )
 
     assert not result.passed
@@ -131,6 +137,7 @@ def test_low_objectivity_fails():
     result = validator.validate(
         create_sentiment(),
         quality,
+        HARD_FAIL_ON,
     )
 
     assert not result.passed

@@ -54,15 +54,49 @@ def test_run_persists_article_so_a_later_duplicate_is_detected(repository):
     assert report_one.duplicate is False
     assert repository.count() == 1
 
-    # Same embedding (the factory default), different id - a genuine
-    # near-duplicate submission, exactly like re-analyzing the same URL.
-    second = create_article(id="22222222-2222-2222-2222-222222222222", claims=[])
+    # Same embedding (the factory default), different id *and* a different
+    # URL - the same story from another outlet. (The same URL again is a
+    # re-analysis, which is covered by the test below.)
+    second = create_article(
+        id="22222222-2222-2222-2222-222222222222",
+        url="https://example.com/another-outlet",
+        claims=[],
+    )
     report_two = checker.run(second)
 
     assert report_two.validation_passed is False
     assert report_two.duplicate is True
     # A rejected duplicate must not also get persisted a second time.
     assert repository.count() == 1
+
+
+def test_reanalysing_the_same_url_is_accepted_and_replaces_the_stored_copy(repository):
+    """
+    Regression: extraction mints a new id every time, so re-running a URL
+    (force_refresh, or a changed threshold that changes the cache key) hit
+    its own stored copy at similarity 1.0 and was rejected as a duplicate
+    of itself. It must pass, and the collection must keep one point per
+    URL rather than growing a copy per run.
+    """
+
+    checker = FactChecker(
+        repository,
+        evidence_retriever=FakeEvidenceRetriever({}),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({}),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    checker.run(create_article(id="11111111-1111-1111-1111-111111111111", claims=[]))
+
+    rerun = create_article(id="22222222-2222-2222-2222-222222222222", claims=[])
+    report = checker.run(rerun)
+
+    assert report.validation_passed is True
+    assert report.duplicate is False
+    assert repository.count() == 1
+    assert repository.exists("22222222-2222-2222-2222-222222222222")
+    assert not repository.exists("11111111-1111-1111-1111-111111111111")
 
 
 def test_run_produces_worst_case_wins_overall_verdict(repository):
@@ -300,9 +334,11 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
 
     phases = [phase for phase, _ in events]
 
-    # Four events per claim, not one. Retrieval and the LLM call are the
+    # Several events per claim, not one. Retrieval and the LLM call are the
     # slowest steps in the pipeline, and a single `claim_checked` at the
     # end left a polling client with nothing to show for the whole of it.
+    # (A real EvidenceRetriever adds searching_web, web_results and the
+    # scraping pair between the first two; this test injects a fake.)
     assert phases == [
         "validating",
         "validated",
@@ -310,6 +346,7 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
         "claims_selected",
         "retrieving_evidence",
         "evidence_retrieved",
+        "evidence_ranked",
         "verifying_claim",
         "claim_checked",
         "fact_check_done",
@@ -322,6 +359,7 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
     for phase in (
         "retrieving_evidence",
         "evidence_retrieved",
+        "evidence_ranked",
         "verifying_claim",
         "claim_checked",
     ):
@@ -332,3 +370,104 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
 
     claim_checked_data = dict(events[phases.index("claim_checked")][1])
     assert claim_checked_data["verdict"] == Verdict.TRUE
+
+
+def _run_one_claim_and_collect_events(repository, evidence):
+
+    claim = create_claim(text="A checkable claim.", confidence=0.9)
+
+    article = create_article(claims=[claim])
+
+    embeddings = FakeEmbeddingService(vectors={
+        claim.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    })
+
+    checker = FactChecker(
+        repository,
+        claim_selector=ClaimSelector(embeddings=embeddings),
+        evidence_retriever=FakeEvidenceRetriever({claim.text: evidence}),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({
+            claim.text: LLMVerificationResult(
+                verdict=Verdict.TRUE,
+                confidence=0.9,
+                explanation="Confirmed.",
+                cited_evidence=[0],
+            ),
+        }),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    events = []
+
+    checker.run(article, on_phase=lambda phase, data: events.append((phase, data)))
+
+    return dict(events)
+
+
+def test_the_ranking_event_carries_each_sources_rating(repository):
+
+    by_phase = _run_one_claim_and_collect_events(repository, [
+        create_evidence(
+            url="https://a.com",
+            domain="a.com",
+            relevance_score=0.9,
+            semantic_score=0.8,
+            recency_score=0.5,
+            reliability_score=0.95,
+            reliability_known=True,
+        ),
+    ])
+
+    [source] = by_phase["evidence_ranked"]["sources"]
+
+    assert source["url"] == "https://a.com"
+    assert source["domain"] == "a.com"
+    assert source["relevanceScore"] == 0.9
+    assert source["semanticScore"] == 0.8
+    assert source["recencyScore"] == 0.5
+    assert source["reliabilityScore"] == 0.95
+    assert source["reliabilityKnown"] is True
+
+
+def test_the_verdict_event_says_which_sources_were_cited(repository):
+
+    by_phase = _run_one_claim_and_collect_events(repository, [
+        create_evidence(url="https://a.com", relevance_score=0.9),
+        create_evidence(url="https://b.com", relevance_score=0.4),
+    ])
+
+    checked = by_phase["claim_checked"]
+
+    assert checked["verdict"] == Verdict.TRUE
+    assert [item["url"] for item in checked["evidence"]] == ["https://a.com", "https://b.com"]
+    assert [item["cited"] for item in checked["evidence"]] == [True, False]
+    assert checked["evidenceCount"] == 2
+
+
+def test_events_never_carry_a_scraped_article_body(repository):
+    """
+    Events are held in memory, polled every second and journalled. A full
+    page of text in each would make all three grow without bound.
+    """
+
+    import json
+
+    by_phase = _run_one_claim_and_collect_events(repository, [
+        create_evidence(
+            url="https://a.com",
+            content="body " * 5000,
+            snippet="snippet " * 500,
+            relevance_score=0.9,
+        ),
+    ])
+
+    for phase in ("evidence_ranked", "claim_checked"):
+
+        payload = by_phase[phase]
+        source = (payload.get("sources") or payload["evidence"])[0]
+
+        assert "content" not in source
+        assert len(source["snippet"]) <= 240
+
+    assert len(json.dumps(by_phase, default=str)) < 20_000

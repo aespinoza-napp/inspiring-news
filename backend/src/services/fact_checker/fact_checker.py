@@ -10,6 +10,7 @@ from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
 from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelector
+from src.services.fact_checker.progress import source_summary
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
 from src.services.fact_checker.retrieval.evidence_retriever import EvidenceRetriever
 from src.services.fact_checker.validation_pipeline import (
@@ -210,6 +211,7 @@ class FactChecker:
 
         return ArticleContext(
             title=article.title or "",
+            url=article.url,
             # The opening of the body stands in for the lead. Nothing
             # upstream marks one, and the first few hundred characters of
             # a news article are the lead often enough to be useful here.
@@ -241,16 +243,28 @@ class FactChecker:
             thresholds,
             context=context,
             language=language,
+            on_phase=report_phase,
         )
 
         report_phase("evidence_retrieved", {
             "claim": claim.text,
             "found": len(retrieval.kept),
             "rejected": len(retrieval.rejected),
+            "queries": retrieval.queries,
+            "rejectedSources": self._rejected_summary(retrieval.rejected),
         })
 
         ranking = self.ranker.rank(claim, retrieval.kept, thresholds)
         ranked = ranking.kept
+
+        # The rating each source received: relevance and the three factors
+        # behind it, including how much its reliability figure is a real
+        # rating rather than the default.
+        report_phase("evidence_ranked", {
+            "claim": claim.text,
+            "sources": [source_summary(item) for item in ranked],
+            "cut": self._rejected_summary(ranking.rejected),
+        })
 
         # Ranking is embedding arithmetic over a handful of items, fast
         # enough not to deserve its own pair of events - but the LLM call
@@ -289,14 +303,37 @@ class FactChecker:
             "raw_confidence": llm_result.confidence,
         })
 
+        cited = set(check.cited_evidence_indices)
+
         report_phase("claim_checked", {
             "claim": check.claim,
             "verdict": check.verdict,
             "confidence": check.confidence,
             "explanation": check.explanation,
+            "evidenceCount": check.evidence_count,
+            "independentDomains": check.independent_domains,
+            "agreements": check.agreements,
+            "discrepancies": check.discrepancies,
+            "evidence": [
+                source_summary(item, cited=index in cited)
+                for index, item in enumerate(check.evidence)
+            ],
         })
 
         return check
+
+    @staticmethod
+    def _rejected_summary(rejected: list[RejectedEvidence]) -> list[dict]:
+
+        return [
+            {
+                "url": item.url,
+                "title": item.title,
+                "reason": item.reason,
+                "score": item.score,
+            }
+            for item in rejected
+        ]
 
     def _trace(
         self,

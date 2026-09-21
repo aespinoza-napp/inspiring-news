@@ -96,3 +96,13 @@ def test_complete_json_returns_none_on_connection_error():
     result = client.complete_json("system", "user", max_retries=1)
 
     assert result is None
+
+
+def test_the_sdk_is_not_allowed_to_retry_on_its_own():
+    """
+    The OpenAI SDK retries timeouts twice by default, on top of
+    complete_json's own retry: one slow claim could hold a worker for
+    6 x LLM_TIMEOUT.
+    """
+
+    assert LLMClient()._client.max_retries == 0

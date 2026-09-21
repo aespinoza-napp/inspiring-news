@@ -133,12 +133,12 @@ class Settings(BaseSettings):
 
     # Admission filter
     TOPIC_MIN_CONFIDENCE: float = 0.35
-    POSITIVE_IMPACT_MIN_SCORE: float = 0.30
+    POSITIVE_IMPACT_MIN_SCORE: float = 0.1
 
     # Whether low objectivity / strong negative sentiment reject an
     # article outright, on top of costing it score. See
     # PositiveImpactValidator.validate.
-    POSITIVE_IMPACT_HARD_FAIL_ENABLED: bool = True
+    POSITIVE_IMPACT_HARD_FAIL_ENABLED: bool = False
 
     # Similarity threshold for duplicate detection
     DUPLICATE_THRESHOLD: float = 0.90

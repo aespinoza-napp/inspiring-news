@@ -229,6 +229,24 @@ ANALYZE_RESPONSE_SHAPE = {
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",
     },
+    # 5 again has the same top-level keys: each evidence item gained
+    # `reliabilityKnown` (whether its reliability figure is a real rating
+    # or just the default for an unrated domain). A v4 entry lacks it and
+    # would show every unrated source as if it had been rated.
+    5: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
+    # 6 again has the same top-level keys: each entry of `topics` gained
+    # `keywords` (the topic's own keywords scored against the article). A
+    # v5 entry lacks it, and the page would show no topic keywords for any
+    # article already cached - forever, since the cache never expires.
+    6: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
 }
 
 

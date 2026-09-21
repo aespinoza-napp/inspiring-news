@@ -1,3 +1,4 @@
+from src.config.thresholds import PipelineThresholds
 from src.services.fact_checker.validation_pipeline import ValidationPipeline
 from datetime import datetime
 from tests.factories import create_article
@@ -26,6 +27,7 @@ def test_pipeline_rejects_duplicate(repository):
 
     duplicated = create_article(
         id="22222222-2222-2222-2222-222222222222",
+        url="https://example.com/another-outlet",
         embedding=[0.1] * 1024,
     )
 
@@ -61,7 +63,11 @@ def test_pipeline_rejects_negative_article(repository):
     article.sentiment.positive = 0.05
     article.sentiment.label = "negative"
 
-    result = pipeline.validate(article)
+    # Explicit: whether strong negative sentiment is a hard fail is a
+    # setting, and this test is about what happens when it is on.
+    result = pipeline.validate(
+        article, PipelineThresholds(positive_impact_hard_fail_enabled=True)
+    )
 
     assert not result.positive_ok
 

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import re
 from typing import List
 
 import numpy as np
 
 from src.config.settings import settings
 from src.config.topics import TOPICS
-from src.models.nlp.topic_prediction import TopicPrediction
+from src.models.nlp.topic_prediction import TopicKeyword, TopicPrediction
 from src.services.embeddings.service import EmbeddingService
 
 from .base import BaseProcessor
@@ -16,12 +17,16 @@ class TopicClassifier(BaseProcessor):
 
     _topic_embeddings = None
 
+    # topic_id -> [(keyword, vector), ...]
+    _keyword_embeddings = None
+
     def __init__(
         self,
         threshold: float | None = None,
+        embedding_service: EmbeddingService | None = None,
     ):
 
-        self.embedding_service = EmbeddingService()
+        self.embedding_service = embedding_service or EmbeddingService()
 
         # Instance default, overridable per call - see process(). The
         # classifier is a long-lived singleton shared by every request,
@@ -34,7 +39,11 @@ class TopicClassifier(BaseProcessor):
 
         if TopicClassifier._topic_embeddings is None:
 
-            TopicClassifier._topic_embeddings = {}
+            # Built aside and assigned at the end. Assigning the empty dict
+            # first left the class holding a half-filled cache whenever the
+            # inference service failed partway, and every later instance
+            # then skipped this block and classified against fewer topics.
+            topic_embeddings = {}
 
             for topic_id, topic in TOPICS.items():
 
@@ -47,9 +56,33 @@ class TopicClassifier(BaseProcessor):
                 {", ".join(topic.keywords)}
                 """
 
-                TopicClassifier._topic_embeddings[topic_id] = (
+                topic_embeddings[topic_id] = (
                     self.embedding_service.encode(topic_text)
                 )
+
+            TopicClassifier._topic_embeddings = topic_embeddings
+
+        if TopicClassifier._keyword_embeddings is None:
+
+            # One batched call for every keyword of every topic, once per
+            # process - scoring an article against them afterwards is
+            # arithmetic only.
+            terms = [
+                (topic_id, keyword)
+                for topic_id, topic in TOPICS.items()
+                for keyword in topic.keywords
+            ]
+
+            vectors = self.embedding_service.encode_many(
+                [keyword for _, keyword in terms]
+            )
+
+            keyword_embeddings: dict = {topic_id: [] for topic_id in TOPICS}
+
+            for (topic_id, keyword), vector in zip(terms, vectors):
+                keyword_embeddings[topic_id].append((keyword, vector))
+
+            TopicClassifier._keyword_embeddings = keyword_embeddings
 
     def process(
         self,
@@ -109,9 +142,45 @@ class TopicClassifier(BaseProcessor):
                 topic=TOPICS[topic_id].name,
                 confidence=round(confidence, 4),
                 probability=round(float(probability), 4),
+                keywords=self._score_keywords(
+                    topic_id, article_embedding, text
+                ),
             )
 
             for (topic_id, confidence), probability
             in zip(similarities, probabilities)
 
         ]
+
+    def _score_keywords(
+        self,
+        topic_id: str,
+        article_embedding,
+        text: str,
+    ) -> List[TopicKeyword]:
+        """
+        The topic's own keywords, ranked by how close each is to this
+        article. Similarity rather than literal matching because the
+        keyword lists are English and 7 of the 12 sources publish in
+        Spanish; `mentions` adds the literal count for the cases where the
+        word really is in the text.
+        """
+
+        scored = [
+            TopicKeyword(
+                keyword=keyword,
+                score=round(float(np.dot(article_embedding, vector)), 4),
+                mentions=len(
+                    re.findall(
+                        rf"(?<!\w){re.escape(keyword)}(?!\w)",
+                        text,
+                        flags=re.IGNORECASE,
+                    )
+                ),
+            )
+            for keyword, vector in self._keyword_embeddings[topic_id]
+        ]
+
+        scored.sort(key=lambda item: item.score, reverse=True)
+
+        return scored

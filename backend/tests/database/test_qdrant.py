@@ -76,8 +76,12 @@ def test_delete_article(repository):
 
 def test_clear_removes_all_articles(repository):
 
-    repository.save(create_article(id="11111111-1111-1111-1111-111111111111"))
-    repository.save(create_article(id="22222222-2222-2222-2222-222222222222"))
+    repository.save(create_article(
+        id="11111111-1111-1111-1111-111111111111", url="https://example.com/one",
+    ))
+    repository.save(create_article(
+        id="22222222-2222-2222-2222-222222222222", url="https://example.com/two",
+    ))
 
     assert repository.count() == 2
 

@@ -14,7 +14,7 @@ interface Stage {
 // recent phase event seen. Distinct from the stepper's per-stage labels,
 // which describe the five coarse-grained stages, not every fine-grained
 // backend phase.
-const CURRENT_PHASE_LABELS: Record<string, string> = {
+export const CURRENT_PHASE_LABELS: Record<string, string> = {
   initializing: "Warming up (loading local AI models, first run only)…",
   initialized: "Models ready",
   scraping: "Fetching the article…",
@@ -27,8 +27,15 @@ const CURRENT_PHASE_LABELS: Record<string, string> = {
   selecting_claims: "Selecting claims to verify…",
   claims_selected: "Claims selected",
   retrieving_evidence: "Searching for evidence…",
+  searching_web: "Searching the web…",
+  web_results: "Sources found",
+  scraping_sources: "Reading the top sources…",
+  sources_scraped: "Sources read",
   evidence_retrieved: "Evidence found",
+  evidence_ranked: "Sources rated",
   verifying_claim: "Asking the model to judge the claim…",
+  extracting_entities: "Reading the claim…",
+  verifying: "Checking the claim…",
   claim_checked: "Claim checked",
   fact_check_done: "Fact-check complete",
   storing: "Storing…",

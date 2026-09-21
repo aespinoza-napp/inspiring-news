@@ -52,3 +52,29 @@ def test_retrieve_filters_out_unrelated_articles(repository):
     results = retriever.retrieve(claim)
 
     assert results == []
+
+
+def test_retrieve_skips_the_article_the_claim_came_from(repository):
+    """
+    On a re-analysis the article's own earlier copy is in the collection.
+    Returned as "internal evidence" it would corroborate the article with
+    itself.
+    """
+
+    article = create_article(
+        id="11111111-1111-1111-1111-111111111111",
+        url="https://bbc.com/mars-water",
+        embedding=[1.0] + [0.0] * 1023,
+    )
+
+    repository.save(article)
+
+    claim = create_claim(text="NASA found water on Mars.")
+
+    retriever = VectorRetriever(
+        repository,
+        embeddings=FakeEmbeddingService(vectors={claim.text: [1.0] + [0.0] * 1023}),
+    )
+
+    assert len(retriever.retrieve(claim)) == 1
+    assert retriever.retrieve(claim, exclude_url=article.url) == []

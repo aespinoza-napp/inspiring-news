@@ -56,6 +56,11 @@ class LLMClient:
             base_url=base_url or settings.LLM_BASE_URL,
             api_key=api_key or settings.LLM_API_KEY.get_secret_value(),
             timeout=timeout or settings.LLM_TIMEOUT,
+            # The SDK retries timeouts and connection errors twice on its
+            # own (DEFAULT_MAX_RETRIES = 2), silently multiplying
+            # complete_json's own retry: a slow local model could hold one
+            # claim for 6 x LLM_TIMEOUT. Retries are owned by complete_json.
+            max_retries=0,
         )
 
     def complete_json(

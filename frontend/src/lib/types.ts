@@ -1,7 +1,18 @@
+/** One of a topic's own keywords, scored against the article. */
+export interface TopicKeyword {
+  keyword: string;
+  /** Cosine similarity to the whole article - only the order is meaningful. */
+  score: number;
+  /** Literal occurrences in the text; often 0 (the lists are English). */
+  mentions: number;
+}
+
 export interface TopicPrediction {
   topic: string;
   confidence: number;
   probability: number;
+  /** The topic's keywords, closest to the article first. */
+  keywords?: TopicKeyword[];
 }
 
 export type Verdict =
@@ -54,6 +65,11 @@ export interface EvidenceItem {
   semanticScore?: number | null;
   recencyScore?: number | null;
   reliabilityScore?: number | null;
+  /**
+   * False when reliabilityScore is only the default for a domain nobody
+   * has rated, not a rating - it should not be drawn like one.
+   */
+  reliabilityKnown?: boolean;
   stance?: EvidenceStance | null;
   /** Only set when the span was found verbatim in the source. */
   quote?: string | null;
@@ -136,6 +152,8 @@ export interface ThresholdOverrides {
   min_body_length?: number;
   topic_min_confidence?: number;
   positive_impact_min_score?: number;
+  /** Whether low objectivity / strong negative sentiment reject outright. */
+  positive_impact_hard_fail_enabled?: boolean;
   duplicate_threshold?: number;
   relatedness_threshold?: number;
   anchor_claims_min?: number;
@@ -205,11 +223,23 @@ export interface PhaseEvent {
 
 export interface AnalysisJob {
   jobId: string;
+  /** For a claim check, the claim text itself. */
   url: string;
+  /** "claim" for POST /verify-claim, otherwise a full article run. */
+  kind?: "article" | "claim";
   status: JobStatus;
   events: PhaseEvent[];
+  /** Total events, even when `events` was left out of a list response. */
+  eventCount?: number;
   result: AnalysisResult | null;
   error: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** GET /analyze/jobs - what is running now and what ran recently. */
+export interface LiveJobsResponse {
+  jobs: AnalysisJob[];
 }
 
 /**

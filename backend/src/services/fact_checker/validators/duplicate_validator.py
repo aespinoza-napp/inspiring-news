@@ -31,9 +31,13 @@ class DuplicateValidator:
         thresholds = thresholds or PipelineThresholds()
 
 
+        # Excluded by URL, not only by id: every extraction mints a new id,
+        # so re-analysing a URL would otherwise match its own stored copy
+        # at similarity 1.0 and be rejected as a duplicate of itself.
         results = self.repository.search(
             article.embedding,
             limit=5,
+            exclude_url=article.url,
         )
 
 

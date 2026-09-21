@@ -38,7 +38,7 @@ start_docker() {
   # A plain `up -d` silently keeps serving the old image forever once
   # one exists - Docker's layer cache makes a no-op rebuild fast, so
   # this costs seconds, not minutes, when nothing actually changed.
-  ( cd "$ROOT" && docker compose -f "$COMPOSE_FILE" up -d --build ) || die "docker compose up failed"
+  ( cd "$ROOT" && docker compose --env-file "$ROOT/backend/.env" -f "$COMPOSE_FILE" up -d --build ) || die "docker compose up failed"
 
   step "Waiting for backend to be healthy"
   # inference's own healthcheck can legitimately take minutes on a cold
@@ -47,7 +47,7 @@ start_docker() {
   if timeout 600 bash -c 'until curl -sf http://localhost:8000/docs >/dev/null 2>&1; do sleep 2; done'; then
     ok "backend is up (http://localhost:8000)"
   else
-    warn "backend did not come up within 10 minutes - check: docker compose -f docker/docker-compose.yml logs backend"
+    warn "backend did not come up within 10 minutes - check: docker compose --env-file backend/.env -f docker/docker-compose.yml logs backend"
   fi
 }
 
@@ -82,7 +82,7 @@ case "$TARGET" in
     ;;
   stop)
     step "Stopping docker services"
-    ( cd "$ROOT" && docker compose -f "$COMPOSE_FILE" down ) || die "docker compose down failed"
+    ( cd "$ROOT" && docker compose --env-file "$ROOT/backend/.env" -f "$COMPOSE_FILE" down ) || die "docker compose down failed"
     ok "Stopped. (Named volumes - the vector store, cache and lake - are kept; 'docker compose down -v' would delete those too.)"
     ;;
   *)

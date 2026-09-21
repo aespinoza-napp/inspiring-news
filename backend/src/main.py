@@ -1,9 +1,12 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from src.api.routes import router
 from src.config.settings import settings
+from src.container import job_store
+from src.services.job_journal import JobJournal
 
 # Python's root logger defaults to WARNING, so plain logger.info() calls
 # (e.g. src/services/job_runner.py's per-phase timing) would silently
@@ -14,7 +17,20 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Attached at startup rather than built into the container: importing
+    # the app (as the API tests do) must not start writing job journals
+    # into the real lake. TestClient only runs this when used as a
+    # context manager, which those tests do not do.
+    if settings.LAKE_ENABLED:
+        job_store.attach_journal(JobJournal(settings.LAKE_PATH / "journal"))
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(router)
 

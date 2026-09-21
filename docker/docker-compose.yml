@@ -5,16 +5,13 @@ services:
       - "7474:7474"
       - "7687:7687"
     environment:
-      # Must match NEO4J_PASSWORD in backend/.env - GraphClient
-      # (backend/src/database/neo4j_client.py) is dead code today, so
-      # nothing surfaces the mismatch yet, but the moment something
-      # calls it, a wrong password here looks exactly like the
-      # intermittent "sometimes it works" failures this file's other
-      # comments describe. Two hardcoded copies of the same secret is
-      # not ideal, but the alternative (Compose ${VAR} interpolation
-      # from a new docker/.env) is more machinery for a credential
-      # nothing currently uses.
-      - NEO4J_AUTH=neo4j/aEm7V1HyGck1B3VXYNzY
+      # Read from backend/.env, the one place the password lives, so the
+      # two can never disagree. Compose only interpolates from the shell
+      # or an env file, so run it with `--env-file ../backend/.env`
+      # (scripts/dev.sh does). The password used to be written here in
+      # plain text and is therefore in git history: treat that value as
+      # compromised and set a new one.
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD - run compose with --env-file ../backend/.env}
       # Without these, Neo4j's JVM auto-sizes heap + page cache based on
       # available host RAM - dangerous on an 8GB machine that's also
       # holding a local LLM in memory. Capped small since this is a dev

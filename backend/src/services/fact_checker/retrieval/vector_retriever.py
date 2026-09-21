@@ -33,13 +33,22 @@ class VectorRetriever:
         claim: Claim,
         limit: int = 5,
         thresholds: PipelineThresholds | None = None,
+        exclude_url: str | None = None,
     ) -> list[Evidence]:
+        """
+        `exclude_url` is the article the claim came from: its own earlier
+        copy must not come back as "independent" corroboration of itself.
+        """
 
         minimum = (thresholds or PipelineThresholds()).relatedness_threshold
 
         embedding = self.embeddings.encode(claim.text)
 
-        results = self.repository.search(_as_vector(embedding), limit=limit)
+        results = self.repository.search(
+            _as_vector(embedding),
+            limit=limit,
+            exclude_url=exclude_url,
+        )
 
         return [
             Evidence(

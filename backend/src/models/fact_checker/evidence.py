@@ -91,6 +91,12 @@ class Evidence(BaseModel):
 
     reliability_score: Optional[float] = None
 
+    # Whether reliability_score is a rating we actually hold for this
+    # domain, or just RANKING_DEFAULT_RELIABILITY because we know nothing
+    # about it. A default 0.5 shown next to a real 0.9 reads as a verdict
+    # on the source that nobody ever made.
+    reliability_known: bool = False
+
     # ---- verification ---------------------------------------------------
 
     stance: Optional[EvidenceStance] = None

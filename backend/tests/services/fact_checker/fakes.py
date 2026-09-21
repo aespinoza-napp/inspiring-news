@@ -126,7 +126,7 @@ class FakeEvidenceRetriever:
         self.evidence_by_claim = evidence_by_claim or {}
         self.calls = []
 
-    def retrieve(self, claim, thresholds=None, context=None, language=None):
+    def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None):
         self.calls.append((claim, thresholds, context, language))
         return RetrievalResult(kept=self.evidence_by_claim.get(claim.text, []))
 
@@ -167,6 +167,9 @@ class FakeSearchProvider:
         self.evidence = evidence or []
         self.calls = []
 
+    def queries_for(self, claim, context=None, language=None):
+        return [f"query for {claim.text}"]
+
     def search(self, claim, thresholds=None, context=None, language=None):
         self.calls.append((claim, thresholds, context, language))
         return list(self.evidence)
@@ -178,9 +181,11 @@ class FakeVectorRetriever:
     def __init__(self, evidence=None):
         self.evidence = evidence or []
         self.calls = []
+        self.exclude_urls = []
 
-    def retrieve(self, claim, limit: int = 5, thresholds=None):
+    def retrieve(self, claim, limit: int = 5, thresholds=None, exclude_url=None):
         self.calls.append((claim, limit, thresholds))
+        self.exclude_urls.append(exclude_url)
         return list(self.evidence)
 
 

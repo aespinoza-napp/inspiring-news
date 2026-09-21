@@ -63,10 +63,27 @@ class VectorRepository:
 
         return EnrichedArticle.model_validate(payload)
 
+    @staticmethod
+    def _same_url(url: str) -> Filter:
+
+        return Filter(
+            must=[FieldCondition(key="url", match=MatchValue(value=url))]
+        )
+
     def save(
         self,
         article: EnrichedArticle,
     ):
+
+        # One point per URL. Every extraction mints a fresh uuid4 id, so
+        # without this a re-analysis of the same URL stored a second copy
+        # beside the first - and the copies then crowd the top-k of every
+        # duplicate and internal-evidence search with the article itself.
+        self.client.delete(
+            collection_name=self.COLLECTION,
+            points_selector=self._same_url(article.url),
+            wait=True,
+        )
 
         self.client.upsert(
             collection_name=self.COLLECTION,
@@ -97,13 +114,25 @@ class VectorRepository:
         self,
         vector: list[float],
         limit: int = 5,
+        exclude_url: str | None = None,
     ) -> list[SimilarArticle]:
-
+        """
+        `exclude_url` drops the article at that URL *inside* the query, so
+        the limit is spent on other articles. Filtering the results
+        afterwards would leave fewer than `limit` real neighbours.
+        """
 
         results = self.client.query_points(
             collection_name=self.COLLECTION,
             query=vector,
             limit=limit,
+            query_filter=(
+                Filter(must_not=[
+                    FieldCondition(key="url", match=MatchValue(value=exclude_url))
+                ])
+                if exclude_url
+                else None
+            ),
             with_payload=True,
             with_vectors=True,
         )

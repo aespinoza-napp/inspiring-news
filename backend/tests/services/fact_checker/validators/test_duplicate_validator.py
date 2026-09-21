@@ -21,6 +21,12 @@ from tests.factories import create_article
 ORIGINAL_ID = "11111111-1111-1111-1111-111111111111"
 OTHER_ID = "22222222-2222-2222-2222-222222222222"
 
+# The factory's default URL is the same for every article, and a stored
+# article at the *same URL* is the same article, not a duplicate (see
+# test_reanalysing_the_same_url_is_not_a_duplicate_of_itself). Anything
+# meant to be a different article therefore needs a different URL.
+OTHER_URL = "https://example.com/another-outlet"
+
 # 0.90 / 0.80: the app's own defaults (src/config/settings.py), stated
 # here so the tests describe fixed behaviour instead of tracking .env.
 THRESHOLDS = PipelineThresholds(
@@ -48,6 +54,7 @@ def test_duplicate_detection(repository):
 
     duplicated_article = create_article(
         id=OTHER_ID,
+        url=OTHER_URL,
         title="Scientists find underground water on Mars",
         body="Researchers found evidence of water reservoirs below Mars.",
         embedding=[0.1] * 1024,
@@ -69,7 +76,9 @@ def test_new_article_is_not_duplicate(repository):
     )
 
     # Orthogonal - similarity 0.0.
-    new_article = create_article(id=OTHER_ID, embedding=unit_vector(0.0, 1.0))
+    new_article = create_article(
+        id=OTHER_ID, url=OTHER_URL, embedding=unit_vector(0.0, 1.0),
+    )
 
     result = DuplicateValidator(repository).validate(new_article, THRESHOLDS)
 
@@ -92,6 +101,7 @@ def test_related_article(repository):
     # cos = 0.85 against (1, 0, 0, ...).
     related_article = create_article(
         id=OTHER_ID,
+        url=OTHER_URL,
         embedding=unit_vector(0.85, (1 - 0.85**2) ** 0.5),
     )
 
@@ -122,6 +132,7 @@ def test_the_duplicate_threshold_decides_the_verdict(repository):
 
     article = create_article(
         id=OTHER_ID,
+        url=OTHER_URL,
         embedding=unit_vector(0.85, (1 - 0.85**2) ** 0.5),
     )
 
@@ -165,3 +176,44 @@ def test_an_empty_corpus_yields_no_match(repository):
     assert result.duplicate is False
     assert result.similarity == 0.0
     assert result.reason == "No similar articles found"
+
+
+def test_reanalysing_the_same_url_is_not_a_duplicate_of_itself(repository):
+    """
+    Every extraction mints a fresh id, so a re-run of the same URL (a
+    forced refresh, or any changed threshold) reaches the validator with a
+    new id and the same content. Matching on id alone flagged it against
+    its own stored copy at similarity 1.0 and rejected it.
+    """
+
+    repository.save(create_article(id=ORIGINAL_ID, embedding=unit_vector(1.0)))
+
+    rerun = create_article(id=OTHER_ID, embedding=unit_vector(1.0))
+
+    assert rerun.url == create_article().url
+
+    result = DuplicateValidator(repository).validate(rerun, THRESHOLDS)
+
+    assert result.duplicate is False
+    assert result.matched_article_id is None
+
+
+def test_a_same_url_copy_does_not_hide_a_real_duplicate(repository):
+    """
+    The same-URL article is excluded inside the query, so it cannot use
+    up the result slots a genuine near-duplicate needs.
+    """
+
+    repository.save(create_article(id=ORIGINAL_ID, embedding=unit_vector(1.0)))
+    repository.save(create_article(
+        id=OTHER_ID, url=OTHER_URL, embedding=unit_vector(1.0),
+    ))
+
+    rerun = create_article(
+        id="33333333-3333-3333-3333-333333333333", embedding=unit_vector(1.0),
+    )
+
+    result = DuplicateValidator(repository).validate(rerun, THRESHOLDS)
+
+    assert result.duplicate is True
+    assert result.matched_article_id == OTHER_ID

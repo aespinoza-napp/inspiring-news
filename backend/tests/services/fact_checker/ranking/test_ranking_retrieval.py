@@ -110,3 +110,40 @@ def test_rank_truncates_to_max_evidence_per_claim(monkeypatch):
     assert [item.url for item in result.rejected] == ["https://2.com", "https://3.com"]
     assert all(item.stage == "evidence_ranking" for item in result.rejected)
     assert all(item.score is not None for item in result.rejected)
+
+
+def test_rank_says_whether_a_reliability_is_a_real_rating():
+    """
+    An unrated domain gets the default figure. Shown beside a real 0.95 it
+    reads as a judgement on the source that nobody made, so the ranking
+    says which is which.
+    """
+
+    known_source = NewsSource(
+        id="known",
+        name="Known",
+        base_url="https://known.com",
+        source_type=SourceType.NEWS,
+        reliability_index=0.95,
+    )
+
+    ranker = EvidenceRanker(
+        embeddings=FakeEmbeddingService(),
+        source_repository=FakeSourceRepository([known_source]),
+    )
+
+    ranked = ranker.rank(
+        create_claim(),
+        [
+            create_evidence(url="https://known.com/a", content="text", published_at=None),
+            create_evidence(url="https://unknown.com/a", content="text", published_at=None),
+        ],
+    ).kept
+
+    by_url = {item.url: item for item in ranked}
+
+    assert by_url["https://known.com/a"].reliability_known is True
+    assert by_url["https://known.com/a"].reliability_score == 0.95
+
+    assert by_url["https://unknown.com/a"].reliability_known is False
+    assert by_url["https://unknown.com/a"].reliability_score == settings.RANKING_DEFAULT_RELIABILITY

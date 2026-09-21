@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Callable, Optional
 
 from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
@@ -7,10 +8,17 @@ from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
 from src.services.embeddings.service import EmbeddingService
 from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.fact_checker.progress import source_summary
 
 from .scraper import EvidenceScraper
 from .search_provider import SearchProvider
 from .vector_retriever import VectorRetriever
+
+OnPhase = Callable[[str, dict], None]
+
+
+def _noop(phase: str, data: dict) -> None:
+    pass
 
 
 @dataclass
@@ -19,6 +27,9 @@ class RetrievalResult:
     kept: list[Evidence]
 
     rejected: list[RejectedEvidence] = field(default_factory=list)
+
+    # What was actually sent to the search engine for this claim.
+    queries: list[str] = field(default_factory=list)
 
 
 class EvidenceRetriever:
@@ -42,11 +53,25 @@ class EvidenceRetriever:
         thresholds: PipelineThresholds | None = None,
         context: ArticleContext | None = None,
         language: str | None = None,
+        on_phase: Optional[OnPhase] = None,
     ) -> RetrievalResult:
 
         thresholds = thresholds or PipelineThresholds()
 
+        report = on_phase or _noop
+
         max_evidence = thresholds.max_evidence_per_claim
+
+        # Announced before the search runs, not after: the search is the
+        # slow part, and this is what lets a second screen show what is
+        # being looked up while the answer is still pending.
+        queries = self.search_provider.queries_for(claim, context, language)
+
+        report("searching_web", {
+            "claim": claim.text,
+            "queries": queries,
+            "candidates": thresholds.evidence_fetch_candidates,
+        })
 
         web_evidence = self.search_provider.search(
             claim,
@@ -57,12 +82,20 @@ class EvidenceRetriever:
         internal_evidence = self.vector_retriever.retrieve(
             claim,
             thresholds=thresholds,
+            exclude_url=context.url if context and context.url else None,
         )
 
         candidates = web_evidence + internal_evidence
 
         if not candidates:
-            return RetrievalResult(kept=[])
+            report("web_results", {
+                "claim": claim.text,
+                "queries": queries,
+                "webCount": 0,
+                "internalCount": 0,
+                "results": [],
+            })
+            return RetrievalResult(kept=[], queries=queries)
 
         claim_embedding = self.embeddings.encode(claim.text)
 
@@ -77,6 +110,19 @@ class EvidenceRetriever:
             reverse=True,
         )
 
+        report("web_results", {
+            "claim": claim.text,
+            "queries": queries,
+            "webCount": len(web_evidence),
+            "internalCount": len(internal_evidence),
+            # Every candidate the search returned, before any is cut, with
+            # the cheap similarity that decides which get scraped.
+            "results": [
+                {**source_summary(evidence), "quickScore": scores[id(evidence)]}
+                for evidence in prescored
+            ],
+        })
+
         web_ranked = [
             evidence
             for evidence in prescored
@@ -88,7 +134,23 @@ class EvidenceRetriever:
         top_web = web_ranked[:max_evidence]
         cut_web = web_ranked[max_evidence:]
 
+        report("scraping_sources", {
+            "claim": claim.text,
+            "sources": [
+                {"url": evidence.url, "domain": evidence.domain}
+                for evidence in top_web
+            ],
+        })
+
         scraped = self.scraper.enrich(top_web)
+
+        report("sources_scraped", {
+            "claim": claim.text,
+            "sources": [
+                {"url": evidence.url, "scraped": bool(evidence.content)}
+                for evidence in scraped
+            ],
+        })
 
         internal = [
             evidence
@@ -111,7 +173,11 @@ class EvidenceRetriever:
             for rank, evidence in enumerate(cut_web, start=len(top_web) + 1)
         ] + same_domain
 
-        return RetrievalResult(kept=scraped + internal, rejected=rejected)
+        return RetrievalResult(
+            kept=scraped + internal,
+            rejected=rejected,
+            queries=queries,
+        )
 
     def _one_per_domain(
         self,
