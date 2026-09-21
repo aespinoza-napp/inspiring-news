@@ -108,7 +108,16 @@ NON_THRESHOLD_SETTINGS = {
     "CONFIDENCE_LLM_WEIGHT", "CONFIDENCE_EVIDENCE_WEIGHT",
     "EVIDENCE_RECENCY_HALF_LIFE_DAYS",
     "URL_GUARD_ENABLED", "URL_GUARD_ALLOWED_HOSTS", "STORAGE_API_KEY",
-    "ANALYSIS_MAX_CONCURRENCY",
+    # Concurrency ceilings. Infrastructure by decision, not oversight:
+    # they cap how hard this *process* leans on SearXNG, inference/, the
+    # LLM and other people's web servers, all of which are shared by
+    # every concurrent run. A per-request override would let one caller
+    # raise the load everyone else is subject to. See
+    # src/services/concurrency.py.
+    "ANALYSIS_MAX_CONCURRENCY", "CLAIM_MAX_CONCURRENCY",
+    "QUERY_MAX_CONCURRENCY", "SEARXNG_MAX_CONCURRENCY",
+    "SCRAPE_MAX_CONCURRENCY", "INFERENCE_MAX_CONCURRENCY",
+    "LLM_MAX_CONCURRENCY",
 }
 
 # These two files are where the thresholds are defined and defaulted, so

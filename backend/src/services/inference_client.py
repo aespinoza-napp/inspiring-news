@@ -21,6 +21,7 @@ from typing import Any
 import httpx
 
 from src.config.settings import settings
+from src.services.concurrency import INFERENCE
 
 
 class InferenceUnavailable(RuntimeError):
@@ -56,10 +57,11 @@ class InferenceClient:
         """
 
         try:
-            response = self._client.post(
-                "/entities",
-                json={"text": text, "threshold": threshold, "labels": labels},
-            )
+            with INFERENCE.permit():
+                response = self._client.post(
+                    "/entities",
+                    json={"text": text, "threshold": threshold, "labels": labels},
+                )
             response.raise_for_status()
         except httpx.HTTPError:
             return None
@@ -70,7 +72,8 @@ class InferenceClient:
         """Raises InferenceUnavailable on any failure - see module docstring."""
 
         try:
-            response = self._client.post("/sentiment", json={"text": text})
+            with INFERENCE.permit():
+                response = self._client.post("/sentiment", json={"text": text})
             response.raise_for_status()
         except httpx.HTTPError as exc:
             raise InferenceUnavailable(f"Sentiment analysis failed: {exc}") from exc
@@ -99,7 +102,11 @@ class InferenceClient:
     def _embed(self, body: dict) -> dict:
 
         try:
-            response = self._client.post("/embeddings", json=body)
+            # One permit per request, batched or not: /embeddings with 20
+            # texts is one call against the ceiling, which is most of why
+            # callers were changed to batch rather than loop.
+            with INFERENCE.permit():
+                response = self._client.post("/embeddings", json=body)
             response.raise_for_status()
         except httpx.HTTPError as exc:
             raise InferenceUnavailable(f"Embedding request failed: {exc}") from exc

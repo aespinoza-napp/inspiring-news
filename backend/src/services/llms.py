@@ -8,6 +8,7 @@ from typing import Any
 from openai import APIConnectionError, APIError, APITimeoutError, OpenAI
 
 from src.config.settings import settings
+from src.services.concurrency import LLM
 
 logger = getLogger(__name__)
 
@@ -83,12 +84,18 @@ class LLMClient:
         for attempt in range(max_retries + 1):
 
             try:
-                response = self._client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    response_format={"type": "json_object"},
-                    temperature=0.0,
-                )
+                # Claims are verified concurrently now, so this is where
+                # several of them meet. A local Ollama serving one model
+                # answers concurrent requests by queueing them anyway -
+                # the permit makes that queue explicit and bounded
+                # instead of letting every claim hold a socket open.
+                with LLM.permit():
+                    response = self._client.chat.completions.create(
+                        model=self.model,
+                        messages=messages,
+                        response_format={"type": "json_object"},
+                        temperature=0.0,
+                    )
             except (APIConnectionError, APITimeoutError, APIError) as exc:
                 logger.warning(
                     "LLM call failed (attempt %d): %s",

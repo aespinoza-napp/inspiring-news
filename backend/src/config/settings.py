@@ -82,6 +82,34 @@ class Settings(BaseSettings):
     ANALYSIS_MAX_CONCURRENCY: int = 3
 
     # -----------------------------------------------------------------
+    # Fan-out and resource ceilings (see src/services/concurrency.py)
+    #
+    # Fact-checking runs claims concurrently, and each claim runs its two
+    # searches and its page fetches concurrently too. Those multiply -
+    # ANALYSIS_MAX_CONCURRENCY x CLAIM_MAX_CONCURRENCY x
+    # SCRAPE_MAX_CONCURRENCY is the worst case - so the fan-out numbers
+    # are chosen for what is sensible to watch at once and the real
+    # ceiling is the per-resource limit below, applied once per process.
+    #
+    # Infrastructure, not per-run tunables: a request must not be able to
+    # raise how hard this process hits a service every other request
+    # shares. Same reasoning as ANALYSIS_MAX_CONCURRENCY above.
+    # -----------------------------------------------------------------
+
+    # How many of an article's claims are verified at the same time.
+    CLAIM_MAX_CONCURRENCY: int = 4
+
+    # How many of one claim's queries are sent at the same time. Two is
+    # the whole set today (affirmative + refutation).
+    QUERY_MAX_CONCURRENCY: int = 2
+
+    # Zero or below means unbounded, for tests and single-user local runs.
+    SEARXNG_MAX_CONCURRENCY: int = 4
+    SCRAPE_MAX_CONCURRENCY: int = 8
+    INFERENCE_MAX_CONCURRENCY: int = 4
+    LLM_MAX_CONCURRENCY: int = 2
+
+    # -----------------------------------------------------------------
     # Pipeline thresholds
     #
     # These are the *defaults*. A single run can override any of them

@@ -1,3 +1,4 @@
+import threading
 from datetime import datetime
 
 from qdrant_client.models import (
@@ -18,12 +19,31 @@ from src.models.nlp.sentiment_result import SentimentResult
 from src.models.core.similarity import SimilarArticle
 
 class VectorRepository:
+    """
+    The one handle on Qdrant in the process (see container.py).
+
+    Every public method holds `_lock` for the whole of its call. The
+    local-storage QdrantClient is a file-backed embedded database with
+    no locking of its own, and it is now reached from several threads at
+    once: claims of one article are verified concurrently (each doing an
+    internal-evidence search), and up to ANALYSIS_MAX_CONCURRENCY
+    articles run at the same time, one of which may be writing through
+    save() while the others read. Serialising here costs nothing that
+    matters - the queries are top-k over a small collection, microseconds
+    beside the HTTP calls around them - and it is the only place that can
+    do it, since the client is shared by construction.
+    """
 
     COLLECTION = "news"
 
     def __init__(self, database: QdrantDatabase):
 
         self.client = database.client
+
+        # RLock, not Lock: save() is one logical operation made of a
+        # delete and an upsert, and a plain Lock would make any future
+        # method that reuses another one deadlock on itself.
+        self._lock = threading.RLock()
 
         self._create_collection()
 
@@ -75,35 +95,39 @@ class VectorRepository:
         article: EnrichedArticle,
     ):
 
-        # One point per URL. Every extraction mints a fresh uuid4 id, so
-        # without this a re-analysis of the same URL stored a second copy
-        # beside the first - and the copies then crowd the top-k of every
-        # duplicate and internal-evidence search with the article itself.
-        self.client.delete(
-            collection_name=self.COLLECTION,
-            points_selector=self._same_url(article.url),
-            wait=True,
-        )
+        with self._lock:
 
-        self.client.upsert(
-            collection_name=self.COLLECTION,
-            wait=True,
-            points=[
-                self._to_point(article)
-            ],
-        )
+            # One point per URL. Every extraction mints a fresh uuid4 id,
+            # so without this a re-analysis of the same URL stored a
+            # second copy beside the first - and the copies then crowd
+            # the top-k of every duplicate and internal-evidence search
+            # with the article itself.
+            self.client.delete(
+                collection_name=self.COLLECTION,
+                points_selector=self._same_url(article.url),
+                wait=True,
+            )
+
+            self.client.upsert(
+                collection_name=self.COLLECTION,
+                wait=True,
+                points=[
+                    self._to_point(article)
+                ],
+            )
 
     def get(
         self,
         article_id: str,
     ) -> EnrichedArticle | None:
 
-        result = self.client.retrieve(
-            collection_name=self.COLLECTION,
-            ids=[article_id],
-            with_payload=True,
-            with_vectors=True,
-        )
+        with self._lock:
+            result = self.client.retrieve(
+                collection_name=self.COLLECTION,
+                ids=[article_id],
+                with_payload=True,
+                with_vectors=True,
+            )
 
         if not result:
             return None
@@ -122,20 +146,21 @@ class VectorRepository:
         afterwards would leave fewer than `limit` real neighbours.
         """
 
-        results = self.client.query_points(
-            collection_name=self.COLLECTION,
-            query=vector,
-            limit=limit,
-            query_filter=(
-                Filter(must_not=[
-                    FieldCondition(key="url", match=MatchValue(value=exclude_url))
-                ])
-                if exclude_url
-                else None
-            ),
-            with_payload=True,
-            with_vectors=True,
-        )
+        with self._lock:
+            results = self.client.query_points(
+                collection_name=self.COLLECTION,
+                query=vector,
+                limit=limit,
+                query_filter=(
+                    Filter(must_not=[
+                        FieldCondition(key="url", match=MatchValue(value=exclude_url))
+                    ])
+                    if exclude_url
+                    else None
+                ),
+                with_payload=True,
+                with_vectors=True,
+            )
 
 
         return [
@@ -151,13 +176,14 @@ class VectorRepository:
         article_id: str,
     ):
 
-        self.client.delete(
-            collection_name=self.COLLECTION,
-            points_selector=PointIdsList(
-                points=[article_id],
-            ),
-            wait=True,
-        )
+        with self._lock:
+            self.client.delete(
+                collection_name=self.COLLECTION,
+                points_selector=PointIdsList(
+                    points=[article_id],
+                ),
+                wait=True,
+            )
 
     def exists(
         self,
@@ -168,15 +194,17 @@ class VectorRepository:
 
     def count(self) -> int:
 
-        return self.client.count(
-            collection_name=self.COLLECTION,
-            exact=True,
-        ).count
+        with self._lock:
+            return self.client.count(
+                collection_name=self.COLLECTION,
+                exact=True,
+            ).count
 
     def clear(self):
 
-        self.client.delete(
-            collection_name=self.COLLECTION,
-            points_selector=Filter(),
-            wait=True,
-        )
+        with self._lock:
+            self.client.delete(
+                collection_name=self.COLLECTION,
+                points_selector=Filter(),
+                wait=True,
+            )

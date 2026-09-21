@@ -3,6 +3,7 @@ from logging import getLogger
 import httpx
 
 from src.config.settings import settings
+from src.services.concurrency import SEARXNG
 
 logger = getLogger(__name__)
 
@@ -38,15 +39,24 @@ class SearxngClient:
         if language:
             params["language"] = language
 
+        # The permit is held around this one request and nothing else.
+        # A claim's queries now run concurrently and several claims run
+        # at once, so without a ceiling here a single article can put a
+        # dozen simultaneous requests on SearXNG - which answers them by
+        # querying real upstream engines that rate-limit it, not us. See
+        # src/services/concurrency.py for why the limit lives with the
+        # resource rather than with the caller.
         try:
-            response = httpx.get(
-                f"{self.base_url}/search",
-                params=params,
-                timeout=self.timeout,
-                headers={
-                    "User-Agent": "InspiringNewsBot/1.0 (fact-checker)"
-                },
-            )
+            with SEARXNG.permit():
+
+                response = httpx.get(
+                    f"{self.base_url}/search",
+                    params=params,
+                    timeout=self.timeout,
+                    headers={
+                        "User-Agent": "InspiringNewsBot/1.0 (fact-checker)"
+                    },
+                )
 
             response.raise_for_status()
 
