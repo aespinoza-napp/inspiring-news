@@ -180,10 +180,22 @@ class Settings(BaseSettings):
     # LLM (OpenAI-compatible chat completions; defaults to a local Ollama
     # instance so verification is free/open-source by default. Swapping to
     # Groq/OpenRouter/Together/real OpenAI is a settings-only change.
+    # llama3.2:3b replaced llama3.1 (8B) as the default: same Ollama/OpenAI
+    # wire format, a third of the weights to load alongside inference/'s
+    # GLiNER + sentiment + bge-m3, and noticeably faster per-claim
+    # verification on a laptop with no GPU. Phase 4 still owns measuring
+    # whether it verifies as well - this is a resource swap, not a
+    # benchmarked upgrade.
     LLM_BASE_URL: str = "http://localhost:11434/v1"
     LLM_API_KEY: SecretStr = SecretStr("ollama")
-    LLM_MODEL: str = "llama3.1"
-    LLM_TIMEOUT: float = 60.0
+    LLM_MODEL: str = "llama3.2:3b"
+    # Halved from 60s now that the default model is 3B, not 8B - a stuck
+    # request still costs at most 2 x this (complete_json's own retry;
+    # the SDK's own retries are off, see LLMClient).
+    LLM_TIMEOUT: float = 30.0
+    # Base delay before complete_json's retry after a connection/timeout
+    # failure, doubled each attempt and capped at 5s.
+    LLM_RETRY_BACKOFF_SECONDS: float = 0.5
 
     # Claim selection
     CLAIM_DEDUP_THRESHOLD: float = 0.92

@@ -211,6 +211,49 @@ def test_run_tracks_reached_stage_for_each_claim(repository):
     assert no_evidence_check.verdict == Verdict.UNVERIFIED
 
 
+def test_run_traces_llm_unreachable_separately_from_no_evidence(repository):
+    """
+    Both a dead LLM and a claim with no evidence come back UNVERIFIED,
+    but they must not be traced (or explained) identically - a run full
+    of unreachable errors has to be visibly different from one that
+    genuinely found nothing.
+    """
+
+    claim = create_claim(text="A claim the LLM was never reached for.", confidence=0.9)
+
+    article = create_article(claims=[claim])
+
+    embeddings = FakeEmbeddingService(vectors={
+        claim.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    })
+
+    evidence = create_evidence(url="https://a.com", relevance_score=0.9)
+
+    checker = FactChecker(
+        repository,
+        claim_selector=ClaimSelector(embeddings=embeddings),
+        evidence_retriever=FakeEvidenceRetriever({claim.text: [evidence]}),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({
+            claim.text: LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="LLM provider was unreachable; verdict could not be produced.",
+                cited_evidence=[],
+                llm_unreachable=True,
+            ),
+        }),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    report = checker.run(article)
+
+    check = report.claim_checks[0]
+    assert check.llm_unreachable is True
+    assert check.reached_stage == "llm_verification"
+    assert "unreachable" in check.stage_note
+
+
 def test_run_records_claims_dropped_during_selection(repository):
 
     kept_claim = create_claim(text="Kept claim.", confidence=0.9)

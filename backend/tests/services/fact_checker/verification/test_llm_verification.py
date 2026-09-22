@@ -1,5 +1,6 @@
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.verification.llm_verification import LLMVerifier
+from src.services.llms import LLMUnavailableError
 
 from tests.factories import create_claim, create_evidence
 from tests.services.fact_checker.fakes import FakeLLMClient
@@ -86,6 +87,33 @@ def test_verify_falls_back_to_unverified_when_client_returns_none():
 
     assert result.verdict == Verdict.UNVERIFIED
     assert result.confidence == 0.0
+
+
+def test_verify_marks_llm_unreachable_distinctly_from_a_real_unverified():
+    """
+    A dead socket and a model that found no support both surface as
+    UNVERIFIED, but only one of them should set llm_unreachable - that
+    flag is what lets a caller (or a Phase 4 benchmark) tell them apart.
+    """
+
+    client = FakeLLMClient(responses=LLMUnavailableError("connection refused"))
+
+    verifier = LLMVerifier(client=client)
+
+    result = verifier.verify(create_claim(), [create_evidence()])
+
+    assert result.verdict == Verdict.UNVERIFIED
+    assert result.llm_unreachable is True
+
+
+def test_verify_does_not_mark_unreachable_for_an_ordinary_unverified():
+
+    client = FakeLLMClient(responses=None)
+
+    result = LLMVerifier(client=client).verify(create_claim(), [create_evidence()])
+
+    assert result.verdict == Verdict.UNVERIFIED
+    assert result.llm_unreachable is False
 
 
 def test_verify_handles_missing_confidence_field():

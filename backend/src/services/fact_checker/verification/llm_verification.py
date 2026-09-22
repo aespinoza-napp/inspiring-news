@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceStance
 from src.models.fact_checker.fact_check import Verdict
-from src.services.llms import LLMClient
+from src.services.llms import LLMClient, LLMUnavailableError
 
 logger = getLogger(__name__)
 
@@ -70,6 +70,12 @@ class LLMVerificationResult(BaseModel):
 
     assessments: list[EvidenceAssessment] = Field(default_factory=list)
 
+    # True only when the provider was never actually reached - a dead
+    # socket, not the model declining to find support. Kept separate from
+    # a plain UNVERIFIED verdict so downstream (FactCheck.llm_unreachable)
+    # can tell "checked, no evidence" from "never asked".
+    llm_unreachable: bool = False
+
 
 class LLMVerifier:
 
@@ -79,10 +85,19 @@ class LLMVerifier:
 
     def verify(self, claim: Claim, evidence: list[Evidence]) -> LLMVerificationResult:
 
-        result = self.client.complete_json(
-            SYSTEM_PROMPT,
-            self._build_prompt(claim, evidence),
-        )
+        try:
+            result = self.client.complete_json(
+                SYSTEM_PROMPT,
+                self._build_prompt(claim, evidence),
+            )
+        except LLMUnavailableError as exc:
+            logger.warning("LLM unreachable while verifying claim: %s", exc)
+            return LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="LLM provider was unreachable; verdict could not be produced.",
+                llm_unreachable=True,
+            )
 
         return self._normalize(result, evidence)
 

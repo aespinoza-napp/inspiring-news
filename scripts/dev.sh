@@ -57,7 +57,7 @@ check_ollama() {
     ok "Ollama is reachable on localhost:11434"
   else
     warn "Ollama is not reachable on localhost:11434 - fact-check claims will come back"
-    warn "\"LLM verification unavailable\". Install it, then 'ollama pull llama3.1' once."
+    warn "\"LLM verification unavailable\". Install it, then 'ollama pull llama3.2:3b' once."
   fi
 }
 

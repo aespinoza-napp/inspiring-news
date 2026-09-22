@@ -100,9 +100,14 @@ class FakeLLMClient:
 
     def complete_json(self, system_prompt: str, user_prompt: str, max_retries: int = 1):
         self.calls.append((system_prompt, user_prompt))
-        if self._responses is not None:
-            return self._responses.pop(0) if self._responses else None
-        return self._single
+        result = (
+            (self._responses.pop(0) if self._responses else None)
+            if self._responses is not None
+            else self._single
+        )
+        if isinstance(result, Exception):
+            raise result
+        return result
 
 
 class FakeSourceRepository:

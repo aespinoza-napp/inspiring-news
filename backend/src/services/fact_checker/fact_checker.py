@@ -379,6 +379,7 @@ class FactChecker:
             "stage_note": stage_note,
             "raw_verdict": llm_result.verdict,
             "raw_confidence": llm_result.confidence,
+            "llm_unreachable": llm_result.llm_unreachable,
         })
 
         cited = set(check.cited_evidence_indices)
@@ -420,6 +421,12 @@ class FactChecker:
         check: FactCheck,
         thresholds: PipelineThresholds,
     ) -> tuple[PipelineStage, Optional[str]]:
+
+        if llm_result.llm_unreachable:
+            return (
+                PipelineStage.LLM_VERIFICATION,
+                "LLM provider was unreachable; verdict could not be produced.",
+            )
 
         if len(ranked) < thresholds.min_evidence_for_verdict:
             return (

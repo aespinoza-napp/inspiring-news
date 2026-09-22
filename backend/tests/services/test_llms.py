@@ -1,6 +1,7 @@
+import pytest
 from openai import APIConnectionError
 
-from src.services.llms import LLMClient
+from src.services.llms import LLMClient, LLMUnavailableError
 
 
 class FakeMessage:
@@ -86,16 +87,38 @@ def test_complete_json_returns_none_after_exhausting_retries():
     assert result is None
 
 
-def test_complete_json_returns_none_on_connection_error():
+def test_complete_json_raises_llm_unavailable_on_connection_error(monkeypatch):
+    """
+    A dead socket is not a verdict. Raising here - rather than returning
+    None like a malformed response would - is what lets callers tell "the
+    LLM was unreachable" apart from a genuine UNVERIFIED.
+    """
+
+    monkeypatch.setattr("src.services.llms.time.sleep", lambda _: None)
 
     client = make_client([
         APIConnectionError(request=None),
         APIConnectionError(request=None),
     ])
 
+    with pytest.raises(LLMUnavailableError):
+        client.complete_json("system", "user", max_retries=1)
+
+
+def test_complete_json_backs_off_between_retries(monkeypatch):
+
+    sleeps = []
+    monkeypatch.setattr("src.services.llms.time.sleep", sleeps.append)
+
+    client = make_client([
+        APIConnectionError(request=None),
+        '{"verdict": "TRUE"}',
+    ])
+
     result = client.complete_json("system", "user", max_retries=1)
 
-    assert result is None
+    assert result == {"verdict": "TRUE"}
+    assert sleeps == [pytest.approx(0.5)]
 
 
 def test_the_sdk_is_not_allowed_to_retry_on_its_own():

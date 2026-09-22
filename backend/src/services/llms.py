@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from logging import getLogger
 from typing import Any
 
@@ -13,6 +14,18 @@ from src.services.concurrency import LLM
 logger = getLogger(__name__)
 
 _JSON_BLOCK_PATTERN = re.compile(r"\{.*\}", re.DOTALL)
+
+
+class LLMUnavailableError(RuntimeError):
+    """
+    Raised when every attempt failed to reach the provider at all -
+    connection refused, timed out, or the API errored before returning a
+    body. Deliberately distinct from complete_json returning None (the
+    provider answered but never produced valid JSON): a caller collapsing
+    both into UNVERIFIED cannot tell "checked, no evidence" from "never
+    actually asked", which is exactly what blocked Phase 4 benchmarking
+    from telling a wrong answer apart from a dead socket.
+    """
 
 
 def _parse_json(content: str) -> dict | None:
@@ -71,15 +84,20 @@ class LLMClient:
         max_retries: int = 1,
     ) -> dict[str, Any] | None:
         """
-        Never raises. Returns None if the provider is unreachable or the
-        response can't be coerced into JSON after retries, so callers can
-        fall back to a safe default (e.g. an UNVERIFIED verdict).
+        Returns None if the provider answered but the response can't be
+        coerced into JSON after retries, so callers can fall back to a
+        safe default (e.g. an UNVERIFIED verdict). Raises
+        LLMUnavailableError instead if the *last* attempt never reached
+        the provider at all - see that class's docstring for why the two
+        are kept apart.
         """
 
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
+
+        unreachable = False
 
         for attempt in range(max_retries + 1):
 
@@ -102,8 +120,12 @@ class LLMClient:
                     attempt,
                     exc,
                 )
+                unreachable = True
+                if attempt < max_retries:
+                    time.sleep(self._backoff_seconds(attempt))
                 continue
 
+            unreachable = False
             content = response.choices[0].message.content or ""
 
             parsed = _parse_json(content)
@@ -125,4 +147,21 @@ class LLMClient:
                 ),
             })
 
+        if unreachable:
+            raise LLMUnavailableError(
+                f"{self.model} unreachable after {max_retries + 1} attempt(s)"
+            )
+
         return None
+
+    @staticmethod
+    def _backoff_seconds(attempt: int) -> float:
+        """
+        Exponential backoff before a retry, capped at 5s so one stalled
+        claim cannot hold up the whole run. Doubling from a sub-second
+        base is enough headroom for Ollama to finish queueing a
+        concurrent request without turning a real outage into a long
+        silent hang - see LLM_RETRY_BACKOFF_SECONDS.
+        """
+
+        return min(settings.LLM_RETRY_BACKOFF_SECONDS * (2 ** attempt), 5.0)

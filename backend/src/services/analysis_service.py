@@ -436,6 +436,7 @@ class AnalysisService:
                     "agreements": [],
                     "discrepancies": [],
                     "independentDomains": 0,
+                    "llmUnreachable": False,
                 }
                 for claim in (article.claims or [])
             ]
@@ -462,6 +463,7 @@ class AnalysisService:
                 "agreements": check.agreements,
                 "discrepancies": check.discrepancies,
                 "independentDomains": check.independent_domains,
+                "llmUnreachable": check.llm_unreachable,
             }
             for check in checks
         ]
@@ -482,6 +484,7 @@ class AnalysisService:
                 "agreements": [],
                 "discrepancies": [],
                 "independentDomains": 0,
+                "llmUnreachable": False,
             }
             for rejected in report.unselected_claims
         ]

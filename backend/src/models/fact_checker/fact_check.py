@@ -55,3 +55,8 @@ class FactCheck(BaseModel):
     # for corroboration: evidence_count can be five copies of one wire
     # story, which is one source, not five.
     independent_domains: int = 0
+
+    # True only when the LLM provider was never reached at all - distinct
+    # from an ordinary UNVERIFIED, where the model was asked and found
+    # nothing to confirm the claim with.
+    llm_unreachable: bool = False

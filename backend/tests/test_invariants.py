@@ -100,6 +100,7 @@ NON_THRESHOLD_SETTINGS = {
     "FACT_CHECK_PATH", "GRAPH_PATH",
     "EMBEDDING_MODEL", "EMBEDDING_DIMENSION", "SENTIMENT_MODEL",
     "LLM_MODEL", "LLM_BASE_URL", "LLM_API_KEY", "LLM_TIMEOUT",
+    "LLM_RETRY_BACKOFF_SECONDS",
     "INFERENCE_URL", "INFERENCE_TIMEOUT",
     "SEARXNG_URL", "SEARXNG_TIMEOUT", "SEARXNG_MAX_RESULTS",
     "NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD",
@@ -270,6 +271,16 @@ ANALYZE_RESPONSE_SHAPE = {
     # existed, so its evidence set may include sources this version
     # would have refused to show the model at all.
     7: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
+    # 8, same top-level keys again. Each entry of `claims` gained
+    # `llmUnreachable`: whether the LLM was never actually reached for
+    # that claim, as opposed to being asked and finding nothing to
+    # confirm it with. A v7 entry lacks it, and would render an
+    # infrastructure failure identically to a genuine UNVERIFIED forever.
+    8: {
         "url", "storage", "thresholds", "title", "keywords", "entities",
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",

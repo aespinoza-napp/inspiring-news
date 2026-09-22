@@ -128,3 +128,43 @@ this did not break it. Its one ordered read — the status line, taken
 from the last event — now switches to "checking N claims, M done" while
 claims are in flight, because during that window the last event belongs
 to whichever claim happened to emit most recently and describes nothing.
+
+## Load test: `/analyze` under real concurrency (2026-09-22)
+
+First real measurement against a live stack — backend on the host (`uv
+run uvicorn`, not the untested Docker image), `inference/` and SearXNG
+up, Ollama serving `llama3.2:3b`. `scripts/load_test_analyze.py` fires N
+concurrent `POST /analyze` calls against distinct real articles from the
+outlet's own site, `forceRefresh=true` so every call does the full
+pipeline instead of hitting the cache.
+
+| Concurrency | Requests | Failed | p50 | p95 | max | wall clock |
+|---|---|---|---|---|---|---|
+| 4 | 4 | 0 | 156s | 160s | 163s | 163s |
+| 6 | 6 | 1 (client-side 240s timeout) | 196s | 211s | 215s+ | 242s |
+
+Findings:
+
+- **The per-service semaphores hold.** At concurrency 4, every request
+  succeeded with zero `llm_unreachable` claims — `LLM_MAX_CONCURRENCY=2`
+  and `SEARXNG_MAX_CONCURRENCY=4` queued the excess work instead of
+  failing it, exactly as designed (see "Why the limits live with the
+  resource" above).
+- **Latency degrades hard past 4 concurrent analyses.** p50 went from
+  156s to 196s between concurrency 4 and 6, and one request exceeded the
+  load tester's own 240s client timeout (not confirmed to have failed
+  server-side — it may simply have still been running). `/analyze` is
+  fully synchronous per request, so a client waiting on it inherits
+  every claim's worth of queueing behind `LLM_MAX_CONCURRENCY=2`. This is
+  the argument for steering real traffic toward `/analyze/jobs` (async +
+  polling) rather than raising the sync endpoint's concurrency ceiling.
+- **No article-level ceiling exists on `/analyze` itself.**
+  `ANALYSIS_MAX_CONCURRENCY` bounds the bulk/job fan-out, not concurrent
+  calls to the sync endpoint — each HTTP request runs independently and
+  only meets the other requests at the shared per-resource semaphores.
+  Six concurrent callers is six full pipelines competing for those
+  semaphores at once, which is exactly what produced the latency jump
+  above.
+- **Not yet measured:** sustained load (this was two short bursts, not a
+  soak test), and the async `/analyze/jobs` path under the same
+  concurrency — worth a follow-up now that the sync path has a baseline.

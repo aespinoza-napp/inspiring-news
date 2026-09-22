@@ -294,6 +294,7 @@ def test_analyze_falls_back_to_raw_claims_when_validation_failed():
             "agreements": [],
             "discrepancies": [],
             "independentDomains": 0,
+            "llmUnreachable": False,
         }
     ]
 

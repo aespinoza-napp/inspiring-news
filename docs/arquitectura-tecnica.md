@@ -38,8 +38,51 @@ El backend está construido sobre Python y FastAPI, con `uv` como gestor de depe
 | Servicio de inferencia (entidades, sentimiento, embeddings) | Servicio FastAPI independiente que carga los modelos GLiNER, XLM-RoBERTa y BGE-M3; el backend lo consulta por HTTP |
 | Base de datos de grafos (prevista para Fase 2; hoy sin uso) | Neo4j |
 | Motor de búsqueda para evidencia | SearXNG autoalojado |
-| Modelo de lenguaje | Endpoint compatible con OpenAI, por defecto un modelo open-source local vía Ollama |
+| Modelo de lenguaje | Endpoint compatible con OpenAI, por defecto `llama3.2:3b` local vía Ollama |
 | Base de datos vectorial | Qdrant (modo embebido/local) |
+
+```mermaid
+flowchart LR
+    subgraph client["Cliente"]
+        FE["frontend/\nNext.js 14"]
+    end
+
+    subgraph api["backend/ — FastAPI"]
+        API["/analyze · /analyze/jobs\n/correct · /verify-claim/"]
+        PIPE["Enrichment + FactChecker"]
+        CACHE[("AnalysisCache\n(file, sin expiración)")]
+        JOURNAL[("JobJournal\n(disco, por evento)")]
+        VDB[("Qdrant\n(embebido/local)")]
+    end
+
+    subgraph inf["inference/ — servidor de modelos"]
+        GLINER["GLiNER (entidades)"]
+        SENT["XLM-RoBERTa (sentimiento)"]
+        EMB["BGE-M3 (embeddings)"]
+    end
+
+    SEARX["SearXNG\n(autoalojado)"]
+    WEB["Web abierta\n(fuentes de evidencia)"]
+    LLM["Ollama\nllama3.2:3b\n(compatible OpenAI)"]
+    NEO[("Neo4j\n(configurado, sin uso)")]
+
+    FE -- "HTTP (server-side)" --> API
+    API --> PIPE
+    PIPE -- "HTTP" --> GLINER
+    PIPE -- "HTTP" --> SENT
+    PIPE -- "HTTP" --> EMB
+    PIPE -- "búsqueda + scraping" --> SEARX
+    SEARX --> WEB
+    PIPE -- "verificación de claims" --> LLM
+    PIPE --- CACHE
+    PIPE --- JOURNAL
+    PIPE --- VDB
+    API -.-> NEO
+
+    style NEO stroke-dasharray: 5 5
+```
+
+*El backend nunca importa `torch`/`transformers`/`gliner`; todo lo que necesita de esos modelos llega por HTTP desde `inference/`. Neo4j (línea punteada) está configurado — su contraseña se exige al arrancar — pero nada lo lee ni lo escribe todavía (Fase 3 del roadmap).*
 
 ### 2.2. Módulo de Scraping y Descubrimiento
 
@@ -116,7 +159,30 @@ La regla de las citas es agnóstica al modelo utilizado: protege contra la aluci
 
 Un artículo puede contener varias afirmaciones verificadas por separado. El veredicto global del artículo no es un promedio ni el veredicto de la afirmación más relevante: es el peor veredicto de todo el conjunto, según un orden de severidad fijo (verdadero < parcialmente verdadero < no verificado < engañoso < falso); la confianza global sí se promedia, pero el veredicto no. Limitación conocida: como "no verificado" pesa más que "verdadero", una sola afirmación sin evidencia suficiente —el resultado habitual con un modelo local pequeño— domina el veredicto del artículo, y el promedio de confianzas mezcla veredictos distintos. Separar "cuánto se pudo comprobar" de "qué se encontró" está pendiente.
 
-#### 2.4.8. Síntesis de la estrategia
+#### 2.4.8. Diagrama de las siete etapas
+
+```mermaid
+flowchart TD
+    A["1. Filtro de admisión\nadmission_filter\n(tema · impacto positivo · duplicado)"]
+    B["2. Selección de afirmaciones\nclaim_selection\n(banda ancla, 2-4 claims)"]
+    C["3. Recuperación de evidencia\nevidence_retrieval\n(SearXNG + Qdrant, 3 queries/claim)"]
+    D["4. Ranking de evidencia\nevidence_ranking\n(semántica · recencia · fiabilidad · léxico\n+ filtro de pertinencia)"]
+    E["5. Verificación LLM\nllm_verification\n(veredicto + cita verbatim por fuente)"]
+    F["6. Recalibración de confianza\nconfidence_recalibration\n(fuerza UNVERIFIED sin evidencia o sin cita)"]
+    G["7. Agregación\naggregation\n(peor veredicto del artículo gana)"]
+
+    A -- "pasa" --> B --> C --> D --> E --> F --> G
+    A -- "rechaza" --> X["Artículo no verificado\n(ningún claim se revisa)"]
+    E -- "LLM inalcanzable\n(LLMUnavailableError)" --> F2["UNVERIFIED\nllmUnreachable=true\n(distinto de un UNVERIFIED real)"]
+    F2 --> G
+
+    style X stroke-dasharray: 5 5
+    style F2 stroke-dasharray: 5 5
+```
+
+*Cada afirmación queda etiquetada con `reached_stage`: la etapa más lejana a la que llegó antes de que algo la detuviera o la degradara. Un fallo de admisión detiene el artículo entero antes de la etapa 2; un LLM inalcanzable (endpoint caído, tras agotar reintentos) se distingue de un veredicto `UNVERIFIED` genuino mediante `llm_unreachable`, para que un backlog de errores de infraestructura no se lea igual que un backlog de afirmaciones sin respaldo.*
+
+#### 2.4.9. Síntesis de la estrategia
 
 Cada capa de esta cadena es más barata y más determinista que la siguiente, y cada capa puede decir "no" de forma definitiva; ninguna capa posterior puede revertir el rechazo de una capa anterior. El único punto donde interviene un modelo de lenguaje está acotado a una clasificación cerrada, forzada a citar sus fuentes, y su salida pasa por una recalibración de confianza que no depende de la introspección del propio modelo. El resultado es un sistema cuya fiabilidad no descansa en la fiabilidad de un único componente de inteligencia artificial, sino en la composición de varias capas independientes de control.
 

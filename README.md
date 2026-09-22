@@ -61,7 +61,7 @@ nothing reads Neo4j. Compose also reads it, so docker commands take
 Three things run outside `uv`:
 
 - **SearXNG**, for evidence: `cd docker && docker compose --env-file ../backend/.env up searxng`
-- **Ollama**, the default LLM: `ollama pull llama3.1` once, then `ollama serve`.
+- **Ollama**, the default LLM: `ollama pull llama3.2:3b` once, then `ollama serve`.
   Point `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` at a hosted provider instead
   if you prefer.
 - **`inference/`**, without which `/analyze` fails with a connection error.
