@@ -424,7 +424,8 @@ export type ScrapeOutcome =
   | "timeout"
   | "connection_error"
   | "blocked"
-  | "error";
+  | "error"
+  | "unavailable";
 
 /** GET /scraper/stats - one row per domain the scraper has fetched from. */
 export interface ScraperDomainStats {

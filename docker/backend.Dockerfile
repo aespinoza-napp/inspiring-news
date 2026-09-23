@@ -53,11 +53,20 @@ ENV PYTHONPATH=/app
 # the build by a wide margin - and it only re-runs when pyproject.toml
 # or uv.lock actually change, not on every source edit.
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project --no-dev
+RUN uv sync --frozen --no-install-project --no-dev --extra browser
+
+# The browser for the last step of the extraction cascade (see
+# docs/decisions/scraping.md), with the system libraries Chromium needs.
+# Its own layer, after the dependencies: a few hundred MB that only
+# re-downloads when the playwright version in uv.lock changes.
+# PLAYWRIGHT_BROWSERS_PATH puts it somewhere fixed rather than under the
+# build user's home, so the runtime finds it whatever user runs the app.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN uv run --no-sync playwright install --with-deps chromium
 
 COPY . .
 
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --extra browser
 
 ENV PATH="/app/.venv/bin:$PATH"
 

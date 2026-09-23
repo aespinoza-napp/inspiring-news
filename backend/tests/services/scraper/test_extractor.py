@@ -281,3 +281,36 @@ def test_metadata_the_winning_parser_missed_is_filled_from_the_same_page():
     assert news.title == "Kept as found"
     assert news.author == "Natalia Soto"
     assert str(news.published_at.date()) == "2026-08-31"
+
+
+def test_evidence_pages_never_reach_the_browser():
+    """
+    Evidence is fetched by the handful per claim and falls back to its
+    search snippet; a render per page would multiply the costliest step.
+    """
+
+    browser = StubStrategy(make_extraction_result(), reads_html=False)
+
+    service = make_service(StubStrategy(None), browser)
+
+    assert service.extract(build_source(), URL, purpose=Purpose.EVIDENCE) is None
+    assert browser.calls == 0
+
+
+def test_a_browser_that_is_not_installed_keeps_the_real_reason():
+    """
+    "unavailable" says nothing about the page; what the HTML parsers
+    found is still the answer, with a note saying why nothing more ran.
+    """
+
+    service = make_service(
+        StubStrategy(None),
+        StubStrategy(None, Outcome.UNAVAILABLE, reads_html=False),
+    )
+
+    service.extract(build_source(), URL)
+
+    entry = only_domain(service)
+
+    assert entry["outcomes"] == {"no_content": 1}
+    assert "not escalated" in entry["lastError"]

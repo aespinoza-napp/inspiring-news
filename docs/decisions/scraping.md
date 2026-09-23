@@ -11,7 +11,7 @@ the cascade, or touching what `ExtractorService` counts.
 |---|---|---|
 | 1 | `TrafilaturaStrategy` | one HTTP request |
 | 2 | `BeautifulSoupStrategy` | **none**: it parses the HTML step 1 already fetched |
-| 3 | a browser (Playwright, once wired) | a full render: a second request, JavaScript, seconds |
+| 3 | `PlaywrightExtractionStrategy` | a full render: a second request, JavaScript, seconds - and never for evidence pages |
 
 The fetch is shared (`fetcher.py`, `strategies/html.py`). Before this,
 each strategy fetched for itself, so a fallback parser doubled the
@@ -27,6 +27,39 @@ plausibly succeed:
 | any other `http_error` (404, 500...), `timeout`, `connection_error`, `blocked` | **stop**. No strategy can fix a page that is not there |
 
 So a dead source costs one request per URL, not one per strategy.
+
+## The browser step
+
+`PlaywrightExtractionStrategy` only *renders*: the rendered HTML goes
+through the same trafilatura and BeautifulSoup `parse()`, so there is one
+notion of where an article is, not a third one written against the
+Playwright API.
+
+- **Never for evidence.** Evidence pages are fetched by the handful for
+  every claim and already fall back to their search snippet;
+  `BROWSER_PURPOSES` keeps the render to articles, ingestion and the
+  enrichment page.
+- **Guarded like every other fetch.** The start URL is checked before a
+  browser launches; every request the page makes goes through the URL
+  guard (cached per host); the navigation's redirect chain is checked
+  after it lands, and content that arrived by way of a forbidden address
+  is discarded. Route handlers do not see redirect hops, which is why that
+  last check exists. **Gap:** a forbidden hop has already been *requested*
+  by then - its response is thrown away, but a blind request to it was
+  made. Closing that needs a proxy in front of the browser.
+- **Capped.** `BROWSER_MAX_CONCURRENCY` (default 2), a `settings` ceiling
+  like the others. One Chromium per render: Playwright's sync objects are
+  thread-bound and extraction runs on many threads.
+- **Optional.** The `browser` extra plus `playwright install chromium`.
+  Absent, the attempt is `unavailable`, and the extraction keeps the
+  previous step's outcome with "not escalated: ..." in its error, so the
+  stats still say why the page failed.
+
+Checked live (2026-09-23): a page whose text is built by JavaScript
+(quotes.toscrape.com/js) has 29 characters in its HTML; trafilatura's
+result is refused as too short, BeautifulSoup finds nothing, the browser
+renders 1,097 characters - 2 requests, 11s on a cold start. An ordinary
+NASA page never gets past trafilatura: 1 request, no browser.
 
 ## Metadata is filled from the same page
 

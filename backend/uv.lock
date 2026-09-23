@@ -62,7 +62,6 @@ dependencies = [
     { name = "motor" },
     { name = "neo4j" },
     { name = "openai" },
-    { name = "playwright" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pytest" },
@@ -76,6 +75,11 @@ dependencies = [
     { name = "yake" },
 ]
 
+[package.optional-dependencies]
+browser = [
+    { name = "playwright" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.15.0" },
@@ -85,7 +89,7 @@ requires-dist = [
     { name = "motor", specifier = ">=3.7.1" },
     { name = "neo4j", specifier = ">=5.28.4" },
     { name = "openai", specifier = ">=2.44.0" },
-    { name = "playwright", specifier = ">=1.60.0" },
+    { name = "playwright", marker = "extra == 'browser'", specifier = ">=1.60.0" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pydantic-settings", specifier = ">=2.11.0" },
     { name = "pytest", specifier = ">=8.4.2" },
@@ -98,6 +102,7 @@ requires-dist = [
     { name = "uvicorn", specifier = ">=0.39.0" },
     { name = "yake", specifier = ">=0.4.8" },
 ]
+provides-extras = ["browser"]
 
 [[package]]
 name = "beautifulsoup4"

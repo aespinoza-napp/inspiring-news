@@ -110,7 +110,7 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 ### Sprint 3 (Sep 29–Oct 12) · 70h — Scraping strategies
 
 - [ ] ➕ **Wire an ingestion path** (not in the original plan) — until something calls `Scraper`/`DiscoveryService`, nothing in this sprint changes what enters the system. `Scraper.discover()` passes a dict where a `list[str]` is declared and `Scraper.extract()` ignores its `topics` argument.
-- [ ] 🎭 Implement `PlaywrightStrategy` for JS-rendered sources — the two Playwright files are placeholders; `PlaywrightExtractionStrategy` builds a `News` where an `ExtractionResult` is expected, so wiring it in raises `AttributeError`
+- [x] 🎭 Implement `PlaywrightStrategy` for JS-rendered sources — the last step of the cascade: renders, then reads the result with the same trafilatura/BeautifulSoup parsers. URL guard on every request and redirect hop, `BROWSER_MAX_CONCURRENCY`, never for evidence, optional `browser` extra (installed in Docker). `playwright_discover.py` is still a placeholder.
 - [x] 🍜 Implement `BeautifulSoupStrategy` — step two of a cheapest-first cascade, parsing the HTML trafilatura already fetched (no second request); JSON-LD, meta tags, per-source `metadata.selectors`, then the densest paragraph block. It also fills title/author/date trafilatura missed. `docs/decisions/scraping.md`
 - [ ] 🧭 Route sources by `requires_javascript` — the flag exists and is never read
 - [ ] ➕ Add new source YAMLs (12 today)

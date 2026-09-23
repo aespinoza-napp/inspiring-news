@@ -127,13 +127,12 @@ write them down than to have each be rediscovered.
   posting a URL to `/analyze`. `Scraper.discover()` passes the `TOPICS`
   dict where `list[str]` is declared and `Scraper.extract()` ignores its
   `topics` argument — unexercised code that has already drifted.
-- **The Playwright extraction strategy does not work.** It constructs a
-  `News` where `ExtractionStrategy.extract` is declared
-  `-> ExtractionResult | None`; wiring it into `ExtractorService` raises
-  `AttributeError` in `ExtractionValidator.is_valid()` (`.body` vs
-  `.content`). It is a trap, not a placeholder. `BeautifulSoupStrategy`
-  *does* work now: it is step two of the cascade
-  (`docs/decisions/scraping.md`).
+- **The headless browser is optional and usually absent locally.**
+  `playwright` is the `browser` extra; `./scripts/check.sh` never
+  installs it, and without it (or without `playwright install chromium`)
+  the last step of the extraction cascade reports `unavailable` and the
+  cascade keeps the previous step's answer. The Docker image installs
+  both. `docs/decisions/scraping.md`.
 - **Nothing reads Neo4j.** `settings.NEO4J_PASSWORD` is required at
   startup as inherited scaffold config only. `motor` (MongoDB) is
   likewise an unused dependency.

@@ -57,6 +57,10 @@ class Outcome(str, Enum):
     # Anything else a strategy raised.
     ERROR = "error"
 
+    # The strategy cannot run here at all - a browser that is not
+    # installed. Says nothing about the page.
+    UNAVAILABLE = "unavailable"
+
 
 class Purpose(str, Enum):
     """Why the page was fetched."""

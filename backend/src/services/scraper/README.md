@@ -16,8 +16,9 @@ pipeline: find URLs, then fetch and extract each one.
 on the *same* fetched HTML (`fetcher.py`, `strategies/html.py`), escalating only when a different
 parser could help. `docs/decisions/scraping.md` has the order, the stop rules and what is counted.
 
-**`strategies/playwright_discover.py` and `strategies/playwright_extraction.py` are unimplemented
-placeholders** — intended for JS-rendered sources (`NewsSource.requires_javascript`), not wired in.
+**`strategies/playwright_extraction.py`** is step three — a headless browser, optional (`browser`
+extra), never used for evidence pages. **`strategies/playwright_discover.py`** is still an unwired
+placeholder.
 
 `strategies/base.py` defines the `ExtractionStrategy`/`DiscoveryStrategy` interfaces both real and
 placeholder strategies implement.

@@ -109,6 +109,12 @@ class Settings(BaseSettings):
     INFERENCE_MAX_CONCURRENCY: int = 4
     LLM_MAX_CONCURRENCY: int = 2
 
+    # Headless browsers rendering at once - the last step of the
+    # extraction cascade, and by far its most expensive: each is a
+    # Chromium process with its own memory, CPU and page load. Kept
+    # small; a page only gets here when both HTML parsers failed.
+    BROWSER_MAX_CONCURRENCY: int = 2
+
     # -----------------------------------------------------------------
     # Pipeline thresholds
     #

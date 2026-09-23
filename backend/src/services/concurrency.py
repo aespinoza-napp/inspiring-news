@@ -97,6 +97,12 @@ INFERENCE = BoundedResource("inference", settings.INFERENCE_MAX_CONCURRENCY)
 
 LLM = BoundedResource("llm", settings.LLM_MAX_CONCURRENCY)
 
+# Held only around the render itself, inside PlaywrightExtractionStrategy.
+# Often acquired while an evidence scrape already holds SCRAPE: that is a
+# different resource, and nothing holding BROWSER ever waits on SCRAPE, so
+# the nesting cannot close into the bounded-pool deadlock.
+BROWSER = BoundedResource("browser", settings.BROWSER_MAX_CONCURRENCY)
+
 
 def bounded_map(
     fn: Callable[[T], R],

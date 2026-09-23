@@ -118,7 +118,7 @@ NON_THRESHOLD_SETTINGS = {
     "ANALYSIS_MAX_CONCURRENCY", "CLAIM_MAX_CONCURRENCY",
     "QUERY_MAX_CONCURRENCY", "SEARXNG_MAX_CONCURRENCY",
     "SCRAPE_MAX_CONCURRENCY", "INFERENCE_MAX_CONCURRENCY",
-    "LLM_MAX_CONCURRENCY",
+    "LLM_MAX_CONCURRENCY", "BROWSER_MAX_CONCURRENCY",
     # Normalised weight groups - same reasoning as the ranking weights
     # above: a caller setting one member alone de-normalises the score.
     "RANKING_LEXICAL_WEIGHT",

@@ -26,6 +26,12 @@ Both copy steps are required, not optional: `.env` is listed under `env_file`, a
 start at all if it is missing (`env file ... not found`). Neither file is in git — `.env` holds
 secrets, `searxng/settings.yml` holds a generated secret key.
 
+The backend image also carries Chromium for the last step of the extraction cascade (the `browser`
+extra plus `playwright install --with-deps chromium`, in its own layer). That roughly doubles the
+image: 1.43GB without it, 2.91GB with it (measured 2026-09-23). To build without it, drop
+`--extra browser` and the `playwright install` line from `backend.Dockerfile`; the cascade then
+stops after BeautifulSoup and reports `unavailable` for pages that needed a browser.
+
 The first build downloads torch, transformers and sentence-transformers, so expect it to be slow and
 the image to be large. The first *request* is slow too, for a different reason: the transformer
 models (GLiNER, the embedding model, the sentiment classifier) download on first use into the

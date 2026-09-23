@@ -1848,6 +1848,9 @@ summary.trace-label {
 .stats-chip-blocked,
 .stats-chip-error { color: var(--false); }
 
+/* Our setup, not the source: muted rather than alarming. */
+.stats-chip-unavailable { color: var(--muted); }
+
 .stats-legend {
   display: grid;
   gap: 0.35rem;

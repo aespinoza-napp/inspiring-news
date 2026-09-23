@@ -23,6 +23,12 @@ PARSE_FAILURES = {Outcome.NO_CONTENT, Outcome.TOO_SHORT, Outcome.ERROR}
 # the cascade skips straight to strategies that render.
 BROWSER_MAY_HELP = {401, 403, 429}
 
+# Who is worth a browser. Evidence is fetched by the handful for every
+# claim and already falls back to its search snippet when a page cannot
+# be read, so rendering each one would multiply the cost of the most
+# expensive step by the most frequent purpose for very little.
+BROWSER_PURPOSES = {Purpose.ARTICLE.value, Purpose.INGESTION.value, Purpose.ENRICHMENT.value}
+
 
 # The fields a parser can find the text and still miss.
 METADATA_FIELDS = ("title", "author", "published_at", "summary", "lead_image")
@@ -64,11 +70,11 @@ class ExtractorService:
     cannot help.
 
     The order is the cost: trafilatura (one request), then BeautifulSoup
-    (no request - it reads the page trafilatura fetched), then, once it
-    exists, a browser (a full render). A page that is not there - a 404,
-    a timeout, a host that does not resolve - is not there for any of
-    them, so those end the cascade instead of spending more requests on a
-    source that is already failing.
+    (no request - it reads the page trafilatura fetched), then a headless
+    browser (a full render; never for evidence pages). A page that is not
+    there - a 404, a timeout, a host that does not resolve - is not there
+    for any of them, so those end the cascade instead of spending more
+    requests on a source that is already failing.
     """
 
     def __init__(self, stats: RequestStats | None = None):
@@ -76,7 +82,7 @@ class ExtractorService:
         self.strategies: list[ExtractionStrategy] = [
             TrafilaturaStrategy(),
             BeautifulSoupStrategy(),
-            #PlaywrightExtractionStrategy()
+            PlaywrightExtractionStrategy(),
         ]
 
         # Every extraction is counted here, not in the strategies: this
@@ -104,10 +110,16 @@ class ExtractorService:
         last: ExtractionAttempt | None = None
         winner: str | None = None
         extracted = None
+        unavailable: str | None = None
+
+        purpose_value = purpose.value if isinstance(purpose, Purpose) else str(purpose)
 
         for strategy in self.strategies:
 
             if strategy.reads_html and (html_unavailable or browser_only):
+                continue
+
+            if not strategy.reads_html and purpose_value not in BROWSER_PURPOSES:
                 continue
 
             tried.append(type(strategy).__name__)
@@ -119,6 +131,13 @@ class ExtractorService:
             )
 
             sent += attempt.sent
+
+            # A strategy that cannot run here (a browser not installed)
+            # says nothing about the page: keep the previous step's
+            # outcome as the answer, and say why nothing further was tried.
+            if attempt.outcome == Outcome.UNAVAILABLE:
+                unavailable = attempt.error
+                continue
 
             if attempt.result is not None and not ExtractionValidator.is_valid(attempt.result, thresholds):
                 attempt = ExtractionAttempt(
@@ -152,14 +171,21 @@ class ExtractorService:
 
             break
 
+        error = None
+
+        if not winner:
+            error = last.error if last else "no strategy could run"
+            if unavailable:
+                error = f"{error}; not escalated: {unavailable}" if last else unavailable
+
         self.stats.record(
             url,
-            last.outcome if last else Outcome.ERROR,
+            last.outcome if last else (Outcome.UNAVAILABLE if unavailable else Outcome.ERROR),
             purpose=purpose,
             strategy=winner or "",
             source_id=source.id,
             status=last.status if last else None,
-            error=None if winner else (last.error if last else "no strategy configured"),
+            error=error,
             elapsed_ms=(time.perf_counter() - started) * 1000,
             sent=sent,
             tried=tried,

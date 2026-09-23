@@ -40,6 +40,11 @@ const OUTCOMES: { key: ScrapeOutcome; label: string; hint: string }[] = [
     hint: "Refused by our own URL guard (a private or reserved address). Never sent.",
   },
   { key: "error", label: "Other error", hint: "Anything else the strategy raised." },
+  {
+    key: "unavailable",
+    label: "No browser",
+    hint: "The page needed the headless browser step, which is not installed here.",
+  },
 ];
 
 const FAILURES = OUTCOMES.filter((outcome) => outcome.key !== "ok");
