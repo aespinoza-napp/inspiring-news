@@ -50,7 +50,7 @@ def test_extract_leaves_published_at_none_when_date_missing():
 
     payload = json.dumps({"text": "x" * 600, "title": "A title"})
 
-    with patch("src.services.scraper.strategies.trafilatura.requests.get", return_value=_mock_response("<html></html>")), \
+    with patch("src.services.scraper.fetcher.requests.get", return_value=_mock_response("<html></html>")), \
          patch("src.services.scraper.strategies.trafilatura.trafilatura.extract", return_value=payload):
 
         result = TrafilaturaStrategy().extract(build_source(), "https://example.com/a")
@@ -63,7 +63,7 @@ def test_extract_leaves_title_none_when_missing():
 
     payload = json.dumps({"text": "x" * 600})
 
-    with patch("src.services.scraper.strategies.trafilatura.requests.get", return_value=_mock_response("<html></html>")), \
+    with patch("src.services.scraper.fetcher.requests.get", return_value=_mock_response("<html></html>")), \
          patch("src.services.scraper.strategies.trafilatura.trafilatura.extract", return_value=payload):
 
         result = TrafilaturaStrategy().extract(build_source(), "https://example.com/a")
@@ -75,7 +75,7 @@ def test_extract_leaves_title_none_when_missing():
 def test_extract_returns_none_on_request_failure():
 
     with patch(
-        "src.services.scraper.strategies.trafilatura.requests.get",
+        "src.services.scraper.fetcher.requests.get",
         side_effect=ConnectionError("boom"),
     ):
 
@@ -103,7 +103,7 @@ def test_a_redirect_is_followed_and_the_destination_is_extracted():
     ]
 
     with patch(
-        "src.services.scraper.strategies.trafilatura.requests.get",
+        "src.services.scraper.fetcher.requests.get",
         side_effect=responses,
     ), patch(
         "src.services.scraper.strategies.trafilatura.trafilatura.extract",
@@ -135,7 +135,7 @@ def test_every_hop_goes_back_through_the_guard(monkeypatch):
     responses = [_mock_response("", redirect_to="http://internal.example/admin")]
 
     with patch(
-        "src.services.scraper.strategies.trafilatura.requests.get",
+        "src.services.scraper.fetcher.requests.get",
         side_effect=responses,
     ):
         result = TrafilaturaStrategy().extract(build_source(), "https://example.com/a")
@@ -149,7 +149,7 @@ def test_a_redirect_loop_gives_up_rather_than_hanging():
         return _mock_response("", redirect_to="https://example.com/loop")
 
     with patch(
-        "src.services.scraper.strategies.trafilatura.requests.get",
+        "src.services.scraper.fetcher.requests.get",
         side_effect=always_redirect,
     ):
         result = TrafilaturaStrategy().extract(build_source(), "https://example.com/loop")
@@ -178,7 +178,7 @@ def test_extract_really_returns_the_pages_title():
     )
 
     with patch(
-        "src.services.scraper.strategies.trafilatura.requests.get",
+        "src.services.scraper.fetcher.requests.get",
         return_value=_mock_response(html),
     ):
         result = TrafilaturaStrategy().extract(build_source(), "https://example.com/a")
@@ -203,7 +203,7 @@ def test_an_http_error_is_reported_with_its_status():
     )
 
     with patch(
-        "src.services.scraper.strategies.trafilatura.requests.get",
+        "src.services.scraper.fetcher.requests.get",
         return_value=response,
     ):
         attempt = TrafilaturaStrategy().attempt(build_source(), "https://example.com/a")
@@ -218,7 +218,7 @@ def test_a_timeout_is_reported_as_a_timeout():
     import requests
 
     with patch(
-        "src.services.scraper.strategies.trafilatura.requests.get",
+        "src.services.scraper.fetcher.requests.get",
         side_effect=requests.ConnectTimeout("too slow"),
     ):
         attempt = TrafilaturaStrategy().attempt(build_source(), "https://example.com/a")
@@ -229,7 +229,7 @@ def test_a_timeout_is_reported_as_a_timeout():
 def test_a_page_with_no_article_is_reported_as_no_content():
 
     with patch(
-        "src.services.scraper.strategies.trafilatura.requests.get",
+        "src.services.scraper.fetcher.requests.get",
         return_value=_mock_response("<html></html>"),
     ), patch(
         "src.services.scraper.strategies.trafilatura.trafilatura.extract",

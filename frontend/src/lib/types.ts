@@ -429,6 +429,12 @@ export type ScrapeOutcome =
 /** GET /scraper/stats - one row per domain the scraper has fetched from. */
 export interface ScraperDomainStats {
   domain: string;
+  /** One per page wanted; outcomes and the success rate are per extraction. */
+  extractions: number;
+  /**
+   * HTTP requests actually sent. Fewer than extractions when a fallback
+   * parser read a page already fetched, or the guard refused the URL.
+   */
   requests: number;
   ok: number;
   failed: number;
@@ -437,7 +443,10 @@ export interface ScraperDomainStats {
   outcomes: Partial<Record<ScrapeOutcome, number>>;
   /** article | evidence | enrichment | ingestion */
   purposes: Record<string, number>;
+  /** Which strategy produced the article, for extractions that got one. */
   strategies: Record<string, number>;
+  /** How often each strategy was tried at all. */
+  tried: Record<string, number>;
   /** Configured source ids; "web" for a URL no source owns. */
   sources: string[];
   avgMs: number | null;
@@ -454,10 +463,12 @@ export interface ScraperStats {
   since: string;
   totals: {
     domains: number;
+    extractions: number;
     requests: number;
     ok: number;
     failed: number;
     outcomes: Partial<Record<ScrapeOutcome, number>>;
+    strategies: Record<string, number>;
   };
   domains: ScraperDomainStats[];
 }

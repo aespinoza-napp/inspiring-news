@@ -22,16 +22,18 @@ def test_counts_are_kept_per_domain_and_outcome():
 
     assert snapshot["totals"] == {
         "domains": 2,
+        "extractions": 3,
         "requests": 3,
         "ok": 2,
         "failed": 1,
         "outcomes": {"ok": 2, "timeout": 1},
+        "strategies": {},
     }
 
     # Busiest domain first.
     [a, b] = snapshot["domains"]
     assert a["domain"] == "a.com"
-    assert a["requests"] == 2
+    assert a["extractions"] == 2
     assert a["successRate"] == 0.5
     assert b["purposes"] == {"evidence": 1}
 
@@ -67,7 +69,7 @@ def test_counts_survive_a_restart(tmp_path):
 
     [entry] = second.snapshot()["domains"]
 
-    assert entry["requests"] == 3
+    assert entry["extractions"] == 3
     assert entry["outcomes"] == {"ok": 2, "blocked": 1}
     assert entry["avgMs"] == 200
 
@@ -102,5 +104,40 @@ def test_concurrent_records_are_all_counted(tmp_path):
     for thread in threads:
         thread.join()
 
-    assert stats.snapshot()["totals"]["requests"] == 400
-    assert RequestStats(tmp_path / "scraper_requests.json").snapshot()["totals"]["requests"] == 400
+    assert stats.snapshot()["totals"]["extractions"] == 400
+    assert RequestStats(tmp_path / "scraper_requests.json").snapshot()["totals"]["extractions"] == 400
+
+
+def test_requests_sent_are_counted_apart_from_extractions():
+    """
+    BeautifulSoup reads the page trafilatura fetched; a URL the guard
+    refuses sends nothing. Extractions and requests are different counts.
+    """
+
+    stats = RequestStats()
+
+    stats.record("https://a.com/1", Outcome.OK, strategy="BeautifulSoupStrategy",
+                 sent=1, tried=["TrafilaturaStrategy", "BeautifulSoupStrategy"])
+    stats.record("https://a.com/2", Outcome.BLOCKED, sent=0, tried=["TrafilaturaStrategy"])
+
+    [entry] = stats.snapshot()["domains"]
+
+    assert (entry["extractions"], entry["requests"]) == (2, 1)
+    assert entry["strategies"] == {"BeautifulSoupStrategy": 1}
+    assert entry["tried"] == {"TrafilaturaStrategy": 2, "BeautifulSoupStrategy": 1}
+
+
+def test_a_file_written_before_the_cascade_still_loads(tmp_path):
+
+    import json
+
+    path = tmp_path / "scraper_requests.json"
+    path.write_text(json.dumps({
+        "since": "2026-09-23T08:00:00+00:00",
+        "domains": [{"domain": "a.com", "requests": 4, "outcomes": {"ok": 4}, "avgMs": 100}],
+    }), encoding="utf-8")
+
+    [entry] = RequestStats(path).snapshot()["domains"]
+
+    assert (entry["extractions"], entry["requests"]) == (4, 4)
+    assert entry["avgMs"] == 100

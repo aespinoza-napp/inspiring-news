@@ -53,6 +53,7 @@ src.main:app --port 8001`.
 | How claims run in parallel; the resource ceilings | `docs/decisions/concurrency.md` |
 | What is searched for; why a source is cut | `docs/decisions/retrieval.md` |
 | Why a given rule exists; what broke before | `docs/decisions/incidents.md` |
+| The extraction cascade and what it counts | `docs/decisions/scraping.md` |
 | Pages, polling hook, API proxies | `frontend/CLAUDE.md` |
 | Running the stack | `docker/README.md` |
 
@@ -126,13 +127,13 @@ write them down than to have each be rediscovered.
   posting a URL to `/analyze`. `Scraper.discover()` passes the `TOPICS`
   dict where `list[str]` is declared and `Scraper.extract()` ignores its
   `topics` argument — unexercised code that has already drifted.
-- **The Playwright and BeautifulSoup extraction strategies do not
-  work.** `BeautifulSoupStrategy.extract()` returns `None`. Both are
-  annotated `Optional[News]` while `ExtractionStrategy.extract` is
-  declared `-> ExtractionResult | None`, and Playwright actually
-  constructs a `News`. Wiring either into `ExtractorService` raises
+- **The Playwright extraction strategy does not work.** It constructs a
+  `News` where `ExtractionStrategy.extract` is declared
+  `-> ExtractionResult | None`; wiring it into `ExtractorService` raises
   `AttributeError` in `ExtractionValidator.is_valid()` (`.body` vs
-  `.content`). They are traps, not placeholders.
+  `.content`). It is a trap, not a placeholder. `BeautifulSoupStrategy`
+  *does* work now: it is step two of the cascade
+  (`docs/decisions/scraping.md`).
 - **Nothing reads Neo4j.** `settings.NEO4J_PASSWORD` is required at
   startup as inherited scaffold config only. `motor` (MongoDB) is
   likewise an unused dependency.

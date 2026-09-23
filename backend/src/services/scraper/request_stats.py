@@ -87,13 +87,25 @@ class DomainStats:
 
     domain: str
 
+    # One per page wanted. Outcomes, purposes and the success rate are
+    # per extraction.
+    extractions: int = 0
+
+    # HTTP requests actually sent. Not the same number: BeautifulSoup
+    # reads the page trafilatura already fetched (0 requests), a browser
+    # fetches again (1 more), and a URL the guard refuses sends none.
     requests: int = 0
 
     outcomes: dict[str, int] = field(default_factory=dict)
 
     purposes: dict[str, int] = field(default_factory=dict)
 
+    # Which strategy produced the article, for the extractions that
+    # produced one - "which step of the cascade does the work here".
     strategies: dict[str, int] = field(default_factory=dict)
+
+    # How often each strategy was tried at all.
+    tried: dict[str, int] = field(default_factory=dict)
 
     # Configured source ids this domain was fetched as ("web" for a URL
     # that belongs to no configured source).
@@ -122,15 +134,17 @@ class DomainStats:
 
         return {
             "domain": self.domain,
+            "extractions": self.extractions,
             "requests": self.requests,
             "ok": ok,
-            "failed": self.requests - ok,
-            "successRate": ok / self.requests if self.requests else None,
+            "failed": self.extractions - ok,
+            "successRate": ok / self.extractions if self.extractions else None,
             "outcomes": dict(self.outcomes),
             "purposes": dict(self.purposes),
             "strategies": dict(self.strategies),
+            "tried": dict(self.tried),
             "sources": list(self.sources),
-            "avgMs": self.total_ms / self.requests if self.requests else None,
+            "avgMs": self.total_ms / self.extractions if self.extractions else None,
             "lastAt": self.last_at,
             "lastUrl": self.last_url,
             "lastOutcome": self.last_outcome,
@@ -142,14 +156,22 @@ class DomainStats:
     @classmethod
     def from_dict(cls, data: dict) -> "DomainStats":
 
+        requests = int(data.get("requests", 0))
+
+        # Files written before the cascade counted one request per
+        # extraction and had no separate figure.
+        extractions = int(data.get("extractions", requests))
+
         return cls(
             domain=data["domain"],
-            requests=int(data.get("requests", 0)),
+            extractions=extractions,
+            requests=requests,
             outcomes=dict(data.get("outcomes") or {}),
             purposes=dict(data.get("purposes") or {}),
             strategies=dict(data.get("strategies") or {}),
+            tried=dict(data.get("tried") or {}),
             sources=list(data.get("sources") or []),
-            total_ms=float(data.get("avgMs") or 0.0) * int(data.get("requests", 0)),
+            total_ms=float(data.get("avgMs") or 0.0) * extractions,
             last_at=data.get("lastAt"),
             last_url=data.get("lastUrl"),
             last_outcome=data.get("lastOutcome"),
@@ -215,7 +237,14 @@ class RequestStats:
         status: int | None = None,
         error: str | None = None,
         elapsed_ms: float = 0.0,
+        sent: int = 1,
+        tried: list[str] | None = None,
     ) -> None:
+        """
+        One extraction: its final outcome, the strategy that produced the
+        article (empty when none did), every strategy tried on the way,
+        and how many HTTP requests it took.
+        """
 
         at = _now()
         domain = domain_of(url)
@@ -226,14 +255,18 @@ class RequestStats:
 
             stats = self._domains.setdefault(domain, DomainStats(domain=domain))
 
-            stats.requests += 1
+            stats.extractions += 1
+            stats.requests += max(sent, 0)
             stats.total_ms += max(elapsed_ms, 0.0)
 
             _bump(stats.outcomes, outcome_value)
             _bump(stats.purposes, purpose_value)
 
-            if strategy:
+            if strategy and outcome_value == Outcome.OK.value:
                 _bump(stats.strategies, strategy)
+
+            for name in tried if tried is not None else ([strategy] if strategy else []):
+                _bump(stats.tried, name)
 
             if source_id and source_id not in stats.sources:
                 stats.sources.append(source_id)
@@ -267,7 +300,7 @@ class RequestStats:
 
         domains = sorted(
             (stats.to_dict() for stats in self._domains.values()),
-            key=lambda entry: entry["requests"],
+            key=lambda entry: entry["extractions"],
             reverse=True,
         )
 
@@ -277,17 +310,25 @@ class RequestStats:
             for key, count in entry["outcomes"].items():
                 outcomes[key] = outcomes.get(key, 0) + count
 
-        requests = sum(entry["requests"] for entry in domains)
+        extractions = sum(entry["extractions"] for entry in domains)
         ok = outcomes.get(Outcome.OK.value, 0)
+
+        strategies: dict[str, int] = {}
+
+        for entry in domains:
+            for key, count in entry["strategies"].items():
+                strategies[key] = strategies.get(key, 0) + count
 
         return {
             "since": self._since,
             "totals": {
                 "domains": len(domains),
-                "requests": requests,
+                "extractions": extractions,
+                "requests": sum(entry["requests"] for entry in domains),
                 "ok": ok,
-                "failed": requests - ok,
+                "failed": extractions - ok,
                 "outcomes": outcomes,
+                "strategies": strategies,
             },
             "domains": domains,
         }

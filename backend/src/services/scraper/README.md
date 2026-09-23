@@ -12,11 +12,12 @@ pipeline: find URLs, then fetch and extract each one.
 - **`extraction_validator.py`** (`ExtractionValidator`) — a cheap sanity gate (minimum body length)
   applied after extraction, before an article is accepted.
 
-**`strategies/beautifulsoup.py`, `strategies/playwright_discover.py`, and
-`strategies/playwright_extraction.py` are unimplemented placeholders** — intended for JS-rendered
-sources (`NewsSource.requires_javascript`), but not wired into `ExtractorService`/`DiscoveryService` yet
-(`BeautifulSoupStrategy.extract()` just returns `None`). Don't assume they do anything until they're
-actually implemented and wired in.
+**Extraction is a cascade, cheapest first** — `TrafilaturaStrategy`, then `BeautifulSoupStrategy`
+on the *same* fetched HTML (`fetcher.py`, `strategies/html.py`), escalating only when a different
+parser could help. `docs/decisions/scraping.md` has the order, the stop rules and what is counted.
+
+**`strategies/playwright_discover.py` and `strategies/playwright_extraction.py` are unimplemented
+placeholders** — intended for JS-rendered sources (`NewsSource.requires_javascript`), not wired in.
 
 `strategies/base.py` defines the `ExtractionStrategy`/`DiscoveryStrategy` interfaces both real and
 placeholder strategies implement.

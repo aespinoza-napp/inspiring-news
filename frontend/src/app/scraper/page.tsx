@@ -53,6 +53,18 @@ function milliseconds(value: number | null): string {
   return value >= 1000 ? `${(value / 1000).toFixed(1)} s` : `${Math.round(value)} ms`;
 }
 
+// "TrafilaturaStrategy" -> "Trafilatura", for display only.
+function strategyName(name: string): string {
+  return name.replace(/Strategy$/, "").replace(/Extraction$/, "");
+}
+
+function strategyList(counts: Record<string, number>): string {
+  return Object.entries(counts)
+    .sort(([, a], [, b]) => b - a)
+    .map(([name, count]) => `${strategyName(name)} ${count}`)
+    .join(" · ");
+}
+
 function when(iso: string | null): string {
   if (!iso) return "–";
   const date = new Date(iso);
@@ -62,7 +74,7 @@ function when(iso: string | null): string {
 // A domain is flagged when most of what it was asked for failed, and it
 // was asked enough times for that to mean something.
 function health(row: ScraperDomainStats): "good" | "warn" | "bad" {
-  if (row.successRate === null || row.requests < 3) return "warn";
+  if (row.successRate === null || row.extractions < 3) return "warn";
   if (row.successRate >= 0.8) return "good";
   if (row.successRate >= 0.4) return "warn";
   return "bad";
@@ -106,7 +118,12 @@ function DomainRow({ row }: { row: ScraperDomainStats }) {
             .join(" · ")}
         </div>
       </td>
-      <td className="stats-number">{row.requests}</td>
+      <td className="stats-number">
+        {row.extractions}
+        <div className="stats-muted">
+          {row.requests} {row.requests === 1 ? "request" : "requests"}
+        </div>
+      </td>
       <td>
         <div className="stats-rate">
           <span className={`stats-rate-value stats-${health(row)}`}>
@@ -122,6 +139,11 @@ function DomainRow({ row }: { row: ScraperDomainStats }) {
         <div className="stats-muted">
           {row.ok} ok · {row.failed} failed
         </div>
+        {Object.keys(row.strategies).length > 0 && (
+          <div className="stats-muted" title="The strategy that produced the article">
+            via {strategyList(row.strategies)}
+          </div>
+        )}
       </td>
       <td>
         <OutcomeChips row={row} />
@@ -383,10 +405,12 @@ export default function ScraperStatsPage() {
     <>
       <h1>Scraper</h1>
       <p className="subtitle">
-        What the scraper asked for and what it got. Requests counts every
-        page fetched, per domain, and why each failed, so a source that has
-        started failing shows up here instead of as an empty result. Scraped
-        articles counts what was actually stored. Refreshes every{" "}
+        What the scraper asked for and what it got. Each page is tried with
+        the cheapest strategy first (trafilatura, then BeautifulSoup on the
+        same HTML) and only escalates when a different parser could help.
+        Requests shows, per domain, every page wanted, the requests that
+        took, which strategy did the work and why the rest failed. Scraped
+        articles shows what was actually stored. Refreshes every{" "}
         {REFRESH_MS / 1000} seconds.
       </p>
 
@@ -403,8 +427,10 @@ export default function ScraperStatsPage() {
       {totals && (
         <div className="stats-totals">
           <div className="stats-total">
-            <div className="stats-total-value">{totals.requests}</div>
-            <div className="stats-total-label">requests</div>
+            <div className="stats-total-value">{totals.extractions}</div>
+            <div className="stats-total-label">
+              pages wanted · {totals.requests} requests
+            </div>
           </div>
           <div className="stats-total">
             <div className="stats-total-value stats-good">{totals.ok}</div>
@@ -423,6 +449,12 @@ export default function ScraperStatsPage() {
             <div className="stats-total-label">domains</div>
           </div>
         </div>
+      )}
+
+      {totals && Object.keys(totals.strategies).length > 0 && (
+        <p className="claims-note">
+          Articles extracted by {strategyList(totals.strategies)}.
+        </p>
       )}
 
       {totals && totals.failed > 0 && (
@@ -479,7 +511,7 @@ export default function ScraperStatsPage() {
             <thead>
               <tr>
                 <th>Domain</th>
-                <th className="stats-number">Requests</th>
+                <th className="stats-number">Pages</th>
                 <th>Success</th>
                 <th>Failures</th>
                 <th className="stats-number">Avg time</th>

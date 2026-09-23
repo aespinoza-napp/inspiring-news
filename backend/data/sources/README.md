@@ -29,6 +29,11 @@ metadata:                    # free-form, strategy-specific hints
   discovery:
     - rss
     - search
+  selectors:                 # optional CSS selectors for BeautifulSoup, step two of the
+    body: .article-body      # extraction cascade - only needed when trafilatura and the
+    author: .byline          # generic heuristics both miss this site's layout
+    title: h1.headline       # (see docs/decisions/scraping.md)
+    date: time.published
 ```
 
 Only `id`, `name`, and `base_url` are required — everything else has a default (see `NewsSource` for

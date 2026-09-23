@@ -1,9 +1,15 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from src.models.scraper.extraction import ExtractionResult
 from src.models.core.source import NewsSource
 from src.services.scraper.request_stats import Outcome
+
+if TYPE_CHECKING:
+    from src.services.scraper.fetcher import FetchedPage
 
 class DiscoveryStrategy(ABC):
 
@@ -35,8 +41,21 @@ class ExtractionAttempt:
 
     error: str | None = None
 
+    # The HTML this attempt worked from, so the next parser in the
+    # cascade can read the same page instead of fetching it again.
+    page: FetchedPage | None = None
+
+    # HTTP requests this attempt actually sent: 0 when it parsed a page
+    # handed to it.
+    sent: int = 1
+
 
 class ExtractionStrategy(ABC):
+
+    # Whether this strategy can read a FetchedPage another strategy
+    # already downloaded. Only plain-HTML parsers can; a browser renders
+    # its own.
+    reads_html = False
 
     @abstractmethod
     def extract(
@@ -50,6 +69,7 @@ class ExtractionStrategy(ABC):
         self,
         source: NewsSource,
         url: str,
+        page: FetchedPage | None = None,
     ) -> ExtractionAttempt:
         """
         `extract()` plus the reason. Strategies that can tell a failure
