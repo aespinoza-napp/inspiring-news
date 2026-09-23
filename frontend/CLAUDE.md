@@ -26,7 +26,7 @@ loopback first and fail to reach uvicorn's IPv4-only default.
 | `/` (`app/page.tsx`) | Paste article URLs; each gets a `JobCard` driven by `lib/useAnalysisJob.ts`. Shows the topic radar next to the *topic's own keywords* (`TopicKeywords`), not the article's yake keywords. Claims appear as rows the moment they are selected and each fills in with its own verdict as it finishes — it folds events with `lib/liveTrace.ts`, the same fold `/live` uses, rather than matching the phase literals a second time |
 | `/live` | A second screen: every job the backend is running or ran recently, from any client. Per claim: the SearXNG queries, every source found and the engines behind it, the rating each received, and the verdict — filling in as events arrive. `lib/useLiveJobs.ts` polls `GET /api/jobs`; `lib/liveTrace.ts` folds events into that view |
 | `/claim` | One claim → verdict, evidence, sources rejected, and the LLM's pre-recalibration answer |
-| `/enrich` | Text → topics, keywords, entities, claims, sentiment, quality, embedding shape |
+| `/enrich` | URL and/or text → what was extracted (title, author, date, body, each tagged typed-in / extracted / missing), then topics, keywords, entities, claims, sentiment, quality, embedding shape |
 | `/corrector` | Text → the 7 corrector metrics |
 
 `lib/types.ts` mirrors the backend's response shapes exactly — keep it in

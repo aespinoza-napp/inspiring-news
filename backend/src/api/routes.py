@@ -2,7 +2,7 @@ import secrets
 from logging import getLogger
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from src.container import (
     get_analysis_service,
@@ -17,6 +17,7 @@ from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
 from src.models.core.job import JobStatus
 from src.models.storage.lineage import DataLayer
+from src.services.enrichment_service import NothingToEnrich
 from src.services.job_runner import run_analysis_job
 
 logger = getLogger(__name__)
@@ -70,13 +71,22 @@ class VerifyClaimRequest(BaseModel):
 
 
 class EnrichRequest(BaseModel):
-    text: str = Field(min_length=1)
+    # Either may be omitted, not both. A URL is fetched with the
+    # analyzer's own extractor; pasted text, when also given, wins over
+    # the fetched body.
+    text: str | None = None
     title: str | None = None
     url: str | None = None
     # Omit to let the pipeline detect it. "en" and "es" are the two
     # supported lexicons; anything else is scored with the English one.
     language: str | None = Field(default=None, max_length=8)
     thresholds: ThresholdOverrides | None = None
+
+    @model_validator(mode="after")
+    def _text_or_url(self):
+        if not (self.text or "").strip() and not (self.url or "").strip():
+            raise ValueError("Provide the article text, a URL, or both.")
+        return self
 
 
 class CreateAnalysisJobRequest(BaseModel):
@@ -339,9 +349,11 @@ def enrich(request: EnrichRequest):
 
     Reuses NewsEnrichmentPipeline exactly as the article pipeline does,
     so the output matches what a full run would derive from the same
-    text. Nothing is fetched and nothing is stored - this is for
-    inspecting and tuning ("what would the pipeline make of this, at
-    these thresholds?"), not for ingesting articles.
+    text. With a `url`, the page is first fetched with the analyzer's
+    extractor and `extraction` reports the title, author, date and body
+    it produced. Nothing is stored - this is for inspecting and tuning
+    ("what would the pipeline make of this, at these thresholds?"), not
+    for ingesting articles.
     """
 
     thresholds = PipelineThresholds.resolve(request.thresholds)
@@ -354,13 +366,16 @@ def enrich(request: EnrichRequest):
             detail=f"Enrichment unavailable: {exc}",
         )
 
-    return service.enrich(
-        request.text,
-        title=request.title,
-        url=request.url,
-        language=request.language,
-        thresholds=thresholds,
-    )
+    try:
+        return service.enrich(
+            request.text,
+            title=request.title,
+            url=request.url,
+            language=request.language,
+            thresholds=thresholds,
+        )
+    except NothingToEnrich as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
 
 # ---------------------------------------------------------------------
 # Storage layers

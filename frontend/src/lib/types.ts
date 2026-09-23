@@ -358,6 +358,8 @@ export interface EnrichedClaim {
 
 export interface EnrichmentResult {
   title: string;
+  /** Detected from the body unless the request named one. */
+  language: string | null;
   keywords: string[];
   entities: Record<string, string[]>;
   topics: TopicPrediction[];
@@ -374,4 +376,38 @@ export interface EnrichmentResult {
     preview: number[];
   };
   thresholds: ResolvedThresholds;
+  extraction: ExtractionReport;
+}
+
+/**
+ * Where one extracted field's value came from: typed in by the caller,
+ * pulled from the fetched page, or absent from both.
+ */
+export type FieldOrigin = "supplied" | "extracted" | "missing";
+
+export interface ExtractedField {
+  value: string | null;
+  origin: FieldOrigin;
+}
+
+/**
+ * What `/enrich` started from. With a URL, the page is fetched with the
+ * same extractor the article analyzer uses, so this is what a real run
+ * would have had to work with.
+ */
+export interface ExtractionReport {
+  url: string | null;
+  fetched: boolean;
+  /** Why the page could not be fetched, when a URL was given and it failed. */
+  error: string | null;
+  title: ExtractedField;
+  author: ExtractedField;
+  /** ISO date (YYYY-MM-DD). */
+  publishedAt: ExtractedField;
+  imageUrl: string | null;
+  body: {
+    origin: FieldOrigin;
+    length: number;
+    preview: string;
+  };
 }

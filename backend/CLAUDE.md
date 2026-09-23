@@ -129,7 +129,7 @@ English rather than raising. See `docs/decisions/incidents.md`.
 | `POST /analyze/jobs` + `GET /analyze/jobs/{id}` | What the frontend uses. `job_store.py` is in-memory, single-process. `job_runner.py` bridges `on_phase` into it and logs per-phase timing at INFO. Every event is also appended to the job journal (`docs/decisions/storage.md`), and `GET /{id}` falls back to it after a restart. |
 | `GET /analyze/jobs` | What is running and what ran recently, for the Live screen: active jobs with every event, finished ones as a summary (`events: []`, `result: null`, `eventCount`). In-memory jobs only. Behind `STORAGE_API_KEY` when set — it enumerates every job id, which used to be an unguessable capability. |
 | `POST /verify-claim` | One claim, no article. Runs `FactChecker.check_claim()` — the pipeline's own stage made public so the two cannot drift. Skips the admission filter and claim selection: those judge an *article*. Still answers synchronously, but is registered as a `kind: "claim"` job so the Live screen shows it and the journal keeps it. |
-| `POST /enrich` | NLP stage alone over supplied text. **Side-effect free** — nothing written to the lake. |
+| `POST /enrich` | NLP stage alone over supplied text, or over a `url` fetched with the analyzer's own extractor. `extraction` reports the title, author, date and body it started from and where each came from (`supplied` / `extracted` / `missing`). **Side-effect free** — nothing written to the lake. |
 | `POST /correct` | `readability` and `coverageVerification` are deterministic; the other 5 come from one LLM call. |
 | `GET /storage/*` | Read the lake. Behind `STORAGE_API_KEY` when set. |
 

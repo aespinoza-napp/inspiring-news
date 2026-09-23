@@ -242,3 +242,20 @@ def test_enrich_defaults_language_to_none_so_it_is_detected(monkeypatch):
     client.post("/enrich", json={"text": "Some text."})
 
     assert service.calls[0][4] is None
+
+
+def test_a_url_without_text_is_accepted(monkeypatch):
+
+    service = use_enrich(monkeypatch)
+
+    response = client.post("/enrich", json={"url": "https://example.com/a"})
+
+    assert response.status_code == 200
+    assert service.calls[0][2] == "https://example.com/a"
+
+
+def test_neither_text_nor_url_is_rejected(monkeypatch):
+
+    use_enrich(monkeypatch)
+
+    assert client.post("/enrich", json={"title": "Only a title"}).status_code == 422

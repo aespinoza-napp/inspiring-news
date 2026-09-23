@@ -1721,3 +1721,53 @@ summary.trace-label {
   font-weight: 400;
   color: var(--muted);
 }
+
+/* ---------------------------------------------------------------------
+   Enrichment: what the extractor found
+   --------------------------------------------------------------------- */
+
+/* Label / value pairs. Two columns while there is room; below that the
+   label sits over its value so a long title never squeezes to a sliver. */
+.extraction-fields {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.45rem 1rem;
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.extraction-fields dt {
+  color: var(--muted);
+}
+
+.extraction-fields dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.extraction-missing {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.extraction-preview {
+  margin: 0.25rem 0 0;
+  padding: 0.6rem 0.75rem;
+  max-height: 14rem;
+  overflow-y: auto;
+  border-left: 3px solid var(--border);
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media (max-width: 520px) {
+  .extraction-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+  }
+
+  .extraction-fields dd {
+    margin-bottom: 0.5rem;
+  }
+}

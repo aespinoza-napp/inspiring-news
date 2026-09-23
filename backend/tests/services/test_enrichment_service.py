@@ -4,16 +4,22 @@ from src.config.thresholds import PipelineThresholds
 from src.services.enrichment_service import EnrichmentService
 
 from tests.factories import create_article, create_claim
+from tests.services.fact_checker.fakes import FakeExtractorService
 
 TEXT = "NASA discovered water on Mars. Scientists confirmed the finding."
 
 
-def make_service(article=None):
+def make_service(article=None, pages=None):
 
     pipeline = Mock()
     pipeline.process.return_value = article if article is not None else create_article()
 
-    return EnrichmentService(pipeline=pipeline)
+    # Never the real extractor: a test passing a URL would otherwise
+    # make a live HTTP request.
+    return EnrichmentService(
+        pipeline=pipeline,
+        extractor=FakeExtractorService(pages or {}),
+    )
 
 
 # ----------------------------------------------------------------------
@@ -171,3 +177,101 @@ def test_phases_are_reported():
     make_service().enrich(TEXT, on_phase=lambda phase, data: events.append(phase))
 
     assert events == ["enriching", "enriched"]
+
+
+# ----------------------------------------------------------------------
+# Given a URL, the extraction itself is what is being inspected
+# ----------------------------------------------------------------------
+
+
+URL = "https://inspiringnews.ai/cultura/farmear-aura/"
+
+
+def _page(**overrides):
+
+    from datetime import datetime
+
+    from src.models.core.news import News
+
+    return News(**{
+        "source_id": "web",
+        "url": URL,
+        "title": "Farmear aura: qué es y por qué se volvió viral en 2026",
+        "author": "Natalia Soto",
+        "published_at": datetime(2026, 8, 31),
+        "content": "Hay algo que los jóvenes están haciendo en las plazas.",
+        **overrides,
+    })
+
+
+def test_a_url_alone_is_fetched_and_its_body_enriched():
+
+    service = make_service(pages={URL: _page()})
+
+    result = service.enrich(url=URL)
+
+    news = service.pipeline.process.call_args[0][0]
+
+    assert news.content.startswith("Hay algo")
+    assert news.title.startswith("Farmear aura")
+    assert news.author == "Natalia Soto"
+
+    extraction = result["extraction"]
+    assert extraction["fetched"] is True
+    assert extraction["title"]["origin"] == "extracted"
+    assert extraction["author"] == {"value": "Natalia Soto", "origin": "extracted"}
+    assert extraction["publishedAt"] == {"value": "2026-08-31", "origin": "extracted"}
+    assert extraction["body"]["origin"] == "extracted"
+
+
+def test_what_the_caller_supplies_wins_over_what_was_extracted():
+
+    service = make_service(pages={URL: _page()})
+
+    result = service.enrich(TEXT, title="My own headline", url=URL)
+
+    news = service.pipeline.process.call_args[0][0]
+
+    assert news.content == TEXT
+    assert news.title == "My own headline"
+    # Nothing supplied for these, so the page still fills them in.
+    assert news.author == "Natalia Soto"
+
+    assert result["extraction"]["title"]["origin"] == "supplied"
+    assert result["extraction"]["body"]["origin"] == "supplied"
+
+
+def test_a_page_without_a_title_says_so():
+
+    service = make_service(pages={URL: _page(title=None, author=None, published_at=None)})
+
+    extraction = service.enrich(url=URL)["extraction"]
+
+    assert extraction["title"] == {"value": None, "origin": "missing"}
+    assert extraction["author"]["origin"] == "missing"
+    assert extraction["publishedAt"]["origin"] == "missing"
+
+
+def test_pasted_text_is_still_enriched_when_the_fetch_fails():
+
+    service = make_service(pages={URL: None})
+
+    result = service.enrich(TEXT, url=URL)
+
+    assert service.pipeline.process.call_args[0][0].content == TEXT
+    assert result["extraction"]["fetched"] is False
+    assert "Could not extract" in result["extraction"]["error"]
+
+
+def test_a_url_that_yields_nothing_and_no_text_is_an_error():
+
+    import pytest
+
+    from src.services.enrichment_service import NothingToEnrich
+
+    service = make_service(pages={URL: None})
+
+    with pytest.raises(NothingToEnrich):
+        service.enrich(url=URL)
+
+    service.pipeline.process.assert_not_called()

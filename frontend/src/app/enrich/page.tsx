@@ -1,8 +1,49 @@
 "use client";
 
 import { useState } from "react";
-import { EnrichmentResult } from "@/lib/types";
+import { EnrichmentResult, ExtractedField, FieldOrigin } from "@/lib/types";
 import { ScoreBar } from "@/components/ScoreBar";
+
+const ORIGIN_LABEL: Record<FieldOrigin, string> = {
+  supplied: "typed in",
+  extracted: "extracted",
+  missing: "missing",
+};
+
+// Missing is the case this view exists to catch: a missing title
+// silently weakens claim selection and the fact checker's subject
+// restoration, so it gets the warning colour rather than a neutral tag.
+const ORIGIN_CLASS: Record<FieldOrigin, string> = {
+  supplied: "trace-tag",
+  extracted: "trace-tag trace-tag-ok",
+  missing: "trace-tag trace-tag-warn",
+};
+
+function OriginTag({ origin }: { origin: FieldOrigin }) {
+  return <span className={ORIGIN_CLASS[origin]}>{ORIGIN_LABEL[origin]}</span>;
+}
+
+function FieldRow({ label, field }: { label: string; field: ExtractedField }) {
+  return (
+    <>
+      <dt>{label}</dt>
+      <dd>
+        {field.value ? (
+          <span>{field.value}</span>
+        ) : (
+          <span className="extraction-missing">not found</span>
+        )}{" "}
+        <OriginTag origin={field.origin} />
+      </dd>
+    </>
+  );
+}
+
+// Only http(s) links are rendered as links: the URL was typed in by
+// whoever is using the page, and a javascript: one must stay inert text.
+function safeHref(url: string | null): string | null {
+  return url && /^https?:\/\//i.test(url) ? url : null;
+}
 
 const QUALITY_METRICS: {
   key: keyof EnrichmentResult["quality"];
@@ -18,6 +59,7 @@ const QUALITY_METRICS: {
 ];
 
 export default function EnrichPage() {
+  const [url, setUrl] = useState("");
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
   const [result, setResult] = useState<EnrichmentResult | null>(null);
@@ -27,7 +69,7 @@ export default function EnrichPage() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    if (!text.trim()) return;
+    if (!text.trim() && !url.trim()) return;
 
     setLoading(true);
     setError(null);
@@ -38,8 +80,9 @@ export default function EnrichPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text,
+          text: text.trim() || null,
           title: title.trim() || null,
+          url: url.trim() || null,
         }),
       });
 
@@ -63,47 +106,75 @@ export default function EnrichPage() {
     <>
       <h1>Enrichment</h1>
       <p className="subtitle">
-        Run only the NLP stage over your own text: keywords, named
-        entities, topics, extracted claims, sentiment, quality scores and
-        the embedding. It uses the same processors as the article
-        analyzer, so this is what the pipeline would derive from this
-        text. Nothing is fetched and nothing is stored.
+        See what the pipeline extracts from an article. Give it a URL and
+        the page is fetched with the same extractor the analyzer uses,
+        showing the title, author, date and body it found. Then the NLP
+        stage runs: keywords, named entities, topics, claims, sentiment,
+        quality and the embedding. You can also paste text instead.
+        Nothing is stored.
       </p>
 
       <form onSubmit={handleSubmit}>
+        <label className="field-label" htmlFor="enrich-url">
+          Article URL{" "}
+          <span className="claims-note">(or paste the text)</span>
+        </label>
+        <input
+          id="enrich-url"
+          type="text"
+          inputMode="url"
+          value={url}
+          onChange={(event) => setUrl(event.target.value)}
+          placeholder="https://..."
+        />
+
         <label className="field-label" htmlFor="enrich-title">
-          Title <span className="claims-note">(optional)</span>
+          Title{" "}
+          <span className="claims-note">
+            (optional)
+          </span>
         </label>
         <input
           id="enrich-title"
           type="text"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="Headline, if you have one"
+          placeholder="Leave empty to use the page's own headline"
         />
 
         <label className="field-label" htmlFor="enrich-input">
-          Text to enrich
+          Text to enrich{" "}
+          <span className="claims-note">
+            (optional with a URL)
+          </span>
         </label>
         <textarea
           id="enrich-input"
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="Paste an article body here..."
+          placeholder="Paste an article body here, or leave empty to use the fetched one..."
         />
         <div>
-          <button type="submit" disabled={loading}>
+          <button
+            type="submit"
+            disabled={loading || (!text.trim() && !url.trim())}
+          >
             {loading && <span className="spinner" aria-hidden="true" />}
-            {loading ? "Enriching…" : "Enrich"}
+            {loading
+              ? "Enriching…"
+              : url.trim()
+                ? "Extract & enrich"
+                : "Enrich"}
           </button>
         </div>
       </form>
 
       {loading && (
         <p className="claims-note">
-          Running entity recognition, topic classification, sentiment and
-          embeddings — the first run in a fresh backend also loads the
-          models, which takes longer.
+          {url.trim() ? "Fetching the page, then running" : "Running"} entity
+          recognition, topic classification, sentiment and embeddings. The
+          first run on a fresh backend also loads the models, so it takes
+          longer.
         </p>
       )}
 
@@ -115,6 +186,69 @@ export default function EnrichPage() {
 
       {result && (
         <>
+          <div className="card">
+            <div className="section-label">Extraction</div>
+
+            {result.extraction.error && (
+              <div className="error-banner" role="alert">
+                {result.extraction.error}
+                {result.extraction.body.origin === "supplied" &&
+                  " The pasted text was enriched instead."}
+              </div>
+            )}
+
+            <dl className="extraction-fields">
+              {result.extraction.url && (
+                <>
+                  <dt>URL</dt>
+                  <dd>
+                    {safeHref(result.extraction.url) ? (
+                      <a
+                        href={safeHref(result.extraction.url)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {result.extraction.url}
+                      </a>
+                    ) : (
+                      result.extraction.url
+                    )}
+                  </dd>
+                </>
+              )}
+              <FieldRow label="Title" field={result.extraction.title} />
+              <FieldRow label="Author" field={result.extraction.author} />
+              <FieldRow label="Published" field={result.extraction.publishedAt} />
+              <dt>Language</dt>
+              <dd>
+                {result.language ?? (
+                  <span className="extraction-missing">not detected</span>
+                )}
+              </dd>
+              <dt>Body</dt>
+              <dd>
+                {result.extraction.body.length.toLocaleString()} characters{" "}
+                <OriginTag origin={result.extraction.body.origin} />
+              </dd>
+            </dl>
+
+            {result.extraction.title.origin === "missing" && (
+              <p className="claims-note">
+                No title was found. The analyzer uses the headline to pick an
+                article&apos;s main claims and to put back the subject a claim
+                sentence leaves out, so without it claims are checked with
+                less context.
+              </p>
+            )}
+
+            <div className="section-label">Body preview</div>
+            <p className="extraction-preview">
+              {result.extraction.body.preview}
+              {result.extraction.body.length >
+                result.extraction.body.preview.length && "…"}
+            </p>
+          </div>
+
           <div className="card">
             <div className="section-label">Topics</div>
             {result.topics.length > 0 ? (
