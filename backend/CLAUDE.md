@@ -132,6 +132,7 @@ English rather than raising. See `docs/decisions/incidents.md`.
 | `POST /enrich` | NLP stage alone over supplied text, or over a `url` fetched with the analyzer's own extractor. `extraction` reports the title, author, date and body it started from and where each came from (`supplied` / `extracted` / `missing`). **Side-effect free** — nothing written to the lake. |
 | `POST /correct` | `readability` and `coverageVerification` are deterministic; the other 5 come from one LLM call. |
 | `GET /scraper/stats` | Every extraction attempt this process (and, via `lake/stats/scraper_requests.json`, previous ones) made, per domain, by outcome and purpose. Recorded in `ExtractorService` into the shared `request_stats`; strategies report *why* through `attempt()`. Behind `STORAGE_API_KEY` when set. |
+| `GET /scraper/articles` | Articles stored in the lake, per domain: raw records, unique URLs, how many arrived with a title / author / date, and how many went on to processed / exploitation / publishable. Read from the lake on every call (`services/scraper/article_stats.py`) - no second counter. Behind `STORAGE_API_KEY` when set. |
 | `GET /storage/*` | Read the lake. Behind `STORAGE_API_KEY` when set. |
 
 All of these accept per-run `thresholds` overrides —

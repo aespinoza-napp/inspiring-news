@@ -28,7 +28,7 @@ loopback first and fail to reach uvicorn's IPv4-only default.
 | `/claim` | One claim → verdict, evidence, sources rejected, and the LLM's pre-recalibration answer |
 | `/enrich` | URL and/or text → what was extracted (title, author, date, body, each tagged typed-in / extracted / missing), then topics, keywords, entities, claims, sentiment, quality, embedding shape |
 | `/corrector` | Text → the 7 corrector metrics |
-| `/scraper` | Every page fetch the backend has made, per domain: requests, success rate, why the rest failed (too short / no content / HTTP error / timeout / connection / blocked), last request and last failure. Polls `GET /api/scraper/stats` every 10s, `cache: "no-store"` like the job routes |
+| `/scraper` | Every page fetch the backend has made, per domain: requests, success rate, why the rest failed (too short / no content / HTTP error / timeout / connection / blocked), last request and last failure. Below that, the articles actually stored in the lake per domain (scraped vs unique, title/author/date coverage, what became of them) and a per-day chart (`components/DailyBars.tsx`). Polls `GET /api/scraper/stats` and `/api/scraper/articles` every 10s, `cache: "no-store"` like the job routes |
 
 `lib/types.ts` mirrors the backend's response shapes exactly — keep it in
 sync when a backend response changes.

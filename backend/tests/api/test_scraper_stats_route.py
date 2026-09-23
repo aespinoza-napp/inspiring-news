@@ -40,3 +40,19 @@ def test_the_counts_are_behind_the_storage_key(monkeypatch):
 
     assert client.get("/scraper/stats").status_code == 401
     assert client.get("/scraper/stats", headers={"x-api-key": "secret"}).status_code == 200
+
+
+def test_scraped_articles_are_read_from_the_lake(monkeypatch):
+
+    from tests.services.scraper.test_article_stats import FakeLake, raw
+
+    monkeypatch.setattr(
+        routes,
+        "get_datalake_repository",
+        lambda: FakeLake(raw=[raw("https://a.com/1")]),
+    )
+
+    response = client.get("/scraper/articles")
+
+    assert response.status_code == 200
+    assert response.json()["totals"]["scraped"] == 1

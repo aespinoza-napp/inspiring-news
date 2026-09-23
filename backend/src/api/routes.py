@@ -19,6 +19,7 @@ from src.models.core.job import JobStatus
 from src.models.storage.lineage import DataLayer
 from src.services.enrichment_service import NothingToEnrich
 from src.services.job_runner import run_analysis_job
+from src.services.scraper.article_stats import article_stats
 from src.services.scraper.request_stats import request_stats
 
 logger = getLogger(__name__)
@@ -393,6 +394,18 @@ def scraper_stats():
     """
 
     return request_stats.snapshot()
+
+
+@router.get("/scraper/articles", dependencies=[Depends(require_storage_key)])
+def scraped_articles():
+    """
+    What the scraper has to show for its requests: articles stored in the
+    lake's raw layer, per domain - how many, how many distinct, how many
+    arrived with a title, author and date, and how many went on to be
+    processed, stored and published. Read from the lake on each call.
+    """
+
+    return article_stats(get_datalake_repository())
 
 
 # ---------------------------------------------------------------------

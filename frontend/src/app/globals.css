@@ -1971,3 +1971,134 @@ summary.trace-label {
 @media (prefers-reduced-motion: reduce) {
   .stats-rate-fill { transition: none; }
 }
+
+/* ---------------------------------------------------------------------
+   Scraper: stored articles
+   --------------------------------------------------------------------- */
+
+.stats-section {
+  margin-top: 2.5rem;
+}
+
+.stats-section h2,
+.site-main > h2 {
+  margin: 1.75rem 0 0.25rem;
+  font-size: 1.1rem;
+}
+
+.stats-coverage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.stats-coverage div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.stats-coverage dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.stats-coverage dd {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------
+   DailyBars
+   --------------------------------------------------------------------- */
+
+.daily-bars-plot {
+  position: relative;
+  width: 100%;
+}
+
+.daily-bars-plot svg {
+  display: block;
+  overflow: visible;
+}
+
+.daily-bars-axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.daily-bars-bar {
+  fill: var(--series-1);
+  transition: opacity 0.15s var(--ease);
+}
+
+.daily-bars-bar.is-dimmed {
+  opacity: 0.35;
+}
+
+.daily-bars-hit {
+  fill: transparent;
+  cursor: default;
+}
+
+.daily-bars-hit:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.daily-bars-tooltip {
+  position: absolute;
+  top: 0;
+  transform: translate(-50%, -100%);
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.daily-bars-tooltip span {
+  margin-left: 0.4rem;
+  color: var(--muted);
+}
+
+.daily-bars-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.daily-bars-table {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.daily-bars-table summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.daily-bars-table table {
+  margin-top: 0.4rem;
+  border-collapse: collapse;
+}
+
+.daily-bars-table th,
+.daily-bars-table td {
+  padding: 0.2rem 1.25rem 0.2rem 0;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-bars-bar { transition: none; }
+}

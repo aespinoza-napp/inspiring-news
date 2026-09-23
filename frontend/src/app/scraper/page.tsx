@@ -1,7 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ScrapeOutcome, ScraperDomainStats, ScraperStats } from "@/lib/types";
+import {
+  ScrapedArticles,
+  ScrapedDomainStats,
+  ScrapeOutcome,
+  ScraperDomainStats,
+  ScraperStats,
+} from "@/lib/types";
+import { DailyBars } from "@/components/DailyBars";
 
 // How often the counts refresh on their own. The page answers "is the
 // scraper failing?", so it should show a run's requests as they happen,
@@ -149,8 +156,171 @@ function DomainRow({ row }: { row: ScraperDomainStats }) {
   );
 }
 
+// "3 / 47" with the share, flagged when most articles arrived without it -
+// a missing title silently weakens claim selection and fact-checking.
+function Coverage({ have, of }: { have: number; of: number }) {
+  if (of === 0) return <span className="stats-muted">–</span>;
+
+  const share = have / of;
+  const tone = share >= 0.8 ? "stats-good" : share >= 0.4 ? "stats-warn" : "stats-bad";
+
+  return (
+    <span className={tone}>
+      {Math.round(share * 100)}%
+      <span className="stats-muted"> ({have})</span>
+    </span>
+  );
+}
+
+function languages(row: ScrapedDomainStats): string {
+  return Object.entries(row.languages)
+    .sort(([, a], [, b]) => b - a)
+    .map(([language, count]) => `${language} ${count}`)
+    .join(" · ");
+}
+
+function ArticlesSection({ articles }: { articles: ScrapedArticles }) {
+  const { totals } = articles;
+
+  return (
+    <section className="stats-section">
+      <h2>Scraped articles</h2>
+      <p className="claims-note">
+        Articles the scraper fetched, extracted and stored in the lake, and
+        what happened to them afterwards. Every analysis stores a new copy,
+        so re-analysing an article counts it again under &quot;scraped&quot;
+        but not under &quot;unique&quot;. Evidence pages are fetched but never
+        stored, so they only show up in the requests above.
+      </p>
+
+      <div className="stats-totals">
+        <div className="stats-total">
+          <div className="stats-total-value">{totals.scraped}</div>
+          <div className="stats-total-label">scraped</div>
+        </div>
+        <div className="stats-total">
+          <div className="stats-total-value">{totals.uniqueUrls}</div>
+          <div className="stats-total-label">unique articles</div>
+        </div>
+        <div className="stats-total">
+          <div className="stats-total-value stats-good">{totals.publishable}</div>
+          <div className="stats-total-label">publishable</div>
+        </div>
+        <div className="stats-total">
+          <div className="stats-total-value">{totals.rejected}</div>
+          <div className="stats-total-label">rejected</div>
+        </div>
+      </div>
+
+      {totals.scraped > 0 && (
+        <div className="card">
+          <div className="section-label">Metadata the extractor found</div>
+          <dl className="stats-coverage">
+            <div>
+              <dt>Title</dt>
+              <dd>
+                <Coverage have={totals.withTitle} of={totals.scraped} />
+              </dd>
+            </div>
+            <div>
+              <dt>Author</dt>
+              <dd>
+                <Coverage have={totals.withAuthor} of={totals.scraped} />
+              </dd>
+            </div>
+            <div>
+              <dt>Published date</dt>
+              <dd>
+                <Coverage have={totals.withDate} of={totals.scraped} />
+              </dd>
+            </div>
+          </dl>
+          {totals.withTitle < totals.scraped && (
+            <p className="claims-note">
+              Articles stored before the title fix (trafilatura&apos;s{" "}
+              <code>with_metadata</code>) have no title, author or date. Analyse
+              them again to refresh them.
+            </p>
+          )}
+
+          <div className="section-label">Articles scraped per day</div>
+          <DailyBars
+            points={articles.daily.map((day) => ({
+              date: day.date,
+              value: day.scraped,
+            }))}
+            unit={["article", "articles"]}
+            label="Articles scraped per day"
+          />
+        </div>
+      )}
+
+      {articles.domains.length > 0 && (
+        <div className="stats-table-wrap">
+          <table className="stats-table">
+            <thead>
+              <tr>
+                <th>Domain</th>
+                <th className="stats-number">Scraped</th>
+                <th className="stats-number">Unique</th>
+                <th className="stats-number">Title</th>
+                <th className="stats-number">Author</th>
+                <th className="stats-number">Date</th>
+                <th className="stats-number">Avg length</th>
+                <th>Then</th>
+                <th>Scraped between</th>
+              </tr>
+            </thead>
+            <tbody>
+              {articles.domains.map((row) => (
+                <tr key={row.domain}>
+                  <td>
+                    <div className="stats-domain">{row.domain}</div>
+                    <div className="stats-muted">{languages(row)}</div>
+                  </td>
+                  <td className="stats-number">{row.scraped}</td>
+                  <td className="stats-number">{row.uniqueUrls}</td>
+                  <td className="stats-number">
+                    <Coverage have={row.withTitle} of={row.scraped} />
+                  </td>
+                  <td className="stats-number">
+                    <Coverage have={row.withAuthor} of={row.scraped} />
+                  </td>
+                  <td className="stats-number">
+                    <Coverage have={row.withDate} of={row.scraped} />
+                  </td>
+                  <td className="stats-number">
+                    {row.avgLength === null
+                      ? "–"
+                      : `${Math.round(row.avgLength).toLocaleString()} chars`}
+                  </td>
+                  <td>
+                    <div>
+                      {row.processed} processed · {row.stored} stored
+                    </div>
+                    <div className="stats-muted">
+                      {row.publishable} publishable · {row.rejected} rejected
+                    </div>
+                  </td>
+                  <td>
+                    {row.firstScraped ?? "–"}
+                    {row.lastScraped && row.lastScraped !== row.firstScraped && (
+                      <div className="stats-muted">to {row.lastScraped}</div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function ScraperStatsPage() {
   const [stats, setStats] = useState<ScraperStats | null>(null);
+  const [articles, setArticles] = useState<ScrapedArticles | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [onlyFailing, setOnlyFailing] = useState(false);
@@ -159,16 +329,23 @@ export default function ScraperStatsPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/scraper/stats", { cache: "no-store" });
-      const data = await response.json();
+      const [requests, stored] = await Promise.all(
+        ["/api/scraper/stats", "/api/scraper/articles"].map(async (path) => {
+          const response = await fetch(path, { cache: "no-store" });
+          const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(
-          data?.error ?? data?.detail ?? `Request failed (${response.status})`
-        );
-      }
+          if (!response.ok) {
+            throw new Error(
+              data?.error ?? data?.detail ?? `Request failed (${response.status})`
+            );
+          }
 
-      setStats(data);
+          return data;
+        })
+      );
+
+      setStats(requests);
+      setArticles(stored);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -206,13 +383,14 @@ export default function ScraperStatsPage() {
     <>
       <h1>Scraper</h1>
       <p className="subtitle">
-        Every page the scraper has requested, counted per domain: articles
-        sent to the analyzer, evidence pages read for claims, and URLs
-        checked on the Enrichment page. Each request is sorted by what it
-        came to, so a source that has started failing shows up here
-        instead of as an empty result. Refreshes every{" "}
+        What the scraper asked for and what it got. Requests counts every
+        page fetched, per domain, and why each failed, so a source that has
+        started failing shows up here instead of as an empty result. Scraped
+        articles counts what was actually stored. Refreshes every{" "}
         {REFRESH_MS / 1000} seconds.
       </p>
+
+      <h2>Requests</h2>
 
       {error && (
         <div className="error-banner" role="alert">
@@ -320,6 +498,8 @@ export default function ScraperStatsPage() {
       {stats && (
         <p className="claims-note">Counting since {when(stats.since)}.</p>
       )}
+
+      {articles && <ArticlesSection articles={articles} />}
     </>
   );
 }

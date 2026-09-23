@@ -461,3 +461,43 @@ export interface ScraperStats {
   };
   domains: ScraperDomainStats[];
 }
+
+/** GET /scraper/articles - articles stored in the lake, per domain. */
+export interface ScrapedDomainStats {
+  domain: string;
+  /** Raw records: every stored fetch, re-analyses included. */
+  scraped: number;
+  /** Distinct articles by host and path. */
+  uniqueUrls: number;
+  uniqueContents: number;
+  withTitle: number;
+  withAuthor: number;
+  withDate: number;
+  avgLength: number | null;
+  languages: Record<string, number>;
+  processed: number;
+  stored: number;
+  publishable: number;
+  rejected: number;
+  /** YYYY-MM-DD */
+  firstScraped: string | null;
+  lastScraped: string | null;
+}
+
+export interface ScrapedArticles {
+  totals: {
+    domains: number;
+    scraped: number;
+    uniqueUrls: number;
+    withTitle: number;
+    withAuthor: number;
+    withDate: number;
+    processed: number;
+    stored: number;
+    publishable: number;
+    rejected: number;
+  };
+  /** Days with at least one scrape, oldest first. */
+  daily: { date: string; scraped: number }[];
+  domains: ScrapedDomainStats[];
+}
