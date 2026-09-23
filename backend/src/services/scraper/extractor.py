@@ -1,4 +1,4 @@
-from typing import Optional
+import time
 
 from src.config.thresholds import PipelineThresholds
 from src.models.core.news import News
@@ -8,13 +8,13 @@ from src.models.core.source import NewsSource
 from .strategies.trafilatura import TrafilaturaStrategy
 from .strategies.beautifulsoup import BeautifulSoupStrategy
 from .strategies.playwright_extraction import PlaywrightExtractionStrategy
-from src.models.core.news import News
 
 from .extraction_validator import ExtractionValidator
+from .request_stats import Outcome, Purpose, RequestStats, request_stats
 
 class ExtractorService:
 
-    def __init__(self):
+    def __init__(self, stats: RequestStats | None = None):
 
         self.strategies = [
             TrafilaturaStrategy(),
@@ -22,24 +22,50 @@ class ExtractorService:
             #PlaywrightExtractionStrategy()
         ]
 
+        # Every attempt is counted here, not in the strategies: this is
+        # the one place every fetch in the process passes through, and
+        # the only one that knows both why the page was wanted and
+        # whether what came back was long enough to use.
+        self.stats = stats if stats is not None else request_stats
+
     def extract(
         self,
         source: NewsSource,
         url: str,
         thresholds: PipelineThresholds | None = None,
+        purpose: Purpose | str = Purpose.ARTICLE,
     ) -> News | None:
 
         for strategy in self.strategies:
 
-            extracted = strategy.extract(
+            started = time.perf_counter()
+
+            attempt = strategy.attempt(
                 source,
                 url,
             )
 
-            if extracted is None:
-                continue
+            extracted = attempt.result
+            outcome = attempt.outcome
+            error = attempt.error
 
-            if not ExtractionValidator.is_valid(extracted, thresholds):
+            if extracted is not None and not ExtractionValidator.is_valid(extracted, thresholds):
+                outcome = Outcome.TOO_SHORT
+                error = f"body too short ({len(extracted.body.strip())} characters)"
+                extracted = None
+
+            self.stats.record(
+                url,
+                outcome,
+                purpose=purpose,
+                strategy=type(strategy).__name__,
+                source_id=source.id,
+                status=attempt.status,
+                error=error,
+                elapsed_ms=(time.perf_counter() - started) * 1000,
+            )
+
+            if extracted is None:
                 continue
 
             news = News(

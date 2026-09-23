@@ -76,7 +76,7 @@ class FakeExtractorService:
     def __init__(self, news_by_url: dict | None = None):
         self.news_by_url = news_by_url or {}
 
-    def extract(self, source, url, thresholds=None):
+    def extract(self, source, url, thresholds=None, purpose="article"):
         result = self.news_by_url.get(url)
         if isinstance(result, Exception):
             raise result

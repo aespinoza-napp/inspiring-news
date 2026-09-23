@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/claim", label: "Claim Check" },
   { href: "/enrich", label: "Enrichment" },
   { href: "/corrector", label: "Corrector" },
+  { href: "/scraper", label: "Scraper" },
 ];
 
 export function NavLinks() {

@@ -5,6 +5,7 @@ from src.models.fact_checker.evidence import Evidence
 from src.models.core.source import NewsSource, SourceType
 from src.services.concurrency import SCRAPE, bounded_map
 from src.services.scraper.extractor import ExtractorService
+from src.services.scraper.request_stats import Purpose
 
 logger = getLogger(__name__)
 
@@ -59,7 +60,11 @@ class EvidenceScraper:
             # and several claims (and several articles) reach here at
             # once - see src/services/concurrency.py.
             with SCRAPE.permit():
-                news = self.extractor.extract(self.GENERIC_SOURCE, item.url)
+                news = self.extractor.extract(
+                    self.GENERIC_SOURCE,
+                    item.url,
+                    purpose=Purpose.EVIDENCE,
+                )
         except Exception as exc:
             logger.warning("Failed to scrape evidence %s: %s", item.url, exc)
             return item

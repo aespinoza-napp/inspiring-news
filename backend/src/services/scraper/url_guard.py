@@ -50,6 +50,14 @@ class BlockedURL(ValueError):
     """Raised when a URL must not be fetched. The message is user-facing."""
 
 
+class UnresolvableHost(BlockedURL):
+    """
+    The host has no address at all. Still refused (there is nothing to
+    check), but a dead or mistyped domain is not the guard protecting
+    anything, and the scraper stats count it as a connection failure.
+    """
+
+
 def _is_forbidden_address(address: str) -> bool:
 
     try:
@@ -72,7 +80,7 @@ def _resolve(host: str) -> list[str]:
     try:
         infos = socket.getaddrinfo(host, None)
     except socket.gaierror as exc:
-        raise BlockedURL(f"Could not resolve host {host!r}: {exc}") from exc
+        raise UnresolvableHost(f"Could not resolve host {host!r}: {exc}") from exc
 
     return [info[4][0] for info in infos]
 

@@ -19,6 +19,7 @@ from src.models.core.job import JobStatus
 from src.models.storage.lineage import DataLayer
 from src.services.enrichment_service import NothingToEnrich
 from src.services.job_runner import run_analysis_job
+from src.services.scraper.request_stats import request_stats
 
 logger = getLogger(__name__)
 
@@ -376,6 +377,23 @@ def enrich(request: EnrichRequest):
         )
     except NothingToEnrich as exc:
         raise HTTPException(status_code=422, detail=str(exc))
+
+# ---------------------------------------------------------------------
+# Scraper request stats
+# ---------------------------------------------------------------------
+
+
+@router.get("/scraper/stats", dependencies=[Depends(require_storage_key)])
+def scraper_stats():
+    """
+    Every page fetch this process has made - article, evidence and
+    enrichment alike - counted per domain, with what each came to (ok,
+    too short, HTTP error, timeout, blocked...). Behind the storage key
+    because it names every URL the server has been asked to read.
+    """
+
+    return request_stats.snapshot()
+
 
 # ---------------------------------------------------------------------
 # Storage layers

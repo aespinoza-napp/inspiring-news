@@ -185,3 +185,82 @@ def test_extract_really_returns_the_pages_title():
 
     assert result is not None
     assert result.title == "Farmear aura: qué es"
+
+
+# ----------------------------------------------------------------------
+# attempt(): why a fetch failed, not only that it did
+# ----------------------------------------------------------------------
+
+
+def test_an_http_error_is_reported_with_its_status():
+
+    import requests
+
+    response = _mock_response("<html></html>")
+    error_response = Mock(status_code=403)
+    response.raise_for_status = Mock(
+        side_effect=requests.HTTPError("403", response=error_response)
+    )
+
+    with patch(
+        "src.services.scraper.strategies.trafilatura.requests.get",
+        return_value=response,
+    ):
+        attempt = TrafilaturaStrategy().attempt(build_source(), "https://example.com/a")
+
+    assert attempt.result is None
+    assert attempt.outcome == "http_error"
+    assert attempt.status == 403
+
+
+def test_a_timeout_is_reported_as_a_timeout():
+
+    import requests
+
+    with patch(
+        "src.services.scraper.strategies.trafilatura.requests.get",
+        side_effect=requests.ConnectTimeout("too slow"),
+    ):
+        attempt = TrafilaturaStrategy().attempt(build_source(), "https://example.com/a")
+
+    assert attempt.outcome == "timeout"
+
+
+def test_a_page_with_no_article_is_reported_as_no_content():
+
+    with patch(
+        "src.services.scraper.strategies.trafilatura.requests.get",
+        return_value=_mock_response("<html></html>"),
+    ), patch(
+        "src.services.scraper.strategies.trafilatura.trafilatura.extract",
+        return_value=None,
+    ):
+        attempt = TrafilaturaStrategy().attempt(build_source(), "https://example.com/a")
+
+    assert attempt.outcome == "no_content"
+
+
+def test_a_url_the_guard_refuses_is_reported_as_blocked(monkeypatch):
+
+    monkeypatch.setattr(settings, "URL_GUARD_ENABLED", True)
+
+    attempt = TrafilaturaStrategy().attempt(build_source(), "http://127.0.0.1/admin")
+
+    assert attempt.outcome == "blocked"
+
+
+def test_a_host_that_does_not_resolve_is_a_connection_error_not_blocked(monkeypatch):
+    """A dead domain is not the guard protecting anything."""
+
+    import socket
+
+    monkeypatch.setattr(settings, "URL_GUARD_ENABLED", True)
+
+    def no_such_host(*args, **kwargs):
+        raise socket.gaierror("Name or service not known")
+
+    monkeypatch.setattr("src.services.scraper.url_guard.socket.getaddrinfo", no_such_host)
+
+    attempt = TrafilaturaStrategy().attempt(build_source(), "https://no-such-host.example/a")
+
+    assert attempt.outcome == "connection_error"

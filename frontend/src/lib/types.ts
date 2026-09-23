@@ -411,3 +411,53 @@ export interface ExtractionReport {
     preview: string;
   };
 }
+
+/**
+ * What one scraper request came to. Only `ok` produced an article; the
+ * rest say which fix a failing source needs.
+ */
+export type ScrapeOutcome =
+  | "ok"
+  | "too_short"
+  | "no_content"
+  | "http_error"
+  | "timeout"
+  | "connection_error"
+  | "blocked"
+  | "error";
+
+/** GET /scraper/stats - one row per domain the scraper has fetched from. */
+export interface ScraperDomainStats {
+  domain: string;
+  requests: number;
+  ok: number;
+  failed: number;
+  /** ok / requests, 0-1; null before any request. */
+  successRate: number | null;
+  outcomes: Partial<Record<ScrapeOutcome, number>>;
+  /** article | evidence | enrichment | ingestion */
+  purposes: Record<string, number>;
+  strategies: Record<string, number>;
+  /** Configured source ids; "web" for a URL no source owns. */
+  sources: string[];
+  avgMs: number | null;
+  lastAt: string | null;
+  lastUrl: string | null;
+  lastOutcome: ScrapeOutcome | null;
+  lastStatus: number | null;
+  /** The most recent failure, kept even after the domain recovers. */
+  lastError: string | null;
+  lastErrorAt: string | null;
+}
+
+export interface ScraperStats {
+  since: string;
+  totals: {
+    domains: number;
+    requests: number;
+    ok: number;
+    failed: number;
+    outcomes: Partial<Record<ScrapeOutcome, number>>;
+  };
+  domains: ScraperDomainStats[];
+}

@@ -1771,3 +1771,203 @@ summary.trace-label {
     margin-bottom: 0.5rem;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Scraper: requests per domain
+   --------------------------------------------------------------------- */
+
+.stats-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.stats-total {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.stats-total-value {
+  font-size: 1.6rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.stats-total-label {
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.stats-good { color: var(--true); }
+.stats-warn { color: var(--misleading); }
+.stats-bad { color: var(--false); }
+
+/* Aligned with the table below it, which is wider than the text. */
+.stats-toolbar {
+  position: relative;
+  left: 50%;
+  width: min(1120px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1.25rem 0 0.75rem;
+}
+
+.stats-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.stats-chip {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+/* Failures that point at the source (it answered, badly) in amber;
+   failures that point at the connection or at us in red. */
+.stats-chip-too_short,
+.stats-chip-no_content,
+.stats-chip-http_error { color: var(--misleading); }
+
+.stats-chip-timeout,
+.stats-chip-connection_error,
+.stats-chip-blocked,
+.stats-chip-error { color: var(--false); }
+
+.stats-legend {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+}
+
+.stats-legend div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.stats-legend dt { font-weight: 600; }
+.stats-legend dd { margin: 0; color: var(--muted); }
+
+/* Wider than the text column when the screen allows - seven columns do
+   not fit in a reading width - centred on it, never wider than the
+   viewport less a 16px gutter each side. Below that it scrolls inside
+   its own box; the page itself never scrolls sideways. */
+.stats-table-wrap {
+  position: relative;
+  left: 50%;
+  width: min(1120px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.stats-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.stats-table th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stats-table tbody tr:last-child td { border-bottom: none; }
+
+.stats-number {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stats-domain { font-weight: 600; }
+
+.stats-muted {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.stats-rate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stats-rate-value {
+  min-width: 2.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-rate-track {
+  flex: 1;
+  min-width: 60px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.stats-rate-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.3s var(--ease);
+}
+
+.stats-fill-good { background: var(--true); }
+.stats-fill-warn { background: var(--misleading); }
+.stats-fill-bad { background: var(--false); }
+
+.stats-url {
+  display: block;
+  max-width: 15rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+}
+
+/* Wraps rather than truncates: the reason is the useful part, and it
+   is usually at the end ("... timed out", "HTTP 403"). */
+.stats-error {
+  margin-top: 0.2rem;
+  max-width: 15rem;
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+  color: var(--false);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stats-rate-fill { transition: none; }
+}

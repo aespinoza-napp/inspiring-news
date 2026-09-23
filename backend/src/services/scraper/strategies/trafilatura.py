@@ -9,9 +9,11 @@ import trafilatura
 
 from src.models.scraper.extraction import ExtractionResult
 from src.models.core.source import NewsSource
-from src.services.scraper.url_guard import BlockedURL, check_url
+from src.services.scraper.url_guard import BlockedURL, UnresolvableHost, check_url
 
-from .base import ExtractionStrategy
+from src.services.scraper.request_stats import Outcome
+
+from .base import ExtractionAttempt, ExtractionStrategy
 
 logger = getLogger(__name__)
 
@@ -43,6 +45,14 @@ class TrafilaturaStrategy(ExtractionStrategy):
         url: str,
     ) -> ExtractionResult | None:
 
+        return self.attempt(source, url).result
+
+    def attempt(
+        self,
+        source: NewsSource,
+        url: str,
+    ) -> ExtractionAttempt:
+
         try:
 
             response = self._get(url)
@@ -65,36 +75,57 @@ class TrafilaturaStrategy(ExtractionStrategy):
             )
 
             if not extracted:
-                return None
+                return ExtractionAttempt(None, Outcome.NO_CONTENT, response.status_code)
 
             data = json.loads(extracted)
 
             body = data.get("text")
 
             if not body:
-                return None
+                return ExtractionAttempt(None, Outcome.NO_CONTENT, response.status_code)
 
-            return ExtractionResult(
-                source_id=source.id,
-                title=data.get("title") or None,
-                body=body,
-                summary=data.get("description"),
-                author=data.get("author"),
-                published_at=_parse_date(data.get("date")),
-                lead_image=data.get("image"),
+            return ExtractionAttempt(
+                ExtractionResult(
+                    source_id=source.id,
+                    title=data.get("title") or None,
+                    body=body,
+                    summary=data.get("description"),
+                    author=data.get("author"),
+                    published_at=_parse_date(data.get("date")),
+                    lead_image=data.get("image"),
+                ),
+                Outcome.OK,
+                response.status_code,
             )
+
+        except UnresolvableHost as exc:
+            logger.warning("Could not resolve %s: %s", url, exc)
+            return ExtractionAttempt(None, Outcome.CONNECTION_ERROR, error=str(exc))
 
         except BlockedURL as exc:
             # Not an unexpected failure - the guard did its job. Logged at
             # warning so a blocked fetch is visible without a stack trace.
             logger.warning("Refused to fetch %s: %s", url, exc)
-            return None
+            return ExtractionAttempt(None, Outcome.BLOCKED, error=str(exc))
+
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else None
+            logger.warning("HTTP %s extracting %s", status, url)
+            return ExtractionAttempt(None, Outcome.HTTP_ERROR, status, f"HTTP {status}")
+
+        except requests.Timeout as exc:
+            logger.warning("Timed out extracting %s: %s", url, exc)
+            return ExtractionAttempt(None, Outcome.TIMEOUT, error=str(exc))
+
+        except requests.ConnectionError as exc:
+            logger.warning("Could not connect extracting %s: %s", url, exc)
+            return ExtractionAttempt(None, Outcome.CONNECTION_ERROR, error=str(exc))
 
         except Exception as exc:
             logger.warning(
                 "Error extracting %s with TrafilaturaStrategy: %s", url, exc
             )
-            return None
+            return ExtractionAttempt(None, Outcome.ERROR, error=str(exc))
 
     def _get(self, url: str) -> requests.Response:
         """

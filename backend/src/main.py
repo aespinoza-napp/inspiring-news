@@ -7,6 +7,7 @@ from src.api.routes import router
 from src.config.settings import settings
 from src.container import job_store
 from src.services.job_journal import JobJournal
+from src.services.scraper.request_stats import request_stats
 
 # Python's root logger defaults to WARNING, so plain logger.info() calls
 # (e.g. src/services/job_runner.py's per-phase timing) would silently
@@ -26,6 +27,10 @@ async def lifespan(app: FastAPI):
     # context manager, which those tests do not do.
     if settings.LAKE_ENABLED:
         job_store.attach_journal(JobJournal(settings.LAKE_PATH / "journal"))
+
+        # Same reasoning: counts persist only for the real app, so the
+        # tests' fetches never land in the lake's stats file.
+        request_stats.attach(settings.LAKE_PATH / "stats" / "scraper_requests.json")
 
     yield
 

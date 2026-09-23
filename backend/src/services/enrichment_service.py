@@ -7,6 +7,7 @@ from src.models.core.enriched_article import EnrichedArticle
 from src.models.core.news import News
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
 from src.services.scraper.extractor import ExtractorService
+from src.services.scraper.request_stats import Purpose
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
 logger = getLogger(__name__)
@@ -115,6 +116,7 @@ class EnrichmentService:
                 EvidenceScraper.GENERIC_SOURCE,
                 url,
                 thresholds,
+                purpose=Purpose.ENRICHMENT,
             )
         except Exception as exc:
             logger.warning("Could not fetch %s for enrichment: %s", url, exc)
