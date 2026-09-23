@@ -1,4 +1,6 @@
 import time
+from logging import getLogger
+from urllib.parse import urlsplit
 
 from src.config.thresholds import PipelineThresholds
 from src.models.core.news import News
@@ -12,6 +14,13 @@ from .strategies.playwright_extraction import PlaywrightExtractionStrategy
 
 from .extraction_validator import ExtractionValidator
 from .request_stats import Outcome, Purpose, RequestStats, request_stats
+
+logger = getLogger(__name__)
+
+# The source id callers use for a URL that belongs to no configured
+# source (see EvidenceScraper.GENERIC_SOURCE). A URL passed with it is
+# matched against the configured sources by domain.
+GENERIC_SOURCE_ID = "web"
 
 # Failures a different parser can fix: the page arrived, but this parser
 # found no article in it, or not enough of one. The next strategy gets a
@@ -64,6 +73,33 @@ def _fill_metadata(result, source: NewsSource, page):
     return type(result).model_validate({**result.model_dump(), **missing})
 
 
+def _host(url: str) -> str:
+    return urlsplit(url.strip()).netloc.lower().removeprefix("www.")
+
+
+def configured_source_for(url: str, sources: list[NewsSource]) -> NewsSource | None:
+    """
+    The enabled configured source this URL belongs to, by domain: the
+    source's own host or any subdomain of it (science.nasa.gov is NASA).
+    The most specific match wins when two sources overlap.
+    """
+
+    host = _host(url)
+
+    if not host:
+        return None
+
+    matches = [
+        source
+        for source in sources
+        if source.enabled
+        and (base := _host(str(source.base_url)))
+        and (host == base or host.endswith("." + base))
+    ]
+
+    return max(matches, key=lambda source: len(_host(str(source.base_url))), default=None)
+
+
 class ExtractorService:
     """
     Tries strategies cheapest first, and stops the moment trying further
@@ -77,7 +113,11 @@ class ExtractorService:
     requests on a source that is already failing.
     """
 
-    def __init__(self, stats: RequestStats | None = None):
+    def __init__(
+        self,
+        stats: RequestStats | None = None,
+        sources: list[NewsSource] | None = None,
+    ):
 
         self.strategies: list[ExtractionStrategy] = [
             TrafilaturaStrategy(),
@@ -91,6 +131,54 @@ class ExtractorService:
         # whether what came back was long enough to use.
         self.stats = stats if stats is not None else request_stats
 
+        # The configured sources, for recognising a URL posted without
+        # one. Loaded on first use, not here: four places construct an
+        # extractor, most of them never see a generic URL.
+        self._sources = sources
+
+    @property
+    def sources(self) -> list[NewsSource]:
+
+        if self._sources is None:
+            try:
+                from src.repositories.source_repository import SourceRepository
+
+                self._sources = SourceRepository().list()
+            except Exception:
+                logger.warning("Could not load the configured sources", exc_info=True)
+                self._sources = []
+
+        return self._sources
+
+    def _resolve(self, source: NewsSource, url: str) -> NewsSource:
+        """
+        A URL posted to /analyze arrives with the generic "web" source,
+        so an El País article was never treated as El País: no
+        requires_javascript, no selectors. Recognised by domain here, it
+        is - and the stored article carries the real source id.
+        """
+
+        if source.id != GENERIC_SOURCE_ID:
+            return source
+
+        return configured_source_for(url, self.sources) or source
+
+    def _order(self, source: NewsSource, purpose_value: str) -> list[ExtractionStrategy]:
+        """
+        Cheapest first - unless the source is known to need a browser, in
+        which case the two cheap attempts are known to fail and would only
+        spend a request finding that out again. The cheap ones still
+        follow, for when no browser is installed.
+        """
+
+        if source.requires_javascript and purpose_value in BROWSER_PURPOSES:
+            return (
+                [strategy for strategy in self.strategies if not strategy.reads_html]
+                + [strategy for strategy in self.strategies if strategy.reads_html]
+            )
+
+        return self.strategies
+
     def extract(
         self,
         source: NewsSource,
@@ -100,6 +188,8 @@ class ExtractorService:
     ) -> News | None:
 
         started = time.perf_counter()
+
+        source = self._resolve(source, url)
 
         page = None
         html_unavailable = False
@@ -114,7 +204,7 @@ class ExtractorService:
 
         purpose_value = purpose.value if isinstance(purpose, Purpose) else str(purpose)
 
-        for strategy in self.strategies:
+        for strategy in self._order(source, purpose_value):
 
             if strategy.reads_html and (html_unavailable or browser_only):
                 continue

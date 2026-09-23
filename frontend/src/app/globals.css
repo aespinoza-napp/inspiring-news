@@ -1851,6 +1851,14 @@ summary.trace-label {
 /* Our setup, not the source: muted rather than alarming. */
 .stats-chip-unavailable { color: var(--muted); }
 
+/* A suggestion the stats support, not an error. */
+.stats-hint {
+  margin-top: 0.3rem;
+  max-width: 18rem;
+  font-size: 0.78rem;
+  color: var(--accent);
+}
+
 .stats-legend {
   display: grid;
   gap: 0.35rem;

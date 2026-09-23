@@ -26,7 +26,7 @@ Legend: `[x]` done · `[ ]` not done · 🟡 partly done (what is left is stated
 - [x] ⚙️ FastAPI skeleton + `pydantic-settings` config
 - [x] 🔎 `ExtractorService` (Trafilatura) — used by `/analyze` and by the evidence scraper
 - [ ] ⚠️ 🟡 `DiscoveryService` (RSS strategy) — the code and its tests exist, but **nothing calls it**. There is no ingestion: an article enters the system only when a person posts its URL to `/analyze`. Never exercised against live feeds.
-- [x] 📄 Declarative YAML news sources (`SourceRepository`) — 12 sources, 7 of them Spanish. `NewsSource.requires_javascript` exists in the model and YAMLs but nothing reads it.
+- [x] 📄 Declarative YAML news sources (`SourceRepository`) — 12 sources, 7 of them Spanish. `NewsSource.requires_javascript` routes a source's articles to the browser first (Phase 2).
 - [x] 🐳 `docker-compose.yml` — Neo4j, SearXNG, `inference`, backend. ⚠️ the `backend` container has been built but never run end to end; Neo4j is unused.
 
 ### Sprint 0.2 — Enrichment Pipeline (Jun 15–28) · 80h
@@ -112,7 +112,7 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 - [ ] ➕ **Wire an ingestion path** (not in the original plan) — until something calls `Scraper`/`DiscoveryService`, nothing in this sprint changes what enters the system. `Scraper.discover()` passes a dict where a `list[str]` is declared and `Scraper.extract()` ignores its `topics` argument.
 - [x] 🎭 Implement `PlaywrightStrategy` for JS-rendered sources — the last step of the cascade: renders, then reads the result with the same trafilatura/BeautifulSoup parsers. URL guard on every request and redirect hop, `BROWSER_MAX_CONCURRENCY`, never for evidence, optional `browser` extra (installed in Docker). `playwright_discover.py` is still a placeholder.
 - [x] 🍜 Implement `BeautifulSoupStrategy` — step two of a cheapest-first cascade, parsing the HTML trafilatura already fetched (no second request); JSON-LD, meta tags, per-source `metadata.selectors`, then the densest paragraph block. It also fills title/author/date trafilatura missed. `docs/decisions/scraping.md`
-- [ ] 🧭 Route sources by `requires_javascript` — the flag exists and is never read
+- [x] 🧭 Route sources by `requires_javascript` — `true` sends articles to the browser first; posted URLs are matched to their configured source by domain so the flag (and `selectors`) apply to `/analyze` too. All 12 sources are `false`; `/scraper` flags domains only the browser can read.
 - [ ] ➕ Add new source YAMLs (12 today)
 - [ ] 🧪 Unit tests for each new scraping strategy (the existing scraper tests cover discovery, extraction and the URL guard only)
 

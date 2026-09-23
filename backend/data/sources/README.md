@@ -19,8 +19,10 @@ reliability_index: 0.94      # 0.0-1.0, editorial reliability — feeds the fact
                               # (see EvidenceRanker in src/services/fact_checker/ranking/) and the
                               # duplicate/relatedness scoring's source-quality signal
 enabled: true
-requires_javascript: false   # true routes to a JS-capable strategy once one exists — see
-                              # src/services/scraper/README.md; currently a no-op either way
+requires_javascript: false   # true: articles go to the headless browser first, skipping the two
+                              # cheap steps that are known to fail for this site. Set it when the
+                              # /scraper page says "only the browser gets articles here"
+                              # (docs/decisions/scraping.md)
 tags:
   - general
   - world

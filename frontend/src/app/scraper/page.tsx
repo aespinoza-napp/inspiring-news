@@ -91,6 +91,29 @@ function safeHref(url: string | null): string | null {
   return url && /^https?:\/\//i.test(url) ? url : null;
 }
 
+const BROWSER = "PlaywrightExtractionStrategy";
+
+/**
+ * When every article from a domain came from the browser, the two cheap
+ * attempts before it are spent for nothing on each page. The stats are
+ * what show it; the fix is one line in the source's YAML.
+ */
+function javascriptHint(row: ScraperDomainStats): string | null {
+  const winners = Object.keys(row.strategies);
+
+  if (row.ok < 2 || winners.length !== 1 || winners[0] !== BROWSER) {
+    return null;
+  }
+
+  const configured = row.sources.filter((source) => source !== "web");
+
+  return configured.length > 0
+    ? `Only the browser gets articles here. Set requires_javascript: true in ${configured
+        .map((source) => `${source}.yaml`)
+        .join(", ")} to skip the two cheap attempts.`
+    : "Only the browser gets articles here. Add it as a source with requires_javascript: true to skip the two cheap attempts.";
+}
+
 function OutcomeChips({ row }: { row: ScraperDomainStats }) {
   const failures = FAILURES.filter(({ key }) => (row.outcomes[key] ?? 0) > 0);
 
@@ -148,6 +171,9 @@ function DomainRow({ row }: { row: ScraperDomainStats }) {
           <div className="stats-muted" title="The strategy that produced the article">
             via {strategyList(row.strategies)}
           </div>
+        )}
+        {javascriptHint(row) && (
+          <div className="stats-hint">{javascriptHint(row)}</div>
         )}
       </td>
       <td>

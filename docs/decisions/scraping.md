@@ -61,6 +61,24 @@ result is refused as too short, BeautifulSoup finds nothing, the browser
 renders 1,097 characters - 2 requests, 11s on a cold start. An ordinary
 NASA page never gets past trafilatura: 1 request, no browser.
 
+## Routing: sources recognised by domain, and `requires_javascript`
+
+A URL posted to `/analyze` arrives with the generic `"web"` source, so an
+El País article was never treated as El País. `ExtractorService` now
+matches it to the enabled configured source by domain (its host or a
+subdomain; the most specific wins), so per-source `selectors` and
+`requires_javascript` apply, and the stored article carries the real
+`source_id`.
+
+`requires_javascript: true` puts the browser first: the two cheap steps
+are known to fail for that site and would each cost a request finding
+that out again. They still follow the browser, for when none is
+installed. Evidence never renders, flag or not.
+
+All twelve configured sources are `false` today. The flag is meant to be
+set from evidence, not guessed: the `/scraper` page flags a domain whose
+every article came from the browser.
+
 ## Metadata is filled from the same page
 
 When a strategy finds the text but not the title, author or date,

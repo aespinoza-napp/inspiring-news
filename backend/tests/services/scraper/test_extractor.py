@@ -65,7 +65,9 @@ class StubStrategy(ExtractionStrategy):
 
 def make_service(*strategies) -> ExtractorService:
 
-    service = ExtractorService(stats=RequestStats())
+    # No configured sources: these tests are about the cascade, and a URL
+    # must not be matched against the real data/sources YAMLs.
+    service = ExtractorService(stats=RequestStats(), sources=[])
     service.strategies = list(strategies)
     return service
 
@@ -314,3 +316,87 @@ def test_a_browser_that_is_not_installed_keeps_the_real_reason():
 
     assert entry["outcomes"] == {"no_content": 1}
     assert "not escalated" in entry["lastError"]
+
+
+# ----------------------------------------------------------------------
+# Configured sources: recognised by domain, routed by requires_javascript
+# ----------------------------------------------------------------------
+
+
+from src.services.scraper.extractor import configured_source_for
+
+
+def test_a_url_is_matched_to_its_configured_source_by_domain():
+
+    nasa = build_source(id="nasa", base_url="https://www.nasa.gov")
+    el_pais = build_source(id="el_pais", base_url="https://elpais.com")
+
+    sources = [nasa, el_pais]
+
+    assert configured_source_for("https://elpais.com/espana/a.html", sources) is el_pais
+    assert configured_source_for("https://www.elpais.com/a", sources) is el_pais
+    assert configured_source_for("https://science.nasa.gov/earth/", sources) is nasa
+    assert configured_source_for("https://notelpais.com/a", sources) is None
+
+
+def test_the_most_specific_source_wins_and_disabled_ones_are_ignored():
+
+    broad = build_source(id="broad", base_url="https://example.com")
+    narrow = build_source(id="narrow", base_url="https://news.example.com")
+    off = build_source(id="off", base_url="https://off.example.com", enabled=False)
+
+    sources = [broad, narrow, off]
+
+    assert configured_source_for("https://news.example.com/a", sources) is narrow
+    assert configured_source_for("https://off.example.com/a", sources) is broad
+
+
+def test_a_posted_url_is_stored_under_its_real_source():
+    """
+    /analyze passes the generic "web" source; an El País URL was never
+    treated as El País - no routing flag, no selectors, source_id "web".
+    """
+
+    service = make_service(StubStrategy(make_extraction_result()))
+    service._sources = [build_source(id="el_pais", base_url="https://elpais.com", language="es")]
+
+    news = service.extract(build_source(id="web"), "https://elpais.com/a.html")
+
+    assert news.source_id == "el_pais"
+
+
+def test_a_source_that_needs_javascript_goes_to_the_browser_first():
+
+    cheap = StubStrategy(make_extraction_result(title="Cheap"))
+    browser = StubStrategy(make_extraction_result(title="Rendered"), reads_html=False)
+
+    service = make_service(cheap, browser)
+
+    news = service.extract(build_source(requires_javascript=True), URL)
+
+    assert news.title == "Rendered"
+    assert cheap.calls == 0
+    assert only_domain(service)["requests"] == 1
+
+
+def test_without_a_browser_a_javascript_source_falls_back_to_the_cheap_steps():
+
+    cheap = StubStrategy(make_extraction_result(title="Cheap"))
+    browser = StubStrategy(None, Outcome.UNAVAILABLE, reads_html=False)
+
+    service = make_service(cheap, browser)
+
+    assert service.extract(build_source(requires_javascript=True), URL).title == "Cheap"
+
+
+def test_evidence_from_a_javascript_source_still_never_renders():
+
+    cheap = StubStrategy(make_extraction_result(title="Cheap"))
+    browser = StubStrategy(make_extraction_result(), reads_html=False)
+
+    service = make_service(cheap, browser)
+
+    news = service.extract(build_source(requires_javascript=True), URL, purpose=Purpose.EVIDENCE)
+
+    assert news.title == "Cheap"
+    assert browser.calls == 0
