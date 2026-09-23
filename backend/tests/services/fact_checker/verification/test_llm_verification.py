@@ -1,4 +1,5 @@
 from src.models.fact_checker.fact_check import Verdict
+from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.verification.llm_verification import LLMVerifier
 from src.services.llms import LLMUnavailableError
 
@@ -242,3 +243,40 @@ def test_assessments_pointing_at_evidence_that_does_not_exist_are_discarded():
     # second, conflicting stance for the same source.
     assert [a.index for a in result.assessments] == [0]
     assert result.assessments[0].stance.value == "supports"
+
+
+def test_the_model_is_shown_the_article_the_claim_came_from():
+    """
+    A lone sentence about prize-money contests in Mexico City was
+    confirmed by the city's marathon. The model can only judge the claim
+    about the article's subject if it is told what that subject is.
+    """
+
+    client = FakeLLMClient(responses=None)
+
+    LLMVerifier(client=client).verify(
+        create_claim(text="En agosto de 2026 ya había convocatorias."),
+        [create_evidence()],
+        context=ArticleContext(
+            title="Farmear aura: qué es y por qué se volvió viral en 2026",
+            lead="Hay algo que los jóvenes están haciendo en las plazas.",
+        ),
+    )
+
+    [(system_prompt, user_prompt)] = client.calls
+
+    assert "Headline: Farmear aura" in user_prompt
+    assert "Opening: Hay algo que los jóvenes" in user_prompt
+    assert user_prompt.index("Headline:") < user_prompt.index("Claim:")
+    assert "different event" in system_prompt
+
+
+def test_a_bare_claim_gets_no_article_block():
+
+    client = FakeLLMClient(responses=None)
+
+    LLMVerifier(client=client).verify(create_claim(), [create_evidence()])
+
+    [(_, user_prompt)] = client.calls
+
+    assert user_prompt.startswith("Claim:")

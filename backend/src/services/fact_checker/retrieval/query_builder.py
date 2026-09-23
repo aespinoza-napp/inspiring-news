@@ -46,7 +46,7 @@ from enum import Enum
 
 from src.models.core.claim import Claim
 from src.services.fact_checker.claim_selector import ArticleContext
-from src.services.fact_checker.terms import claim_terms, content_terms
+from src.services.fact_checker.terms import claim_terms, content_terms, subject_terms
 
 # Terms that pull refutations to the surface, per language. Every query
 # built from a claim is phrased affirmatively, which biases retrieval
@@ -117,7 +117,11 @@ def _quoted(term: str) -> str:
     return '"' + term.strip() + '"'
 
 
-def build_query(claim: Claim, context: ArticleContext | None = None) -> str:
+def build_query(
+    claim: Claim,
+    context: ArticleContext | None = None,
+    language: str | None = None,
+) -> str:
     """The anchor query: what identifies this claim's event."""
 
     parts: list[str] = []
@@ -135,6 +139,13 @@ def build_query(claim: Claim, context: ArticleContext | None = None) -> str:
     # subject. The title is the cheapest available antecedent.
     if not entities and context and context.title:
         parts.append(context.title)
+
+    # An entity is not the same as the subject. "convocatorias en Ciudad
+    # de México con premios económicos" names a city, so the fallback
+    # above never fired - and the query found the city's marathon rather
+    # than the aura-farming battles the article was about.
+    elif entities:
+        parts = subject_terms(claim, context, language) + parts
 
     # Nothing identifying at all: fall back to the claim's longer words,
     # which is still better than the raw sentence with its stopwords.
@@ -158,7 +169,9 @@ def build_proposition_query(
     are what a document has to satisfy to be worth reading.
     """
 
-    all_anchors, all_content = claim_terms(claim, language)
+    # With the context, a subject the sentence lost leads the anchors -
+    # so it is what rides along with the assertion's words.
+    all_anchors, all_content = claim_terms(claim, language, context)
 
     content = all_content[:MAX_PROPOSITION_WORDS]
 
@@ -180,7 +193,7 @@ def build_proposition_query(
 
     # A proposition query identical to the anchor query teaches the
     # fusion nothing and spends a search finding the same page twice.
-    return "" if query == build_query(claim, context) else query
+    return "" if query == build_query(claim, context, language) else query
 
 
 def build_refutation_query(
@@ -190,7 +203,7 @@ def build_refutation_query(
 ) -> str:
     """The same event, asked in a way that can surface a contradiction."""
 
-    base = build_query(claim, context)
+    base = build_query(claim, context, language)
 
     if not base:
         return ""
@@ -217,7 +230,7 @@ def plan_queries(
     """
 
     planned = [
-        PlannedQuery(build_query(claim, context), QueryKind.ANCHOR),
+        PlannedQuery(build_query(claim, context, language), QueryKind.ANCHOR),
         PlannedQuery(
             build_proposition_query(claim, context, language),
             QueryKind.PROPOSITION,

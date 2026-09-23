@@ -123,6 +123,45 @@ The pre-rank funnel scores candidates with the same semantic/lexical
 split, so it spends its five page fetches on pages that can survive the
 gate rather than on ones already destined to be cut.
 
+## A sentence is checked inside its article
+
+"En agosto de 2026 ya había convocatorias en Ciudad de México con premios
+económicos" came from an article about *farmear aura* battles in public
+squares. It came back **TRUE at 84%**, confirmed by the Mexico City
+marathon's prize money.
+
+Three things had to be true at once for that to happen, and all three
+were:
+
+- **The title was never extracted.** trafilatura 2.x leaves title,
+  author and date out of its JSON unless called with `with_metadata=True`.
+  Every article in the lake had `title: None`, so every fallback built on
+  the headline was dead. The strategy's tests mocked `extract()`, which is
+  why nobody noticed; one test now runs it for real.
+- **Restoring the subject required the claim to have no entity.** This
+  one names a city, so it was searched as the city.
+- **The LLM was shown the lone sentence**, so it had no way to know which
+  contests the article meant.
+
+Now `terms.subject_terms` takes the headline words the article's own
+keywords agree on (`Farmear`, `aura`, but not `volvió` or `viral`), or the
+top keyword when there's no headline. It restores them whenever the claim
+doesn't already mention them: as the leading anchors (so every query
+carries them and lexical coverage counts them) and in front of the
+embedded claim text (so the funnel and the pertinence gate compare
+sources with the claim in its article's sense). The verifier also gets
+the headline and opening, with a rule that evidence about a different
+event is `unrelated` even when it shares a place, a date or a figure.
+
+With the subject in the queries, the search engine's best answer was the
+article itself, which the model then cited as support. The article's own
+URL is now dropped from its web results as well as from the internal
+corpus (host and path compared, so `www.`, a trailing slash or tracking
+parameters don't hide it).
+
+`POST /verify-claim` has no article, so none of this applies there: a
+bare claim is searched as it stands.
+
 ## What is still not fixed
 
 - **The LLM is still not asked whether a source is on-point.** The gate

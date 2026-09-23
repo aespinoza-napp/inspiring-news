@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
 from src.models.core.source import NewsSource, SourceType
+from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
 
 from tests.factories import create_claim, create_evidence
@@ -416,3 +417,46 @@ def test_every_source_is_embedded_in_one_batched_call():
     )
 
     assert embeddings.batches == 1
+
+
+def test_the_article_subject_counts_against_a_source_that_lacks_it():
+    """
+    A marathon's prize money is not evidence for prize-money contests in
+    an article about aura-farming battles. Without the article the ranker
+    cannot tell; with it, the missing subject costs the source coverage.
+    """
+
+    claim = create_claim(
+        text=(
+            "En agosto de 2026 ya había convocatorias en Ciudad de México "
+            "con premios económicos."
+        ),
+        entities={"city": ["Ciudad de México"]},
+    )
+
+    marathon = create_evidence(
+        url="https://example.com/maraton",
+        title="Maratón CDMX 2026",
+        content=(
+            "Las convocatorias del maratón en Ciudad de México ofrecen "
+            "premios económicos a los primeros lugares."
+        ),
+        published_at=None,
+    )
+
+    context = ArticleContext(
+        title="Farmear aura: qué es y por qué se volvió viral en 2026",
+        keywords=["farmear aura", "aura", "farmear"],
+    )
+
+    ranker = EvidenceRanker(
+        embeddings=FakeEmbeddingService(),
+        source_repository=FakeSourceRepository([]),
+    )
+
+    [alone] = ranker.rank(claim, [marathon], no_gate(), language="es").kept
+    [in_context] = ranker.rank(
+        claim, [marathon], no_gate(), language="es", context=context,
+    ).kept
+
+    assert in_context.lexical_score < alone.lexical_score

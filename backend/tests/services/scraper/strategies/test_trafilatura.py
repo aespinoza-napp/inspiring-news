@@ -155,3 +155,33 @@ def test_a_redirect_loop_gives_up_rather_than_hanging():
         result = TrafilaturaStrategy().extract(build_source(), "https://example.com/loop")
 
     assert result is None
+
+
+def test_extract_really_returns_the_pages_title():
+    """
+    Runs the real trafilatura.extract. The tests above mock it, which is
+    how every article in the lake came to have `title: None` unnoticed:
+    trafilatura 2.x leaves metadata out of its JSON unless asked.
+    """
+
+    paragraph = (
+        "<p>Hay algo que los jóvenes están haciendo en las plazas de México "
+        "y España que los adultos llevamos años sin hacer. Salir a un "
+        "espacio público, hacer algo absurdo con total convicción.</p>"
+    )
+
+    html = (
+        "<html><head><title>Farmear aura: qué es</title></head><body>"
+        "<article><h1>Farmear aura: qué es</h1>"
+        + paragraph * 8
+        + "</article></body></html>"
+    )
+
+    with patch(
+        "src.services.scraper.strategies.trafilatura.requests.get",
+        return_value=_mock_response(html),
+    ):
+        result = TrafilaturaStrategy().extract(build_source(), "https://example.com/a")
+
+    assert result is not None
+    assert result.title == "Farmear aura: qué es"

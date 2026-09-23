@@ -284,6 +284,17 @@ ANALYZE_RESPONSE_SHAPE = {
         "url", "storage", "thresholds", "title", "keywords", "entities",
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",
+    },    # 9, same keys, and no field added anywhere - bumped for the
+    # *values*. Every v8 entry was extracted with `title: None`
+    # (trafilatura 2.x drops metadata unless asked), and its claims were
+    # checked as lone sentences without the article's subject. That is
+    # how an article about aura-farming battles had a claim confirmed
+    # TRUE by the Mexico City marathon. A v8 entry would go on serving
+    # that verdict forever.
+    9: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
     },
 }
 

@@ -51,6 +51,14 @@ class TrafilaturaStrategy(ExtractionStrategy):
             extracted = trafilatura.extract(
                 response.text,
                 output_format="json",
+                # trafilatura 2.x leaves title, author, date and
+                # description out of the JSON unless asked. Without this
+                # every article in the lake came in with `title: None`,
+                # no author and no published date - which silently
+                # disabled everything downstream that leans on the
+                # headline: claim selection's thesis and the fact
+                # checker's subject restoration.
+                with_metadata=True,
                 include_comments=False,
                 include_tables=False,
                 include_images=False,

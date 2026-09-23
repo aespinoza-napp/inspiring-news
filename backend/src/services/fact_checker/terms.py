@@ -28,9 +28,13 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from typing import TYPE_CHECKING
 
 from src.config.lexicons import lexicon_for
 from src.models.core.claim import Claim
+
+if TYPE_CHECKING:
+    from src.services.fact_checker.claim_selector import ArticleContext
 
 # Words of 4+ letters. Digits are excluded here on purpose: figures reach
 # the query through claim.facts.figures, quoted, rather than as loose
@@ -46,6 +50,11 @@ TOKEN = re.compile(r"[^\W_]+", re.UNICODE)
 # shape of the measure, not a threshold on it.
 ANCHOR_WEIGHT = 2.0
 CONTENT_WEIGHT = 1.0
+
+# How many of the article's subject words are restored to a claim that
+# lost them. Two is a subject ("farmear aura"); more starts describing
+# the article rather than naming what it is about.
+MAX_SUBJECT_TERMS = 2
 
 
 def fold(text: str) -> str:
@@ -97,7 +106,75 @@ def content_terms(text: str, language: str | None = None) -> list[str]:
     ])
 
 
-def claim_terms(claim: Claim, language: str | None = None) -> tuple[list[str], list[str]]:
+def subject_terms(
+    claim: Claim,
+    context: ArticleContext | None = None,
+    language: str | None = None,
+) -> list[str]:
+    """
+    The article's subject, when the claim sentence has lost it.
+
+    Claims are extracted one sentence at a time, and a sentence only
+    means what it means inside its article. "En agosto de 2026 ya había
+    convocatorias en Ciudad de México con premios económicos" comes from
+    a piece about *farmear aura* battles in public squares - but the
+    sentence never says so, and it carries an entity and a date of its
+    own. So it was searched as it stood, retrieved two articles about the
+    Mexico City marathon's prize money, and came back TRUE at 84%. Every
+    stage matched the sentence. None of them matched the article.
+
+    The subject is the headline's words that the article's own keywords
+    agree are central - the intersection is what separates "farmear" and
+    "aura" from "volvió" and "viral". Without a headline, the top
+    keyword stands in. Empty when the claim already names the subject,
+    or when there is no article at all (POST /verify-claim).
+    """
+
+    if context is None:
+        return []
+
+    title_words = content_terms(context.title, language)
+
+    keyword_tokens = {
+        token
+        for keyword in context.keywords
+        for token in TOKEN.findall(fold(keyword))
+    }
+
+    subject = [word for word in title_words if fold(word) in keyword_tokens]
+
+    if not subject and not title_words and context.keywords:
+        subject = content_terms(context.keywords[0], language)
+
+    subject = subject[:MAX_SUBJECT_TERMS]
+
+    claim_tokens = set(TOKEN.findall(fold(claim.text)))
+
+    if any(fold(word) in claim_tokens for word in subject):
+        return []
+
+    return subject
+
+
+def contextualised_claim(
+    claim: Claim,
+    context: ArticleContext | None = None,
+    language: str | None = None,
+) -> str:
+    """
+    The claim's text with a lost subject put back in front - what gets
+    embedded to judge a source against. Shared by the retriever and the
+    ranker so the funnel and the pertinence gate judge the same claim.
+    """
+
+    return " ".join(subject_terms(claim, context, language) + [claim.text])
+
+
+def claim_terms(
+    claim: Claim,
+    language: str | None = None,
+    context: ArticleContext | None = None,
+) -> tuple[list[str], list[str]]:
     """
     `(anchors, content)` for one claim, with the two sets kept disjoint.
 
@@ -107,9 +184,14 @@ def claim_terms(claim: Claim, language: str | None = None) -> tuple[list[str], l
     and since anchors are weighted double, a page that named every entity
     and addressed nothing scored half marks. That is exactly the
     etymology page the gate exists to cut, passing the gate.
+
+    With a `context`, the article's subject is restored as the leading
+    anchors when the sentence lost it (`subject_terms`). Leading, because
+    the proposition query keeps only the first couple of anchors, and a
+    source that never mentions the subject is about something else.
     """
 
-    anchors = anchor_terms(claim)
+    anchors = _unique(subject_terms(claim, context, language) + anchor_terms(claim))
 
     inside_an_anchor = {
         token

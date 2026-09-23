@@ -147,6 +147,7 @@ class FakeRanker:
         thresholds=None,
         claim_embedding=None,
         language=None,
+        context=None,
     ):
         return RankingResult(kept=evidence)
 
@@ -157,7 +158,7 @@ class FakeVerifier:
     def __init__(self, result_by_claim: dict | None = None):
         self.result_by_claim = result_by_claim or {}
 
-    def verify(self, claim, evidence):
+    def verify(self, claim, evidence, context=None):
         return self.result_by_claim[claim.text]
 
 

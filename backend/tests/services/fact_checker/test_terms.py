@@ -7,12 +7,14 @@ is the point: the two drifting apart is how retrieval came to ask for
 one thing while scoring rewarded another.
 """
 
+from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.terms import (
     anchor_terms,
     claim_terms,
     content_terms,
     coverage,
     fold,
+    subject_terms,
 )
 
 from tests.factories import create_claim
@@ -146,3 +148,84 @@ def test_a_claim_with_no_terms_covers_nothing():
     """
 
     assert coverage("any text at all", [], []) == 0.0
+
+
+# ----------------------------------------------------------------------
+# Restoring the article's subject to a sentence that lost it
+# ----------------------------------------------------------------------
+
+
+def _aura_claim():
+    """
+    Checked TRUE at 84%, confirmed by the Mexico City marathon's prize
+    money. The article was about aura-farming battles; the sentence never
+    says so, and it has an entity and a date of its own.
+    """
+
+    return create_claim(
+        text=(
+            "En agosto de 2026 ya había convocatorias en Ciudad de México "
+            "con premios económicos."
+        ),
+        entities={"city": ["Ciudad de México"]},
+    )
+
+
+def _aura_context():
+
+    # The article's real headline and its real yake keywords.
+    return ArticleContext(
+        title="Farmear aura: qué es y por qué se volvió viral en 2026",
+        keywords=["farmear aura", "aura", "llevamos años", "farmear", "público"],
+    )
+
+
+def test_the_subject_is_the_headline_words_the_keywords_agree_on():
+
+    # "volvió" and "viral" are in the headline but not what it is about.
+    assert subject_terms(_aura_claim(), _aura_context(), "es") == ["Farmear", "aura"]
+
+
+def test_no_subject_is_restored_to_a_claim_that_already_names_it():
+
+    claim = create_claim(text="Las batallas de aura se multiplican en México.")
+
+    assert subject_terms(claim, _aura_context(), "es") == []
+
+
+def test_no_subject_is_restored_without_an_article():
+    """POST /verify-claim checks a bare claim; there is nothing to restore."""
+
+    assert subject_terms(_aura_claim(), None, "es") == []
+
+
+def test_without_a_headline_the_top_keyword_stands_in():
+    """
+    Every article in the lake was extracted without a title for a while
+    (trafilatura dropping metadata); the keywords were still right.
+    """
+
+    context = ArticleContext(title="", keywords=["farmear aura", "aura"])
+
+    assert subject_terms(_aura_claim(), context, "es") == ["farmear", "aura"]
+
+
+def test_the_restored_subject_leads_the_anchors():
+
+    anchors, content = claim_terms(_aura_claim(), "es", _aura_context())
+
+    assert anchors[:3] == ["Farmear", "aura", "Ciudad de México"]
+    assert "convocatorias" in content
+
+
+def test_a_page_about_the_right_city_and_the_wrong_event_covers_less():
+
+    marathon = (
+        "Maratón CDMX 2026: convocatorias y premios económicos en Ciudad de "
+        "México para los primeros lugares."
+    )
+
+    without = coverage(marathon, *claim_terms(_aura_claim(), "es"))
+    with_subject = coverage(marathon, *claim_terms(_aura_claim(), "es", _aura_context()))
+
+    assert with_subject < without

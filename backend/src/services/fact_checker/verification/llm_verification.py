@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceStance
 from src.models.fact_checker.fact_check import Verdict
+from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.llms import LLMClient, LLMUnavailableError
 
 logger = getLogger(__name__)
@@ -21,7 +22,8 @@ _WHITESPACE = re.compile(r"\s+")
 
 SYSTEM_PROMPT = (
     "You are a rigorous fact-checking assistant. You are given a claim "
-    "extracted from a news article and a numbered list of evidence "
+    "extracted from a news article, usually with the article's headline "
+    "and opening for context, and a numbered list of evidence "
     "snippets gathered from the web and from previously verified "
     "articles. Judge the claim against that evidence, source by source.\n\n"
     "Respond with ONLY a JSON object with this exact shape:\n"
@@ -34,6 +36,11 @@ SYSTEM_PROMPT = (
     '"quote": "<text copied verbatim from that evidence item, or empty>"}]}\n\n'
     "Rules:\n"
     "- Give one assessment entry per evidence item you were shown.\n"
+    "- The claim means what it means inside its article. When the article "
+    "is given, judge the claim about the article's subject, even if the "
+    "sentence itself does not name it. Evidence about a different event, "
+    "activity or subject is \"unrelated\", even when it shares a place, a "
+    "date or a figure with the claim.\n"
     "- A quote MUST be copied word for word from that evidence item. Do "
     "not paraphrase, translate, correct or shorten it mid-sentence. If "
     "nothing in the item is worth quoting, use an empty string.\n"
@@ -83,12 +90,24 @@ class LLMVerifier:
 
         self.client = client or LLMClient()
 
-    def verify(self, claim: Claim, evidence: list[Evidence]) -> LLMVerificationResult:
+    def verify(
+        self,
+        claim: Claim,
+        evidence: list[Evidence],
+        context: ArticleContext | None = None,
+    ) -> LLMVerificationResult:
+        """
+        `context` is the article the claim came from. Without it the
+        model judges a lone sentence - and a sentence about prize-money
+        contests in Mexico City was confirmed by the city's marathon when
+        the article was about aura-farming battles. Every word matched;
+        the subject did not.
+        """
 
         try:
             result = self.client.complete_json(
                 SYSTEM_PROMPT,
-                self._build_prompt(claim, evidence),
+                self._build_prompt(claim, evidence, context),
             )
         except LLMUnavailableError as exc:
             logger.warning("LLM unreachable while verifying claim: %s", exc)
@@ -101,7 +120,12 @@ class LLMVerifier:
 
         return self._normalize(result, evidence)
 
-    def _build_prompt(self, claim: Claim, evidence: list[Evidence]) -> str:
+    def _build_prompt(
+        self,
+        claim: Claim,
+        evidence: list[Evidence],
+        context: ArticleContext | None = None,
+    ) -> str:
 
         if not evidence:
             block = "(no evidence retrieved)"
@@ -111,7 +135,33 @@ class LLMVerifier:
                 for i, item in enumerate(evidence)
             )
 
-        return f"Claim:\n{claim.text}\n\nEvidence:\n{block}"
+        return f"{self._article_block(context)}Claim:\n{claim.text}\n\nEvidence:\n{block}"
+
+    @staticmethod
+    def _article_block(context: ArticleContext | None) -> str:
+        """
+        The headline and opening the claim was taken from, or nothing.
+
+        Both, because either alone falls short often enough: extraction
+        does not always find a headline, and an opening can be pure scene
+        setting. Together they name the subject.
+        """
+
+        if context is None:
+            return ""
+
+        lines = []
+
+        if context.title:
+            lines.append(f"Headline: {context.title}")
+
+        if context.lead:
+            lines.append(f"Opening: {context.lead}")
+
+        if not lines:
+            return ""
+
+        return "Article the claim comes from:\n" + "\n".join(lines) + "\n\n"
 
     def _normalize(self, result: dict | None, evidence: list[Evidence]) -> LLMVerificationResult:
 

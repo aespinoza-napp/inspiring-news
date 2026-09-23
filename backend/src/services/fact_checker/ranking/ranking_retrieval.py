@@ -10,7 +10,12 @@ from src.models.fact_checker.evidence import Evidence, RejectedEvidence
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.source_repository import SourceRepository
 from src.services.embeddings.service import EmbeddingService
-from src.services.fact_checker.terms import claim_terms, coverage
+from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.fact_checker.terms import (
+    claim_terms,
+    contextualised_claim,
+    coverage,
+)
 
 # How much of a source is read when judging it. Enough to cover a lead
 # and the paragraphs under it; past that a long page's tail dilutes both
@@ -57,6 +62,7 @@ class EvidenceRanker:
         thresholds: PipelineThresholds | None = None,
         claim_embedding=None,
         language: str | None = None,
+        context: ArticleContext | None = None,
     ) -> RankingResult:
         """
         Scores, gates and orders a claim's evidence.
@@ -67,6 +73,11 @@ class EvidenceRanker:
         re-encoding it here was a second HTTP round trip to inference/
         for an answer already in memory - per claim, on the critical
         path.
+
+        `context` is the article the claim came from. With it, a subject
+        the sentence lost counts as an anchor a source must carry, so a
+        page about the right city and the wrong event scores as what it
+        is.
         """
 
         thresholds = thresholds or PipelineThresholds()
@@ -77,9 +88,11 @@ class EvidenceRanker:
             return RankingResult(kept=[])
 
         if claim_embedding is None:
-            claim_embedding = self.embeddings.encode(claim.text)
+            claim_embedding = self.embeddings.encode(
+                contextualised_claim(claim, context, language)
+            )
 
-        anchors, content = claim_terms(claim, language)
+        anchors, content = claim_terms(claim, language, context)
 
         texts = [self._judged_text(item) for item in evidence]
 

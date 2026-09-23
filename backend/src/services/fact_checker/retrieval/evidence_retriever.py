@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Callable, Optional
+from urllib.parse import urlsplit
 
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
@@ -11,7 +12,11 @@ from src.services.concurrency import bounded_map
 from src.services.embeddings.service import EmbeddingService
 from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.progress import source_summary
-from src.services.fact_checker.terms import claim_terms, coverage
+from src.services.fact_checker.terms import (
+    claim_terms,
+    contextualised_claim,
+    coverage,
+)
 
 from .scraper import EvidenceScraper
 from .search_provider import SearchProvider
@@ -30,6 +35,20 @@ QUICK_LEXICAL_WEIGHT = settings.PERTINENCE_LEXICAL_WEIGHT
 
 def _noop(phase: str, data: dict) -> None:
     pass
+
+
+def _comparable(url: str) -> str:
+    """
+    Host and path only, so the article is recognised however the search
+    engine spelled its URL - with or without `www.`, `https`, a trailing
+    slash or tracking parameters.
+    """
+
+    parts = urlsplit(url.strip().lower())
+
+    host = parts.netloc.removeprefix("www.")
+
+    return f"{host}{parts.path.rstrip('/')}"
 
 
 @dataclass
@@ -98,7 +117,16 @@ class EvidenceRetriever:
         # to sit behind the web search for no reason at all. The encode
         # goes first because both scorers below need it and it is the
         # cheapest of the three.
-        claim_embedding = self.embeddings.encode(claim.text)
+        #
+        # The claim is embedded with its article's subject in front when
+        # the sentence lost it (`subject_terms`). A sentence about prize
+        # money in Mexico City is a near-perfect semantic match for a
+        # marathon's prize money; the same sentence prefixed with
+        # "farmear aura" is not. The ranker reuses this vector, so the
+        # pertinence gate judges the same contextualised claim.
+        claim_embedding = self.embeddings.encode(
+            contextualised_claim(claim, context, language)
+        )
 
         web_evidence, internal_evidence = bounded_map(
             lambda fetch: fetch(),
@@ -119,6 +147,8 @@ class EvidenceRetriever:
             thread_name_prefix="evidence-source",
         )
 
+        web_evidence, itself = self._without_the_article(web_evidence, context)
+
         candidates = web_evidence + internal_evidence
 
         if not candidates:
@@ -131,11 +161,14 @@ class EvidenceRetriever:
             })
             return RetrievalResult(
                 kept=[],
+                rejected=itself,
                 queries=queries,
                 claim_embedding=claim_embedding,
             )
 
-        scores = self._quick_scores(claim, candidates, claim_embedding, language)
+        scores = self._quick_scores(
+            claim, candidates, claim_embedding, language, context
+        )
 
         prescored = sorted(
             candidates,
@@ -204,7 +237,7 @@ class EvidenceRetriever:
                 score=scores[id(evidence)],
             )
             for rank, evidence in enumerate(cut_web, start=len(top_web) + 1)
-        ] + same_domain
+        ] + same_domain + itself
 
         return RetrievalResult(
             kept=scraped + internal,
@@ -212,6 +245,46 @@ class EvidenceRetriever:
             queries=queries,
             claim_embedding=claim_embedding,
         )
+
+    @staticmethod
+    def _without_the_article(
+        evidence: list[Evidence],
+        context: ArticleContext | None,
+    ) -> tuple[list[Evidence], list[RejectedEvidence]]:
+        """
+        Drops the article being checked from its own web results.
+
+        The internal-corpus lookup already excluded it; the web search
+        did not. Once the article's subject was restored to the queries,
+        the search engine's best answer for them was, naturally, the
+        article itself - which the model then cited as the one source
+        that "supports" the claim.
+        """
+
+        if not context or not context.url:
+            return evidence, []
+
+        own = _comparable(context.url)
+
+        kept = []
+        dropped = []
+
+        for item in evidence:
+
+            if _comparable(item.url) != own:
+                kept.append(item)
+                continue
+
+            dropped.append(RejectedEvidence(
+                url=item.url,
+                title=item.title,
+                origin=item.origin,
+                stage=PipelineStage.EVIDENCE_RETRIEVAL,
+                reason="the article being checked cannot corroborate itself",
+                score=item.relevance_score,
+            ))
+
+        return kept, dropped
 
     def _one_per_domain(
         self,
@@ -261,6 +334,7 @@ class EvidenceRetriever:
         candidates: list[Evidence],
         claim_embedding,
         language: str | None,
+        context: ArticleContext | None = None,
     ) -> dict[int, float]:
         """
         The cheap "is this worth fetching" score for every candidate, in
@@ -284,7 +358,7 @@ class EvidenceRetriever:
             for evidence in candidates
         ]
 
-        anchors, content = claim_terms(claim, language)
+        anchors, content = claim_terms(claim, language, context)
 
         scorable = [index for index, text in enumerate(texts) if text]
 

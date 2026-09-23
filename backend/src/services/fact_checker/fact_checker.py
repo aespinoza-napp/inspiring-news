@@ -335,6 +335,7 @@ class FactChecker:
             # a second round trip to inference/ for the same answer.
             claim_embedding=retrieval.claim_embedding,
             language=language,
+            context=context,
         )
         ranked = ranking.kept
 
@@ -352,7 +353,7 @@ class FactChecker:
         # after it is the single longest step, so it gets one.
         phase("verifying_claim", {"evidence": len(ranked)})
 
-        llm_result = self.verifier.verify(claim, ranked)
+        llm_result = self.verifier.verify(claim, ranked, context=context)
 
         check = self.confidence_scorer.score(claim, ranked, llm_result, thresholds)
 

@@ -221,3 +221,42 @@ def test_the_articles_own_url_is_excluded_from_internal_evidence():
     retriever.retrieve(create_claim())
 
     assert vectors.exclude_urls == ["https://example.com/the-article", None]
+
+
+def test_the_article_is_excluded_from_its_own_web_results():
+    """
+    Reproduced live: with the article's subject restored to the queries,
+    the search engine's top answer was the article itself, and the model
+    cited it as the one source that supported the claim.
+    """
+
+    from src.services.fact_checker.claim_selector import ArticleContext
+
+    web = [
+        Evidence(
+            url="https://www.inspiringnews.ai/cultura/farmear-aura?utm_source=x",
+            title="Farmear aura: qué es",
+            snippet="one",
+            origin=EvidenceOrigin.WEB,
+            domain="inspiringnews.ai",
+        ),
+        Evidence(
+            url="https://infobae.com/farmear-aura-cdmx",
+            title="Batalla de farmear aura en CDMX",
+            snippet="two",
+            origin=EvidenceOrigin.WEB,
+            domain="infobae.com",
+        ),
+    ]
+
+    retriever, _, _ = _retriever(web)
+
+    result = retriever.retrieve(
+        create_claim(),
+        context=ArticleContext(url="https://inspiringnews.ai/cultura/farmear-aura/"),
+    )
+
+    assert [item.url for item in result.kept] == ["https://infobae.com/farmear-aura-cdmx"]
+
+    [itself] = [item for item in result.rejected if "itself" in item.reason]
+    assert itself.stage == "evidence_retrieval"
