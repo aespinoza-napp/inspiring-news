@@ -75,11 +75,16 @@ class AnalysisService:
         force_refresh: bool = False,
         on_phase: Optional[OnPhase] = None,
         thresholds: PipelineThresholds | None = None,
+        purpose: str = "article",
     ) -> dict:
         """
         `thresholds` is the effective threshold set for this one run.
         None means "use the environment defaults" (settings.*), which is
         what PipelineThresholds() resolves to.
+
+        `purpose` is why the article is being fetched - "article" for one
+        someone posted, "ingestion" for one discovery found - and only
+        affects how the fetch is counted in the scraper stats.
         """
 
         report_phase = on_phase or _noop
@@ -99,7 +104,7 @@ class AnalysisService:
                 report_phase("cache_hit", final)
                 return final
 
-        result = self._run_pipeline(url, report_phase, thresholds)
+        result = self._run_pipeline(url, report_phase, thresholds, purpose)
 
         final = {**result, "cached": False}
 
@@ -123,6 +128,7 @@ class AnalysisService:
         url: str,
         report_phase: OnPhase,
         thresholds: PipelineThresholds,
+        purpose: str = "article",
     ) -> dict:
 
         report_phase("scraping", {"url": url, "thresholds": thresholds.model_dump()})
@@ -132,6 +138,7 @@ class AnalysisService:
                 EvidenceScraper.GENERIC_SOURCE,
                 url,
                 thresholds,
+                purpose=purpose,
             )
         except Exception as exc:
             error = {"url": url, "error": f"Failed to fetch article: {exc}"}

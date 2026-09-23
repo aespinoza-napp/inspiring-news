@@ -9,6 +9,7 @@ from src.container import (
     get_claim_service,
     get_datalake_repository,
     get_enrichment_service,
+    get_ingestion_service,
     get_job_queue,
     get_text_corrector,
     job_store,
@@ -91,6 +92,16 @@ class EnrichRequest(BaseModel):
         return self
 
 
+class IngestRequest(BaseModel):
+    # Source ids to discover from; omitted means every enabled source.
+    sources: list[str] | None = None
+    # New articles queued per source per run. Each one is a full analysis
+    # (scrape, enrichment, an LLM call per claim), so the ceiling is low.
+    perSource: int = Field(default=3, ge=1, le=20)
+    forceRefresh: bool = False
+    thresholds: ThresholdOverrides | None = None
+
+
 class CreateAnalysisJobRequest(BaseModel):
     url: str
     forceRefresh: bool = False
@@ -142,7 +153,12 @@ def analyze(request: AnalyzeRequest):
     return {"results": results}
 
 
-def _start_job(url: str, force_refresh: bool, thresholds: PipelineThresholds) -> tuple[str, bool]:
+def _start_job(
+    url: str,
+    force_refresh: bool,
+    thresholds: PipelineThresholds,
+    purpose: str = "article",
+) -> tuple[str, bool]:
     """
     Shared by the single and batch job routes: dedupes onto any job
     already in flight for this exact URL, otherwise creates one and
@@ -161,6 +177,7 @@ def _start_job(url: str, force_refresh: bool, thresholds: PipelineThresholds) ->
             url,
             force_refresh,
             thresholds,
+            purpose,
         )
 
     return job.job_id, reused
@@ -378,6 +395,67 @@ def enrich(request: EnrichRequest):
         )
     except NothingToEnrich as exc:
         raise HTTPException(status_code=422, detail=str(exc))
+
+# ---------------------------------------------------------------------
+# Ingestion
+# ---------------------------------------------------------------------
+
+
+@router.get("/ingest/sources", dependencies=[Depends(require_storage_key)])
+def ingestion_sources():
+    """The enabled configured sources, and the report of the last run."""
+
+    service = get_ingestion_service()
+
+    return {
+        "sources": [
+            {
+                "id": source.id,
+                "name": source.name,
+                "language": source.language,
+                "rssUrl": str(source.rss_url) if source.rss_url else None,
+                "requiresJavascript": source.requires_javascript,
+            }
+            for source in service.enabled_sources()
+        ],
+        "lastRun": service.last_run,
+    }
+
+
+@router.post("/ingest", dependencies=[Depends(require_storage_key)])
+def ingest(request: IngestRequest):
+    """
+    Discovers article URLs from the configured sources and queues every
+    new one (not already in the lake) as an analysis job, up to
+    `perSource` per source. Returns once discovery is done; the jobs run
+    on the bounded queue and show on /live.
+
+    Behind the storage key: one call can start dozens of full analyses,
+    each costing a scrape, an enrichment and an LLM call per claim.
+    """
+
+    thresholds = PipelineThresholds.resolve(request.thresholds)
+
+    service = get_ingestion_service()
+
+    unknown = sorted(
+        set(request.sources or []) - {source.id for source in service.enabled_sources()}
+    )
+
+    if unknown:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown or disabled sources: {', '.join(unknown)}",
+        )
+
+    return service.run(
+        start_job=lambda url: _start_job(
+            url, request.forceRefresh, thresholds, purpose="ingestion"
+        ),
+        source_ids=request.sources,
+        per_source=request.perSource,
+    )
+
 
 # ---------------------------------------------------------------------
 # Scraper request stats

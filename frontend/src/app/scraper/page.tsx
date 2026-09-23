@@ -9,6 +9,7 @@ import {
   ScraperStats,
 } from "@/lib/types";
 import { DailyBars } from "@/components/DailyBars";
+import { IngestPanel } from "@/components/IngestPanel";
 
 // How often the counts refresh on their own. The page answers "is the
 // scraper failing?", so it should show a run's requests as they happen,
@@ -68,6 +69,14 @@ function strategyList(counts: Record<string, number>): string {
     .sort(([, a], [, b]) => b - a)
     .map(([name, count]) => `${strategyName(name)} ${count}`)
     .join(" · ");
+}
+
+// Discovery strategies win too (the feed that produced the links), but
+// they did not extract an article.
+function extractionWinners(counts: Record<string, number>): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(counts).filter(([name]) => !name.endsWith("DiscoveryStrategy"))
+  );
 }
 
 function when(iso: string | null): string {
@@ -438,12 +447,15 @@ export default function ScraperStatsPage() {
       <p className="subtitle">
         What the scraper asked for and what it got. Each page is tried with
         the cheapest strategy first (trafilatura, then BeautifulSoup on the
-        same HTML) and only escalates when a different parser could help.
+        same HTML, then a headless browser) and only escalates when the next
+        step could help.
         Requests shows, per domain, every page wanted, the requests that
         took, which strategy did the work and why the rest failed. Scraped
         articles shows what was actually stored. Refreshes every{" "}
         {REFRESH_MS / 1000} seconds.
       </p>
+
+      <IngestPanel onQueued={load} />
 
       <h2>Requests</h2>
 
@@ -482,9 +494,9 @@ export default function ScraperStatsPage() {
         </div>
       )}
 
-      {totals && Object.keys(totals.strategies).length > 0 && (
+      {totals && Object.keys(extractionWinners(totals.strategies)).length > 0 && (
         <p className="claims-note">
-          Articles extracted by {strategyList(totals.strategies)}.
+          Articles extracted by {strategyList(extractionWinners(totals.strategies))}.
         </p>
       )}
 

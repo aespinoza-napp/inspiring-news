@@ -121,12 +121,14 @@ the declared exception, deliberately.
 The code invites several confident wrong conclusions. It is cheaper to
 write them down than to have each be rediscovered.
 
-- **There is no ingestion pipeline.** `Scraper`, `DiscoveryService`,
-  `RSSDiscoveryStrategy` and the twelve source YAMLs exist and nothing
-  calls them. The only way an article enters the system is a human
-  posting a URL to `/analyze`. `Scraper.discover()` passes the `TOPICS`
-  dict where `list[str]` is declared and `Scraper.extract()` ignores its
-  `topics` argument — unexercised code that has already drifted.
+- **Ingestion runs only when someone asks.** `POST /ingest` (the
+  Scraper page's panel) discovers from the configured sources and queues
+  each new article as an ordinary analysis job. Nothing runs on a timer.
+  Four of the twelve feed URLs (National Geographic, Reuters, RTVE, SINC)
+  return 404 and their homepages advertise no feed trafilatura can find:
+  those YAMLs need new `rss_url`s. The topic keywords are English only,
+  so Spanish sources are not pre-filtered by topic
+  (`docs/decisions/scraping.md`).
 - **The headless browser is optional and usually absent locally.**
   `playwright` is the `browser` extra; `./scripts/check.sh` never
   installs it, and without it (or without `playwright install chromium`)

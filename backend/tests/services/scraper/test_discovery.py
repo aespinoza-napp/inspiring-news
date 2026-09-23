@@ -1,4 +1,5 @@
 import feedparser
+import pytest
 
 from src.services.scraper.strategies.rss import RSSDiscoveryStrategy
 
@@ -21,6 +22,23 @@ class FakeFeed:
 
     def __init__(self, entries):
         self.entries = entries
+
+
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    """
+    The strategy fetches the feed itself now (feedparser's own HTTP has no
+    timeout and skips the URL guard). These tests replace feedparser.parse
+    with canned entries, so the fetch only has to return something.
+    """
+
+    from src.services.scraper.fetcher import FetchedPage, Fetcher
+
+    monkeypatch.setattr(
+        Fetcher,
+        "get",
+        lambda self, url: FetchedPage(url=url, status=200, html="<rss></rss>"),
+    )
 
 
 def test_discover_matches_by_topic_keyword(monkeypatch):
@@ -179,3 +197,62 @@ def test_discover_excludes_video_pages_even_with_matching_url_segment(monkeypatc
     # above - proving it's specifically the "/videos/" segment, not a
     # topic/keyword mismatch, that excludes this one.
     assert strategy.discover(make_source(), topics=["space"]) == []
+
+
+# ----------------------------------------------------------------------
+# Article shape in any language, and a topic filter only where it works
+# ----------------------------------------------------------------------
+
+
+import pytest as _pytest
+
+
+@_pytest.mark.parametrize("url", [
+    "https://www.elmundo.es/internacional/2026/09/23/6ab35dc6e9cf4aed758b458c.html",
+    "https://elpais.com/espana/madrid/2026-09-23/maricarmen-se-queda.html",
+    "https://www.lavanguardia.com/internacional/20260923/11641410/xi-jinping.html",
+    "https://science.nasa.gov/earth/earth-observatory/boom-year-for-desert-blooms/",
+])
+def test_articles_are_recognised_by_date_or_headline_slug_in_any_language(url):
+    """Every one of these was dropped by the English section-name patterns."""
+
+    assert RSSDiscoveryStrategy()._is_article(url)
+
+
+@_pytest.mark.parametrize("url", [
+    "https://www.abc.es/",
+    "https://elpais.com/espana/",
+    "https://www.bbc.co.uk/news/videos/cjp306113l0wo",
+])
+def test_homepages_sections_and_videos_are_not_articles(url):
+
+    assert not RSSDiscoveryStrategy()._is_article(url)
+
+
+def test_a_spanish_feed_is_not_filtered_by_english_keywords(monkeypatch):
+    """
+    Every TOPICS keyword is English; against a Spanish feed they kept 5 of
+    El País's 149 entries, at random. Topic is left to the admission filter.
+    """
+
+    entries = [
+        entry("https://elpais.com/espana/2026-09-23/una-donante-anonima-paga-el-alquiler.html",
+              "Una donante anónima se ofrece a pagar el alquiler"),
+    ]
+
+    monkeypatch.setattr(feedparser, "parse", lambda text: FakeFeed(entries))
+
+    urls = RSSDiscoveryStrategy().discover(make_source(language="es"), topics=["space"])
+
+    assert urls == [entries[0].link]
+
+
+def test_an_english_feed_is_still_filtered_by_topic(monkeypatch):
+
+    entries = [
+        entry("https://example.com/2026/09/23/football-final-result", "Football final result"),
+    ]
+
+    monkeypatch.setattr(feedparser, "parse", lambda text: FakeFeed(entries))
+
+    assert RSSDiscoveryStrategy().discover(make_source(language="en"), topics=["space"]) == []

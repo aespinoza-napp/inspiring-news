@@ -39,3 +39,15 @@ def test_get_unknown_source():
     repository = SourceRepository()
 
     assert repository.get("does_not_exist") is None
+
+
+def test_source_names_are_read_as_utf_8_on_every_platform():
+    """
+    open() without an encoding uses the platform's, and on Windows that
+    showed "El País" as "El PaÃ­s" on the ingestion panel.
+    """
+
+    repository = SourceRepository()
+
+    assert repository.get("el_pais").name == "El País"
+    assert "El País" in {source.name for source in repository.list()}

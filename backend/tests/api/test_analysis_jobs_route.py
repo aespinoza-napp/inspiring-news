@@ -36,7 +36,7 @@ class FakeAnalysisService:
     scraper/SearXNG/LLM.
     """
 
-    def analyze(self, url, force_refresh=False, on_phase=None, thresholds=None):
+    def analyze(self, url, force_refresh=False, on_phase=None, thresholds=None, purpose="article"):
 
         report = on_phase or (lambda phase, data: None)
 

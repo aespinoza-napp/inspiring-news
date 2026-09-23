@@ -10,6 +10,7 @@ from src.services.claim_service import ClaimService
 from src.services.enrichment_service import EnrichmentService
 from src.services.corrector.text_corrector import TextCorrector
 from src.services.fact_checker.fact_checker import FactChecker
+from src.services.ingestion_service import IngestionService
 from src.services.job_queue import AnalysisJobQueue
 from src.services.job_store import JobStore
 from src.workflows.enrichment import NewsEnrichmentPipeline
@@ -74,6 +75,7 @@ _fact_checker: FactChecker | None = None
 _claim_service: ClaimService | None = None
 _enrichment_service: EnrichmentService | None = None
 _job_queue: AnalysisJobQueue | None = None
+_ingestion_service: IngestionService | None = None
 
 
 def get_vector_repository() -> VectorRepository:
@@ -223,3 +225,25 @@ def get_text_corrector() -> TextCorrector:
                 _text_corrector = TextCorrector()
 
     return _text_corrector
+
+
+def get_ingestion_service() -> IngestionService:
+    """
+    Backs POST /ingest. A singleton so the last run's report survives
+    between the POST and the page that shows it. The source YAMLs are read
+    once, here: adding a source means restarting, as it always has.
+    """
+
+    global _ingestion_service
+
+    if _ingestion_service is None:
+        with _lock:
+            if _ingestion_service is None:
+                from src.repositories.source_repository import SourceRepository
+
+                _ingestion_service = IngestionService(
+                    sources=SourceRepository().list(),
+                    lake=get_datalake_repository(),
+                )
+
+    return _ingestion_service

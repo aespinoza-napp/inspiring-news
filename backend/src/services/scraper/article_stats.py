@@ -54,7 +54,7 @@ def _filled(value) -> bool:
     return value is not None and str(value).strip() != ""
 
 
-def _comparable_url(url: str) -> str:
+def comparable_url(url: str) -> str:
     """
     Host and path, so a re-analysis of the same article with a tracking
     parameter or a trailing slash is not counted as a second article.
@@ -100,7 +100,7 @@ def article_stats(lake) -> dict:
         lineage = record.get("lineage") or {}
 
         entry["scraped"] += 1
-        entry["urls"].add(_comparable_url(url))
+        entry["urls"].add(comparable_url(url))
 
         if lineage.get("content_hash"):
             entry["contents"].add(lineage["content_hash"])

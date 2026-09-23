@@ -107,13 +107,52 @@ page shows all four. "Which step does the work for this source" is the
 `strategies` count; a source that only ever succeeds via the last step is
 a candidate for `requires_javascript`.
 
+## Discovery and ingestion
+
+`POST /ingest` (`services/ingestion_service.py`) turns configured sources
+into analysis jobs. Discovery is cheapest first too:
+
+1. the source's `rss_url`, fetched through `Fetcher` (URL guard and a
+   timeout - feedparser's own HTTP has neither) and parsed by feedparser;
+2. only if that finds nothing: trafilatura's feed discovery, on the
+   `rss_url` and then the homepage - lenient with broken XML, and able to
+   find the feed a site advertises today.
+
+Then, before anything is queued:
+
+- **Article shape**, in any language: the old English section-name
+  patterns kept 0 of El Mundo's 26 feed entries, 5 of El País's 149 and
+  0 of NASA's 10. A date in the path or a four-word slug now counts.
+- **Topic**, for English sources only. Every TOPICS keyword is English;
+  against a Spanish feed they matched at random. Spanish articles are left
+  to the admission filter, which rejects before any LLM call.
+- **Not already in the lake** (host and path, so tracking parameters do
+  not make an old article new; a syndicated article is queued once).
+- **At most `perSource`** per source per run; the rest are reported as
+  deferred.
+
+Each queued URL is an ordinary job with purpose `ingestion`: it shows on
+`/live`, lands in the lake, and is counted apart from posted articles.
+`POST /ingest` is behind `STORAGE_API_KEY`, since one call can start dozens
+of full analyses.
+
+Live, 2026-09-23: discovery went from 4 of 12 sources producing links to
+9 (El Mundo 26, El País 146, La Vanguardia 132, ABC 42 via its homepage,
+CNN 25, BBC 17, NASA 9). A NASA article went discovered → queued →
+extracted (title, four authors, date) → enriched → fact-checked →
+stored in 52s, and the next run reported it as already stored. The feed
+URLs for National Geographic, Reuters, RTVE and SINC return **404** -
+earlier read here as "malformed XML", which was feedparser parsing the
+404 page - and need replacing in their YAMLs.
+
 ## Checked against real sources (2026-09-23)
 
-Two articles from each configured feed, both parsers on the same page:
+Two articles from each configured feed that could be read, both parsers
+on the same page:
 trafilatura produced the article for El Mundo, La Vanguardia, NASA, CNN
 and BBC. BeautifulSoup extracted comparable text on the same pages (and on
 a CNN live blog picked a much smaller block, which is why it is second).
 El País answered 403: the case the browser step exists for. Five feeds
-could not be read at all (National Geographic, RTVE and SINC return
-malformed XML; EFE and Reuters timed out), and ABC's feed links point to
-its homepage - discovery problems, not extraction ones.
+could not be read at all (National Geographic, Reuters, RTVE and SINC
+404; EFE timed out), and ABC's feed links point to its homepage -
+discovery problems, not extraction ones (see "Discovery and ingestion").

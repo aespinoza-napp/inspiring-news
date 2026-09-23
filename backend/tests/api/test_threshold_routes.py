@@ -14,7 +14,7 @@ class RecordingAnalysisService:
     def __init__(self):
         self.calls = []
 
-    def analyze(self, url, force_refresh=False, on_phase=None, thresholds=None):
+    def analyze(self, url, force_refresh=False, on_phase=None, thresholds=None, purpose="article"):
 
         self.calls.append(thresholds)
 

@@ -1,5 +1,6 @@
 from unittest.mock import Mock
 
+from src.services.scraper.request_stats import Purpose
 from src.services.scraper.scraper import Scraper
 
 from tests.builders.source_builder import build_source
@@ -45,7 +46,9 @@ def test_extract_delegates_to_extractor_service():
 
     assert result is fake_news
 
-    scraper.extractor.extract.assert_called_once_with(source, "https://bbc.com/a")
+    scraper.extractor.extract.assert_called_once_with(
+        source, "https://bbc.com/a", purpose=Purpose.INGESTION
+    )
 
 
 def test_extract_returns_none_when_extractor_finds_nothing():
@@ -55,3 +58,21 @@ def test_extract_returns_none_when_extractor_finds_nothing():
     scraper = make_scraper(extract_return=None)
 
     assert scraper.extract(source, "https://bbc.com/a") is None
+
+
+def test_discover_passes_topic_ids_not_the_topics_dict():
+    """
+    It used to pass TOPICS itself where list[str] is declared - working
+    only because iterating a dict yields its keys.
+    """
+
+    from src.config.topics import TOPICS
+
+    scraper = make_scraper()
+
+    scraper.discover(build_source())
+
+    topics = scraper.discovery.discover.call_args.kwargs["topics"]
+
+    assert isinstance(topics, list)
+    assert topics == list(TOPICS)

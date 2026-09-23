@@ -21,6 +21,7 @@ def run_analysis_job(
     url: str,
     force_refresh: bool = False,
     thresholds: PipelineThresholds | None = None,
+    purpose: str = "article",
 ) -> None:
     """
     Runs AnalysisService.analyze() for one URL, writing each phase into
@@ -96,6 +97,7 @@ def run_analysis_job(
             force_refresh=force_refresh,
             on_phase=on_phase,
             thresholds=thresholds,
+            purpose=purpose,
         )
     except Exception as exc:
         total_seconds = time.monotonic() - start

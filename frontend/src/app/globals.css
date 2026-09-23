@@ -2113,3 +2113,52 @@ summary.trace-label {
 @media (prefers-reduced-motion: reduce) {
   .daily-bars-bar { transition: none; }
 }
+
+/* ---------------------------------------------------------------------
+   Scraper: ingest panel
+   --------------------------------------------------------------------- */
+
+.ingest-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.35rem 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.85rem;
+}
+
+.ingest-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ingest-per-source {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.ingest-per-source select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+}
+
+.ingest-report {
+  margin-top: 1rem;
+}
+
+/* Inside a card the table fits the card, rather than breaking out to
+   the wide layout the page-level tables use. */
+.ingest-report .stats-table-wrap {
+  position: static;
+  width: auto;
+  transform: none;
+}

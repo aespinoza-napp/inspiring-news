@@ -41,7 +41,7 @@ def _make_tracking_service(call_log: list[str], hold_seconds: float = 0.05):
     active_lock = threading.Lock()
 
     class TrackingAnalysisService:
-        def analyze(self, url, force_refresh=False, on_phase=None, thresholds=None):
+        def analyze(self, url, force_refresh=False, on_phase=None, thresholds=None, purpose="article"):
 
             report = on_phase or (lambda phase, data: None)
 

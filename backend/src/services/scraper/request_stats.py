@@ -77,6 +77,9 @@ class Purpose(str, Enum):
     # Discovery-driven scraping of a configured source.
     INGESTION = "ingestion"
 
+    # Reading a source's feed (or its homepage) to find article URLs.
+    DISCOVERY = "discovery"
+
 
 def domain_of(url: str) -> str:
     """Host without `www.`, lowercased; the URL itself if it has none."""

@@ -19,7 +19,9 @@ class SourceRepository:
 
         for file in self.sources_path.glob("*.yaml"):
 
-            with open(file) as f:
+            # Explicit: the default is the platform's encoding, which on
+            # Windows turned "El País" into "El PaÃ­s" on every page.
+            with open(file, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
 
             sources.append(
@@ -38,7 +40,7 @@ class SourceRepository:
         if not path.exists():
             return None
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
 
         return NewsSource(**data)

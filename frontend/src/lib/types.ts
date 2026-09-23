@@ -513,3 +513,40 @@ export interface ScrapedArticles {
   daily: { date: string; scraped: number }[];
   domains: ScrapedDomainStats[];
 }
+
+/** GET /ingest/sources */
+export interface IngestSource {
+  id: string;
+  name: string;
+  language: string;
+  rssUrl: string | null;
+  requiresJavascript: boolean;
+}
+
+export interface IngestSourceRun {
+  source: string;
+  name: string;
+  /** The discovery strategy that found the links; null when none did. */
+  method: string | null;
+  discovered: number;
+  alreadyStored: number;
+  queued: { url: string; jobId: string; reused: boolean }[];
+  /** New articles beyond perSource, left for a later run. */
+  deferred: number;
+  error: string | null;
+}
+
+/** POST /ingest */
+export interface IngestReport {
+  startedAt: string;
+  perSource: number;
+  totals: {
+    sources: number;
+    discovered: number;
+    alreadyStored: number;
+    queued: number;
+    deferred: number;
+    failed: number;
+  };
+  sources: IngestSourceRun[];
+}
