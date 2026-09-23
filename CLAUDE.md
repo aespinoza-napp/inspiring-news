@@ -47,6 +47,7 @@ src.main:app --port 8001`.
 |---|---|
 | The plan, and what is actually done | `docs/roadmap.md` |
 | Pipeline stages, entry points, container | `backend/CLAUDE.md` |
+| What decides whether an article is checked at all | `backend/src/services/admission/README.md` |
 | Why the models live in their own service | `docs/decisions/inference.md` |
 | Per-run thresholds, how overrides resolve | `docs/decisions/thresholds.md` |
 | The three storage layers and lineage | `docs/decisions/storage.md` |
@@ -66,7 +67,7 @@ the declared exception, deliberately.
 
 1. **Never write `MIN_X = settings.MIN_X` in a class body.** It is
    evaluated once at import and freezes for the life of the process.
-   Thresholds are passed **per call** (`validate(article, thresholds)`,
+   Thresholds are passed **per call** (`admit(article, thresholds)`,
    `process(text, threshold)`, `run(article, thresholds=...)`), because
    the components are long-lived singletons shared by every request.
    `None` always means "use the defaults". *Declared exception:* the

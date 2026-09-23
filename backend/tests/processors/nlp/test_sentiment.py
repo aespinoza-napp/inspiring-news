@@ -4,7 +4,7 @@ model (and its @user/http normalization) moved to
 inference/tests/test_sentiment.py. This tests the adapter: it builds a
 SentimentResult from whatever the client returns, and propagates
 failure rather than degrading (see sentiment.py's docstring for why:
-PositiveImpactValidator reads this as a core admission signal).
+PositiveImpactScorer reads this as a core admission signal).
 """
 
 import pytest

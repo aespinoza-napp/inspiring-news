@@ -6,6 +6,7 @@ from src.models.core.news import News
 from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
+from src.services.admission.admission_filter import AdmissionFilter, AdmissionResult
 from src.services.analysis_service import AnalysisService
 
 from tests.factories import create_article, create_claim
@@ -48,7 +49,43 @@ class FakeCache:
         self.store[self._key(url, thresholds)] = result
 
 
-def make_service(extract_return, article, report, cache=None) -> AnalysisService:
+class FakeAdmission:
+    """
+    Stands in for AdmissionFilter: returns a fixed decision and records
+    what it was asked to remember, and in what order relative to the
+    fact-check (`log`).
+    """
+
+    def __init__(self, result: AdmissionResult, log: list | None = None):
+        self.result = result
+        self.remembered = []
+        self.log = log if log is not None else []
+
+    def admit(self, article, thresholds=None, on_phase=None):
+        self.log.append("admit")
+        return self.result
+
+    def remember(self, article):
+        self.log.append("remember")
+        self.remembered.append(article)
+
+
+def admitted(**kwargs) -> AdmissionResult:
+
+    values = dict(
+        passed=True, topic_ok=True, positive_ok=True, duplicate=False,
+        impact_score=0.6, impact_reasons=[],
+    )
+    values.update(kwargs)
+    return AdmissionResult(**values)
+
+
+def rejected(**kwargs) -> AdmissionResult:
+
+    return admitted(passed=False, **kwargs)
+
+
+def make_service(extract_return, article, report, cache=None, admission=None) -> AnalysisService:
 
     extractor = Mock()
     extractor.extract.return_value = extract_return
@@ -64,6 +101,7 @@ def make_service(extract_return, article, report, cache=None) -> AnalysisService
         extractor=extractor,
         enrichment_pipeline=enrichment_pipeline,
         cache=cache if cache is not None else FakeCache(),
+        admission=admission,
     )
 
 
@@ -255,21 +293,16 @@ def test_analyze_falls_back_to_raw_claims_when_validation_failed():
 
     article = create_article(claims=[claim])
 
-    report = FactCheckReport(
-        article_id=article.id,
-        validation_passed=False,
-        skipped_reason="topic_not_relevant",
-        topic_ok=False,
-        positive_ok=True,
-        duplicate=False,
-        claims_total=1,
-        claims_selected=0,
-        claim_checks=[],
-    )
+    admission = FakeAdmission(rejected(topic_ok=False))
 
-    service = make_service(make_news(), article, report)
+    service = make_service(make_news(), article, report=None, admission=admission)
 
     result = service.analyze("https://example.com/a")
+
+    # Turned away at admission: the fact-checker never sees it, and it is
+    # not stored for later duplicate checks.
+    service.fact_checker.run.assert_not_called()
+    assert admission.remembered == []
 
     assert result["validity"]["isValid"] is False
     assert result["validity"]["hasTopic"] is False
@@ -659,20 +692,10 @@ def test_an_article_that_failed_validation_is_still_persisted(tmp_path):
 
     article = create_article()
 
-    report = FactCheckReport(
-        article_id=article.id,
-        validation_passed=False,
-        skipped_reason="not_positive_impact",
-        topic_ok=True,
-        positive_ok=False,
-        duplicate=False,
-        claims_total=1,
-        claims_selected=0,
-    )
+    service = _service_with_lake(lake, article=article)
+    service.admission = FakeAdmission(rejected(positive_ok=False))
 
-    result = _service_with_lake(lake, article=article, report=report).analyze(
-        "https://example.com/a"
-    )
+    result = service.analyze("https://example.com/a")
 
     assert result["storage"]["publishable"] is False
 
@@ -896,3 +919,104 @@ def test_a_failing_cache_write_does_not_fail_a_finished_run():
     assert "error" not in result
     assert result["cached"] is False
     assert phases[-1] == "done"
+
+
+# ----------------------------------------------------------------------
+# Admission, composed ahead of the fact-check
+# ----------------------------------------------------------------------
+
+
+def test_an_admitted_article_is_fact_checked_then_remembered():
+
+    article = create_article()
+    log = []
+    admission = FakeAdmission(admitted(impact_score=0.72, impact_reasons=["Low objectivity"]), log)
+
+    service = make_service(make_news(), article, _successful_report(article), admission=admission)
+    service.fact_checker.run.side_effect = lambda *args, **kwargs: (
+        log.append("fact_check") or _successful_report(article)
+    )
+
+    result = service.analyze("https://example.com/a")
+
+    # Remembered only after its own claims were checked: stored earlier,
+    # it would be found as internal evidence for itself.
+    assert log == ["admit", "fact_check", "remember"]
+    assert admission.remembered == [article]
+
+    # The report's admission fields come from the admission module.
+    assert result["validity"]["isValid"] is True
+    assert result["validity"]["impactScore"] == 0.72
+    assert result["validity"]["impactReasons"] == ["Low objectivity"]
+
+
+def test_a_rejected_article_reports_every_reason():
+
+    article = create_article(claims=[create_claim()])
+
+    service = make_service(
+        make_news(), article, report=None,
+        admission=FakeAdmission(rejected(topic_ok=False, duplicate=True)),
+    )
+
+    result = service.analyze("https://example.com/a")
+
+    assert result["validity"]["reasons"] == ["topic_not_relevant", "duplicate_article"]
+    assert result["validity"]["isDuplicate"] is True
+    assert result["validity"]["failedStage"] == PipelineStage.ADMISSION_FILTER
+    assert result["factCheck"]["claimsChecked"] == 0
+
+
+def test_admission_phases_come_between_enrichment_and_the_fact_check(repository):
+
+    article = create_article(topics=[])
+
+    service = make_service(
+        make_news(), article, report=None, admission=AdmissionFilter(repository),
+    )
+
+    events = []
+    service.analyze("https://example.com/a", on_phase=lambda phase, data: events.append(phase))
+
+    assert events == [
+        "scraping",
+        "scraped",
+        "enriching",
+        "enriched",
+        "validating",
+        "validated",
+        "skipped",
+        "done",
+    ]
+
+
+def test_the_same_story_from_a_second_outlet_is_caught_as_a_duplicate(repository):
+    """
+    End to end through the real admission module: the first analysis
+    stores the article, the second - same story, another URL - is turned
+    away before any fact-checking.
+    """
+
+    first = create_article(id="11111111-1111-1111-1111-111111111111", claims=[])
+    second = create_article(
+        id="22222222-2222-2222-2222-222222222222",
+        url="https://example.com/another-outlet",
+        claims=[],
+    )
+
+    admission = AdmissionFilter(repository)
+
+    one = make_service(make_news(), first, _successful_report(first), admission=admission)
+    assert one.analyze("https://example.com/a")["validity"]["isValid"] is True
+    assert repository.count() == 1
+
+    two = make_service(
+        make_news(url="https://example.com/another-outlet"), second, report=None,
+        admission=admission,
+    )
+    result = two.analyze("https://example.com/another-outlet")
+
+    assert result["validity"]["isDuplicate"] is True
+    assert result["validity"]["isValid"] is False
+    two.fact_checker.run.assert_not_called()
+    assert repository.count() == 1

@@ -2,12 +2,20 @@
 from src.config.thresholds import PipelineThresholds
 from src.models.nlp.sentiment_result import SentimentResult
 from src.models.nlp.quality import Quality
-from src.models.fact_checker.validation_result import ValidationResult
+from src.models.admission.impact_result import ImpactResult
 
 
 
 
-class PositiveImpactValidator:
+class PositiveImpactScorer:
+    """
+    How constructive, inspiring and hopeful the article is, on a 0-1
+    scale, and whether that clears the run's minimum.
+
+    Takes sentiment and quality rather than an article so anything
+    holding those two can be scored - the corrector reuses it for its
+    coverage metric on text that is not an article at all.
+    """
 
     # settings.POSITIVE_IMPACT_MIN_SCORE is the default; a single run can
     # override it (see src/config/thresholds.py).
@@ -22,12 +30,12 @@ class PositiveImpactValidator:
     # mean something.
     WEIGHT_SUM = 3.50
 
-    def validate(
+    def score(
         self,
         sentiment: SentimentResult,
         quality: Quality,
         thresholds: PipelineThresholds | None = None,
-    ) -> ValidationResult:
+    ) -> ImpactResult:
 
         resolved = thresholds or PipelineThresholds()
         minimum = resolved.positive_impact_min_score
@@ -70,7 +78,7 @@ class PositiveImpactValidator:
 
         passed = not hard_fail and score >= minimum
         
-        return ValidationResult(
+        return ImpactResult(
             passed=passed,
             score=max(0.0, min(score, 1.0)),
             reasons=reasons,

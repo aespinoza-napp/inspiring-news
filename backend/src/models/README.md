@@ -9,7 +9,8 @@ No `__init__.py` anywhere here or elsewhere in `src/` — everything is a namesp
 | `core/` | `news.py`, `source.py`, `claim.py` (+ `RejectedClaim`), `enriched_article.py`, `similarity.py`, `job.py` | Types shared across multiple subsystems — the "nouns" of the pipeline |
 | `nlp/` | `sentiment_result.py`, `quality.py`, `topic_prediction.py`, `topics.py` | Output shapes for `src/processors/nlp/` |
 | `scraper/` | `extraction.py` | `src/services/scraper/` |
-| `fact_checker/` | `evidence.py` (+ `RejectedEvidence`), `fact_check.py`, `fact_check_report.py`, `validation_result.py`, `duplicate_result.py`, `pipeline_stage.py` | `src/services/fact_checker/` — mirrors that directory's own layout |
+| `admission/` | `impact_result.py`, `duplicate_result.py` | `src/services/admission/` |
+| `fact_checker/` | `evidence.py` (+ `RejectedEvidence`), `fact_check.py`, `fact_check_report.py`, `pipeline_stage.py` | `src/services/fact_checker/` — mirrors that directory's own layout |
 | `corrector/` | `correction_metric.py` | `src/services/corrector/` |
 
 A few worth knowing about specifically:

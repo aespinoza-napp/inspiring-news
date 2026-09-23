@@ -4,7 +4,7 @@
 from pydantic import BaseModel
 
 
-class ValidationResult(BaseModel):
+class ImpactResult(BaseModel):
 
     passed: bool
 

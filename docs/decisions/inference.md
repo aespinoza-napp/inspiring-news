@@ -82,7 +82,7 @@ moving it would mean abandoning Qdrant's local mode entirely.
 | Component | On failure | Why |
 |---|---|---|
 | `EntityExtractor` | returns `{}` | `ClaimExtractor` already treats "no entities" as one weak signal among several in its scoring — an outage should weaken a sentence's score, not fail the run. Mirrors `LLMClient`'s `None`. |
-| `SentimentAnalyzer` | raises `InferenceUnavailable` | `PositiveImpactValidator` reads `sentiment.positive`/`negative` as core admission inputs. A silently neutral result would corrupt an admission decision. |
+| `SentimentAnalyzer` | raises `InferenceUnavailable` | `PositiveImpactScorer` (admission) reads `sentiment.positive`/`negative` as core admission inputs. A silently neutral result would corrupt an admission decision. |
 | `EmbeddingService` | raises `InferenceUnavailable` | Feeds duplicate detection, evidence ranking and topic classification. A zeroed vector breaks those silently. |
 
 Both raising cases propagate through `AnalysisService`'s existing

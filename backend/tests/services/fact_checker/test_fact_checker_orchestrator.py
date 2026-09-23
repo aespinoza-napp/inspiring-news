@@ -14,29 +14,11 @@ from tests.services.fact_checker.fakes import (
 )
 
 
-def test_run_short_circuits_when_validation_fails(repository):
-
-    article = create_article(topics=[])  # fails topic validation
-
-    checker = FactChecker(repository)
-
-    report = checker.run(article)
-
-    assert report.validation_passed is False
-    assert "topic_not_relevant" in report.skipped_reason
-    assert report.claims_selected == 0
-    assert report.claim_checks == []
-    assert report.failed_stage == "admission_filter"
-
-
-def test_run_persists_article_so_a_later_duplicate_is_detected(repository):
+def test_run_does_not_judge_admission(repository):
     """
-    Nothing else in the app ever calls VectorRepository.save() - confirmed
-    by grepping src/ for ".save(" - so without FactChecker.run() persisting
-    a successfully-checked article itself, DuplicateValidator and
-    VectorRetriever (internal-corpus evidence) permanently query an empty
-    collection: re-analyzing the exact same article twice never gets
-    flagged as a duplicate, no matter how many times it's run.
+    Admission (topic, positive impact, duplicates) is its own module, run
+    before FactChecker. An article that admission would turn away - no
+    topics at all - is still checked when handed here directly.
     """
 
     checker = FactChecker(
@@ -47,56 +29,30 @@ def test_run_persists_article_so_a_later_duplicate_is_detected(repository):
         confidence_scorer=ConfidenceScorer(),
     )
 
-    first = create_article(id="11111111-1111-1111-1111-111111111111", claims=[])
-    report_one = checker.run(first)
-
-    assert report_one.validation_passed is True
-    assert report_one.duplicate is False
-    assert repository.count() == 1
-
-    # Same embedding (the factory default), different id *and* a different
-    # URL - the same story from another outlet. (The same URL again is a
-    # re-analysis, which is covered by the test below.)
-    second = create_article(
-        id="22222222-2222-2222-2222-222222222222",
-        url="https://example.com/another-outlet",
-        claims=[],
-    )
-    report_two = checker.run(second)
-
-    assert report_two.validation_passed is False
-    assert report_two.duplicate is True
-    # A rejected duplicate must not also get persisted a second time.
-    assert repository.count() == 1
-
-
-def test_reanalysing_the_same_url_is_accepted_and_replaces_the_stored_copy(repository):
-    """
-    Regression: extraction mints a new id every time, so re-running a URL
-    (force_refresh, or a changed threshold that changes the cache key) hit
-    its own stored copy at similarity 1.0 and was rejected as a duplicate
-    of itself. It must pass, and the collection must keep one point per
-    URL rather than growing a copy per run.
-    """
-
-    checker = FactChecker(
-        repository,
-        evidence_retriever=FakeEvidenceRetriever({}),
-        ranker=FakeRanker(),
-        verifier=FakeVerifier({}),
-        confidence_scorer=ConfidenceScorer(),
-    )
-
-    checker.run(create_article(id="11111111-1111-1111-1111-111111111111", claims=[]))
-
-    rerun = create_article(id="22222222-2222-2222-2222-222222222222", claims=[])
-    report = checker.run(rerun)
+    report = checker.run(create_article(topics=[], claims=[]))
 
     assert report.validation_passed is True
-    assert report.duplicate is False
-    assert repository.count() == 1
-    assert repository.exists("22222222-2222-2222-2222-222222222222")
-    assert not repository.exists("11111111-1111-1111-1111-111111111111")
+    assert report.skipped_reason is None
+    assert report.failed_stage is None
+
+
+def test_run_does_not_store_the_article(repository):
+    """
+    Storing it for later duplicate checks belongs to admission
+    (AdmissionFilter.remember), not to fact-checking.
+    """
+
+    checker = FactChecker(
+        repository,
+        evidence_retriever=FakeEvidenceRetriever({}),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({}),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    checker.run(create_article(claims=[]))
+
+    assert repository.count() == 0
 
 
 def test_run_produces_worst_case_wins_overall_verdict(repository):
@@ -326,23 +282,6 @@ def test_run_with_no_claims_returns_unverified_overall(repository):
     assert report.overall_confidence == 0.0
 
 
-def test_run_reports_phases_when_validation_fails(repository):
-
-    article = create_article(topics=[])
-
-    checker = FactChecker(repository)
-
-    events = []
-
-    checker.run(article, on_phase=lambda phase, data: events.append((phase, data)))
-
-    phases = [phase for phase, _ in events]
-    assert phases == ["validating", "validated", "skipped"]
-
-    validated_data = dict(events[1][1])
-    assert validated_data["passed"] is False
-
-
 def test_run_reports_a_phase_per_claim_and_final_summary(repository):
 
     claim = create_claim(text="A checkable claim.", confidence=0.9)
@@ -385,9 +324,9 @@ def test_run_reports_a_phase_per_claim_and_final_summary(repository):
     #
     # One claim, so the order is still exact. With several the per-claim
     # events interleave by design - see the concurrency tests below.
+    # No admission events: admission is its own module now, run before
+    # FactChecker by AnalysisService.
     assert phases == [
-        "validating",
-        "validated",
         "selecting_claims",
         "claims_selected",
         "retrieving_evidence",

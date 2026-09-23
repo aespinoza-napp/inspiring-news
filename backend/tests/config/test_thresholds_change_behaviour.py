@@ -15,10 +15,8 @@ from src.models.nlp.sentiment_result import SentimentResult
 from src.models.nlp.topic_prediction import TopicPrediction
 from src.models.scraper.extraction import ExtractionResult
 from src.services.fact_checker.claim_selector import ClaimSelector
-from src.services.fact_checker.validators.positive_impact_validator import (
-    PositiveImpactValidator,
-)
-from src.services.fact_checker.validators.topic_validator import TopicValidator
+from src.services.admission.positive_impact import PositiveImpactScorer
+from src.services.admission.topic_filter import TopicFilter
 from src.services.scraper.extraction_validator import ExtractionValidator
 
 from tests.factories import create_article, create_claim
@@ -65,15 +63,15 @@ def make_sentiment(**kwargs) -> SentimentResult:
 
 def test_positive_impact_min_score_decides_admission():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
     sentiment, quality = make_sentiment(), make_quality()
 
     # The same article, judged against a lenient and a strict bar.
-    lenient = validator.validate(
+    lenient = validator.score(
         sentiment, quality, PipelineThresholds(positive_impact_min_score=0.10)
     )
-    strict = validator.validate(
+    strict = validator.score(
         sentiment, quality, PipelineThresholds(positive_impact_min_score=0.99)
     )
 
@@ -86,12 +84,12 @@ def test_positive_impact_min_score_decides_admission():
 
 def test_positive_impact_falls_back_to_the_default_when_not_given():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
-    explicit = validator.validate(
+    explicit = validator.score(
         make_sentiment(), make_quality(), PipelineThresholds()
     )
-    implicit = validator.validate(make_sentiment(), make_quality())
+    implicit = validator.score(make_sentiment(), make_quality())
 
     assert explicit.passed == implicit.passed
     assert explicit.score == implicit.score
@@ -99,28 +97,28 @@ def test_positive_impact_falls_back_to_the_default_when_not_given():
 
 def test_topic_min_confidence_decides_whether_an_article_is_on_topic():
 
-    validator = TopicValidator()
+    validator = TopicFilter()
 
     article = create_article(
         topics=[TopicPrediction(topic="climate", confidence=0.40, probability=0.4)]
     )
 
-    assert validator.validate(article, PipelineThresholds(topic_min_confidence=0.30))
-    assert not validator.validate(
+    assert validator.accepts(article, PipelineThresholds(topic_min_confidence=0.30))
+    assert not validator.accepts(
         article, PipelineThresholds(topic_min_confidence=0.50)
     )
 
 
-def test_topic_validator_still_rejects_an_article_with_no_topics_at_all():
+def test_topic_filter_still_rejects_an_article_with_no_topics_at_all():
     """
     A threshold of 0.0 lowers the bar; it does not invent a topic.
     """
 
-    validator = TopicValidator()
+    validator = TopicFilter()
 
     article = create_article(topics=[])
 
-    assert not validator.validate(article, PipelineThresholds(topic_min_confidence=0.0))
+    assert not validator.accepts(article, PipelineThresholds(topic_min_confidence=0.0))
 
 
 # ----------------------------------------------------------------------

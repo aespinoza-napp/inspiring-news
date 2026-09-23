@@ -1,7 +1,7 @@
 # Tests
 
-Mirrors `src/` by subsystem: `processors/nlp/`, `services/` (including `services/scraper/` and
-`services/fact_checker/`, further split into `ranking/`, `retrieval/`, `validators/`, `verification/` —
+Mirrors `src/` by subsystem: `processors/nlp/`, `services/` (including `services/scraper/`,
+`services/admission/` and `services/fact_checker/`, further split into `ranking/`, `retrieval/`, `verification/` —
 matching `src/services/fact_checker/` exactly), `api/`, `database/`, `repositories/`, `config/`.
 
 ## Shared fixtures & fakes

@@ -12,6 +12,7 @@ from src.models.core.news import News
 from src.models.storage.lineage import DataLayer, RunContext
 from src.models.storage.records import ProcessedRecord, RawRecord
 from src.repositories.datalake_repository import DataLakeRepository, content_hash
+from src.services.admission.admission_filter import AdmissionFilter, AdmissionResult
 from src.services.analysis_cache import AnalysisCache
 # _VERDICT_SEVERITY is imported, not restated: it orders claims
 # worst-first for display, and the second copy that used to live here
@@ -34,7 +35,11 @@ def _noop(phase: str, data: dict) -> None:
 class AnalysisService:
     """
     Runs a single arbitrary URL through the full pipeline: scrape -> enrich
-    -> validate -> fact-check, and shapes the result for the frontend.
+    -> admit -> fact-check, and shapes the result for the frontend.
+
+    Admission and fact-checking are separate modules, composed here:
+    `admission` decides whether the article is on topic, of positive
+    impact and new; only an admitted article reaches `fact_checker`.
 
     Results are cached by URL (see AnalysisCache) - a repeat request for
     the same URL returns the stored result instead of re-scraping and
@@ -55,6 +60,7 @@ class AnalysisService:
         enrichment_pipeline: NewsEnrichmentPipeline | None = None,
         cache: AnalysisCache | None = None,
         lake: DataLakeRepository | None = None,
+        admission: AdmissionFilter | None = None,
     ):
         self.fact_checker = fact_checker
         self.extractor = extractor or ExtractorService()
@@ -68,6 +74,12 @@ class AnalysisService:
         # passes the container singleton (see container.py); None simply
         # switches the persist stage off.
         self.lake = lake
+
+        # No default either, for the same reason as `fact_checker`: the
+        # duplicate check reads the one shared VectorRepository. The app
+        # passes the container singleton; None switches the admission
+        # stage off, and every article goes straight to fact-checking.
+        self.admission = admission
 
     def analyze(
         self,
@@ -180,11 +192,7 @@ class AnalysisService:
         # NLP pass.
         processed = self._store_processed(run, raw, article, report_phase)
 
-        report = self.fact_checker.run(
-            article,
-            on_phase=report_phase,
-            thresholds=thresholds,
-        )
+        report = self._check(article, report_phase, thresholds)
 
         # Layer 3, and the report attached back onto layer 2.
         storage = self._store_verified(
@@ -219,6 +227,68 @@ class AnalysisService:
                 "belowAnchorFloor": report.below_anchor_floor,
             },
         }
+
+    def _check(
+        self,
+        article: EnrichedArticle,
+        report_phase: OnPhase,
+        thresholds: PipelineThresholds,
+    ) -> FactCheckReport:
+        """
+        Admission, then - only for an admitted article - the fact-check.
+
+        The report keeps its admission fields (the lake stores them, the
+        response's `validity` block reads them), so the two modules'
+        results are joined into it here rather than either module knowing
+        about the other.
+        """
+
+        if self.admission is None:
+            return self.fact_checker.run(
+                article,
+                on_phase=report_phase,
+                thresholds=thresholds,
+            )
+
+        admission = self.admission.admit(article, thresholds, on_phase=report_phase)
+
+        if not admission.passed:
+            return self._rejected(article, admission)
+
+        report = self.fact_checker.run(
+            article,
+            on_phase=report_phase,
+            thresholds=thresholds,
+        )
+
+        # Only now, after its own claims were checked: stored earlier, the
+        # article would be found as internal evidence for itself.
+        self.admission.remember(article)
+
+        return report.model_copy(update={
+            "topic_ok": admission.topic_ok,
+            "positive_ok": admission.positive_ok,
+            "duplicate": admission.duplicate,
+            "impact_score": admission.impact_score,
+            "impact_reasons": admission.impact_reasons,
+        })
+
+    @staticmethod
+    def _rejected(article: EnrichedArticle, admission: AdmissionResult) -> FactCheckReport:
+
+        return FactCheckReport(
+            article_id=article.id,
+            validation_passed=False,
+            skipped_reason=admission.reason,
+            topic_ok=admission.topic_ok,
+            positive_ok=admission.positive_ok,
+            impact_score=admission.impact_score,
+            impact_reasons=admission.impact_reasons,
+            duplicate=admission.duplicate,
+            failed_stage=PipelineStage.ADMISSION_FILTER,
+            claims_total=len(article.claims or []),
+            claims_selected=0,
+        )
 
     # ------------------------------------------------------------------
     # Storage

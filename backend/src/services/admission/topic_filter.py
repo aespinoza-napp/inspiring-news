@@ -1,11 +1,16 @@
-
 from src.config.thresholds import PipelineThresholds
 from src.models.core.enriched_article import EnrichedArticle
 
 
-class TopicValidator:
+class TopicFilter:
+    """
+    Is the article about one of the topics this publication covers?
 
-    def validate(
+    Reads only what enrichment already put on the article - its topic
+    predictions - so it needs no service and makes no call.
+    """
+
+    def accepts(
         self,
         article: EnrichedArticle,
         thresholds: PipelineThresholds | None = None,

@@ -171,7 +171,7 @@ class Settings(BaseSettings):
 
     # Whether low objectivity / strong negative sentiment reject an
     # article outright, on top of costing it score. See
-    # PositiveImpactValidator.validate.
+    # PositiveImpactScorer.score.
     POSITIVE_IMPACT_HARD_FAIL_ENABLED: bool = False
 
     # Similarity threshold for duplicate detection

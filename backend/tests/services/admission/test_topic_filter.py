@@ -6,7 +6,7 @@ from src.models.core.enriched_article import EnrichedArticle
 from src.models.nlp.quality import Quality
 from src.models.nlp.sentiment_result import SentimentResult
 from src.models.nlp.topic_prediction import TopicPrediction
-from src.services.fact_checker.validators.topic_validator import TopicValidator
+from src.services.admission.topic_filter import TopicFilter
 
 
 @pytest.fixture
@@ -56,7 +56,7 @@ def base_article():
 
 def test_accepts_valid_topic(base_article):
 
-    validator = TopicValidator()
+    validator = TopicFilter()
 
     base_article.topics = [
         TopicPrediction(
@@ -66,30 +66,30 @@ def test_accepts_valid_topic(base_article):
         )
     ]
 
-    assert validator.validate(base_article)
+    assert validator.accepts(base_article)
 
 
 def test_rejects_empty_topics(base_article):
 
-    validator = TopicValidator()
+    validator = TopicFilter()
 
     base_article.topics = []
 
-    assert not validator.validate(base_article)
+    assert not validator.accepts(base_article)
 
 
 def test_rejects_none_topics(base_article):
 
-    validator = TopicValidator()
+    validator = TopicFilter()
 
     base_article.topics = None
 
-    assert not validator.validate(base_article)
+    assert not validator.accepts(base_article)
 
 
 def test_rejects_low_confidence(base_article):
 
-    validator = TopicValidator()
+    validator = TopicFilter()
 
     base_article.topics = [
         TopicPrediction(
@@ -99,12 +99,12 @@ def test_rejects_low_confidence(base_article):
         )
     ]
 
-    assert not validator.validate(base_article)
+    assert not validator.accepts(base_article)
 
 
 def test_accepts_if_one_topic_is_above_threshold(base_article):
 
-    validator = TopicValidator()
+    validator = TopicFilter()
 
     base_article.topics = [
         TopicPrediction(topic="sports", confidence=0.10, probability=0.10),
@@ -112,5 +112,5 @@ def test_accepts_if_one_topic_is_above_threshold(base_article):
         TopicPrediction(topic="politics", confidence=0.18, probability=0.18),
     ]
 
-    assert validator.validate(base_article)
+    assert validator.accepts(base_article)
 

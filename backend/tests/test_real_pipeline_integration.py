@@ -2,7 +2,7 @@
 End-to-end test of the real pipeline wiring: a real News object goes
 through the real NewsEnrichmentPipeline (real GLiNER/topic-classifier/
 sentiment/quality/embedding models, no mocks), then the real
-ValidationPipeline (backed by a temporary on-disk Qdrant, per the shared
+AdmissionFilter (backed by a temporary on-disk Qdrant, per the shared
 `repository` fixture), then the real ClaimSelector.
 
 Every other test in this suite fakes at least one of those boundaries
@@ -30,7 +30,7 @@ from src.models.core.news import News
 from src.models.fact_checker.fact_check import Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.services.fact_checker.claim_selector import ClaimSelector
-from src.services.fact_checker.validation_pipeline import ValidationPipeline
+from src.services.admission.admission_filter import AdmissionFilter
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
 ARTICLE_BODY = """
@@ -63,7 +63,7 @@ def make_news() -> News:
 def test_real_enrichment_feeds_real_validation_and_claim_selection(repository, require_inference):
 
     pipeline = NewsEnrichmentPipeline(settings)
-    validation = ValidationPipeline(repository)
+    admission = AdmissionFilter(repository)
     selector = ClaimSelector()
 
     article = pipeline.process(make_news())
@@ -80,7 +80,7 @@ def test_real_enrichment_feeds_real_validation_and_claim_selection(repository, r
     # (a named researcher, a percentage, a patient count, "published",
     # "announced") should clear the admission gate and yield checkable
     # claims - this is the scenario the whole system exists for.
-    result = validation.validate(article)
+    result = admission.admit(article)
 
     assert result.topic_ok is True
     assert result.duplicate is False

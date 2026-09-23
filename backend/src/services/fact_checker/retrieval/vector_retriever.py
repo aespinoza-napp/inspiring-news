@@ -16,7 +16,7 @@ def _as_vector(embedding) -> list[float]:
 class VectorRetriever:
     """
     Thin wrapper around VectorRepository.search(), analogous to
-    DuplicateValidator: finds already-stored articles related to a
+    DuplicateDetector (admission): finds already-stored articles related to a
     claim and surfaces them as internal corroborating evidence.
     """
 

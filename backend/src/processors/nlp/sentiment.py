@@ -40,7 +40,7 @@ class SentimentAnalyzer(BaseProcessor):
         """
         Raises InferenceUnavailable (propagated from InferenceClient) on
         failure, rather than degrading - NewsEnrichmentPipeline.process
-        feeds this straight into PositiveImpactValidator's admission
+        feeds this straight into PositiveImpactScorer's admission
         gate, which reads sentiment.positive/negative as core scoring
         inputs. A silently neutral/zeroed SentimentResult here would
         corrupt that decision rather than just weaken one signal, so a

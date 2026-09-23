@@ -12,8 +12,8 @@ now, so the behaviour can be pinned instead of inherited.
 """
 
 from src.config.thresholds import PipelineThresholds
-from src.services.fact_checker.validators.duplicate_validator import (
-    DuplicateValidator,
+from src.services.admission.duplicate_detector import (
+    DuplicateDetector,
 )
 
 from tests.factories import create_article
@@ -60,7 +60,7 @@ def test_duplicate_detection(repository):
         embedding=[0.1] * 1024,
     )
 
-    result = DuplicateValidator(repository).validate(
+    result = DuplicateDetector(repository).check(
         duplicated_article, THRESHOLDS
     )
 
@@ -80,7 +80,7 @@ def test_new_article_is_not_duplicate(repository):
         id=OTHER_ID, url=OTHER_URL, embedding=unit_vector(0.0, 1.0),
     )
 
-    result = DuplicateValidator(repository).validate(new_article, THRESHOLDS)
+    result = DuplicateDetector(repository).check(new_article, THRESHOLDS)
 
     assert result.duplicate is False
     assert result.matched_article_id is None
@@ -105,7 +105,7 @@ def test_related_article(repository):
         embedding=unit_vector(0.85, (1 - 0.85**2) ** 0.5),
     )
 
-    result = DuplicateValidator(repository).validate(
+    result = DuplicateDetector(repository).check(
         related_article, THRESHOLDS
     )
 
@@ -136,12 +136,12 @@ def test_the_duplicate_threshold_decides_the_verdict(repository):
         embedding=unit_vector(0.85, (1 - 0.85**2) ** 0.5),
     )
 
-    validator = DuplicateValidator(repository)
+    validator = DuplicateDetector(repository)
 
-    strict = validator.validate(
+    strict = validator.check(
         article, PipelineThresholds(duplicate_threshold=0.99)
     )
-    lenient = validator.validate(
+    lenient = validator.check(
         article, PipelineThresholds(duplicate_threshold=0.50)
     )
 
@@ -160,7 +160,7 @@ def test_an_article_is_never_a_duplicate_of_itself(repository):
 
     repository.save(article)
 
-    result = DuplicateValidator(repository).validate(article, THRESHOLDS)
+    result = DuplicateDetector(repository).check(article, THRESHOLDS)
 
     assert result.duplicate is False
     assert result.matched_article_id is None
@@ -168,7 +168,7 @@ def test_an_article_is_never_a_duplicate_of_itself(repository):
 
 def test_an_empty_corpus_yields_no_match(repository):
 
-    result = DuplicateValidator(repository).validate(
+    result = DuplicateDetector(repository).check(
         create_article(id=ORIGINAL_ID, embedding=unit_vector(1.0)),
         THRESHOLDS,
     )
@@ -192,7 +192,7 @@ def test_reanalysing_the_same_url_is_not_a_duplicate_of_itself(repository):
 
     assert rerun.url == create_article().url
 
-    result = DuplicateValidator(repository).validate(rerun, THRESHOLDS)
+    result = DuplicateDetector(repository).check(rerun, THRESHOLDS)
 
     assert result.duplicate is False
     assert result.matched_article_id is None
@@ -213,7 +213,7 @@ def test_a_same_url_copy_does_not_hide_a_real_duplicate(repository):
         id="33333333-3333-3333-3333-333333333333", embedding=unit_vector(1.0),
     )
 
-    result = DuplicateValidator(repository).validate(rerun, THRESHOLDS)
+    result = DuplicateDetector(repository).check(rerun, THRESHOLDS)
 
     assert result.duplicate is True
     assert result.matched_article_id == OTHER_ID

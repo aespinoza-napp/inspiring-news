@@ -2,7 +2,7 @@ from src.config.thresholds import PipelineThresholds
 from src.models.nlp.quality import Quality
 from src.models.nlp.sentiment_result import SentimentResult
 
-from src.services.fact_checker.validators.positive_impact_validator import PositiveImpactValidator
+from src.services.admission.positive_impact import PositiveImpactScorer
 
 
 def create_quality(
@@ -56,9 +56,9 @@ HARD_FAIL_ON = PipelineThresholds(positive_impact_hard_fail_enabled=True)
 
 def test_positive_article_passes():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
-    result = validator.validate(
+    result = validator.score(
         create_sentiment(),
         create_quality(),
     )
@@ -68,7 +68,7 @@ def test_positive_article_passes():
 
 def test_high_negative_sentiment_fails():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
     sentiment = create_sentiment(
         positive=0.05,
@@ -78,7 +78,7 @@ def test_high_negative_sentiment_fails():
         label="negative",
     )
 
-    result = validator.validate(
+    result = validator.score(
         sentiment,
         create_quality(),
         HARD_FAIL_ON,
@@ -96,11 +96,11 @@ def test_low_constructiveness_is_flagged_but_not_a_hard_fail():
     hard fail is ever restored, this test is the one to flip back.
     """
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
-    baseline = validator.validate(create_sentiment(), create_quality())
+    baseline = validator.score(create_sentiment(), create_quality())
 
-    result = validator.validate(
+    result = validator.score(
         create_sentiment(),
         create_quality(constructiveness=0.10),
     )
@@ -112,11 +112,11 @@ def test_low_constructiveness_is_flagged_but_not_a_hard_fail():
 
 def test_low_inspirational_score_is_flagged_but_not_a_hard_fail():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
-    baseline = validator.validate(create_sentiment(), create_quality())
+    baseline = validator.score(create_sentiment(), create_quality())
 
-    result = validator.validate(
+    result = validator.score(
         create_sentiment(),
         create_quality(inspirational_score=0.10),
     )
@@ -128,13 +128,13 @@ def test_low_inspirational_score_is_flagged_but_not_a_hard_fail():
 
 def test_low_objectivity_fails():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
     quality = create_quality(
         objectivity=0.15,
     )
 
-    result = validator.validate(
+    result = validator.score(
         create_sentiment(),
         quality,
         HARD_FAIL_ON,
@@ -145,7 +145,7 @@ def test_low_objectivity_fails():
 
 def test_hard_fail_can_be_disabled_via_thresholds():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
     sentiment = create_sentiment(
         positive=0.05,
@@ -155,7 +155,7 @@ def test_hard_fail_can_be_disabled_via_thresholds():
         label="negative",
     )
 
-    result = validator.validate(
+    result = validator.score(
         sentiment,
         create_quality(),
         thresholds=PipelineThresholds(positive_impact_hard_fail_enabled=False),
@@ -167,7 +167,7 @@ def test_hard_fail_can_be_disabled_via_thresholds():
 
 def test_neutral_constructive_article_passes():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
     sentiment = create_sentiment(
         label="neutral",
@@ -184,7 +184,7 @@ def test_neutral_constructive_article_passes():
         hopefulness=0.65,
     )
 
-    result = validator.validate(
+    result = validator.score(
         sentiment,
         quality,
     )
@@ -201,9 +201,9 @@ def test_score_is_normalised_to_the_zero_one_range():
     should score below it.
     """
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
-    perfect = validator.validate(
+    perfect = validator.score(
         create_sentiment(positive=1.0, neutral=0.0, negative=0.0, subjectivity=0.0),
         create_quality(
             constructiveness=1.0,
@@ -215,7 +215,7 @@ def test_score_is_normalised_to_the_zero_one_range():
         ),
     )
 
-    good = validator.validate(create_sentiment(), create_quality())
+    good = validator.score(create_sentiment(), create_quality())
 
     assert perfect.score == 1.0
     assert 0.0 < good.score < 1.0
@@ -223,9 +223,9 @@ def test_score_is_normalised_to_the_zero_one_range():
 
 def test_score_never_leaves_the_zero_one_range_for_a_bleak_article():
 
-    validator = PositiveImpactValidator()
+    validator = PositiveImpactScorer()
 
-    result = validator.validate(
+    result = validator.score(
         create_sentiment(positive=0.0, neutral=0.0, negative=1.0, subjectivity=1.0),
         create_quality(
             constructiveness=0.0,

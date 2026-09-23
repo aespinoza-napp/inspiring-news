@@ -49,12 +49,17 @@ several in claim scoring), sentiment and embeddings **raise**
 `InferenceUnavailable` (they feed the admission gate and duplicate
 detection, where a silently empty result corrupts a decision).
 `TopicClassifier` also scores each matched topic's own keywords (`src/config/topics.py`) against the article by embedding similarity and counts literal mentions (`TopicPrediction.keywords`); the keyword vectors are embedded once per process in one batched call. `yake` keywords and `textstat` quality stay local — no model to move.
-`src/services/fact_checker/` then validates and checks it:
+`AnalysisService` then runs two separate modules over it, in order:
 
-- `validation_pipeline.py` → `topic_validator`, `positive_impact_validator`,
-  `duplicate_validator` (a Qdrant similarity search).
-- `fact_checker.py` (`FactChecker`) orchestrates: validate (short-circuit
-  on failure) → `claim_selector.py` → then, **per claim and in this
+- `src/services/admission/` (`AdmissionFilter`) decides whether the
+  article is worth checking: `topic_filter`, `positive_impact` and
+  `duplicate_detector` (a Qdrant similarity search). All three always
+  run, so every reason is reported; a rejected article never reaches
+  the fact-checker. `DuplicateDetector.remember` stores an admitted
+  article **after** its fact-check — earlier, it would be found as
+  internal evidence for its own claims. See its README.
+- `src/services/fact_checker/fact_checker.py` (`FactChecker`) knows
+  nothing about admission. It orchestrates `claim_selector.py` → then, **per claim and in this
   order**, `retrieval/evidence_retriever.py` (SearXNG web hits via
   `retrieval/search_provider.py` merged with internal corpus hits from
   `retrieval/vector_retriever.py`; `retrieval/scraper.py` fetches full
@@ -128,7 +133,7 @@ English rather than raising. See `docs/decisions/incidents.md`.
 | `POST /analyze` | Synchronous, N URLs. Catches per URL, not per batch. |
 | `POST /analyze/jobs` + `GET /analyze/jobs/{id}` | What the frontend uses. `job_store.py` is in-memory, single-process. `job_runner.py` bridges `on_phase` into it and logs per-phase timing at INFO. Every event is also appended to the job journal (`docs/decisions/storage.md`), and `GET /{id}` falls back to it after a restart. |
 | `GET /analyze/jobs` | What is running and what ran recently, for the Live screen: active jobs with every event, finished ones as a summary (`events: []`, `result: null`, `eventCount`). In-memory jobs only. Behind `STORAGE_API_KEY` when set — it enumerates every job id, which used to be an unguessable capability. |
-| `POST /verify-claim` | One claim, no article. Runs `FactChecker.check_claim()` — the pipeline's own stage made public so the two cannot drift. Skips the admission filter and claim selection: those judge an *article*. Still answers synchronously, but is registered as a `kind: "claim"` job so the Live screen shows it and the journal keeps it. |
+| `POST /verify-claim` | One claim, no article. Runs `FactChecker.check_claim()` — the pipeline's own stage made public so the two cannot drift. Skips admission and claim selection: those judge an *article*. Still answers synchronously, but is registered as a `kind: "claim"` job so the Live screen shows it and the journal keeps it. |
 | `POST /enrich` | NLP stage alone over supplied text, or over a `url` fetched with the analyzer's own extractor. `extraction` reports the title, author, date and body it started from and where each came from (`supplied` / `extracted` / `missing`). **Side-effect free** — nothing written to the lake. |
 | `POST /correct` | `readability` and `coverageVerification` are deterministic; the other 5 come from one LLM call. |
 | `POST /ingest` + `GET /ingest/sources` | Discovery over the configured sources, queuing each new article (not already in the lake, at most `perSource`) as an analysis job with purpose `ingestion`. Manual only; behind `STORAGE_API_KEY`. `services/ingestion_service.py`, `docs/decisions/scraping.md`. |
@@ -159,7 +164,7 @@ startup so it is never a silent choice.
 ## Layout
 
 - `src/models/` — subpackages by domain: `core/`, `nlp/`, `scraper/`,
-  `fact_checker/`, `corrector/`, `storage/`. No `__init__.py` anywhere.
+  `admission/`, `fact_checker/`, `corrector/`, `storage/`. No `__init__.py` anywhere.
 - `src/container.py` — lazy singletons behind an `RLock`. Read
   `docs/decisions/incidents.md` before changing it; both the laziness
   and the reentrancy are load-bearing.

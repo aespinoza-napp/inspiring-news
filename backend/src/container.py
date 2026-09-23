@@ -5,6 +5,7 @@ from src.config.settings import settings
 from src.database.qdrant import QdrantDatabase
 from src.repositories.datalake_repository import DataLakeRepository
 from src.repositories.vector_repository import VectorRepository
+from src.services.admission.admission_filter import AdmissionFilter
 from src.services.analysis_service import AnalysisService
 from src.services.claim_service import ClaimService
 from src.services.enrichment_service import EnrichmentService
@@ -72,6 +73,7 @@ _enrichment_pipeline: NewsEnrichmentPipeline | None = None
 _text_corrector: TextCorrector | None = None
 _datalake_repository: DataLakeRepository | None = None
 _fact_checker: FactChecker | None = None
+_admission_filter: AdmissionFilter | None = None
 _claim_service: ClaimService | None = None
 _enrichment_service: EnrichmentService | None = None
 _job_queue: AnalysisJobQueue | None = None
@@ -140,6 +142,23 @@ def get_fact_checker() -> FactChecker:
     return _fact_checker
 
 
+def get_admission_filter() -> AdmissionFilter:
+    """
+    Shared admission module: topic, positive impact, duplicates. Shares
+    the one VectorRepository with the FactChecker - the duplicate check
+    and the internal-evidence lookup read the same collection.
+    """
+
+    global _admission_filter
+
+    if _admission_filter is None:
+        with _lock:
+            if _admission_filter is None:
+                _admission_filter = AdmissionFilter(get_vector_repository())
+
+    return _admission_filter
+
+
 def get_claim_service() -> ClaimService:
     """
     Backs POST /verify-claim. Lazy for the usual reason: reaching it
@@ -190,6 +209,7 @@ def get_analysis_service() -> AnalysisService:
             if _analysis_service is None:
                 _analysis_service = AnalysisService(
                     fact_checker=get_fact_checker(),
+                    admission=get_admission_filter(),
                     enrichment_pipeline=get_enrichment_pipeline(),
                     lake=get_datalake_repository() if settings.LAKE_ENABLED else None,
                 )

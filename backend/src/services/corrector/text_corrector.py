@@ -5,8 +5,8 @@ from src.config.lexicons import lexicon_for
 from src.processors.nlp.language import LanguageDetector
 from src.processors.nlp.quality import QualityAnalyzer
 from src.processors.nlp.sentiment import SentimentAnalyzer
-from src.services.fact_checker.validators.positive_impact_validator import (
-    PositiveImpactValidator,
+from src.services.admission.positive_impact import (
+    PositiveImpactScorer,
 )
 from src.services.llms import LLMClient
 
@@ -46,12 +46,12 @@ class TextCorrector:
         llm: LLMClient | None = None,
         sentiment_analyzer=None,
         quality_analyzer: QualityAnalyzer | None = None,
-        positive_validator: PositiveImpactValidator | None = None,
+        impact_scorer: PositiveImpactScorer | None = None,
     ):
         self.llm = llm or LLMClient()
         self.sentiment_analyzer = sentiment_analyzer or SentimentAnalyzer(settings)
         self.quality_analyzer = quality_analyzer or QualityAnalyzer()
-        self.positive_validator = positive_validator or PositiveImpactValidator()
+        self.impact_scorer = impact_scorer or PositiveImpactScorer()
 
     def correct(self, text: str) -> dict[str, CorrectionMetric]:
 
@@ -90,7 +90,7 @@ class TextCorrector:
             )
         )
 
-        result = self.positive_validator.validate(sentiment, quality)
+        result = self.impact_scorer.score(sentiment, quality)
 
         summary = (
             "Aligns well with Inspiring's positive-impact criteria."

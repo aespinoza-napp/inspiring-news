@@ -26,7 +26,8 @@ SearXNG for evidence, and an OpenAI-compatible LLM endpoint (Ollama by default).
 |---|---|
 | `src/api/routes.py` | Every endpoint |
 | `src/workflows/enrichment.py` | The NLP stack that builds an `EnrichedArticle` |
-| `src/services/fact_checker/` | Admission filter, claim selection, evidence retrieval, ranking, LLM verification |
+| `src/services/admission/` | Admission: topic filter, positive impact score, duplicate detection |
+| `src/services/fact_checker/` | Claim selection, evidence retrieval, ranking, LLM verification |
 | `src/services/analysis_service.py` | One URL through everything, and the storage writes |
 | `src/services/job_*.py` | The job store, queue, runner and the on-disk journal |
 | `src/config/` | Settings, per-run thresholds, topics, language lexicons |
