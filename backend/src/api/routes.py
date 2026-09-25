@@ -11,6 +11,7 @@ from src.container import (
     get_enrichment_service,
     get_ingestion_service,
     get_job_queue,
+    get_source_probe,
     get_text_corrector,
     job_store,
 )
@@ -100,6 +101,15 @@ class IngestRequest(BaseModel):
     perSource: int = Field(default=3, ge=1, le=20)
     forceRefresh: bool = False
     thresholds: ThresholdOverrides | None = None
+
+
+class ProbeRequest(BaseModel):
+    # Source ids to probe; omitted means every enabled source.
+    sources: list[str] | None = None
+    # Articles extracted per source. Cheap next to an ingestion (no
+    # enrichment, no LLM), but each is still a request to someone else's
+    # server.
+    perSource: int = Field(default=5, ge=0, le=20)
 
 
 class CreateAnalysisJobRequest(BaseModel):
@@ -472,6 +482,40 @@ def scraper_stats():
     """
 
     return request_stats.snapshot()
+
+
+@router.get("/scraper/probe", dependencies=[Depends(require_storage_key)])
+def source_probe_state():
+    """Whether a probe is running, and the last report (kept on disk)."""
+
+    return get_source_probe().state()
+
+
+@router.post("/scraper/probe", status_code=202, dependencies=[Depends(require_storage_key)])
+def start_source_probe(request: ProbeRequest):
+    """
+    Checks every enabled source - feed, topic section pages, and a sample
+    of real extractions - plus SearXNG, on a background thread; poll GET
+    for the report. 409 while one is already running. Behind the storage
+    key: one call sends ~10-15 requests to every configured site.
+    """
+
+    probe = get_source_probe()
+
+    unknown = sorted(
+        set(request.sources or []) - {source.id for source in probe.enabled_sources()}
+    )
+
+    if unknown:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown or disabled sources: {', '.join(unknown)}",
+        )
+
+    if not probe.start(source_ids=request.sources, per_source=request.perSource):
+        raise HTTPException(status_code=409, detail="A probe is already running.")
+
+    return probe.state()
 
 
 @router.get("/scraper/articles", dependencies=[Depends(require_storage_key)])

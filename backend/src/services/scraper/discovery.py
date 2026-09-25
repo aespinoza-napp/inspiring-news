@@ -5,6 +5,9 @@ Finding article URLs for a configured source, cheapest first.
    titles and summaries to filter on.
 2. trafilatura's feed discovery - lenient with broken XML, and able to
    find a feed from the homepage - only when step 1 found nothing.
+3. The source's topic section pages (/science/, /ciencia/...), read as
+   HTML - only when there is no feed to be found at all. See
+   strategies/topic_pages.py.
 
 Every attempt is counted in the scraper stats under the purpose
 `discovery`, so a feed that has started failing shows up on /scraper
@@ -22,6 +25,7 @@ from src.services.scraper.request_stats import Outcome, Purpose, RequestStats, r
 
 from .strategies.base import DiscoveryStrategy
 from .strategies.rss import RSSDiscoveryStrategy
+from .strategies.topic_pages import TopicPageDiscoveryStrategy
 from .strategies.trafilatura_feeds import TrafilaturaFeedDiscoveryStrategy
 
 
@@ -50,6 +54,7 @@ class DiscoveryService:
         self.strategies = strategies if strategies is not None else [
             RSSDiscoveryStrategy(),
             TrafilaturaFeedDiscoveryStrategy(),
+            TopicPageDiscoveryStrategy(),
         ]
 
         self.stats = stats if stats is not None else request_stats

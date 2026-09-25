@@ -550,3 +550,91 @@ export interface IngestReport {
   };
   sources: IngestSourceRun[];
 }
+
+// ---------------------------------------------------------------------
+// GET/POST /scraper/probe - is each source up, and can we read it?
+// backend/src/services/scraper/source_probe.py
+// ---------------------------------------------------------------------
+
+export type ProbeStatus = "up" | "degraded" | "down";
+
+export interface ProbeSection {
+  url: string;
+  advertised: boolean;
+  status: number | null;
+  outcome: string;
+  error: string | null;
+  links: number;
+}
+
+export interface ProbeSample {
+  url: string;
+  via: "feed" | "topic_page";
+  ok: boolean;
+  outcome: string;
+  status: number | null;
+  error: string | null;
+  strategy: string | null;
+  ms: number | null;
+  title: boolean;
+  author: boolean;
+  date: boolean;
+  chars: number;
+}
+
+export interface ProbeSource {
+  source: string;
+  name: string;
+  language: string;
+  status: ProbeStatus;
+  reason: string;
+  homepageStatus: number | null;
+  homepageError: string | null;
+  feedMethod: string | null;
+  feedLinks: number;
+  feedError: string | null;
+  topicLinks: number;
+  extraLinks: number;
+  sections: ProbeSection[];
+  sampled: number;
+  extracted: number;
+  sample: ProbeSample[];
+  elapsedMs: number;
+}
+
+export interface SearchHealth {
+  language: string;
+  query: string;
+  ok: boolean;
+  results?: number;
+  engines?: string[];
+  unresponsive?: { engine: string; reason: string }[];
+  error: string | null;
+  ms?: number;
+}
+
+export interface ProbeReport {
+  startedAt: string;
+  finishedAt: string;
+  perSource: number;
+  totals: {
+    sources: number;
+    up: number;
+    degraded: number;
+    down: number;
+    feedLinks: number;
+    topicLinks: number;
+    extraLinks: number;
+    sampled: number;
+    extracted: number;
+  };
+  sources: ProbeSource[];
+  search: SearchHealth[];
+}
+
+export interface ProbeState {
+  running: boolean;
+  startedAt: string | null;
+  error: string | null;
+  report: ProbeReport | null;
+}

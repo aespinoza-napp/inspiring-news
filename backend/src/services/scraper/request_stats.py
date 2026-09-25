@@ -80,6 +80,10 @@ class Purpose(str, Enum):
     # Reading a source's feed (or its homepage) to find article URLs.
     DISCOVERY = "discovery"
 
+    # A sample article read by the source probe, to see whether the
+    # source can be scraped at all today (services/scraper/source_probe.py).
+    PROBE = "probe"
+
 
 def domain_of(url: str) -> str:
     """Host without `www.`, lowercased; the URL itself if it has none."""

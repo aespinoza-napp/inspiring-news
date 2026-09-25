@@ -254,3 +254,35 @@ TOPIC_URL_PATTERNS = {
         "/global-health/",
     ),
 }
+
+
+# The section names Spanish outlets use for the same topics - El País has
+# /ciencia/, not /science/. Only read to find *section pages* to crawl
+# (strategies/topic_pages.py); deliberately not merged into
+# TOPIC_URL_PATTERNS above, which also decides whether a feed link looks
+# like an article, and whose behaviour on the English feeds is settled.
+TOPIC_SECTION_PATTERNS_ES = {
+    "education": ("/educacion/",),
+    "community": ("/sociedad/", "/solidaridad/"),
+    "employment": ("/economia/", "/empleo/", "/trabajo/"),
+    "cities": ("/ciudades/", "/vivienda/", "/movilidad/"),
+    "space": ("/espacio/", "/astronomia/"),
+    "technology": ("/tecnologia/", "/ciencia-y-tecnologia/"),
+    "research": ("/ciencia/", "/investigacion/"),
+    "biology": ("/biologia/", "/genetica/"),
+    "climate": ("/clima/", "/medio-ambiente/", "/medioambiente/", "/cambio-climatico/"),
+    "nature": ("/naturaleza/", "/animales/", "/biodiversidad/"),
+    "energy": ("/energia/",),
+    "sustainability": ("/sostenibilidad/",),
+    "food": ("/gastronomia/", "/alimentacion/", "/agricultura/"),
+    "arts": ("/cultura/", "/arte/", "/arquitectura/"),
+    "entertainment": ("/cine/", "/musica/", "/television/", "/series/"),
+    "heritage": ("/historia/", "/patrimonio/", "/arqueologia/"),
+    "literature": ("/libros/", "/literatura/"),
+    "inspiration": ("/buenas-noticias/",),
+    "medicine": ("/salud/", "/sanidad/", "/medicina/"),
+    "mental_health": ("/salud-mental/", "/psicologia/", "/bienestar/"),
+    "nutrition": ("/nutricion/", "/alimentacion/"),
+    "fitness": ("/deporte-y-salud/",),
+    "public_health": ("/salud-publica/",),
+}

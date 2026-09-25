@@ -10,6 +10,7 @@ import {
 } from "@/lib/types";
 import { DailyBars } from "@/components/DailyBars";
 import { IngestPanel } from "@/components/IngestPanel";
+import { SourceProbePanel } from "@/components/SourceProbePanel";
 
 // How often the counts refresh on their own. The page answers "is the
 // scraper failing?", so it should show a run's requests as they happen,
@@ -454,6 +455,8 @@ export default function ScraperStatsPage() {
         articles shows what was actually stored. Refreshes every{" "}
         {REFRESH_MS / 1000} seconds.
       </p>
+
+      <SourceProbePanel />
 
       <IngestPanel onQueued={load} />
 

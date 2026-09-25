@@ -139,3 +139,72 @@ def test_search_returns_empty_on_invalid_json(monkeypatch):
     client = SearxngClient(base_url="http://localhost:8080")
 
     assert client.search("some claim") == []
+
+
+# ----------------------------------------------------------------------
+# Engines that did not answer
+#
+# Measured 2026-09-25: 68 of 69 queries came back empty with Brave and
+# Google rate-limited and DuckDuckGo answering with a CAPTCHA. SearXNG
+# said so in `unresponsive_engines`; nothing here read it.
+# ----------------------------------------------------------------------
+
+
+DOWN = {
+    "results": [],
+    "unresponsive_engines": [["brave", "too many requests"], ["duckduckgo", "CAPTCHA"]],
+}
+
+
+def test_an_empty_answer_with_engines_down_is_logged(monkeypatch, caplog):
+
+    monkeypatch.setattr(httpx, "get", lambda *a, **k: FakeResponse(json_data=DOWN))
+
+    with caplog.at_level("WARNING"):
+        assert SearxngClient(base_url="http://s").search("anything") == []
+
+    assert "brave (too many requests)" in caplog.text
+    assert "duckduckgo (CAPTCHA)" in caplog.text
+
+
+def test_health_reports_which_engines_answered_and_which_did_not(monkeypatch):
+
+    data = {
+        "results": [
+            {"url": "https://a.com", "engines": ["wikipedia"]},
+            {"url": "https://b.com", "engines": ["wikipedia", "bing"]},
+        ],
+        "unresponsive_engines": [["brave", "too many requests"]],
+    }
+
+    monkeypatch.setattr(httpx, "get", lambda *a, **k: FakeResponse(json_data=data))
+
+    health = SearxngClient(base_url="http://s").health("renewable energy", "en")
+
+    assert health["ok"] is True
+    assert health["results"] == 2
+    assert health["engines"] == ["bing", "wikipedia"]
+    assert health["unresponsive"] == [{"engine": "brave", "reason": "too many requests"}]
+
+
+def test_health_with_every_engine_down_is_not_ok(monkeypatch):
+
+    monkeypatch.setattr(httpx, "get", lambda *a, **k: FakeResponse(json_data=DOWN))
+
+    health = SearxngClient(base_url="http://s").health()
+
+    assert health["ok"] is False
+    assert len(health["unresponsive"]) == 2
+
+
+def test_health_reports_searxng_itself_unreachable(monkeypatch):
+
+    def refuse(*a, **k):
+        raise httpx.ConnectError("connection refused")
+
+    monkeypatch.setattr(httpx, "get", refuse)
+
+    health = SearxngClient(base_url="http://s").health()
+
+    assert health["ok"] is False
+    assert "connection refused" in health["error"]

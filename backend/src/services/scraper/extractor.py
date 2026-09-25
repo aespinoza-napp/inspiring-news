@@ -36,7 +36,13 @@ BROWSER_MAY_HELP = {401, 403, 429}
 # claim and already falls back to its search snippet when a page cannot
 # be read, so rendering each one would multiply the cost of the most
 # expensive step by the most frequent purpose for very little.
-BROWSER_PURPOSES = {Purpose.ARTICLE.value, Purpose.INGESTION.value, Purpose.ENRICHMENT.value}
+BROWSER_PURPOSES = {
+    Purpose.ARTICLE.value,
+    Purpose.INGESTION.value,
+    Purpose.ENRICHMENT.value,
+    # The probe asks what ingestion would get, so it gets what ingestion gets.
+    Purpose.PROBE.value,
+}
 
 
 # The fields a parser can find the text and still miss.

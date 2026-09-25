@@ -14,6 +14,7 @@ from src.services.fact_checker.fact_checker import FactChecker
 from src.services.ingestion_service import IngestionService
 from src.services.job_queue import AnalysisJobQueue
 from src.services.job_store import JobStore
+from src.services.scraper.source_probe import SourceProbe
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
 # ---------------------------------------------------------------------
@@ -78,6 +79,7 @@ _claim_service: ClaimService | None = None
 _enrichment_service: EnrichmentService | None = None
 _job_queue: AnalysisJobQueue | None = None
 _ingestion_service: IngestionService | None = None
+_source_probe: SourceProbe | None = None
 
 
 def get_vector_repository() -> VectorRepository:
@@ -267,3 +269,27 @@ def get_ingestion_service() -> IngestionService:
                 )
 
     return _ingestion_service
+
+
+def get_source_probe() -> SourceProbe:
+    """
+    Backs /scraper/probe. A singleton for the same reason as ingestion:
+    the run happens on a background thread, and the page polls this one
+    object for it. The last report is read back from the lake on start.
+    """
+
+    global _source_probe
+
+    if _source_probe is None:
+        with _lock:
+            if _source_probe is None:
+                from src.repositories.source_repository import SourceRepository
+                from src.services.search import SearxngClient
+
+                _source_probe = SourceProbe(
+                    sources=SourceRepository().list(),
+                    path=settings.LAKE_PATH / "stats" / "source_probe.json",
+                    search_client=SearxngClient(),
+                )
+
+    return _source_probe
