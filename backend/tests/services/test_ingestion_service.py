@@ -211,6 +211,20 @@ def test_a_broken_feed_falls_back_and_both_attempts_are_counted():
     assert entry["outcomes"] == {"http_error": 1, "ok": 1}
 
 
+def test_topic_pages_are_the_last_discovery_step():
+    """Only after both feed steps: they cost one request, it costs up to seven."""
+
+    from src.services.scraper.strategies.rss import RSSDiscoveryStrategy
+    from src.services.scraper.strategies.topic_pages import TopicPageDiscoveryStrategy
+    from src.services.scraper.strategies.trafilatura_feeds import TrafilaturaFeedDiscoveryStrategy
+
+    assert [type(s) for s in DiscoveryService(stats=RequestStats()).strategies] == [
+        RSSDiscoveryStrategy,
+        TrafilaturaFeedDiscoveryStrategy,
+        TopicPageDiscoveryStrategy,
+    ]
+
+
 def test_when_nothing_is_found_the_reason_is_kept():
 
     discovery = DiscoveryService([Canned([]), Canned([])], stats=RequestStats())

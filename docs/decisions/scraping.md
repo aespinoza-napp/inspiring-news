@@ -116,7 +116,9 @@ into analysis jobs. Discovery is cheapest first too:
    timeout - feedparser's own HTTP has neither) and parsed by feedparser;
 2. only if that finds nothing: trafilatura's feed discovery, on the
    `rss_url` and then the homepage - lenient with broken XML, and able to
-   find the feed a site advertises today.
+   find the feed a site advertises today;
+3. only if there is no feed at all: the source's **topic section pages**
+   (below).
 
 Then, before anything is queued:
 
@@ -144,6 +146,63 @@ stored in 52s, and the next run reported it as already stored. The feed
 URLs for National Geographic, Reuters, RTVE and SINC return **404** -
 earlier read here as "malformed XML", which was feedparser parsing the
 404 page - and need replacing in their YAMLs.
+
+## Topic section pages: articles without a feed
+
+`strategies/topic_pages.py`. Four feed URLs went 404 and their homepages
+advertise no feed, so those sources produced nothing although their sites
+were up. Every news site files articles under sections, and the sections
+this project wants are the ones `TOPIC_URL_PATTERNS` already names. The
+step reads them as HTML and keeps the article-shaped links on them:
+
+1. **Sections the homepage links to** (a short path ending in a topic
+   pattern) - they exist, so nothing is spent on a guess.
+2. **Then guesses**, `base_url + pattern`, one per topic, capped at six
+   pages in all - and none at all when the homepage refused us: EFE (403)
+   and Reuters (401) refused every guess the same way.
+
+Spanish sources also get `TOPIC_SECTION_PATTERNS_ES` (`/ciencia/`,
+`/salud/`, `/cultura/`...). It is a separate table on purpose:
+`TOPIC_URL_PATTERNS` also decides whether a *feed* link looks like an
+article, and that behaviour on the English feeds is settled.
+
+A link is kept when it is on the source's host or a subdomain of it
+(NASA's science sections live on `science.nasa.gov`), is not itself a
+section, and passes the same article-shape test as feed links.
+
+## The source probe: is each source up?
+
+`services/scraper/source_probe.py`, `POST /scraper/probe` and the "Source
+health" panel on `/scraper`. The request stats only know about pages
+someone happened to ask for; the probe asks on purpose, per source: the
+feed (both feed steps), the topic pages (always - how many links they add
+is the point), and a real extraction of `perSource` sampled links, split
+between the two, with purpose `probe`. It calls a source **up** (feed
+links and at least half the sample extracted), **degraded** (articles can
+be had but not the normal way: dead feed rescued by topic pages, or under
+half extracting) or **down** (nothing extracted). It also sends one query
+per language to SearXNG and reports which engines answered
+(`retrieval.md`).
+
+It runs on a background thread (409 while one is running), is behind
+`STORAGE_API_KEY`, and keeps the last report in
+`lake/stats/source_probe.json`. Never on a timer: one run is ~10-15
+requests per source.
+
+First run, 2026-09-25, 6 articles per source, from the host (no Chromium
+installed, so nothing escalated to the browser):
+
+| | Sources | |
+|---|---|---|
+| up | ABC, BBC, CNN, El Mundo, La Vanguardia, NASA | feed works, 5-6 of 6 extracted |
+| degraded | National Geographic, RTVE, SINC | feed dead; **topic pages gave 113, 115 and 64 links, 6/6 extracted each** |
+| down | EFE (403 on everything), Reuters (401 on everything), El País (feed gives 138 links, every article 403) | bot walls |
+
+The feeds gave 395 links in all; the topic pages **1,272 more** that no
+feed had. 53 of 60 sampled articles extracted, all by trafilatura - with
+a title on 53, a date on 52 and an author on 44 (the metadata fix above
+holds). El País and EFE are what the browser step is for; the host run
+could not try it.
 
 ## Checked against real sources (2026-09-23)
 

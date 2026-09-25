@@ -28,9 +28,17 @@ def test_topic_classifier(require_inference):
     # never pass. Assert the real contract instead: every prediction is a
     # configured topic, they come back ranked, and the probabilities are
     # a distribution.
-    assert all(prediction.topic in TOPICS for prediction in predictions)
+    #
+    # `topic` is the display name ("Technology"), not the TOPICS key
+    # ("technology") - the classifier switched to names and this test,
+    # which only runs when inference/ is up, kept comparing keys. It
+    # failed on every run that had the models and skipped on every run
+    # that did not, so nobody saw it.
+    names = {topic.name for topic in TOPICS.values()}
 
-    assert predictions[0].topic == "technology"
+    assert all(prediction.topic in names for prediction in predictions)
+
+    assert predictions[0].topic == TOPICS["technology"].name
 
     confidences = [prediction.confidence for prediction in predictions]
     assert confidences == sorted(confidences, reverse=True)

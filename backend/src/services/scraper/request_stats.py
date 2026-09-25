@@ -83,6 +83,10 @@ class Purpose(str, Enum):
     # The /sources page checking that a configured source still extracts.
     SOURCE_CHECK = "source_check"
 
+    # A sample article read by the source probe, to see whether the
+    # source can be scraped at all today (services/scraper/source_probe.py).
+    PROBE = "probe"
+
 
 def domain_of(url: str) -> str:
     """Host without `www.`, lowercased; the URL itself if it has none."""

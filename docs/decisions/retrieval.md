@@ -162,6 +162,66 @@ parameters don't hide it).
 `POST /verify-claim` has no article, so none of this applies there: a
 bare claim is searched as it stands.
 
+## Why web evidence so often comes back empty (measured 2026-09-25)
+
+Better queries cannot help when the search itself returns nothing, and
+most of the time it did. Measured with 24 claims from the x-fact pilot
+set (12 Spanish, 12 English), the pipeline's own query planner and the
+pipeline's own extractor:
+
+| | |
+|---|---|
+| Queries sent to SearXNG | 69 |
+| Queries that came back **empty** | **68** |
+| Claims left with **zero** web evidence | 23 of 24 |
+
+SearXNG says why in its own answer (`unresponsive_engines`), and until
+this date nothing read it:
+
+- **Brave and Google CSE: "too many requests".** SearXNG scrapes them
+  from one IP with no API key. One article sends 3 queries per claim for
+  2-4 claims, all at once, so a single analysis is a burst of 6-12; after
+  a 429 SearXNG suspends the engine (180 s here) and every query in that
+  window gets nothing from it.
+- **DuckDuckGo: a CAPTCHA on every request**, or a timeout - 104
+  CAPTCHAs and 231 timeouts in the three hours before the measurement,
+  before any of it was sent.
+- **Wikidata: times out** (251 timeouts in the same window). Wikipedia
+  answers, but rarely has a page for a specific claim.
+
+So the default engine mix of a self-hosted SearXNG is, from this
+machine, a coin toss that mostly lands on nothing. The burst of the
+measurement itself made Brave's suspension worse; the DuckDuckGo and
+Wikidata failures predate it.
+
+When search *did* answer (the four journalled runs of 2026-09-21), the
+second loss is reading the pages: **11 of 20** top results were
+extracted. The rest were social networks (Facebook, Instagram, Reddit),
+a paywall (nytimes.com) and sites that refuse bots - and evidence never
+escalates to the browser, by design (`scraping.md`). Those fall back to
+their search snippet.
+
+The third, smaller one is the queries for a claim with no named entity:
+x-fact's "El 65% del total del presupuesto está comprendido ahí" plans
+the anchor query `"65%"`. In the pipeline the article's headline is
+restored to the claim (above), which is why this matters less there than
+in a bare `/verify-claim`.
+
+What changed: `SearxngClient.search` logs the engines that were down
+whenever an answer is empty, and `SearxngClient.health` - run by the
+source probe on `/scraper` - reports which engines answered. What would
+fix it, in order of leverage:
+
+1. **An engine with an API key** (Brave Search API, Google Programmable
+   Search) configured in `searxng/settings.yml`: a key is not
+   rate-limited per scraping IP.
+2. **Disable the engines that only fail** (DuckDuckGo, Wikidata) so they
+   stop costing a timeout on every query.
+3. **Report "search unavailable" apart from "nothing found"**, the way
+   `llm_unreachable` separates a dead LLM from `UNVERIFIED`: today a
+   claim with every engine down is `UNVERIFIED`, which reads as a
+   judgement about the claim.
+
 ## What is still not fixed
 
 - **The LLM is still not asked whether a source is on-point.** The gate

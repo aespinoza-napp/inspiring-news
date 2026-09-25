@@ -2207,3 +2207,59 @@ summary.trace-label {
   width: auto;
   transform: none;
 }
+
+/* ---------------------------------------------------------------------
+   Scraper: source health probe
+   --------------------------------------------------------------------- */
+
+.probe-panel .stats-table-wrap {
+  position: static;
+  width: auto;
+  transform: none;
+}
+
+.probe-row { cursor: pointer; }
+.probe-row:hover td { background: var(--bg); }
+
+.probe-toggle {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.probe-reason {
+  max-width: 22rem;
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.probe-detail td { background: var(--bg); }
+
+.probe-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem 2rem;
+  padding: 0.5rem 0;
+}
+
+.probe-list {
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+
+.probe-url {
+  display: inline-block;
+  max-width: 22rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+

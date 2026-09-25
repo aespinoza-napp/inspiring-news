@@ -142,10 +142,12 @@ write them down than to have each be rediscovered.
 - **`TopicPrediction.probability` carries no signal.** It is a softmax
   over raw cosine similarities across ~22 topics, so it comes back
   near-uniform (0.049 top vs 0.044 bottom). Use `confidence`.
-- **The `backend` container has not been run.** All build stages
-  succeed and it has never been started end to end. The `inference`
-  container *has* — built, brought up, reached `healthy`, and served
-  real `/entities`, `/sentiment` and `/embeddings` requests.
+- **The `backend` container runs, but a full analysis inside it is
+  unverified.** It was brought up on 2026-09-23 and again on 2026-09-25,
+  reached `healthy` and served requests. The `inference` container
+  has served real `/entities`, `/sentiment` and `/embeddings` requests.
+  Its port 8001 is not published to the host, so backend tests on the
+  host still skip the model tests unless a local `inference/` runs.
 - **`SENTIMENT_MODEL` and `EMBEDDING_MODEL` in `backend/.env` are
   documentary.** The models load in `inference/`, from
   `inference/src/config.py`'s own defaults. Editing the backend values
@@ -190,6 +192,12 @@ Phase 1.
   subject.** The pertinence gate is embedding and term arithmetic: it
   catches a page about something else, not a page about the same subject
   making a different claim.
+- **Web search mostly returns nothing, and it looks like a verdict.**
+  Measured 2026-09-25: 68 of 69 SearXNG queries empty, because its
+  engines were rate-limited, CAPTCHA'd or timing out. A claim with no
+  evidence comes back `UNVERIFIED`, indistinguishable from a real one.
+  Check the "Source health" panel on `/scraper` before reading anything
+  into a run's verdicts (`docs/decisions/retrieval.md`).
 - **The end-to-end speedup is not measured.** The parallel work is
   covered by tests that assert overlap, not by a benchmark. The job
   journal's timestamps make a real before/after possible.
