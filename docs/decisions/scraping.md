@@ -156,3 +156,25 @@ El País answered 403: the case the browser step exists for. Five feeds
 could not be read at all (National Geographic, Reuters, RTVE and SINC
 404; EFE timed out), and ABC's feed links point to its homepage -
 discovery problems, not extraction ones (see "Discovery and ingestion").
+
+## Checking every source: `/sources`
+
+Ingestion cannot tell a source whose articles stopped extracting from
+one with nothing new: it skips what is stored and hands the rest to a
+full analysis. `SourceCheckService` (`services/scraper/source_check.py`,
+`POST /sources/check`) answers "is every configured page still working?"
+directly: discovery, then a few links through the same cascade, purpose
+`source_check` (it escalates to the browser exactly as ingestion would,
+and is counted apart on `/scraper`). Nothing is stored or analysed.
+Disabled sources are checked too.
+
+A source is **working** when every sample extracted with a title, author
+and date; **partial** when some failed or one lacked those; **broken**
+when discovery found nothing or no sample extracted.
+
+First run, 2026-09-24, two per source: 6 working (ABC, BBC, CNN, El
+Mundo, La Vanguardia, NASA), every sample with title, author and date,
+all by trafilatura. 6 broken: EFE, National Geographic, Reuters, RTVE
+and SINC discover nothing (the feed URLs above, plus EFE's); El País
+discovers 147 links and answers **403 to the headless browser too**, so
+`requires_javascript` would not fix it.

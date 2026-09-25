@@ -79,6 +79,8 @@ _enrichment_service: EnrichmentService | None = None
 _job_queue: AnalysisJobQueue | None = None
 _ingestion_service: IngestionService | None = None
 
+_source_check_service = None
+
 
 def get_vector_repository() -> VectorRepository:
 
@@ -267,3 +269,24 @@ def get_ingestion_service() -> IngestionService:
                 )
 
     return _ingestion_service
+
+
+def get_source_check_service():
+    """
+    Backs /sources/check. A singleton for the same reason as ingestion:
+    the last report is shown when the page is reopened.
+    """
+
+    global _source_check_service
+
+    if _source_check_service is None:
+        with _lock:
+            if _source_check_service is None:
+                from src.repositories.source_repository import SourceRepository
+                from src.services.scraper.source_check import SourceCheckService
+
+                _source_check_service = SourceCheckService(
+                    sources=SourceRepository().list(),
+                )
+
+    return _source_check_service

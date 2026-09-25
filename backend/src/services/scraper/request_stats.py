@@ -80,6 +80,9 @@ class Purpose(str, Enum):
     # Reading a source's feed (or its homepage) to find article URLs.
     DISCOVERY = "discovery"
 
+    # The /sources page checking that a configured source still extracts.
+    SOURCE_CHECK = "source_check"
+
 
 def domain_of(url: str) -> str:
     """Host without `www.`, lowercased; the URL itself if it has none."""

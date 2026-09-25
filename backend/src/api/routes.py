@@ -10,6 +10,7 @@ from src.container import (
     get_datalake_repository,
     get_enrichment_service,
     get_ingestion_service,
+    get_source_check_service,
     get_job_queue,
     get_text_corrector,
     job_store,
@@ -100,6 +101,16 @@ class IngestRequest(BaseModel):
     perSource: int = Field(default=3, ge=1, le=20)
     forceRefresh: bool = False
     thresholds: ThresholdOverrides | None = None
+
+
+class SourceCheckRequest(BaseModel):
+    # Source ids to check; omitted means every configured source,
+    # disabled ones included.
+    sources: list[str] | None = None
+    # Sample articles extracted per source. Nothing is analysed, so this
+    # costs one to two requests per article - kept low all the same,
+    # they are other people's servers.
+    perSource: int = Field(default=2, ge=1, le=5)
 
 
 class CreateAnalysisJobRequest(BaseModel):
@@ -455,6 +466,59 @@ def ingest(request: IngestRequest):
         source_ids=request.sources,
         per_source=request.perSource,
     )
+
+
+# ---------------------------------------------------------------------
+# Source check
+# ---------------------------------------------------------------------
+
+
+@router.get("/sources/check", dependencies=[Depends(require_storage_key)])
+def source_check_sources():
+    """Every configured source, and the report of the last check."""
+
+    service = get_source_check_service()
+
+    return {
+        "sources": [
+            {
+                "id": source.id,
+                "name": source.name,
+                "language": source.language,
+                "enabled": source.enabled,
+                "rssUrl": str(source.rss_url) if source.rss_url else None,
+                "requiresJavascript": source.requires_javascript,
+            }
+            for source in service.all_sources()
+        ],
+        "lastRun": service.last_run,
+    }
+
+
+@router.post("/sources/check", dependencies=[Depends(require_storage_key)])
+def check_sources(request: SourceCheckRequest):
+    """
+    For each source YAML: discover its article links, extract up to
+    `perSource` of them, and report what came back - outcome, strategy,
+    title, author, date, body length. Nothing is stored or analysed.
+
+    Behind the storage key: it makes real requests to every configured
+    site, and returns what those sites served.
+    """
+
+    service = get_source_check_service()
+
+    unknown = sorted(
+        set(request.sources or []) - {source.id for source in service.all_sources()}
+    )
+
+    if unknown:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown sources: {', '.join(unknown)}",
+        )
+
+    return service.run(source_ids=request.sources, per_source=request.perSource)
 
 
 # ---------------------------------------------------------------------

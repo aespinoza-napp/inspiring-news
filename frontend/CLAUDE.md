@@ -15,7 +15,7 @@ The typecheck is the gate.
 
 ## Shape
 
-Six pages. Every one talks to the backend **only** through the
+Seven pages. Every one talks to the backend **only** through the
 server-side route handlers in `src/app/api/`, which keeps `BACKEND_URL`
 off the client. See `.env.local.example` — it is `http://127.0.0.1:8000`,
 not `localhost`, because Node can resolve `localhost` to the IPv6
@@ -29,6 +29,7 @@ loopback first and fail to reach uvicorn's IPv4-only default.
 | `/enrich` | URL and/or text → what was extracted (title, author, date, body, each tagged typed-in / extracted / missing), then topics, keywords, entities, claims, sentiment, quality, embedding shape |
 | `/corrector` | Text → the 7 corrector metrics |
 | `/scraper` | An **ingest panel** (`components/IngestPanel.tsx`: pick sources and articles per source; the button states the most analyses it can queue; shows the last run). Then every page fetch the backend has made, per domain: requests, success rate, why the rest failed (too short / no content / HTTP error / timeout / connection / blocked), last request and last failure. Below that, the articles actually stored in the lake per domain (scraped vs unique, title/author/date coverage, what became of them) and a per-day chart (`components/DailyBars.tsx`). Polls `GET /api/scraper/stats` and `/api/scraper/articles` every 10s, `cache: "no-store"` like the job routes |
+| `/sources` | A health check of every source YAML, disabled ones included: discovery (links found, via feed or homepage, or why none), then 1-5 sample articles each run through the real extraction cascade - outcome, strategy, title / author / date (a missing one shown as **missing**), body length, time. Verdict per source: working / partial / broken; a Re-check button per source. Nothing is stored or analysed. `POST /api/sources/check`, behind the storage key |
 
 `lib/types.ts` mirrors the backend's response shapes exactly — keep it in
 sync when a backend response changes.

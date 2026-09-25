@@ -2162,3 +2162,48 @@ summary.trace-label {
   width: auto;
   transform: none;
 }
+
+/* ---------------------------------------------------------------------
+   Sources: the per-YAML check
+   --------------------------------------------------------------------- */
+
+.stats-chip-ok { color: var(--true); }
+
+.source-check-card {
+  margin-top: 1rem;
+}
+
+.source-check-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.source-check-head h2 {
+  margin-bottom: 0.2rem;
+}
+
+.source-check-verdict {
+  margin-left: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.source-check-title {
+  max-width: 22rem;
+  overflow-wrap: anywhere;
+}
+
+.source-check-discovery-error {
+  max-width: none;
+  margin-bottom: 0.5rem;
+}
+
+/* Inside a card the table fits the card, as in the ingest report. */
+.source-check-card .stats-table-wrap {
+  position: static;
+  width: auto;
+  transform: none;
+}

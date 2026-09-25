@@ -442,7 +442,7 @@ export interface ScraperDomainStats {
   /** ok / requests, 0-1; null before any request. */
   successRate: number | null;
   outcomes: Partial<Record<ScrapeOutcome, number>>;
-  /** article | evidence | enrichment | ingestion */
+  /** article | evidence | enrichment | ingestion | discovery | source_check */
   purposes: Record<string, number>;
   /** Which strategy produced the article, for extractions that got one. */
   strategies: Record<string, number>;
@@ -549,4 +549,62 @@ export interface IngestReport {
     failed: number;
   };
   sources: IngestSourceRun[];
+}
+
+/** GET /api/sources/check: every configured source YAML. */
+export interface CheckableSource {
+  id: string;
+  name: string;
+  language: string;
+  enabled: boolean;
+  rssUrl: string | null;
+  requiresJavascript: boolean;
+}
+
+/** One sample article a source check tried to extract. */
+export interface SourceCheckSample {
+  url: string;
+  outcome: ScrapeOutcome;
+  /** The strategy that produced the article; null when none did. */
+  strategy: string | null;
+  tried: string[];
+  status: number | null;
+  error: string | null;
+  elapsedMs: number;
+  title: string | null;
+  author: string | null;
+  publishedAt: string | null;
+  bodyLength: number;
+  language: string | null;
+  /** Of title / author / published_at, what an extracted article lacked. */
+  missing: string[];
+}
+
+export type SourceVerdict = "ok" | "partial" | "broken";
+
+export interface SourceCheckRow {
+  source: string;
+  name: string;
+  language: string;
+  enabled: boolean;
+  requiresJavascript: boolean;
+  baseUrl: string;
+  rssUrl: string | null;
+  verdict: SourceVerdict;
+  discovery: {
+    method: string | null;
+    tried: string[];
+    found: number;
+    error: string | null;
+  };
+  samples: SourceCheckSample[];
+  elapsedMs: number;
+}
+
+/** POST /api/sources/check */
+export interface SourceCheckReport {
+  startedAt: string;
+  perSource: number;
+  totals: { sources: number; ok: number; partial: number; broken: number };
+  sources: SourceCheckRow[];
 }

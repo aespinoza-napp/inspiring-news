@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/enrich", label: "Enrichment" },
   { href: "/corrector", label: "Corrector" },
   { href: "/scraper", label: "Scraper" },
+  { href: "/sources", label: "Sources" },
 ];
 
 export function NavLinks() {
