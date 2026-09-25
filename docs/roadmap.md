@@ -4,13 +4,13 @@ The plan, and what is true of it **today**. Every checkbox below was checked
 against the code, not against the plan. `[x]` means done *and* working as
 described; anything less is `[ ]` with a note saying exactly how far it got.
 
-- **As of:** 2026-09-21 — Phase 1, Sprint 2 (Sep 15–28).
+- **As of:** 2026-09-25 — Phase 1, Sprint 2 (Sep 15–28).
 - **Hours** are the planned budget. There is no time log in the repo, so
   nothing here claims hours actually spent.
-- **Verification used for "done"** is `./scripts/check.sh`: 542 backend tests
-  passed (11 skipped because they need `inference/` or Neo4j running, 2 slow
-  ones deselected), 9 inference tests passed against the real models, and the
-  frontend typechecks. The `slow` corpus test was not part of that pass. There
+- **Verification used for "done"** is `./scripts/check.sh`: 708 backend tests
+  passed **with `inference/` running** (1 skipped: Neo4j; 2 slow ones
+  deselected), and the frontend typechecks. Without `inference/` the model
+  tests skip rather than run - which is how a failing one went unseen. The `slow` corpus test was not part of that pass. There
   is no frontend test runner, no CI, and no linter.
 
 Legend: `[x]` done · `[ ]` not done · 🟡 partly done (what is left is stated) ·
@@ -70,7 +70,7 @@ Legend: `[x]` done · `[ ]` not done · 🟡 partly done (what is left is stated
 - [x] 🧯 Review `on_phase` callback coverage across all stages — extended on Sep 21 with per-source events (`searching_web`, `web_results`, `scraping_sources`, `sources_scraped`, `evidence_ranked`)
 - [x] 🗃️ Audit `AnalysisCache` correctness (`forceRefresh` behavior) — the key hashes the *effective* thresholds; a cache write that fails no longer fails the job; schema version 6
 - [x] 🧪 Expand the fact-checker fakes — `tests/services/fact_checker/fakes.py`, with `tests/test_fake_contracts.py` pinning every fake's signature to the real class
-- [x] 📋 Fix pre-existing failing tests — the suite is green. The 11 skips need `inference/` or Neo4j running.
+- [x] 📋 Fix pre-existing failing tests — the suite is green. ⚠️ Until 2026-09-25 it was green only because 10 tests skip without `inference/`: with it running, `test_topic_classifier` failed. The classifier had switched `topic` to the display name ("Technology") and the test still compared the TOPICS keys ("technology"). Fixed; not a threshold problem.
 
 ### Sprint 2 (Sep 15–28) · 70h — Testing & bugfixing  ← **current sprint**
 
@@ -114,7 +114,9 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 - [x] 🍜 Implement `BeautifulSoupStrategy` — step two of a cheapest-first cascade, parsing the HTML trafilatura already fetched (no second request); JSON-LD, meta tags, per-source `metadata.selectors`, then the densest paragraph block. It also fills title/author/date trafilatura missed. `docs/decisions/scraping.md`
 - [x] 🧭 Route sources by `requires_javascript` — `true` sends articles to the browser first; posted URLs are matched to their configured source by domain so the flag (and `selectors`) apply to `/analyze` too. All 12 sources are `false`; `/scraper` flags domains only the browser can read.
 - [ ] ➕ Add new source YAMLs (12 today)
-- [ ] 🧪 Unit tests for each new scraping strategy (the existing scraper tests cover discovery, extraction and the URL guard only)
+- [x] 🧪 Unit tests for each new scraping strategy — BeautifulSoup (8), the Playwright step (10), trafilatura (14), the cascade's stop/escalate rules (21 in `test_extractor.py`), discovery (18), and the topic-page strategy (11) and source probe (14) added on Sep 25.
+- [x] 🩺 **Topic-page discovery + source probe** (not in the original plan) — discovery's third step reads a source's topic section pages (`/science/`, `/ciencia/`...) when it has no feed; `POST /scraper/probe` and a "Source health" panel on `/scraper` check every source (feed, topic pages, a sample of real extractions) and SearXNG. First run: 6 up, 3 degraded (National Geographic, RTVE, SINC: dead feeds, **rescued by topic pages**, 6/6 extracted each), 3 down (EFE 403, Reuters 401, El País 403 on articles). Topic pages added 1,272 links to the feeds' 395. `docs/decisions/scraping.md`
+- [ ] 🏷️ **Build and hand-label the custom validation set · 40h** (not in the original plan) — the paper's evaluation section (`docs/final_document/sections/evaluation_dataset.tex`, "Custom Validation Set") commits to it and x-fact cannot replace it: x-fact is political statements, not the interpretive claims of positive-news articles. Budgeted here, out of the hours this sprint freed by building its strategies a week early. Breakdown: labelling guide and schema (verdict, factual vs interpretive, evidence URL) 4h; pick ~50 articles and run claim selection over them 4h; label ~150 claims by hand, ~10 min each with the search, 25h; re-label a 20% sample blind a week later and measure self-agreement 4h; JSONL + loader next to x-fact 3h. Gates Sprint 4's tuning and 3 of Sprint 7's 6 items.
 
 ### Sprint 4 (Oct 13–26) · 70h — Enrichment & fact-checking improvements
 
@@ -151,7 +153,7 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 
 > `LLMClient` is a swappable OpenAI-SDK wrapper (Ollama local by default; Groq/OpenRouter/Together via settings only). That part is true. **None of the benchmark machinery exists yet**: no harness, no labelled ground-truth set, no rubric, and no token or cost accounting.
 >
-> **Prerequisite work, not on the plan:** a labelled set of claims with human verdicts (needed by 3 of the 6 Sprint 7 items), and a harness that runs a model over it and records latency and cost. Per-claim LLM latency can already be read from the journal (`verifying_claim` → `claim_checked`).
+> **Prerequisite work:** a labelled set of claims with human verdicts (needed by 3 of the 6 Sprint 7 items) — the x-fact set is in the repo, and the custom set is now a budgeted task in Sprint 3 (40h) — and a harness that runs a model over them and records latency and cost, which is still not on the plan. Per-claim LLM latency can already be read from the journal (`verifying_claim` → `claim_checked`).
 
 ### Sprint 6 (Nov 10–23) · 70h — ✍️ Writing / redaction models
 
@@ -206,7 +208,7 @@ Nothing of this phase exists: no accounts, profiles, feed, bookmarks or recommen
 
 ## 🧪 Testing Checklist (Cross-Phase)
 
-- [x] ✅ Unit tests per module — `processors/`, `services/scraper/`, `services/fact_checker/`, `services/`, `database/`, `repositories/`, `api/`, `config/`. None for the Playwright/BeautifulSoup strategies, because they do not work.
+- [x] ✅ Unit tests per module — `processors/`, `services/scraper/` (every strategy included), `services/fact_checker/`, `services/`, `database/`, `repositories/`, `api/`, `config/`.
 - [ ] 🟡 🔗 Integration tests: full pipeline run — `tests/test_real_pipeline_integration.py` exists but is skipped unless `inference/` is running
 - [ ] 🟡 🧵 Concurrency tests — see Sprint 2; Qdrant client use from several threads is untested
 - [ ] 🤖 Model comparison tests (writing + verification, Phase 4)
