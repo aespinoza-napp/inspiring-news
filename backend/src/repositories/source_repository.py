@@ -1,8 +1,11 @@
+from logging import getLogger
 from pathlib import Path
 
 import yaml
 
 from src.models.core.source import NewsSource
+
+logger = getLogger(__name__)
 
 
 class SourceRepository:
@@ -26,6 +29,17 @@ class SourceRepository:
 
             sources.append(
                 NewsSource(**data)
+            )
+
+        # The path is relative to the working directory, and a glob over a
+        # missing directory is just empty. That is how the Docker backend
+        # ran with no sources at all - nothing failed, /sources simply
+        # listed nothing - so say so instead of returning [] quietly.
+        if not sources:
+            logger.warning(
+                "No source YAMLs found in %s (resolved to %s)",
+                self.sources_path,
+                self.sources_path.resolve(),
             )
 
         return sources

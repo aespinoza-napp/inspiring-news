@@ -152,6 +152,13 @@ services:
       # starts from an empty vector collection, and duplicate detection
       # has nothing to compare against.
       - backend-data:/app/data
+      # The source YAMLs are configuration, not runtime data, but they
+      # live under data/ - which .dockerignore keeps out of the image and
+      # the volume above shadows anyway. Without this mount the container
+      # saw zero sources: /sources and ingestion listed nothing, and every
+      # domain lost its reliability rating. Read-only, from the host, so a
+      # YAML edit needs a restart rather than a rebuild.
+      - ../backend/data/sources:/app/data/sources:ro
       # model-cache moved to the `inference` service above - the
       # transformer models live there now, not here.
     depends_on:
