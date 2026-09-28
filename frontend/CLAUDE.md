@@ -15,7 +15,7 @@ The typecheck is the gate.
 
 ## Shape
 
-Seven pages. Every one talks to the backend **only** through the
+Eight pages. Every one talks to the backend **only** through the
 server-side route handlers in `src/app/api/`, which keeps `BACKEND_URL`
 off the client. See `.env.local.example` — it is `http://127.0.0.1:8000`,
 not `localhost`, because Node can resolve `localhost` to the IPv6
@@ -30,6 +30,7 @@ loopback first and fail to reach uvicorn's IPv4-only default.
 | `/corrector` | Text → the 7 corrector metrics |
 | `/scraper` | A **source health panel** (`components/SourceProbePanel.tsx`: starts `POST /api/scraper/probe`, polls `GET` every 2s only while it runs; up / degraded / down per source, feed vs topic-page links, a sample of extractions, and a banner when SearXNG's engines are down). An **ingest panel** (`components/IngestPanel.tsx`: pick sources and articles per source; the button states the most analyses it can queue; shows the last run). Then every page fetch the backend has made, per domain: requests, success rate, why the rest failed (too short / no content / HTTP error / timeout / connection / blocked), last request and last failure. Below that, the articles actually stored in the lake per domain (scraped vs unique, title/author/date coverage, what became of them) and a per-day chart (`components/DailyBars.tsx`). Polls `GET /api/scraper/stats` and `/api/scraper/articles` every 10s, `cache: "no-store"` like the job routes |
 | `/sources` | A health check of every source YAML, disabled ones included: discovery (links found, via feed or homepage, or why none), then 1-5 sample articles each run through the real extraction cascade - outcome, strategy, title / author / date (a missing one shown as **missing**), body length, time. Verdict per source: working / partial / broken; a Re-check button per source. Nothing is stored or analysed. `POST /api/sources/check`, behind the storage key |
+| `/dataset` | The labelling tool for the custom evaluation set. **Label facts**: a form whose fields are the stored row's keys (x-fact's plus topic, claim type, strongest source tier, own-source flag, evidence date, note); after a save the article's fields stay filled for its next claim. Above it a verdict x topic-group balance table against the targets; below it every fact, with edit and delete. **Review 20%**: the blind second pass - the sampled fact without its first label - and the observed agreement and Cohen's kappa so far. `app/api/dataset/*` proxies, behind the storage key |
 
 `lib/types.ts` mirrors the backend's response shapes exactly — keep it in
 sync when a backend response changes.

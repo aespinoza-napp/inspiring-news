@@ -39,6 +39,10 @@ class Settings(BaseSettings):
 
     CACHE_PATH: Path = STORAGE_PATH / "cache"
 
+    # Labelled evaluation sets: x-fact's and the hand-labelled custom one
+    # (src/repositories/custom_fact_repository.py). Tracked in git.
+    EVALUATION_PATH: Path = STORAGE_PATH / "evaluation"
+
     # Three-layer storage lake (raw -> processed -> exploitation).
     # Deliberately *not* the legacy RAW_PATH/PROCESSED_PATH scratch
     # directories above: those hold bare News/EnrichedArticle JSON
@@ -305,6 +309,7 @@ for folder in (
     settings.GRAPH_PATH,
     settings.CACHE_PATH,
     settings.LAKE_PATH,
+    settings.EVALUATION_PATH,
 ):
     folder.mkdir(
         parents=True,

@@ -7,7 +7,12 @@ described; anything less is `[ ]` with a note saying exactly how far it got.
 - **As of:** 2026-09-28 — last day of Phase 1, Sprint 2 (Sep 15–28).
 - **Hours** are the planned budget. There is no time log in the repo, so
   nothing here claims hours actually spent.
-- **Verification used for "done"** is `./scripts/check.sh`: on Sep 28, 737
+- **Rebalanced on Sep 28**, still 900h: the custom validation set turned
+  out to be a 40h task on its own, not something the hours Sprint 3 freed
+  could absorb. It gets its own 40h in Sprint 3 (70h → 110h), paid for by
+  Sprint 6 (70h → 50h) and Sprint 8 (60h → 40h). Phase 2 is now 180h,
+  Phase 4 120h, Phase 5 40h.
+- **Verification used for "done"** is `./scripts/check.sh`: on Sep 28, 757
   backend tests passed (11 skipped, 2 slow ones deselected), 9 inference
   tests against the real models, and the frontend typechecks. The 11 skips
   are mostly the model tests: `inference/` ran in Docker, and its port is
@@ -98,6 +103,7 @@ was changed; the numbers are in `docs/decisions/retrieval.md` and
 - [x] 🔎 **SearXNG engines.** The allowlist in `settings.yml.example` had never reached the live, gitignored `settings.yml`, which still ran the full default roster - where the DuckDuckGo CAPTCHAs and Wikidata timeouts of Sep 25 came from. Now: Bing, Google, Brave, Yep, Bing News, Wikipedia (which now returns its article, not only an infobox) and four science APIs measured live first: arXiv, Crossref, Semantic Scholar, PubMed, at half weight so web results lead. Timeout 8s → 3s: every remaining engine answered in ≤2.1s.
 - [x] 🚦 **Fewer searches at once.** `SEARXNG_MAX_CONCURRENCY` 4 → 2, and `SearxngClient` sends a repeated query once: a concurrent asker waits for the request in flight, and answers with results are kept 10 minutes (empty ones are not - they are usually a rate-limit suspension).
 - [x] ⚖️ **Weight groups must sum to 1.0, or the backend refuses to start.** The committed `.env-example` had ranking weights summing to **1.2** since the lexical weight was added, so every setup copied from it inflated evidence scores. The suite had not noticed: the weights are frozen into their classes at import, and the tests never reset those copies (see Sprint 4's regression-test item).
+- [x] 🏷️ **Labelling tool for the custom validation set.** A `/dataset` page and `/dataset` endpoints: one row per fact in x-fact's exact format (same keys, same order, `split: test`) plus `topic`, `claimType`, `sourceTier`, `onlyOwnSource`, `evidenceDate` and a note, appended to `backend/data/evaluation/custom_en_es.jsonl`. The four tie-break rules are fixed before labelling starts, and the ones that can be checked are enforced on save (own source only → `UNVERIFIED`; evidence newer than the article is rejected). A verdict × topic-group balance table steers toward 150 facts (25 cells of 6). The Review tab labels a hash-chosen 20% again, blind, and reports agreement and Cohen's kappa on the first label. Written up for the paper in `docs/final_document/sections/custom_dataset.tex`. No facts yet: labelling is Sprint 3's 40h.
 - [x] 🧮 **Sentiment int8 via ONNX: measured and rejected.** On 336 real en/es texts the fast int8 variants agreed with today's model on only 86–92% of labels, flipping mostly neutral → positive (an admission gate); the accurate variant was 2.5x slower. Kept fp32.
 
 ### Found by the Sep 21 audit (not on the original plan)
@@ -121,9 +127,9 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 
 ---
 
-## 🧭 Phase 2 — New Strategies & Core Improvements (Sep 29 – Oct 26) · 140h
+## 🧭 Phase 2 — New Strategies & Core Improvements (Sep 29 – Oct 26) · 180h
 
-### Sprint 3 (Sep 29–Oct 12) · 70h — Scraping strategies
+### Sprint 3 (Sep 29–Oct 12) · 110h — Scraping strategies (70h) + custom validation set (40h)
 
 - [x] ➕ **Wire an ingestion path** (not in the original plan) — `POST /ingest` + a panel on `/scraper`: RSS, then trafilatura's feed discovery; article-shape filter that works in Spanish; English-only topic pre-filter; skips what the lake already has; queues full analyses (purpose `ingestion`). Manual only. `Scraper` drift fixed. At the time 9 of 12 sources produced links and 4 feed URLs returned 404; since Sep 28 RTVE's is replaced, and National Geographic, Reuters and SINC have no feed to replace it with (topic pages rescue two of them).
 - [x] 🎭 Implement `PlaywrightStrategy` for JS-rendered sources — the last step of the cascade: renders, then reads the result with the same trafilatura/BeautifulSoup parsers. URL guard on every request and redirect hop, `BROWSER_MAX_CONCURRENCY`, never for evidence, optional `browser` extra (installed in Docker). `playwright_discover.py` is still a placeholder.
@@ -132,7 +138,7 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 - [x] ➕ Add new source YAMLs — 12 → 36 (Sep 28). 24 added, each only after its feed produced links and 2/2 sample articles extracted through the real cascade; RTVE's dead feed replaced. Newtral and Maldita are `enabled: false`: rated for evidence, not ingested (a fact-check quotes the claim it debunks). One source per domain, enforced by a test. `backend/data/sources/README.md`
 - [x] 🧪 Unit tests for each new scraping strategy — BeautifulSoup (8), the Playwright step (10), trafilatura (14), the cascade's stop/escalate rules (21 in `test_extractor.py`), discovery (18), and the topic-page strategy (11) and source probe (14) added on Sep 25.
 - [x] 🩺 **Topic-page discovery + source probe** (not in the original plan) — discovery's third step reads a source's topic section pages (`/science/`, `/ciencia/`...) when it has no feed; `POST /scraper/probe` and a "Source health" panel on `/scraper` check every source (feed, topic pages, a sample of real extractions) and SearXNG. First run: 6 up, 3 degraded (National Geographic, RTVE, SINC: dead feeds, **rescued by topic pages**, 6/6 extracted each), 3 down (EFE 403, Reuters 401, El País 403 on articles). Topic pages added 1,272 links to the feeds' 395. `docs/decisions/scraping.md`
-- [ ] 🏷️ **Build and hand-label the custom validation set · 40h** (not in the original plan) — the paper's evaluation section (`docs/final_document/sections/evaluation_dataset.tex`, "Custom Validation Set") commits to it and x-fact cannot replace it: x-fact is political statements, not the interpretive claims of positive-news articles. Budgeted here, out of the hours this sprint freed by building its strategies a week early. Breakdown: labelling guide and schema (verdict, factual vs interpretive, evidence URL) 4h; pick ~50 articles and run claim selection over them 4h; label ~150 claims by hand, ~10 min each with the search, 25h; re-label a 20% sample blind a week later and measure self-agreement 4h; JSONL + loader next to x-fact 3h. Gates Sprint 4's tuning and 3 of Sprint 7's 6 items.
+- [ ] 🏷️ **Hand-label the custom validation set · 40h** (not in the original plan; own budget since the Sep 28 rebalance) — the paper commits to it (`docs/final_document/sections/evaluation_dataset.tex`, "Custom Validation Set") and x-fact cannot replace it: x-fact is political statements, not the interpretive claims of positive-news articles. The tool, schema and guide are done (Sep 28, Sprint 2), so the 40h is labelling: find and label 100–150 facts with their sources, balanced over verdict × topic group, ~13 min each, 34h; the blind 20% review a week later, 4h; settle the disagreements and report agreement in `custom_dataset.tex`, 2h. Gates Sprint 4's tuning and 3 of Sprint 7's 6 items.
 
 ### Sprint 4 (Oct 13–26) · 70h — Enrichment & fact-checking improvements
 
@@ -165,13 +171,15 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 
 ---
 
-## 🤖 Phase 4 — AI Model Testing (THE BIG ROCK) (Nov 10 – Dec 7) · 140h
+## 🤖 Phase 4 — AI Model Testing (THE BIG ROCK) (Nov 10 – Dec 7) · 120h
 
 > `LLMClient` is a swappable OpenAI-SDK wrapper (Ollama local by default; Groq/OpenRouter/Together via settings only). That part is true. **None of the benchmark machinery exists yet**: no harness, no labelled ground-truth set, no rubric, and no token or cost accounting.
 >
-> **Prerequisite work:** a labelled set of claims with human verdicts (needed by 3 of the 6 Sprint 7 items) — the x-fact set is in the repo, and the custom set is now a budgeted task in Sprint 3 (40h) — and a harness that runs a model over them and records latency and cost, which is still not on the plan. Per-claim LLM latency can already be read from the journal (`verifying_claim` → `claim_checked`).
+> **Prerequisite work:** a labelled set of claims with human verdicts (needed by 3 of the 6 Sprint 7 items) — the x-fact set is in the repo, and the custom set has its labelling tool and a 40h labelling budget in Sprint 3 — and a harness that runs a model over them and records latency and cost, which is still not on the plan. Per-claim LLM latency can already be read from the journal (`verifying_claim` → `claim_checked`).
 
-### Sprint 6 (Nov 10–23) · 70h — ✍️ Writing / redaction models
+### Sprint 6 (Nov 10–23) · 50h — ✍️ Writing / redaction models
+
+Cut from 70h on Sep 28 to fund the custom validation set. Seven items no longer fit in 50h at the depth planned: decide at sprint start what shrinks. Together AI is the likeliest to drop, since it speaks the same wire format as OpenRouter and adds the least that is new.
 
 - [ ] 🦙 Benchmark local Ollama models (baseline, free)
 - [ ] ⚡ Benchmark Groq-hosted models (speed test)
@@ -192,11 +200,13 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 
 ---
 
-## 💻 Phase 5 — Frontend v2: User-Facing App (Dec 8 – Dec 21) · 60h
+## 💻 Phase 5 — Frontend v2: User-Facing App (Dec 8 – Dec 21) · 40h
 
-Nothing of this phase exists: no accounts, profiles, feed, bookmarks or recommendations. What the frontend has today is an internal tool — seven pages (`/` analyzer, `/live`, `/claim`, `/enrich`, `/corrector`, `/scraper`, `/sources`).
+Nothing of this phase exists: no accounts, profiles, feed, bookmarks or recommendations. What the frontend has today is an internal tool — eight pages (`/` analyzer, `/live`, `/claim`, `/enrich`, `/corrector`, `/scraper`, `/sources`, `/dataset`).
 
-### Sprint 8 (Dec 8–21) · 60h
+### Sprint 8 (Dec 8–21) · 40h
+
+Cut from 60h on Sep 28 to fund the custom validation set. Authentication, profiles and a topic feed are the core; bookmarks and recommendations v1 are the first to slip if 40h does not stretch.
 
 - [ ] 🔐 User authentication (sign up / login / sessions)
 - [ ] 👤 User profiles (topic preferences, settings)
