@@ -72,7 +72,8 @@ the declared exception, deliberately.
    the components are long-lived singletons shared by every request.
    `None` always means "use the defaults". *Declared exception:* the
    ranking and confidence **weights**, which are environment-only —
-   each group must sum to 1.0.
+   each group must sum to 1.0, or `Settings` refuses to start
+   (`WEIGHT_GROUPS`). Tests see them pinned via `tests/frozen_settings.py`.
 2. **Every per-run tunable lives in `src/config/thresholds.py`.** A
    value read straight from `settings` cannot be overridden for one run.
 3. **Bump `AnalysisCache.SCHEMA_VERSION` whenever `analyze()` changes
@@ -125,9 +126,10 @@ write them down than to have each be rediscovered.
 - **Ingestion runs only when someone asks.** `POST /ingest` (the
   Scraper page's panel) discovers from the configured sources and queues
   each new article as an ordinary analysis job. Nothing runs on a timer.
-  Four of the twelve feed URLs (National Geographic, Reuters, RTVE, SINC)
-  return 404 and their homepages advertise no feed trafilatura can find:
-  those YAMLs need new `rss_url`s. The topic keywords are English only,
+  Three configured feed URLs (National Geographic, Reuters, SINC) return
+  404 and no replacement feed exists: they are discovered from topic
+  section pages instead. EFE and Reuters refuse this scraper outright
+  (403/401). The topic keywords are English only,
   so Spanish sources are not pre-filtered by topic
   (`docs/decisions/scraping.md`).
 - **The headless browser is optional and usually absent locally.**
@@ -183,7 +185,7 @@ Phase 1.
 - **`JobStore` never evicts**, and the analysis cache never expires (and caches
   rejections).
 - **URLs are compared as plain strings** for duplicate detection.
-- **Only the 12 configured domains have a real reliability rating**; every
+- **Only the 36 configured domains have a real reliability rating**; every
   other domain gets the default and is flagged `reliability_known: false`.
 - **The LLM's accuracy has never been measured** against labelled data — and
   the pertinence gate's default threshold is reasoned, not fitted, for the

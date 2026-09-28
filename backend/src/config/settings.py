@@ -1,7 +1,21 @@
+import math
 from pathlib import Path
 
-from pydantic import SecretStr
+from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Each group is one scoring function's weights, and each must sum to 1.0.
+# That used to be a comment only: setting CONFIDENCE_LLM_WEIGHT=0.8 in
+# .env alone produced a confidence of up to 1.1 before the clamp, and
+# nothing said so. Now it refuses to start.
+WEIGHT_GROUPS = {
+    "ranking": (
+        "RANKING_SEMANTIC_WEIGHT", "RANKING_LEXICAL_WEIGHT",
+        "RANKING_RECENCY_WEIGHT", "RANKING_RELIABILITY_WEIGHT",
+    ),
+    "pertinence": ("PERTINENCE_SEMANTIC_WEIGHT", "PERTINENCE_LEXICAL_WEIGHT"),
+    "confidence": ("CONFIDENCE_LLM_WEIGHT", "CONFIDENCE_EVIDENCE_WEIGHT"),
+}
 
 
 class Settings(BaseSettings):
@@ -253,6 +267,24 @@ class Settings(BaseSettings):
     # ConfidenceScorer weights (must sum to 1.0)
     CONFIDENCE_LLM_WEIGHT: float = 0.7
     CONFIDENCE_EVIDENCE_WEIGHT: float = 0.3
+
+    @model_validator(mode="after")
+    def _weight_groups_sum_to_one(self) -> "Settings":
+
+        for group, names in WEIGHT_GROUPS.items():
+
+            weights = {name: getattr(self, name) for name in names}
+
+            if any(weight < 0 for weight in weights.values()) or not math.isclose(
+                sum(weights.values()), 1.0, abs_tol=1e-6
+            ):
+                raise ValueError(
+                    f"The {group} weights must be non-negative and sum to 1.0, "
+                    f"got {weights} (sum {sum(weights.values()):.4f}). "
+                    "Change them together, in backend/.env or the environment."
+                )
+
+        return self
 
 
 settings = Settings()

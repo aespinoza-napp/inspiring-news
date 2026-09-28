@@ -112,9 +112,14 @@ def pinned_settings(monkeypatch):
 
     fields = type(live_settings).model_fields
 
+    import importlib
+
+    from tests.frozen_settings import FROZEN_SETTINGS
+
     pinned = {name.upper() for name in PipelineThresholds.model_fields} | {
-        "RANKING_SEMANTIC_WEIGHT", "RANKING_RECENCY_WEIGHT",
+        "RANKING_SEMANTIC_WEIGHT", "RANKING_LEXICAL_WEIGHT", "RANKING_RECENCY_WEIGHT",
         "RANKING_RELIABILITY_WEIGHT", "RANKING_DEFAULT_RELIABILITY",
+        "PERTINENCE_SEMANTIC_WEIGHT", "PERTINENCE_LEXICAL_WEIGHT",
         "CONFIDENCE_LLM_WEIGHT", "CONFIDENCE_EVIDENCE_WEIGHT",
         "EVIDENCE_RECENCY_HALF_LIFE_DAYS",
         "URL_GUARD_ENABLED", "URL_GUARD_ALLOWED_HOSTS", "STORAGE_API_KEY",
@@ -129,3 +134,13 @@ def pinned_settings(monkeypatch):
             continue
 
         monkeypatch.setattr(live_settings, name, field.default)
+
+    # The copies those classes took at import, from whatever .env held
+    # then - pinning `live_settings` above does not reach them.
+    for path, attributes in FROZEN_SETTINGS.items():
+
+        module, cls = path.rsplit(".", 1)
+        owner = getattr(importlib.import_module(module), cls)
+
+        for attribute, name in attributes.items():
+            monkeypatch.setattr(owner, attribute, fields[name].default)

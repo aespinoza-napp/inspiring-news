@@ -87,6 +87,58 @@ def test_the_frozen_settings_exceptions_are_all_real():
         ), f"{name} is exempted but no longer needs to be - remove it"
 
 
+def test_every_frozen_setting_is_pinned_for_the_suite():
+    """
+    An exempted class keeps the value `.env` held at import, which
+    `pinned_settings` cannot reach through `settings`. It pins the class
+    attribute itself, from tests/frozen_settings.py - so an attribute
+    missing there runs every test on the local `.env` again.
+    """
+
+    from tests.frozen_settings import FROZEN_SETTINGS
+
+    frozen = {}
+
+    for name in FROZEN_SETTINGS_EXCEPTIONS:
+
+        path = SRC / name
+        module = "src." + name.removesuffix(".py").replace("/", ".")
+
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+
+            if not isinstance(node, ast.ClassDef):
+                continue
+
+            for statement in node.body:
+
+                if (
+                    isinstance(statement, ast.Assign)
+                    and isinstance(statement.value, ast.Attribute)
+                    and isinstance(statement.value.value, ast.Name)
+                    and statement.value.value.id == "settings"
+                ):
+                    for target in statement.targets:
+                        frozen.setdefault(f"{module}.{node.name}", {})[target.id] = statement.value.attr
+
+    assert frozen == FROZEN_SETTINGS
+
+
+def test_every_weight_belongs_to_a_group_that_sums_to_one():
+    """
+    Settings refuses to start when a weight group does not sum to 1.0
+    (the committed .env-example had ranking at 1.2 for as long as the
+    lexical weight has existed). A new *_WEIGHT setting outside every
+    group would escape that check.
+    """
+
+    from src.config.settings import WEIGHT_GROUPS, Settings
+
+    weights = {name for name in Settings.model_fields if name.endswith("_WEIGHT")}
+    grouped = {name for names in WEIGHT_GROUPS.values() for name in names}
+
+    assert weights == grouped
+
+
 # ----------------------------------------------------------------------
 # "Every tunable threshold lives in src/config/thresholds.py"
 # ----------------------------------------------------------------------
