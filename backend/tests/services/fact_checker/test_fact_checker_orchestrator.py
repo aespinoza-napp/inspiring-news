@@ -167,6 +167,61 @@ def test_run_tracks_reached_stage_for_each_claim(repository):
     assert no_evidence_check.verdict == Verdict.UNVERIFIED
 
 
+def test_a_claim_without_evidence_is_never_sent_to_the_llm(repository):
+    """
+    Below the evidence floor the verdict is forced to UNVERIFIED whatever
+    the model answers, so the call - the slowest step - was pure waste:
+    23 of 24 claims on 2026-09-25. And no `verifying_claim` event, which
+    the UI shows as "Asking the model to judge the claim".
+    """
+
+    class RecordingVerifier:
+
+        def __init__(self):
+            self.calls = []
+
+        def verify(self, claim, evidence, context=None):
+            self.calls.append(claim.text)
+            raise AssertionError("the LLM was asked about a claim with no evidence")
+
+    claim = create_claim(text="A claim nothing on the web mentions.", confidence=0.9)
+
+    embeddings = FakeEmbeddingService(vectors={
+        claim.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    })
+
+    verifier = RecordingVerifier()
+
+    checker = FactChecker(
+        repository,
+        claim_selector=ClaimSelector(embeddings=embeddings),
+        evidence_retriever=FakeEvidenceRetriever({claim.text: []}),
+        ranker=FakeRanker(),
+        verifier=verifier,
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    events = []
+
+    report = checker.run(
+        create_article(claims=[claim]),
+        on_phase=lambda phase, data: events.append(phase),
+        thresholds=PipelineThresholds(min_evidence_for_verdict=1),
+    )
+
+    [check] = report.claim_checks
+
+    assert verifier.calls == []
+    assert "verifying_claim" not in events
+    assert "claim_checked" in events
+
+    assert check.verdict == Verdict.UNVERIFIED
+    assert check.confidence == 0.0
+    assert check.llm_unreachable is False
+    assert check.reached_stage == "confidence_recalibration"
+    assert "without asking the LLM" in check.stage_note
+
+
 def test_run_traces_llm_unreachable_separately_from_no_evidence(repository):
     """
     Both a dead LLM and a claim with no evidence come back UNVERIFIED,

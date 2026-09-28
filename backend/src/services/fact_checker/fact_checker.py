@@ -292,12 +292,27 @@ class FactChecker:
             "cut": self._rejected_summary(ranking.rejected),
         })
 
-        # Ranking is embedding arithmetic over a handful of items, fast
-        # enough not to deserve its own pair of events - but the LLM call
-        # after it is the single longest step, so it gets one.
-        phase("verifying_claim", {"evidence": len(ranked)})
+        if len(ranked) < thresholds.min_evidence_for_verdict:
 
-        llm_result = self.verifier.verify(claim, ranked, context=context)
+            # Below the evidence floor the scorer forces UNVERIFIED
+            # whatever the model says, so asking it was the single longest
+            # step spent on an answer that was then thrown away - for 23
+            # of 24 claims on 2026-09-25, when search returned nothing.
+            # No `verifying_claim` either: the model is not being asked.
+            llm_result = LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="",
+            )
+
+        else:
+
+            # Ranking is embedding arithmetic over a handful of items, fast
+            # enough not to deserve its own pair of events - but the LLM call
+            # after it is the single longest step, so it gets one.
+            phase("verifying_claim", {"evidence": len(ranked)})
+
+            llm_result = self.verifier.verify(claim, ranked, context=context)
 
         check = self.confidence_scorer.score(claim, ranked, llm_result, thresholds)
 
@@ -376,7 +391,8 @@ class FactChecker:
         if len(ranked) < thresholds.min_evidence_for_verdict:
             return (
                 PipelineStage.CONFIDENCE_RECALIBRATION,
-                "No evidence could be retrieved for this claim; verdict forced to UNVERIFIED.",
+                "No evidence could be retrieved for this claim; verdict forced to "
+                "UNVERIFIED without asking the LLM.",
             )
 
         if check.verdict != llm_result.verdict:

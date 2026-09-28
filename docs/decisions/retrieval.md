@@ -222,6 +222,31 @@ fix it, in order of leverage:
    claim with every engine down is `UNVERIFIED`, which reads as a
    judgement about the claim.
 
+### 2026-09-28: fewer requests, more engines
+
+- **The engine allowlist was never live.** `settings.yml.example` had
+  dropped DuckDuckGo and Wikidata long before; the live, gitignored
+  `settings.yml` was still `use_default_settings: true`, the full
+  roster. Both now carry the allowlist - **re-copy the example** on any
+  other machine (`docker/README.md`).
+- **Science APIs added:** arXiv, Crossref, Semantic Scholar and PubMed,
+  each measured live first. They are in SearXNG's `science` category
+  and the client asks `general` only, so they are added to `general`;
+  weighted 0.5 so a web result outranks a paper at the same position,
+  and papers still arrive when every web engine is suspended.
+  Wikipedia now returns its article as a result, not only an infobox.
+- **Timeout 8s → 3s.** The slow engines were the dead ones; every
+  remaining engine answered in ≤2.1s.
+- **`SEARXNG_MAX_CONCURRENCY` 4 → 2**, and `SearxngClient` sends a
+  repeated query once: concurrent askers wait for the one in flight,
+  and non-empty answers are kept 10 minutes. Empty ones are not - they
+  are usually a suspension.
+- **No LLM call below the evidence floor.** The verdict was forced to
+  `UNVERIFIED` anyway; the call was the slowest step spent on an answer
+  thrown away, for 23 of 24 claims on 2026-09-25.
+
+Items 1 and 3 above still stand.
+
 ## What is still not fixed
 
 - **The LLM is still not asked whether a source is on-point.** The gate

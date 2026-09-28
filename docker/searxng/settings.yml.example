@@ -32,6 +32,26 @@ use_default_settings:
     # what the fact-checker wants: corroboration from sources that do not
     # share a crawler.
     #
+    # 2026-09-28: this allowlist had never reached the live settings.yml,
+    # which was still `use_default_settings: true` - the full roster, and
+    # the DuckDuckGo CAPTCHAs and Wikidata timeouts of the 2026-09-25
+    # measurement (docs/decisions/retrieval.md). Added the same day, each
+    # measured on three claim-shaped queries (en, es, en):
+    #
+    #   arxiv             10/10/10 results, 0.6-1.3s
+    #   crossref          20/19/18 results, 1.0-1.8s
+    #   semantic scholar  10/10/10 results, 0.6-1.7s
+    #   pubmed            rate-limited by NCBI after one query (no API
+    #                     key); fails in 0.2s while suspended, so kept
+    #   wikipedia         see its override below
+    #
+    #   openalex          rate-limited after one query without a
+    #                     `mailto` - left out
+    #
+    # APIs rather than scraped result pages: nothing to CAPTCHA, and they
+    # still answer when the web engines are suspended - which on
+    # 2026-09-25 was most of the time.
+    #
     # Re-measure before trusting this list on a different network - these
     # are blocked/allowed by where the container runs, not by SearXNG.
     keep_only:
@@ -40,6 +60,11 @@ use_default_settings:
       - brave
       - yep
       - bing news
+      - wikipedia
+      - arxiv
+      - crossref
+      - semantic scholar
+      - pubmed
 
 # keep_only (above) narrows the roster; it does not switch anything on.
 # bing, google and yep all ship `disabled: true` in SearXNG's defaults,
@@ -56,6 +81,37 @@ engines:
   - name: yep
     disabled: false
 
+  # By default Wikipedia only fills the infobox, which SearxngClient never
+  # reads: it answered 0 results on every query until "list" was added.
+  - name: wikipedia
+    display_type: ["infobox", "list"]
+
+  # The science engines live in the `science` category, and SearxngClient
+  # sends no `categories` - SearXNG then asks `general` only, so without
+  # `general` here they were never queried at all.
+  #
+  # weight 0.5: a paper is evidence for a science claim, noise for most
+  # others, and Crossref answers ~20 records for anything - enough to fill
+  # the backend's top SEARXNG_MAX_RESULTS by itself. Halved, a web result
+  # at the same position outranks it, and the papers still come through
+  # whole when the web engines are rate-limited. The pertinence gate cuts
+  # the off-subject ones either way.
+  - name: arxiv
+    categories: [general, science]
+    weight: 0.5
+  - name: crossref
+    categories: [general, science]
+    weight: 0.5
+    disabled: false
+    # Its default is 30s, far over request_timeout below; measured 1.0-1.8s.
+    timeout: 3.0
+  - name: semantic scholar
+    categories: [general, science]
+    weight: 0.5
+  - name: pubmed
+    categories: [general, science]
+    weight: 0.5
+
 general:
   instance_name: "Inspiring News Fact-Checker"
 
@@ -65,12 +121,15 @@ search:
     - json   # required: SearxngClient (backend/src/services/search.py) calls ?format=json
 
 outgoing:
-  # Default is 3.0s. Too aggressive here: an engine that answers slowly
-  # is recorded as a failure, and enough recorded failures suspend it -
-  # so a short timeout does not just lose one slow answer, it removes
-  # that engine from the pool for a while.
-  request_timeout: 8.0
-  max_request_timeout: 15.0
+  # SearXNG's own default. This was 8s here, against a short timeout
+  # recording a slow answer as a failure and suspending the engine - but
+  # the slow engines were the dead ones (DuckDuckGo, Wikidata), which are
+  # gone. Every engine above answered within 2.1s on 2026-09-28; an 8s
+  # timeout only made each query wait longer on an engine that was down.
+  # If one starts showing "Suspended: timeout" on /scraper's Source
+  # health panel, raise that engine's own `timeout`, not this.
+  request_timeout: 3.0
+  max_request_timeout: 6.0
 
 server:
   # Generate with: python -c "import secrets; print(secrets.token_hex(32))"

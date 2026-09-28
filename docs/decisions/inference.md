@@ -130,3 +130,40 @@ Compose treats a dependency that reports `unhealthy` *before*
   resolved before the split. Left as open ranges, `uv lock` picked
   `transformers` 5.x, which breaks GLiNER's tokenizer loading outright
   (`tiktoken` required to read a tiktoken file).
+
+## Why the sentiment model is not quantized (measured 2026-09-28)
+
+int8 through ONNX was tried to cut CPU and memory, and rejected on the
+numbers. `cardiffnlp/twitter-xlm-roberta-base-sentiment` exported to
+ONNX (opset 17) and quantized with onnxruntime 1.29, scored against the
+PyTorch model on 336 real texts (48 articles fresh from the configured
+feeds, whole bodies and single sentences, half English, half Spanish):
+
+| Variant | Size | ms/text | Same label | Polarity diff p95 |
+|---|---|---|---|---|
+| PyTorch fp32 (what runs) | 1061 MB | 58 | - | - |
+| ONNX fp32, no quantization | 1061 MB | 54 | 336/336 | 0.000 |
+| dynamic int8, per-tensor | 266 MB | 31 | 290 (86%) | 0.32 |
+| dynamic int8, best variant* | 266 MB | 32 | 307 (91%) | 0.21 |
+| dynamic int8, last 4 layers + head fp32 | 347 MB | 42 | 308 (92%) | 0.17 |
+| weight-only int8 (MatMulNBits) | 820 MB | 145 | 331 (98.5%) | 0.025 |
+
+\* MatMul + Gather, per-channel, `reduce_range`. Per-channel alone,
+MatMul-only (embeddings left fp32) and excluding the classifier head all
+landed between 85% and 92%.
+
+- **The fast variants change the answer, and in one direction.** The
+  label flips were mostly neutral → positive (10-23 of them against 1
+  the other way). Sentiment feeds the positive-impact admission gate,
+  so that is a gate quietly loosened, not noise.
+- **The accurate variant costs more than it saves:** 2.5x slower, and
+  the 732 MB word-embedding matrix (250k tokens x 768) is most of the
+  model and is not what weight-only quantization shrinks.
+- **ONNX alone buys nothing:** identical answers, 7% faster, more
+  resident memory.
+
+What would actually shrink it: trimming the 250k-token vocabulary to
+the tokens English and Spanish use, since that matrix is ~70% of the
+weights. And the larger model here is `bge-m3` (~568M parameters), not
+this one or GLiNER (`gliner_small`, the smallest of the three) - but
+quantizing it changes every stored vector, so it waits for the gold set.

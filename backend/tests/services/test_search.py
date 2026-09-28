@@ -208,3 +208,173 @@ def test_health_reports_searxng_itself_unreachable(monkeypatch):
 
     assert health["ok"] is False
     assert "connection refused" in health["error"]
+
+
+# ----------------------------------------------------------------------
+# Repeated queries are sent once
+#
+# An article's claims share a subject and plan the same anchor query,
+# concurrently. Each one sent was another request SearXNG forwarded to
+# engines that suspend it for "too many requests".
+# ----------------------------------------------------------------------
+
+
+def counting_get(monkeypatch, json_data):
+
+    calls = []
+
+    def fake_get(url, params=None, timeout=None, headers=None):
+        calls.append(params)
+        return FakeResponse(json_data=json_data)
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    return calls
+
+
+RESULTS = {"results": [{"url": f"https://e{i}.com", "title": str(i)} for i in range(6)]}
+
+
+def test_a_repeated_query_is_sent_once(monkeypatch):
+
+    calls = counting_get(monkeypatch, RESULTS)
+
+    client = SearxngClient(base_url="http://s")
+
+    first = client.search("the anchor", language="en")
+    second = client.search("the anchor", language="en")
+
+    assert len(calls) == 1
+    assert first == second
+
+
+def test_the_same_query_in_another_language_is_a_different_query(monkeypatch):
+
+    calls = counting_get(monkeypatch, RESULTS)
+
+    client = SearxngClient(base_url="http://s")
+
+    client.search("NASA", language="en")
+    client.search("NASA", language="es")
+
+    assert [call["language"] for call in calls] == ["en", "es"]
+
+
+def test_a_cached_answer_is_cut_to_each_callers_limit(monkeypatch):
+
+    counting_get(monkeypatch, RESULTS)
+
+    client = SearxngClient(base_url="http://s")
+
+    assert len(client.search("q", max_results=6)) == 6
+    assert len(client.search("q", max_results=2)) == 2
+    assert len(client.search("q", max_results=5)) == 5
+
+
+def test_an_empty_answer_is_not_remembered(monkeypatch):
+    """
+    Empty is most often every engine suspended. Remembering it would turn
+    a three-minute suspension into ten minutes of UNVERIFIED.
+    """
+
+    calls = counting_get(monkeypatch, DOWN)
+
+    client = SearxngClient(base_url="http://s")
+
+    client.search("q")
+    client.search("q")
+
+    assert len(calls) == 2
+
+
+def test_an_expired_answer_is_asked_again(monkeypatch):
+
+    calls = counting_get(monkeypatch, RESULTS)
+
+    client = SearxngClient(base_url="http://s")
+    client.CACHE_TTL_SECONDS = 0
+
+    client.search("q")
+    client.search("q")
+
+    assert len(calls) == 2
+
+
+def test_the_cache_is_bounded(monkeypatch):
+
+    counting_get(monkeypatch, RESULTS)
+
+    client = SearxngClient(base_url="http://s")
+    client.CACHE_MAX_ENTRIES = 3
+
+    for query in ("a", "b", "c", "d"):
+        client.search(query)
+
+    assert [key[0] for key in client._cache] == ["b", "c", "d"]
+
+
+def test_two_claims_asking_the_same_query_at_once_send_it_once(monkeypatch):
+    """
+    Claims run concurrently, so the second asker usually arrives while
+    the first is still waiting on SearXNG - which a cache alone misses.
+    """
+
+    import threading
+    import time
+
+    entered = threading.Event()
+    release = threading.Event()
+    calls = []
+
+    def slow_get(url, params=None, timeout=None, headers=None):
+        calls.append(params)
+        entered.set()
+        release.wait(5)
+        return FakeResponse(json_data=RESULTS)
+
+    monkeypatch.setattr(httpx, "get", slow_get)
+
+    client = SearxngClient(base_url="http://s")
+    answers = []
+
+    def ask():
+        answers.append(client.search("the anchor"))
+
+    first = threading.Thread(target=ask)
+    first.start()
+    entered.wait(5)
+
+    second = threading.Thread(target=ask)
+    second.start()
+
+    # Long enough for the second asker to reach the wait.
+    time.sleep(0.2)
+    release.set()
+
+    first.join(5)
+    second.join(5)
+
+    assert len(calls) == 1
+    assert len(answers) == 2
+    assert answers[0] == answers[1] != []
+
+
+def test_a_failed_request_does_not_leave_the_query_stuck(monkeypatch):
+
+    def refuse(*args, **kwargs):
+        raise RuntimeError("not an httpx error")
+
+    monkeypatch.setattr(httpx, "get", refuse)
+
+    client = SearxngClient(base_url="http://s")
+
+    try:
+        client.search("q")
+    except RuntimeError:
+        pass
+
+    assert client._inflight == {}
+
+    counting_get(monkeypatch, RESULTS)
+
+    assert client.search("q") != []

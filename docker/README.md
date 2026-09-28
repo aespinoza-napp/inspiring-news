@@ -17,7 +17,8 @@ since it defaults to a local Ollama instance running on the host (see `CLAUDE.md
 
 ```bash
 cd docker
-cp searxng/settings.yml.example searxng/settings.yml   # first time only
+cp searxng/settings.yml.example searxng/settings.yml   # first time, and again whenever
+                                                       # the example changes (keep your secret_key)
 cp ../backend/.env-example ../backend/.env             # first time only, then edit
 docker compose --env-file ../backend/.env up --build
 ```

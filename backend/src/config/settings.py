@@ -118,7 +118,14 @@ class Settings(BaseSettings):
     QUERY_MAX_CONCURRENCY: int = 2
 
     # Zero or below means unbounded, for tests and single-user local runs.
-    SEARXNG_MAX_CONCURRENCY: int = 4
+    #
+    # SearXNG was 4. It fans every request out to each upstream engine,
+    # and those rate-limit by IP: a single analysis (3 queries x 2-4
+    # claims) arriving four at a time got Brave suspended for "too many
+    # requests", and on 2026-09-28 Brave, Yep and Semantic Scholar were
+    # suspended within four back-to-back queries. Fewer at once, plus
+    # SearxngClient answering repeated queries once, is fewer suspensions.
+    SEARXNG_MAX_CONCURRENCY: int = 2
     SCRAPE_MAX_CONCURRENCY: int = 8
     INFERENCE_MAX_CONCURRENCY: int = 4
     LLM_MAX_CONCURRENCY: int = 2

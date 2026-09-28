@@ -1,4 +1,6 @@
+import threading
 import time
+from dataclasses import dataclass, field
 from logging import getLogger
 
 import httpx
@@ -9,7 +11,25 @@ from src.services.concurrency import SEARXNG
 logger = getLogger(__name__)
 
 
+@dataclass
+class _InFlight:
+
+    done: threading.Event = field(default_factory=threading.Event)
+
+    results: list[dict] = field(default_factory=list)
+
+
 class SearxngClient:
+
+    # A repeated query is answered from memory for this long. An article's
+    # claims share their subject, so they plan the same anchor query -
+    # and every one sent is another request SearXNG forwards to engines
+    # that suspend it for "too many requests". Minutes, not forever:
+    # a verdict depends on today's web, and the analysis cache that never
+    # expires is already a known problem (CLAUDE.md).
+    CACHE_TTL_SECONDS = 600
+
+    CACHE_MAX_ENTRIES = 512
 
     def __init__(
         self,
@@ -19,14 +39,77 @@ class SearxngClient:
         self.base_url = (base_url or settings.SEARXNG_URL).rstrip("/")
         self.timeout = timeout or settings.SEARXNG_TIMEOUT
 
+        self._lock = threading.Lock()
+
+        # (query, language) -> (stored at, every result SearXNG returned)
+        self._cache: dict[tuple, tuple[float, list[dict]]] = {}
+
+        # (query, language) -> the request already in flight for it
+        self._inflight: dict[tuple, _InFlight] = {}
+
     def search(
         self,
         query: str,
         max_results: int | None = None,
         language: str | None = None,
     ) -> list[dict]:
+        """
+        One query's results, sent at most once at a time and remembered
+        for CACHE_TTL_SECONDS.
+
+        Claims are checked concurrently, so two of an article's claims
+        asking the same anchor query usually do so at the same moment -
+        a cache alone would miss both. The second waits for the first
+        instead, and is never holding a SearXNG permit while it waits
+        (the bounded-pool deadlock, src/services/concurrency.py).
+
+        Only answers with results are kept. An empty one is most often
+        every engine suspended, and remembering it would stretch a
+        three-minute suspension into ten minutes of UNVERIFIED.
+        """
 
         limit = max_results or settings.SEARXNG_MAX_RESULTS
+
+        key = (query, language)
+
+        with self._lock:
+
+            cached = self._cache.get(key)
+
+            if cached and time.monotonic() - cached[0] < self.CACHE_TTL_SECONDS:
+                return cached[1][:limit]
+
+            flight = self._inflight.get(key)
+            leader = flight is None
+
+            if leader:
+                flight = self._inflight[key] = _InFlight()
+
+        if not leader:
+            flight.done.wait()
+            return flight.results[:limit]
+
+        try:
+            flight.results = self._fetch(query, language)
+        finally:
+            with self._lock:
+
+                del self._inflight[key]
+
+                if flight.results:
+
+                    if len(self._cache) >= self.CACHE_MAX_ENTRIES:
+                        # Insertion order: the oldest entry goes first.
+                        del self._cache[next(iter(self._cache))]
+
+                    self._cache[key] = (time.monotonic(), flight.results)
+
+            flight.done.set()
+
+        return flight.results[:limit]
+
+    def _fetch(self, query: str, language: str | None) -> list[dict]:
+        """The request itself: every result SearXNG returned, or []."""
 
         params = {
             "q": query,
@@ -89,7 +172,7 @@ class SearxngClient:
                 ", ".join(f"{name} ({reason})" for name, reason in unresponsive),
             )
 
-        return results[:limit]
+        return results
 
     def health(self, query: str = "news", language: str | None = None) -> dict:
         """
