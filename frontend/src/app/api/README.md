@@ -15,7 +15,6 @@ backend (`backend/src/api/routes.py`), not here.
 | `correct/route.ts` | `POST /correct` | `/corrector` page |
 | `verify-claim/route.ts` | `POST /verify-claim` | `/claim` page |
 | `enrich/route.ts` | `POST /enrich` | `/enrich` page |
-| `dataset/route.ts`, `dataset/[factId]/route.ts`, `dataset/[factId]/review/route.ts`, `dataset/review/route.ts` | `GET /dataset`, `POST /dataset/facts`, `PUT`/`DELETE /dataset/facts/{id}`, `POST /dataset/facts/{id}/review`, `GET /dataset/review` | `/dataset` page. All go through `dataset/forward.ts`: `no-store`, the storage key, and a 204 with no body for a delete |
 
 All of them use `127.0.0.1`, never `localhost`, for `BACKEND_URL`'s default — see the comment in
 `analyze/route.ts` for why (Node can resolve `localhost` to the IPv6 loopback first, which fails

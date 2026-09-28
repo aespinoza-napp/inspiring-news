@@ -21,9 +21,12 @@ independently of this file.
   scraping and one LLM call (see `docs/decisions/concurrency.md`'s load
   test: tens of seconds per claim, not milliseconds).
 
-- **`custom_en_es.jsonl`** - the hand-labelled custom set (target 150
-  claims, minimum 100), typed in on the frontend's `/dataset` page. It
-  does not exist until the first fact is saved. See below.
+- **`manual/factNNN.json`** - the hand-labelled custom set, one file per
+  fact (target 150, minimum 100), written by `labeller/`. Empty until the
+  first fact is saved. See below.
+- **`custom_en_es.jsonl`** - those files joined, once the set is
+  finished (`python labeller/app.py join`). Derived: the per-fact files
+  are the source.
 
 Regenerate either x-fact file with `scripts/prepare_xfact_eval.py` (full set) and the
 inline script in its module docstring history / this README's git blame
@@ -78,26 +81,29 @@ because this project does open-domain retrieval (SearXNG, at
 verification time) and handing it the answer's own sources would defeat
 the point of the benchmark.
 
-## The custom set (`custom_en_es.jsonl`)
+## The custom set (`manual/`, joined into `custom_en_es.jsonl`)
 
 What the paper calls the **custom validation set**
 (`docs/final_document/sections/custom_dataset.tex`): claims from
 positive-news articles, which x-fact's political statements do not cover.
-Labelled by hand on `/dataset`.
+Labelled by hand with `python labeller/app.py` (standard library only;
+`labeller/README.md`), **one file per fact** so each verified fact is
+visible in the repository on its own.
 
-**Same format as x-fact, so the same harness scores it.** Every row starts
-with x-fact's ten keys in x-fact's order (`XFACT_FIELDS` in
-`backend/src/models/evaluation/custom_fact.py`; a test holds the key order
-and types to `xfact_en_es_pilot.jsonl`). Then its own:
+**Same format as x-fact, so the same harness scores it.** Every fact
+starts with x-fact's ten keys in x-fact's order (a test in
+`labeller/test_app.py` holds the order and types to
+`xfact_en_es_pilot.jsonl`). Then its own:
 
 | Key | |
 |---|---|
+| `id` | The file name: `fact001`, `fact002`... |
 | `topic` | A `TOPICS` key; balanced over its five groups (society, science, environment, culture, health) |
 | `claimType` | `factual` / `numerical` / `interpretive` |
 | `sourceTier` | Strongest source used: `primary` > `reference_media` > `press_release` > `social_media` |
 | `onlyOwnSource` | Only the organisation the story is about backs it - forces `UNVERIFIED` |
 | `evidenceDate` | Newest evidence used; may not be after `claimDate` |
-| `articleUrl`, `annotatorNote`, `id`, `createdAt` | |
+| `articleUrl`, `annotatorNote`, `createdAt` | |
 | `review` | The blind second label, for the 20% sample: `label`, `firstLabel`, `agrees` |
 
 `labelRaw` is the guide's label, after AVeriTeC: `supported`,
@@ -111,10 +117,6 @@ short, not padded.
 
 **Self-agreement.** `ceil(20%)` of the facts - chosen by a hash of their
 id, not by hand - are labelled a second time, blind, ideally a week
-later. The Review tab reports observed agreement and Cohen's kappa, on
-the *first* label: correcting a fact after its review does not turn a
+later. The labeller reports observed agreement and Cohen's kappa on the
+*first* label: correcting a fact after its review does not turn a
 disagreement into an agreement.
-
-**Docker.** `backend/data` is the `backend-data` volume inside the
-container, so a fact saved through the containerised backend does not
-reach this file. Label against a backend run on the host.

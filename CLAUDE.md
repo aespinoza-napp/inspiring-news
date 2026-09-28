@@ -14,6 +14,7 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ./scripts/check.sh fast      # invariants only, seconds, no models loaded
 ./scripts/check.sh inference # the real models, in their own service
 ./scripts/check.sh slow      # the whole data/raw corpus, minutes
+./scripts/check.sh labeller  # the fact labeller, plain python
 ```
 
 `make check` / `make fast` / `make slow` do the same. Use these rather
@@ -39,6 +40,10 @@ src.main:app --port 8001`.
   `frontend/CLAUDE.md`.
 - `docker/` — compose (Neo4j, SearXNG, inference, backend) and the two
   Dockerfiles.
+- `labeller/` — the tool for hand-labelling the custom validation set:
+  `python labeller/app.py`, standard library only, nothing from
+  `backend/`. One file per fact in `backend/data/evaluation/manual/`;
+  `join` merges them. See `labeller/README.md`.
 - `docs/decisions/` — why things are the way they are.
 
 ## Navigation

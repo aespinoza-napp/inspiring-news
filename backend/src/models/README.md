@@ -12,7 +12,6 @@ No `__init__.py` anywhere here or elsewhere in `src/` — everything is a namesp
 | `admission/` | `impact_result.py`, `duplicate_result.py` | `src/services/admission/` |
 | `fact_checker/` | `evidence.py` (+ `RejectedEvidence`), `fact_check.py`, `fact_check_report.py`, `pipeline_stage.py` | `src/services/fact_checker/` — mirrors that directory's own layout |
 | `corrector/` | `correction_metric.py` | `src/services/corrector/` |
-| `evaluation/` | `custom_fact.py` (`CustomFactInput`, `CustomFact`, `XFACT_FIELDS`, `LABEL_RAW`) | `src/services/custom_dataset.py` - the hand-labelled evaluation set |
 
 A few worth knowing about specifically:
 

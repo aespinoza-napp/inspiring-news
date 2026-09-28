@@ -82,7 +82,6 @@ _ingestion_service: IngestionService | None = None
 _source_probe: SourceProbe | None = None
 
 _source_check_service = None
-_custom_dataset_service = None
 
 
 def get_vector_repository() -> VectorRepository:
@@ -318,24 +317,3 @@ def get_source_probe() -> SourceProbe:
                 )
 
     return _source_probe
-
-
-def get_custom_dataset_service():
-    """
-    Backs /dataset. A singleton so the repository's lock is the one lock:
-    two tabs of the form must not interleave a read-modify-write.
-    """
-
-    global _custom_dataset_service
-
-    if _custom_dataset_service is None:
-        with _lock:
-            if _custom_dataset_service is None:
-                from src.repositories.custom_fact_repository import CustomFactRepository
-                from src.services.custom_dataset import CustomDatasetService
-
-                _custom_dataset_service = CustomDatasetService(
-                    CustomFactRepository(settings.EVALUATION_PATH / "custom_en_es.jsonl"),
-                )
-
-    return _custom_dataset_service

@@ -12,9 +12,10 @@ described; anything less is `[ ]` with a note saying exactly how far it got.
   could absorb. It gets its own 40h in Sprint 3 (70h → 110h), paid for by
   Sprint 6 (70h → 50h) and Sprint 8 (60h → 40h). Phase 2 is now 180h,
   Phase 4 120h, Phase 5 40h.
-- **Verification used for "done"** is `./scripts/check.sh`: on Sep 28, 757
+- **Verification used for "done"** is `./scripts/check.sh`: on Sep 28, 737
   backend tests passed (11 skipped, 2 slow ones deselected), 9 inference
-  tests against the real models, and the frontend typechecks. The 11 skips
+  tests against the real models, the frontend typechecks, and the fact
+  labeller's 19 tests pass. The 11 skips
   are mostly the model tests: `inference/` ran in Docker, and its port is
   not published to the host. The last pass **with** `inference/` reachable
   was Sep 25 (708 passed, 1 skipped: Neo4j) - without it the model tests
@@ -103,7 +104,7 @@ was changed; the numbers are in `docs/decisions/retrieval.md` and
 - [x] 🔎 **SearXNG engines.** The allowlist in `settings.yml.example` had never reached the live, gitignored `settings.yml`, which still ran the full default roster - where the DuckDuckGo CAPTCHAs and Wikidata timeouts of Sep 25 came from. Now: Bing, Google, Brave, Yep, Bing News, Wikipedia (which now returns its article, not only an infobox) and four science APIs measured live first: arXiv, Crossref, Semantic Scholar, PubMed, at half weight so web results lead. Timeout 8s → 3s: every remaining engine answered in ≤2.1s.
 - [x] 🚦 **Fewer searches at once.** `SEARXNG_MAX_CONCURRENCY` 4 → 2, and `SearxngClient` sends a repeated query once: a concurrent asker waits for the request in flight, and answers with results are kept 10 minutes (empty ones are not - they are usually a rate-limit suspension).
 - [x] ⚖️ **Weight groups must sum to 1.0, or the backend refuses to start.** The committed `.env-example` had ranking weights summing to **1.2** since the lexical weight was added, so every setup copied from it inflated evidence scores. The suite had not noticed: the weights are frozen into their classes at import, and the tests never reset those copies (see Sprint 4's regression-test item).
-- [x] 🏷️ **Labelling tool for the custom validation set.** A `/dataset` page and `/dataset` endpoints: one row per fact in x-fact's exact format (same keys, same order, `split: test`) plus `topic`, `claimType`, `sourceTier`, `onlyOwnSource`, `evidenceDate` and a note, appended to `backend/data/evaluation/custom_en_es.jsonl`. The four tie-break rules are fixed before labelling starts, and the ones that can be checked are enforced on save (own source only → `UNVERIFIED`; evidence newer than the article is rejected). A verdict × topic-group balance table steers toward 150 facts (25 cells of 6). The Review tab labels a hash-chosen 20% again, blind, and reports agreement and Cohen's kappa on the first label. Written up for the paper in `docs/final_document/sections/custom_dataset.tex`. No facts yet: labelling is Sprint 3's 40h.
+- [x] 🏷️ **Labelling tool for the custom validation set.** `labeller/`: one Python file and one HTML page, standard library only - `python labeller/app.py`, nothing to install, no backend or Docker needed. Each fact is its own file, `backend/data/evaluation/manual/factNNN.json`, so every hand-verified fact is visible in the repo; `python labeller/app.py join` merges them into `custom_en_es.jsonl` when the set is done. Rows are x-fact's exact format (same keys, same order, `split: test`) plus `topic`, `claimType`, `sourceTier`, `onlyOwnSource`, `evidenceDate` and a note. The four tie-break rules are fixed before labelling, and the checkable ones are enforced on save (own source only → `UNVERIFIED`; evidence newer than the article refused). A verdict × topic-group table steers toward 150 facts (25 cells of 6). The Review tab labels a hash-chosen 20% again, blind, and reports agreement and Cohen's kappa on the first label. `./scripts/check.sh labeller` runs its tests. Written up in `docs/final_document/sections/custom_dataset.tex`. No facts yet: labelling is Sprint 3's 40h.
 - [x] 🧮 **Sentiment int8 via ONNX: measured and rejected.** On 336 real en/es texts the fast int8 variants agreed with today's model on only 86–92% of labels, flipping mostly neutral → positive (an admission gate); the accurate variant was 2.5x slower. Kept fp32.
 
 ### Found by the Sep 21 audit (not on the original plan)
@@ -138,7 +139,7 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 - [x] ➕ Add new source YAMLs — 12 → 36 (Sep 28). 24 added, each only after its feed produced links and 2/2 sample articles extracted through the real cascade; RTVE's dead feed replaced. Newtral and Maldita are `enabled: false`: rated for evidence, not ingested (a fact-check quotes the claim it debunks). One source per domain, enforced by a test. `backend/data/sources/README.md`
 - [x] 🧪 Unit tests for each new scraping strategy — BeautifulSoup (8), the Playwright step (10), trafilatura (14), the cascade's stop/escalate rules (21 in `test_extractor.py`), discovery (18), and the topic-page strategy (11) and source probe (14) added on Sep 25.
 - [x] 🩺 **Topic-page discovery + source probe** (not in the original plan) — discovery's third step reads a source's topic section pages (`/science/`, `/ciencia/`...) when it has no feed; `POST /scraper/probe` and a "Source health" panel on `/scraper` check every source (feed, topic pages, a sample of real extractions) and SearXNG. First run: 6 up, 3 degraded (National Geographic, RTVE, SINC: dead feeds, **rescued by topic pages**, 6/6 extracted each), 3 down (EFE 403, Reuters 401, El País 403 on articles). Topic pages added 1,272 links to the feeds' 395. `docs/decisions/scraping.md`
-- [ ] 🏷️ **Hand-label the custom validation set · 40h** (not in the original plan; own budget since the Sep 28 rebalance) — the paper commits to it (`docs/final_document/sections/evaluation_dataset.tex`, "Custom Validation Set") and x-fact cannot replace it: x-fact is political statements, not the interpretive claims of positive-news articles. The tool, schema and guide are done (Sep 28, Sprint 2), so the 40h is labelling: find and label 100–150 facts with their sources, balanced over verdict × topic group, ~13 min each, 34h; the blind 20% review a week later, 4h; settle the disagreements and report agreement in `custom_dataset.tex`, 2h. Gates Sprint 4's tuning and 3 of Sprint 7's 6 items.
+- [ ] 🏷️ **Hand-label the custom validation set · 40h** (not in the original plan; own budget since the Sep 28 rebalance) — the paper commits to it (`docs/final_document/sections/evaluation_dataset.tex`, "Custom Validation Set") and x-fact cannot replace it: x-fact is political statements, not the interpretive claims of positive-news articles. The tool (`labeller/`), schema and guide are done (Sep 28, Sprint 2), so the 40h is labelling: find and label 100–150 facts with their sources, balanced over verdict × topic group, ~13 min each, 34h; the blind 20% review a week later, 4h; settle the disagreements and report agreement in `custom_dataset.tex`, 2h. Gates Sprint 4's tuning and 3 of Sprint 7's 6 items.
 
 ### Sprint 4 (Oct 13–26) · 70h — Enrichment & fact-checking improvements
 
@@ -202,7 +203,7 @@ Cut from 70h on Sep 28 to fund the custom validation set. Seven items no longer 
 
 ## 💻 Phase 5 — Frontend v2: User-Facing App (Dec 8 – Dec 21) · 40h
 
-Nothing of this phase exists: no accounts, profiles, feed, bookmarks or recommendations. What the frontend has today is an internal tool — eight pages (`/` analyzer, `/live`, `/claim`, `/enrich`, `/corrector`, `/scraper`, `/sources`, `/dataset`).
+Nothing of this phase exists: no accounts, profiles, feed, bookmarks or recommendations. What the frontend has today is an internal tool — seven pages (`/` analyzer, `/live`, `/claim`, `/enrich`, `/corrector`, `/scraper`, `/sources`).
 
 ### Sprint 8 (Dec 8–21) · 40h
 

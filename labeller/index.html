@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fact labeller</title>
+<style>
+  :root {
+    --bg: #fff; --fg: #1a1a1a; --muted: #6b6b6b; --line: #e2e2e2; --soft: #f6f6f6;
+    --accent: #2563eb; --ok: #1a7f37; --bad: #c92a2a;
+    --TRUE: #1a7f37; --PARTIALLY_TRUE: #7a8b1f; --MISLEADING: #c9770a; --FALSE: #c92a2a; --UNVERIFIED: #6b6b6b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121212; --fg: #ececec; --muted: #9a9a9a; --line: #2c2c2c; --soft: #1b1b1b;
+      --accent: #6ea8fe; --ok: #4caf6d; --bad: #e5605a;
+      --TRUE: #4caf6d; --PARTIALLY_TRUE: #a8b84a; --MISLEADING: #e0a44b; --FALSE: #e5605a; --UNVERIFIED: #8a8a8a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  h2 { font-size: 1.05rem; margin: 0 0 12px; }
+  .muted { color: var(--muted); font-size: .85rem; }
+  section { border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-top: 16px; }
+  nav { display: flex; gap: 6px; margin-top: 16px; }
+  nav button { background: none; color: var(--muted); border: 1px solid var(--line); }
+  nav button.on { color: var(--fg); border-color: var(--fg); }
+  label { display: block; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 12px 0 4px; }
+  input, select, textarea { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--soft); color: var(--fg); font: inherit; }
+  textarea { min-height: 70px; resize: vertical; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 12px; }
+  .check { display: flex; gap: 8px; align-items: flex-start; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: .85rem; }
+  .check input { width: auto; margin-top: 3px; }
+  button { font: inherit; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  button.plain { background: none; color: var(--fg); border-color: var(--line); padding: 3px 10px; font-size: .8rem; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  .msg { margin-top: 12px; padding: 8px 12px; border-radius: 6px; font-size: .9rem; }
+  .msg.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
+  .msg.bad { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+  .msg ul { margin: 0; padding-left: 18px; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+  td.nowrap, td:first-child { white-space: nowrap; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  td.some { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  td.full { background: color-mix(in srgb, var(--ok) 20%, transparent); }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; color: #fff; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+  .bar { height: 6px; background: var(--line); border-radius: 999px; position: relative; margin: 8px 0 14px; }
+  .bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  .bar b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
+  details summary { cursor: pointer; font-weight: 600; }
+  details li { margin: 6px 0; }
+  .claim { font-size: 1.05rem; font-weight: 500; }
+  .stats { display: flex; gap: 24px; flex-wrap: wrap; }
+  .stats div b { display: block; font-size: 1.5rem; }
+  a { color: var(--accent); word-break: break-all; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Fact labeller</h1>
+  <p class="muted" id="where">Each fact is saved as its own JSON file.</p>
+
+  <nav>
+    <button id="tab-label" class="on">Label</button>
+    <button id="tab-review">Review 20%</button>
+  </nav>
+
+  <div id="broken" class="msg bad" hidden></div>
+
+  <!-- ============ LABEL ============ -->
+  <div id="view-label">
+    <section>
+      <h2>Balance</h2>
+      <div class="muted" id="balance-note"></div>
+      <div class="bar"><i id="bar-fill"></i><b id="bar-min"></b></div>
+      <div class="scroll"><table id="matrix"></table></div>
+    </section>
+
+    <section>
+      <h2 id="form-title">New fact</h2>
+      <form id="form">
+        <label for="claim">Claim *</label>
+        <textarea id="claim" required placeholder="One checkable assertion, as the article states it."></textarea>
+
+        <div class="grid">
+          <div><label for="label">Verdict *</label><select id="label"></select><div class="muted" id="label-help"></div></div>
+          <div><label for="topic">Topic *</label><select id="topic" required></select></div>
+          <div><label for="claimType">Claim type *</label><select id="claimType"></select></div>
+          <div><label for="language">Language *</label><select id="language"><option>en</option><option>es</option></select></div>
+          <div><label for="articleUrl">Article URL</label><input id="articleUrl" placeholder="https://…"></div>
+          <div><label for="site">Site (outlet)</label><input id="site" placeholder="Taken from the URL if empty"></div>
+          <div><label for="claimant">Claimant</label><input id="claimant" placeholder="Who asserts it"></div>
+          <div><label for="claimDate">Article published *</label><input id="claimDate" type="date" required></div>
+        </div>
+
+        <label for="links">Evidence links (one per line)</label>
+        <textarea id="links" placeholder="https://…&#10;Required unless the verdict is UNVERIFIED."></textarea>
+
+        <div class="grid">
+          <div><label for="sourceTier">Strongest source *</label><select id="sourceTier"></select></div>
+          <div><label for="evidenceDate">Newest evidence dated</label><input id="evidenceDate" type="date"><div class="muted">Not after the article's date.</div></div>
+        </div>
+
+        <label class="check"><input type="checkbox" id="onlyOwnSource">
+          Only the organisation the story is about backs this (its own release, report or post) → UNVERIFIED; name the source in the note</label>
+
+        <label for="annotatorNote">Note</label>
+        <textarea id="annotatorNote" placeholder="Why this verdict; which rule decided a close call."></textarea>
+
+        <div class="row">
+          <button type="submit" id="save">Save fact</button>
+          <button type="button" class="plain" id="cancel" hidden>Cancel edit</button>
+        </div>
+        <div id="form-msg" class="msg" hidden></div>
+      </form>
+    </section>
+
+    <section>
+      <details>
+        <summary>Tie-break rules</summary>
+        <ol>
+          <li><b>The organisation's own source.</b> If only the NGO's or company's own release, report or post backs the claim → UNVERIFIED. Tick the box and name the source in the note.</li>
+          <li><b>Numeric tolerance.</b> Within ±10% relative of the source (30% against 28%), or a reasonable rounding, is supported. Beyond that: PARTIALLY_TRUE if the figure is a detail, FALSE if the figure is the claim.</li>
+          <li><b>Date of the evidence.</b> Only evidence available on the article's publication date. Something confirmed later does not change the verdict.</li>
+          <li><b>Source hierarchy.</b> Primary (report, official statistic, study) &gt; reference media &gt; press release &gt; social media. The higher tier wins a conflict; a conflict within one tier is MISLEADING. Record the strongest source used.</li>
+        </ol>
+      </details>
+    </section>
+
+    <section>
+      <h2 id="facts-title">Facts</h2>
+      <div class="scroll"><table id="facts"></table></div>
+    </section>
+  </div>
+
+  <!-- ============ REVIEW ============ -->
+  <div id="view-review" hidden>
+    <section>
+      <h2>Self-agreement</h2>
+      <p class="muted" id="review-note"></p>
+      <div class="stats">
+        <div><b id="st-observed">—</b><span class="muted">observed agreement</span></div>
+        <div><b id="st-kappa">—</b><span class="muted">Cohen's kappa</span></div>
+        <div><b id="st-dis">0</b><span class="muted">disagreements</span></div>
+      </div>
+    </section>
+
+    <section id="review-box">
+      <h2>Blind review</h2>
+      <p class="claim" id="rv-claim"></p>
+      <p class="muted" id="rv-meta"></p>
+      <ul id="rv-links"></ul>
+      <form id="rv-form">
+        <div class="grid">
+          <div><label for="rv-label">Your verdict *</label><select id="rv-label" required></select></div>
+          <div><label for="rv-note">Note</label><input id="rv-note"></div>
+        </div>
+        <div class="row"><button type="submit">Save review</button></div>
+        <div id="rv-msg" class="msg bad" hidden></div>
+      </form>
+    </section>
+    <section id="review-done" hidden><p class="muted" id="review-done-text"></p></section>
+
+    <section id="dis-box" hidden>
+      <h2>Disagreements</h2>
+      <p class="muted">Settle each against the rules; if the first label was wrong, edit the fact on the Label tab. Agreement stays measured on the first label.</p>
+      <ul id="dis-list"></ul>
+    </section>
+  </div>
+</main>
+
+<script>
+"use strict";
+
+const GROUPS = { society: "Society", science: "Science", environment: "Environment", culture: "Culture", health: "Health" };
+const TIERS = { primary: "Primary (report, statistic, study)", reference_media: "Reference media", press_release: "Press release", social_media: "Social media" };
+// Kept after a save: an article usually yields several claims.
+const STICKY = ["language", "site", "claimant", "claimDate", "articleUrl", "topic"];
+const FIELDS = ["claim", "label", "topic", "claimType", "language", "articleUrl", "site", "claimant", "claimDate", "sourceTier", "evidenceDate", "annotatorNote"];
+
+const $ = (id) => document.getElementById(id);
+let S = null;          // last /api/state
+let editing = null;    // fact id being edited
+let optionsBuilt = false;
+
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v; else if (k === "style") e.style.cssText = v; else e.setAttribute(k, v);
+  }
+  for (const kid of kids) if (kid != null) e.append(kid);
+  return e;
+}
+
+function badge(label) {
+  return el("span", { class: "badge", style: `background:var(--${label})` }, label);
+}
+
+// Links are typed by hand; only http(s) become links.
+function link(url, text) {
+  return /^https?:\/\//i.test(url) ? el("a", { href: url, target: "_blank", rel: "noreferrer" }, text || url) : document.createTextNode(url);
+}
+
+async function call(method, url, body) {
+  const res = await fetch(url, {
+    method,
+    headers: body ? { "Content-Type": "application/json" } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({ errors: [`HTTP ${res.status}`] }));
+  if (!res.ok) throw data.errors || [`HTTP ${res.status}`];
+  return data;
+}
+
+function showMsg(box, ok, content) {
+  box.hidden = false;
+  box.className = "msg " + (ok ? "ok" : "bad");
+  box.replaceChildren();
+  if (Array.isArray(content)) box.append(el("ul", {}, ...content.map((c) => el("li", {}, c))));
+  else box.append(content);
+}
+
+async function load() {
+  S = await call("GET", "/api/state");
+  if (!optionsBuilt) buildOptions();
+  render();
+}
+
+function buildOptions() {
+  const sch = S.schema;
+  $("label").replaceChildren(...sch.labels.map((l) => el("option", { value: l.label }, `${l.label} — ${l.labelRaw}`)));
+  $("rv-label").replaceChildren(el("option", { value: "" }, "Choose…"), ...sch.labels.map((l) => el("option", { value: l.label }, `${l.label} — ${l.labelRaw}`)));
+  $("claimType").replaceChildren(...sch.claimTypes.map((c) => el("option", { value: c }, c)));
+  $("sourceTier").replaceChildren(...sch.sourceTiers.map((s) => el("option", { value: s }, TIERS[s] || s)));
+  $("label").addEventListener("change", labelHelp);
+  labelHelp();
+  optionsBuilt = true;
+}
+
+function labelHelp() {
+  const l = S.schema.labels.find((x) => x.label === $("label").value);
+  $("label-help").textContent = l ? l.help : "";
+}
+
+function topicName(id) {
+  const t = S.schema.topics.find((x) => x.id === id);
+  return t ? t.name : id;
+}
+
+function render() {
+  const { summary: sum, schema: sch } = S;
+  const t = sch.targets;
+
+  $("where").textContent = `Each fact is saved as its own file in ${S.folder}/. Aim for ${t.total} (at least ${t.minimum}); then run "python labeller/app.py join".`;
+
+  if (S.broken.length) {
+    showMsg($("broken"), false, S.broken.map((b) => `${b.file} could not be read: ${b.error}`));
+  } else $("broken").hidden = true;
+
+  // Topic select keeps its current value while its counts refresh.
+  const current = $("topic").value;
+  const groups = sch.groups.map((g) =>
+    el("optgroup", { label: GROUPS[g] || g },
+      ...sch.topics.filter((x) => x.group === g).map((x) => el("option", { value: x.id }, `${x.name} (${sum.byTopic[x.id] || 0})`))));
+  $("topic").replaceChildren(el("option", { value: "" }, "Choose…"), ...groups);
+  $("topic").value = current;
+
+  // Balance
+  $("balance-note").textContent =
+    `${sum.total} of ${t.total} facts. Each cell aims at ${t.perCell}; a short cell is reported short, not padded. ` +
+    `en ${sum.byLanguage.en} · es ${sum.byLanguage.es} · ` + Object.entries(sum.byClaimType).map(([k, v]) => `${k} ${v}`).join(" · ");
+  $("bar-fill").style.width = Math.min(100, sum.total / t.total * 100) + "%";
+  $("bar-min").style.left = (t.minimum / t.total * 100) + "%";
+
+  const head = el("tr", {}, el("th", {}, "Verdict"), ...sch.groups.map((g) => el("th", { class: "n" }, GROUPS[g])), el("th", { class: "n" }, `Total / ${t.perLabel}`));
+  const rows = sch.labels.map(({ label }) => el("tr", {},
+    el("td", {}, badge(label)),
+    ...sch.groups.map((g) => {
+      const n = sum.matrix[label][g];
+      return el("td", { class: "n " + (n >= t.perCell ? "full" : n > 0 ? "some" : "") }, String(n));
+    }),
+    el("td", { class: "n" }, el("b", {}, String(sum.byLabel[label])))));
+  const total = el("tr", {}, el("td", {}, el("b", {}, `Total / ${t.perGroup}`)),
+    ...sch.groups.map((g) => el("td", { class: "n" }, el("b", {}, String(sum.byGroup[g])))),
+    el("td", { class: "n" }, el("b", {}, String(sum.total))));
+  $("matrix").replaceChildren(el("thead", {}, head), el("tbody", {}, ...rows, total));
+
+  // Facts
+  $("facts-title").textContent = `Facts (${S.facts.length})`;
+  if (!S.facts.length) {
+    $("facts").replaceChildren(el("tr", {}, el("td", { class: "muted" }, "Nothing labelled yet.")));
+  } else {
+    $("facts").replaceChildren(
+      el("thead", {}, el("tr", {}, ...["File", "Claim", "Verdict", "Topic", "Date", "Review", ""].map((h) => el("th", {}, h)))),
+      el("tbody", {}, ...S.facts.map((f) => el("tr", {},
+        el("td", {}, `${f.id}.json`),
+        el("td", {}, f.claim, el("div", { class: "muted" }, `${f.site}${f.claimant ? " · " + f.claimant : ""} · ${f.language} · ${f.referenceEvidenceLinks.length} link(s)`)),
+        el("td", {}, badge(f.label)),
+        el("td", {}, topicName(f.topic)),
+        el("td", { class: "nowrap" }, f.claimDate),
+        el("td", {}, f.review ? (f.review.agrees ? "agrees" : "→ " + f.review.label) : "—"),
+        el("td", {}, editButton(f))))));
+  }
+
+  renderReview();
+}
+
+function editButton(fact) {
+  const b = el("button", { class: "plain", type: "button" }, "Edit");
+  b.addEventListener("click", () => {
+    editing = fact.id;
+    for (const k of FIELDS) $(k).value = fact[k] ?? "";
+    $("links").value = fact.referenceEvidenceLinks.join("\n");
+    $("onlyOwnSource").checked = !!fact.onlyOwnSource;
+    $("form-title").textContent = `Edit ${fact.id}.json`;
+    $("save").textContent = "Save changes";
+    $("cancel").hidden = false;
+    $("form-msg").hidden = true;
+    labelHelp();
+    window.scrollTo({ top: $("form").offsetTop - 60, behavior: "smooth" });
+  });
+  return b;
+}
+
+function resetForm(keepArticle) {
+  const kept = {};
+  if (keepArticle) for (const k of STICKY) kept[k] = $(k).value;
+  $("form").reset();
+  for (const [k, v] of Object.entries(kept)) $(k).value = v;
+  editing = null;
+  $("form-title").textContent = "New fact";
+  $("save").textContent = "Save fact";
+  $("cancel").hidden = true;
+  labelHelp();
+}
+
+$("form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const body = { onlyOwnSource: $("onlyOwnSource").checked, referenceEvidenceLinks: $("links").value.split(/\s+/).filter(Boolean) };
+  for (const k of FIELDS) body[k] = $(k).value.trim() || null;
+  try {
+    const fact = editing ? await call("PUT", `/api/facts/${editing}`, body) : await call("POST", "/api/facts", body);
+    showMsg($("form-msg"), true, editing ? `Saved ${fact.id}.json.` : `Saved ${fact.id}.json. The article's fields are kept for its next claim.`);
+    resetForm(!editing);
+    await load();
+  } catch (errors) {
+    showMsg($("form-msg"), false, Array.isArray(errors) ? errors : [String(errors)]);
+  }
+});
+
+$("cancel").addEventListener("click", () => { resetForm(false); $("form-msg").hidden = true; });
+
+// ---------------- review ----------------
+
+function renderReview() {
+  const r = S.review, a = r.agreement;
+  const done = r.sample.filter((f) => f.review).length;
+  $("review-note").textContent =
+    `${done} of ${r.sampleSize} sampled facts reviewed (${Math.round(S.schema.targets.reviewShare * 100)}% of ${S.summary.total}, ` +
+    `chosen by a hash of the file name, not by hand). Label each again without looking at the first answer, ideally a week later.`;
+  $("st-observed").textContent = a.observed == null ? "—" : Math.round(a.observed * 100) + "%";
+  $("st-kappa").textContent = a.kappa == null ? "—" : a.kappa.toFixed(2);
+  $("st-dis").textContent = String(a.disagreements.length);
+
+  const next = r.sample.find((f) => !f.review);
+  $("review-box").hidden = !next;
+  $("review-done").hidden = !!next;
+  $("review-done-text").textContent = r.sampleSize ? "Every sampled fact is reviewed." : "Nothing to review yet.";
+  if (next) {
+    $("rv-claim").textContent = next.claim;
+    $("rv-meta").textContent = `${next.id}.json · ${next.site}${next.claimant ? " · " + next.claimant : ""} · ${next.language} · published ${next.claimDate} · ${topicName(next.topic)} · ${next.claimType}` +
+      (next.evidenceDate ? ` · evidence up to ${next.evidenceDate}` : "");
+    const items = [];
+    if (next.articleUrl) items.push(el("li", {}, "Article: ", link(next.articleUrl)));
+    for (const l of next.referenceEvidenceLinks) items.push(el("li", {}, link(l)));
+    $("rv-links").replaceChildren(...items);
+    $("rv-form").dataset.id = next.id;
+  }
+
+  $("dis-box").hidden = !a.disagreements.length;
+  $("dis-list").replaceChildren(...a.disagreements.map((d) =>
+    el("li", {}, `${d.id}.json — ${d.claim} — `, badge(d.firstLabel), " then ", badge(d.secondLabel))));
+}
+
+$("rv-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    await call("POST", `/api/facts/${$("rv-form").dataset.id}/review`, { label: $("rv-label").value, note: $("rv-note").value });
+    $("rv-form").reset();
+    $("rv-msg").hidden = true;
+    await load();
+  } catch (errors) {
+    showMsg($("rv-msg"), false, Array.isArray(errors) ? errors : [String(errors)]);
+  }
+});
+
+// ---------------- tabs ----------------
+
+function tab(name) {
+  $("view-label").hidden = name !== "label";
+  $("view-review").hidden = name !== "review";
+  $("tab-label").classList.toggle("on", name === "label");
+  $("tab-review").classList.toggle("on", name === "review");
+}
+$("tab-label").addEventListener("click", () => tab("label"));
+$("tab-review").addEventListener("click", () => tab("review"));
+
+load().catch((errors) => showMsg($("broken"), false, [`Could not reach the labeller: ${errors}`]));
+</script>
+</body>
+</html>

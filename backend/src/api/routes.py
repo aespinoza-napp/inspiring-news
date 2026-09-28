@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field, model_validator
 from src.container import (
     get_analysis_service,
     get_claim_service,
-    get_custom_dataset_service,
     get_datalake_repository,
     get_enrichment_service,
     get_ingestion_service,
@@ -20,7 +19,6 @@ from src.container import (
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
 from src.models.core.job import JobStatus
-from src.models.evaluation.custom_fact import CustomFactInput, CustomFactReview
 from src.models.storage.lineage import DataLayer
 from src.services.enrichment_service import NothingToEnrich
 from src.services.job_runner import run_analysis_job
@@ -638,67 +636,3 @@ def trace_article(article_id: str):
     """
 
     return get_datalake_repository().trace(article_id)
-
-
-# ---------------------------------------------------------------------
-# Custom evaluation set
-#
-# The hand-labelled facts the paper's "custom validation set" promises,
-# typed in through the /dataset page. Rows are x-fact's shape plus the
-# topic and the guide's fields, so the set is scored by the same code as
-# backend/data/evaluation/xfact_en_es.jsonl. Behind the storage key: the
-# writes land in a file that goes into git.
-# docs/final_document/sections/custom_dataset.tex has the labelling guide.
-# ---------------------------------------------------------------------
-
-
-@router.get("/dataset", dependencies=[Depends(require_storage_key)])
-def custom_dataset():
-    """Every fact (newest first), the balance counts, and the form's options."""
-
-    return get_custom_dataset_service().overview()
-
-
-@router.post("/dataset/facts", status_code=201, dependencies=[Depends(require_storage_key)])
-def create_custom_fact(request: CustomFactInput):
-
-    return get_custom_dataset_service().create(request).model_dump(mode="json")
-
-
-@router.put("/dataset/facts/{fact_id}", dependencies=[Depends(require_storage_key)])
-def update_custom_fact(fact_id: str, request: CustomFactInput):
-
-    fact = get_custom_dataset_service().update(fact_id, request)
-
-    if fact is None:
-        raise HTTPException(status_code=404, detail="Fact not found")
-
-    return fact.model_dump(mode="json")
-
-
-@router.delete("/dataset/facts/{fact_id}", status_code=204, dependencies=[Depends(require_storage_key)])
-def delete_custom_fact(fact_id: str):
-
-    if not get_custom_dataset_service().delete(fact_id):
-        raise HTTPException(status_code=404, detail="Fact not found")
-
-
-@router.get("/dataset/review", dependencies=[Depends(require_storage_key)])
-def custom_dataset_review():
-    """
-    The 20% self-agreement sample, blind (no first label, no note), and
-    the agreement measured so far.
-    """
-
-    return get_custom_dataset_service().review_queue()
-
-
-@router.post("/dataset/facts/{fact_id}/review", dependencies=[Depends(require_storage_key)])
-def review_custom_fact(fact_id: str, request: CustomFactReview):
-
-    fact = get_custom_dataset_service().review(fact_id, request)
-
-    if fact is None:
-        raise HTTPException(status_code=404, detail="Fact not found")
-
-    return fact.model_dump(mode="json")

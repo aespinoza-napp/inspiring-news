@@ -103,6 +103,8 @@ verdict rests. \\
 train or tune on. \\
 \midrule
 \multicolumn{2}{@{}l}{\emph{Added by the custom set}} \\
+\texttt{id} & The record's file name (\texttt{fact001},
+\texttt{fact002}, \ldots), in the order of annotation. \\
 \texttt{topic} & One of the 23 classifier topics; its group is
 derived. \\
 \texttt{claimType} & \texttt{factual}, \texttt{numerical} or
@@ -192,17 +194,29 @@ searches for evidence independently of the system, records the
 links on which the verdict rests, and assigns the label under the
 rules of Section~\ref{subsec:custom-rules}.
 
-Records are entered through a purpose-built web form in the system's
-internal tooling (the \texttt{/dataset} page). Its fields are exactly
+Records are entered through a small web form built for this purpose
+and kept apart from the system itself: a single program using only the
+Python standard library, so that labelling depends neither on the
+system's services nor on any installed package. Its fields are exactly
 the keys of Table~\ref{tab:custom-format}, and it enforces the rules
 that can be checked mechanically at the moment a record is saved:
 a verdict other than \texttt{UNVERIFIED} requires at least one
 evidence link; a claim backed only by its protagonist's own source
 must be labelled \texttt{UNVERIFIED} and the source named; and an
 evidence date later than the article's publication date is rejected.
-The same page shows the running count per verdict and topic group
+The same form shows the running count per verdict and topic group
 against the targets of Section~\ref{subsec:custom-size}, which is how
 balance is steered during annotation rather than assessed after it.
+
+Each record is stored as its own file (\texttt{fact001.json},
+\texttt{fact002.json}, \ldots) in the project's version-controlled
+repository. Every verified claim is therefore individually visible,
+and every later correction is recorded as a change to that one file,
+which leaves an audit trail of the annotation. Once the set is
+complete, the files are validated again and merged, in order, into a
+single JSON Lines file in the X-Fact format, which is what the
+evaluation harness reads. The per-record files remain the source, and
+the merged file is derived from them.
 
 \subsection{Tie-Break Rules}
 \label{subsec:custom-rules}
