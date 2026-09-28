@@ -1,0 +1,33 @@
+id: 20minutos
+
+name: 20minutos
+
+base_url: https://www.20minutos.es
+
+rss_url: https://www.20minutos.es/rss/
+
+search_url: https://www.20minutos.es/busqueda/?q={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.78
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - society
+  - science
+  - technology
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

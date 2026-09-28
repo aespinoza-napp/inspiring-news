@@ -1,0 +1,33 @@
+id: muy_interesante
+
+name: Muy Interesante
+
+base_url: https://www.muyinteresante.com
+
+rss_url: https://www.muyinteresante.com/feed/
+
+search_url: https://www.muyinteresante.com/?s={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.78
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - history
+  - health
+  - space
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

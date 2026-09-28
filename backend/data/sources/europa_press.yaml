@@ -1,0 +1,33 @@
+id: europa_press
+
+name: Europa Press
+
+base_url: https://www.europapress.es
+
+rss_url: https://www.europapress.es/rss/rss.aspx?ch=00564
+
+search_url: https://www.europapress.es/buscador.aspx?buscar={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.9
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - science
+  - society
+  - economy
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

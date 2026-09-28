@@ -1,0 +1,35 @@
+# Disabled on purpose: rated, not ingested - see newtral.yaml.
+
+id: maldita
+
+name: Maldita.es
+
+base_url: https://maldita.es
+
+rss_url: https://maldita.es/feed/
+
+search_url: https://maldita.es/buscador/?q={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.93
+
+enabled: false
+
+requires_javascript: false
+
+tags:
+  - fact-checking
+  - science
+  - health
+  - society
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

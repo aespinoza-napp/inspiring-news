@@ -1,0 +1,31 @@
+id: xataka_ciencia
+
+name: Xataka Ciencia
+
+base_url: https://www.xatakaciencia.com
+
+rss_url: https://www.xatakaciencia.com/index.xml
+
+search_url: https://www.xatakaciencia.com/buscar?q={query}
+
+language: es
+
+country: ES
+
+source_type: blog
+
+reliability_index: 0.75
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - technology
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

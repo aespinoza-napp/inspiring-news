@@ -1,0 +1,32 @@
+id: yale_e360
+
+name: Yale Environment 360
+
+base_url: https://e360.yale.edu
+
+rss_url: https://e360.yale.edu/feed.xml
+
+search_url: https://e360.yale.edu/search?q={query}
+
+language: en
+
+country: US
+
+source_type: academic
+
+reliability_index: 0.9
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - environment
+  - climate
+  - wildlife
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

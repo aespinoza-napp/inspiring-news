@@ -4,7 +4,7 @@ name: RTVE Noticias
 
 base_url: https://www.rtve.es
 
-rss_url: https://www.rtve.es/rss/noticias.xml
+rss_url: https://api2.rtve.es/rss/temas_noticias.xml
 
 search_url: https://www.rtve.es/buscador/?text={query}
 

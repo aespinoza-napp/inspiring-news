@@ -1,0 +1,33 @@
+id: guardian
+
+name: The Guardian
+
+base_url: https://www.theguardian.com
+
+rss_url: https://www.theguardian.com/science/rss
+
+search_url: https://www.theguardian.com/search?q={query}
+
+language: en
+
+country: UK
+
+source_type: news
+
+reliability_index: 0.88
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - environment
+  - health
+  - world
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

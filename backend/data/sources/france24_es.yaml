@@ -1,0 +1,32 @@
+id: france24_es
+
+name: France 24 Español
+
+base_url: https://www.france24.com
+
+rss_url: https://www.france24.com/es/rss
+
+search_url: https://www.france24.com/es/buscar/?q={query}
+
+language: es
+
+country: FR
+
+source_type: news
+
+reliability_index: 0.88
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - world
+  - general
+  - politics
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

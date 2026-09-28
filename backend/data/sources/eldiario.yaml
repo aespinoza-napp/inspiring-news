@@ -1,0 +1,33 @@
+id: eldiario
+
+name: elDiario.es
+
+base_url: https://www.eldiario.es
+
+rss_url: https://www.eldiario.es/rss/
+
+search_url: https://www.eldiario.es/busqueda/?q={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.83
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - politics
+  - society
+  - environment
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

@@ -1,0 +1,33 @@
+id: un_news
+
+name: UN News
+
+base_url: https://news.un.org
+
+rss_url: https://news.un.org/feed/subscribe/en/news/all/rss.xml
+
+search_url: https://news.un.org/en/search/{query}
+
+language: en
+
+country: INT
+
+source_type: government
+
+reliability_index: 0.92
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - world
+  - community
+  - health
+  - climate
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

@@ -1,0 +1,32 @@
+id: esa
+
+name: European Space Agency
+
+base_url: https://www.esa.int
+
+rss_url: https://www.esa.int/rssfeed/Our_Activities/Space_Science
+
+search_url: https://www.esa.int/Search?SearchText={query}
+
+language: en
+
+country: EU
+
+source_type: government
+
+reliability_index: 1.0
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - space
+  - astronomy
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

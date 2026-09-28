@@ -1,0 +1,33 @@
+id: mit_news
+
+name: MIT News
+
+base_url: https://news.mit.edu
+
+rss_url: https://news.mit.edu/rss/feed
+
+search_url: https://news.mit.edu/search?keys={query}
+
+language: en
+
+country: US
+
+source_type: academic
+
+reliability_index: 0.92
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - technology
+  - research
+  - education
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

@@ -1,0 +1,33 @@
+id: new_scientist
+
+name: New Scientist
+
+base_url: https://www.newscientist.com
+
+rss_url: https://www.newscientist.com/feed/home/
+
+search_url: https://www.newscientist.com/search/?q={query}
+
+language: en
+
+country: UK
+
+source_type: news
+
+reliability_index: 0.88
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - technology
+  - health
+  - space
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

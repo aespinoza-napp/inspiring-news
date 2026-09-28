@@ -1,0 +1,32 @@
+id: carbon_brief
+
+name: Carbon Brief
+
+base_url: https://www.carbonbrief.org
+
+rss_url: https://www.carbonbrief.org/feed/
+
+search_url: https://www.carbonbrief.org/?s={query}
+
+language: en
+
+country: UK
+
+source_type: news
+
+reliability_index: 0.9
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - climate
+  - environment
+  - energy
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

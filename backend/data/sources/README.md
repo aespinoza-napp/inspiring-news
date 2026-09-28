@@ -39,7 +39,22 @@ metadata:                    # free-form, strategy-specific hints
 ```
 
 Only `id`, `name`, and `base_url` are required — everything else has a default (see `NewsSource` for
-exact defaults). Set `enabled: false` to keep a source's YAML around without it being loaded.
+exact defaults).
+
+`enabled: false` keeps a source out of ingestion, the probe and posted-URL recognition — but **not** out
+of the reliability map, which reads every YAML. That makes it the way to *rate* a domain without
+*ingesting* it: `newtral.yaml` and `maldita.yaml` are disabled because a fact-check quotes the claim it
+debunks, and claim extraction would take that quote for the article's own claim.
+
+**One source per domain.** Reliability and posted-URL recognition are both looked up by domain, so a
+second YAML on the same domain (BBC Mundo on bbc.com, The Conversation's Spanish edition) silently
+overrides the first. `tests/repositories/test_source_repository.py` fails on it.
+
+**Before adding a source,** check its feed yields article links *and* that two of them extract: the
+`/sources` page does both for every YAML. English feeds are filtered by topic keyword, so a feed with
+nothing on the configured topics discovers zero links even when it works. Feeds tried on 2026-09-28
+and left out: NPR, Phys.org and El Confidencial (feed fine, articles would not extract), ScienceDaily,
+DW Español and CSIC (no article links), AP (403).
 
 `reliability_index` matters beyond discovery: `EvidenceRanker` looks it up by domain (via
 `SourceRepository`) when scoring a piece of evidence during fact-checking, with a neutral default for

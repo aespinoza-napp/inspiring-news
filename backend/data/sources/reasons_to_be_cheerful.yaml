@@ -1,0 +1,33 @@
+id: reasons_to_be_cheerful
+
+name: Reasons to be Cheerful
+
+base_url: https://reasonstobecheerful.world
+
+rss_url: https://reasonstobecheerful.world/feed/
+
+search_url: https://reasonstobecheerful.world/?s={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.8
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - community
+  - cities
+  - environment
+  - solutions
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

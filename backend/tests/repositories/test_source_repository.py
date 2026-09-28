@@ -34,6 +34,30 @@ def test_list_sources():
     # silently shadow each other in SourceRepository.get().
     assert len(ids) == len(sources)
 
+
+def test_no_two_sources_share_a_domain():
+    """
+    Both lookups that start from a URL key sources by domain: the
+    evidence ranker's reliability map (the later YAML silently overwrites
+    the earlier one's rating) and configured_source_for (a posted BBC
+    Mundo URL would resolve to "bbc" and be scored as English). A second
+    edition of an outlet on the same domain - bbc.com/mundo,
+    theconversation.com/es - was left out for this reason.
+    """
+
+    from collections import defaultdict
+    from urllib.parse import urlsplit
+
+    by_domain = defaultdict(list)
+
+    for source in SourceRepository().list():
+        by_domain[urlsplit(str(source.base_url)).netloc.lower().removeprefix("www.")].append(source.id)
+
+    shared = {domain: ids for domain, ids in by_domain.items() if len(ids) > 1}
+
+    assert shared == {}
+
+
 def test_get_unknown_source():
 
     repository = SourceRepository()

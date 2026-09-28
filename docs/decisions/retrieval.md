@@ -230,4 +230,4 @@ fix it, in order of leverage:
   A real stance/entailment step is the next thing.
 - **Accuracy is still unmeasured.** There is no labelled set, so the
   threshold defaults are reasoned, not fitted.
-- **Only the 12 configured domains have a real reliability rating.**
+- **Only the 36 configured domains have a real reliability rating.**

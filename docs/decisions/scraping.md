@@ -75,7 +75,7 @@ are known to fail for that site and would each cost a request finding
 that out again. They still follow the browser, for when none is
 installed. Evidence never renders, flag or not.
 
-All twelve configured sources are `false` today. The flag is meant to be
+Every configured source is `false` today. The flag is meant to be
 set from evidence, not guessed: the `/scraper` page flags a domain whose
 every article came from the browser.
 

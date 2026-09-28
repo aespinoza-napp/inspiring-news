@@ -1,0 +1,33 @@
+id: the_conversation
+
+name: The Conversation
+
+base_url: https://theconversation.com
+
+rss_url: https://theconversation.com/global/articles.atom
+
+search_url: https://theconversation.com/global/search?q={query}
+
+language: en
+
+country: AU
+
+source_type: academic
+
+reliability_index: 0.9
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - education
+  - health
+  - society
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

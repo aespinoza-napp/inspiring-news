@@ -1,0 +1,33 @@
+id: smithsonian
+
+name: Smithsonian Magazine
+
+base_url: https://www.smithsonianmag.com
+
+rss_url: https://www.smithsonianmag.com/rss/latest_articles/
+
+search_url: https://www.smithsonianmag.com/search/?q={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.9
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - history
+  - culture
+  - wildlife
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

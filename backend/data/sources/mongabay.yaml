@@ -1,0 +1,33 @@
+id: mongabay
+
+name: Mongabay
+
+base_url: https://news.mongabay.com
+
+rss_url: https://news.mongabay.com/feed/
+
+search_url: https://news.mongabay.com/?s={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.85
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - environment
+  - wildlife
+  - conservation
+  - climate
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

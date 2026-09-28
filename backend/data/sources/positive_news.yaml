@@ -1,0 +1,33 @@
+id: positive_news
+
+name: Positive News
+
+base_url: https://www.positive.news
+
+rss_url: https://www.positive.news/feed/
+
+search_url: https://www.positive.news/?s={query}
+
+language: en
+
+country: UK
+
+source_type: news
+
+reliability_index: 0.78
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - community
+  - environment
+  - society
+  - solutions
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

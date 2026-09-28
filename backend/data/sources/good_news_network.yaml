@@ -1,0 +1,36 @@
+# Largely rewrites other outlets' stories, often without linking the
+# primary source: a steady supply of on-topic articles, but rated as a
+# blog when it turns up as evidence.
+
+id: good_news_network
+
+name: Good News Network
+
+base_url: https://www.goodnewsnetwork.org
+
+rss_url: https://www.goodnewsnetwork.org/feed/
+
+search_url: https://www.goodnewsnetwork.org/?s={query}
+
+language: en
+
+country: US
+
+source_type: blog
+
+reliability_index: 0.65
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - community
+  - society
+  - wildlife
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

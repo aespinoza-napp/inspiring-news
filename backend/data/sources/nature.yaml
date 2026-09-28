@@ -1,0 +1,33 @@
+id: nature
+
+name: Nature
+
+base_url: https://www.nature.com
+
+rss_url: https://www.nature.com/nature.rss
+
+search_url: https://www.nature.com/search?q={query}
+
+language: en
+
+country: UK
+
+source_type: academic
+
+reliability_index: 0.98
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - science
+  - research
+  - medicine
+  - biology
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

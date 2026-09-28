@@ -1,0 +1,32 @@
+id: who
+
+name: World Health Organization
+
+base_url: https://www.who.int
+
+rss_url: https://www.who.int/rss-feeds/news-english.xml
+
+search_url: https://www.who.int/home/search-results?indexCatalogue=genericsearchindex1&searchQuery={query}
+
+language: en
+
+country: INT
+
+source_type: government
+
+reliability_index: 0.97
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - health
+  - medicine
+  - world
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

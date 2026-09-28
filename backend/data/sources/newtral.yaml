@@ -1,0 +1,38 @@
+# Disabled on purpose: rated, not ingested. A fact-check quotes the
+# claim it debunks, and claim extraction would pick that quote up as
+# the article's own claim. The reliability map (EvidenceRanker) reads
+# every YAML, enabled or not, so its pages still rank as evidence.
+
+id: newtral
+
+name: Newtral
+
+base_url: https://www.newtral.es
+
+rss_url: https://www.newtral.es/feed/
+
+search_url: https://www.newtral.es/?s={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.93
+
+enabled: false
+
+requires_javascript: false
+
+tags:
+  - fact-checking
+  - politics
+  - science
+  - health
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

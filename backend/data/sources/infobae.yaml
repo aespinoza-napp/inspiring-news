@@ -1,0 +1,33 @@
+id: infobae
+
+name: Infobae
+
+base_url: https://www.infobae.com
+
+rss_url: https://www.infobae.com/arc/outboundfeeds/rss/
+
+search_url: https://www.infobae.com/buscador/?q={query}
+
+language: es
+
+country: AR
+
+source_type: news
+
+reliability_index: 0.7
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - general
+  - world
+  - science
+  - health
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search
