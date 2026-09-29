@@ -1,0 +1,212 @@
+{
+  "requestId": "bd9529767ca6445d950eed511b632b10",
+  "seed": "2026-09-29",
+  "createdAt": "2026-09-29T09:07:15+00:00",
+  "requested": {
+    "articles": 3,
+    "claimsPerArticle": 3,
+    "languages": null,
+    "preferTopics": [
+      "education",
+      "community",
+      "employment",
+      "cities",
+      "space",
+      "technology",
+      "research",
+      "biology",
+      "climate",
+      "nature",
+      "energy",
+      "sustainability",
+      "food",
+      "medicine",
+      "mental_health",
+      "nutrition",
+      "fitness",
+      "public_health"
+    ],
+    "excluded": 1496
+  },
+  "totals": {
+    "sources": 34,
+    "discovered": 1491,
+    "candidates": 6,
+    "ready": 5,
+    "articles": 3,
+    "claims": 9
+  },
+  "articles": [
+    {
+      "url": "https://www.smithsonianmag.com/smart-news/in-a-first-sea-turtles-were-spotted-nesting-on-the-us-west-coast-scientists-say-the-super-el-nino-could-have-brought-them-there-180989574/",
+      "source": "smithsonian",
+      "title": "In a First, Sea Turtles Were Spotted Nesting on the U.S. West Coast. Scientists Say the 'Super' El Niño Could Have Brought Them There",
+      "site": "smithsonianmag.com",
+      "sourceName": "Smithsonian Magazine",
+      "language": "en",
+      "publishedAt": "2026-09-25",
+      "author": "Margherita Bassi",
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "food"
+      ],
+      "claims": [
+        {
+          "text": "On September 16, an olive ridley turtle dug a nest and laid her eggs near Seal Beach in Orange County.",
+          "selectedBy": "anchor",
+          "score": 0.714,
+          "figures": [
+            "16"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact007"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "West Coast’s first known natural sea turtle nesting, according to a social media post by the National Oceanic and Atmospheric Administration (NOAA) Fisheries West Coast.",
+          "selectedBy": "anchor",
+          "score": 0.654,
+          "figures": [],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        },
+        {
+          "text": "A popular nesting beach in southern Mexico hosts an estimated 450,000 nesting females, while two beaches on Costa Rica’s Pacific coast host around 600,000.",
+          "selectedBy": "anchor",
+          "score": 0.594,
+          "figures": [
+            "450,000",
+            "600,000"
+          ],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://e360.yale.edu/digest/data-centers-battery-storage",
+      "source": "yale_e360",
+      "title": "Data Centers are Helping Fuel a U.S. Battery Boom",
+      "site": "e360.yale.edu",
+      "sourceName": "Yale Environment 360",
+      "language": "en",
+      "publishedAt": "2026-09-02",
+      "author": "Jan Rosenow",
+      "topic": "energy",
+      "topics": [
+        "energy",
+        "technology",
+        "climate",
+        "sustainability",
+        "cities",
+        "research",
+        "food",
+        "space",
+        "entertainment"
+      ],
+      "claims": [
+        {
+          "text": "By one estimate, more than 100 gigawatts of onsite gas power, the rough equivalent of 100 large gas power plants, is planned for data centers across the U.S.",
+          "selectedBy": "anchor",
+          "score": 0.723,
+          "figures": [
+            "100",
+            "100"
+          ],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        },
+        {
+          "text": "But instead of waiting for that approval, tech companies keen to build the infrastructure for A.I. are often building gas generators on site.",
+          "selectedBy": "anchor",
+          "score": 0.629,
+          "figures": [],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        },
+        {
+          "text": "Analysts say that public outcry over the data center boom may push companies to fund more home battery installations.",
+          "selectedBy": "anchor",
+          "score": 0.583,
+          "figures": [],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://news.mit.edu/2026/new-cell-collection-device-could-improve-early-cancer-detection-0924",
+      "source": "mit_news",
+      "title": "New cell-collection device could improve early cancer detection",
+      "site": "news.mit.edu",
+      "sourceName": "MIT News",
+      "language": "en",
+      "publishedAt": "2026-09-24",
+      "author": "Zach Winn; MIT News",
+      "topic": "medicine",
+      "topics": [
+        "medicine",
+        "biology",
+        "research",
+        "sustainability",
+        "energy",
+        "nature",
+        "space",
+        "education",
+        "nutrition",
+        "food",
+        "cities",
+        "mental_health",
+        "technology"
+      ],
+      "claims": [
+        {
+          "text": "“Break Through Cancer brought together people working on not only ovarian cancer but also on pancreatic cancer, brain cancer, leukemia, and other cancers,” Varanasi says.",
+          "selectedBy": "anchor",
+          "score": 0.639,
+          "figures": [],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        },
+        {
+          "text": "“It’s very time-consuming and destructive to the cells,” Varanasi says.",
+          "selectedBy": "anchor",
+          "score": 0.618,
+          "figures": [],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        },
+        {
+          "text": "About 20 years ago, researchers studying ovarian cancer discovered that many cases of high-grade serous ovarian cancer, the most common type, originate in the fallopian tubes.",
+          "selectedBy": "anchor",
+          "score": 0.568,
+          "figures": [
+            "20"
+          ],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "url": "https://www.lavanguardia.com/participacion/las-fotos-de-los-lectores/20260929/11512016/ferrata-cala-moli.html",
+      "source": "la_vanguardia",
+      "reason": "no checkable claim found"
+    }
+  ],
+  "file": "2026-09-29.json",
+  "date": "2026-09-29"
+}

@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "lacarabuenadelmundo.com",
+  "claimant": null,
+  "claim": "Uno de cada tres niños y adolescentes en España vive en riesgo de pobreza",
+  "claimDate": "2026-09-23",
+  "reviewDate": "2026-09-29T07:04:17",
+  "labelRaw": "conflicting evidence/cherrypicking",
+  "label": "MISLEADING",
+  "referenceEvidenceLinks": [
+    "https://ine.es/dyngs/Prensa/en/ECV2025.htm?print=1",
+    "https://www.eapn.es/estadopobreza/noticia/1958/las-politicas-actuales-no-logran-reducir-la-pobreza-eapn-es-reclama-nuevas-herramientas-para-romper-el-suelo-estructural-de-la-exclusion-social"
+  ],
+  "split": "test",
+  "id": "fact001",
+  "topic": "community",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-02-05",
+  "articleUrl": "https://lacarabuenadelmundo.com/noticias/sociedad/romper-el-circulo-de-la-pobreza-hereditaria/",
+  "annotatorNote": "In the article of INE we can see that there is evidence that is not 1 out of 3. Is about 25% (1 out of 4) including the social exclusion, only considering the risk of poverty would be around 1 out of 5.",
+  "createdAt": "2026-09-29T05:54:42",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "inspiringnews.ai",
+  "claimant": "Natalia Soto",
+  "claim": "Bollardo II estudió pintura en la Facultad de Bellas Artes de Lisboa.",
+  "claimDate": "2026-08-06",
+  "reviewDate": "2026-09-29T07:04:22",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.p55.art/es/blogs/revista-p55/arte-urbano-en-portugal-lista-de-esculturas-de-bordalo-ii?srsltid=AU7gw4XayFTQlsqT-4xgHNPJIZMqjAoRWejuKGaJ7hW6M3GQ-zD1Mlef",
+    "https://drap-art.org/es/talent/artist-es/bordalo-ii/"
+  ],
+  "split": "test",
+  "id": "fact002",
+  "topic": "arts",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-05-19",
+  "articleUrl": "https://inspiringnews.ai/cultura/bordalo-ii-convierte-basura-en-animales-gigantes/",
+  "annotatorNote": "Is already cited in two different cites so I would say that is mostly true, but there is no a reliable source to 100% corroborrate it.",
+  "createdAt": "2026-09-29T06:07:54",
+  "review": null
+}

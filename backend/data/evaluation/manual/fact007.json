@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Margherita Bassi",
+  "claim": "On September 16, an olive ridley turtle dug a nest and laid her eggs near Seal Beach in Orange County.",
+  "claimDate": "2026-09-25",
+  "reviewDate": "2026-09-29T09:20:13",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.sfgate.com/bayarea/article/sea-turtle-california-eggs-22444518.php",
+    "https://www.vvng.com/olive-ridley-sea-turtles-lay-eggs-in-orange-county-in-historic-first-for-u-s-west-coast/"
+  ],
+  "split": "test",
+  "id": "fact007",
+  "topic": "nature",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-22",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/in-a-first-sea-turtles-were-spotted-nesting-on-the-us-west-coast-scientists-say-the-super-el-nino-could-have-brought-them-there-180989574/",
+  "annotatorNote": "There is a clear reference to it and it is source of information is from San Francisco (California). There are also a lot of references on social media.",
+  "createdAt": "2026-09-29T09:20:13",
+  "review": null
+}

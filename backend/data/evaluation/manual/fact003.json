@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "20minutos.es",
+  "claimant": "Daniel Mateo",
+  "claim": "Paco Pastor: Mi primer contrato discográfico lo tuvo que firmar mi madre, porque yo era menor de edad",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-09-29T07:04:27",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://radiolidersantiago.com/paco-pastor-voz-de-formula-v-el-guateque-era-el-tardeo-de-nuestra-epoca/"
+  ],
+  "split": "test",
+  "id": "fact003",
+  "topic": "inspiration",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-07-23",
+  "articleUrl": "https://www.20minutos.es/musica/entrevista-paco-pastor-formula-v-fuimos-primer-grupo-que-cruzo-charco-alli-se-nos-respetaba-espana-hubo-un-momento-que-no_7034554_0.html",
+  "annotatorNote": "There is not need to have more than one link since it is been asked in an interview",
+  "createdAt": "2026-09-29T06:14:44",
+  "review": null
+}

@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "elmundo.es",
+  "claimant": "Teresa Guerrero",
+  "claim": "El verano de 2026 ha sido el más tórrido desde 1869 y da paso a un otoño más caluroso de lo habitual",
+  "claimDate": "2026-09-21",
+  "reviewDate": "2026-09-29T06:20:37",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.aemet.es/es/noticias/2026/09/resumen_verano2026"
+  ],
+  "split": "test",
+  "id": "fact004",
+  "topic": "climate",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-01",
+  "articleUrl": "https://www.elmundo.es/ciencia/2026/09/21/6ab11a2cfc6c83a6348b457e.html",
+  "annotatorNote": "AEMET is a really reliable source.",
+  "createdAt": "2026-09-29T06:20:37",
+  "review": null
+}

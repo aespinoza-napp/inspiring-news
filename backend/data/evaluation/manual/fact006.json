@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "diariodenavarra.es",
+  "claimant": null,
+  "claim": "Si bien alcanzar entre 7.500 y 10.000 pasos diarios se asoció con el menor riesgo de muerte prematura, independientemente del ritmo, mantener un ritmo más rápido durante al menos 30 minutos al día también se asoció con un menor riesgo de muerte por cualquier causa, independientemente del número de pasos.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-09-29T07:10:38",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.euronews.com/2026/09/09/getting-those-steps-in-does-reduce-the-risk-of-early-death-but-it-is-also-the-pace-that-ma",
+    "https://drkumardiscovery.com/posts/combinations-stepping-intensity-daily-step-counts-against-all-cause/"
+  ],
+  "split": "test",
+  "id": "fact006",
+  "topic": "fitness",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-09",
+  "articleUrl": "https://www.diariodenavarra.es/noticias/vivir/2026/09/29/pasos-hay-dar-dia-velocidad-cuidar-salud-836935-108.html",
+  "annotatorNote": "Reliable sources",
+  "createdAt": "2026-09-29T07:10:38",
+  "review": null
+}
