@@ -156,3 +156,36 @@ def test_facts_retain_figures_dates_and_quotes():
     assert "40" not in facts.figures
     assert "2024" in facts.dates
     assert facts.quotes == ["we reached the target"]
+
+
+def test_a_line_break_ends_a_sentence():
+    """
+    A headline and a section label sit on their own lines with no full
+    stop. The first labelling batch proposed all three lines, joined, as
+    one claim - and the fact-checker searched for the same thing.
+    """
+
+    sentences = ClaimExtractor()._split_sentences(
+        "Identifican nuevas vías contra la fibromialgia\n"
+        "INVESTIGACIÓN MÉDICA\n"
+        "Un estudio de la UAB halló tres compuestos eficaces."
+    )
+
+    assert sentences == [
+        "Identifican nuevas vías contra la fibromialgia",
+        "INVESTIGACIÓN MÉDICA",
+        "Un estudio de la UAB halló tres compuestos eficaces.",
+    ]
+
+
+def test_an_abbreviation_does_not_end_a_sentence():
+
+    sentences = ClaimExtractor()._split_sentences(
+        "Tech firms build A.I. infrastructure fast. ¿Hay alternativa? 2025 was a record year."
+    )
+
+    assert sentences == [
+        "Tech firms build A.I. infrastructure fast.",
+        "¿Hay alternativa?",
+        "2025 was a record year.",
+    ]

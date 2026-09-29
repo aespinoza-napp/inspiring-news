@@ -13,6 +13,13 @@ x-fact's format.
     python labeller/app.py --port 9000
     python labeller/app.py join         # manual/*.json -> custom_en_es.jsonl
 
+The Today tab asks the backend for the day's batch - ~10 articles, each
+with the 1-3 claims the pipeline would check - so labelling starts from
+the claims instead of from a search. That one button needs the backend
+running (LABELLER_BACKEND_URL, default http://127.0.0.1:8000); labelling
+itself still needs nothing. Batches are saved beside the facts, in
+backend/data/evaluation/queue/.
+
 The labelling guide (the tie-break rules this file enforces) is
 docs/final_document/sections/custom_dataset.tex.
 """
@@ -27,12 +34,15 @@ import math
 import os
 import re
 import sys
+import urllib.error
+import urllib.request
+import uuid
 import webbrowser
 from collections import Counter
 from datetime import date, datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 MANUAL = ROOT / "backend" / "data" / "evaluation" / "manual"
@@ -97,6 +107,25 @@ REVIEW_SHARE = 0.2
 SPLIT = "test"
 
 FACT_ID = re.compile(r"^fact(\d{3,})$")
+
+# The day's batch (see the Today tab). The labeller asks the backend for
+# it and keeps it here, beside the facts: the backend may run in a
+# container whose data directory this machine cannot see.
+QUEUE = ROOT / "backend" / "data" / "evaluation" / "queue"
+BATCH_FILE = re.compile(r"^\d{4}-\d{2}-\d{2}(-\d+)?\.json$")
+BACKEND_URL = os.environ.get("LABELLER_BACKEND_URL", "http://127.0.0.1:8000")
+
+# Why a proposed claim was not labelled. Kept, because the share of the
+# pipeline's proposals worth checking at all is itself a result: the
+# precision of its claim selection, measured by the annotator.
+SKIP_REASONS = {
+    "opinion": "Opinion or interpretation, not a checkable fact",
+    "prediction": "A prediction or a plan: nothing to check yet",
+    "trivial": "Checkable, but not worth checking",
+    "fragment": "Not a whole claim (a cut sentence, a caption)",
+    "duplicate": "Same claim as another one",
+    "other": "Other",
+}
 
 
 def load_topics(path: Path = TOPICS_FILE) -> dict[str, str]:
@@ -487,19 +516,269 @@ def state(store: Store) -> dict:
 
 
 # ----------------------------------------------------------------------
+# The day's batch
+# ----------------------------------------------------------------------
+
+
+class BackendUnreachable(Exception):
+    pass
+
+
+class Backend:
+    """The backend's /labelling/batch, over urllib: nothing to install."""
+
+    def __init__(self, base_url: str = BACKEND_URL, api_key: str | None = None):
+        self.base_url = base_url.rstrip("/")
+        self.api_key = api_key if api_key is not None else os.environ.get("STORAGE_API_KEY")
+
+    def call(self, method: str, path: str, body: dict | None = None) -> tuple[int, dict]:
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["X-API-Key"] = self.api_key
+        request = urllib.request.Request(
+            self.base_url + path,
+            data=json.dumps(body).encode("utf-8") if body is not None else None,
+            method=method,
+            headers=headers,
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=15) as response:
+                return response.status, json.loads(response.read() or b"{}")
+        except urllib.error.HTTPError as error:
+            try:
+                return error.code, json.loads(error.read() or b"{}")
+            except ValueError:
+                return error.code, {"detail": f"HTTP {error.code}"}
+        except (urllib.error.URLError, OSError) as error:
+            raise BackendUnreachable(
+                f"Could not reach the backend at {self.base_url} ({error}). Start it: "
+                "cd backend && uv run uvicorn src.main:app"
+            ) from error
+
+
+class Queue:
+    """One file per batch: YYYY-MM-DD.json, then -2, -3 on the same day."""
+
+    def __init__(self, folder: Path = QUEUE):
+        self.folder = Path(folder)
+
+    def names(self) -> list[str]:
+        if not self.folder.exists():
+            return []
+        return sorted(p.name for p in self.folder.glob("*.json") if BATCH_FILE.match(p.name))
+
+    def load(self, name: str) -> dict | None:
+        if not BATCH_FILE.match(name or ""):
+            return None
+        path = self.folder / name
+        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+    def all(self) -> list[dict]:
+        batches = []
+        for name in self.names():
+            try:
+                batches.append(self.load(name))
+            except (OSError, ValueError):
+                continue
+        return [b for b in batches if b]
+
+    def save(self, batch: dict, today: str) -> str:
+        """Stores a batch from the backend. The same request twice is one file."""
+
+        for existing in self.all():
+            if batch.get("requestId") and existing.get("requestId") == batch["requestId"]:
+                return existing["file"]
+
+        self.folder.mkdir(parents=True, exist_ok=True)
+        name, n = f"{today}.json", 1
+        while (self.folder / name).exists():
+            n += 1
+            name = f"{today}-{n}.json"
+
+        record = {**batch, "file": name, "date": today}
+        for article in record.get("articles", []):
+            for claim in article.get("claims", []):
+                claim.setdefault("status", "pending")
+                claim.setdefault("factIds", [])
+                claim.setdefault("skipReason", None)
+
+        self._write(name, record)
+        return name
+
+    def mark(self, name: str, article: int, claim: int, status: str,
+             reason: str | None = None, fact_id: str | None = None) -> tuple[dict | None, list[str]]:
+
+        batch = self.load(name)
+        if batch is None:
+            return None, ["Batch not found."]
+        try:
+            if article < 0 or claim < 0:
+                raise IndexError
+            item = batch["articles"][article]["claims"][claim]
+        except (IndexError, KeyError, TypeError):
+            return None, ["No such claim in that batch."]
+
+        if status == "labelled":
+            item["status"] = "labelled"
+            item["skipReason"] = None
+            if fact_id and fact_id not in item["factIds"]:
+                item["factIds"].append(fact_id)
+        elif status == "skipped":
+            if reason not in SKIP_REASONS:
+                return None, [f"reason must be one of {', '.join(SKIP_REASONS)}."]
+            item["status"] = "skipped"
+            item["skipReason"] = reason
+        elif status == "pending":
+            item["status"] = "labelled" if item["factIds"] else "pending"
+            item["skipReason"] = None
+        else:
+            return None, ["status must be labelled, skipped or pending."]
+
+        self._write(name, batch)
+        return batch, []
+
+    def known_urls(self) -> set[str]:
+        urls = set()
+        for batch in self.all():
+            urls.update(a.get("url") for a in batch.get("articles", []))
+            urls.update(s.get("url") for s in batch.get("skipped", []))
+        return {u for u in urls if u}
+
+    def stats(self) -> dict:
+        """
+        Over every batch: what was proposed and what became of it. The
+        selection precision is labelled / (labelled + skipped); pending
+        claims have not been judged yet.
+        """
+
+        counts = Counter()
+        reasons = Counter()
+        for batch in self.all():
+            for article in batch.get("articles", []):
+                for claim in article.get("claims", []):
+                    counts[claim.get("status", "pending")] += 1
+                    if claim.get("status") == "skipped":
+                        reasons[claim.get("skipReason")] += 1
+
+        judged = counts["labelled"] + counts["skipped"]
+        return {
+            "proposed": sum(counts.values()),
+            "labelled": counts["labelled"],
+            "skipped": counts["skipped"],
+            "pending": counts["pending"],
+            "byReason": {k: reasons.get(k, 0) for k in SKIP_REASONS},
+            "precision": round(counts["labelled"] / judged, 4) if judged else None,
+        }
+
+    def _write(self, name: str, batch: dict) -> None:
+        path = self.folder / name
+        tmp = path.with_suffix(".json.tmp")
+        tmp.write_text(_dump(batch), encoding="utf-8")
+        os.replace(tmp, path)
+
+
+def prefer_topics(summary: dict) -> list[str]:
+    """
+    The topics of every group below the average group count: what the
+    balance table is short of. Nothing when the groups are level.
+    """
+
+    counts = summary["byGroup"]
+    average = sum(counts.values()) / len(counts)
+    short = [g for g, n in counts.items() if n < average]
+    return [t for g in short for t in TOPIC_GROUPS[g]]
+
+
+def batch_request(store: "Store", queue: Queue, options: dict, request_id: str, today: str) -> dict:
+    """What to ask the backend for: never an article already labelled or proposed."""
+
+    facts, _ = store.load()
+    exclude = {f.get("articleUrl") for f in facts if f.get("articleUrl")} | queue.known_urls()
+
+    languages = options.get("languages")
+    if languages not in (None, ["en"], ["es"], ["en", "es"]):
+        languages = None
+
+    return {
+        "articles": max(1, min(30, _int(options.get("articles")) if _int(options.get("articles")) > 0 else 10)),
+        "claimsPerArticle": max(1, min(3, _int(options.get("claimsPerArticle")) if _int(options.get("claimsPerArticle")) > 0 else 3)),
+        "exclude": sorted(exclude),
+        "preferTopics": prefer_topics(summarise(facts)),
+        "languages": languages,
+        "seed": today,
+        "requestId": request_id,
+    }
+
+
+# ----------------------------------------------------------------------
 # HTTP
 # ----------------------------------------------------------------------
 
 
-def make_handler(store: Store):
+def make_handler(store: Store, queue: Queue | None = None, backend: Backend | None = None):
+
+    # Beside the facts folder, so a test's temporary store gets a
+    # temporary queue too.
+    queue = queue if queue is not None else Queue(store.folder.parent / "queue")
+    backend = backend if backend is not None else Backend()
+
+    # The batch this labeller asked for and has not saved yet.
+    pending: dict = {}
+
+    def queue_state(name: str | None) -> dict:
+        names = queue.names()
+        current = queue.load(name) if name in names else (queue.load(names[-1]) if names else None)
+        files = []
+        for batch in queue.all():
+            claims = [c for a in batch.get("articles", []) for c in a.get("claims", [])]
+            files.append({
+                "name": batch["file"],
+                "claims": len(claims),
+                "done": sum(c.get("status") != "pending" for c in claims),
+            })
+        return {
+            "files": files,
+            "current": current,
+            "stats": queue.stats(),
+            "skipReasons": SKIP_REASONS,
+            "pending": dict(pending) or None,
+            "backend": backend.base_url,
+        }
+
+    def batch_status() -> tuple[int, dict]:
+        if not pending:
+            return 200, {"running": False}
+        try:
+            code, data = backend.call("GET", "/labelling/batch")
+        except BackendUnreachable as error:
+            return 502, {"errors": [str(error)]}
+        if code != 200:
+            return 502, {"errors": [data.get("detail") or f"The backend answered {code}."]}
+        if data.get("running"):
+            return 200, {"running": True, "startedAt": data.get("startedAt")}
+        batch = data.get("batch") or {}
+        request_id = pending.get("requestId")
+        pending.clear()
+        if data.get("error"):
+            return 502, {"errors": [f"The batch failed in the backend: {data['error']}"]}
+        if batch.get("requestId") != request_id:
+            return 502, {"errors": ["The backend finished a different batch; ask again."]}
+        name = queue.save(batch, date.today().isoformat())
+        return 200, {"running": False, "saved": name}
 
     class Handler(BaseHTTPRequestHandler):
 
         def do_GET(self):
-            if self.path in ("/", "/index.html"):
+            url = urlparse(self.path)
+            if url.path in ("/", "/index.html"):
                 self._send(200, PAGE.read_bytes(), "text/html; charset=utf-8")
-            elif self.path == "/api/state":
+            elif url.path == "/api/state":
                 self._json(200, state(store))
+            elif url.path == "/api/queue":
+                name = (parse_qs(url.query).get("name") or [None])[0]
+                self._json(200, queue_state(name))
+            elif url.path == "/api/queue/status":
+                self._json(*batch_status())
             else:
                 self._json(404, {"errors": ["Not found."]})
 
@@ -509,7 +788,39 @@ def make_handler(store: Store):
                 return
             if self.path == "/api/facts":
                 record, errors = store.create(body)
+                ref = body.get("queueRef")
+                if record is not None and isinstance(ref, dict):
+                    # A fact labelled from the day's batch: mark its claim.
+                    queue.mark(str(ref.get("name")), _int(ref.get("article")), _int(ref.get("claim")),
+                               "labelled", fact_id=record["id"])
                 self._answer(record, errors, created=True)
+                return
+            if self.path == "/api/queue/fetch":
+                if pending:
+                    self._json(409, {"errors": ["A batch is already being built; wait for it."]})
+                    return
+                request_id = uuid.uuid4().hex
+                request = batch_request(store, queue, body, request_id, date.today().isoformat())
+                try:
+                    code, data = backend.call("POST", "/labelling/batch", request)
+                except BackendUnreachable as error:
+                    self._json(502, {"errors": [str(error)]})
+                    return
+                if code != 202:
+                    self._json(502, {"errors": [data.get("detail") or f"The backend answered {code}."]})
+                    return
+                pending.update({"requestId": request_id, "startedAt": _now()})
+                self._json(202, {"started": True, "excluded": len(request["exclude"]),
+                                 "preferTopics": request["preferTopics"]})
+                return
+            if self.path == "/api/queue/claim":
+                batch, errors = queue.mark(str(body.get("name")), _int(body.get("article")),
+                                           _int(body.get("claim")), str(body.get("status")),
+                                           reason=body.get("reason"))
+                if batch is None:
+                    self._json(422, {"errors": errors})
+                else:
+                    self._json(200, {"ok": True})
                 return
             match = re.fullmatch(r"/api/facts/(fact\d{3,})/review", self.path)
             if match:
@@ -576,6 +887,13 @@ def make_handler(store: Store):
 # ----------------------------------------------------------------------
 # Helpers and entry point
 # ----------------------------------------------------------------------
+
+
+def _int(value) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return -1
 
 
 def _number(path: Path) -> int:

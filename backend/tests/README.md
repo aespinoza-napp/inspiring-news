@@ -27,9 +27,10 @@ new test file.
 ## What runs, what skips
 
 `./scripts/check.sh` from the repo root is the definition of "done". As of 2026-09-21 the backend suite
-is green: 504 passed, 11 skipped, 2 deselected. The skips need something running — the `inference/`
-service (`require_inference`) or Neo4j — and the two deselected carry the `slow` marker (the whole corpus
-through the real models; `./scripts/check.sh slow`).
+is green: 504 passed, 11 skipped, 2 deselected. The skips need the `inference/` service running
+(`require_inference`). Deselected: the `slow` marker (the whole corpus through the real models;
+`./scripts/check.sh slow`) and the `neo4j` marker (the graph against a real Neo4j, which **fails**
+rather than skips when it is down; `./scripts/check.sh graph`).
 
 There are no known failing tests. If one fails, it is yours until shown otherwise.
 

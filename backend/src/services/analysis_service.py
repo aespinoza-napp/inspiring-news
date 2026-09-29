@@ -20,6 +20,7 @@ from src.services.analysis_cache import AnalysisCache
 # raises KeyError on the verdict the copy has never heard of.
 from src.services.fact_checker.fact_checker import _VERDICT_SEVERITY, FactChecker
 from src.services.fact_checker.retrieval.scraper import EvidenceScraper
+from src.services.graph.graph_writer import GraphWriter
 from src.services.scraper.extractor import ExtractorService
 from src.workflows.enrichment import NewsEnrichmentPipeline
 
@@ -61,6 +62,7 @@ class AnalysisService:
         cache: AnalysisCache | None = None,
         lake: DataLakeRepository | None = None,
         admission: AdmissionFilter | None = None,
+        graph: GraphWriter | None = None,
     ):
         self.fact_checker = fact_checker
         self.extractor = extractor or ExtractorService()
@@ -80,6 +82,11 @@ class AnalysisService:
         # passes the container singleton; None switches the admission
         # stage off, and every article goes straight to fact-checking.
         self.admission = admission
+
+        # No default, for the same reason as `lake`: it writes outside the
+        # process, into a Neo4j every test would otherwise share with the
+        # developer's own graph. None switches the graph write off.
+        self.graph = graph
 
     def analyze(
         self,
@@ -198,6 +205,8 @@ class AnalysisService:
         storage = self._store_verified(
             run, raw, processed, article, report, report_phase
         )
+
+        self._store_graph(run, article, report, report_phase)
 
         return {
             "url": url,
@@ -454,6 +463,42 @@ class AnalysisService:
         )
 
         return record
+
+    def _store_graph(
+        self,
+        run: RunContext | None,
+        article: EnrichedArticle,
+        report: FactCheckReport,
+        report_phase: OnPhase,
+    ) -> None:
+        """
+        The article, its entities, topics, claims, verdicts and evidence,
+        into Neo4j (src/services/graph/). Last, after the lake: the lake is
+        the record, the graph is a view of it that GraphSync can rebuild -
+        so a Neo4j outage is reported and skipped, never fatal, and never
+        in the way of the lake write.
+
+        Rejected articles are written too: what they mention and what they
+        are about is real, and `admitted: false` on the node says the rest.
+        """
+
+        if self.graph is None:
+            return
+
+        report_phase("graph_storing", {})
+
+        try:
+            summary = self.graph.write_analysis(
+                article,
+                report,
+                run_id=run.run_id if run else None,
+            )
+        except Exception as exc:
+            logger.warning("Could not write %s into the graph", article.url, exc_info=True)
+            report_phase("graph_failed", {"error": str(exc)})
+            return
+
+        report_phase("graph_stored", summary)
 
     @staticmethod
     def _build_sentiment(article: EnrichedArticle) -> dict:

@@ -122,5 +122,5 @@ everything up to that point.
 - `JobStore.list()` (behind `GET /analyze/jobs`) lists only jobs held in
   memory. Earlier runs are readable by id, not browsable.
 
-Neo4j (`src/database/neo4j_client.py`, `docker-compose.yml`) is configured but nothing in the real pipeline uses it — `settings.NEO4J_PASSWORD` is required at startup purely as inherited scaffold config, not because anything reads from Neo4j.
+After the lake, the same run is written into Neo4j (`AnalysisService._store_graph`) - last, and fail-soft, because the lake is the record and the graph is a view of it that `POST /graph/sync` can rebuild from `processed/`. See `docs/decisions/graph.md`.
 

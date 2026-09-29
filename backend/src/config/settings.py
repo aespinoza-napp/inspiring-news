@@ -54,6 +54,13 @@ class Settings(BaseSettings):
     NEO4J_USER: str = "neo4j"
     NEO4J_PASSWORD: SecretStr
 
+    # Whether a finished analysis is also written into the Neo4j graph
+    # (src/services/graph/). A side effect like the lake, and fail-soft
+    # like it: Neo4j being down costs one short connection timeout per
+    # run and a `graph_failed` event, never the analysis. Off skips the
+    # write entirely; the /graph read endpoints still answer.
+    GRAPH_ENABLED: bool = True
+
     # Documentary, not load-bearing: the model itself now loads inside
     # inference/ (inference/src/config.py's own SENTIMENT_MODEL), not
     # here. Kept so a human reading .env still sees what's running.

@@ -9,6 +9,9 @@ from src.container import (
     get_claim_service,
     get_datalake_repository,
     get_enrichment_service,
+    get_graph_reader,
+    get_graph_writer,
+    get_labelling_batch,
     get_ingestion_service,
     get_source_check_service,
     get_job_queue,
@@ -636,3 +639,160 @@ def trace_article(article_id: str):
     """
 
     return get_datalake_repository().trace(article_id)
+
+
+# ---------------------------------------------------------------------
+# Graph (Neo4j)
+#
+# Read views over the graph every analysis is written into, the query
+# console behind the frontend's /graph page, and the backfill. Behind the
+# storage key like /storage/*: the graph holds every analysed URL, claim
+# and verdict. Neo4j being down is a 503 with the reason, never a 500 -
+# the page says "start Neo4j", not "something broke".
+# ---------------------------------------------------------------------
+
+
+class GraphQueryRequest(BaseModel):
+    cypher: str = Field(max_length=20_000)
+    params: dict = Field(default_factory=dict)
+
+
+def _graph_call(call):
+
+    from neo4j.exceptions import ClientError, Neo4jError
+
+    from src.database.neo4j_client import GraphUnavailable
+    from src.services.graph.graph_reader import QueryRejected
+
+    try:
+        return call()
+    except GraphUnavailable as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                f"Neo4j is not reachable at {settings.NEO4J_URI}: {exc}. "
+                "Start it with: cd docker && docker compose --env-file ../backend/.env up -d neo4j"
+            ),
+        )
+    except QueryRejected as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except ClientError as exc:
+        # Syntax errors, a write attempted in the read-only console, an
+        # unknown parameter, a timeout: all the query's fault, all shown.
+        raise HTTPException(status_code=400, detail=exc.message or str(exc))
+    except Neo4jError as exc:
+        raise HTTPException(status_code=502, detail=exc.message or str(exc))
+
+
+@router.get("/graph/schema", dependencies=[Depends(require_storage_key)])
+def graph_schema():
+    """The declared schema, and what the database actually holds."""
+
+    return _graph_call(lambda: get_graph_reader().schema())
+
+
+@router.get("/graph/presets", dependencies=[Depends(require_storage_key)])
+def graph_presets():
+    """Starting queries for the console. Needs no database."""
+
+    from src.services.graph.graph_reader import GraphReader
+
+    return {"presets": GraphReader.presets()}
+
+
+@router.post("/graph/query", dependencies=[Depends(require_storage_key)])
+def graph_query(request: GraphQueryRequest):
+    """
+    Run one Cypher query, read-only (enforced by Neo4j), 10 s and 500 rows
+    at most. Returns the rows and, separately, every node and
+    relationship in them for drawing.
+    """
+
+    return _graph_call(lambda: get_graph_reader().query(request.cypher, request.params))
+
+
+@router.get("/graph/articles", dependencies=[Depends(require_storage_key)])
+def graph_articles(
+    search: str | None = Query(default=None, max_length=200),
+    limit: int = Query(default=50, ge=1, le=200),
+):
+
+    return {"articles": _graph_call(lambda: get_graph_reader().articles(search, limit))}
+
+
+@router.get("/graph/related", dependencies=[Depends(require_storage_key)])
+def graph_related(
+    url: str = Query(max_length=2048),
+    limit: int = Query(default=10, ge=1, le=50),
+):
+    """
+    Articles related to this one through the graph: a shared claim, a
+    shared evidence page, a shared entity (weighted down the more
+    articles mention it) or a shared topic - each reported with what was
+    shared.
+    """
+
+    return _graph_call(lambda: get_graph_reader().related_articles(url, limit))
+
+
+@router.post("/graph/sync", dependencies=[Depends(require_storage_key)])
+def graph_sync():
+    """
+    Backfill: configured sources, the hand-labelled facts and the lake's
+    verified records, into the graph. Idempotent - see graph_sync.py.
+    """
+
+    from src.services.graph.graph_sync import GraphSync
+
+    return _graph_call(lambda: GraphSync(
+        get_graph_writer(),
+        lake=get_datalake_repository() if settings.LAKE_ENABLED else None,
+    ).run())
+
+
+# ---------------------------------------------------------------------
+# Labelling batch
+#
+# The day's articles and claims for labeller/ to show. Built on a
+# background thread (discovery over every source, then extraction and
+# claim selection: a minute or two); the labeller polls GET. Behind the
+# storage key: one run sends requests to every configured source.
+# ---------------------------------------------------------------------
+
+
+class LabellingBatchRequest(BaseModel):
+    articles: int = Field(default=10, ge=1, le=30)
+    claimsPerArticle: int = Field(default=3, ge=1, le=3)
+    exclude: list[str] = Field(default_factory=list, max_length=5000)
+    preferTopics: list[str] = Field(default_factory=list, max_length=50)
+    languages: list[str] | None = None
+    seed: str | None = Field(default=None, max_length=40)
+    requestId: str | None = Field(default=None, max_length=64)
+
+
+@router.post("/labelling/batch", status_code=202, dependencies=[Depends(require_storage_key)])
+def start_labelling_batch(request: LabellingBatchRequest):
+
+    from src.services.labelling_batch import BatchRequest
+
+    started = get_labelling_batch().start(BatchRequest(
+        articles=request.articles,
+        claims_per_article=request.claimsPerArticle,
+        exclude=request.exclude,
+        prefer_topics=request.preferTopics,
+        languages=request.languages,
+        seed=request.seed,
+        request_id=request.requestId,
+    ))
+
+    if not started:
+        raise HTTPException(status_code=409, detail="A labelling batch is already being built.")
+
+    return {"started": True, "requestId": request.requestId}
+
+
+@router.get("/labelling/batch", dependencies=[Depends(require_storage_key)])
+def labelling_batch_state():
+    """Whether a batch is being built, and the last one built."""
+
+    return get_labelling_batch().state()

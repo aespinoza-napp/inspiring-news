@@ -17,8 +17,7 @@ still expects.
 Since the ML split, "real GLiNER/sentiment/embedding models" means
 calling the inference/ service over HTTP rather than loading them
 in-process - both tests below use conftest.py's require_inference and
-skip rather than fail when that service isn't reachable, the same
-tradeoff test_connection.py already makes for Neo4j.
+skip rather than fail when that service isn't reachable.
 """
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds

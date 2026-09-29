@@ -47,6 +47,23 @@ later edit.
 
 ## What the page does
 
+- **Today**: the day's batch. *Get a new batch* asks the backend
+  (`LABELLER_BACKEND_URL`, default `http://127.0.0.1:8000`; `STORAGE_API_KEY`
+  is sent if set) for ~10 articles drawn at random from the configured
+  sources - one per source, languages alternated, seeded by the date,
+  never an article already labelled or proposed, preferring articles from
+  the last 60 days and then the topic groups the balance table is short
+  of - each with the 1-3 claims the
+  pipeline's own claim selector would check. It takes 2-4 minutes; the
+  page polls. The batch is saved as `backend/data/evaluation/queue/
+  YYYY-MM-DD.json` (then `-2`, `-3` the same day). **Label** fills the form
+  from the article and claim and, on save, marks the claim with the fact
+  it became; **Skip** records why (opinion, prediction, trivial, fragment,
+  duplicate). Labelled / (labelled + skipped) is shown as the precision of
+  the pipeline's claim selection - a result for the paper, not just
+  progress. This one button needs the backend running (and `inference/`
+  for anchor selection; without it claims are ranked by the extractor's
+  confidence and say so). Everything else still needs nothing.
 - **Label**: the form, a verdict x topic-group balance table (5 x 5
   cells, 6 facts each, 150 total; 100 is the floor), and every fact with
   an Edit button. After a save the article's fields (URL, outlet,

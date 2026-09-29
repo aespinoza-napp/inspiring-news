@@ -57,9 +57,13 @@ testpaths = ["tests"]
 # the flag had to be remembered on every invocation, and forgetting it
 # ran a test that wrote over committed sample fixtures. Run them with
 # `./scripts/check.sh slow`.
-addopts = "-m 'not slow'"
+addopts = "-m 'not slow and not neo4j'"
 markers = [
     "slow: loads the full model stack over the whole data/raw corpus (minutes, not seconds)",
+    # Excluded by default for the same reason, and *failing* rather than
+    # skipping when Neo4j is down: `./scripts/check.sh graph`. See
+    # tests/database/test_neo4j_live.py.
+    "neo4j: needs a running Neo4j (writes into it, then removes what it wrote)",
 ]
 filterwarnings = [
     "ignore:Using `httpx` with `starlette.testclient` is deprecated",

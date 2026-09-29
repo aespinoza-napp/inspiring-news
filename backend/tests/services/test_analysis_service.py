@@ -1020,3 +1020,103 @@ def test_the_same_story_from_a_second_outlet_is_caught_as_a_duplicate(repository
     assert result["validity"]["isValid"] is False
     two.fact_checker.run.assert_not_called()
     assert repository.count() == 1
+
+
+# ----------------------------------------------------------------------
+# The graph write (src/services/graph/)
+
+
+class FakeGraph:
+    """Stands in for GraphWriter.write_analysis; fails on request."""
+
+    def __init__(self, fail: bool = False):
+        self.fail = fail
+        self.written = []
+
+    def write_analysis(self, article, report, run_id=None):
+        if self.fail:
+            from src.database.neo4j_client import GraphUnavailable
+            raise GraphUnavailable("Neo4j is down")
+        self.written.append((article, report, run_id))
+        return {"url": article.url, "claims": 0, "verdicts": 0, "evidence": 0}
+
+
+def test_the_fake_graph_matches_the_real_writer():
+
+    import inspect
+
+    from src.services.graph.graph_writer import GraphWriter
+
+    real = inspect.signature(GraphWriter.write_analysis)
+    fake = inspect.signature(FakeGraph.write_analysis)
+
+    assert list(real.parameters) == list(fake.parameters)
+
+
+def _service_with_graph(graph, tmp_path=None):
+
+    article = create_article()
+
+    service = _service_with_lake(_lake(tmp_path) if tmp_path else None, article=article)
+    service.graph = graph
+
+    return service, article
+
+
+def test_a_finished_analysis_is_written_into_the_graph_after_the_lake(tmp_path):
+
+    graph = FakeGraph()
+    service, article = _service_with_graph(graph, tmp_path)
+
+    events = []
+    result = service.analyze("https://example.com/a", on_phase=lambda p, d: events.append(p))
+
+    assert "error" not in result
+    assert [a.id for a, _, _ in graph.written] == [article.id]
+    # The run id ties the graph node back to the lake records it came from.
+    assert graph.written[0][2] == result["storage"]["runId"]
+
+    assert events.index("stored") < events.index("graph_storing") < events.index("graph_stored")
+    assert events.index("graph_stored") < events.index("done")
+
+
+def test_a_graph_outage_is_reported_and_does_not_fail_the_analysis():
+
+    service, _ = _service_with_graph(FakeGraph(fail=True))
+
+    events = []
+    result = service.analyze(
+        "https://example.com/a",
+        on_phase=lambda phase, data: events.append((phase, data)),
+    )
+
+    assert "error" not in result
+    assert result["factCheck"]["overallVerdict"] is not None
+
+    failed = [data for phase, data in events if phase == "graph_failed"]
+    assert failed and "Neo4j is down" in failed[0]["error"]
+    assert "done" in [phase for phase, _ in events]
+
+
+def test_without_a_graph_nothing_is_written_and_no_graph_phase_fires():
+
+    article = create_article()
+    service = make_service(make_news(), article, _successful_report(article))
+
+    assert service.graph is None
+
+    events = []
+    service.analyze("https://example.com/a", on_phase=lambda p, d: events.append(p))
+
+    assert not [phase for phase in events if phase.startswith("graph_")]
+
+
+def test_a_cache_hit_is_not_written_into_the_graph_again():
+
+    graph = FakeGraph()
+    service, _ = _service_with_graph(graph)
+
+    service.analyze("https://example.com/a")
+    service.analyze("https://example.com/a")
+
+    assert len(graph.written) == 1

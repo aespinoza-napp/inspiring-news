@@ -271,5 +271,166 @@ class LabellerTest(unittest.TestCase):
             server.server_close()
 
 
+def backend_batch(request_id="r1", urls=("https://a.example/1", "https://b.example/2")):
+    return {
+        "requestId": request_id,
+        "articles": [
+            {"url": url, "site": url.split("/")[2], "language": "es", "publishedAt": "2026-09-20",
+             "topic": "climate", "claims": [{"text": f"Claim {i} of {url}", "selectedBy": "anchor", "figures": []}
+                                            for i in range(2)]}
+            for url in urls
+        ],
+        "skipped": [{"url": "https://c.example/broken", "source": "c", "reason": "no text"}],
+    }
+
+
+class FakeBackend:
+    """Stands in for app.Backend: answers the two calls the queue makes."""
+
+    base_url = "http://backend.test"
+
+    def __init__(self, down=False):
+        self.down = down
+        self.sent = []
+        self.running = False
+        self.batch = None
+
+    def call(self, method, path, body=None):
+        if self.down:
+            raise app.BackendUnreachable("Could not reach the backend at http://backend.test")
+        self.sent.append((method, path, body))
+        if method == "POST":
+            self.running = True
+            self.batch = backend_batch(body["requestId"])
+            return 202, {"started": True}
+        return 200, {"running": self.running, "batch": self.batch, "error": None}
+
+
+class QueueTest(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        self.store = app.Store(root / "manual")
+        self.queue = app.Queue(root / "queue")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_a_batch_is_saved_once_per_request_and_numbered_within_a_day(self):
+
+        first = self.queue.save(backend_batch("r1"), "2026-09-29")
+        again = self.queue.save(backend_batch("r1"), "2026-09-29")
+        second = self.queue.save(backend_batch("r2"), "2026-09-29")
+
+        self.assertEqual((first, again, second), ("2026-09-29.json", "2026-09-29.json", "2026-09-29-2.json"))
+        claim = self.queue.load(first)["articles"][0]["claims"][0]
+        self.assertEqual((claim["status"], claim["factIds"]), ("pending", []))
+
+    def test_labelling_skipping_and_undoing_are_counted(self):
+
+        name = self.queue.save(backend_batch(), "2026-09-29")
+
+        self.queue.mark(name, 0, 0, "labelled", fact_id="fact007")
+        self.queue.mark(name, 0, 1, "skipped", reason="opinion")
+        self.queue.mark(name, 1, 0, "skipped", reason="trivial")
+        self.queue.mark(name, 1, 0, "pending")
+
+        stats = self.queue.stats()
+        self.assertEqual((stats["labelled"], stats["skipped"], stats["pending"]), (1, 1, 2))
+        # Labelled over labelled + skipped: pending claims are not judged yet.
+        self.assertEqual(stats["precision"], 0.5)
+        self.assertEqual(stats["byReason"]["opinion"], 1)
+
+    def test_a_skip_needs_a_known_reason_and_a_real_claim(self):
+
+        name = self.queue.save(backend_batch(), "2026-09-29")
+
+        self.assertIsNone(self.queue.mark(name, 0, 0, "skipped", reason="boring")[0])
+        self.assertIsNone(self.queue.mark(name, 9, 0, "skipped", reason="opinion")[0])
+        self.assertIsNone(self.queue.mark("../../etc/passwd", 0, 0, "skipped", reason="opinion")[0])
+
+    def test_the_request_leaves_out_every_article_already_labelled_or_proposed(self):
+
+        self.store.create(fact(articleUrl="https://labelled.example/x"))
+        self.queue.save(backend_batch(), "2026-09-29")
+
+        request = app.batch_request(self.store, self.queue, {"articles": "8", "languages": ["es"]}, "id1", "2026-09-30")
+
+        self.assertEqual(set(request["exclude"]), {
+            "https://labelled.example/x", "https://a.example/1", "https://b.example/2", "https://c.example/broken",
+        })
+        self.assertEqual((request["articles"], request["claimsPerArticle"], request["languages"]), (8, 3, ["es"]))
+        self.assertEqual((request["seed"], request["requestId"]), ("2026-09-30", "id1"))
+
+    def test_topics_of_the_groups_the_balance_table_is_short_of_are_preferred(self):
+
+        summary = {"byGroup": {"society": 3, "science": 3, "environment": 0, "culture": 3, "health": 3}}
+
+        self.assertEqual(app.prefer_topics(summary), app.TOPIC_GROUPS["environment"])
+        self.assertEqual(app.prefer_topics({"byGroup": {g: 2 for g in app.TOPIC_GROUPS}}), [])
+
+    def test_the_server_fetches_saves_and_marks_a_batch(self):
+
+        backend = FakeBackend()
+        handler = app.make_handler(self.store, self.queue, backend)
+        handler.log_message = lambda *args: None
+        server = HTTPServer(("127.0.0.1", 0), handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+
+        def send(method, path, body=None):
+            data = json.dumps(body).encode() if body is not None else None
+            request = urllib.request.Request(base + path, data=data, method=method, headers={"Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(request) as response:
+                    return response.status, json.loads(response.read())
+            except urllib.error.HTTPError as error:
+                return error.code, json.loads(error.read())
+
+        try:
+            self.assertEqual(send("POST", "/api/queue/fetch", {"articles": 5})[0], 202)
+            # One at a time: a second ask while the first is out is refused.
+            self.assertEqual(send("POST", "/api/queue/fetch", {})[0], 409)
+
+            self.assertEqual(send("GET", "/api/queue/status")[1], {"running": True, "startedAt": None})
+            backend.running = False
+            saved = send("GET", "/api/queue/status")[1]["saved"]
+
+            state = send("GET", "/api/queue")[1]
+            self.assertEqual(state["current"]["file"], saved)
+
+            code, _ = send("POST", "/api/facts", {**fact(), "queueRef": {"name": saved, "article": 1, "claim": 0}})
+            self.assertEqual(code, 201)
+            self.assertEqual(send("POST", "/api/queue/claim", {"name": saved, "article": 0, "claim": 0,
+                                                               "status": "skipped", "reason": "fragment"})[0], 200)
+
+            claims = self.queue.load(saved)["articles"]
+            self.assertEqual(claims[1]["claims"][0]["factIds"], ["fact001"])
+            self.assertEqual(claims[0]["claims"][0]["skipReason"], "fragment")
+        finally:
+            server.shutdown()
+            server.server_close()
+
+    def test_a_backend_that_is_not_running_is_a_clear_error_not_a_crash(self):
+
+        handler = app.make_handler(self.store, self.queue, FakeBackend(down=True))
+        handler.log_message = lambda *args: None
+        server = HTTPServer(("127.0.0.1", 0), handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+
+        try:
+            request = urllib.request.Request(base + "/api/queue/fetch", data=b"{}", method="POST",
+                                             headers={"Content-Type": "application/json"})
+            with self.assertRaises(urllib.error.HTTPError) as caught:
+                urllib.request.urlopen(request)
+            self.assertEqual(caught.exception.code, 502)
+            self.assertIn("Could not reach the backend", json.loads(caught.exception.read())["errors"][0])
+        finally:
+            server.shutdown()
+            server.server_close()
+
+
 if __name__ == "__main__":
     unittest.main()

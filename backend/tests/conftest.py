@@ -38,8 +38,7 @@ def example_sources():
 def require_inference():
     """
     Skips, rather than fails, when the inference/ service isn't
-    reachable at settings.INFERENCE_URL - same reasoning as
-    test_connection.py's Neo4j skip: a test that needs a real GLiNER/
+    reachable at settings.INFERENCE_URL. A test that needs a real GLiNER/
     sentiment/embedding model now needs a real *service* since the
     split, and an unrelated red test in every local run (nobody starts
     `docker compose up inference` or a second `uv run uvicorn` just to

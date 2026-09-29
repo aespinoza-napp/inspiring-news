@@ -32,7 +32,7 @@ isn't running - see `tests/conftest.py`'s `require_inference`.
 
 `backend/.env` is required (`Settings` reads it via `pydantic-settings`);
 `backend/.env-example` lists every key. `NEO4J_PASSWORD` has no default
-and raises on startup even though nothing reads Neo4j. `Settings` creates
+and raises on startup. `Settings` creates
 the `data/*` directories on import as a side effect.
 
 ## The pipeline
@@ -141,6 +141,8 @@ English rather than raising. See `docs/decisions/incidents.md`.
 | `GET /scraper/articles` | Articles stored in the lake, per domain: raw records, unique URLs, how many arrived with a title / author / date, and how many went on to processed / exploitation / publishable. Read from the lake on every call (`services/scraper/article_stats.py`) - no second counter. Behind `STORAGE_API_KEY` when set. |
 | `POST /scraper/probe` + `GET /scraper/probe` | Is each source up: its feed, its topic section pages (`strategies/topic_pages.py`, also discovery's last step) and a sample of real extractions (purpose `probe`), plus one SearXNG query per language reporting which engines answered. Background thread, 409 while one runs; last report in `lake/stats/source_probe.json`. `services/scraper/source_probe.py`, `docs/decisions/scraping.md`. Behind `STORAGE_API_KEY` when set. |
 | `GET /storage/*` | Read the lake. Behind `STORAGE_API_KEY` when set. |
+| `POST /labelling/batch` + `GET /labelling/batch` | The day's hand-labelling batch for `labeller/`'s Today tab: discovery over every enabled source, a date-seeded draw (one article per source, languages alternated, `exclude` and `preferTopics` from the labeller), extraction (purpose `labelling`), then 1-3 claims each from the enrichment extractor and `ClaimSelector` - the fact-checker's own selection. Background thread, polled; 409 while one runs. Returned, not stored: the labeller saves it, since the backend may be in a container. Nothing is fact-checked or written to the lake. `services/labelling_batch.py`. Behind `STORAGE_API_KEY` when set. |
+| `GET /graph/schema`, `/graph/presets`, `/graph/articles`, `/graph/related` + `POST /graph/query`, `/graph/sync` | The Neo4j graph: the schema with live counts, related articles (the read use-case), a read-only Cypher console (READ transaction, 10 s, 500 rows; `LOAD CSV` and admin procedures refused) and the backfill. 503 with the fix when Neo4j is down. Behind `STORAGE_API_KEY` when set. `src/services/graph/`, `docs/decisions/graph.md`. |
 
 All of these accept per-run `thresholds` overrides —
 `docs/decisions/thresholds.md`.
@@ -149,6 +151,13 @@ All of these accept per-run `thresholds` overrides —
 
 Three layers under `settings.LAKE_PATH`, one write per stage as that
 stage completes. `docs/decisions/storage.md`.
+
+Then the graph: `AnalysisService._store_graph` writes the article, its
+entities, topics, claims, verdicts and evidence into Neo4j in one
+transaction, fail-soft (`graph_storing` / `graph_stored` /
+`graph_failed`). `AnalysisService.graph` has no default, like `lake`.
+`src/services/graph/schema.py` declares every label and relationship;
+`docs/decisions/graph.md`.
 
 ## Security
 
@@ -191,8 +200,7 @@ real collaborator accepts — five fakes drifted at once when thresholds
 became per-call, each found by a `TypeError` days later.
 
 `conftest.py::require_inference` skips any test needing a real model
-when `inference/` isn't reachable — the same tradeoff
-`tests/database/test_connection.py` already makes for Neo4j. Real
+when `inference/` isn't reachable. Real
 *model* behaviour is tested in `inference/tests/` now; what these still
 cover is backend correctly using a real inference service
 (`TopicClassifier`'s semantic ranking, `EMBEDDING_DIMENSION` agreement,
@@ -202,7 +210,11 @@ nothing running (`tests/processors/nlp/test_entities.py`,
 `test_sentiment.py`, `test_embeddings.py`,
 `tests/services/test_inference_client.py`).
 
-`tests/database/test_connection.py` skips when Neo4j is not running.
+`tests/database/test_neo4j_live.py` carries the `neo4j` marker, excluded
+by default like `slow`, and **fails** when Neo4j is down:
+`./scripts/check.sh graph`. The graph's writer, reader, sync and routes
+are covered in the default run against `tests/services/graph/
+fake_graph_client.py`.
 `tests/processors/nlp/test_pipeline.py` skips when `data/raw` is empty —
 it enriches whatever real article sorts first there, so it can only
 assert what holds for *any* article. Assertions about a specific

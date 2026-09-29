@@ -19,6 +19,15 @@ services:
       - NEO4J_server_memory_heap_initial__size=512m
       - NEO4J_server_memory_heap_max__size=512m
       - NEO4J_server_memory_pagecache_size=256m
+    volumes:
+      # Named, so the graph survives `docker compose down` like the lake
+      # does. It used to be the image's anonymous /data volume: a
+      # recreated container silently started an empty database, and one
+      # created before the password moved to backend/.env kept the old
+      # password, since NEO4J_AUTH only applies to a new database. The
+      # graph can always be rebuilt from the lake and the labelled facts
+      # (POST /graph/sync), but that should be a choice, not a surprise.
+      - neo4j-data:/data
     mem_limit: 1g
     healthcheck:
       # backend depends on Bolt being ready, not just the container
@@ -194,3 +203,4 @@ services:
 volumes:
   backend-data:
   model-cache:
+  neo4j-data:

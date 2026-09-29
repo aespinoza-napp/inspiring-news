@@ -87,6 +87,10 @@ class Purpose(str, Enum):
     # source can be scraped at all today (services/scraper/source_probe.py).
     PROBE = "probe"
 
+    # An article drawn for the day's hand-labelling batch
+    # (services/labelling_batch.py). Read, never stored or fact-checked.
+    LABELLING = "labelling"
+
 
 def domain_of(url: str) -> str:
     """Host without `www.`, lowercased; the URL itself if it has none."""

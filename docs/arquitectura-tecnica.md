@@ -29,14 +29,14 @@ El sistema se organiza en tres fases técnicas. La Fase 1 es el pipeline ya cons
 
 ### 2.1. Arquitectura y Orquestación
 
-El backend está construido sobre Python y FastAPI, con `uv` como gestor de dependencias. El entorno completo se levanta mediante contenedores orquestados por `docker-compose`, que coordina la base de datos de grafos (Neo4j, configurada pero sin uso todavía), el motor de búsqueda autoalojado (SearXNG), un servicio de inferencia propio que aloja los modelos de entidades, sentimiento y embeddings, y la API del backend. Las peticiones de análisis se manejan de forma asíncrona mediante un sistema de trabajos en segundo plano con sondeo de progreso (polling) y una caché local de resultados por URL (que distingue además los umbrales con que se ejecutó cada análisis), de modo que una noticia ya analizada no vuelve a pagar el costo completo del pipeline salvo que se solicite explícitamente su reprocesamiento. Cada paso de cada ejecución se guarda además, según ocurre, en un diario en disco: una ejecución que falla a mitad conserva todo lo que llevaba hecho y sigue siendo consultable tras un reinicio.
+El backend está construido sobre Python y FastAPI, con `uv` como gestor de dependencias. El entorno completo se levanta mediante contenedores orquestados por `docker-compose`, que coordina la base de datos de grafos (Neo4j, donde se escribe cada análisis terminado), el motor de búsqueda autoalojado (SearXNG), un servicio de inferencia propio que aloja los modelos de entidades, sentimiento y embeddings, y la API del backend. Las peticiones de análisis se manejan de forma asíncrona mediante un sistema de trabajos en segundo plano con sondeo de progreso (polling) y una caché local de resultados por URL (que distingue además los umbrales con que se ejecutó cada análisis), de modo que una noticia ya analizada no vuelve a pagar el costo completo del pipeline salvo que se solicite explícitamente su reprocesamiento. Cada paso de cada ejecución se guarda además, según ocurre, en un diario en disco: una ejecución que falla a mitad conserva todo lo que llevaba hecho y sigue siendo consultable tras un reinicio.
 
 | Componente | Tecnología |
 |---|---|
 | API y orquestación | Python, FastAPI, `uv` |
 | Contenerización | Docker, `docker-compose` |
 | Servicio de inferencia (entidades, sentimiento, embeddings) | Servicio FastAPI independiente que carga los modelos GLiNER, XLM-RoBERTa y BGE-M3; el backend lo consulta por HTTP |
-| Base de datos de grafos (prevista para Fase 2; hoy sin uso) | Neo4j |
+| Base de datos de grafos (artículos, entidades, temas, afirmaciones, veredictos y fuentes; desde el 29/09) | Neo4j |
 | Motor de búsqueda para evidencia | SearXNG autoalojado, con una lista cerrada de motores medidos uno a uno: Bing, Google, Brave, Yep, Bing News y Wikipedia, más cuatro APIs científicas (arXiv, Crossref, Semantic Scholar, PubMed) |
 | Extracción de páginas | trafilatura → BeautifulSoup sobre el mismo HTML → navegador sin interfaz (Playwright, opcional) |
 | Modelo de lenguaje | Endpoint compatible con OpenAI, por defecto `llama3.2:3b` local vía Ollama |
@@ -67,7 +67,7 @@ flowchart LR
     WEB["Web abierta\n(fuentes de evidencia)"]
     NEWS["Medios configurados\n(noticias a analizar)"]
     LLM["Ollama\nllama3.2:3b\n(compatible OpenAI)"]
-    NEO[("Neo4j\n(configurado, sin uso)")]
+    NEO[("Neo4j\n(artículos, afirmaciones,\nveredictos y fuentes)")]
 
     FE -- "HTTP (server-side)" --> API
     API --> PIPE
@@ -83,12 +83,11 @@ flowchart LR
     PIPE --- CACHE
     PIPE --- JOURNAL
     PIPE --- VDB
-    API -.-> NEO
-
-    style NEO stroke-dasharray: 5 5
+    PIPE -- "tras el lago, tolerante a fallos" --> NEO
+    API -- "/graph: esquema, consola, relacionados" --> NEO
 ```
 
-*El backend nunca importa `torch`/`transformers`/`gliner`; todo lo que necesita de esos modelos llega por HTTP desde `inference/`. Neo4j (línea punteada) está configurado — su contraseña se exige al arrancar — pero nada lo lee ni lo escribe todavía (Fase 3 del roadmap).*
+*El backend nunca importa `torch`/`transformers`/`gliner`; todo lo que necesita de esos modelos llega por HTTP desde `inference/`. Cada análisis terminado se escribe en Neo4j después del lago, en una sola transacción, y un fallo de Neo4j no afecta al análisis; los hechos etiquetados a mano llegan mediante `POST /graph/sync`. Ver `docs/decisions/graph.md`.*
 
 ### 2.2. Módulo de Scraping y Descubrimiento
 

@@ -184,15 +184,36 @@ sets are scored on the same five classes.}
 \subsection{Annotation Procedure}
 \label{subsec:custom-procedure}
 
-Claims are taken from articles published by the outlet under study
-and by the positive-news and science sources the system ingests.
-Each record holds one atomic claim: an article usually yields
-several, and a sentence that asserts two things is split into two
-records, following the claim decomposition practice of real-world
-fact-checking datasets \cite{guo2022survey}. The annotator then
-searches for evidence independently of the system, records the
-links on which the verdict rests, and assigns the label under the
-rules of Section~\ref{subsec:custom-rules}.
+Claims are taken from articles published by the positive-news and
+science sources the system ingests, and neither the articles nor the
+claims are chosen by the annotator. Each day a batch of about ten
+articles is drawn at random from the sources' current feeds and topic
+pages: at most one article per source, the two languages alternated,
+every article already labelled or previously proposed excluded, and
+articles whose predicted topic belongs to an under-filled topic group
+preferred, after articles published within the previous sixty days,
+which keep small the gap between the evidence admissible under
+Rule~3 and the present-day web the system searches. The draw is seeded
+with the date, so the same set of candidate links yields the same
+draw.
+For each article, the system's own claim extractor and anchor-claim
+selector propose between one and three claims, which are therefore
+the claims the system would itself verify.
+
+The annotator either labels a proposed claim or rejects it with a
+recorded reason: an opinion or interpretation, a prediction, a
+checkable but trivial statement, a fragment of a sentence, or a
+duplicate. Those rejections are kept, and the share of proposals
+accepted is reported as the precision of the system's claim
+selection as judged by the annotator. Each record holds one atomic
+claim, kept in the article's own wording; a proposed sentence that
+asserts two things is split into two records, following the claim
+decomposition practice of real-world fact-checking datasets
+\cite{guo2022survey}. The annotator then searches for evidence
+independently of the system, records the links on which the verdict
+rests, and assigns the label under the rules of
+Section~\ref{subsec:custom-rules}. The system's verdict is never
+shown during annotation.
 
 Records are entered through a small web form built for this purpose
 and kept apart from the system itself: a single program using only the
@@ -316,10 +337,16 @@ disagreement into an agreement.
     \item \textbf{One annotator.} Self-agreement measures the
     consistency of the guide's application, not its validity: a
     systematic misreading applied twice agrees with itself.
-    \item \textbf{Selection by the annotator.} Claims are chosen by
-    the person who labels them, and the scarcity of false claims in
-    positive news pushes that choice toward the most checkable
-    cases.
+    \item \textbf{Selection by the system.} Articles are drawn at
+    random and claims are proposed by the system, which removes the
+    annotator's tendency to pick the most checkable cases, but ties
+    the set to the claims the system's selector favours. A claim the
+    selector would never propose cannot enter the set, so the
+    evaluation measures verification on the system's own claim
+    choice, not on an independent sample of all check-worthy claims.
+    The first six records were labelled before the daily draw existed
+    and were chosen by hand; they are identified as such (no batch
+    refers to them) and reported separately.
     \item \textbf{Temporal asymmetry.} Rule~3 restricts the
     annotator to evidence available at publication time, whereas the
     system searches today's web, without a date restriction. A system

@@ -9,8 +9,8 @@ now only be verified against a real, reachable inference service - the
 fake/stub used in tests/processors/nlp/test_embeddings.py can't assert
 anything about what the real model actually outputs.
 
-Skips rather than fails when inference isn't reachable, same as
-test_connection.py does for Neo4j - see conftest.py's require_inference.
+Skips rather than fails when inference isn't reachable - see
+conftest.py's require_inference.
 """
 
 from src.config.settings import settings

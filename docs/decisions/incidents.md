@@ -267,7 +267,7 @@ same for all of them.
 ## The Neo4j password was committed in `docker-compose.yml`
 
 `NEO4J_AUTH=neo4j/<password>` was written in plain text in the compose file
-and pushed to GitHub. Nothing reads Neo4j, which hid it. It now comes from
+and pushed to GitHub. Nothing read Neo4j at the time, which hid it. It now comes from
 `NEO4J_PASSWORD` in `backend/.env` (`${NEO4J_PASSWORD:?...}`), so compose
 must be run with `--env-file ../backend/.env` (`scripts/dev.sh` does).
 

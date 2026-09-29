@@ -19,6 +19,8 @@
 #   ./scripts/check.sh frontend   frontend only
 #   ./scripts/check.sh labeller   the fact labeller - stdlib only, no venv
 #   ./scripts/check.sh slow       the slow model-stack tests, only
+#   ./scripts/check.sh graph      the graph against a real Neo4j - fails,
+#                                 not skips, when it is not running
 
 set -uo pipefail
 
@@ -71,6 +73,20 @@ run_slow() {
   fi
 }
 
+# Not part of `all`, like `slow`: it needs a running Neo4j, and a check
+# that fails on every machine without one trains people to ignore it.
+# Asked for explicitly, a missing Neo4j is a failure - the old
+# test_connection.py skipped, so it passed whether a database existed or
+# not.
+run_graph() {
+  step "Graph tests (a real Neo4j at NEO4J_URI)"
+  if (cd "$ROOT/backend" && uv run pytest -m neo4j -q); then
+    pass "graph tests"
+  else
+    fail "graph tests"
+  fi
+}
+
 run_inference() {
   step "Inference service tests (real models, no mocks)"
   if (cd "$ROOT/inference" && uv run pytest -q); then
@@ -103,13 +119,14 @@ run_labeller() {
 case "$TARGET" in
   fast)      run_fast ;;
   slow)      run_slow ;;
+  graph)     run_graph ;;
   backend)   run_backend ;;
   inference) run_inference ;;
   frontend)  run_frontend ;;
   labeller)  run_labeller ;;
   all)       run_backend; run_inference; run_frontend; run_labeller ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | slow | backend | inference | frontend | labeller" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | backend | inference | frontend | labeller" >&2
     exit 2
     ;;
 esac

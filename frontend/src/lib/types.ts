@@ -442,7 +442,7 @@ export interface ScraperDomainStats {
   /** ok / requests, 0-1; null before any request. */
   successRate: number | null;
   outcomes: Partial<Record<ScrapeOutcome, number>>;
-  /** article | evidence | enrichment | ingestion | discovery | source_check */
+  /** article | evidence | enrichment | ingestion | discovery | source_check | probe | labelling */
   purposes: Record<string, number>;
   /** Which strategy produced the article, for extractions that got one. */
   strategies: Record<string, number>;
@@ -695,4 +695,122 @@ export interface ProbeState {
   startedAt: string | null;
   error: string | null;
   report: ProbeReport | null;
+}
+
+// ---------------------------------------------------------------------
+// Graph (/graph page) - mirrors backend/src/services/graph/ and the
+// /graph/* endpoints in backend/src/api/routes.py.
+// ---------------------------------------------------------------------
+
+export type GraphMethod = "pipeline" | "manual";
+
+export interface GraphNodeDecl {
+  label: string;
+  key: string;
+  description: string;
+  properties: string[];
+}
+
+export interface GraphRelationshipDecl {
+  type: string;
+  from: string;
+  to: string;
+  description: string;
+  properties: string[];
+}
+
+export interface GraphPatternCount {
+  from: string | null;
+  type: string;
+  to: string | null;
+  count: number;
+}
+
+export interface GraphSchema {
+  nodes: GraphNodeDecl[];
+  relationships: GraphRelationshipDecl[];
+  /** GLiNER entity type -> the second label an Entity node carries. */
+  entityTypes: Record<string, string>;
+  methods: GraphMethod[];
+  live: {
+    labels: Record<string, number>;
+    patterns: GraphPatternCount[];
+    methods: { type: string; method: GraphMethod; count: number }[];
+  };
+}
+
+export interface GraphNode {
+  kind: "node";
+  /** Neo4j element id: stable within one query, not across restarts. */
+  id: string;
+  labels: string[];
+  properties: Record<string, unknown>;
+}
+
+export interface GraphRelationship {
+  kind: "relationship";
+  id: string;
+  type: string;
+  start: string;
+  end: string;
+  properties: Record<string, unknown>;
+}
+
+export interface GraphData {
+  nodes: GraphNode[];
+  relationships: GraphRelationship[];
+}
+
+export interface GraphQueryResult {
+  columns: string[];
+  rows: Record<string, unknown>[];
+  graph: GraphData;
+  truncated: boolean;
+  maxRows: number;
+  elapsedMs: number;
+  notices: string[];
+}
+
+export interface GraphPreset {
+  id: string;
+  title: string;
+  description: string;
+  view: "graph" | "table";
+  cypher: string;
+  params?: { name: string; label: string }[];
+}
+
+export interface GraphArticle {
+  url: string;
+  title: string | null;
+  source: string | null;
+  language: string | null;
+  verdict: string | null;
+  analyzedAt: string | null;
+  labelled: boolean;
+  claims: number;
+  entities: number;
+}
+
+export interface RelatedArticle {
+  url: string;
+  title: string | null;
+  source: string | null;
+  verdict: string | null;
+  score: number;
+  shared: { kind: "claim" | "evidence" | "entity" | "topic"; via: string; weight: number }[];
+}
+
+export interface RelatedArticles {
+  url: string;
+  found: boolean;
+  title: string | null;
+  related: RelatedArticle[];
+}
+
+export interface GraphSyncReport {
+  sources: number;
+  facts: number;
+  articles: number;
+  errors: { item: string; error: string }[];
 }

@@ -59,6 +59,16 @@
   .stats div b { display: block; font-size: 1.5rem; }
   a { color: var(--accent); word-break: break-all; }
   [hidden] { display: none !important; }
+  .art { border-top: 1px solid var(--line); padding: 14px 0 6px; }
+  .art:first-child { border-top: none; }
+  .art-title { font-weight: 600; }
+  .qclaim { margin: 10px 0; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--soft); border-radius: 0 6px 6px 0; }
+  .qclaim.labelled { border-left-color: var(--ok); }
+  .qclaim.skipped { border-left-color: var(--line); opacity: .65; }
+  .qclaim p { margin: 0 0 6px; }
+  .qclaim .row { margin-top: 6px; }
+  .qclaim select { width: auto; padding: 3px 6px; font-size: .8rem; }
+  .hint { color: var(--MISLEADING); font-size: .8rem; margin: 0 0 6px; }
 </style>
 </head>
 <body>
@@ -67,14 +77,43 @@
   <p class="muted" id="where">Each fact is saved as its own JSON file.</p>
 
   <nav>
-    <button id="tab-label" class="on">Label</button>
+    <button id="tab-today" class="on">Today</button>
+    <button id="tab-label">Label</button>
     <button id="tab-review">Review 20%</button>
   </nav>
 
   <div id="broken" class="msg bad" hidden></div>
 
+  <!-- ============ TODAY ============ -->
+  <div id="view-today">
+    <section>
+      <h2>Today's batch</h2>
+      <p class="muted">About ten articles drawn at random from the configured sources, one per outlet,
+        leaving out every article you already labelled or were shown, and preferring topics your
+        balance table is short of. Each comes with the 1-3 claims the pipeline itself would check.
+        Label a claim, or skip it with a reason: the reasons measure how well the system chooses claims.</p>
+      <div class="grid">
+        <div><label for="q-articles">Articles</label><input id="q-articles" type="number" min="1" max="30" value="10"></div>
+        <div><label for="q-claims">Claims per article</label><select id="q-claims"><option>1</option><option>2</option><option selected>3</option></select></div>
+        <div><label for="q-lang">Language</label><select id="q-lang"><option value="">English and Spanish</option><option value="es">Spanish only</option><option value="en">English only</option></select></div>
+      </div>
+      <div class="row"><button id="q-fetch" type="button">Get a new batch</button><span class="muted" id="q-status"></span></div>
+      <div id="q-msg" class="msg" hidden></div>
+      <p class="muted" id="q-backend"></p>
+    </section>
+
+    <section id="q-batch" hidden>
+      <div class="row" style="margin-top:0">
+        <select id="q-file" style="width:auto"></select>
+        <span class="muted" id="q-progress"></span>
+      </div>
+      <p class="muted" id="q-stats"></p>
+      <div id="q-list"></div>
+    </section>
+  </div>
+
   <!-- ============ LABEL ============ -->
-  <div id="view-label">
+  <div id="view-label" hidden>
     <section>
       <h2>Balance</h2>
       <div class="muted" id="balance-note"></div>
@@ -85,6 +124,7 @@
     <section>
       <h2 id="form-title">New fact</h2>
       <form id="form">
+        <div id="from-queue" class="msg ok" hidden></div>
         <label for="claim">Claim *</label>
         <textarea id="claim" required placeholder="One checkable assertion, as the article states it."></textarea>
 
@@ -188,6 +228,10 @@ const $ = (id) => document.getElementById(id);
 let S = null;          // last /api/state
 let editing = null;    // fact id being edited
 let optionsBuilt = false;
+let Q = null;          // last /api/queue
+let qName = null;      // batch file shown
+let queueRef = null;   // the batch claim the form was filled from
+let polling = null;
 
 function el(tag, attrs, ...kids) {
   const e = document.createElement(tag);
@@ -230,6 +274,7 @@ async function load() {
   S = await call("GET", "/api/state");
   if (!optionsBuilt) buildOptions();
   render();
+  await loadQueue();
 }
 
 function buildOptions() {
@@ -334,6 +379,8 @@ function resetForm(keepArticle) {
   $("form").reset();
   for (const [k, v] of Object.entries(kept)) $(k).value = v;
   editing = null;
+  queueRef = null;
+  $("from-queue").hidden = true;
   $("form-title").textContent = "New fact";
   $("save").textContent = "Save fact";
   $("cancel").hidden = true;
@@ -344,8 +391,17 @@ $("form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const body = { onlyOwnSource: $("onlyOwnSource").checked, referenceEvidenceLinks: $("links").value.split(/\s+/).filter(Boolean) };
   for (const k of FIELDS) body[k] = $(k).value.trim() || null;
+  const fromQueue = !editing && queueRef;
+  if (fromQueue) body.queueRef = queueRef;
   try {
     const fact = editing ? await call("PUT", `/api/facts/${editing}`, body) : await call("POST", "/api/facts", body);
+    if (fromQueue) {
+      resetForm(false);
+      await load();
+      tab("today");
+      showMsg($("q-msg"), true, `Saved ${fact.id}.json from the batch.`);
+      return;
+    }
     showMsg($("form-msg"), true, editing ? `Saved ${fact.id}.json.` : `Saved ${fact.id}.json. The article's fields are kept for its next claim.`);
     resetForm(!editing);
     await load();
@@ -400,14 +456,164 @@ $("rv-form").addEventListener("submit", async (event) => {
   }
 });
 
+// ---------------- today ----------------
+
+async function loadQueue() {
+  Q = await call("GET", "/api/queue" + (qName ? "?name=" + encodeURIComponent(qName) : ""));
+  renderQueue();
+  if (Q.pending && !polling) poll();
+}
+
+// A sentence carrying two figures joined by "and", or simply very long,
+// usually asserts two things: label each part as its own fact.
+function looksCompound(c) {
+  return c.text.length > 220 || ((c.figures || []).length >= 2 && /\b(y|e|and)\b/i.test(c.text));
+}
+
+function renderQueue() {
+  $("q-backend").textContent = `Batches come from the backend at ${Q.backend}; it has to be running for "Get a new batch".`;
+  const b = Q.current;
+  $("q-batch").hidden = !b;
+  const s = Q.stats;
+  if (!b) return;
+  qName = b.file;
+
+  $("q-file").replaceChildren(...Q.files.slice().reverse().map((f) =>
+    el("option", { value: f.name }, `${f.name.replace(".json", "")} - ${f.done}/${f.claims} done`)));
+  $("q-file").value = b.file;
+
+  const claims = b.articles.flatMap((a) => a.claims);
+  const done = claims.filter((c) => c.status !== "pending").length;
+  $("q-progress").textContent = `${done} of ${claims.length} claims done in this batch`;
+  $("q-stats").textContent =
+    `All batches: ${s.proposed} claims proposed · ${s.labelled} labelled · ${s.skipped} skipped · ${s.pending} to do` +
+    (s.precision == null ? "" : ` · the pipeline chose a claim worth checking ${Math.round(s.precision * 100)}% of the time`) +
+    (b.skipped && b.skipped.length ? ` · ${b.skipped.length} drawn articles could not be read and were left out` : "");
+
+  $("q-list").replaceChildren(...b.articles.map((a, ai) => el("div", { class: "art" },
+    el("div", { class: "art-title" }, `${ai + 1}. `, link(a.url, a.title || a.url)),
+    el("div", { class: "muted" }, [
+      a.sourceName || a.site, a.language,
+      a.publishedAt ? `published ${a.publishedAt}` : "no publication date found: fill it in",
+      a.author, a.topic ? `suggested topic: ${topicName(a.topic)}` : null,
+    ].filter(Boolean).join(" · ")),
+    ...a.claims.map((c, ci) => claimRow(a, ai, c, ci)))));
+}
+
+function claimRow(a, ai, c, ci) {
+  const box = el("div", { class: "qclaim " + c.status });
+  box.append(el("p", {}, c.text));
+  if (c.status === "pending" && looksCompound(c)) {
+    box.append(el("p", { class: "hint" }, "May hold more than one assertion: label each part as its own fact (Label, then Label again)."));
+  }
+  const row = el("div", { class: "row" });
+  const labelButton = el("button", { type: "button", class: "plain" }, c.status === "labelled" ? "Label another part" : "Label");
+  labelButton.addEventListener("click", () => labelFrom(a, ai, c, ci));
+
+  if (c.status === "skipped") {
+    const undo = el("button", { type: "button", class: "plain" }, "Undo skip");
+    undo.addEventListener("click", () => markClaim(ai, ci, "pending"));
+    row.append(el("span", { class: "muted" }, `Skipped: ${Q.skipReasons[c.skipReason] || c.skipReason}`), undo);
+  } else {
+    row.append(labelButton);
+    if (c.status === "labelled") {
+      row.append(el("span", { class: "muted" }, `Labelled as ${c.factIds.map((f) => f + ".json").join(", ")}`));
+    } else {
+      const reasons = el("select", {}, el("option", { value: "" }, "Skip because…"),
+        ...Object.entries(Q.skipReasons).map(([k, v]) => el("option", { value: k }, v)));
+      reasons.addEventListener("change", () => { if (reasons.value) markClaim(ai, ci, "skipped", reasons.value); });
+      row.append(reasons);
+    }
+  }
+  row.append(el("span", { class: "muted" }, c.selectedBy === "anchor" ? "chosen by the pipeline's anchor selection" : "ranked by the extractor's confidence"));
+  box.append(row);
+  return box;
+}
+
+function labelFrom(a, ai, c, ci) {
+  resetForm(false);
+  $("claim").value = c.text;
+  $("articleUrl").value = a.url;
+  $("site").value = a.site || "";
+  $("claimant").value = a.author || "";
+  $("claimDate").value = a.publishedAt || "";
+  $("language").value = a.language === "en" ? "en" : "es";
+  if (a.topic) $("topic").value = a.topic;
+  $("claimType").value = (c.figures || []).length ? "numerical" : "factual";
+  queueRef = { name: Q.current.file, article: ai, claim: ci };
+  $("from-queue").hidden = false;
+  $("from-queue").textContent = `From batch ${Q.current.file}, article ${ai + 1}. Keep the article's wording but cut it to one assertion; ` +
+    "the topic, claim type and claimant are guesses - check them. Then find the evidence as usual.";
+  tab("label");
+  window.scrollTo({ top: $("form").offsetTop - 60, behavior: "smooth" });
+}
+
+async function markClaim(ai, ci, status, reason) {
+  try {
+    await call("POST", "/api/queue/claim", { name: Q.current.file, article: ai, claim: ci, status, reason });
+    await loadQueue();
+  } catch (errors) {
+    showMsg($("q-msg"), false, Array.isArray(errors) ? errors : [String(errors)]);
+  }
+}
+
+function stopPolling() {
+  clearInterval(polling);
+  polling = null;
+  $("q-fetch").disabled = false;
+  $("q-status").textContent = "";
+}
+
+function poll() {
+  $("q-fetch").disabled = true;
+  $("q-status").textContent = "Searching the sources and choosing claims - usually 2 to 4 minutes…";
+  polling = setInterval(async () => {
+    try {
+      const st = await call("GET", "/api/queue/status");
+      if (st.running) return;
+      stopPolling();
+      if (st.saved) {
+        qName = st.saved;
+        showMsg($("q-msg"), true, `New batch saved as ${st.saved}.`);
+      }
+      await loadQueue();
+    } catch (errors) {
+      stopPolling();
+      showMsg($("q-msg"), false, Array.isArray(errors) ? errors : [String(errors)]);
+    }
+  }, 3000);
+}
+
+$("q-fetch").addEventListener("click", async () => {
+  const languages = $("q-lang").value ? [$("q-lang").value] : null;
+  try {
+    const r = await call("POST", "/api/queue/fetch", {
+      articles: Number($("q-articles").value), claimsPerArticle: Number($("q-claims").value), languages,
+    });
+    showMsg($("q-msg"), true, `Asked for a batch; ${r.excluded} articles you already have are left out` +
+      (r.preferTopics.length ? ", and topics you are short of come first." : "."));
+    poll();
+  } catch (errors) {
+    showMsg($("q-msg"), false, Array.isArray(errors) ? errors : [String(errors)]);
+  }
+});
+
+$("q-file").addEventListener("change", async () => {
+  qName = $("q-file").value;
+  await loadQueue();
+});
+
 // ---------------- tabs ----------------
 
 function tab(name) {
+  $("view-today").hidden = name !== "today";
   $("view-label").hidden = name !== "label";
   $("view-review").hidden = name !== "review";
+  $("tab-today").classList.toggle("on", name === "today");
   $("tab-label").classList.toggle("on", name === "label");
   $("tab-review").classList.toggle("on", name === "review");
 }
+$("tab-today").addEventListener("click", () => tab("today"));
 $("tab-label").addEventListener("click", () => tab("label"));
 $("tab-review").addEventListener("click", () => tab("review"));
 

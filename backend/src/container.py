@@ -83,6 +83,12 @@ _source_probe: SourceProbe | None = None
 
 _source_check_service = None
 
+_graph_client = None
+_graph_writer = None
+_graph_reader = None
+
+_labelling_batch = None
+
 
 def get_vector_repository() -> VectorRepository:
 
@@ -216,6 +222,7 @@ def get_analysis_service() -> AnalysisService:
                     admission=get_admission_filter(),
                     enrichment_pipeline=get_enrichment_pipeline(),
                     lake=get_datalake_repository() if settings.LAKE_ENABLED else None,
+                    graph=get_graph_writer() if settings.GRAPH_ENABLED else None,
                 )
 
     return _analysis_service
@@ -317,3 +324,97 @@ def get_source_probe() -> SourceProbe:
                 )
 
     return _source_probe
+
+
+def get_graph_client():
+    """
+    One Neo4j driver per process - it owns a connection pool. Building it
+    does not connect (the first session does), so this is safe with Neo4j
+    down; the imports are local for the same reason as the source probe's.
+    """
+
+    global _graph_client
+
+    if _graph_client is None:
+        with _lock:
+            if _graph_client is None:
+                from src.database.neo4j_client import GraphClient
+
+                _graph_client = GraphClient(
+                    uri=settings.NEO4J_URI,
+                    user=settings.NEO4J_USER,
+                    password=settings.NEO4J_PASSWORD.get_secret_value(),
+                )
+
+    return _graph_client
+
+
+def get_graph_writer():
+    """
+    Writes each finished analysis into the graph (AnalysisService's
+    `graph`), and backs POST /graph/sync. The source YAMLs are read once,
+    here, like ingestion's.
+    """
+
+    global _graph_writer
+
+    if _graph_writer is None:
+        with _lock:
+            if _graph_writer is None:
+                from src.repositories.source_repository import SourceRepository
+                from src.services.graph.graph_writer import GraphWriter
+
+                _graph_writer = GraphWriter(
+                    get_graph_client(),
+                    sources=SourceRepository().list(),
+                )
+
+    return _graph_writer
+
+
+def get_graph_reader():
+
+    global _graph_reader
+
+    if _graph_reader is None:
+        with _lock:
+            if _graph_reader is None:
+                from src.services.graph.graph_reader import GraphReader
+
+                _graph_reader = GraphReader(get_graph_client())
+
+    return _graph_reader
+
+
+def get_labelling_batch():
+    """
+    Backs /labelling/batch. A singleton like the probe: the batch is built
+    on a background thread and the labeller polls this one object for it.
+    Borrows the enrichment pipeline's extractor and a ClaimSelector over
+    its own EmbeddingService - the same selection the fact-checker makes,
+    without opening Qdrant.
+    """
+
+    global _labelling_batch
+
+    if _labelling_batch is None:
+        with _lock:
+            if _labelling_batch is None:
+                from src.repositories.source_repository import SourceRepository
+                from src.services.embeddings.service import EmbeddingService
+                from src.services.fact_checker.claim_selector import ClaimSelector
+                from src.services.labelling_batch import LabellingBatch
+                from src.services.scraper.extractor import ExtractorService
+
+                sources = SourceRepository().list()
+                pipeline = get_enrichment_pipeline()
+
+                _labelling_batch = LabellingBatch(
+                    sources=sources,
+                    extractor=ExtractorService(sources=sources),
+                    enrichment=pipeline,
+                    selector=ClaimSelector(EmbeddingService()),
+                    claim_extractor=pipeline.claims,
+                )
+
+    return _labelling_batch

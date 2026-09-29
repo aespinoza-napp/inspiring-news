@@ -42,6 +42,9 @@ export const CURRENT_PHASE_LABELS: Record<string, string> = {
   stored_layer: "Stored",
   stored: "All layers stored",
   store_failed: "A storage layer failed — the analysis itself succeeded",
+  graph_storing: "Writing to the graph…",
+  graph_stored: "Written to the graph",
+  graph_failed: "The graph write failed (is Neo4j up?) — the analysis itself succeeded",
 };
 
 /**

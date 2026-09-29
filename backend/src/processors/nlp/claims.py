@@ -193,10 +193,20 @@ class ClaimExtractor(BaseProcessor):
         text: str,
     ) -> list[str]:
 
+        # Two boundaries, both found by the first labelling batch
+        # (2026-09-29), where they turned into proposed claims:
+        #
+        # - A line break ends a sentence. Extracted text keeps the
+        #   headline, a section label and the first paragraph on separate
+        #   lines with no full stop between them, so "Identifican nuevas
+        #   vías...\nINVESTIGACIÓN MÉDICA\nUn estudio de la UAB..." was one
+        #   "sentence", and the fact-checker searched for all of it.
+        # - A full stop only ends one when a sentence can start after it.
+        #   "infrastructure for A.I. before..." was cut after "A.I.".
         return [
             s.strip()
             for s in re.split(
-                r"(?<=[.!?])\s+",
+                r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑÜ¿¡\"“«'‘(\d])|\s*\n\s*",
                 text,
             )
             if s.strip()

@@ -112,8 +112,7 @@ Compose treats a dependency that reports `unhealthy` *before*
 - **Running locally now takes two processes.** `INFERENCE_URL` defaults
   to `http://localhost:8001` — start `inference/` first.
 - **Backend tests that need a real model skip when it isn't running**
-  (`backend/tests/conftest.py::require_inference`), the same tradeoff
-  `test_connection.py` already makes for Neo4j. Real model behaviour is
+  (`backend/tests/conftest.py::require_inference`). Real model behaviour is
   tested in `inference/tests/`; adapter behaviour is tested with stubs
   and needs nothing running.
 - **`SENTIMENT_MODEL` / `EMBEDDING_MODEL` in `backend/.env` became

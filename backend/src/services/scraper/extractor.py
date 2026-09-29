@@ -44,6 +44,9 @@ BROWSER_PURPOSES = {
     # they get what ingestion gets.
     Purpose.PROBE.value,
     Purpose.SOURCE_CHECK.value,
+    # An article someone will read and label: a page only the browser
+    # can read is still one of the sources' articles.
+    Purpose.LABELLING.value,
 }
 
 

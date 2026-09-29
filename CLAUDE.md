@@ -14,6 +14,7 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ./scripts/check.sh fast      # invariants only, seconds, no models loaded
 ./scripts/check.sh inference # the real models, in their own service
 ./scripts/check.sh slow      # the whole data/raw corpus, minutes
+./scripts/check.sh graph     # the graph against a real Neo4j; fails if it is down
 ./scripts/check.sh labeller  # the fact labeller, plain python
 ```
 
@@ -43,7 +44,9 @@ src.main:app --port 8001`.
 - `labeller/` — the tool for hand-labelling the custom validation set:
   `python labeller/app.py`, standard library only, nothing from
   `backend/`. One file per fact in `backend/data/evaluation/manual/`;
-  `join` merges them. See `labeller/README.md`.
+  `join` merges them. Its Today tab gets the day's articles and claims
+  from the backend's `POST /labelling/batch` over HTTP and keeps them in
+  `backend/data/evaluation/queue/`. See `labeller/README.md`.
 - `docs/decisions/` — why things are the way they are.
 
 ## Navigation
@@ -60,6 +63,7 @@ src.main:app --port 8001`.
 | What is searched for; why a source is cut | `docs/decisions/retrieval.md` |
 | Why a given rule exists; what broke before | `docs/decisions/incidents.md` |
 | The extraction cascade and what it counts | `docs/decisions/scraping.md` |
+| The Neo4j graph: schema, write path, console | `docs/decisions/graph.md` |
 | Pages, polling hook, API proxies | `frontend/CLAUDE.md` |
 | Running the stack | `docker/README.md` |
 
@@ -143,9 +147,13 @@ write them down than to have each be rediscovered.
   the last step of the extraction cascade reports `unavailable` and the
   cascade keeps the previous step's answer. The Docker image installs
   both. `docs/decisions/scraping.md`.
-- **Nothing reads Neo4j.** `settings.NEO4J_PASSWORD` is required at
-  startup as inherited scaffold config only. `motor` (MongoDB) is
-  likewise an unused dependency.
+- **The graph is written by the pipeline and the sync, not the
+  labeller.** Every finished analysis lands in Neo4j (fail-soft, after
+  the lake). Hand-labelled facts only get there through `POST
+  /graph/sync` (the Sync button on `/graph`): the labeller imports
+  nothing from `backend/`. The lake is the record, the graph a view that
+  sync rebuilds. `docs/decisions/graph.md`. `motor` (MongoDB) is an
+  unused dependency.
 - **`TopicPrediction.probability` carries no signal.** It is a softmax
   over raw cosine similarities across ~22 topics, so it comes back
   near-uniform (0.049 top vs 0.044 bottom). Use `confidence`.

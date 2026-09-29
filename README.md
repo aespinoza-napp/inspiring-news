@@ -37,7 +37,7 @@ URL -> extract -> enrich -> admission filter -> select claims -> retrieve eviden
 | `backend/` | FastAPI: the pipeline, the job API, storage. See `backend/CLAUDE.md` |
 | `inference/` | Model server for entity extraction, sentiment and embeddings |
 | `frontend/` | Next.js 14 internal tools: analyzer, live view, claim check, enrichment, corrector |
-| `docker/` | Compose stack: Neo4j (unused), SearXNG, inference, backend |
+| `docker/` | Compose stack: Neo4j, SearXNG, inference, backend |
 | `docs/` | The roadmap, technical architecture and the reasoning behind design choices |
 
 `CLAUDE.md` at the repo root is the map for working in the code: what must not
@@ -54,8 +54,9 @@ cp frontend/.env.local.example frontend/.env.local
 cp docker/searxng/settings.yml.example docker/searxng/settings.yml
 ```
 
-`backend/.env`'s `NEO4J_PASSWORD` is required by the settings even though
-nothing reads Neo4j. Compose also reads it, so docker commands take
+`backend/.env`'s `NEO4J_PASSWORD` is required by the settings: every
+analysis is also written into the Neo4j graph (see `/graph` in the
+frontend). Compose also reads it, so docker commands take
 `--env-file ../backend/.env`.
 
 Three things run outside `uv`:

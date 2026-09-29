@@ -3,7 +3,7 @@
 # anywhere bash does, including Git Bash on Windows where make usually
 # is not installed.
 
-.PHONY: check fast slow backend frontend dev dev-docker stop
+.PHONY: check fast slow graph backend frontend dev dev-docker stop
 
 check:
 	@./scripts/check.sh all
@@ -19,6 +19,9 @@ frontend:
 
 slow:
 	@./scripts/check.sh slow
+
+graph:
+	@./scripts/check.sh graph
 
 # Runs the app: docker services (backend, inference, searxng, neo4j)
 # plus the frontend dev server. Not verification - see scripts/check.sh
