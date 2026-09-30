@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Sara Hashemi",
+  "claim": "“We found that structural changes in the brain occur many years before high levels of plaque are seen on PET scans, which is the brain scan currently used to identify the earliest signs of Alzheimer’s disease,” says study co-author James Michael Roe, a neuroscientist at the University of Oslo in Norway, in a statement.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-09-30T07:44:13",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.nature.com/articles/s41593-026-02363-4"
+  ],
+  "split": "test",
+  "id": "fact012",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-16",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/mri-scans-might-reveal-signs-of-alzheimers-disease-seven-years-before-a-telltale-marker-appears-in-the-brain-180989570/",
+  "annotatorNote": "There is the paper related to the new",
+  "createdAt": "2026-09-30T07:44:13",
+  "review": null
+}

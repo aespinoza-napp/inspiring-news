@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "As it would happen, in April 2025, the Bank’s South Korea–Africa Economic Cooperation (KOAFEC) Trust Fund had launched a program to train 30 public sector experts from the meteorology, road mapping, water management, and disaster response agencies in the use of drones in emergency response.",
+  "claimDate": "2026-09-21",
+  "reviewDate": "2026-09-30T08:10:06",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://afdb.africa-newsroom.com/press/african-development-bank-and-mozambique-launch-dronebased-initiative-to-strengthen-countrys-disaster-preparedness?lang=en"
+  ],
+  "split": "test",
+  "id": "fact018",
+  "topic": "community",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-04-04",
+  "articleUrl": "https://www.goodnewsnetwork.org/korean-drone-rescue-program-helps-mozambique-achieve-zero-fatalities-during-worst-flood-in-decades/",
+  "annotatorNote": null,
+  "createdAt": "2026-09-30T08:10:06",
+  "review": null
+}

@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "abc.es",
+  "claimant": "Mario Daza",
+  "claim": "Cuando sea ejecutada esta infraestructura, la función de ronda metropolitana pasará a esa 'nueva' SE-20 y desaparecerá por tanto de la Ronda Urbana Norte, que de ese modo será el gran bulevar verde diseñado por el Ayuntamiento de Sevilla y en el que se invertirán casi 25 millones de euros hasta su culminación a finales de 2028.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-09-30T07:40:02",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://www.abc.es/sevilla/ciudad/ronda-urbana-norte-gran-bulevar-verde-finales-20260927070433-nts.html"
+  ],
+  "split": "test",
+  "id": "fact010",
+  "topic": "cities",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-27",
+  "articleUrl": "https://www.abc.es/sevilla/ciudad/nuevos-barrios-norte-sevilla-uniran-carretera-verde-20260930174134-nts.html",
+  "annotatorNote": "There is no evidence about the numbers",
+  "createdAt": "2026-09-30T07:40:02",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "agenciasinc.es",
+  "claimant": "EFE",
+  "claim": "La nave Starship de SpaceX amerizó con éxito este lunes en el océano Pacífico frente a las costas de Chile tras su primer viaje orbital y después de que la empresa de Elon Musk decidiera reducir su recorrido, que estaba previsto inicialmente que realizara unas seis vueltas al planeta durante unas 10 horas.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-09-30T07:22:21",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.elmundo.es/ciencia/2026/09/28/6aba6d92fc6c832f2b8b4597.html",
+    "https://www.xataka.com/espacio/cohete-grande-jamas-construido-acaba-alcanzar-orbita-starship-ha-cruzado-sus-grandes-fronteras"
+  ],
+  "split": "test",
+  "id": "fact008",
+  "topic": "space",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://www.agenciasinc.es/Noticias/Starship-ameriza-con-exito-tras-su-primer-viaje-alrededor-de-la-Tierra",
+  "annotatorNote": "In different trustful media that i've found it has been state that it was expected 10 hours and finally only reached 3h.",
+  "createdAt": "2026-09-30T07:22:21",
+  "review": null
+}

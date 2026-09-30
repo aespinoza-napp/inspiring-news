@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Dan Milmo",
+  "claim": "Two of the “godfathers” of modern AI and senior executives at OpenAI and Anthropic have warned governments to prepare for an AI “intelligence explosion”, which they say could be the most consequential technological development in history.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-09-30T07:50:53",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.axios.com/2026/09/28/ai-pioneers-intelligence-explosion",
+    "https://es.investing.com/news/economy-news/investigadores-de-ia-advierten-de-una-explosion-de-inteligencia-y-piden-supervision-3852002"
+  ],
+  "split": "test",
+  "id": "fact013",
+  "topic": "technology",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-06-28",
+  "articleUrl": "https://www.theguardian.com/technology/2026/sep/28/ai-godfathers-warn-of-runaway-intelligence-explosion",
+  "annotatorNote": null,
+  "createdAt": "2026-09-30T07:50:53",
+  "review": null
+}

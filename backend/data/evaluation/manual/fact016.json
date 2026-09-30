@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "reasonstobecheerful.world",
+  "claimant": "Oliver Gordon",
+  "claim": "Book Bunk has cataloged 138,000 books and added another 23,000 titles, converting 10 books by African authors into Braille and many others into audio formats.",
+  "claimDate": "2026-09-25",
+  "reviewDate": "2026-09-30T08:03:07",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://bookbunk.org/collections/",
+    "https://bookbunk.org/about-us/"
+  ],
+  "split": "test",
+  "id": "fact016",
+  "topic": "education",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-25",
+  "articleUrl": "https://reasonstobecheerful.world/nairobi-libraries-civic-hubs/",
+  "annotatorNote": "Oficial statistics in their cite",
+  "createdAt": "2026-09-30T08:03:07",
+  "review": null
+}

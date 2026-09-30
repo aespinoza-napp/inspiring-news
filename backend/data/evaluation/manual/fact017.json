@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "“Before this project, I had absolutely no experience with drones,” says Kátia Manjate, one of the new pilots.",
+  "claimDate": "2026-09-21",
+  "reviewDate": "2026-09-30T08:07:40",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.afdb.org/en/success-stories/eyes-above-ricatla-how-african-development-bank-korea-partnership-helped-mozambiques-flood-zone-achieve-zero-fatalities-96237"
+  ],
+  "split": "test",
+  "id": "fact017",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-21",
+  "articleUrl": "https://www.goodnewsnetwork.org/korean-drone-rescue-program-helps-mozambique-achieve-zero-fatalities-during-worst-flood-in-decades/",
+  "annotatorNote": "\"I had no idea what they were there for,\" - she said",
+  "createdAt": "2026-09-30T08:07:40",
+  "review": null
+}

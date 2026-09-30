@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "agenciasinc.es",
+  "claimant": "EFE",
+  "claim": "La nave despegó hacia las 14:49 (hora española) en su decimocuarta prueba desde el complejo de SpaceX en el extremo sur de Texas, EE.UU, y reingresó entorno a las 17.58, unas tres horas después sin que la compañía haya detallado cuántas vueltas ha conseguido completar.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-09-30T07:26:03",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.elmundo.es/ciencia/2026/09/28/6aba6d92fc6c832f2b8b4597.html",
+    "https://www.xataka.com/espacio/cohete-grande-jamas-construido-acaba-alcanzar-orbita-starship-ha-cruzado-sus-grandes-fronteras"
+  ],
+  "split": "test",
+  "id": "fact009",
+  "topic": "space",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://www.agenciasinc.es/Noticias/Starship-ameriza-con-exito-tras-su-primer-viaje-alrededor-de-la-Tierra",
+  "annotatorNote": "It is mentioned the duration of the \"trip\" but there is no reference about how many laps around the  earth has completed.",
+  "createdAt": "2026-09-30T07:26:03",
+  "review": null
+}

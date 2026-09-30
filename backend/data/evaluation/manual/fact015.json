@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "reasonstobecheerful.world",
+  "claimant": "Oliver Gordon",
+  "claim": "Founded in 2017 by writer Wanjiru Koinange and publisher Angela Wachuka, the nonprofit has restored the Eastlands and Kaloleni libraries; and work is underway at the city’s oldest library, McMillan Memorial.",
+  "claimDate": "2026-09-25",
+  "reviewDate": "2026-09-30T07:59:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.wri.org/insights/reviving-nairobis-libraries-builds-healthier-communities",
+    "https://brittlepaper.com/2025/12/library/"
+  ],
+  "split": "test",
+  "id": "fact015",
+  "topic": "cities",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-03-24",
+  "articleUrl": "https://reasonstobecheerful.world/nairobi-libraries-civic-hubs/",
+  "annotatorNote": null,
+  "createdAt": "2026-09-30T07:59:09",
+  "review": null
+}

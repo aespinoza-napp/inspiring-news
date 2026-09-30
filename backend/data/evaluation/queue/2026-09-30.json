@@ -1,0 +1,554 @@
+{
+  "requestId": "7fe63a880d8040348e08f155914ae758",
+  "seed": "2026-09-30",
+  "createdAt": "2026-09-30T07:09:06+00:00",
+  "requested": {
+    "articles": 10,
+    "claimsPerArticle": 2,
+    "languages": null,
+    "preferTopics": [
+      "education",
+      "community",
+      "employment",
+      "cities",
+      "space",
+      "technology",
+      "research",
+      "biology",
+      "medicine",
+      "mental_health",
+      "nutrition",
+      "fitness",
+      "public_health"
+    ],
+    "excluded": 1385
+  },
+  "totals": {
+    "sources": 34,
+    "discovered": 1377,
+    "candidates": 20,
+    "ready": 17,
+    "articles": 10,
+    "claims": 20
+  },
+  "articles": [
+    {
+      "url": "https://news.un.org/feed/view/en/story/2026/09/1168460",
+      "source": "un_news",
+      "title": "Countries far from conflict paying the price for wars not their own, India tells UN",
+      "site": "news.un.org",
+      "sourceName": "UN News",
+      "language": "en",
+      "publishedAt": "2026-09-26",
+      "author": "UN News",
+      "topic": "cities",
+      "topics": [
+        "cities",
+        "sustainability",
+        "education",
+        "community",
+        "climate",
+        "technology",
+        "food",
+        "nutrition",
+        "employment",
+        "nature",
+        "public_health",
+        "mental_health"
+      ],
+      "claims": [
+        {
+          "text": "Jaishankar said the focus must shift from “an endless war” to “ending the war”, adding that India supported initiatives aimed at achieving peace.",
+          "selectedBy": "anchor",
+          "score": 0.563,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "Addressing the high-level debate of the 81st session of the UN General Assembly, he said the inability to maintain peace was “not only weakening security, but is also threatening progress, slowing the pace of development in a globalized world.”",
+          "selectedBy": "anchor",
+          "score": 0.535,
+          "figures": [
+            "81"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        }
+      ]
+    },
+    {
+      "url": "https://www.agenciasinc.es/Noticias/Starship-ameriza-con-exito-tras-su-primer-viaje-alrededor-de-la-Tierra",
+      "source": "sinc",
+      "title": "Starship ameriza con éxito tras su primer viaje alrededor de la Tierra",
+      "site": "agenciasinc.es",
+      "sourceName": "SINC",
+      "language": "es",
+      "publishedAt": "2026-09-29",
+      "author": "EFE",
+      "topic": "space",
+      "topics": [
+        "space"
+      ],
+      "claims": [
+        {
+          "text": "La nave Starship de SpaceX amerizó con éxito este lunes en el océano Pacífico frente a las costas de Chile tras su primer viaje orbital y después de que la empresa de Elon Musk decidiera reducir su recorrido, que estaba previsto inicialmente que realizara unas seis vueltas al planeta durante unas 10 horas.",
+          "selectedBy": "anchor",
+          "score": 0.827,
+          "figures": [
+            "10"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact008"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "La nave despegó hacia las 14:49 (hora española) en su decimocuarta prueba desde el complejo de SpaceX en el extremo sur de Texas, EE.UU, y reingresó entorno a las 17.58, unas tres horas después sin que la compañía haya detallado cuántas vueltas ha conseguido completar.",
+          "selectedBy": "anchor",
+          "score": 0.722,
+          "figures": [
+            "14",
+            "49",
+            "17.58"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact009"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.abc.es/sevilla/ciudad/nuevos-barrios-norte-sevilla-uniran-carretera-verde-20260930174134-nts.html",
+      "source": "abc",
+      "title": "Una carretera 'verde' unirá los nuevos barrios del norte y este con las circunvalaciones de Sevilla",
+      "site": "abc.es",
+      "sourceName": "ABC",
+      "language": "es",
+      "publishedAt": "2026-09-30",
+      "author": "Mario Daza",
+      "topic": "cities",
+      "topics": [
+        "cities",
+        "sustainability",
+        "research",
+        "climate",
+        "energy",
+        "community",
+        "education",
+        "food",
+        "technology",
+        "biology",
+        "medicine",
+        "nature",
+        "employment"
+      ],
+      "claims": [
+        {
+          "text": "Cuando sea ejecutada esta infraestructura, la función de ronda metropolitana pasará a esa 'nueva' SE-20 y desaparecerá por tanto de la Ronda Urbana Norte, que de ese modo será el gran bulevar verde diseñado por el Ayuntamiento de Sevilla y en el que se invertirán casi 25 millones de euros hasta su culminación a finales de 2028.",
+          "selectedBy": "anchor",
+          "score": 0.803,
+          "figures": [
+            "20",
+            "25",
+            "2028"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact010"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "El proyecto original de ronda intermedia que tumbó Europa hace diez años se transformará en una vía urbana que conectará la Supernorte con la SE-40 y la SE-30 a la altura del Calonge para desatascar la Ronda Urbana Norte",
+          "selectedBy": "anchor",
+          "score": 0.788,
+          "figures": [
+            "40",
+            "30"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact011"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.europapress.es/portaltic/sector/noticia-claude-experimenta-fallo-interrumpe-servicio-app-claude-code-cowork-20260929164458.html",
+      "source": "europa_press",
+      "title": "Claude experimenta un fallo que interrumpe el servicio en la 'app', Claude Code y Cowork",
+      "site": "europapress.es",
+      "sourceName": "Europa Press",
+      "language": "es",
+      "publishedAt": "2026-09-29",
+      "author": "Europa Press",
+      "topic": "technology",
+      "topics": [
+        "technology"
+      ],
+      "claims": [
+        {
+          "text": "En actualizaciones más recientes del estado del servicio, la compañía ha señalado que algunas solicitudes a la API de Claude \"también están devolviendo errores\" y, de la misma forma, ha agregado un rendimiento deficiente en 'platform.claude.com'.",
+          "selectedBy": "anchor",
+          "score": 0.719,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "other"
+        },
+        {
+          "text": "Igualmente, el incidente también ha sido recogido por la propia compañía en su página oficial de seguimiento del servicio Claude Status, donde ha detallado estar investigando un aumento de errores que han afectado a los servicios de Claude.ai, Code y Cowork.",
+          "selectedBy": "anchor",
+          "score": 0.682,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "other"
+        }
+      ]
+    },
+    {
+      "url": "https://www.smithsonianmag.com/smart-news/mri-scans-might-reveal-signs-of-alzheimers-disease-seven-years-before-a-telltale-marker-appears-in-the-brain-180989570/",
+      "source": "smithsonian",
+      "title": "MRI Scans Might Reveal Signs of Alzheimer's Disease Seven Years Before a Telltale Marker Appears in the Brain",
+      "site": "smithsonianmag.com",
+      "sourceName": "Smithsonian Magazine",
+      "language": "en",
+      "publishedAt": "2026-09-29",
+      "author": "Sara Hashemi",
+      "topic": "medicine",
+      "topics": [
+        "medicine",
+        "research",
+        "mental_health",
+        "public_health",
+        "technology",
+        "biology",
+        "education",
+        "nutrition",
+        "cities",
+        "sustainability",
+        "space"
+      ],
+      "claims": [
+        {
+          "text": "“We found that structural changes in the brain occur many years before high levels of plaque are seen on PET scans, which is the brain scan currently used to identify the earliest signs of Alzheimer’s disease,” says study co-author James Michael Roe, a neuroscientist at the University of Oslo in Norway, in a statement.",
+          "selectedBy": "anchor",
+          "score": 0.727,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact012"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Now, researchers say a different kind of brain imaging can help them see signs associated with the disease even sooner.",
+          "selectedBy": "anchor",
+          "score": 0.647,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        }
+      ]
+    },
+    {
+      "url": "https://www.theguardian.com/technology/2026/sep/28/ai-godfathers-warn-of-runaway-intelligence-explosion",
+      "source": "guardian",
+      "title": "AI godfathers warn of runaway ‘intelligence explosion’",
+      "site": "theguardian.com",
+      "sourceName": "The Guardian",
+      "language": "en",
+      "publishedAt": "2026-09-28",
+      "author": "Dan Milmo",
+      "topic": "technology",
+      "topics": [
+        "technology",
+        "research",
+        "mental_health",
+        "education",
+        "employment",
+        "biology",
+        "medicine",
+        "heritage",
+        "climate",
+        "food",
+        "cities",
+        "public_health",
+        "energy",
+        "nature",
+        "space",
+        "nutrition",
+        "community",
+        "entertainment",
+        "sustainability"
+      ],
+      "claims": [
+        {
+          "text": "Two of the “godfathers” of modern AI and senior executives at OpenAI and Anthropic have warned governments to prepare for an AI “intelligence explosion”, which they say could be the most consequential technological development in history.",
+          "selectedBy": "anchor",
+          "score": 0.809,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact013"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "The authors say they are concerned about an “intelligence explosion”, which they describe as a “dramatic AI-driven acceleration of AI progress, compressing advances that would otherwise take years into months or less”.",
+          "selectedBy": "anchor",
+          "score": 0.693,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact014"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://reasonstobecheerful.world/nairobi-libraries-civic-hubs/",
+      "source": "reasons_to_be_cheerful",
+      "title": "Nairobi Is Transforming Neglected Libraries Into Vibrant Civic Hubs",
+      "site": "reasonstobecheerful.world",
+      "sourceName": "Reasons to be Cheerful",
+      "language": "en",
+      "publishedAt": "2026-09-25",
+      "author": "Oliver Gordon",
+      "topic": "cities",
+      "topics": [
+        "cities",
+        "education",
+        "community",
+        "sustainability",
+        "technology",
+        "employment",
+        "entertainment",
+        "food",
+        "literature",
+        "inspiration",
+        "energy",
+        "climate",
+        "arts",
+        "research",
+        "nature",
+        "mental_health",
+        "medicine",
+        "heritage",
+        "nutrition",
+        "biology",
+        "public_health",
+        "fitness"
+      ],
+      "claims": [
+        {
+          "text": "Founded in 2017 by writer Wanjiru Koinange and publisher Angela Wachuka, the nonprofit has restored the Eastlands and Kaloleni libraries; and work is underway at the city’s oldest library, McMillan Memorial.",
+          "selectedBy": "anchor",
+          "score": 0.575,
+          "figures": [
+            "2017"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact015"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Book Bunk has cataloged 138,000 books and added another 23,000 titles, converting 10 books by African authors into Braille and many others into audio formats.",
+          "selectedBy": "anchor",
+          "score": 0.574,
+          "figures": [
+            "138,000",
+            "23,000",
+            "10"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact016"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.goodnewsnetwork.org/korean-drone-rescue-program-helps-mozambique-achieve-zero-fatalities-during-worst-flood-in-decades/",
+      "source": "good_news_network",
+      "title": "Korean Drone Rescue Program Helps Mozambique Achieve Zero Fatalities During Worst Flood in Decades",
+      "site": "goodnewsnetwork.org",
+      "sourceName": "Good News Network",
+      "language": "en",
+      "publishedAt": "2026-09-21",
+      "author": "Andy Corbley",
+      "topic": "community",
+      "topics": [
+        "community",
+        "technology",
+        "cities",
+        "climate",
+        "research",
+        "sustainability",
+        "medicine",
+        "food",
+        "inspiration",
+        "energy"
+      ],
+      "claims": [
+        {
+          "text": "“Before this project, I had absolutely no experience with drones,” says Kátia Manjate, one of the new pilots.",
+          "selectedBy": "anchor",
+          "score": 0.639,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact017"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "As it would happen, in April 2025, the Bank’s South Korea–Africa Economic Cooperation (KOAFEC) Trust Fund had launched a program to train 30 public sector experts from the meteorology, road mapping, water management, and disaster response agencies in the use of drones in emergency response.",
+          "selectedBy": "anchor",
+          "score": 0.638,
+          "figures": [
+            "2025",
+            "30"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact018"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://muyinteresante.okdiario.com/ciencia/gato-schrodinger-optico-tamano-record-frontera-cuantica.html",
+      "source": "muy_interesante",
+      "title": "Físicos crean un gato de Schrödinger óptico de tamaño récord y llevan más lejos la frontera entre el mundo cuántico y el cotidiano",
+      "site": "muyinteresante.okdiario.com",
+      "sourceName": "Muy Interesante",
+      "language": "es",
+      "publishedAt": "2026-09-29",
+      "author": "César Noragueda",
+      "topic": "research",
+      "topics": [
+        "research",
+        "sustainability",
+        "technology",
+        "space",
+        "nature",
+        "energy",
+        "climate"
+      ],
+      "claims": [
+        {
+          "text": "Esa contradicción aparente inspiró en 1935 el célebre gato de Erwin Schrödinger.",
+          "selectedBy": "anchor",
+          "score": 0.798,
+          "figures": [
+            "1935"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "El logro no consiste solo en alejar más las ramas y aumentar el tamaño del gato de Schrödinger, sino en hacerlo sin borrar por completo aquello que lo hace tal: su naturaleza cuántica.",
+          "selectedBy": "anchor",
+          "score": 0.626,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        }
+      ]
+    },
+    {
+      "url": "https://e360.yale.edu/features/julian-aguon-interview",
+      "source": "yale_e360",
+      "title": "From Indigenous Loss, a Potent Legal Argument on Climate",
+      "site": "e360.yale.edu",
+      "sourceName": "Yale Environment 360",
+      "language": "en",
+      "publishedAt": "2026-09-15",
+      "author": "Beth Gardiner • September",
+      "topic": "climate",
+      "topics": [
+        "climate",
+        "food",
+        "sustainability",
+        "nature",
+        "energy",
+        "community",
+        "cities",
+        "technology",
+        "heritage",
+        "education",
+        "biology",
+        "entertainment",
+        "nutrition",
+        "research",
+        "employment",
+        "mental_health",
+        "medicine",
+        "arts",
+        "inspiration"
+      ],
+      "claims": [
+        {
+          "text": "Yale Environment 360: Can you tell me about the testimonies you and your colleagues gathered when you traveled to Vanuatu, Fiji, and other island nations in preparation for the case?",
+          "selectedBy": "anchor",
+          "score": 0.578,
+          "figures": [
+            "360"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "other"
+        },
+        {
+          "text": "Aguon: Basically 27 law students from the Vanuatu campus of the University of the South Pacific rallied behind this call to bring the world’s biggest problem to the world’s highest court.",
+          "selectedBy": "anchor",
+          "score": 0.572,
+          "figures": [
+            "27"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact019"
+          ],
+          "skipReason": null
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "url": "https://www.newscientist.com/article/2591216-how-will-el-nino-affect-the-world/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+      "source": "new_scientist",
+      "reason": "no article text could be extracted"
+    },
+    {
+      "url": "https://www.nationalgeographic.com/health/article/superager-brain-cells-neurogenesis",
+      "source": "national_geographic",
+      "reason": "no article text could be extracted"
+    },
+    {
+      "url": "https://www.bbc.co.uk/news/articles/cm89jkn232xxo?at_medium=RSS&at_campaign=rss",
+      "source": "bbc",
+      "reason": "no article text could be extracted"
+    }
+  ],
+  "file": "2026-09-30.json",
+  "date": "2026-09-30"
+}

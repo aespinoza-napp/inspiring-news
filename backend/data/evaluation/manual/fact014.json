@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Dan Milmo",
+  "claim": "The authors say they are concerned about an “intelligence explosion”, which they describe as a “dramatic AI-driven acceleration of AI progress, compressing advances that would otherwise take years into months or less”.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-09-30T07:54:17",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://www.axios.com/2026/09/28/ai-pioneers-intelligence-explosion",
+    "https://es.investing.com/news/economy-news/investigadores-de-ia-advierten-de-una-explosion-de-inteligencia-y-piden-supervision-3852002"
+  ],
+  "split": "test",
+  "id": "fact014",
+  "topic": "technology",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://www.theguardian.com/technology/2026/sep/28/ai-godfathers-warn-of-runaway-intelligence-explosion",
+  "annotatorNote": null,
+  "createdAt": "2026-09-30T07:54:17",
+  "review": null
+}

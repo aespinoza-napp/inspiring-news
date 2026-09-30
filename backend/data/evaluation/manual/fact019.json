@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Beth Gardiner • September",
+  "claim": "Aguon: Basically 27 law students from the Vanuatu campus of the University of the South Pacific rallied behind this call to bring the world’s biggest problem to the world’s highest court.",
+  "claimDate": "2026-09-15",
+  "reviewDate": "2026-09-30T08:18:01",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.amnesty.org/en/latest/campaigns/2026/05/how-students-from-the-pacific-took-the-fight-against-climate-change-to-the-worlds-top-court/",
+    "https://www.pisfcc.org/"
+  ],
+  "split": "test",
+  "id": "fact019",
+  "topic": "climate",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-05-08",
+  "articleUrl": "https://e360.yale.edu/features/julian-aguon-interview",
+  "annotatorNote": null,
+  "createdAt": "2026-09-30T08:18:01",
+  "review": null
+}
