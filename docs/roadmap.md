@@ -4,7 +4,7 @@ The plan, and what is true of it **today**. Every checkbox below was checked
 against the code, not against the plan. `[x]` means done *and* working as
 described; anything less is `[ ]` with a note saying exactly how far it got.
 
-- **As of:** 2026-09-29 — day 1 of Phase 2 (Sprint 3 and the validation-set window).
+- **As of:** 2026-09-30 — week 1 of Sprint 4 (development) and of the validation set (evaluation), run side by side.
 - **Hours** are the planned budget. There is no time log in the repo, so
   nothing here claims hours actually spent.
 - **Rebalanced on Sep 28**, still 900h: the custom validation set turned
@@ -40,18 +40,72 @@ described; anything less is `[ ]` with a note saying exactly how far it got.
      cut) and by Sprint 4 (70h → 60h: topic-classifier accuracy is on no
      research question's path).
 
-  | Bucket | Sep 28 | Sep 29 |
-  |---|---:|---:|
-  | Phase 0 · Foundations | 300 | 300 |
-  | Phase 1 · Pipeline completion | 140 | 140 |
-  | Phase 2 · Strategies + validation set (Sep 29 – Nov 2) | 180 | 170 |
-  | Evaluation harness (Oct 13 – Nov 9) | 0 | 40 |
-  | Phase 3 · Neo4j + infra (Nov 3–9) | 70 | 65 |
-  | Phase 4 · Model testing (Nov 10 – Dec 7) | 120 | 80 |
-  | Phase 5 · Reader view (Dec 8–21) | 40 | 20 |
-  | Phase 6 · Paper (Dec 22–31) | 50 | 35 |
-  | Testing & QA, transversal (Sep 29 – Dec 31) | 0 | 50 |
-  | **Total** | **900** | **900** |
+- **Rescheduled on Sep 30**, still 900h. The Sep 29 plan kept the hours
+  honest but not the calendar: Phase 3 put 65h into one week while the
+  20h reader view had two, and the evaluation was spread over three
+  places (the validation set inside Phase 2, the harness on its own,
+  model testing in Phase 4). Now:
+  1. **Every block's dates follow from its hours**, at the ~30–35h a
+     week Phases 0 and 1 ran at. Work already done (Sprint 3, the Neo4j
+     half of Phase 3) is dated when it was done and takes no future
+     calendar.
+  2. **Development and evaluation are two tracks that run side by
+     side.** Phase 2 is development only (Sprint 4). **Phase 4 is the
+     evaluation groundwork**: the validation set (the labelling), the
+     harness, and the tuning against the labels, in the order each needs
+     the one before. Sprint 4's two tuning items move into it (-10h /
+     +10h): they need the labels and the harness, not the development
+     work beside them. **The model testing (Sprints 6 and 7) is its own
+     phase, Phase 5**, which starts once Phase 4 has given it labels and
+     a harness to run on.
+  3. **Neo4j 35h → 20h** (done on Sep 29, in far less than planned);
+     infrastructure keeps 30h, over three weeks (Oct 20 – Nov 9) instead
+     of one. The 15h go to the interface, **Phase 6, 20h → 35h**: one
+     full week, Dec 11–17.
+  4. **Testing stays its own transversal track, 50h, and ends Dec 24.**
+     Its final window (regression, frontend E2E, bugfix, prod smoke test)
+     is the week *before* the paper, not the same days.
+  5. **The paper gets the last week, Dec 25–31**, on a system that no
+     longer changes.
+  6. **Phases from 4 on are renumbered.** Model testing was Phase 4 and
+     is Phase 5; the interface was Phase 5 and is Phase 6; the paper was
+     Phase 6 and is Phase 7. The Sep 28 and Sep 29 entries above keep the
+     numbers they were written with.
+
+  | Bucket | Sep 28 | Sep 29 | Sep 30 |
+  |---|---:|---:|---:|
+  | Phase 0 · Foundations (Jun 1 – Jul 31) | 300 | 300 | 300 |
+  | Phase 1 · Pipeline completion (Sep 1–28) | 140 | 140 | 140 |
+  | Phase 2 · Development: scraping + fact-checking (Sep 29 – Oct 19) | 140 | 130 | 120 |
+  | Phase 3 · Neo4j (done) + infrastructure (Oct 20 – Nov 9) | 70 | 65 | 50 |
+  | Phase 4 · Evaluation: labelling, harness, tuning (Sep 29 – Nov 16) | 40 | 80 | 90 |
+  | Phase 5 · AI model testing (Nov 10 – Dec 10) | 120 | 80 | 80 |
+  | Phase 6 · Interface: reader view (Dec 11–17) | 40 | 20 | 35 |
+  | Testing & QA, transversal (Sep 29 – Dec 24) | 0 | 50 | 50 |
+  | Phase 7 · Paper (Dec 25–31) | 50 | 35 | 35 |
+  | **Total** | **900** | **900** | **900** |
+
+  The Sep 28 and Sep 29 columns are regrouped into today's buckets (the
+  validation set's 40h and the harness's 40h counted under Phase 4, the
+  model benchmarks under Phase 5), so all three add up the same way.
+
+  Week by week, in hours:
+
+  | Week | Development | Evaluation (Phase 4) | Model testing (Phase 5) | Testing | Total |
+  |---|---|---|---|---:|---:|
+  | Sep 29 – Oct 5 | Sprint 4 · 17 | labelling 1–50 · 11 | — | 2 | 30 |
+  | Oct 6–12 | Sprint 4 · 17 | labelling 51–100 · 11, research questions · 3 | — | 2 | 33 |
+  | Oct 13–19 | Sprint 4 · 16 | labelling 101–150 · 12 | — | 2 | 30 |
+  | Oct 20–26 | infrastructure · 10 | harness · 12, re-label · 1 | — | 2 | 25 |
+  | Oct 27 – Nov 2 | infrastructure · 10 | harness · 12, re-label, kappa, join · 5 | — | 3 | 30 |
+  | Nov 3–9 | infrastructure · 10 | harness · 13 | — | 3 | 26 |
+  | Nov 10–16 | — | tuning · 10 | Sprint 6 · 10 | 3 | 23 |
+  | Nov 17–23 | — | — | Sprint 6 · 10, Sprint 7 · 18 | 3 | 31 |
+  | Nov 24–30 | — | — | Sprint 7 · 18 | 3 | 21 |
+  | Dec 1–10 | — | — | Sprint 7 · 24 | 10 | 34 |
+  | Dec 11–17 | interface · 35 | — | — | — | 35 |
+  | Dec 18–24 | — | — | — | final · 20 | 20 |
+  | Dec 25–31 | paper · 35 | — | — | — | 35 |
 
 - **Verification used for "done"** is `./scripts/check.sh`: on Sep 28, 737
   backend tests passed (11 skipped, 2 slow ones deselected), 9 inference
@@ -101,7 +155,7 @@ Legend: `[x]` done · `[ ]` not done · 🟡 partly done (what is left is stated
 - [x] 🎯 `ClaimSelector` — now ranks by how load-bearing a claim is and keeps an "anchor band" (`anchor_claims_min`/`max`), rather than the original confidence ranking
 - [x] 🌐 Evidence retrieval (SearXNG web + Qdrant internal corpus) — since rebuilt: three queries per claim (anchor / proposition / refutation) fused by reciprocal rank, run concurrently, one source per domain (Sep 21); a repeated query is sent to SearXNG once (Sep 28).
 - [x] 📈 `EvidenceRanker` (similarity + recency + reliability) — reliability is a real rating only for the 36 configured domains; every other domain gets the default 0.5 and is flagged `reliability_known: false`
-- [x] 🤖 `LLMVerifier` + `ConfidenceScorer` (hard UNVERIFIED fallback) — works, but its accuracy has never been measured against labelled data (that is Phase 4)
+- [x] 🤖 `LLMVerifier` + `ConfidenceScorer` (hard UNVERIFIED fallback) — works, but its accuracy has never been measured against labelled data (that is Phase 5)
 
 ### Sprint 0.4 — Job API, Frontend v1 & Fixes (Jul 13–31) · 60h
 
@@ -140,7 +194,7 @@ Legend: `[x]` done · `[ ]` not done · 🟡 partly done (what is left is stated
 
 ### Also this sprint (not on the original plan)
 
-- [x] 🦙 Swapped the default LLM from `llama3.1` (8B, ~4.9GB) to `llama3.2:3b` (~2GB) — a resource swap, not a benchmarked upgrade; Phase 4 still owns measuring verification quality. Settings-only change (`LLM_MODEL`), plus `.env`/`.env-example`/README/dev.sh updated and the model pulled and smoke-tested live against Ollama.
+- [x] 🦙 Swapped the default LLM from `llama3.1` (8B, ~4.9GB) to `llama3.2:3b` (~2GB) — a resource swap, not a benchmarked upgrade; Phase 5 still owns measuring verification quality. Settings-only change (`LLM_MODEL`), plus `.env`/`.env-example`/README/dev.sh updated and the model pulled and smoke-tested live against Ollama.
 
 ### Sep 28: fewer wasted calls, more engines (not on the original plan)
 
@@ -167,7 +221,7 @@ Also fixed (Sep 21, second pass — `docs/decisions/concurrency.md`, `docs/decis
 - [x] 🧷 Local Qdrant client used from several threads with no locking — `VectorRepository` holds an `RLock` for the whole of every call. Moving to a Qdrant server is now a scaling decision rather than a correctness one.
 - [x] 🎯 **Retrieval asked what a claim was about, never what it said.** A claim mentioning ACME was returned FALSE at 83% citing three pages on the Greek etymology of the word. Now: three queries per claim (anchor / proposition / refutation) fused by reciprocal rank; a lexical term-coverage factor in ranking beside the embedding one; and a per-run **pertinence gate** that cuts a source before the LLM sees it, so that claim comes back `UNVERIFIED` instead. **Unmeasured:** the threshold default is reasoned, not fitted — there is still no labelled set.
 
-Open — best done in this sprint or the next, and **before Phase 4**, because benchmarking runs many claims through the verifier:
+Open — best done in this sprint or the next, and **before Phase 5**, because benchmarking runs many claims through the verifier:
 - [ ] ⚖️ The article verdict is "worst claim wins", so a single `UNVERIFIED` (the common outcome with a small local model) outweighs any number of `TRUE`; `overall_confidence` averages confidences of different verdicts. Separate "how much could be checked" from "what was found".
 - [ ] 🗑️ `JobStore` keeps every job in memory forever (now safe to evict, since the journal has them)
 - [ ] ⏳ The analysis cache never expires, and it also caches rejections; fact-check verdicts depend on today's web
@@ -176,15 +230,16 @@ Open — best done in this sprint or the next, and **before Phase 4**, because b
 
 ---
 
-## 🧭 Phase 2 — New Strategies, Validation Set & Core Improvements (Sep 29 – Nov 2) · 170h
+## 🧭 Phase 2 — Development: Scraping Strategies & Fact-Checking Improvements (Sep 29 – Oct 19) · 120h
 
-Ends Nov 2 rather than Oct 26 since the Sep 29 reschedule: the validation
-set takes three weeks of calendar time for its 40h, and Sprint 4's tuning
-cannot start before there are labels to tune against.
+Development only since Sep 30: the validation set and every other piece
+of evaluation moved to Phase 4, which runs beside this. Sprint 3 was
+built in September; Sprint 4 is what is left, at ~17h a week beside the
+labelling.
 
-### Sprint 3 (Sep 29–Oct 12) · 70h — Scraping strategies  ← **current sprint**
+### Sprint 3 (built in September) · 70h — Scraping strategies
 
-Built early, in September: every item below is done.
+Every item below is done.
 
 - [x] ➕ **Wire an ingestion path** (not in the original plan) — `POST /ingest` + a panel on `/scraper`: RSS, then trafilatura's feed discovery; article-shape filter that works in Spanish; English-only topic pre-filter; skips what the lake already has; queues full analyses (purpose `ingestion`). Manual only. `Scraper` drift fixed. At the time 9 of 12 sources produced links and 4 feed URLs returned 404; since Sep 28 RTVE's is replaced, and National Geographic, Reuters and SINC have no feed to replace it with (topic pages rescue two of them).
 - [x] 🎭 Implement `PlaywrightStrategy` for JS-rendered sources — the last step of the cascade: renders, then reads the result with the same trafilatura/BeautifulSoup parsers. URL guard on every request and redirect hop, `BROWSER_MAX_CONCURRENCY`, never for evidence, optional `browser` extra (installed in Docker). `playwright_discover.py` is still a placeholder.
@@ -194,13 +249,68 @@ Built early, in September: every item below is done.
 - [x] 🧪 Unit tests for each new scraping strategy — BeautifulSoup (8), the Playwright step (10), trafilatura (14), the cascade's stop/escalate rules (21 in `test_extractor.py`), discovery (18), and the topic-page strategy (11) and source probe (14) added on Sep 25.
 - [x] 🩺 **Topic-page discovery + source probe** (not in the original plan) — discovery's third step reads a source's topic section pages (`/science/`, `/ciencia/`...) when it has no feed; `POST /scraper/probe` and a "Source health" panel on `/scraper` check every source (feed, topic pages, a sample of real extractions) and SearXNG. First run: 6 up, 3 degraded (National Geographic, RTVE, SINC: dead feeds, **rescued by topic pages**, 6/6 extracted each), 3 down (EFE 403, Reuters 401, El País 403 on articles). Topic pages added 1,272 links to the feeds' 395. `docs/decisions/scraping.md`
 - [x] 🩺 **Probe re-run on all 34 enabled sources (Sep 29)** — **29 up, 4 degraded, 1 down: 33 of 34 return articles**, 156 of 165 sampled articles extracted (95%); feeds 1,314 links, topic pages +3,604 more. Only Reuters is out (401 on everything). EFE, down on Sep 25 (403), now answers: no feed, but its topic pages give 85 links and 5/5 extract. National Geographic and SINC as before: dead feeds, rescued by topic pages (5/5 each). El País reads 2 of 5: the other 3 answer 403 and the host has the `playwright` package but not Chromium (`uv run playwright install chromium`; the Docker image has it). Positive News' two failures were section pages taken for articles, not the site. SearXNG answered both test queries (74 and 80 results, ~1.2s) from Google, Brave, Bing, Wikipedia, arXiv, Crossref and PubMed; Semantic Scholar (parsing error) and Yep (suspended) did not. One query per language is not a benchmark's load - the Sep 25 failure (68 of 69 empty) happened under load - so Sprint 4's search fix stays.
-### Validation set (Sep 29 – Oct 30) · 40h  ← **current, runs beside Sprints 3 and 4**
+
+### Sprint 4 (Sep 29 – Oct 19) · 50h — Enrichment & fact-checking improvements  ← **current sprint**
+
+70h → 60h on Sep 29 (evaluation harness), 60h → 50h on Sep 30: its two
+tuning items moved to Phase 4, where the labels and the harness they
+need are. What is left is development, and none of it waits on the
+labels - so it runs first, and the search is fixed before any benchmark.
+
+- [ ] 🟡 🔎 **Fix the search before any benchmark · 10h** — an engine with an API key (Brave Search API or Google Programmable Search), which is not rate-limited per IP like the scraped engines, and a **"search unavailable" state** apart from `UNVERIFIED`, as `llm_unreachable` already is for the LLM. Without both, a benchmark measures SearXNG's uptime: on Sep 25, 68 of 69 queries came back empty and every affected claim looked like an honest `UNVERIFIED`. **Sep 30: the state is done** — `searchUnavailable` on every claim (cache v10, graph), set when every query of a claim failed; the trace stops at `evidence_retrieval` and says the web was never asked (`docs/decisions/retrieval.md`). The analyzer's stage timeline shows that note, so the UI already tells the two apart; there is no dedicated badge, as there is none for `llmUnreachable`. Left: the API-keyed engine, deferred on Sep 30.
+
+- ↪️ Improve claim selection heuristics — the structural half is done; tuning its thresholds moved to Phase 4 (Nov 10–16), Sep 30.
+- [ ] 🟡 🌐 Alternative evidence retrieval strategies — SearXNG queries are now a planned set (anchor / proposition / refutation) fused by reciprocal rank, and off-target sources are cut by the pertinence gate (`docs/decisions/retrieval.md`). Sep 28: four science APIs (arXiv, Crossref, Semantic Scholar, PubMed) and Wikipedia answer through SearXNG beside the web engines, and still answer when those are rate-limited; the internal Qdrant corpus now grows from 34 ingested sources. Left: an engine with an API key (Brave Search API / Google Programmable Search), a "search unavailable" state apart from `UNVERIFIED`, and asking the model whether a source is on-point about the right subject.
+- ↪️ Tune `RANKING_*`, `CONFIDENCE_*` and `EVIDENCE_MIN_PERTINENCE` with real data — moved to Phase 4 (Nov 10–16), Sep 30.
+- [ ] 🟡 🏷️ Improve topic classifier accuracy — **de-scoped on Sep 29 to "only if time"**: on no research question's path (topics steer admission and balance, not verdicts). Keyword coverage was widened from misclassified real articles; there is no labelled set to measure accuracy on. The labelling batch's wrong topic guesses are a free sample of its errors.
+- [x] 🧪 Regression tests for new ranking/confidence behavior — ranking (lexical factor, pertinence gate both ways, run-threshold not env) was already covered. Sep 28: confidence golden values and properties (`test_confidence_weights.py`); the frozen class weights are now pinned for the suite (they had been running on the local `.env`); weight groups that do not sum to 1.0 refuse to start - the committed `.env-example` had ranking at 1.2. Still not *measured*: that is the tuning item above.
+
+---
+
+## 🗄️ Phase 3 — Neo4j Integration & Infrastructure Deployment (Neo4j done Sep 29 · infrastructure Oct 20 – Nov 9) · 50h
+
+### Sprint 5 · 50h — Neo4j 20h (done) + infrastructure 30h
+
+Neo4j 35h → 20h on Sep 30: it was done on Sep 29, a month early and in
+far less than planned. Infrastructure keeps its 30h, now over three
+weeks at ~10h a week beside the harness, instead of squeezed with Neo4j
+into one. CI moved to the testing track on Sep 29 (-5h), where it is
+needed from October.
+
+**Neo4j** — done early, Sep 29 (`docs/decisions/graph.md`):
+
+- [x] 🔗 Design graph schema — `Article`, `Entity` (+ type label: `:Person`, `:Country`...), `Topic`, `Claim`, `Verdict`, `Evidence`, `Source`; declared once in `src/services/graph/schema.py`. Every relationship carries `method` (`pipeline` / `manual`), so a hand label and the model's verdict on one claim sit side by side.
+- [x] 🧩 Wire `neo4j_client.py` into the real pipeline (write path) — `AnalysisService._store_graph`, after the lake, one transaction per article, fail-soft (`graph_failed`). Backfill with `POST /graph/sync`: configured sources, the labeller's facts, the lake's verified runs. Hand labels reach the graph only through the sync.
+- [x] 🔍 Add at least one read use-case — `GET /graph/related` (shared claim / evidence / entity / topic, each weight shown), plus the schema with live counts and a read-only Cypher console; all on the frontend's new `/graph` page.
+- [x] 🧪 Fix/replace `tests/database/test_connection.py` — replaced by `tests/database/test_neo4j_live.py` (`neo4j` marker, `./scripts/check.sh graph`), which **fails** when Neo4j is down; writer/reader/sync/routes are unit-tested against a recording fake in the default run.
+- [ ] 🟡 Measure it at scale — verified on 8 articles (2 analysed, 6 hand-labelled). `PRUNE_ORPHANS` and the fact cleanup scan by label/property without an index; fine now, revisit past a few thousand articles.
+
+**Infrastructure Deployment (Oct 20 – Nov 9) · 30h:**
+
+- [ ] ☁️ Choose hosting target (VPS / cloud provider) for backend + Neo4j + SearXNG
+- [ ] 🟡 🐳 Production-ready `docker-compose` — healthchecks, named volumes and a shutdown grace period exist; the Neo4j password now comes from env. Left: the rest of the secrets, a hardened SearXNG, and a full analysis run inside the backend container, which has come up healthy but never been verified end to end.
+- [ ] 🟡 🔐 Copy & configure `searxng/settings.yml` (secret) for prod — `settings.yml.example` now carries the measured engine allowlist (Sep 28); the real file is gitignored and **drifts**: the local copy ran the full default roster for weeks. Left: a generated `secret_key` (the local copy still has the placeholder) and a check that the live file matches the example.
+- [ ] 🟡 🧯 Logging/monitoring — INFO-level phase durations are logged, and every run's events are now journalled with timestamps. No metrics or alerting.
+- ↪️ CI pipeline — moved to the testing track (October), Sep 29.
+
+---
+
+## 🧮 Phase 4 — Evaluation: Labelling & Harness (Sep 29 – Nov 16) · 90h
+
+What every result the paper reports is measured with: the labelled
+claims, the harness that runs the pipeline over them, and the tuning
+those two make possible. Each part needs the one before it, so the order
+is fixed, and it runs beside the development track (Phases 2 and 3)
+rather than after it. The model benchmarks that use all three are their
+own phase since Sep 30, Phase 5.
+
+### Validation set — the labelling (Sep 29 – Oct 30) · 40h  ← **current, runs beside Sprint 4**
 
 Not in the original plan; own budget since the Sep 28 rebalance, own
 window since Sep 29. The paper commits to it
 (`docs/final_document/sections/evaluation_dataset.tex`, "Custom Validation
 Set") and x-fact cannot replace it: x-fact is political statements, not
-the claims of positive-news articles. Gates Sprint 4's tuning and 3 of
+the claims of positive-news articles. Gates the tuning below and 3 of
 Sprint 7's 6 items.
 
 - [x] 🗓️ **Daily labelling batch** (Sep 29, not in the original plan) — the labeller's **Today** tab asks the backend for ~10 articles, drawn at random (seeded by the day), one per source, languages alternated, never one already labelled or proposed, preferring articles from the last 60 days (to keep the gap between Rule 3's evidence and today's web small) and then topics the balance table is short of; each with the 1–3 claims the pipeline's own `ClaimSelector` would check (extractor confidence when `inference/` is down). **Label** pre-fills the form; **Skip** records why (opinion, prediction, trivial, fragment, duplicate). Removes the search that took most of each fact's time, answers the "selection by the annotator" limitation, and the skip reasons measure the claim selector's precision for the paper. First real batch: 34 sources, 1,491 links, 10 articles (5 en / 5 es), 29 claims, 200s. `backend/src/services/labelling_batch.py`, `POST /labelling/batch`; batches saved in `backend/data/evaluation/queue/`.
@@ -211,32 +321,14 @@ Sprint 7's 6 items.
 - [ ] 🔁 Blind re-label of the hash-chosen 20% · 4h (Oct 26–28) — at least a week after the first pass, per the guide.
 - [ ] 📐 Settle disagreements, report agreement and Cohen's kappa in `custom_dataset.tex`, `join` into `custom_en_es.jsonl` · 2h (by Oct 30)
 
-### Sprint 4 (Oct 13 – Nov 2) · 60h — Enrichment & fact-checking improvements
+### Evaluation harness (research questions by Oct 12 · the rest Oct 20 – Nov 9) · 40h
 
-Three weeks rather than two since Sep 29: its tuning items need the
-labels, which exist from ~Oct 19 (first pass) and are settled by Oct 30.
-70h → 60h the same day, for the evaluation harness. Runs beside it and
-beside the end of the validation set: ~40h a week for three weeks, the
-heaviest stretch of the plan.
-
-- [ ] 🔎 **Fix the search before any benchmark · 10h** — an engine with an API key (Brave Search API or Google Programmable Search), which is not rate-limited per IP like the scraped engines, and a **"search unavailable" state** apart from `UNVERIFIED`, as `llm_unreachable` already is for the LLM. Without both, a benchmark measures SearXNG's uptime: on Sep 25, 68 of 69 queries came back empty and every affected claim looked like an honest `UNVERIFIED`.
-
-- [ ] 🟡 🧠 Improve claim selection heuristics — the anchor-claim redesign (rank by how load-bearing a claim is, drop near-duplicates, keep 2–4) is done. Left: tuning the dedupe and confidence thresholds against real data.
-- [ ] 🟡 🌐 Alternative evidence retrieval strategies — SearXNG queries are now a planned set (anchor / proposition / refutation) fused by reciprocal rank, and off-target sources are cut by the pertinence gate (`docs/decisions/retrieval.md`). Sep 28: four science APIs (arXiv, Crossref, Semantic Scholar, PubMed) and Wikipedia answer through SearXNG beside the web engines, and still answer when those are rate-limited; the internal Qdrant corpus now grows from 34 ingested sources. Left: an engine with an API key (Brave Search API / Google Programmable Search), a "search unavailable" state apart from `UNVERIFIED`, and asking the model whether a source is on-point about the right subject.
-- [ ] ⚖️ Tune `RANKING_*`, `CONFIDENCE_*` and `EVIDENCE_MIN_PERTINENCE` with real data — no labelled evaluation set exists in the repo. `RANKING_LEXICAL_WEIGHT` was carved out of the other three by reasoning, not measurement.
-- [ ] 🟡 🏷️ Improve topic classifier accuracy — **de-scoped on Sep 29 to "only if time"**: on no research question's path (topics steer admission and balance, not verdicts). Keyword coverage was widened from misclassified real articles; there is no labelled set to measure accuracy on. The labelling batch's wrong topic guesses are a free sample of its errors.
-- [x] 🧪 Regression tests for new ranking/confidence behavior — ranking (lexical factor, pertinence gate both ways, run-threshold not env) was already covered. Sep 28: confidence golden values and properties (`test_confidence_weights.py`); the frozen class weights are now pinned for the suite (they had been running on the local `.env`); weight groups that do not sum to 1.0 refuse to start - the committed `.env-example` had ranking at 1.2. Still not *measured*: that is the tuning item above.
-
----
-
-## 🧮 Evaluation harness (Oct 13 – Nov 9) · 40h
-
-Added on Sep 29. Every result the paper will report comes out of this, and
-until then it had no hours: Phase 4's benchmarks, the verdict agreement
-with the labelled set and the confidence re-tuning all assumed a harness
-nobody had planned. It starts once the labelling has a head start, runs
-beside Sprint 4, and is proven on the x-fact pilot before the custom set
-is finished, so Phase 4 starts on Nov 10 with a working tool.
+Added on Sep 29: every result the paper will report comes out of this,
+and until then it had no hours. The research questions come first, since
+they decide what the harness measures; the build starts once Sprint 4
+has fixed the search and the first labelling pass is done, and is proven
+on the x-fact pilot before the custom set is settled, so the benchmarks
+start on Nov 10 with a working tool.
 
 - [ ] ❓ Fix 2–3 research questions, each with the metric that answers it · 3h (by Oct 13) — suggested: **RQ1** how well an open-web, low-cost pipeline verifies claims from constructive news in Spanish and English, against a temporally sound gold set; **RQ2** where it fails - retrieval, ranking or reasoning; **RQ3** how much of the verification work it takes off a journalist. Whatever answers none of them is cut or moved to future work.
 - [ ] 🧰 Harness: run the pipeline's own `check_claim` over a JSONL set (x-fact and the custom set share a format) · 12h — per claim: verdict, raw verdict, confidence, stage reached, the queries sent, every candidate and ranked source, latency; per model, cached and resumable, so a crash at claim 90 does not re-pay claims 1–89
@@ -246,39 +338,26 @@ is finished, so Phase 4 starts on Nov 10 with a working tool.
 - [ ] ⏱️ Journalist-effort metrics · 5h (RQ3) — the claim selector's precision (the labelling batch's skip reasons, recorded since Sep 29), time per fact (to add to the labeller), and the share of verdicts usable without re-checking
 - [ ] 🧪 Pilot on the 64-claim x-fact set, end to end · 5h — shakes out the harness before the custom set is ready; its first numbers are the baseline for the fixed search
 
----
+### Tuning against the labels (Nov 10–16) · 10h
 
-## 🗄️ Phase 3 — Neo4j Integration & Infrastructure Deployment (Nov 3 – Nov 9) · 65h
+Moved from Sprint 4 on Sep 30: both items need the settled labels
+(Oct 30) and the harness (Nov 9), and they fix the defaults every
+benchmark after them runs on.
 
-### Sprint 5 (Nov 3–9) · 65h — Neo4j 35h (done) + infrastructure 30h
-
-One week since Sep 29, because the Neo4j half was done a month early; the
-week it frees is what the validation set's window takes. CI moved to the
-testing track (-5h), where it is needed from October rather than November.
-
-**Neo4j** — done early, Sep 29 (`docs/decisions/graph.md`):
-
-- [x] 🔗 Design graph schema — `Article`, `Entity` (+ type label: `:Person`, `:Country`...), `Topic`, `Claim`, `Verdict`, `Evidence`, `Source`; declared once in `src/services/graph/schema.py`. Every relationship carries `method` (`pipeline` / `manual`), so a hand label and the model's verdict on one claim sit side by side.
-- [x] 🧩 Wire `neo4j_client.py` into the real pipeline (write path) — `AnalysisService._store_graph`, after the lake, one transaction per article, fail-soft (`graph_failed`). Backfill with `POST /graph/sync`: configured sources, the labeller's facts, the lake's verified runs. Hand labels reach the graph only through the sync.
-- [x] 🔍 Add at least one read use-case — `GET /graph/related` (shared claim / evidence / entity / topic, each weight shown), plus the schema with live counts and a read-only Cypher console; all on the frontend's new `/graph` page.
-- [x] 🧪 Fix/replace `tests/database/test_connection.py` — replaced by `tests/database/test_neo4j_live.py` (`neo4j` marker, `./scripts/check.sh graph`), which **fails** when Neo4j is down; writer/reader/sync/routes are unit-tested against a recording fake in the default run.
-- [ ] 🟡 Measure it at scale — verified on 8 articles (2 analysed, 6 hand-labelled). `PRUNE_ORPHANS` and the fact cleanup scan by label/property without an index; fine now, revisit past a few thousand articles.
-
-**Infrastructure Deployment:**
-
-- [ ] ☁️ Choose hosting target (VPS / cloud provider) for backend + Neo4j + SearXNG
-- [ ] 🟡 🐳 Production-ready `docker-compose` — healthchecks, named volumes and a shutdown grace period exist; the Neo4j password now comes from env. Left: the rest of the secrets, a hardened SearXNG, and a full analysis run inside the backend container, which has come up healthy but never been verified end to end.
-- [ ] 🟡 🔐 Copy & configure `searxng/settings.yml` (secret) for prod — `settings.yml.example` now carries the measured engine allowlist (Sep 28); the real file is gitignored and **drifts**: the local copy ran the full default roster for weeks. Left: a generated `secret_key` (the local copy still has the placeholder) and a check that the live file matches the example.
-- [ ] 🟡 🧯 Logging/monitoring — INFO-level phase durations are logged, and every run's events are now journalled with timestamps. No metrics or alerting.
-- ↪️ CI pipeline — moved to the testing track (October), Sep 29.
+- [ ] 🟡 🧠 Improve claim selection heuristics — the anchor-claim redesign (rank by how load-bearing a claim is, drop near-duplicates, keep 2–4) is done. Left: tuning the dedupe and confidence thresholds against real data.
+- [ ] ⚖️ Tune `RANKING_*`, `CONFIDENCE_*` and `EVIDENCE_MIN_PERTINENCE` with real data — no labelled evaluation set exists in the repo. `RANKING_LEXICAL_WEIGHT` was carved out of the other three by reasoning, not measurement.
 
 ---
 
-## 🤖 Phase 4 — AI Model Testing (THE BIG ROCK) (Nov 10 – Dec 7) · 80h
+## 🤖 Phase 5 — AI Model Testing (THE BIG ROCK) (Nov 10 – Dec 10) · 80h
+
+Its own phase again since Sep 30 (Phase 4 until then). It starts when
+Phase 4 has delivered the labels (Oct 30) and the harness (Nov 9), and
+runs the models over them.
 
 > `LLMClient` is a swappable OpenAI-SDK wrapper (Ollama local by default; Groq/OpenRouter/Together via settings only). That part is true. **None of the benchmark machinery exists yet**: no harness, no labelled ground-truth set, no rubric, and no token or cost accounting.
 >
-> **Prerequisite work:** a labelled set of claims with human verdicts (needed by 3 of the Sprint 7 items) — the x-fact set is in the repo, and the custom set has its own window, Sep 29 – Oct 30 — and a harness that runs a model over them and records latency and cost: planned since Sep 29, "Evaluation harness" above, Oct 13 – Nov 9. Per-claim LLM latency can already be read from the journal (`verifying_claim` → `claim_checked`).
+> **Prerequisite work:** a labelled set of claims with human verdicts (needed by 3 of the Sprint 7 items) — the x-fact set is in the repo, and the custom set is Phase 4's labelling, Sep 29 – Oct 30 — and a harness that runs a model over them and records latency and cost: Phase 4's evaluation harness, Oct 20 – Nov 9. Per-claim LLM latency can already be read from the journal (`verifying_claim` → `claim_checked`).
 
 ### Sprint 6 (Nov 10–23) · 20h — ✍️ Writing / redaction models
 
@@ -296,7 +375,7 @@ wire format as the providers kept and add the least that is new.
 - [ ] 📊 Build a scoring rubric + comparison table per model
 - [ ] 💰 Log cost/latency/quality trade-offs per provider
 
-### Sprint 7 (Nov 24–Dec 7) · 60h — 🕵️ Verification models
+### Sprint 7 (Nov 17 – Dec 10) · 60h — 🕵️ Verification models
 
 70h → 60h on Sep 29: the guardrail stress test moved to the testing track.
 
@@ -309,13 +388,17 @@ wire format as the providers kept and add the least that is new.
 
 ---
 
-## 💻 Phase 5 — Frontend v2: Reader View (Dec 8 – Dec 21) · 20h
+## 💻 Phase 6 — Interface: Reader View (Dec 11–17) · 35h
 
 What the frontend has today is an internal tool — eight pages (`/` analyzer, `/live`, `/claim`, `/enrich`, `/corrector`, `/scraper`, `/sources`, `/graph`).
 
-### Sprint 8 (Dec 8–21) · 20h
+### Sprint 8 (Dec 11–17, one week) · 35h
 
-60h → 40h on Sep 28 (validation set), 40h → 20h on Sep 29 (testing track).
+60h → 40h on Sep 28 (validation set), 40h → 20h on Sep 29 (testing track),
+20h → 35h on Sep 30: the 15h Neo4j gave back, so the interface gets one
+full week. It comes after the benchmarks, so it shows the final model's
+output.
+
 **Cut from scope on Sep 29:** user authentication, profiles, bookmarks and
 recommendations v1. The paper is about automating a journalist's
 verification work; none of those four answers anything it asks, and each
@@ -325,32 +408,17 @@ journalist or reader actually looks at.
 - [ ] 📰 Topic-based feed of publishable articles (read-only) — the ingestion path exists (manual `POST /ingest`, 34 sources); the lake has to be filled before a feed has anything to show
 - [ ] 🧾 Article view: the verdict per claim, the evidence and why each source was trusted — most of it exists on `/` and `/live`, for an operator rather than a reader
 - [ ] 🟡 🎨 Extend the existing hand-written CSS design system (no new UI libs) — the system exists and is what `/live` and `/graph` were built on
-- ↪️ E2E test for the feed — moved to the testing track (December)
+- ↪️ E2E test for the feed — in the testing track's final window (Dec 18–24), the week after
 
 ---
 
-## 📄 Phase 6 — Paper (Dec 22 – Dec 31) · 35h
-
-### Sprint 9 (Dec 22–31, ~10 days) · 35h
-
-50h → 35h on Sep 29: its three QA items moved to the testing track's final
-window, which runs over the same days. The paper itself is not cut.
-
-- [ ] ✍️ Consolidate methodology section (pipeline architecture) — `docs/arquitectura-tecnica.md` is the starting point and was brought back in line with the code on Sep 28 (v1.1)
-- [ ] 📊 Insert AI model benchmarking results (Phase 4 data)
-- ↪️ Final regression suite, bugfix pass and prod smoke test — moved to the testing track (Dec 22–31)
-- [ ] 📬 Submit / deliver paper draft
-- [ ] 🎉 Project wrap-up & retrospective notes
-
----
-
-## 🧪 Testing & QA — transversal (Sep 29 – Dec 31) · 50h
+## 🧪 Testing & QA — transversal (Sep 29 – Dec 24) · 50h
 
 Its own hours since Sep 29 (before, a checklist with none), weighted
-towards the end: testing follows what each phase builds, and the last ten
-days are mostly regression and bugfixing. On top of Sprint 2's 70h of
-testing, already spent. `./scripts/check.sh` stays the definition of done
-throughout.
+towards the end: testing follows what each phase builds. Since Sep 30 it
+ends on Dec 24, so the paper's week is not also a bugfixing week. On top
+of Sprint 2's 70h of testing, already spent. `./scripts/check.sh` stays
+the definition of done throughout.
 
 ### October (Sep 29 – Oct 31) · 8h
 
@@ -365,20 +433,36 @@ throughout.
 ### November (Nov 1–30) · 12h
 
 - [ ] 🧮 Tests for the benchmark harness itself — scoring, macro-F1, kappa, the temporal-leakage split: a wrong metric is a wrong paper
-- [ ] 🤖 Model comparison tests (writing + verification, Phase 4)
+- [ ] 🤖 Model comparison tests (writing + verification, Phase 5)
 - [ ] 🚫 Stress-test hallucination guardrails (moved from Sprint 7) — the no-evidence → `UNVERIFIED` rule and the "definitive verdict citing nothing → `UNVERIFIED`" rule are unit-tested with fakes, never against a real model that is trying to bluff
 
-### December 1–21 · 10h
+### December 1–10 · 10h
 
 - [ ] ☁️ Infra smoke tests (staging) — locally the backend container comes up healthy, but a full analysis inside it is unverified
-- [ ] 💻 Frontend E2E tests — job polling and the reader view (no test runner exists yet; the typecheck is the only gate)
 - [ ] 📉 Load/performance testing before final deployment — and the parallel pipeline's speedup, asserted as overlap and never measured
 
-### Final (Dec 22–31) · 20h
+### Final (Dec 18–24) · 20h — after the interface, before the paper
 
-- [ ] 🧪 Final full regression suite, backend + frontend + `slow` + `graph` (moved from Phase 6)
-- [ ] 🐛 Final bugfix pass across all phases (moved from Phase 6)
-- [ ] 🚀 Final deployment verification — prod smoke test (moved from Phase 6)
+- [ ] 🧪 Final full regression suite, backend + frontend + `slow` + `graph` (moved from the paper phase)
+- [ ] 🐛 Final bugfix pass across all phases (moved from the paper phase)
+- [ ] 🚀 Final deployment verification — prod smoke test (moved from the paper phase)
+- [ ] 💻 Frontend E2E tests — job polling and the reader view (no test runner exists yet; the typecheck is the only gate). Moved here from December 1–21 on Sep 30: the interface is built Dec 11–17.
+
+---
+
+## 📄 Phase 7 — Paper (Dec 25–31) · 35h
+
+### Sprint 9 (Dec 25–31, the final week) · 35h
+
+50h → 35h on Sep 29: its three QA items moved to the testing track. Since
+Sep 30 they run the week *before* (Dec 18–24), so the paper is written
+about a system that no longer changes. The paper itself is not cut.
+
+- [ ] ✍️ Consolidate methodology section (pipeline architecture) — `docs/arquitectura-tecnica.md` is the starting point and was brought back in line with the code on Sep 28 (v1.1)
+- [ ] 📊 Insert AI model benchmarking results (Phase 5 data)
+- ↪️ Final regression suite, bugfix pass and prod smoke test — moved to the testing track (Dec 18–24)
+- [ ] 📬 Submit / deliver paper draft
+- [ ] 🎉 Project wrap-up & retrospective notes
 
 ---
 

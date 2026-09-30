@@ -1,7 +1,7 @@
 # Frontend
 
 Next.js 14 (App Router, TypeScript) internal tools for the backend. Not the
-user-facing app — that is Phase 5 of [`docs/roadmap.md`](../docs/roadmap.md) and
+user-facing app — that is Phase 6 of [`docs/roadmap.md`](../docs/roadmap.md) and
 does not exist yet.
 
 **The working reference is [`CLAUDE.md`](CLAUDE.md) in this directory.** The

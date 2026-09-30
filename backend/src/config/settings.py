@@ -217,7 +217,7 @@ class Settings(BaseSettings):
     # llama3.2:3b replaced llama3.1 (8B) as the default: same Ollama/OpenAI
     # wire format, a third of the weights to load alongside inference/'s
     # GLiNER + sentiment + bge-m3, and noticeably faster per-claim
-    # verification on a laptop with no GPU. Phase 4 still owns measuring
+    # verification on a laptop with no GPU. Phase 5 still owns measuring
     # whether it verifies as well - this is a resource swap, not a
     # benchmarked upgrade.
     LLM_BASE_URL: str = "http://localhost:11434/v1"

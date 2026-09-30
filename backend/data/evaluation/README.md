@@ -1,6 +1,6 @@
 # X-Fact evaluation set (English + Spanish)
 
-The ground-truth set Phase 4 (`docs/roadmap.md`) needs and did not have:
+The ground-truth set Phase 5 (`docs/roadmap.md`) needs and did not have:
 labelled claims with human verdicts, to benchmark `LLMVerifier` against
 instead of eyeballing output. Source: X-Fact (Gupta & Srikumar, 2021,
 <https://github.com/utahnlp/x-fact>), chosen over FEVER because it is an

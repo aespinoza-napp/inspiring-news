@@ -23,7 +23,7 @@ class LLMUnavailableError(RuntimeError):
     body. Deliberately distinct from complete_json returning None (the
     provider answered but never produced valid JSON): a caller collapsing
     both into UNVERIFIED cannot tell "checked, no evidence" from "never
-    actually asked", which is exactly what blocked Phase 4 benchmarking
+    actually asked", which is exactly what blocked Phase 5 benchmarking
     from telling a wrong answer apart from a dead socket.
     """
 

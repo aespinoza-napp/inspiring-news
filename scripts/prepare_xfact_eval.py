@@ -2,7 +2,7 @@
 """
 Filters the X-Fact dataset (Gupta & Srikumar, 2021) down to English and
 Spanish, and maps its 7-class label taxonomy onto this project's Verdict
-enum, for the Phase 4 benchmark ground-truth set the roadmap flags as
+enum, for the Phase 5 benchmark ground-truth set the roadmap flags as
 missing (docs/roadmap.md, "Also this sprint" / docs/decisions - Phase 4
 is 140h of benchmarking with nothing to benchmark against).
 
