@@ -7,9 +7,19 @@ from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
 from src.services.concurrency import bounded_map
 from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.duckduckgo import DuckDuckGoClient
 from src.services.search import SearchUnavailableError, SearxngClient
 
 from .query_builder import PlannedQuery, fuse_by_rank, plan_queries
+
+
+def default_fallback() -> DuckDuckGoClient | None:
+    """
+    The route the fact-checker's search falls back to when SearXNG cannot
+    answer: DuckDuckGo, keyless, unless switched off in the environment.
+    """
+
+    return DuckDuckGoClient() if settings.DUCKDUCKGO_FALLBACK_ENABLED else None
 
 
 def registrable_domain(url: str) -> str:
@@ -27,7 +37,7 @@ class SearchProvider:
 
     def __init__(self, client: SearxngClient | None = None):
 
-        self.client = client or SearxngClient()
+        self.client = client or SearxngClient(fallback=default_fallback())
 
     def plan(
         self,

@@ -212,7 +212,11 @@ Phase 1.
   engines were rate-limited, CAPTCHA'd or timing out. A claim with no
   evidence comes back `UNVERIFIED`, indistinguishable from a real one.
   Check the "Source health" panel on `/scraper` before reading anything
-  into a run's verdicts (`docs/decisions/retrieval.md`).
+  into a run's verdicts (`docs/decisions/retrieval.md`). Since
+  2026-09-30 a claim whose search failed says `searchUnavailable`, and
+  a failed query falls back to DuckDuckGo directly - which, the same
+  day, challenged every request from this machine as a bot, so do not
+  count on the fallback rescuing a run here.
 - **The end-to-end speedup is not measured.** The parallel work is
   covered by tests that assert overlap, not by a benchmark. The job
   journal's timestamps make a real before/after possible.

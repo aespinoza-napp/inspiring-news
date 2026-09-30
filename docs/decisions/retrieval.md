@@ -270,12 +270,25 @@ Items 1 and 3 above still stand.
   saying why, and they no longer raise the confidence. No extra LLM
   call. What is left is that the judgement is a 3B model's, and how
   often it is right is unmeasured until the harness runs.
-- **No second search route.** An API-keyed engine was ruled out on
-  2026-09-30 (cost, credentials, reproducibility). A keyless fallback -
-  DuckDuckGo queried directly when SearXNG fails - is proposed as future
-  work in `docs/final_document/sections/future_work.tex`, with the
-  measurements it needs first: DuckDuckGo was the engine that answered
-  every request with a CAPTCHA from this machine on 2026-09-25.
+- **The second search route is keyless, and currently refused.** Since
+  2026-09-30 a query SearXNG cannot answer is sent once to DuckDuckGo's
+  HTML page directly (`src/services/duckduckgo.py`, wired in by
+  `SearchProvider`; `DUCKDUCKGO_FALLBACK_ENABLED` switches it off), inside
+  SearxngClient's shared flight, so a query two claims ask at once goes
+  to it once and its answer is cached. A claim is `searchUnavailable`
+  only when both routes fail. **Measured the same day: DuckDuckGo
+  answered every keyless request from this machine with a bot challenge**
+  (HTTP 202, "select all squares containing a duck") - 3 of 3, through
+  the HTML page by GET and POST and the lite page. The client recognises
+  it, reports the search unavailable, and does not ask again for 5
+  minutes; a page it does not recognise is also unavailable, never
+  "nothing found". Its result parser follows the markup open-source
+  clients read and is tested on sample pages only: no real results page
+  has come back from here. It was not made to look like a browser to get
+  past the challenge. An API-keyed engine (Brave Search API) is future
+  work, `docs/final_document/sections/future_work.tex`: cost, credentials
+  and reproducibility against a route that answers automated requests by
+  design.
 - **Accuracy is still unmeasured.** There is no labelled set, so the
   threshold defaults are reasoned, not fitted.
 - **Only the 36 configured domains have a real reliability rating.**

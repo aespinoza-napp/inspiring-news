@@ -211,6 +211,15 @@ class Settings(BaseSettings):
     SEARXNG_TIMEOUT: float = 10.0
     SEARXNG_MAX_RESULTS: int = 8
 
+    # DuckDuckGo's keyless HTML results page, asked only when SearXNG
+    # cannot answer a query (src/services/duckduckgo.py). A second route
+    # that needs no API key. One request at a time: it refuses by IP, and
+    # it is only ever asked when something is already failing.
+    DUCKDUCKGO_FALLBACK_ENABLED: bool = True
+    DUCKDUCKGO_URL: str = "https://html.duckduckgo.com/html/"
+    DUCKDUCKGO_TIMEOUT: float = 10.0
+    DUCKDUCKGO_MAX_CONCURRENCY: int = 1
+
     # LLM (OpenAI-compatible chat completions; defaults to a local Ollama
     # instance so verification is free/open-source by default. Swapping to
     # Groq/OpenRouter/Together/real OpenAI is a settings-only change.

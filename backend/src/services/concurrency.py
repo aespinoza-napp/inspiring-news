@@ -91,6 +91,10 @@ class BoundedResource:
 
 SEARXNG = BoundedResource("searxng", settings.SEARXNG_MAX_CONCURRENCY)
 
+# Asked only after SearXNG has failed, and after its permit is released:
+# nothing holding SEARXNG ever waits on this one.
+DUCKDUCKGO = BoundedResource("duckduckgo", settings.DUCKDUCKGO_MAX_CONCURRENCY)
+
 SCRAPE = BoundedResource("scrape", settings.SCRAPE_MAX_CONCURRENCY)
 
 INFERENCE = BoundedResource("inference", settings.INFERENCE_MAX_CONCURRENCY)

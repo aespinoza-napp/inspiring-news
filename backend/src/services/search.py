@@ -49,9 +49,18 @@ class SearxngClient:
         self,
         base_url: str | None = None,
         timeout: float | None = None,
+        fallback=None,
     ):
         self.base_url = (base_url or settings.SEARXNG_URL).rstrip("/")
         self.timeout = timeout or settings.SEARXNG_TIMEOUT
+
+        # A second route asked only when SearXNG cannot answer - anything
+        # with `fetch(query, language) -> list[dict]` that raises
+        # SearchUnavailableError when it cannot answer either
+        # (DuckDuckGoClient). None by default: the fact-checker's
+        # SearchProvider passes one in, the source probe does not, since
+        # it exists to report on SearXNG itself.
+        self.fallback = fallback
 
         self._lock = threading.Lock()
 
@@ -113,7 +122,7 @@ class SearxngClient:
             return flight.results[:limit]
 
         try:
-            flight.results = self._fetch(query, language)
+            flight.results = self._fetch_or_fall_back(query, language)
         except SearchUnavailableError as exc:
             flight.error = exc
             raise
@@ -133,6 +142,38 @@ class SearxngClient:
             flight.done.set()
 
         return flight.results[:limit]
+
+    def _fetch_or_fall_back(self, query: str, language: str | None) -> list[dict]:
+        """
+        SearXNG, and the fallback only when SearXNG could not answer.
+
+        Inside the shared flight, so a query two claims ask at once goes
+        to the fallback once too, and its answer is cached like any other.
+        The SearXNG permit is already released here: nothing waits on the
+        fallback's permit while holding SearXNG's.
+        """
+
+        try:
+            return self._fetch(query, language)
+        except SearchUnavailableError as primary:
+
+            if self.fallback is None:
+                raise
+
+            try:
+                results = self.fallback.fetch(query, language)
+            except SearchUnavailableError as secondary:
+                raise SearchUnavailableError(
+                    f"{primary}; fallback: {secondary}"
+                ) from secondary
+
+            logger.info(
+                "SearXNG could not answer %r; the fallback returned %d results",
+                query,
+                len(results),
+            )
+
+            return results
 
     def _fetch(self, query: str, language: str | None) -> list[dict]:
         """
