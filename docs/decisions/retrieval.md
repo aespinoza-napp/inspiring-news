@@ -218,9 +218,17 @@ fix it, in order of leverage:
 2. **Disable the engines that only fail** (DuckDuckGo, Wikidata) so they
    stop costing a timeout on every query.
 3. **Report "search unavailable" apart from "nothing found"**, the way
-   `llm_unreachable` separates a dead LLM from `UNVERIFIED`: today a
-   claim with every engine down is `UNVERIFIED`, which reads as a
-   judgement about the claim.
+   `llm_unreachable` separates a dead LLM from `UNVERIFIED`. **Done
+   2026-09-30:** `SearxngClient.search` raises `SearchUnavailableError`
+   when SearXNG cannot be reached, or answers empty while reporting any
+   engine down (it does not say which engines answered with nothing, so
+   such an answer cannot be read as "nothing exists"). A claim counts as
+   unsearched only when *every* one of its queries failed; the internal
+   corpus is still asked. The claim then carries `searchUnavailable`
+   (API, cache v10, graph `HAS_VERDICT.search_unavailable`) and stops at
+   `evidence_retrieval` with a note saying the web was never asked. The
+   verdict is still `UNVERIFIED`; what changed is that it no longer
+   looks like a judgement about the claim.
 
 ### 2026-09-28: fewer requests, more engines
 

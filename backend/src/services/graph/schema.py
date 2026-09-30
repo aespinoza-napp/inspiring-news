@@ -149,7 +149,7 @@ RELATIONSHIPS: list[dict] = [
         "properties": [
             "method", "confidence", "explanation", "raw_verdict",
             "checked_at", "reached_stage", "independent_domains",
-            "llm_unreachable", "fact_id", "label_raw", "annotator_note",
+            "llm_unreachable", "search_unavailable", "fact_id", "label_raw", "annotator_note",
             "reviewed", "source_tier", "evidence_date",
         ],
     },

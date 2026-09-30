@@ -260,3 +260,57 @@ def test_the_article_is_excluded_from_its_own_web_results():
 
     [itself] = [item for item in result.rejected if "itself" in item.reason]
     assert itself.stage == "evidence_retrieval"
+
+
+def test_search_unavailable_is_reported_and_the_internal_corpus_still_answers():
+    """
+    A dead search is not fatal: the internal corpus is looked up anyway.
+    What changes is that the result says the web was never asked.
+    """
+
+    internal = [
+        Evidence(
+            url="https://internal.com",
+            title="Internal",
+            snippet="",
+            origin=EvidenceOrigin.INTERNAL,
+            relevance_score=0.9,
+        ),
+    ]
+
+    events = []
+
+    retriever = EvidenceRetriever(
+        repository=None,
+        search_provider=FakeSearchProvider(unavailable=True),
+        scraper=FakeEvidenceScraper(),
+        vector_retriever=FakeVectorRetriever(internal),
+        embeddings=FakeEmbeddingService(),
+    )
+
+    result = retriever.retrieve(
+        create_claim(text="claim keyword here"),
+        on_phase=lambda phase, data: events.append((phase, data)),
+    )
+
+    assert result.search_unavailable is True
+    assert [item.url for item in result.kept] == ["https://internal.com"]
+
+    [web_results] = [data for phase, data in events if phase == "web_results"]
+    assert web_results["searchUnavailable"] is True
+
+
+def test_a_search_that_ran_and_found_nothing_is_not_unavailable():
+
+    retriever = EvidenceRetriever(
+        repository=None,
+        search_provider=FakeSearchProvider([]),
+        scraper=FakeEvidenceScraper(),
+        vector_retriever=FakeVectorRetriever([]),
+        embeddings=FakeEmbeddingService(),
+    )
+
+    result = retriever.retrieve(create_claim(text="claim keyword here"))
+
+    assert result.kept == []
+    assert result.search_unavailable is False

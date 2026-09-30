@@ -559,6 +559,7 @@ class AnalysisService:
                     "discrepancies": [],
                     "independentDomains": 0,
                     "llmUnreachable": False,
+                    "searchUnavailable": False,
                 }
                 for claim in (article.claims or [])
             ]
@@ -586,6 +587,7 @@ class AnalysisService:
                 "discrepancies": check.discrepancies,
                 "independentDomains": check.independent_domains,
                 "llmUnreachable": check.llm_unreachable,
+                "searchUnavailable": check.search_unavailable,
             }
             for check in checks
         ]
@@ -607,6 +609,7 @@ class AnalysisService:
                 "discrepancies": [],
                 "independentDomains": 0,
                 "llmUnreachable": False,
+                "searchUnavailable": False,
             }
             for rejected in report.unselected_claims
         ]

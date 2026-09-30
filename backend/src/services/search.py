@@ -11,12 +11,26 @@ from src.services.concurrency import SEARXNG
 logger = getLogger(__name__)
 
 
+class SearchUnavailableError(RuntimeError):
+    """
+    The search could not be carried out, as opposed to having found
+    nothing. On 2026-09-25, 68 of 69 queries came back empty because the
+    engines behind SearXNG were rate-limited or CAPTCHA'd, and every
+    affected claim came out as an honest-looking UNVERIFIED. The same
+    split `LLMUnavailableError` makes for the model.
+    """
+
+
 @dataclass
 class _InFlight:
 
     done: threading.Event = field(default_factory=threading.Event)
 
     results: list[dict] = field(default_factory=list)
+
+    # Set when the leader's request could not be answered, so a caller
+    # that waited on it gets the same failure rather than a plain [].
+    error: SearchUnavailableError | None = None
 
 
 class SearxngClient:
@@ -66,6 +80,11 @@ class SearxngClient:
         Only answers with results are kept. An empty one is most often
         every engine suspended, and remembering it would stretch a
         three-minute suspension into ten minutes of UNVERIFIED.
+
+        Raises SearchUnavailableError when SearXNG could not be reached,
+        or answered with nothing while reporting engines down: "the web
+        has nothing on this" cannot be told from "nobody looked". An
+        empty answer with no engine reported down is a real empty answer.
         """
 
         limit = max_results or settings.SEARXNG_MAX_RESULTS
@@ -87,10 +106,17 @@ class SearxngClient:
 
         if not leader:
             flight.done.wait()
+
+            if flight.error:
+                raise flight.error
+
             return flight.results[:limit]
 
         try:
             flight.results = self._fetch(query, language)
+        except SearchUnavailableError as exc:
+            flight.error = exc
+            raise
         finally:
             with self._lock:
 
@@ -109,7 +135,11 @@ class SearxngClient:
         return flight.results[:limit]
 
     def _fetch(self, query: str, language: str | None) -> list[dict]:
-        """The request itself: every result SearXNG returned, or []."""
+        """
+        The request itself: every result SearXNG returned, [] when it
+        answered and found nothing, SearchUnavailableError when it could
+        not answer.
+        """
 
         params = {
             "q": query,
@@ -154,7 +184,9 @@ class SearxngClient:
                 exc,
             )
 
-            return []
+            raise SearchUnavailableError(
+                f"SearXNG request failed: {exc or type(exc).__name__}"
+            ) from exc
 
         results = data.get("results", [])
 
@@ -166,11 +198,21 @@ class SearxngClient:
         unresponsive = data.get("unresponsive_engines") or []
 
         if unresponsive and not results:
+
+            down = ", ".join(f"{name} ({reason})" for name, reason in unresponsive)
+
             logger.warning(
                 "SearXNG returned nothing for %r; engines down: %s",
                 query,
-                ", ".join(f"{name} ({reason})" for name, reason in unresponsive),
+                down,
             )
+
+            # Any engine down, not every one: SearXNG does not say which
+            # engines answered with nothing, so an empty answer with even
+            # one failure cannot be read as "nothing exists". Reporting
+            # search as unavailable when it half-worked is the honest
+            # error of the two - the other one is a verdict.
+            raise SearchUnavailableError(f"no results; engines down: {down}")
 
         return results
 

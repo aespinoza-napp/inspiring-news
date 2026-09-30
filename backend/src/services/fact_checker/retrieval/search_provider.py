@@ -7,7 +7,7 @@ from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
 from src.services.concurrency import bounded_map
 from src.services.fact_checker.claim_selector import ArticleContext
-from src.services.search import SearxngClient
+from src.services.search import SearchUnavailableError, SearxngClient
 
 from .query_builder import PlannedQuery, fuse_by_rank, plan_queries
 
@@ -71,6 +71,10 @@ class SearchProvider:
         many of those may be in flight lives in SearxngClient, not here
         (see src/services/concurrency.py): the limit belongs to the
         service, which does not care which claim a request came from.
+
+        Raises SearchUnavailableError only when *every* query failed.
+        One that answered - even with nothing - means the search ran, and
+        the hits the others found are still evidence.
         """
 
         thresholds = thresholds or PipelineThresholds()
@@ -83,15 +87,40 @@ class SearchProvider:
             return []
 
         results = bounded_map(
-            lambda query: self._run(query, candidates, language),
+            lambda query: self._run_or_failure(query, candidates, language),
             queries,
             max_workers=settings.QUERY_MAX_CONCURRENCY,
             thread_name_prefix="searxng-query",
         )
 
-        return self._fuse(queries, results)
+        failures = [result for result in results if isinstance(result, SearchUnavailableError)]
+
+        if len(failures) == len(results):
+            raise failures[0]
+
+        return self._fuse(
+            queries,
+            [[] if isinstance(result, SearchUnavailableError) else result for result in results],
+        )
 
     ##########################################################
+
+    def _run_or_failure(
+        self,
+        query: PlannedQuery,
+        candidates: int,
+        language: str | None,
+    ) -> list[Evidence] | SearchUnavailableError:
+        """
+        `_run`, with a failure returned rather than raised: `bounded_map`
+        would re-raise the first one and lose whether the other queries
+        answered, which is the whole question.
+        """
+
+        try:
+            return self._run(query, candidates, language)
+        except SearchUnavailableError as exc:
+            return exc
 
     def _run(
         self,

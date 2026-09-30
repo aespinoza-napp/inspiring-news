@@ -256,3 +256,45 @@ def test_search_ignores_results_that_are_not_web_pages():
     results = SearchProvider(client=client).search(create_claim())
 
     assert [item.url for item in results] == ["HTTPS://example.com/ok"]
+
+
+# ----------------------------------------------------------------------
+# Search unavailable
+#
+# The web search failing is not the web having nothing. Only when every
+# query failed does the claim count as unsearched: one that answered is
+# a search that ran, and the hits the others found are still evidence.
+# ----------------------------------------------------------------------
+
+
+def test_every_query_failing_means_search_is_unavailable():
+
+    import pytest
+
+    from src.services.search import SearchUnavailableError
+
+    client = FakeSearxngClient(unavailable=True)
+
+    with pytest.raises(SearchUnavailableError):
+        SearchProvider(client=client).search(create_claim(text="NASA discovered water on Mars."))
+
+    # Every planned query was tried, not just the first.
+    assert len(client.queries) > 1
+
+
+def test_one_query_failing_keeps_what_the_others_found():
+
+    class HalfDown(FakeSearxngClient):
+
+        def search(self, query, max_results=None, language=None):
+            if not self.queries:
+                self.queries.append(query)
+                from src.services.search import SearchUnavailableError
+                raise SearchUnavailableError("brave (too many requests)")
+            return super().search(query, max_results, language)
+
+    client = HalfDown(results=[{"url": "https://example.com/a", "title": "A"}])
+
+    results = SearchProvider(client=client).search(create_claim(text="NASA discovered water on Mars."))
+
+    assert [item.url for item in results] == ["https://example.com/a"]

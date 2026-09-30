@@ -521,3 +521,77 @@ def test_events_never_carry_a_scraped_article_body(repository):
         assert len(source["snippet"]) <= 240
 
     assert len(json.dumps(by_phase, default=str)) < 20_000
+
+
+def test_run_traces_search_unavailable_separately_from_no_evidence(repository):
+    """
+    On 2026-09-25, 68 of 69 queries came back empty because the engines
+    were rate-limited, and every claim read as an honest UNVERIFIED. The
+    verdict is still UNVERIFIED - nothing was found - but the check now
+    says the web was never asked, and names the stage where it stopped.
+    """
+
+    claim = create_claim(text="A claim nobody could search for.", confidence=0.9)
+
+    embeddings = FakeEmbeddingService(vectors={
+        claim.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    })
+
+    verifier = FakeVerifier({})
+
+    checker = FactChecker(
+        repository,
+        claim_selector=ClaimSelector(embeddings=embeddings),
+        evidence_retriever=FakeEvidenceRetriever({claim.text: []}, search_unavailable=True),
+        ranker=FakeRanker(),
+        verifier=verifier,
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    events = []
+
+    report = checker.run(
+        create_article(claims=[claim]),
+        on_phase=lambda phase, data: events.append((phase, data)),
+        thresholds=PipelineThresholds(min_evidence_for_verdict=1),
+    )
+
+    [check] = report.claim_checks
+
+    assert "verifying_claim" not in [phase for phase, _ in events]
+    assert check.verdict == Verdict.UNVERIFIED
+    assert check.search_unavailable is True
+    assert check.llm_unreachable is False
+    assert check.reached_stage == "evidence_retrieval"
+    assert "Web search was unavailable" in check.stage_note
+
+    [checked] = [data for phase, data in events if phase == "claim_checked"]
+    assert checked["searchUnavailable"] is True
+
+
+def test_a_claim_with_no_evidence_found_is_not_search_unavailable(repository):
+
+    claim = create_claim(text="A claim the web had nothing on.", confidence=0.9)
+
+    embeddings = FakeEmbeddingService(vectors={
+        claim.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    })
+
+    checker = FactChecker(
+        repository,
+        claim_selector=ClaimSelector(embeddings=embeddings),
+        evidence_retriever=FakeEvidenceRetriever({claim.text: []}),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({}),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    report = checker.run(
+        create_article(claims=[claim]),
+        thresholds=PipelineThresholds(min_evidence_for_verdict=1),
+    )
+
+    [check] = report.claim_checks
+
+    assert check.search_unavailable is False
+    assert check.reached_stage == "confidence_recalibration"

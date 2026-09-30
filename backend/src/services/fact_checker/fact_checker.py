@@ -330,7 +330,7 @@ class FactChecker:
         ]
 
         reached_stage, stage_note = self._trace(
-            ranked, llm_result, check, thresholds
+            ranked, llm_result, check, thresholds, retrieval.search_unavailable
         )
 
         check = check.model_copy(update={
@@ -340,6 +340,7 @@ class FactChecker:
             "raw_verdict": llm_result.verdict,
             "raw_confidence": llm_result.confidence,
             "llm_unreachable": llm_result.llm_unreachable,
+            "search_unavailable": retrieval.search_unavailable,
         })
 
         cited = set(check.cited_evidence_indices)
@@ -351,6 +352,7 @@ class FactChecker:
             "explanation": check.explanation,
             "evidenceCount": check.evidence_count,
             "independentDomains": check.independent_domains,
+            "searchUnavailable": check.search_unavailable,
             "agreements": check.agreements,
             "discrepancies": check.discrepancies,
             "evidence": [
@@ -380,12 +382,23 @@ class FactChecker:
         llm_result: LLMVerificationResult,
         check: FactCheck,
         thresholds: PipelineThresholds,
+        search_unavailable: bool = False,
     ) -> tuple[PipelineStage, Optional[str]]:
 
         if llm_result.llm_unreachable:
             return (
                 PipelineStage.LLM_VERIFICATION,
                 "LLM provider was unreachable; verdict could not be produced.",
+            )
+
+        # Before the evidence floor on purpose: both end in UNVERIFIED
+        # with no evidence, and only this one says the web was never asked.
+        if search_unavailable and len(ranked) < thresholds.min_evidence_for_verdict:
+            return (
+                PipelineStage.EVIDENCE_RETRIEVAL,
+                "Web search was unavailable (SearXNG unreachable or its engines "
+                "down); no evidence could be looked up, so this UNVERIFIED says "
+                "nothing about the claim.",
             )
 
         if len(ranked) < thresholds.min_evidence_for_verdict:

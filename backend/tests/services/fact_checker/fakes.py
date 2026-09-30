@@ -8,6 +8,7 @@ import hashlib
 from src.services.fact_checker.ranking.ranking_retrieval import RankingResult
 from src.services.fact_checker.retrieval.evidence_retriever import RetrievalResult
 from src.services.fact_checker.retrieval.query_builder import PlannedQuery, QueryKind
+from src.services.search import SearchUnavailableError
 
 
 class FakeEmbeddingService:
@@ -48,8 +49,10 @@ class FakeEmbeddingService:
 
 class FakeSearxngClient:
 
-    def __init__(self, results: list[dict] | None = None):
+    def __init__(self, results: list[dict] | None = None, unavailable: bool = False):
         self.results = results or []
+        # Every query fails, the way they did during the 2026-09-25 outage.
+        self.unavailable = unavailable
         self.queries: list[str] = []
         self.languages: list[str | None] = []
 
@@ -61,6 +64,8 @@ class FakeSearxngClient:
     ) -> list[dict]:
         self.queries.append(query)
         self.languages.append(language)
+        if self.unavailable:
+            raise SearchUnavailableError("no results; engines down: brave (too many requests)")
         limit = max_results or len(self.results)
         return self.results[:limit]
 
@@ -128,13 +133,17 @@ class FakeSourceRepository:
 class FakeEvidenceRetriever:
     """Maps claim text -> canned evidence list, for orchestrator-level tests."""
 
-    def __init__(self, evidence_by_claim: dict | None = None):
+    def __init__(self, evidence_by_claim: dict | None = None, search_unavailable: bool = False):
         self.evidence_by_claim = evidence_by_claim or {}
+        self.search_unavailable = search_unavailable
         self.calls = []
 
     def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None):
         self.calls.append((claim, thresholds, context, language))
-        return RetrievalResult(kept=self.evidence_by_claim.get(claim.text, []))
+        return RetrievalResult(
+            kept=self.evidence_by_claim.get(claim.text, []),
+            search_unavailable=self.search_unavailable,
+        )
 
 
 class FakeRanker:
@@ -177,8 +186,9 @@ class FakeVerifier:
 class FakeSearchProvider:
     """Canned web evidence, ignoring the query."""
 
-    def __init__(self, evidence=None):
+    def __init__(self, evidence=None, unavailable: bool = False):
         self.evidence = evidence or []
+        self.unavailable = unavailable
         self.calls = []
 
     def plan(self, claim, context=None, language=None):
@@ -189,6 +199,8 @@ class FakeSearchProvider:
 
     def search(self, claim, thresholds=None, context=None, language=None):
         self.calls.append((claim, thresholds, context, language))
+        if self.unavailable:
+            raise SearchUnavailableError("every query failed")
         return list(self.evidence)
 
 

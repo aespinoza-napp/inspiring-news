@@ -12,6 +12,7 @@ from src.services.concurrency import bounded_map
 from src.services.embeddings.service import EmbeddingService
 from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.progress import source_summary
+from src.services.search import SearchUnavailableError
 from src.services.fact_checker.terms import (
     claim_terms,
     contextualised_claim,
@@ -64,6 +65,10 @@ class RetrievalResult:
     # The claim's own vector, computed once here and handed on to the
     # ranker rather than encoded again a few lines later.
     claim_embedding: Optional[object] = None
+
+    # True when no web query could be answered at all. The internal
+    # corpus may still have contributed; what is missing is the web.
+    search_unavailable: bool = False
 
 
 class EvidenceRetriever:
@@ -128,15 +133,29 @@ class EvidenceRetriever:
             contextualised_claim(claim, context, language)
         )
 
-        web_evidence, internal_evidence = bounded_map(
-            lambda fetch: fetch(),
-            [
-                lambda: self.search_provider.search(
+        search_unavailable = False
+
+        def search_web() -> list[Evidence]:
+
+            nonlocal search_unavailable
+
+            try:
+                return self.search_provider.search(
                     claim,
                     thresholds,
                     context=context,
                     language=language,
-                ),
+                )
+            except SearchUnavailableError:
+                # Not fatal: the internal corpus is looked up regardless,
+                # and the claim is still checked against whatever it has.
+                search_unavailable = True
+                return []
+
+        web_evidence, internal_evidence = bounded_map(
+            lambda fetch: fetch(),
+            [
+                search_web,
                 lambda: self.vector_retriever.retrieve(
                     claim,
                     thresholds=thresholds,
@@ -158,12 +177,14 @@ class EvidenceRetriever:
                 "webCount": 0,
                 "internalCount": 0,
                 "results": [],
+                "searchUnavailable": search_unavailable,
             })
             return RetrievalResult(
                 kept=[],
                 rejected=itself,
                 queries=queries,
                 claim_embedding=claim_embedding,
+                search_unavailable=search_unavailable,
             )
 
         scores = self._quick_scores(
@@ -181,6 +202,7 @@ class EvidenceRetriever:
             "queries": queries,
             "webCount": len(web_evidence),
             "internalCount": len(internal_evidence),
+            "searchUnavailable": search_unavailable,
             # Every candidate the search returned, before any is cut, with
             # the cheap similarity that decides which get scraped.
             "results": [
@@ -244,6 +266,7 @@ class EvidenceRetriever:
             rejected=rejected,
             queries=queries,
             claim_embedding=claim_embedding,
+            search_unavailable=search_unavailable,
         )
 
     @staticmethod

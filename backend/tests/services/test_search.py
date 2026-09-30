@@ -1,6 +1,7 @@
 import httpx
+import pytest
 
-from src.services.search import SearxngClient
+from src.services.search import SearchUnavailableError, SearxngClient
 
 
 class FakeResponse:
@@ -103,7 +104,7 @@ def test_search_truncates_to_max_results(monkeypatch):
     assert len(results) == 3
 
 
-def test_search_returns_empty_on_http_error(monkeypatch):
+def test_search_is_unavailable_on_http_error(monkeypatch):
 
     def fake_get(url, params=None, timeout=None, headers=None):
         return FakeResponse(raise_exc=httpx.HTTPStatusError(
@@ -114,10 +115,11 @@ def test_search_returns_empty_on_http_error(monkeypatch):
 
     client = SearxngClient(base_url="http://localhost:8080")
 
-    assert client.search("some claim") == []
+    with pytest.raises(SearchUnavailableError):
+        client.search("some claim")
 
 
-def test_search_returns_empty_on_timeout(monkeypatch):
+def test_search_is_unavailable_on_timeout(monkeypatch):
 
     def fake_get(url, params=None, timeout=None, headers=None):
         raise httpx.TimeoutException("timed out")
@@ -126,10 +128,11 @@ def test_search_returns_empty_on_timeout(monkeypatch):
 
     client = SearxngClient(base_url="http://localhost:8080")
 
-    assert client.search("some claim") == []
+    with pytest.raises(SearchUnavailableError):
+        client.search("some claim")
 
 
-def test_search_returns_empty_on_invalid_json(monkeypatch):
+def test_search_is_unavailable_on_invalid_json(monkeypatch):
 
     def fake_get(url, params=None, timeout=None, headers=None):
         return FakeResponse(json_data=None)
@@ -138,7 +141,8 @@ def test_search_returns_empty_on_invalid_json(monkeypatch):
 
     client = SearxngClient(base_url="http://localhost:8080")
 
-    assert client.search("some claim") == []
+    with pytest.raises(SearchUnavailableError):
+        client.search("some claim")
 
 
 # ----------------------------------------------------------------------
@@ -156,15 +160,43 @@ DOWN = {
 }
 
 
-def test_an_empty_answer_with_engines_down_is_logged(monkeypatch, caplog):
+def test_an_empty_answer_with_engines_down_is_unavailable_not_empty(monkeypatch, caplog):
+    """
+    The 2026-09-25 outage: every claim came back UNVERIFIED as if the web
+    had nothing on it. Nobody had looked - and now that says so.
+    """
 
     monkeypatch.setattr(httpx, "get", lambda *a, **k: FakeResponse(json_data=DOWN))
 
     with caplog.at_level("WARNING"):
-        assert SearxngClient(base_url="http://s").search("anything") == []
+        with pytest.raises(SearchUnavailableError) as raised:
+            SearxngClient(base_url="http://s").search("anything")
 
     assert "brave (too many requests)" in caplog.text
     assert "duckduckgo (CAPTCHA)" in caplog.text
+    assert "brave" in str(raised.value)
+
+
+def test_an_empty_answer_with_every_engine_up_is_a_real_empty_answer(monkeypatch):
+
+    monkeypatch.setattr(
+        httpx, "get",
+        lambda *a, **k: FakeResponse(json_data={"results": [], "unresponsive_engines": []}),
+    )
+
+    assert SearxngClient(base_url="http://s").search("anything") == []
+
+
+def test_results_with_some_engines_down_are_still_results(monkeypatch):
+
+    data = {
+        "results": [{"url": "https://a.com", "title": "A"}],
+        "unresponsive_engines": [["brave", "too many requests"]],
+    }
+
+    monkeypatch.setattr(httpx, "get", lambda *a, **k: FakeResponse(json_data=data))
+
+    assert len(SearxngClient(base_url="http://s").search("anything")) == 1
 
 
 def test_health_reports_which_engines_answered_and_which_did_not(monkeypatch):
@@ -281,8 +313,9 @@ def test_an_empty_answer_is_not_remembered(monkeypatch):
 
     client = SearxngClient(base_url="http://s")
 
-    client.search("q")
-    client.search("q")
+    for _ in range(2):
+        with pytest.raises(SearchUnavailableError):
+            client.search("q")
 
     assert len(calls) == 2
 
@@ -378,3 +411,49 @@ def test_a_failed_request_does_not_leave_the_query_stuck(monkeypatch):
     counting_get(monkeypatch, RESULTS)
 
     assert client.search("q") != []
+
+
+def test_a_caller_waiting_on_a_failed_request_gets_the_failure_too(monkeypatch):
+    """
+    The second asker shares the first one's request. If that request
+    failed, an empty list would tell the second claim "nothing exists" -
+    the exact confusion this error was added to end.
+    """
+
+    import threading
+    import time
+
+    entered = threading.Event()
+    release = threading.Event()
+
+    def slow_down(url, params=None, timeout=None, headers=None):
+        entered.set()
+        release.wait(5)
+        return FakeResponse(json_data=DOWN)
+
+    monkeypatch.setattr(httpx, "get", slow_down)
+
+    client = SearxngClient(base_url="http://s")
+    outcomes = []
+
+    def ask():
+        try:
+            outcomes.append(client.search("the anchor"))
+        except SearchUnavailableError:
+            outcomes.append("unavailable")
+
+    first = threading.Thread(target=ask)
+    first.start()
+    entered.wait(5)
+
+    second = threading.Thread(target=ask)
+    second.start()
+
+    time.sleep(0.2)
+    release.set()
+
+    first.join(5)
+    second.join(5)
+
+    assert outcomes == ["unavailable", "unavailable"]
+    assert client._inflight == {}

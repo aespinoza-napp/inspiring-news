@@ -348,6 +348,16 @@ ANALYZE_RESPONSE_SHAPE = {
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",
     },
+    # 10, same top-level keys. Each entry of `claims` gained
+    # `searchUnavailable`: whether the web search could not be carried
+    # out for that claim, as opposed to running and finding nothing. A v9
+    # entry lacks it - and one written during the 2026-09-25 outage holds
+    # UNVERIFIED verdicts that were really a dead search, served forever.
+    10: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
 }
 
 

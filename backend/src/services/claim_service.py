@@ -159,5 +159,6 @@ class ClaimService:
             "discrepancies": check.discrepancies,
             "independentDomains": check.independent_domains,
             "llmUnreachable": check.llm_unreachable,
+            "searchUnavailable": check.search_unavailable,
             "thresholds": thresholds.model_dump(),
         }

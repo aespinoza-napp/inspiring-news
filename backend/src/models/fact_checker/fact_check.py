@@ -60,3 +60,9 @@ class FactCheck(BaseModel):
     # from an ordinary UNVERIFIED, where the model was asked and found
     # nothing to confirm the claim with.
     llm_unreachable: bool = False
+
+    # True when the web search could not be carried out for this claim
+    # (SearXNG down, or every engine behind it rate-limited) - distinct
+    # from a search that ran and found nothing. The verdict may still
+    # rest on the internal corpus; it never rests on the web.
+    search_unavailable: bool = False

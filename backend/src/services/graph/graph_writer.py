@@ -566,6 +566,7 @@ class GraphWriter:
                     "independent_domains": check.independent_domains,
                     "evidence_count": check.evidence_count,
                     "llm_unreachable": check.llm_unreachable,
+                    "search_unavailable": check.search_unavailable,
                 },
             })
 
