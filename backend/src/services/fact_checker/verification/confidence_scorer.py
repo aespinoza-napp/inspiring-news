@@ -68,11 +68,20 @@ class ConfidenceScorer:
             item.domain or item.url for item in corroborating
         })
 
+        # The model's own judgement of each source, enforced. It is told
+        # to mark evidence about a different event "unrelated" even when
+        # it shares a place, a date or a figure with the claim - and until
+        # this was read, a citation of a source it had just called
+        # unrelated still counted: a TRUE resting only on off-subject
+        # pages passed the "cited nothing" rule below, and raised the
+        # confidence as if it were corroboration.
+        grounded = self._grounded_citations(llm_result)
+
         confidence = max(0.0, min(
             llm_result.confidence * self.LLM_WEIGHT
             + self._evidence_quality(
                 annotated,
-                llm_result.cited_evidence,
+                grounded,
                 thresholds.max_evidence_per_claim,
             ) * self.EVIDENCE_WEIGHT,
             1.0,
@@ -81,8 +90,9 @@ class ConfidenceScorer:
         verdict = llm_result.verdict
 
         # A definitive verdict with zero citations, despite evidence being
-        # available, is an ungrounded assertion - don't trust it.
-        if verdict in _DEFINITIVE and not llm_result.cited_evidence:
+        # available, is an ungrounded assertion - don't trust it. Citing
+        # only sources the model itself judged unrelated is the same thing.
+        if verdict in _DEFINITIVE and not grounded:
             verdict = Verdict.UNVERIFIED
             confidence = min(confidence, 0.4)
 
@@ -116,6 +126,23 @@ class ConfidenceScorer:
         )
 
     ##########################################################
+
+    @staticmethod
+    def _grounded_citations(llm_result: LLMVerificationResult) -> list[int]:
+        """
+        The citations that stand on a source the model did not itself
+        call unrelated. Only an explicit "unrelated" removes one: a cited
+        source with no assessment at all - or a response with no
+        assessments block, the degraded case above - keeps its citation.
+        """
+
+        unrelated = {
+            assessment.index
+            for assessment in llm_result.assessments
+            if assessment.stance == EvidenceStance.UNRELATED
+        }
+
+        return [index for index in llm_result.cited_evidence if index not in unrelated]
 
     @staticmethod
     def _annotate(

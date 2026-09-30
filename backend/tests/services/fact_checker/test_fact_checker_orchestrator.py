@@ -595,3 +595,80 @@ def test_a_claim_with_no_evidence_found_is_not_search_unavailable(repository):
 
     assert check.search_unavailable is False
     assert check.reached_stage == "confidence_recalibration"
+
+
+def _checked_with(repository, llm_result, evidence_list):
+
+    claim = create_claim(text="A claim with a recalibrated verdict.", confidence=0.9)
+
+    embeddings = FakeEmbeddingService(vectors={
+        claim.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    })
+
+    checker = FactChecker(
+        repository,
+        claim_selector=ClaimSelector(embeddings=embeddings),
+        evidence_retriever=FakeEvidenceRetriever({claim.text: evidence_list}),
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({claim.text: llm_result}),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    [check] = checker.run(create_article(claims=[claim])).claim_checks
+
+    return check
+
+
+def test_the_stage_note_names_a_citation_of_only_unrelated_sources(repository):
+
+    from src.models.fact_checker.evidence import EvidenceStance
+    from src.services.fact_checker.verification.llm_verification import EvidenceAssessment
+
+    check = _checked_with(
+        repository,
+        LLMVerificationResult(
+            verdict=Verdict.TRUE,
+            confidence=0.9,
+            explanation="Confirmed.",
+            cited_evidence=[0],
+            assessments=[EvidenceAssessment(index=0, stance=EvidenceStance.UNRELATED)],
+        ),
+        [create_evidence(url="https://a.com", relevance_score=0.9)],
+    )
+
+    assert check.verdict == Verdict.UNVERIFIED
+    assert check.reached_stage == "confidence_recalibration"
+    assert "only sources it judged unrelated" in check.stage_note
+
+
+def test_a_contradicted_true_is_not_described_as_citing_nothing(repository):
+    """
+    The note used to say "cited no evidence; downgraded to UNVERIFIED"
+    for every override - including this one, which cited two sources
+    and ended PARTIALLY_TRUE.
+    """
+
+    from src.models.fact_checker.evidence import EvidenceStance
+    from src.services.fact_checker.verification.llm_verification import EvidenceAssessment
+
+    check = _checked_with(
+        repository,
+        LLMVerificationResult(
+            verdict=Verdict.TRUE,
+            confidence=0.9,
+            explanation="Mostly confirmed.",
+            cited_evidence=[0, 1],
+            assessments=[
+                EvidenceAssessment(index=0, stance=EvidenceStance.SUPPORTS),
+                EvidenceAssessment(index=1, stance=EvidenceStance.CONTRADICTS),
+            ],
+        ),
+        [
+            create_evidence(url="https://a.com", domain="a.com", relevance_score=0.9),
+            create_evidence(url="https://b.com", domain="b.com", relevance_score=0.9),
+        ],
+    )
+
+    assert check.verdict == Verdict.PARTIALLY_TRUE
+    assert "recalibrated to PARTIALLY_TRUE" in check.stage_note
+    assert "cited no evidence" not in check.stage_note

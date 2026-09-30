@@ -358,6 +358,15 @@ ANALYZE_RESPONSE_SHAPE = {
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",
     },
+    # 11, same keys, bumped for the *values*: a definitive verdict that
+    # cited only sources the model itself marked "unrelated" is now
+    # UNVERIFIED, and such citations no longer raise the confidence. A v10
+    # entry may hold a TRUE resting on off-subject pages, served forever.
+    11: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
 }
 
 

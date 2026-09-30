@@ -257,10 +257,25 @@ Items 1 and 3 above still stand.
 
 ## What is still not fixed
 
-- **The LLM is still not asked whether a source is on-point.** The gate
-  is embedding and term arithmetic; it catches a page about a different
-  subject, not a page about the right subject making a different claim.
-  A real stance/entailment step is the next thing.
+- **The model's on-point judgement is enforced, not measured.** The
+  gate is embedding and term arithmetic; it catches a page about a
+  different subject, not a page about the right subject making a
+  different claim. The verifier already asks the model, per source, for
+  a stance - `supports`, `contradicts` or `unrelated`, the last one for
+  evidence about a different event even when it shares a place, a date
+  or a figure. **Since 2026-09-30 that `unrelated` is enforced**
+  (`ConfidenceScorer._grounded_citations`): a citation of a source the
+  model itself called unrelated no longer counts, so a definitive
+  verdict resting only on such sources falls to `UNVERIFIED` with a note
+  saying why, and they no longer raise the confidence. No extra LLM
+  call. What is left is that the judgement is a 3B model's, and how
+  often it is right is unmeasured until the harness runs.
+- **No second search route.** An API-keyed engine was ruled out on
+  2026-09-30 (cost, credentials, reproducibility). A keyless fallback -
+  DuckDuckGo queried directly when SearXNG fails - is proposed as future
+  work in `docs/final_document/sections/future_work.tex`, with the
+  measurements it needs first: DuckDuckGo was the engine that answered
+  every request with a CAPTCHA from this machine on 2026-09-25.
 - **Accuracy is still unmeasured.** There is no labelled set, so the
   threshold defaults are reasoned, not fitted.
 - **Only the 36 configured domains have a real reliability rating.**

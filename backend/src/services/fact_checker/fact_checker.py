@@ -409,10 +409,22 @@ class FactChecker:
             )
 
         if check.verdict != llm_result.verdict:
+
+            # Each override has its own cause, and the note used to give
+            # the first one for all of them - including a TRUE turned
+            # PARTIALLY_TRUE by a contradicting source, which had cited
+            # plenty.
+            if check.verdict != Verdict.UNVERIFIED:
+                reason = "a cited source contradicts part of it"
+            elif llm_result.cited_evidence:
+                reason = "it cited only sources it judged unrelated to the claim"
+            else:
+                reason = "it cited no evidence"
+
             return (
                 PipelineStage.CONFIDENCE_RECALIBRATION,
-                f"LLM verdict {llm_result.verdict.value} cited no evidence; "
-                "downgraded to UNVERIFIED with a low confidence ceiling.",
+                f"LLM verdict {llm_result.verdict.value} recalibrated to "
+                f"{check.verdict.value}: {reason}.",
             )
 
         return PipelineStage.AGGREGATION, None

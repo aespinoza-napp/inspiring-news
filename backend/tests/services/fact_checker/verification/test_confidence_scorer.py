@@ -158,3 +158,85 @@ def test_a_single_outlet_repeated_is_not_corroboration():
 
     assert result.independent_domains == 1
     assert result.confidence <= 0.6
+
+
+# ----------------------------------------------------------------------
+# The model's own "unrelated", enforced
+#
+# The verifier is told to mark evidence about a different event
+# "unrelated" even when it shares a place, a date or a figure with the
+# claim. Until 2026-09-30 a citation of such a source still counted.
+# ----------------------------------------------------------------------
+
+
+def test_a_verdict_citing_only_sources_the_model_called_unrelated_is_downgraded():
+
+    evidence = [create_evidence(url="https://a.example/x", domain="a.example", relevance_score=0.9)]
+
+    llm_result = LLMVerificationResult(
+        verdict=Verdict.TRUE,
+        confidence=0.9,
+        explanation="Confirmed.",
+        cited_evidence=[0],
+        assessments=[EvidenceAssessment(index=0, stance=EvidenceStance.UNRELATED)],
+    )
+
+    result = ConfidenceScorer().score(create_claim(), evidence, llm_result)
+
+    assert result.verdict == Verdict.UNVERIFIED
+    assert result.confidence <= 0.4
+    # What the model said it cited stays visible.
+    assert result.cited_evidence_indices == [0]
+
+
+def test_citing_an_unrelated_source_beside_a_supporting_one_adds_no_confidence():
+
+    evidence = [
+        create_evidence(url="https://a.example/x", domain="a.example", relevance_score=0.9),
+        create_evidence(url="https://b.example/y", domain="b.example", relevance_score=0.9),
+    ]
+
+    assessments = [
+        EvidenceAssessment(index=0, stance=EvidenceStance.SUPPORTS, quote="the grid hit 50%"),
+        EvidenceAssessment(index=1, stance=EvidenceStance.UNRELATED),
+    ]
+
+    def score(cited):
+        return ConfidenceScorer().score(
+            create_claim(),
+            evidence,
+            LLMVerificationResult(
+                verdict=Verdict.TRUE,
+                confidence=0.9,
+                explanation="Confirmed.",
+                cited_evidence=cited,
+                assessments=assessments,
+            ),
+            PipelineThresholds(min_independent_domains=1),
+        )
+
+    only_supporting = score([0])
+    padded = score([0, 1])
+
+    assert padded.verdict == Verdict.TRUE
+    assert padded.confidence == only_supporting.confidence
+
+
+def test_without_assessments_every_citation_still_counts():
+    """
+    No assessments block is a degraded response, not a verdict about the
+    sources: nothing was called unrelated, so nothing is discounted.
+    """
+
+    evidence = [create_evidence(relevance_score=0.9)]
+
+    llm_result = LLMVerificationResult(
+        verdict=Verdict.FALSE,
+        confidence=0.9,
+        explanation="Refuted.",
+        cited_evidence=[0],
+    )
+
+    result = ConfidenceScorer().score(create_claim(), evidence, llm_result)
+
+    assert result.verdict == Verdict.FALSE
