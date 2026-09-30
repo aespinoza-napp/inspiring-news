@@ -7,92 +7,89 @@
 \section{Future Work}
 \label{sec:future-work}
 
-\subsection{A Keyless Fallback Search Route}
-\label{subsec:future-ddg-fallback}
+\subsection{An API-Keyed Search Engine}
+\label{subsec:future-keyed-search}
 
 \paragraph{The problem.} Every piece of web evidence the system
-retrieves passes through a single self-hosted SearXNG instance, which
-in turn scrapes public search engines from one IP address without API
-keys. That design keeps the system free of paid services and of
-credentials, but it makes the search a single point of failure. On
-25~September~2026 it failed almost completely: 68 of 69 queries sent
-during a measurement came back empty, because the upstream engines had
+retrieves comes from search engines queried without API keys: a
+self-hosted SearXNG instance, which scrapes public engines from one IP
+address, and, when it cannot answer, DuckDuckGo's HTML results page
+queried directly. Keyless search keeps the system free of paid
+services and of credentials, but every keyless route can be refused
+by the engine behind it, at any time and for any IP. On
+25~September~2026, 68 of 69 queries sent through SearXNG during a
+measurement came back empty because the upstream engines had
 rate-limited or challenged the instance, and 23 of 24 claims were left
-without any web evidence. Each of those claims was reported as
-\texttt{UNVERIFIED}, indistinguishable from a claim that had been
-searched and found unsupported.
+without any web evidence.
 
-Since 30~September~2026 the system reports such a failure explicitly:
-when every query planned for a claim fails, the claim is marked
-\texttt{searchUnavailable} and its trace stops at the evidence
-retrieval stage, so the evaluation can report those claims apart from
-genuine \texttt{UNVERIFIED} verdicts. This makes the failure visible;
-it does not recover the evidence that was lost.
+\paragraph{What the system does today.} Two measures address that
+failure without an API key, both introduced on 30~September~2026.
+First, a failed search is reported as such: when every query planned
+for a claim fails, the claim is marked \texttt{searchUnavailable} and
+its trace stops at the evidence retrieval stage, so the evaluation
+reports those claims apart from genuine \texttt{UNVERIFIED} verdicts.
+Second, a query SearXNG cannot answer is sent once to DuckDuckGo
+directly, and a claim is marked \texttt{searchUnavailable} only when
+both routes fail. The second route has a known limit: on the day it
+was introduced, DuckDuckGo answered every keyless request from the
+development machine with a human-verification challenge (three of
+three requests, through both of its HTML interfaces). The fallback
+recognises the challenge, reports the search as unavailable and stops
+asking for a few minutes; it recovers evidence only when DuckDuckGo
+lets the requesting IP through. Both keyless routes therefore share a
+single weakness: an engine that does not want automated traffic can
+refuse it.
 
-\paragraph{Why not an API-keyed engine.} The usual remedy is a search
-engine accessed with an API key (for example, the Brave Search API or
-Google Programmable Search), which is rate-limited per key rather than
-per scraping IP. It is deliberately not adopted here: it introduces a
-per-query cost, a credential that every deployment must manage, and a
-dependence on a commercial service whose terms and free quotas may
-change, which would also weaken the reproducibility of the results.
-
-\paragraph{Proposed design.} A second, independent route that is
-used only when the first one fails:
+\paragraph{Proposal.} A search engine accessed with an API key, such
+as the Brave Search API, is rate-limited per key rather than per
+scraping IP, and answers automated requests by design. Brave also
+maintains its own index, so its results are not copies of the Google
+or Bing results that SearXNG already scrapes, which matters for a
+system that counts independent sources as corroboration. It would be
+added as one more route in the chain that already exists:
 \begin{itemize}
-    \item \textbf{Trigger on failure only.} When SearXNG cannot answer
-    a query (the condition that already raises the system's
-    \texttt{SearchUnavailableError}), the same query is sent once to
-    DuckDuckGo directly, bypassing SearXNG and its engine-suspension
-    state. In normal operation the fallback sends nothing, so it adds
-    no load and no latency.
-    \item \textbf{Same shape of result.} DuckDuckGo results are mapped
-    to the same evidence records (URL, title, snippet) and tagged with
-    their route in the existing \texttt{engines} field, so every later
-    stage --- the pertinence gate, ranking and verification ---
-    treats them identically, and the evaluation can still tell which
-    route produced each source.
-    \item \textbf{Its own ceiling.} Requests to the fallback are
-    bounded by a process-wide concurrency limit and back off after a
-    refusal, like every other external service the system calls; a
-    per-request override of that limit is not allowed, since the load
-    falls on a service shared by all concurrent runs.
-    \item \textbf{A stricter definition of ``unavailable''.} A claim
-    is marked \texttt{searchUnavailable} only when both routes fail.
+    \item \textbf{Position in the chain.} Asked only when the keyless
+    routes cannot answer, so that normal operation stays free of cost;
+    or, if the evaluation shows the keyless routes fail too often under
+    load, asked first for benchmark runs only.
+    \item \textbf{Same shape of result.} Its results are mapped to the
+    same evidence records (URL, title, snippet) and tagged with their
+    route in the existing \texttt{engines} field, so the pertinence
+    gate, ranking and verification treat them identically and the
+    evaluation can still tell which route produced each source.
+    \item \textbf{The key as configuration.} The key is read from the
+    environment, never committed, and the route is disabled when no key
+    is set, so the system keeps working, keyless, without one.
+    \item \textbf{Cost accounted for.} Every keyed query is counted per
+    run, so the cost of a benchmark is reported beside its results.
 \end{itemize}
 
-\paragraph{The risk that must be measured first.} DuckDuckGo does not
-offer a free API for web results --- its Instant Answer API returns
-summary information, not a ranked list of pages --- so a keyless
-route means requesting its HTML results page and parsing it. That has
-two consequences. First, the parser depends on markup that can change
-without notice. Second, and more seriously, the request is subject to
-the same bot detection the fallback is meant to escape: in the
-25~September measurement, DuckDuckGo queried through SearXNG answered
-with a CAPTCHA or a timeout on every request (104 CAPTCHAs and 231
-timeouts in the preceding three hours), from the same machine that
-would send the fallback's requests. A fallback that fails under the
-same conditions as the primary route adds nothing. The fallback is
-therefore proposed together with its evaluation, and should only be
-adopted if it succeeds:
+\paragraph{Why it is not adopted now.} An API key introduces a
+per-query cost under the provider's terms at the time, a credential
+that every deployment must manage, and a dependence on a commercial
+service whose terms and quotas may change --- which would also weaken
+the reproducibility of the reported results, since a later reader
+could not re-run them without the same service. The system therefore
+stays keyless, and the keyed route is proposed together with the
+measurements that would justify it:
 
 \begin{table}[ht]
 \centering
-\caption{Measurements required before adopting the fallback route.}
-\label{tab:future-ddg-measurements}
+\caption{Measurements required before adopting an API-keyed engine.}
+\label{tab:future-keyed-measurements}
 \begin{tabular}{@{}ll@{}}
 \toprule
 \textbf{Measurement} & \textbf{Question it answers} \\
 \midrule
-Answer rate under benchmark load & Does it answer when SearXNG does not? \\
-Answer rate from the deployment IP & Is the result specific to one machine? \\
-Share of \texttt{searchUnavailable} claims & How much evidence does it recover? \\
+Share of \texttt{searchUnavailable} claims & How often do the keyless routes fail? \\
+Evidence recovered by the keyed route & How much of that does a key recover? \\
 Accuracy on the recovered claims & Is the recovered evidence useful? \\
-Added latency per recovered claim & What does the recovery cost? \\
+Sources found by no other route & Does its own index add independence? \\
+Cost per benchmark run & What does the recovery cost? \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The first two rows decide whether the route is worth building at all;
-the last three come from the evaluation harness, run once with and
-once without the fallback over the same labelled claims.
+The first row is available as soon as the evaluation harness runs over
+the labelled claims; the others require one run with the keyed route
+and one without, over the same claims.
