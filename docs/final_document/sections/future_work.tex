@@ -1,0 +1,98 @@
+% ============================================================
+% Section: Future work
+% Standalone section file, like sections/custom_dataset.tex.
+% Requires: \usepackage{booktabs} in the main document preamble.
+% ============================================================
+
+\section{Future Work}
+\label{sec:future-work}
+
+\subsection{A Keyless Fallback Search Route}
+\label{subsec:future-ddg-fallback}
+
+\paragraph{The problem.} Every piece of web evidence the system
+retrieves passes through a single self-hosted SearXNG instance, which
+in turn scrapes public search engines from one IP address without API
+keys. That design keeps the system free of paid services and of
+credentials, but it makes the search a single point of failure. On
+25~September~2026 it failed almost completely: 68 of 69 queries sent
+during a measurement came back empty, because the upstream engines had
+rate-limited or challenged the instance, and 23 of 24 claims were left
+without any web evidence. Each of those claims was reported as
+\texttt{UNVERIFIED}, indistinguishable from a claim that had been
+searched and found unsupported.
+
+Since 30~September~2026 the system reports such a failure explicitly:
+when every query planned for a claim fails, the claim is marked
+\texttt{searchUnavailable} and its trace stops at the evidence
+retrieval stage, so the evaluation can report those claims apart from
+genuine \texttt{UNVERIFIED} verdicts. This makes the failure visible;
+it does not recover the evidence that was lost.
+
+\paragraph{Why not an API-keyed engine.} The usual remedy is a search
+engine accessed with an API key (for example, the Brave Search API or
+Google Programmable Search), which is rate-limited per key rather than
+per scraping IP. It is deliberately not adopted here: it introduces a
+per-query cost, a credential that every deployment must manage, and a
+dependence on a commercial service whose terms and free quotas may
+change, which would also weaken the reproducibility of the results.
+
+\paragraph{Proposed design.} A second, independent route that is
+used only when the first one fails:
+\begin{itemize}
+    \item \textbf{Trigger on failure only.} When SearXNG cannot answer
+    a query (the condition that already raises the system's
+    \texttt{SearchUnavailableError}), the same query is sent once to
+    DuckDuckGo directly, bypassing SearXNG and its engine-suspension
+    state. In normal operation the fallback sends nothing, so it adds
+    no load and no latency.
+    \item \textbf{Same shape of result.} DuckDuckGo results are mapped
+    to the same evidence records (URL, title, snippet) and tagged with
+    their route in the existing \texttt{engines} field, so every later
+    stage --- the pertinence gate, ranking and verification ---
+    treats them identically, and the evaluation can still tell which
+    route produced each source.
+    \item \textbf{Its own ceiling.} Requests to the fallback are
+    bounded by a process-wide concurrency limit and back off after a
+    refusal, like every other external service the system calls; a
+    per-request override of that limit is not allowed, since the load
+    falls on a service shared by all concurrent runs.
+    \item \textbf{A stricter definition of ``unavailable''.} A claim
+    is marked \texttt{searchUnavailable} only when both routes fail.
+\end{itemize}
+
+\paragraph{The risk that must be measured first.} DuckDuckGo does not
+offer a free API for web results --- its Instant Answer API returns
+summary information, not a ranked list of pages --- so a keyless
+route means requesting its HTML results page and parsing it. That has
+two consequences. First, the parser depends on markup that can change
+without notice. Second, and more seriously, the request is subject to
+the same bot detection the fallback is meant to escape: in the
+25~September measurement, DuckDuckGo queried through SearXNG answered
+with a CAPTCHA or a timeout on every request (104 CAPTCHAs and 231
+timeouts in the preceding three hours), from the same machine that
+would send the fallback's requests. A fallback that fails under the
+same conditions as the primary route adds nothing. The fallback is
+therefore proposed together with its evaluation, and should only be
+adopted if it succeeds:
+
+\begin{table}[ht]
+\centering
+\caption{Measurements required before adopting the fallback route.}
+\label{tab:future-ddg-measurements}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Measurement} & \textbf{Question it answers} \\
+\midrule
+Answer rate under benchmark load & Does it answer when SearXNG does not? \\
+Answer rate from the deployment IP & Is the result specific to one machine? \\
+Share of \texttt{searchUnavailable} claims & How much evidence does it recover? \\
+Accuracy on the recovered claims & Is the recovered evidence useful? \\
+Added latency per recovered claim & What does the recovery cost? \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The first two rows decide whether the route is worth building at all;
+the last three come from the evaluation harness, run once with and
+once without the fallback over the same labelled claims.
