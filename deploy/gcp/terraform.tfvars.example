@@ -1,0 +1,10 @@
+# Copy to terraform.tfvars (gitignored) and fill in. See
+# docs/decisions/deployment.md for what each choice costs.
+project_id = "your-project-id"
+
+# region       = "europe-southwest1"   # Madrid
+# zone         = "europe-southwest1-a"
+# machine_type = "e2-standard-4"       # 16 GB is the floor
+# repo_ref     = "main"
+# domain       = "factcheck.example.org"
+# alert_email  = "you@example.org"

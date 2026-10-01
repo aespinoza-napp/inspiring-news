@@ -287,10 +287,15 @@ needed from October.
 
 **Infrastructure Deployment (Oct 20 – Nov 9) · 30h:**
 
-- [ ] ☁️ Choose hosting target (VPS / cloud provider) for backend + Neo4j + SearXNG
-- [ ] 🟡 🐳 Production-ready `docker-compose` — healthchecks, named volumes and a shutdown grace period exist; the Neo4j password now comes from env. Left: the rest of the secrets, a hardened SearXNG, and a full analysis run inside the backend container, which has come up healthy but never been verified end to end.
-- [ ] 🟡 🔐 Copy & configure `searxng/settings.yml` (secret) for prod — `settings.yml.example` now carries the measured engine allowlist (Sep 28); the real file is gitignored and **drifts**: the local copy ran the full default roster for weeks. Left: a generated `secret_key` (the local copy still has the placeholder) and a check that the live file matches the example.
-- [ ] 🟡 🧯 Logging/monitoring — INFO-level phase durations are logged, and every run's events are now journalled with timestamps. No metrics or alerting.
+Done early, Oct 1, except the one step that needs a billed Google Cloud
+project (`docs/decisions/deployment.md`):
+
+- [x] ☁️ Choose hosting target — **Google Cloud, one Compute Engine VM** (`e2-standard-4`, 16 GB, Madrid, ~$115/month on demand) running the same compose stack; not Cloud Run (Qdrant's file lock, in-memory jobs, background threads, ~6 GiB of warm models). Sized from measurements: ~9.6 GiB resident across the production stack, the LLM ~45 s per claim on CPU. `deploy/gcp/` (Terraform) creates the VM, its secrets, network, snapshots and alerts, and is applied to **Floci**, a local Google Cloud emulator, by `./scripts/check.sh gcp`.
+- [x] 🐳 Production-ready `docker-compose` — `docker-compose.prod.yml`: only the API published (loopback), every secret required, restart policies, log rotation, memory caps from measurements, the LLM as an `ollama` service. A full analysis ran inside the dev stack (75 s) and the production one (184 s). The production run found the dev LLM limits turn CPU verdicts into timeouts (3 of 4 claims); fixed there.
+- [x] 🔐 SearXNG for prod — the committed `settings.yml` is mounted read-only (no copy left to drift), the secret comes from `SEARXNG_SECRET`, the image is pinned. The healthcheck no longer sends a real search to every engine every 5 s.
+- [x] 🧯 Logging/monitoring — JSON logs (`LOG_FORMAT=json`), `GET /metrics` (Prometheus text: stages, outcomes, verdicts, empty/failed searches), `GET /healthz` (every dependency). On Google Cloud: Ops Agent to Cloud Logging and managed Prometheus, an uptime check and a search-health alert by email.
+- [ ] 🚀 First real `terraform apply`, then the search check from the VM's IP, then one analysis there — needs a project with billing. Floci runs no guest, so the VM's boot is unverified until then.
+- [ ] 🌐 Where the frontend runs (Cloud Run, or the VM behind Caddy) and a domain for HTTPS.
 - ↪️ CI pipeline — moved to the testing track (October), Sep 29.
 
 ---

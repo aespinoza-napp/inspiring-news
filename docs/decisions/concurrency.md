@@ -168,3 +168,22 @@ Findings:
 - **Not yet measured:** sustained load (this was two short bursts, not a
   soak test), and the async `/analyze/jobs` path under the same
   concurrency — worth a follow-up now that the sync path has a baseline.
+
+## The LLM on a CPU (2026-10-01)
+
+The load test above ran against the dev machine's Ollama, partly on its
+GPU. The first analysis on the production stack - Ollama in a container,
+CPU only - sent four claims' LLM calls at once under
+`LLM_MAX_CONCURRENCY=2`, with Ollama running parallel slots of its own.
+Sharing the same cores, each call took 90-103 s; `LLM_TIMEOUT=30` cut
+three of them off twice, and those claims came back `UNVERIFIED` as "LLM
+provider was unreachable". The semaphore held, as designed; the timeout
+was sized for a GPU.
+
+`docker-compose.prod.yml` sets `LLM_MAX_CONCURRENCY=1`,
+`LLM_TIMEOUT=180` and `OLLAMA_NUM_PARALLEL=1`: on a CPU, parallel calls
+only slow each other, and one at a time each takes the 31-53 s it needs.
+The wait for the permit does not count against the timeout - the permit
+is taken before the request is sent (`LLMClient.complete_json`). Same
+article, re-run: four real verdicts, 184 s. The defaults in `settings`
+stay as they are for a machine with a GPU.

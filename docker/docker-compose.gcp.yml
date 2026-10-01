@@ -1,0 +1,43 @@
+# Google Cloud overrides, layered on the production file:
+#
+#   docker compose -p inspiring-news -f docker-compose.yml \
+#     -f docker-compose.prod.yml -f docker-compose.gcp.yml \
+#     --env-file ../backend/.env up -d --build
+#
+# deploy/gcp/vm/bootstrap.sh runs exactly that on the VM. All this adds
+# is the reverse proxy: everything else a server needs is already in
+# docker-compose.prod.yml, so the same stack runs on any VM, and Google
+# Cloud only differs in what is around it (deploy/gcp/,
+# docs/decisions/deployment.md).
+#
+# Logs stay on Docker's json-file driver (rotated by the prod file). The
+# Ops Agent on the VM reads those files, parses the backend's JSON lines
+# into fields and sends them to Cloud Logging; it also scrapes /metrics.
+
+services:
+  caddy:
+    image: caddy:2.10.2
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates. On a volume, so a restart does not request new ones
+      # and run into the CA's rate limits.
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      - SITE_ADDRESS=${SITE_ADDRESS:-:80}
+    depends_on:
+      - backend
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    mem_limit: 128m
+
+volumes:
+  caddy-data:
+  caddy-config:

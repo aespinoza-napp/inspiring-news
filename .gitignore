@@ -219,9 +219,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# SearXNG local instance config (contains a generated secret_key)
-docker/searxng/settings.yml
-
 # Runtime data - local Qdrant storage, the /analyze results cache, and
 # the three-layer storage lake the pipeline writes on every run
 backend/data/vector_db/

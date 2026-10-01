@@ -1,0 +1,8 @@
+# Terraform's working files. The state holds the generated secrets in
+# plain text: never commit it (or move it to a GCS backend).
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+terraform.tfvars
+crash.log

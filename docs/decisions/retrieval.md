@@ -235,8 +235,8 @@ fix it, in order of leverage:
 - **The engine allowlist was never live.** `settings.yml.example` had
   dropped DuckDuckGo and Wikidata long before; the live, gitignored
   `settings.yml` was still `use_default_settings: true`, the full
-  roster. Both now carry the allowlist - **re-copy the example** on any
-  other machine (`docker/README.md`).
+  roster. Both now carry the allowlist. (Since 2026-10-01 there is no
+  copy: the committed file is the one that runs.)
 - **Science APIs added:** arXiv, Crossref, Semantic Scholar and PubMed,
   each measured live first. They are in SearXNG's `science` category
   and the client asks `general` only, so they are added to `general`;
@@ -254,6 +254,22 @@ fix it, in order of leverage:
   thrown away, for 23 of 24 claims on 2026-09-25.
 
 Items 1 and 3 above still stand.
+
+### 2026-10-01: the healthcheck was a search
+
+- **Compose's SearXNG healthcheck searched `q=test` every 5 seconds**,
+  from 2026-09-10. A search is not local: SearXNG sends it to every
+  enabled engine, so an idle stack sent each of them ~17,000 queries a
+  day. On 2026-10-01 SearXNG's own log showed Brave suspended for "too
+  many requests" on exactly that query. The healthcheck now asks
+  `/healthz`, which touches no engine. Whether this was a cause of the
+  2026-09-25 rate limits above is likely, not proven: nothing was
+  measured with the old healthcheck off.
+- **No more copy to re-copy.** `docker/searxng/settings.yml` is the
+  committed file, mounted read-only, with the secret from
+  `SEARXNG_SECRET` (`deployment.md`). The live copy had drifted again
+  by 2026-10-01: it still lacked the science engines added on
+  2026-09-28.
 
 ## What is still not fixed
 

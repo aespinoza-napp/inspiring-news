@@ -51,13 +51,13 @@ Copy the example env files. Every value in them is a working default:
 ```bash
 cp backend/.env-example backend/.env
 cp frontend/.env.local.example frontend/.env.local
-cp docker/searxng/settings.yml.example docker/searxng/settings.yml
 ```
 
 `backend/.env`'s `NEO4J_PASSWORD` is required by the settings: every
 analysis is also written into the Neo4j graph (see `/graph` in the
-frontend). Compose also reads it, so docker commands take
-`--env-file ../backend/.env`.
+frontend). Compose also reads it, and `SEARXNG_SECRET` (generate one:
+`python -c "import secrets; print(secrets.token_hex(32))"`), so docker
+commands take `--env-file ../backend/.env`.
 
 Three things run outside `uv`:
 

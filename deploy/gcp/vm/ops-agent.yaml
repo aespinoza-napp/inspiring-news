@@ -1,0 +1,52 @@
+# Google Cloud Ops Agent configuration for the VM, installed by
+# bootstrap.sh at /etc/google-cloud-ops-agent/config.yaml.
+#
+# Logs: Docker's json-file logs (rotated by docker-compose.prod.yml),
+# each line unwrapped from Docker's envelope and, where the line is
+# itself JSON (the backend, LOG_FORMAT=json), parsed again so `phase`,
+# `step_seconds`, `total_seconds`, `job` and `url` arrive as fields of
+# jsonPayload. Lines that are not JSON (Neo4j, SearXNG) stay text.
+#
+# Metrics: the backend's GET /metrics, scraped into Cloud Monitoring's
+# managed Prometheus, which is what the search-health alert in
+# deploy/gcp/monitoring.tf queries.
+#
+# Not verifiable before a real VM exists: Floci manages VMs but runs no
+# guest. docs/decisions/deployment.md.
+
+logging:
+  receivers:
+    containers:
+      type: files
+      include_paths:
+        - /var/lib/docker/containers/*/*-json.log
+      record_log_file_path: true
+  processors:
+    docker_envelope:
+      type: parse_json
+      time_key: time
+      time_format: "%Y-%m-%dT%H:%M:%S.%LZ"
+    backend_json:
+      type: parse_json
+      field: log
+  service:
+    pipelines:
+      containers:
+        receivers: [containers]
+        processors: [docker_envelope, backend_json]
+
+metrics:
+  receivers:
+    backend:
+      type: prometheus
+      config:
+        scrape_configs:
+          - job_name: inspiring-news-backend
+            scrape_interval: 60s
+            metrics_path: /metrics
+            static_configs:
+              - targets: ["localhost:8000"]
+  service:
+    pipelines:
+      backend:
+        receivers: [backend]

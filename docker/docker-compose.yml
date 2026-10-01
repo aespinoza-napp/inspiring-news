@@ -38,13 +38,25 @@ services:
       retries: 10
 
   searxng:
-    image: searxng/searxng:latest
+    # Pinned, like neo4j: settings.yml's engine list was measured against
+    # this build, and SearXNG changes its engines' parsers and defaults
+    # from one release to the next. Bump it deliberately, then re-run
+    # the engine measurements (or /scraper's source probe).
+    image: searxng/searxng:2026.9.8-3fdc6d753
     ports:
       - "8080:8080"
     volumes:
-      - ./searxng:/etc/searxng:rw
+      # The committed file itself, read-only: there is no local copy to
+      # drift from it (docker/searxng/settings.yml says how one did).
+      # Only the file, not the directory: the image's entrypoint chowns
+      # its config directory, which on a Linux host used to hand
+      # docker/searxng/ in the checkout to SearXNG's user.
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
     environment:
       - SEARXNG_BASE_URL=http://localhost:8080/
+      # The one secret settings.yml does not hold. From backend/.env,
+      # like NEO4J_PASSWORD, and required the same way.
+      - SEARXNG_SECRET=${SEARXNG_SECRET:?set SEARXNG_SECRET - run compose with --env-file ../backend/.env}
     mem_limit: 256m
     healthcheck:
       # "service_started" (the old depends_on condition below) only
@@ -53,11 +65,21 @@ services:
       # Python app with real startup time. A backend request that hits
       # evidence retrieval before this is ready fails intermittently,
       # which looks exactly like "sometimes docker works, sometimes
-      # not" even though the container came up fine. format=json
-      # requires docker/searxng/settings.yml's `formats: [..., json]`,
-      # already enabled - it's what SearxngClient itself calls.
-      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8080/search?q=test&format=json"]
-      interval: 5s
+      # not" even though the container came up fine.
+      #
+      # /healthz, not a search. This used to probe
+      # /search?q=test&format=json every 5s, and a search is not local:
+      # SearXNG forwards it to every enabled engine. That was ~17,000
+      # searches a day sent to Google, Bing, Brave and the rest from an
+      # idle stack, and on 2026-10-01 its own log showed Brave suspended
+      # for "too many requests" on exactly that "q=test" query. It ran
+      # from 2026-09-10; on 2026-09-25, 68 of 69 real queries came back
+      # empty from rate-limited engines (docs/decisions/retrieval.md).
+      # Likely related, not proven. That the JSON format the backend
+      # needs is enabled is now held by a test
+      # (backend/tests/test_deployment_config.py), not probed live.
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8080/healthz"]
+      interval: 10s
       timeout: 5s
       retries: 10
       start_period: 10s

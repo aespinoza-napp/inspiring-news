@@ -21,6 +21,8 @@
 #   ./scripts/check.sh slow       the slow model-stack tests, only
 #   ./scripts/check.sh graph      the graph against a real Neo4j - fails,
 #                                 not skips, when it is not running
+#   ./scripts/check.sh gcp        the Google Cloud deployment against Floci,
+#                                 a local emulator - needs Docker only
 
 set -uo pipefail
 
@@ -87,6 +89,19 @@ run_graph() {
   fi
 }
 
+# Not part of `all` either: it needs Docker and pulls two images. The
+# Terraform in deploy/gcp/ applied to Floci (a local Google Cloud
+# emulator), the VM's .env rendered from the secrets it created, then
+# destroyed. See deploy/gcp/emulator-check.sh for what it cannot prove.
+run_gcp() {
+  step "Google Cloud deployment against Floci (deploy/gcp/)"
+  if "$ROOT/deploy/gcp/emulator-check.sh"; then
+    pass "gcp deployment (emulated)"
+  else
+    fail "gcp deployment (emulated)"
+  fi
+}
+
 run_inference() {
   step "Inference service tests (real models, no mocks)"
   if (cd "$ROOT/inference" && uv run pytest -q); then
@@ -120,13 +135,14 @@ case "$TARGET" in
   fast)      run_fast ;;
   slow)      run_slow ;;
   graph)     run_graph ;;
+  gcp)       run_gcp ;;
   backend)   run_backend ;;
   inference) run_inference ;;
   frontend)  run_frontend ;;
   labeller)  run_labeller ;;
   all)       run_backend; run_inference; run_frontend; run_labeller ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | backend | inference | frontend | labeller" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller" >&2
     exit 2
     ;;
 esac

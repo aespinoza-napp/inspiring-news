@@ -28,7 +28,7 @@ die()  { printf '\033[31m✗ %s\033[0m\n' "$1" >&2; exit 1; }
 
 check_config() {
   [ -f "$ROOT/backend/.env" ] || die "backend/.env is missing - copy backend/.env-example first, then edit it (see docker/README.md)."
-  [ -f "$ROOT/docker/searxng/settings.yml" ] || die "docker/searxng/settings.yml is missing - copy docker/searxng/settings.yml.example first (see docker/README.md)."
+  grep -Eq '^SEARXNG_SECRET=.+' "$ROOT/backend/.env" || die "backend/.env has no SEARXNG_SECRET - generate one with: python -c \"import secrets; print(secrets.token_hex(32))\" (see docker/README.md)."
 }
 
 start_docker() {

@@ -15,6 +15,7 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ./scripts/check.sh inference # the real models, in their own service
 ./scripts/check.sh slow      # the whole data/raw corpus, minutes
 ./scripts/check.sh graph     # the graph against a real Neo4j; fails if it is down
+./scripts/check.sh gcp       # deploy/gcp/ applied to Floci (local GCP emulator); Docker only
 ./scripts/check.sh labeller  # the fact labeller, plain python
 ```
 
@@ -40,7 +41,11 @@ src.main:app --port 8001`.
 - `frontend/` — Next.js 14 (App Router + TypeScript) UI. See
   `frontend/CLAUDE.md`.
 - `docker/` — compose (Neo4j, SearXNG, inference, backend) and the two
-  Dockerfiles.
+  Dockerfiles; `docker-compose.prod.yml` (+ Ollama) and
+  `docker-compose.gcp.yml` (+ Caddy) layer on top.
+- `deploy/gcp/` — Terraform for the Google Cloud VM, its secrets,
+  network, snapshots and alerts; `vm/bootstrap.sh` is what the VM runs
+  on boot. Checked against Floci by `./scripts/check.sh gcp`.
 - `labeller/` — the tool for hand-labelling the custom validation set:
   `python labeller/app.py`, standard library only, nothing from
   `backend/`. One file per fact in `backend/data/evaluation/manual/`;
@@ -66,6 +71,7 @@ src.main:app --port 8001`.
 | The Neo4j graph: schema, write path, console | `docs/decisions/graph.md` |
 | Pages, polling hook, API proxies | `frontend/CLAUDE.md` |
 | Running the stack | `docker/README.md` |
+| Production, Google Cloud, sizing, `/healthz` and `/metrics` | `docs/decisions/deployment.md` |
 
 ## Invariants
 
@@ -157,12 +163,18 @@ write them down than to have each be rediscovered.
 - **`TopicPrediction.probability` carries no signal.** It is a softmax
   over raw cosine similarities across ~22 topics, so it comes back
   near-uniform (0.049 top vs 0.044 bottom). Use `confidence`.
-- **The `backend` container runs, but a full analysis inside it is
-  unverified.** It was brought up on 2026-09-23 and again on 2026-09-25,
-  reached `healthy` and served requests. The `inference` container
-  has served real `/entities`, `/sentiment` and `/embeddings` requests.
-  Its port 8001 is not published to the host, so backend tests on the
-  host still skip the model tests unless a local `inference/` runs.
+- **The containers run full analyses; Google Cloud has never been
+  applied.** Since 2026-10-01 a whole analysis has run inside the dev
+  stack and inside the production one (`docker-compose.prod.yml`, LLM on
+  CPU in its own container). `deploy/gcp/` has only ever been applied to
+  Floci, which runs no guest: the VM's boot is unverified
+  (`docs/decisions/deployment.md`). `inference`'s port 8001 is not
+  published to the host, so backend tests on the host still skip the
+  model tests unless a local `inference/` runs.
+- **The dev LLM limits are wrong for a CPU.** `LLM_MAX_CONCURRENCY=2`
+  and `LLM_TIMEOUT=30` assume the laptop's GPU; on a CPU they turned 3 of
+  4 verdicts into "LLM provider was unreachable". The production file
+  overrides both. Running Ollama CPU-only locally needs the same.
 - **`SENTIMENT_MODEL` and `EMBEDDING_MODEL` in `backend/.env` are
   documentary.** The models load in `inference/`, from
   `inference/src/config.py`'s own defaults. Editing the backend values
@@ -216,7 +228,11 @@ Phase 1.
   2026-09-30 a claim whose search failed says `searchUnavailable`, and
   a failed query falls back to DuckDuckGo directly - which, the same
   day, challenged every request from this machine as a bot, so do not
-  count on the fallback rescuing a run here.
+  count on the fallback rescuing a run here. On 2026-10-01 every search
+  in three runs answered (20-22 results), after compose's SearXNG
+  healthcheck stopped sending a real search to every engine every 5
+  seconds - likely a cause, not proven. `/metrics` counts empty and
+  failed searches (`inspiring_web_searches_total`).
 - **The end-to-end speedup is not measured.** The parallel work is
   covered by tests that assert overlap, not by a benchmark. The job
   journal's timestamps make a real before/after possible.

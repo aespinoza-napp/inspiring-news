@@ -132,6 +132,15 @@ outgoing:
   max_request_timeout: 6.0
 
 server:
-  # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
-  secret_key: "REPLACE_WITH_A_RANDOM_SECRET"
+  # No secret_key here: SearXNG reads it from SEARXNG_SECRET, which
+  # docker-compose.yml passes in from backend/.env and refuses to start
+  # without. That is what lets this file be the committed one, mounted
+  # read-only as it is in git. It used to be a gitignored copy of a
+  # committed `.example`, holding the secret, and the copy drifted: the
+  # local one ran the full default roster for weeks after the allowlist
+  # above was measured, and still had the placeholder secret on
+  # 2026-10-01. With no copy there is nothing to drift.
+  #
+  # If SEARXNG_SECRET were ever unset, SearXNG falls back to its own
+  # "ultrasecretkey" placeholder, which it refuses to start with.
   limiter: false   # internal-only instance; re-enable + add Valkey/Redis if ever exposed publicly

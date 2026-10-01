@@ -1,0 +1,132 @@
+# Production overrides, layered on docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+#     --env-file ../backend/.env up -d --build
+#
+# Everything here is what a server needs and a laptop does not: nothing
+# but the API reachable from outside, every secret required rather than
+# defaulted, restarts after a crash or a reboot, bounded logs, and the
+# LLM as a service of its own instead of an Ollama the host happens to
+# run. Sizing and the reasoning behind each limit:
+# docs/decisions/deployment.md.
+
+x-logging: &logging
+  # Docker's default json-file driver never rotates: a stack that logs
+  # every phase of every run fills the disk eventually. 5 x 10MB per
+  # container: one four-claim analysis wrote 140 lines, 20KB, to the
+  # backend's log (2026-10-01, polling included), so ~2,500 runs are
+  # kept. This is also what `docker compose logs` reads.
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  neo4j:
+    # The browser (7474) and Bolt (7687) stay on the compose network.
+    # Reach the console through an SSH tunnel, not the internet.
+    ports: !reset []
+    restart: unless-stopped
+    logging: *logging
+    # Measured 2026-10-01 under the dev cap of 1g: 819MiB resident at
+    # peak (512m heap + 256m page cache + the JVM's own), and the cgroup
+    # hit its limit 120 times. Not an OOM kill, but no headroom for a
+    # graph sync or a heavy console query either.
+    mem_limit: 1536m
+
+  searxng:
+    ports: !reset []
+    restart: unless-stopped
+    logging: *logging
+
+  inference:
+    restart: unless-stopped
+    logging: *logging
+
+  ollama:
+    # Pinned to the version the dev machine ran when the stack was sized
+    # (2026-10-01). On a server there is no host Ollama for
+    # host.docker.internal to reach, so it moves into compose.
+    image: ollama/ollama:0.35.0
+    volumes:
+      - ollama-models:/root/.ollama
+    environment:
+      # Keep the model loaded. Ollama's default unloads it after 5
+      # minutes idle, and the next claim then pays the load.
+      - OLLAMA_KEEP_ALIVE=-1
+      # One request at a time, like the backend's LLM_MAX_CONCURRENCY
+      # below. On a CPU, parallel requests share the same cores: each
+      # gets slower and none gets done sooner. It also holds one
+      # context's KV cache in memory instead of one per slot.
+      - OLLAMA_NUM_PARALLEL=1
+    restart: unless-stopped
+    logging: *logging
+    # llama3.2:3b (Q4_K_M) at a 4096-token context: 2.9GB loaded,
+    # measured with /api/ps on 2026-10-01.
+    mem_limit: 4g
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  ollama-pull:
+    # One-shot: fetches LLM_MODEL into the ollama-models volume, then
+    # exits. A no-op once the model is there. backend waits for it to
+    # finish, so the first verification never meets a missing model.
+    image: ollama/ollama:0.35.0
+    entrypoint: ["ollama", "pull", "${LLM_MODEL:?set LLM_MODEL in backend/.env}"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+    logging: *logging
+
+  backend:
+    # Loopback only: a reverse proxy on the host (Caddy, nginx) or the
+    # frontend's server routes on the same machine are what talk to it.
+    # Published on every interface, /storage/* and /graph/query would be
+    # one leaked key away from the internet.
+    ports: !override
+      - "127.0.0.1:8000:8000"
+    environment:
+      - LLM_BASE_URL=http://ollama:11434/v1
+      # The dev defaults (2 at once, 30s each) assume the laptop's GPU.
+      # On a CPU they turned verdicts into errors: the first production
+      # run (2026-10-01) sent 4 claims at Ollama together, each took
+      # 90-103s, and 3 of the 4 timed out twice and came back UNVERIFIED
+      # as "LLM provider was unreachable". One at a time, each call is
+      # the 40-50s a CPU needs; the timeout leaves it room to finish.
+      # The wait for the permit is not counted: it is taken before the
+      # request is sent (docs/decisions/concurrency.md).
+      - LLM_MAX_CONCURRENCY=1
+      - LLM_TIMEOUT=180
+      # Required here, optional in dev: unset, /storage/* and the graph
+      # console are open to whoever can reach the port (src/main.py
+      # warns; here it refuses to start instead).
+      - STORAGE_API_KEY=${STORAGE_API_KEY:?set STORAGE_API_KEY in backend/.env - production does not run without it}
+      # Whatever backend/.env says: off, POST /analyze is an HTTP proxy
+      # into this compose network.
+      - URL_GUARD_ENABLED=true
+      # One JSON object per line, so a log shipper can read the phase
+      # timings as fields instead of parsing prose.
+      - LOG_FORMAT=json
+    # host.docker.internal pointed at the host's Ollama; there is none.
+    extra_hosts: !reset []
+    depends_on:
+      ollama-pull:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    logging: *logging
+    # Measured 2026-10-01 under the dev cap of 512m: the process itself
+    # peaks at 232MiB, with Chromium rendering a page (77MiB without).
+    # The rest of the cap went to file cache (Qdrant's storage, the
+    # lake), and the cgroup hit its limit 10,276 times reclaiming it.
+    # Both grow with the corpus; 1g gives them room.
+    mem_limit: 1g
+
+volumes:
+  ollama-models:

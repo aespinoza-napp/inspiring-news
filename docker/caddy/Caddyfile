@@ -1,0 +1,19 @@
+# The only door from the internet into the production stack
+# (docker-compose.gcp.yml). The backend itself listens on loopback.
+#
+# SITE_ADDRESS is ":80" until there is a domain; set it to the domain
+# (in backend/.env, or the Terraform variable `domain`) and Caddy fetches
+# and renews a certificate by itself.
+{$SITE_ADDRESS::80} {
+	# For the uptime check (deploy/gcp/monitoring.tf). Says which
+	# dependency is down and how, never the error text.
+	handle /healthz {
+		reverse_proxy backend:8000
+	}
+
+	# Nothing else, until the frontend has a home: the analysis endpoints
+	# take no key, and each run costs minutes of CPU.
+	handle {
+		respond 404
+	}
+}

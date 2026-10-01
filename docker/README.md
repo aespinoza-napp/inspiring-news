@@ -6,7 +6,7 @@ pipeline against a real search engine end-to-end.
 
 | Service | Image | Why |
 |---|---|---|
-| `searxng` | `searxng/searxng` | Self-hosted search engine the fact-checker queries for web evidence (`src/services/search.py`'s `SearxngClient`). Needs its JSON API enabled — copy `searxng/settings.yml.example` to `searxng/settings.yml` first (gitignored, holds a generated secret) |
+| `searxng` | `searxng/searxng` | Self-hosted search engine the fact-checker queries for web evidence (`src/services/search.py`'s `SearxngClient`). Runs `searxng/settings.yml` exactly as committed (mounted read-only); its secret comes from `SEARXNG_SECRET` in `backend/.env` |
 | `neo4j` | `neo4j` | The graph: every finished analysis is written into it, and the frontend's `/graph` page reads it. Browser UI at http://localhost:7474. See `docs/decisions/graph.md` |
 | `backend` | built from `backend.Dockerfile` | The FastAPI app |
 
@@ -17,15 +17,44 @@ since it defaults to a local Ollama instance running on the host (see `CLAUDE.md
 
 ```bash
 cd docker
-cp searxng/settings.yml.example searxng/settings.yml   # first time, and again whenever
-                                                       # the example changes (keep your secret_key)
 cp ../backend/.env-example ../backend/.env             # first time only, then edit
+python -c "import secrets; print(secrets.token_hex(32))"   # paste as SEARXNG_SECRET in ../backend/.env
 docker compose --env-file ../backend/.env up --build
 ```
 
-Both copy steps are required, not optional: `.env` is listed under `env_file`, and compose refuses to
-start at all if it is missing (`env file ... not found`). Neither file is in git — `.env` holds
-secrets, `searxng/settings.yml` holds a generated secret key.
+The copy step is required, not optional: `.env` is listed under `env_file`, and compose refuses to
+start at all if it is missing (`env file ... not found`). It is not in git: it holds every secret
+(`NEO4J_PASSWORD`, `SEARXNG_SECRET`, `STORAGE_API_KEY`).
+
+SearXNG's settings are *not* copied any more. `searxng/settings.yml` is committed and mounted
+read-only, so the engine list that runs is the one in git. It used to be a gitignored copy of a
+committed `.example`, and the copy drifted: the local one ran SearXNG's full default roster for weeks
+after the allowlist was measured. A change to the engines is now a commit, then
+`docker compose up -d searxng`.
+
+## Production
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file ../backend/.env up -d --build
+```
+
+`docker-compose.prod.yml` is layered on top of this file and changes what a server needs: only the
+API is published, on `127.0.0.1:8000` (a reverse proxy in front of it); every service restarts after a
+crash or reboot and rotates its logs (5 × 10MB); `STORAGE_API_KEY` is required and the URL guard
+forced on; the backend logs JSON; and the LLM runs as an `ollama` service, its model pulled by a
+one-shot `ollama-pull` before the backend starts, one request at a time with a 180 s timeout (the
+dev limits time out on a CPU). Sizing, the measurements behind each memory limit, the server choice
+and monitoring: `docs/decisions/deployment.md`.
+
+`GET /healthz` (200, or 503 naming the dependency that is down) is for an uptime monitor; `GET
+/metrics` serves the run counters in Prometheus' text format.
+
+## Google Cloud
+
+`docker-compose.gcp.yml` adds Caddy on 80/443, forwarding `/healthz` only. The VM that runs all three
+files is created by `deploy/gcp/` (Terraform) and boots through `deploy/gcp/vm/bootstrap.sh`, which
+renders `backend/.env` from Secret Manager. `./scripts/check.sh gcp` applies it to Floci, a local
+Google Cloud emulator, with nothing but Docker. Everything else: `docs/decisions/deployment.md`.
 
 The backend image also carries Chromium for the last step of the extraction cascade (the `browser`
 extra plus `playwright install --with-deps chromium`, in its own layer). That roughly doubles the

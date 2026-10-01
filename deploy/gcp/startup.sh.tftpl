@@ -1,0 +1,27 @@
+#!/bin/bash
+# The VM's startup script, rendered by Terraform (vm.tf). Runs as root on
+# every boot. Kept to cloning: what the VM actually does is in the
+# repository (deploy/gcp/vm/bootstrap.sh), so it is reviewed and versioned
+# with the code it runs, not frozen into instance metadata.
+set -euo pipefail
+
+REPO_DIR=/opt/inspiring-news
+
+if ! command -v git >/dev/null; then
+  apt-get update -q && apt-get install -y -q git
+fi
+
+if [ ! -d "$REPO_DIR/.git" ]; then
+  git clone --quiet "${repo_url}" "$REPO_DIR"
+fi
+
+# Every boot follows the ref: a deploy is "push, then reset the VM".
+git -C "$REPO_DIR" fetch --quiet --depth 1 origin "${repo_ref}"
+git -C "$REPO_DIR" checkout --quiet --force FETCH_HEAD
+
+export PROJECT_ID="${project_id}"
+export SECRET_PREFIX="${secret_prefix}"
+export LLM_MODEL="${llm_model}"
+export SITE_ADDRESS="${site_address}"
+
+exec bash "$REPO_DIR/deploy/gcp/vm/bootstrap.sh"
