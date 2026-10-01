@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "muyinteresante.okdiario.com",
+  "claimant": "Christian Pérez",
+  "claim": "Las zonas notificadas más recientemente, como Dungu en Haut-Uélé y Bulu en Sud-Ubangi, muestran que el virus sigue encontrando nuevos territorios donde propagarse.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.who.int/emergencies/disease-outbreak-news/item/2026-DON618"
+  ],
+  "split": "test",
+  "id": "fact035",
+  "topic": "public_health",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-25",
+  "articleUrl": "https://muyinteresante.okdiario.com/salud/muertes-por-ebola-congo.html",
+  "annotatorNote": "WHO DON (25 Sept): Dungu and Bulu are the most recently affected health zones.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

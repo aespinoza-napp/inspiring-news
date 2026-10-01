@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "bbc.co.uk",
+  "claimant": "Steven McIntosh",
+  "claim": "Overall, the BBC brings \"immeasurable benefits\" to society but needs reform of the TV licence fee to avoid a fate of \"managed decline\", they said.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.aol.co.uk/articles/mps-recommend-bbc-charter-renewal-230100000.html",
+    "https://www.advanced-television.com/2026/10/01/mps-set-out-bbc-charter-review-proposals/"
+  ],
+  "split": "test",
+  "id": "fact022",
+  "topic": "entertainment",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-01",
+  "articleUrl": "https://www.bbc.co.uk/news/articles/cr89j4g7v05wo?at_medium=RSS&at_campaign=rss",
+  "annotatorNote": "Committee chair's statement (PA) uses both 'managed decline' and 'immeasurable benefits'.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

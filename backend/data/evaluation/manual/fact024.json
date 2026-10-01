@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "nationalgeographic.com",
+  "claimant": "Boyce Upholt; Mac Stone",
+  "claim": "Florida’s commercial mullet catch has dwindled, and some longtime mullet run observers say the migration has only become more spectacular.",
+  "claimDate": "2026-09-09",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://repository.library.noaa.gov/view/noaa/35320/noaa_35320_DS1.pdf",
+    "https://www.seafoodwatch.org/globalassets/sfw-data-blocks/reports/m/seafood-watch-striped-mullet-florida-28269.pdf"
+  ],
+  "split": "test",
+  "id": "fact024",
+  "topic": "nature",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2023-12-04",
+  "articleUrl": "https://www.nationalgeographic.com/animals/article/striped-mullet-fish-migration",
+  "annotatorNote": "Landings fell from ~25M lb/yr (1967-90) to ~8M after the 1995 net ban, ~4.5M in 2021. The observers' part is opinion.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

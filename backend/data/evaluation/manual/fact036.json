@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Victoria Bekiempis",
+  "claim": "Hillsborough county, Florida, officials made the declaration on 24 September as health authorities recorded 134 confirmed cases of dengue fever, which is a mosquito-borne sickness typically found in countries outside the US.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://hcfl.gov/newsroom/2026/09/24/dengue-fever-prompts-hillsborough-county-to-declare-state-of-local-emergency",
+    "https://baynews9.com/fl/tampa/news/2026/09/24/pasco-county-issues-local-state-of-emergency-on-dengue-fever"
+  ],
+  "split": "test",
+  "id": "fact036",
+  "topic": "public_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-24",
+  "articleUrl": "https://www.theguardian.com/us-news/2026/sep/28/dengue-fever-cases-florida-counties",
+  "annotatorNote": "County order signed 24 Sept; 134 cases reported at the time (Bay News 9).",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "theconversation.com",
+  "claimant": "Reece Hammond; Thomas A Püschel",
+  "claim": "Indeed, the example of Jire and Jimato is eclipsed by a case from the Mahale Mountains, Tanzania, where a mother carried her infant’s corpse for perhaps as long as 126 days.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://pmc.ncbi.nlm.nih.gov/articles/PMC7428235/"
+  ],
+  "split": "test",
+  "id": "fact021",
+  "topic": "nature",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2020-07-01",
+  "articleUrl": "https://theconversation.com/why-do-some-chimpanzee-mothers-carry-their-dead-infants-for-months-292509",
+  "annotatorNote": "Lonsdorf et al. 2020 cite a Mahale compilation with carrying up to ~126 days.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

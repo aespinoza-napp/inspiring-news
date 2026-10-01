@@ -1,0 +1,22 @@
+{
+  "language": "en",
+  "site": "nationalgeographic.com",
+  "claimant": "Boyce Upholt; Mac Stone",
+  "claim": "And the spectacle of their massive runs in Florida is suggestive of healthy habitats, says Stephen Kajiura, a biologist at Florida Atlantic University.",
+  "claimDate": "2026-09-09",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [],
+  "split": "test",
+  "id": "fact025",
+  "topic": "nature",
+  "claimType": "interpretive",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": null,
+  "articleUrl": "https://www.nationalgeographic.com/animals/article/striped-mullet-fish-migration",
+  "annotatorNote": "Kajiura's view appears only in this article; no independent source for it.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

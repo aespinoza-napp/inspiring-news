@@ -1,0 +1,629 @@
+{
+  "requestId": "9a90972caa7e49a0aca1e8bd46dd0b85",
+  "seed": "2026-10-01",
+  "createdAt": "2026-10-01T05:48:05+00:00",
+  "requested": {
+    "articles": 10,
+    "claimsPerArticle": 3,
+    "languages": null,
+    "preferTopics": [
+      "climate",
+      "nature",
+      "energy",
+      "sustainability",
+      "food",
+      "arts",
+      "entertainment",
+      "heritage",
+      "literature",
+      "inspiration",
+      "medicine",
+      "mental_health",
+      "nutrition",
+      "fitness",
+      "public_health"
+    ],
+    "excluded": 1491
+  },
+  "totals": {
+    "sources": 34,
+    "discovered": 1479,
+    "candidates": 20,
+    "ready": 19,
+    "articles": 10,
+    "claims": 28
+  },
+  "articles": [
+    {
+      "url": "https://theconversation.com/why-do-some-chimpanzee-mothers-carry-their-dead-infants-for-months-292509",
+      "source": "the_conversation",
+      "title": "Why do some chimpanzee mothers carry their dead infants for months?",
+      "site": "theconversation.com",
+      "sourceName": "The Conversation",
+      "language": "en",
+      "publishedAt": "2026-09-29",
+      "author": "Reece Hammond; Thomas A Püschel",
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "biology",
+        "mental_health"
+      ],
+      "claims": [
+        {
+          "text": "In 2003, in the deep forests of Bossou in Guinea, a chimpanzee mother did something that reshaped how we view animal minds.",
+          "selectedBy": "anchor",
+          "score": 0.788,
+          "figures": [
+            "2003"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "Jire carried the the lifeless body of her one-year-old infant Jimato for some 68 days.",
+          "selectedBy": "anchor",
+          "score": 0.747,
+          "figures": [
+            "68"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact020"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Indeed, the example of Jire and Jimato is eclipsed by a case from the Mahale Mountains, Tanzania, where a mother carried her infant’s corpse for perhaps as long as 126 days.",
+          "selectedBy": "anchor",
+          "score": 0.746,
+          "figures": [
+            "126"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact021"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.bbc.co.uk/news/articles/cr89j4g7v05wo?at_medium=RSS&at_campaign=rss",
+      "source": "bbc",
+      "title": "BBC paying to air shows like Suits and Schitt's Creek is illogical, MPs say",
+      "site": "bbc.co.uk",
+      "sourceName": "BBC",
+      "language": "en",
+      "publishedAt": "2026-10-01",
+      "author": "Steven McIntosh",
+      "topic": "entertainment",
+      "topics": [
+        "entertainment",
+        "climate",
+        "sustainability",
+        "nature"
+      ],
+      "claims": [
+        {
+          "text": "Overall, the BBC brings \"immeasurable benefits\" to society but needs reform of the TV licence fee to avoid a fate of \"managed decline\", they said.",
+          "selectedBy": "anchor",
+          "score": 0.664,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact022"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Committee chair Dame Caroline Dinenage said the report , externalcomes at \"a pivotal moment for the BBC\", which is grappling with changing media habits, declining income and negotiations with the government over how it is paid for.",
+          "selectedBy": "anchor",
+          "score": 0.662,
+          "figures": [],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        },
+        {
+          "text": "Dame Caroline said the government \"must ensure the BBC has a universal and sustainable source of funding\".",
+          "selectedBy": "anchor",
+          "score": 0.651,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact023"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.nationalgeographic.com/animals/article/striped-mullet-fish-migration",
+      "source": "national_geographic",
+      "title": "Witness the Uncanny Spectacle of Millions of Mullet Swarming in the Atlantic",
+      "site": "nationalgeographic.com",
+      "sourceName": "National Geographic",
+      "language": "en",
+      "publishedAt": "2026-09-09",
+      "author": "Boyce Upholt; Mac Stone",
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "food",
+        "sustainability",
+        "mental_health",
+        "entertainment",
+        "research",
+        "biology",
+        "space",
+        "education",
+        "fitness",
+        "cities",
+        "nutrition",
+        "climate"
+      ],
+      "claims": [
+        {
+          "text": "“You can’t see anything, no horizon line, no fixed point that you can focus on,” Stone says.",
+          "selectedBy": "anchor",
+          "score": 0.56,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "Florida’s commercial mullet catch has dwindled, and some longtime mullet run observers say the migration has only become more spectacular.",
+          "selectedBy": "anchor",
+          "score": 0.481,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact024"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "And the spectacle of their massive runs in Florida is suggestive of healthy habitats, says Stephen Kajiura, a biologist at Florida Atlantic University.",
+          "selectedBy": "anchor",
+          "score": 0.398,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact025"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://e360.yale.edu/digest/environmental-defenders-killed-2025",
+      "source": "yale_e360",
+      "title": "At Least 124 Environmental Defenders Killed Worldwide Last Year",
+      "site": "e360.yale.edu",
+      "sourceName": "Yale Environment 360",
+      "language": "en",
+      "publishedAt": "2026-09-16",
+      "author": "Jan Rosenow",
+      "topic": "climate",
+      "topics": [
+        "climate",
+        "nature",
+        "community",
+        "food",
+        "technology",
+        "cities",
+        "sustainability",
+        "inspiration"
+      ],
+      "claims": [
+        {
+          "text": "Latin America accounted for 85 percent of killings, making it the deadliest region for defenders, a distinction it has earned every year since Global Witness began tracking killings in 2012.",
+          "selectedBy": "anchor",
+          "score": 0.749,
+          "figures": [
+            "85",
+            "2012"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact026"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“The effects of these budget cuts are not abstract,” said Juliana Vélez Echeverri, a senior campaigner with the watchdog group Global Witness, which published the report.",
+          "selectedBy": "anchor",
+          "score": 0.672,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "Last year Colombia led the world with 39 murders, followed by Brazil with 26.",
+          "selectedBy": "anchor",
+          "score": 0.649,
+          "figures": [
+            "39",
+            "26"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact027"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.france24.com/es/salud/20261001-octubre-rosa-equidad-y-detecci%C3%B3n-temprana-los-grandes-desaf%C3%ADos-ante-el-c%C3%A1ncer-de-mama-en-latinoam%C3%A9rica",
+      "source": "france24_es",
+      "title": "Octubre rosa: equidad y detección temprana, los grandes desafíos ante el cáncer de mama en Latinoamérica",
+      "site": "france24.com",
+      "sourceName": "France 24 Español",
+      "language": "es",
+      "publishedAt": "2026-10-01",
+      "author": "Eumar Esaá",
+      "topic": "medicine",
+      "topics": [
+        "medicine",
+        "technology",
+        "research",
+        "public_health",
+        "cities",
+        "community",
+        "nature",
+        "food",
+        "space",
+        "climate",
+        "mental_health",
+        "inspiration",
+        "nutrition",
+        "sustainability",
+        "energy",
+        "biology"
+      ],
+      "claims": [
+        {
+          "text": "Leer también\"Si detectamos el cáncer de mama en etapa inicial, probabilidad de curarse es de 98%\"",
+          "selectedBy": "anchor",
+          "score": 0.73,
+          "figures": [
+            "98%"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "El inicio del Mes de la Concienciación sobre el Cáncer de Mama este 1 de octubre encuentra regiones como Latinoamérica con grandes avances en la lucha integral contra la enfermedad, en nuevas terapias y en capacidad de difusión, pero con varias tareas pendientes para garantizar el acceso a tratamientos en regiones remotas, conseguir diagnósticos en los estadios iniciales y reducir las tasas de mortalidad.",
+          "selectedBy": "anchor",
+          "score": 0.729,
+          "figures": [
+            "1"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact028"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Cada año, más de 200.000 nuevos casos de cáncer de mama son detectados en América Latina.",
+          "selectedBy": "anchor",
+          "score": 0.683,
+          "figures": [
+            "200.000"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact029"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://news.mit.edu/2026/governor-healey-mit-president-kornbluth-kick-festivities-mit-future-fest",
+      "source": "mit_news",
+      "title": "Governor Healey, MIT President Kornbluth to Kick Off Festivities at MIT Future Fest",
+      "site": "news.mit.edu",
+      "sourceName": "MIT News",
+      "language": "en",
+      "publishedAt": "2026-09-04",
+      "author": null,
+      "topic": "sustainability",
+      "topics": [
+        "sustainability",
+        "entertainment",
+        "education",
+        "cities",
+        "technology",
+        "arts",
+        "employment",
+        "heritage",
+        "food",
+        "research",
+        "mental_health",
+        "biology",
+        "space",
+        "medicine",
+        "climate",
+        "nutrition"
+      ],
+      "claims": [
+        {
+          "text": "Curated and produced by the MIT Museum, the inaugural MIT Future Fest will take place across MIT’s campus from September 30–October 4, 2026.",
+          "selectedBy": "anchor",
+          "score": 0.777,
+          "figures": [
+            "30",
+            "4",
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact030"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "The event will take place on Wednesday, September 30 at 3:30 PM at MIT’s Kresge Auditorium.",
+          "selectedBy": "anchor",
+          "score": 0.723,
+          "figures": [
+            "30",
+            "3",
+            "30"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact031"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "MIT Future Fest celebrates that same spirit of curiosity on mission,\" said MIT President Sally Kornbluth.",
+          "selectedBy": "anchor",
+          "score": 0.673,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        }
+      ]
+    },
+    {
+      "url": "https://www.nature.com/articles/d41586-026-03038-7",
+      "source": "nature",
+      "title": "Who’s the loudest of them all? The bare-throated bellbird vies for the prize",
+      "site": "nature.com",
+      "sourceName": "Nature",
+      "language": "en",
+      "publishedAt": "2026-09-30",
+      "author": null,
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "biology",
+        "energy",
+        "research",
+        "sustainability",
+        "climate",
+        "space",
+        "cities",
+        "mental_health",
+        "education",
+        "nutrition",
+        "heritage",
+        "literature",
+        "food",
+        "entertainment",
+        "fitness",
+        "public_health",
+        "community",
+        "employment"
+      ],
+      "claims": [
+        {
+          "text": "Access Nature and 54 other Nature Portfolio journals",
+          "selectedBy": "anchor",
+          "score": 0.572,
+          "figures": [
+            "54"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        }
+      ]
+    },
+    {
+      "url": "https://news.un.org/feed/view/en/story/2026/09/1168476",
+      "source": "un_news",
+      "title": "DPR Korea tells UN its nuclear status is ‘irreversible’, rejects outside pressure",
+      "site": "news.un.org",
+      "sourceName": "UN News",
+      "language": "en",
+      "publishedAt": "2026-09-28",
+      "author": "UN News",
+      "topic": "climate",
+      "topics": [
+        "climate",
+        "technology",
+        "sustainability",
+        "cities",
+        "nutrition",
+        "public_health",
+        "energy",
+        "food",
+        "education",
+        "fitness",
+        "nature",
+        "community"
+      ],
+      "claims": [
+        {
+          "text": "The Democratic People’s Republic of Korea (DPRK) told the UN General Assembly on Monday that its status as a nuclear-armed State was irreversible, arguing that its military capabilities were necessary to safeguard the country’s sovereignty and maintain peace on the Korean Peninsula.",
+          "selectedBy": "anchor",
+          "score": 0.7,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact032"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“The DPRK’s nuclear deterrent is the absolute might and irresistible force designed, from A to Z, to safeguard the sovereignty, security and peace against aggression and threat from outside,” he said.",
+          "selectedBy": "anchor",
+          "score": 0.57,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact033"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Marking 35 years since the DPRK joined the United Nations, he concluded by pledging that his country would continue working through the Organization to promote what it regards as international justice, peace and security, while defending its sovereignty, security interests and right to development.",
+          "selectedBy": "anchor",
+          "score": 0.566,
+          "figures": [
+            "35"
+          ],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://muyinteresante.okdiario.com/salud/muertes-por-ebola-congo.html",
+      "source": "muy_interesante",
+      "title": "Por qué el ébola sigue propagándose en la RDC: inseguridad, desconfianza y vacunación limitada frente a la variante Bundibugyo",
+      "site": "muyinteresante.okdiario.com",
+      "sourceName": "Muy Interesante",
+      "language": "es",
+      "publishedAt": "2026-09-29",
+      "author": "Christian Pérez",
+      "topic": "public_health",
+      "topics": [
+        "public_health",
+        "medicine",
+        "biology",
+        "community",
+        "technology"
+      ],
+      "claims": [
+        {
+          "text": "Según la OMS, en sus evaluaciones sobre vacunas del 9 de septiembre de 2026, Ervebo solo debe emplearse bajo protocolo de investigación, porque su eficacia en seres humanos contra la variante Bundibugyo no está demostrada.",
+          "selectedBy": "anchor",
+          "score": 0.713,
+          "figures": [
+            "9",
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact034"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Ervebo solo debe emplearse frente al ébola Bundibugyo bajo investigación, pues su eficacia en humanos contra esta variante no está demostrada.",
+          "selectedBy": "anchor",
+          "score": 0.598,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "duplicate"
+        },
+        {
+          "text": "Las zonas notificadas más recientemente, como Dungu en Haut-Uélé y Bulu en Sud-Ubangi, muestran que el virus sigue encontrando nuevos territorios donde propagarse.",
+          "selectedBy": "anchor",
+          "score": 0.588,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact035"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.theguardian.com/us-news/2026/sep/28/dengue-fever-cases-florida-counties",
+      "source": "guardian",
+      "title": "Dengue fever outbreak prompts Florida counties to declare state of emergency",
+      "site": "theguardian.com",
+      "sourceName": "The Guardian",
+      "language": "en",
+      "publishedAt": "2026-09-28",
+      "author": "Victoria Bekiempis",
+      "topic": "mental_health",
+      "topics": [
+        "mental_health",
+        "public_health",
+        "cities",
+        "medicine",
+        "nature",
+        "research",
+        "biology"
+      ],
+      "claims": [
+        {
+          "text": "Hillsborough county, Florida, officials made the declaration on 24 September as health authorities recorded 134 confirmed cases of dengue fever, which is a mosquito-borne sickness typically found in countries outside the US.",
+          "selectedBy": "anchor",
+          "score": 0.762,
+          "figures": [
+            "24",
+            "134"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact036"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Over the same period, there were 38 locally contracted dengue cases reported in Florida.",
+          "selectedBy": "anchor",
+          "score": 0.71,
+          "figures": [
+            "38"
+          ],
+          "status": "pending",
+          "factIds": [],
+          "skipReason": null
+        },
+        {
+          "text": "There have been a total of 212 known travel-related cases in Florida reported so far in 2026.",
+          "selectedBy": "anchor",
+          "score": 0.707,
+          "figures": [
+            "212",
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact037"
+          ],
+          "skipReason": null
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "url": "https://elpais.com/espana/2026-10-01/julian-garcia-vargas-un-hombre-prudente.html",
+      "source": "el_pais",
+      "reason": "no article text could be extracted"
+    }
+  ],
+  "file": "2026-10-01.json",
+  "date": "2026-10-01"
+}

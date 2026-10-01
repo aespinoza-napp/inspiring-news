@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "news.mit.edu",
+  "claimant": "MIT News",
+  "claim": "The event will take place on Wednesday, September 30 at 3:30 PM at MIT’s Kresge Auditorium.",
+  "claimDate": "2026-09-04",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://mit-museum.prezly.com/mit-museum-announces-line-up-for-inaugural-mit-future-fest-governor-healey-mit-president-kornbluth-to-kick-off-festivities"
+  ],
+  "split": "test",
+  "id": "fact031",
+  "topic": "education",
+  "claimType": "factual",
+  "sourceTier": "press_release",
+  "onlyOwnSource": true,
+  "evidenceDate": null,
+  "articleUrl": "https://news.mit.edu/2026/governor-healey-mit-president-kornbluth-kick-festivities-mit-future-fest",
+  "annotatorNote": "Only MIT's own press release (MIT Museum) gives the time and place.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

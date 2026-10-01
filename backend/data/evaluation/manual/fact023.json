@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "bbc.co.uk",
+  "claimant": "Steven McIntosh",
+  "claim": "Dame Caroline said the government \"must ensure the BBC has a universal and sustainable source of funding\".",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.advanced-television.com/2026/10/01/mps-set-out-bbc-charter-review-proposals/",
+    "https://www.aol.co.uk/articles/mps-recommend-bbc-charter-renewal-230100000.html"
+  ],
+  "split": "test",
+  "id": "fact023",
+  "topic": "entertainment",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-01",
+  "articleUrl": "https://www.bbc.co.uk/news/articles/cr89j4g7v05wo?at_medium=RSS&at_campaign=rss",
+  "annotatorNote": "Quote confirmed by Advanced Television and PA (word order 'sustainable and universal').",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

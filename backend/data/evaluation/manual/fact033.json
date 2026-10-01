@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "news.un.org",
+  "claimant": "UN News",
+  "claim": "“The DPRK’s nuclear deterrent is the absolute might and irresistible force designed, from A to Z, to safeguard the sovereignty, security and peace against aggression and threat from outside,” he said.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.nbc26.com/world/north-korea-uses-un-platform-to-lament-mutual-distrust-and-tension"
+  ],
+  "split": "test",
+  "id": "fact033",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://news.un.org/feed/view/en/story/2026/09/1168476",
+  "annotatorNote": "AP (28 Sept) quotes the same sentence verbatim.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

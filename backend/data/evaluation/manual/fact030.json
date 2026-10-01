@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.mit.edu",
+  "claimant": "MIT News",
+  "claim": "Curated and produced by the MIT Museum, the inaugural MIT Future Fest will take place across MIT’s campus from September 30–October 4, 2026.",
+  "claimDate": "2026-09-04",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://mitmuseum.mit.edu/announcements/mit-museum-announces-line-up-for-inaugural-mit-future-fest",
+    "https://www.theplan.it/eng/whats_on/mit-future-fest-2026-september-30october-4-2026-cambridge"
+  ],
+  "split": "test",
+  "id": "fact030",
+  "topic": "education",
+  "claimType": "factual",
+  "sourceTier": "press_release",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-28",
+  "articleUrl": "https://news.mit.edu/2026/governor-healey-mit-president-kornbluth-kick-festivities-mit-future-fest",
+  "annotatorNote": "Dates and curator in the MIT Museum announcement, repeated by The Plan.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

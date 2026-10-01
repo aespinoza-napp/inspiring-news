@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "muyinteresante.okdiario.com",
+  "claimant": "Christian Pérez",
+  "claim": "Según la OMS, en sus evaluaciones sobre vacunas del 9 de septiembre de 2026, Ervebo solo debe emplearse bajo protocolo de investigación, porque su eficacia en seres humanos contra la variante Bundibugyo no está demostrada.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.who.int/emergencies/situations/ebola-outbreak---drc-2026",
+    "https://www.premiumtimesng.com/health/health-news/906969-who-restricts-ervebo-use-in-bundibugyo-outbreak.html"
+  ],
+  "split": "test",
+  "id": "fact034",
+  "topic": "public_health",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-02",
+  "articleUrl": "https://muyinteresante.okdiario.com/salud/muertes-por-ebola-congo.html",
+  "annotatorNote": "WHO guidance restricts Ervebo to research protocols, efficacy unknown. It is dated 1 Sept, not 9 Sept.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

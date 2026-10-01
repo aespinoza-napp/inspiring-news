@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Victoria Bekiempis",
+  "claim": "There have been a total of 212 known travel-related cases in Florida reported so far in 2026.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.floridahealth.gov/wp-content/uploads/2026/09/fl-arbovirus-report-w37-2026.pdf"
+  ],
+  "split": "test",
+  "id": "fact037",
+  "topic": "public_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-19",
+  "articleUrl": "https://www.theguardian.com/us-news/2026/sep/28/dengue-fever-cases-florida-counties",
+  "annotatorNote": "Florida arbovirus report, week 37: 212 travel-associated dengue cases in 2026.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

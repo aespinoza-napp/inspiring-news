@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Jan Rosenow",
+  "claim": "Last year Colombia led the world with 39 murders, followed by Brazil with 26.",
+  "claimDate": "2026-09-16",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://globalwitness.org/en/press-releases/at-least-124-land-and-environmental-defenders-killed-globally-in-2025/",
+    "https://www.upi.com/Top_News/World-News/2026/09/16/latam-environmental-defensers-killed-worldwide/8411789575699"
+  ],
+  "split": "test",
+  "id": "fact027",
+  "topic": "community",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-16",
+  "articleUrl": "https://e360.yale.edu/digest/environmental-defenders-killed-2025",
+  "annotatorNote": "Global Witness report: Colombia 39, Brazil 26.",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}

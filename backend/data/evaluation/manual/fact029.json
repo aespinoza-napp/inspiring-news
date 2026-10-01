@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "france24.com",
+  "claimant": "Eumar Esaá",
+  "claim": "Cada año, más de 200.000 nuevos casos de cáncer de mama son detectados en América Latina.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-01T06:01:09",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.paho.org/es/noticias/2-10-2025-todas-cada-juntas-prevencion-cancer-mama",
+    "https://www.paho.org/en/topics/breast-cancer"
+  ],
+  "split": "test",
+  "id": "fact029",
+  "topic": "public_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-10-02",
+  "articleUrl": "https://www.france24.com/es/salud/20261001-octubre-rosa-equidad-y-detecci%C3%B3n-temprana-los-grandes-desaf%C3%ADos-ante-el-c%C3%A1ncer-de-mama-en-latinoam%C3%A9rica",
+  "annotatorNote": "OPS: >220,000 new cases in Latin America and the Caribbean in 2022 (>210,000 in 2020).",
+  "createdAt": "2026-10-01T06:01:09",
+  "review": null
+}
