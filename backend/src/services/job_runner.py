@@ -5,6 +5,7 @@ from typing import Callable
 from src.config.thresholds import PipelineThresholds
 from src.services.analysis_service import AnalysisService
 from src.services.job_store import JobStore
+from src.services.run_metrics import RunClock, RunMetrics, run_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ def run_analysis_job(
     force_refresh: bool = False,
     thresholds: PipelineThresholds | None = None,
     purpose: str = "article",
+    metrics: RunMetrics = run_metrics,
 ) -> None:
     """
     Runs AnalysisService.analyze() for one URL, writing each phase into
@@ -43,10 +45,16 @@ def run_analysis_job(
     server console instead of just "it's slow" - see logging setup in
     src/main.py for why this actually shows up (INFO is not the default
     level).
+
+    The same events feed `metrics` (GET /metrics), where each stage is
+    timed from its own start to its own end rather than between
+    consecutive events - see src/services/run_metrics.py for why those
+    differ once claims run concurrently.
     """
 
     start = time.monotonic()
     last = start
+    clock = RunClock(metrics, purpose)
 
     def on_phase(phase: str, data: dict) -> None:
 
@@ -57,10 +65,21 @@ def run_analysis_job(
         total_seconds = now - start
         last = now
 
+        # The fields are for LOG_FORMAT=json, which writes them as keys;
+        # the text format ignores them.
         logger.info(
             "[analyze %s] %s (+%.2fs, total %.2fs) url=%s",
             job_id[:8], phase, step_seconds, total_seconds, url,
+            extra={
+                "job": job_id[:8],
+                "phase": phase,
+                "step_seconds": round(step_seconds, 3),
+                "total_seconds": round(total_seconds, 3),
+                "url": url,
+            },
         )
+
+        clock.observe(phase, data)
 
         if phase in _SUCCESS_PHASES:
             job_store.complete(job_id, data)
@@ -102,6 +121,11 @@ def run_analysis_job(
     except Exception as exc:
         total_seconds = time.monotonic() - start
         logger.warning(
-            "[analyze %s] failed after %.2fs: %s", job_id[:8], total_seconds, exc
+            "[analyze %s] failed after %.2fs: %s", job_id[:8], total_seconds, exc,
+            extra={"job": job_id[:8], "phase": "failed",
+                   "total_seconds": round(total_seconds, 3), "url": url},
         )
+        # No "failed" phase reaches on_phase on this path, so the run is
+        # counted here or not at all.
+        metrics.observe_run("failed", purpose, total_seconds)
         job_store.fail(job_id, str(exc))

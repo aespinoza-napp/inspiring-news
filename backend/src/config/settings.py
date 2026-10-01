@@ -1,5 +1,6 @@
 import math
 from pathlib import Path
+from typing import Literal
 
 from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -178,6 +179,11 @@ class Settings(BaseSettings):
     # not fine anywhere else - src/main.py logs a warning at startup so
     # that choice is never silent.
     STORAGE_API_KEY: SecretStr | None = None
+
+    # "text" for a terminal, "json" for a log shipper: one object per
+    # line, the job runner's phase timings as fields
+    # (src/services/log_format.py). docker-compose.prod.yml sets json.
+    LOG_FORMAT: Literal["text", "json"] = "text"
 
     # Enrichment
     TOPIC_CLASSIFIER_THRESHOLD: float = 0.35

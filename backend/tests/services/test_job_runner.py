@@ -153,3 +153,48 @@ def test_run_analysis_job_only_builds_service_once():
     run_analysis_job(store, factory, job.job_id, job.url)
 
     factory.assert_called_once()
+
+
+def test_run_analysis_job_feeds_the_run_metrics():
+    """The same events that land in the job store reach GET /metrics."""
+
+    from src.services.run_metrics import RunMetrics
+
+    store = JobStore()
+    job = store.create("https://example.com/a")
+    metrics = RunMetrics()
+
+    def fake_analyze(url, force_refresh=False, on_phase=None, thresholds=None, purpose="article"):
+        on_phase("scraping", {"url": url})
+        on_phase("scraped", {"url": url})
+        on_phase("web_results", {"claimIndex": 0, "webCount": 0, "searchUnavailable": True})
+        on_phase("done", {"url": url})
+        return {"url": url}
+
+    run_analysis_job(
+        store, lambda: make_analysis_service(side_effect=fake_analyze),
+        job.job_id, job.url, purpose="ingestion", metrics=metrics,
+    )
+
+    text = metrics.render()
+
+    assert 'inspiring_stage_seconds_count{stage="scrape"} 1' in text
+    assert 'inspiring_web_searches_total{result="unavailable"} 1' in text
+    assert 'inspiring_runs_total{outcome="done",purpose="ingestion"} 1' in text
+
+
+def test_a_run_that_raises_is_counted_as_failed():
+    """No "failed" phase reaches on_phase on this path."""
+
+    from src.services.run_metrics import RunMetrics
+
+    store = JobStore()
+    job = store.create("https://example.com/a")
+    metrics = RunMetrics()
+
+    run_analysis_job(
+        store, lambda: make_analysis_service(side_effect=RuntimeError("boom")),
+        job.job_id, job.url, metrics=metrics,
+    )
+
+    assert 'inspiring_runs_total{outcome="failed",purpose="article"} 1' in metrics.render()

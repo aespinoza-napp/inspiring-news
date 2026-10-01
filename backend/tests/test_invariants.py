@@ -162,6 +162,7 @@ NON_THRESHOLD_SETTINGS = {
     "CONFIDENCE_LLM_WEIGHT", "CONFIDENCE_EVIDENCE_WEIGHT",
     "EVIDENCE_RECENCY_HALF_LIFE_DAYS",
     "URL_GUARD_ENABLED", "URL_GUARD_ALLOWED_HOSTS", "STORAGE_API_KEY",
+    "LOG_FORMAT",
     # Concurrency ceilings. Infrastructure by decision, not oversight:
     # they cap how hard this *process* leans on SearXNG, inference/, the
     # LLM and other people's web servers, all of which are shared by

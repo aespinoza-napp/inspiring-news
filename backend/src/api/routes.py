@@ -1,7 +1,8 @@
 import secrets
 from logging import getLogger
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field, model_validator
 
 from src.container import (
@@ -24,13 +25,53 @@ from src.config.thresholds import PipelineThresholds, ThresholdOverrides
 from src.models.core.job import JobStatus
 from src.models.storage.lineage import DataLayer
 from src.services.enrichment_service import NothingToEnrich
+from src.services.health import default_checks, run_checks
 from src.services.job_runner import run_analysis_job
+from src.services.run_metrics import run_metrics
 from src.services.scraper.article_stats import article_stats
 from src.services.scraper.request_stats import request_stats
 
 logger = getLogger(__name__)
 
 router = APIRouter()
+
+
+@router.get("/healthz")
+def healthz(response: Response):
+    """
+    200 when every dependency an analysis needs answers, 503 naming the
+    ones that do not (src/services/health.py). For an uptime monitor -
+    the container's own healthcheck asks only whether uvicorn is up.
+    Unauthenticated, so it says which dependency failed and how, never
+    the error text.
+    """
+
+    report = run_checks(health_checks())
+
+    if not report["ok"]:
+        response.status_code = 503
+
+    return report
+
+
+# Swapped by the tests, which have none of these services.
+health_checks = default_checks
+
+
+@router.get("/metrics", response_class=PlainTextResponse)
+def metrics():
+    """
+    This process's analysis runs as Prometheus counters: runs by outcome,
+    time per pipeline stage, verdicts, and web searches that came back
+    empty or failed (src/services/run_metrics.py). Unauthenticated, like
+    most /metrics endpoints - it holds counts and durations, no URLs or
+    claims - but not meant for the public internet either: in production
+    the backend listens on loopback only (docker-compose.prod.yml).
+    """
+
+    return PlainTextResponse(
+        run_metrics.render(), media_type="text/plain; version=0.0.4; charset=utf-8"
+    )
 
 
 def require_storage_key(x_api_key: str | None = Header(default=None)) -> None:

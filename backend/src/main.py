@@ -7,16 +7,15 @@ from src.api.routes import router
 from src.config.settings import settings
 from src.container import job_store
 from src.services.job_journal import JobJournal
+from src.services.log_format import configure_logging
 from src.services.scraper.request_stats import request_stats
 
 # Python's root logger defaults to WARNING, so plain logger.info() calls
 # (e.g. src/services/job_runner.py's per-phase timing) would silently
-# never print. INFO here makes that timing visible without touching
-# uvicorn's own access/error logging (which configures itself).
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-)
+# never print. INFO here makes that timing visible. In text mode uvicorn's
+# own access/error logging (which configures itself) is left alone; in
+# JSON mode it is routed through the same JSON handler.
+configure_logging(settings.LOG_FORMAT)
 
 
 @asynccontextmanager
