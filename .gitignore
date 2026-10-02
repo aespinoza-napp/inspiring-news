@@ -224,3 +224,10 @@ __marimo__/
 backend/data/vector_db/
 backend/data/cache/
 backend/data/lake/
+
+# Evaluation runs: raw per-claim results, third-party titles and quotes,
+# and a copy of the corpus each. The reports made from them
+# (backend/data/evaluation/reports/, .../writing/reports/) are committed.
+# docs/decisions/evaluation.md §Run layout.
+backend/data/evaluation/runs/
+backend/data/evaluation/writing/runs/

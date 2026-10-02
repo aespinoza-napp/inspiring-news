@@ -20,6 +20,13 @@ _VALID_STANCES = {stance.value for stance in EvidenceStance}
 # quote over a newline would defeat the check.
 _WHITESPACE = re.compile(r"\s+")
 
+# The explanation a claim gets when the model answered but nothing usable
+# came back (no JSON after the retry). A constant so the evaluation
+# harness can count these per model: a small model failing the output
+# format is a model-quality result, and comparing the string by copy
+# would drift the day this sentence is reworded.
+INVALID_OUTPUT_EXPLANATION = "LLM verification unavailable or returned invalid output."
+
 SYSTEM_PROMPT = (
     "You are a rigorous fact-checking assistant. You are given a claim "
     "extracted from a news article, usually with the article's headline "
@@ -169,7 +176,7 @@ class LLMVerifier:
             return LLMVerificationResult(
                 verdict=Verdict.UNVERIFIED,
                 confidence=0.0,
-                explanation="LLM verification unavailable or returned invalid output.",
+                explanation=INVALID_OUTPUT_EXPLANATION,
                 cited_evidence=[],
             )
 

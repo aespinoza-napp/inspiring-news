@@ -71,12 +71,13 @@ documented in `scripts/prepare_xfact_eval.py`:
 
 ## What this is not
 
-This is data, not a harness. Nothing here runs a claim through
-`LLMVerifier` and scores the result yet - that's the next piece of
-Phase 4 groundwork, and it's what turns this file from "a dataset exists"
-into "verification accuracy is measured." Its design (record format, run
-layout, metrics, what is reported apart) is in
-`docs/decisions/evaluation.md`, designed on 2026-10-01 and not built yet. `referenceEvidenceLinks` on
+This is data, not a harness. The harness that runs a model over it is
+`backend/src/evaluation/` (built 2026-10-02): `uv run python -m
+src.evaluation.cli run --dataset data/evaluation/xfact_en_es_pilot.jsonl
+--model llama3.2:3b`, resumable, writing to `runs/` (gitignored); `cli
+report` turns a run into the committed `reports/`. Both formats load as
+they are, and so does `manual/` before it is joined. The design and what
+was built are in `docs/decisions/evaluation.md`. `referenceEvidenceLinks` on
 each row are X-Fact's own sources, kept for manual spot-checking a
 disagreement - they are deliberately not fed to the pipeline as evidence,
 because this project does open-domain retrieval (SearXNG, at

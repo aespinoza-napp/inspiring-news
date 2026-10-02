@@ -27,25 +27,31 @@ moved to future work.
 
 ## How one claim is run
 
-Through `FactChecker.check_claim`, the stage `POST /verify-claim` runs,
-so the harness measures the pipeline and not a copy of it. The claim is
-built by `ClaimService.build_claim` (the same GLiNER pass, confidence
-1.0, as the endpoint).
+**Built on 2026-10-02 (G2)**: `backend/src/evaluation/runner.py`,
+`dataset.py`, `record.py`, `store.py`, `cli.py`. Tested with the shared
+fakes only (`backend/tests/evaluation/`); not yet run against live
+services, which is the pilot's job.
 
-Two gaps have to close before a single number means anything. Both are
-in the harness goal:
+Each claim went through `FactChecker.check_claim`, the stage
+`POST /verify-claim` runs, so the harness measures the pipeline and not a
+copy of it. The claim was built by `ClaimService.build_claim` (the same
+GLiNER pass, confidence 1.0, as the endpoint).
 
-- **`check_claim` takes no `language`.** The query builder then falls
-  back to English (`query_builder.py`, `(language or "en")`), so the 40
-  Spanish pilot claims would be searched with the English lexicon.
-- **`check_claim` takes no `context`.** For the custom set, the article
-  the claim came from would then be retrieved as evidence for its own
-  claim. That incident is why `EvidenceRetriever` drops the article's own
-  URL, which it can only do when `context.url` is set.
+Two gaps were closed first, because without them no number would have
+meant anything:
 
-So `check_claim` gains two optional keyword arguments, `context` and
-`language`, passed through to `_check_claim`. Existing callers do not
-change. The harness passes:
+- **`check_claim` took no `language`.** The query builder then fell back
+  to English (`query_builder.py`, `(language or "en")`), so the 40
+  Spanish pilot claims would have been searched with the English lexicon.
+- **`check_claim` took no `context`.** For the custom set, the article the
+  claim came from would then have been retrievable as evidence for its
+  own claim. That incident is why `EvidenceRetriever` drops the article's
+  own URL, which it can only do when `context.url` is set.
+
+So `check_claim` gained two keyword-only, optional arguments, `context`
+and `language`, passed through to `_check_claim`. `/verify-claim` passes
+neither and is unchanged; no fake or contract pinned the signature. The
+harness passes:
 
 | Set | `language` | `context` |
 |---|---|---|
@@ -55,80 +61,130 @@ change. The harness passes:
 x-fact gets no context on purpose. The harness hands the pipeline
 nothing from the gold row that the production pipeline would not have,
 and the fact-checker's own page is dealt with as a measured leak (below),
-not by hinting it away.
+not by hinting it away. A test holds each row of this table.
 
 **The model** is a constructor argument, not an `.env` edit per run:
 `FactChecker(repo, verifier=LLMVerifier(client=LLMClient(model=M)))`.
+**The provider is configuration only**: `LLM_BASE_URL`, `LLM_API_KEY`,
+`LLM_TIMEOUT` and `LLM_MAX_CONCURRENCY`, read from the environment or
+`backend/.env` as the API reads them. Ollama (the baseline) and Groq
+differ by those variables alone; no flag names a provider. Every record
+says who served it (`provider`, the host of `LLM_BASE_URL`).
 
 **Thresholds** default to `PipelineThresholds()`; `--thresholds f.json`
-resolves through `PipelineThresholds.resolve`, as a request would. The
-effective set is written into the run's manifest.
+resolves through `PipelineThresholds.resolve(ThresholdOverrides(...))`,
+as a request would, so an unknown field is an error rather than a
+silently ignored typo. The effective set is written into the manifest.
 
 **The internal corpus** comes from a copy, not from the live store.
 `QdrantClient`'s local mode takes an exclusive file lock, held by any
-running backend. The live store also grows with every ingestion, so a run
-against it cannot be repeated. `--corpus snapshot` (the default) copies
-`data/vector_db` into the run directory at start and records its point
-count. `--corpus none` opens an empty store: web only, for the ablation.
+running backend, and the live store grows with every ingestion, so a run
+against it could not be repeated. `--corpus snapshot` (the default)
+copies `data/vector_db` into the run directory once, at the run's first
+start, without the live `.lock` file, and records its point count; a
+resumed run keeps the copy it started with. `--corpus none` opens an
+empty store: web only, for the ablation.
 
 **Concurrency.** Claims go through `bounded_map` at
-`settings.CLAIM_MAX_CONCURRENCY`. The per-service ceilings inside each
-client still hold. Each result is written as soon as it finishes, under
-a lock, so input order is irrelevant to the file: records are keyed by
-id.
+`settings.CLAIM_MAX_CONCURRENCY`; the per-service ceilings inside each
+client still hold. Each result is written as soon as it finishes, under a
+lock, so input order is irrelevant to the file: records are keyed by id.
+
+**Stopping.** The first Ctrl-C starts no new claim and lets those in
+flight finish and be written; the second aborts. `bounded_map` waits for
+every queued item before it returns, so without this a Ctrl-C an hour
+into a run would have stopped nothing.
 
 ## Record format
 
-`results.jsonl` holds one line per claim. No scraped body is stored
-(`Evidence.content` is left out), the same rule
-`progress.source_summary` follows for events.
+`results.jsonl` holds one line per claim (`record.py`, `RECORD_FIELDS`
+in write order). No scraped body is stored (`Evidence.content` is left
+out), the same rule `progress.source_summary` follows for events. An
+error record has every key too, empty, so a report never asks whether a
+key exists.
 
 | Field | Content |
 |---|---|
-| `id` | The custom set's `id`. For x-fact, which has none: `xf-` plus the first 12 hex digits of sha1(`language`, `site`, `claim`). That is unique for all 64 pilot rows; the loader refuses a duplicate. |
-| `dataset`, `language`, `site`, `claim`, `claimDate`, `label`, `labelRaw`, `referenceEvidenceLinks` | Copied from the row, so a report needs nothing else. `claimDate` is `null` for x-fact's `"none"`. |
+| `id` | The custom set's `id`. For x-fact, which has none: `xf-` plus the first 12 hex digits of sha1(`language`, `site`, `claim`). Unique for all 64 pilot rows; the loader refuses a duplicate. |
+| `dataset`, `language`, `site`, `claim`, `claimDate`, `label`, `labelRaw`, `referenceEvidenceLinks` | Copied from the row, so a report needs nothing else. `claimDate` is `null` for x-fact's `"none"`. `dataset` is `custom` or `xfact`, decided by whether the row has an `id`. |
+| `articleUrl`, `topic`, `topicGroup`, `claimType`, `sourceTier` | Custom set only (`null` for x-fact): what the breakdowns need. `topicGroup` is the labeller's five groups; a test holds the backend's copy equal to the labeller's and every topic in `topics.py` to exactly one group. |
 | `status`, `error` | `ok` or `error`; on error, the exception type and message. |
-| `verdict`, `rawVerdict`, `confidence`, `rawConfidence` | From the `FactCheck`. `raw*` is the LLM's answer before `ConfidenceScorer`. |
+| `verdict`, `rawVerdict`, `confidence`, `rawConfidence`, `explanation` | From the `FactCheck`. `raw*` is the LLM's answer before `ConfidenceScorer`. |
+| `invalidOutput` | The model answered but returned nothing usable after the JSON retry (`LLMVerifier`'s `INVALID_OUTPUT_EXPLANATION`). A format failure is a model-quality result, counted per model. |
 | `reachedStage`, `stageNote`, `searchUnavailable`, `llmUnreachable` | From the `FactCheck`. |
 | `queries` | `[{text, kind}]`, from the `searching_web` event (anchor / proposition / refutation). |
-| `candidates` | Every source seen: `evidence` plus `rejected_sources`, each as `{url, domain, title, origin, stoppedAt, reason, score}`. `stoppedAt` is `ranked` or the stage that dropped it (`evidence_retrieval`: funnel, same domain, own article; `evidence_ranking`: pertinence gate, cap; `llm_verification`: not cited). |
-| `evidence` | The ranked list in index order: `{url, domain, title, publishedAt, relevance, semantic, lexical, recency, reliability, reliabilityKnown, pertinence, stance, cited, quote, engines, foundBy}`. |
+| `candidates` | Every source seen, **once**: `{url, domain, title, origin, stoppedAt, reason, score}`. `stoppedAt` is `ranked`, or the stage that cut it (`evidence_retrieval`: funnel, same domain, own article; `evidence_ranking`: pertinence gate, cap). Rejected sources carry no domain; it is computed with `registrable_domain`, as `Evidence.domain` is. |
+| `evidence` | The ranked list in index order: `{url, domain, title, origin, publishedAt, relevance, semantic, lexical, recency, reliability, reliabilityKnown, pertinence, stance, cited, quote, engines, foundBy}`. |
 | `citedIndices`, `evidenceCount`, `independentDomains` | From the `FactCheck`. |
-| `events` | The `on_phase` trace: `[{phase, t, data}]`, `t` in seconds since the claim started. |
-| `latency` | `total` and per stage, from the events: retrieval (`retrieving_evidence` → `evidence_retrieved`), ranking (→ `evidence_ranked`), LLM (`verifying_claim` → `claim_checked`). |
-| `model`, `thresholdsHash`, `harnessVersion`, `gitCommit`, `startedAt`, `finishedAt` | Provenance. |
+| `events` | The `on_phase` trace: `[{phase, t, data}]`, `t` in seconds since the claim started, starting at `extracting_entities`. |
+| `latency` | `total`, `entities` (building the claim) and per stage, from the events: `retrieval` (`retrieving_evidence` → `evidence_retrieved`), `ranking` (→ `evidence_ranked`), `llm` (`verifying_claim` → `claim_checked`; `null` when the model was not asked). |
+| `usage` | The LLM calls this claim made (`usage.py`): `calls`, `failedCalls`, `promptTokens`, `completionTokens`, `usageMissing`, `latency` and `perCall`. See §Cost, latency and tokens. |
+| `model`, `provider`, `thresholdsHash`, `harnessVersion`, `gitCommit`, `startedAt`, `finishedAt` | Provenance. `gitCommit` ends in `-dirty` when the tree had uncommitted changes, and is `unknown` in the container, which has no `.git`. |
+
+Changed from the design:
+
+- **`stoppedAt: llm_verification` was dropped.** The design listed "not
+  cited" as a stage a candidate stops at. A ranked source the model did
+  not cite is still ranked: `FactCheck.rejected_sources` lists it as well,
+  and taking both would have counted it twice. It is `ranked` in
+  `candidates`, with `cited: false` in `evidence`.
+- **Added**: the custom-set fields, `explanation`, `invalidOutput`,
+  `usage`, `provider` and `latency.entities`.
 
 ## Run layout, cache and resume
 
 ```
 backend/data/evaluation/runs/<dataset-stem>/<model-slug>/<key>/
     run.json        manifest
-    results.jsonl   one line per claim
+    results.jsonl   one line per claim, appended
     vector_db/      the corpus snapshot
 ```
 
-- **`key`** is the first 12 hex digits of sha256(dataset file sha256,
-  model, effective thresholds, corpus mode, `HARNESS_VERSION`). The git
+- **`key`** is the first 12 hex digits of sha256(dataset sha256, model,
+  effective thresholds, corpus mode, `HARNESS_VERSION`). The same command
+  therefore resumes; changing any of the five starts a new run. The git
   commit is recorded on every record, not keyed: keying it would throw a
   run away on every commit. A change that alters results bumps
-  `HARNESS_VERSION`, the same discipline as `AnalysisCache.SCHEMA_VERSION`.
-- **The manifest** holds the dataset path and sha256, the model, the
-  full thresholds, corpus mode and point count, the git commit at start,
-  `HARNESS_VERSION`, `SEARXNG_URL`, `LLM_BASE_URL`, `LLM_TIMEOUT`, the
-  concurrency settings and the start time.
-- **Resume.** On start, the runner reads `results.jsonl`. Ids with
-  `status: ok` are done and are not re-run. Errors are retried. A torn
-  last line, from a crash mid-write, is ignored and its claim re-run.
-  `--retry-unavailable` also re-runs `searchUnavailable` and
-  `llmUnreachable` claims: those are infrastructure outcomes, and the
-  search fix exists to change them. `--fresh` starts a new file. Each
-  write is one line, then flush, then `os.fsync`.
+  `HARNESS_VERSION` (now 1), the discipline of
+  `AnalysisCache.SCHEMA_VERSION`. The dataset sha256 of a directory
+  (the custom set before `join`) covers every file's name and bytes, so
+  editing a label starts a new run rather than mixing two gold sets.
+- **The manifest** holds the key, the dataset (path, stem, sha256, rows,
+  kinds), the model and provider, the full thresholds and those that
+  differ from the defaults, corpus mode and point count, the git commit
+  at start, `HARNESS_VERSION`, the verifier prompt's sha256, `LLM_BASE_URL`
+  (credentials stripped), `LLM_TIMEOUT`, `SEARXNG_URL`, `INFERENCE_URL`,
+  the DuckDuckGo fallback switch, the concurrency settings and the start
+  time. Each start appends a **session** (`startedAt`, `finishedAt`,
+  commit, provider, flags, pending, ran, ok, errors, `stopped`,
+  `tornLinesDropped`, `unattributedLlmCalls`), so a resumed run keeps the
+  first session's provenance and says how it was resumed.
+- **Resume.** On start, the runner reads `results.jsonl`; the last record
+  per id wins. Ids with `status: ok` are done and are not re-run. Errors
+  are retried. A torn last line, from a crash mid-write, is cut from the
+  file and its claim re-run (the next append would otherwise glue a new
+  record onto the fragment). A damaged line that is not the last is not
+  a torn write, and the run refuses to guess. `--retry-unavailable` also
+  re-runs `searchUnavailable` and `llmUnreachable` claims: those are
+  infrastructure outcomes, and the search fix exists to change them.
+  `--fresh` moves the old file aside (`results.replaced-<time>.jsonl`)
+  rather than deleting hours of model time. Each write is one line, then
+  flush, then `os.fsync`, LF on every OS.
+- **`--limit N`** is the first N rows of the dataset, not N more claims,
+  so the same flag always means the same rows.
 - **What is committed.** `runs/` is gitignored: it is raw, it holds
   third-party titles and quotes, and the corpus snapshot is large. The
   report (`metrics.json`, `report.md` and a copy of `run.json`) goes to
   `backend/data/evaluation/reports/<dataset-stem>/<model-slug>/<key>/`
   and is committed. Those are the numbers the paper quotes, next to the
   manifest that produced them.
+
+Proven by `backend/tests/evaluation/test_harness_runner.py`: a run
+stopped after claim k resumes without calling the checker for claims
+1..k; a torn last line is re-run and cut; Spanish rows reach
+`check_claim` with `language='es'`; custom rows pass `articleUrl` as
+`context.url` and x-fact rows no context; every field above is filled
+by the real retriever, ranker, verifier and scorer over the shared fakes.
 
 ## What is reported apart
 
