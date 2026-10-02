@@ -130,12 +130,12 @@ English rather than raising. See `docs/decisions/incidents.md`.
 
 | Endpoint | Notes |
 |---|---|
-| `POST /analyze` | Synchronous, N URLs. Catches per URL, not per batch. |
-| `POST /analyze/jobs` + `GET /analyze/jobs/{id}` | What the frontend uses. `job_store.py` is in-memory, single-process. `job_runner.py` bridges `on_phase` into it and logs per-phase timing at INFO. Every event is also appended to the job journal (`docs/decisions/storage.md`), and `GET /{id}` falls back to it after a restart. |
+| `POST /analyze` | Synchronous, N URLs. Catches per URL, not per batch. Behind `STORAGE_API_KEY` when set, like every endpoint that runs the pipeline (see Security). |
+| `POST /analyze/jobs` + `GET /analyze/jobs/{id}` | What the frontend uses. Starting a job (and `/analyze/jobs/batch`) takes the key; polling one by id does not - its uuid4 is the capability. `job_store.py` is in-memory, single-process. `job_runner.py` bridges `on_phase` into it and logs per-phase timing at INFO. Every event is also appended to the job journal (`docs/decisions/storage.md`), and `GET /{id}` falls back to it after a restart. |
 | `GET /analyze/jobs` | What is running and what ran recently, for the Live screen: active jobs with every event, finished ones as a summary (`events: []`, `result: null`, `eventCount`). In-memory jobs only. Behind `STORAGE_API_KEY` when set — it enumerates every job id, which used to be an unguessable capability. |
-| `POST /verify-claim` | One claim, no article. Runs `FactChecker.check_claim()` — the pipeline's own stage made public so the two cannot drift. Skips admission and claim selection: those judge an *article*. Still answers synchronously, but is registered as a `kind: "claim"` job so the Live screen shows it and the journal keeps it. |
-| `POST /enrich` | NLP stage alone over supplied text, or over a `url` fetched with the analyzer's own extractor. `extraction` reports the title, author, date and body it started from and where each came from (`supplied` / `extracted` / `missing`). **Side-effect free** — nothing written to the lake. |
-| `POST /correct` | `readability` and `coverageVerification` are deterministic; the other 5 come from one LLM call. |
+| `POST /verify-claim` | One claim, no article. Runs `FactChecker.check_claim()` — the pipeline's own stage made public so the two cannot drift. Skips admission and claim selection: those judge an *article*. Still answers synchronously, but is registered as a `kind: "claim"` job so the Live screen shows it and the journal keeps it. Behind `STORAGE_API_KEY` when set. |
+| `POST /enrich` | NLP stage alone over supplied text, or over a `url` fetched with the analyzer's own extractor. `extraction` reports the title, author, date and body it started from and where each came from (`supplied` / `extracted` / `missing`). **Side-effect free** — nothing written to the lake. Behind `STORAGE_API_KEY` when set. |
+| `POST /correct` | `readability` and `coverageVerification` are deterministic; the other 5 come from one LLM call. Behind `STORAGE_API_KEY` when set. |
 | `POST /ingest` + `GET /ingest/sources` | Discovery over the configured sources, queuing each new article (not already in the lake, at most `perSource`) as an analysis job with purpose `ingestion`. Manual only; behind `STORAGE_API_KEY`. `services/ingestion_service.py`, `docs/decisions/scraping.md`. |
 | `GET /scraper/stats` | Every extraction attempt this process (and, via `lake/stats/scraper_requests.json`, previous ones) made, per domain, by outcome and purpose. Recorded in `ExtractorService` into the shared `request_stats`; strategies report *why* through `attempt()`. Behind `STORAGE_API_KEY` when set. |
 | `GET /scraper/articles` | Articles stored in the lake, per domain: raw records, unique URLs, how many arrived with a title / author / date, and how many went on to processed / exploitation / publishable. Read from the lake on every call (`services/scraper/article_stats.py`) - no second counter. Behind `STORAGE_API_KEY` when set. |
@@ -169,9 +169,17 @@ loopback / link-local / reserved addresses denied, infrastructure ports
 blocked, redirects followed manually so each hop is re-checked. Disable
 only for offline tests (`URL_GUARD_ENABLED=false`).
 
-`STORAGE_API_KEY` gates `/storage/*`, which returns whole article bodies.
-Unset leaves them open — fine on localhost, and `src/main.py` warns at
-startup so it is never a silent choice.
+`STORAGE_API_KEY`, sent as `X-API-Key`, is the API key. Named for
+`/storage/*`, the first thing it guarded; since 2026-10-02 it is required
+by **every endpoint except `/healthz`, `/metrics` and polling a job by
+id** - analyses, `/enrich` and `/verify-claim` (minutes of CPU, a
+headless browser, other people's servers) included. A new route is
+closed unless `tests/api/test_api_key.py::OPEN_ENDPOINTS` says, with a
+reason, that it may be open. The frontend's server routes send it on every
+call, so the browser never holds it. Unset leaves everything open — fine
+on localhost, `src/main.py` warns at startup so it is never a silent
+choice, and `docker-compose.prod.yml` refuses to start without it.
+`docs/decisions/deployment.md`, "The front door".
 
 ## Layout
 
