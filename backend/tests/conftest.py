@@ -52,6 +52,15 @@ def require_inference():
     end to end, or the EMBEDDING_DIMENSION agreement check.
     """
 
+    skip_unless_inference()
+
+
+def skip_unless_inference():
+    """
+    `require_inference`'s check, callable from a fixture of wider scope:
+    a module-scoped fixture cannot request a function-scoped one.
+    """
+
     import httpx
 
     try:
@@ -103,6 +112,17 @@ def pinned_settings(monkeypatch):
     the suite actually loads (and then disagree with EMBEDDING_DIMENSION),
     and pinning the paths would create a second set of data directories
     beside the ones Settings already made on import.
+    """
+
+    pin_settings(monkeypatch)
+
+
+def pin_settings(monkeypatch):
+    """
+    `pinned_settings`' body, callable from a fixture of wider scope with
+    its own `pytest.MonkeyPatch.context()`. A module-scoped fixture is set
+    up *before* the autouse function-scoped pin, so without this it would
+    run under whatever `.env` holds.
     """
 
     from pydantic_core import PydanticUndefined

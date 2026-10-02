@@ -5,9 +5,12 @@ Shared fakes for fact-checker tests. Not a test module itself (no
 
 import hashlib
 
+import requests
+
 from src.services.fact_checker.ranking.ranking_retrieval import RankingResult
 from src.services.fact_checker.retrieval.evidence_retriever import RetrievalResult
 from src.services.fact_checker.retrieval.query_builder import PlannedQuery, QueryKind
+from src.services.scraper.fetcher import FetchedPage
 from src.services.search import SearchUnavailableError
 
 
@@ -48,11 +51,28 @@ class FakeEmbeddingService:
 
 
 class FakeSearxngClient:
+    """
+    `results` answers every query - unless `results_by_term` is given,
+    in which case a query containing one of its terms (case-insensitive,
+    first match wins) gets that term's results instead, and `results`
+    only answers the rest.
 
-    def __init__(self, results: list[dict] | None = None, unavailable: bool = False):
+    The routing exists for end-to-end runs, where the claims come out of
+    real extraction and their queries are not known in advance: a figure
+    the anchor query quotes verbatim ("87%") is enough to give one claim
+    evidence and leave the others with none, in the same run.
+    """
+
+    def __init__(
+        self,
+        results: list[dict] | None = None,
+        unavailable: bool = False,
+        results_by_term: dict[str, list[dict]] | None = None,
+    ):
         self.results = results or []
         # Every query fails, the way they did during the 2026-09-25 outage.
         self.unavailable = unavailable
+        self.results_by_term = results_by_term or {}
         self.queries: list[str] = []
         self.languages: list[str | None] = []
 
@@ -66,8 +86,43 @@ class FakeSearxngClient:
         self.languages.append(language)
         if self.unavailable:
             raise SearchUnavailableError("no results; engines down: brave (too many requests)")
-        limit = max_results or len(self.results)
-        return self.results[:limit]
+        results = next(
+            (
+                hits
+                for term, hits in self.results_by_term.items()
+                if term.lower() in query.lower()
+            ),
+            self.results,
+        )
+        limit = max_results or len(results)
+        return results[:limit]
+
+
+class FakeFetcher:
+    """
+    The network underneath the extraction cascade: `pages` maps a URL to
+    the HTML its server would return. Stands in for `Fetcher`, so the
+    real strategies (trafilatura, BeautifulSoup) parse real HTML and only
+    the request itself is fake.
+
+    Any URL not in `pages` answers 404, the way a missing page does - so
+    a test that forgot a page sees an ordinary extraction failure, and
+    can never fall through to a real request. `requested` records every
+    URL asked for, in order.
+    """
+
+    def __init__(self, pages: dict[str, str] | None = None):
+        self.pages = pages or {}
+        self.requested: list[str] = []
+
+    def get(self, url: str) -> FetchedPage:
+        self.requested.append(url)
+        if url not in self.pages:
+            response = requests.Response()
+            response.status_code = 404
+            response.url = url
+            raise requests.HTTPError(f"404 Client Error: Not Found for url: {url}", response=response)
+        return FetchedPage(url=url, status=200, html=self.pages[url])
 
 
 class FakeExtractorService:

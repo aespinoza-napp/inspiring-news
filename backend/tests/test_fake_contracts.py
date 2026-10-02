@@ -32,6 +32,7 @@ from src.services.fact_checker.verification.confidence_scorer import ConfidenceS
 from src.services.fact_checker.verification.llm_verification import LLMVerifier
 from src.services.llms import LLMClient
 from src.services.scraper.extractor import ExtractorService
+from src.services.scraper.fetcher import Fetcher
 from src.services.search import SearxngClient
 from src.repositories.source_repository import SourceRepository
 
@@ -50,6 +51,7 @@ CONTRACTS = [
     (fakes.FakeConfidenceScorer, ConfidenceScorer, "score"),
     (fakes.FakeExtractorService, ExtractorService, "extract"),
     (fakes.FakeSearxngClient, SearxngClient, "search"),
+    (fakes.FakeFetcher, Fetcher, "get"),
     (fakes.FakeLLMClient, LLMClient, "complete_json"),
     (fakes.FakeSourceRepository, SourceRepository, "list"),
     (fakes.FakeSourceRepository, SourceRepository, "get"),
