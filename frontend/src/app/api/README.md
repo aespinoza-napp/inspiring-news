@@ -15,6 +15,7 @@ backend (`backend/src/api/routes.py`), not here.
 | `correct/route.ts` | `POST /correct` | `/corrector` page |
 | `verify-claim/route.ts` | `POST /verify-claim` | `/claim` page |
 | `enrich/route.ts` | `POST /enrich` | `/enrich` page |
+| `reader/articles/route.ts`, `reader/articles/[id]/route.ts` | `GET /reader/articles`, `GET /reader/articles/{id}` | `/reader` and `/reader/[id]`. `cache: "no-store"` (a re-check can publish or withdraw an article). The backend leaves these open on purpose; `STORAGE_API_KEY` is still sent when set, so the page survives a deployment that gates every route. A non-JSON answer becomes a 502 rather than a crash |
 | `graph/[...path]/route.ts` | `GET /graph/{schema,presets,articles,related}`, `POST /graph/{query,sync}` | `/graph` page. An allowlist, not a blind catch-all. GETs are `cache: "no-store"`; forwards `STORAGE_API_KEY` as `X-API-Key` |
 
 All of them use `127.0.0.1`, never `localhost`, for `BACKEND_URL`'s default — see the comment in
