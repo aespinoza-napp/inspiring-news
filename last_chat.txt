@@ -1,0 +1,20 @@
+I've written the spec and nine ready-to-paste `/goal` prompts. I couldn't update the documentation page you linked, so nothing changed there. As you asked, nothing was run: no tests, no `check.sh`, no commits.
+
+**The page you linked:** neither tool can open it. Claude Docs denies access, the artifact reader says "not found", and it isn't in your artifact list. It may belong to another account or not be shared with this one. If you share it or send the right link, I'll put the summary there.
+
+**What I wrote:**
+- [docs/decisions/evaluation.md](docs/decisions/evaluation.md) is the spec all the goals build on. It covers the research questions, how a claim is run, the per-claim record, the run folder and how a crashed run resumes, what is kept out of the error rate, the metrics, the retrieval check, stage attribution and the journalist-effort numbers.
+- [docs/goals.md](docs/goals.md) has the prompts in dependency order. G1 (research questions) and G2 (harness) come first, then G3–G6 side by side, then G7 (pilot), which is the only one that runs the live stack. T1 (CI) and T2 (integration test) can go at any time.
+- I also updated [roadmap.md](docs/roadmap.md), added two rows to [CLAUDE.md](CLAUDE.md)'s navigation table, and added a pointer in the [evaluation README](backend/data/evaluation/README.md).
+
+**Problems found while reading the code and data:**
+- **No `language` argument:** `check_claim` doesn't take one, so the 40 Spanish pilot claims would be searched with the English word lists.
+- **No `context` argument:** a custom-set claim could be "verified" by the article it came from. G2 fixes both before producing any number.
+- **The pilot can find its own answers:** all 40 chequeado.com rows link chequeado's own verdict page and have no claim date. A search of today's web will find those verdicts. The harness reports these claims separately rather than hiding them.
+- **The custom set is lopsided:** 27 of its 37 facts are `TRUE` and none is `FALSE`.
+
+**Defaults I picked, which you may want to change:**
+- **Linter:** CI runs none (no ruff, black or mypy) unless you say otherwise.
+- **Git:** each goal works on an `eval/<goal>` branch, commits there and doesn't push.
+- **Results:** raw run files are gitignored. The reports the paper quotes are committed.
+- **Fact-checker sites:** whether to block their domains from search is left until the pilot shows how often it happens.

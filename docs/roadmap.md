@@ -4,7 +4,7 @@ The plan, and what is true of it **today**. Every checkbox below was checked
 against the code, not against the plan. `[x]` means done *and* working as
 described; anything less is `[ ]` with a note saying exactly how far it got.
 
-- **As of:** 2026-09-30 — week 1 of Sprint 4 (development) and of the validation set (evaluation), run side by side.
+- **As of:** 2026-10-01 — week 1 of Sprint 4 (development) and of the validation set (evaluation), run side by side.
 - **Hours** are the planned budget. There is no time log in the repo, so
   nothing here claims hours actually spent.
 - **Rebalanced on Sep 28**, still 900h: the custom validation set turned
@@ -335,6 +335,25 @@ has fixed the search and the first labelling pass is done, and is proven
 on the x-fact pilot before the custom set is settled, so the benchmarks
 start on Nov 10 with a working tool.
 
+**Oct 1: designed, not built.** `docs/decisions/evaluation.md` fixes
+what the items below share: the record format, the run layout and its
+resume rules, what is reported apart from the error rate, and the stage
+attribution table. Each item has a ready `/goal` in `docs/goals.md`
+(G1–G7). Found while designing it, from the code and the data:
+
+- `check_claim` takes no `language`, so Spanish claims would be searched
+  with the English lexicon. It takes no `context` either, so a custom-set
+  claim could be "verified" by its own article. G2 fixes both before the
+  harness produces a single number.
+- All 40 chequeado.com rows of the pilot list chequeado's own verdict
+  page among their reference links, and none of them has a `claimDate`.
+  Searching today's web will find the verdicts themselves. The harness
+  flags this as `verdictLeak` instead of hiding it. Rule 3 cannot be
+  checked for those 40 rows.
+- The custom set so far (37 facts) is 27 `TRUE`, 0 `FALSE`: macro-F1 is
+  averaged over the classes the gold labels contain, and the empty ones
+  are shown, not averaged.
+
 - [ ] ❓ Fix 2–3 research questions, each with the metric that answers it · 3h (by Oct 13) — suggested: **RQ1** how well an open-web, low-cost pipeline verifies claims from constructive news in Spanish and English, against a temporally sound gold set; **RQ2** where it fails - retrieval, ranking or reasoning; **RQ3** how much of the verification work it takes off a journalist. Whatever answers none of them is cut or moved to future work.
 - [ ] 🧰 Harness: run the pipeline's own `check_claim` over a JSONL set (x-fact and the custom set share a format) · 12h — per claim: verdict, raw verdict, confidence, stage reached, the queries sent, every candidate and ranked source, latency; per model, cached and resumable, so a crash at claim 90 does not re-pay claims 1–89
 - [ ] 📐 Metrics · 6h — accuracy, macro-F1 and per-class precision/recall, the confusion matrix, bootstrap confidence intervals; search-unavailable runs and evidence newer than the claim (the guide's Rule 3) reported apart rather than folded into the error rate
@@ -432,8 +451,8 @@ the definition of done throughout.
 - [x] 🗄️ Neo4j read/write tests — `tests/services/graph/` (no database) and `tests/database/test_neo4j_live.py` (real Neo4j, `./scripts/check.sh graph`)
 - [x] 🗓️ Labelling batch and queue tests — 13 backend (`test_labelling_batch.py`, routes), 7 labeller (`QueueTest`), splitter regressions
 - [x] 🔬 A full pass with `inference/` reachable — Sep 29: 819 passed, 0 skipped (the model tests had not run since Sep 25)
-- [ ] 🚦 CI pipeline (moved from Phase 3) — none exists (no `.github/`). `./scripts/check.sh` is already the one command a job would run; the model tests need `inference/`, so CI runs the rest and the model tests stay a weekly local pass. Decide on ruff/black/mypy first, or explicitly not.
-- [ ] 🟡 🔗 Integration test: full pipeline run — `tests/test_real_pipeline_integration.py` covers scrape → enrich → select, not retrieval or the LLM; it ran on Sep 29 with `inference/` up
+- [ ] 🚦 CI pipeline (moved from Phase 3) — none exists (no `.github/`). `./scripts/check.sh` is already the one command a job would run; the model tests need `inference/`, so CI runs the rest and the model tests stay a weekly local pass. Decide on ruff/black/mypy first, or explicitly not. Oct 1: `/goal` prepared (T1 in `docs/goals.md`): backend, frontend and labeller jobs on every push, calling `check.sh` targets; the linter decision defaults to none unless changed.
+- [ ] 🟡 🔗 Integration test: full pipeline run — `tests/test_real_pipeline_integration.py` covers enrich → admit → select, starting from a hand-built `News` (so extraction is not covered either), not retrieval or the LLM; it ran on Sep 29 with `inference/` up. Oct 1: `/goal` prepared (T2 in `docs/goals.md`): the real `AnalysisService.analyze` from a saved HTML page, with only the network clients faked.
 
 ### November (Nov 1–30) · 12h
 

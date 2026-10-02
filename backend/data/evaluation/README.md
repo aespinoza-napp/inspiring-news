@@ -74,7 +74,9 @@ documented in `scripts/prepare_xfact_eval.py`:
 This is data, not a harness. Nothing here runs a claim through
 `LLMVerifier` and scores the result yet - that's the next piece of
 Phase 4 groundwork, and it's what turns this file from "a dataset exists"
-into "verification accuracy is measured." `referenceEvidenceLinks` on
+into "verification accuracy is measured." Its design (record format, run
+layout, metrics, what is reported apart) is in
+`docs/decisions/evaluation.md`, designed on 2026-10-01 and not built yet. `referenceEvidenceLinks` on
 each row are X-Fact's own sources, kept for manual spot-checking a
 disagreement - they are deliberately not fed to the pipeline as evidence,
 because this project does open-domain retrieval (SearXNG, at
