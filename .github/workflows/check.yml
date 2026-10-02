@@ -1,0 +1,104 @@
+# The verification command, on every push and pull request.
+#
+# Each job calls one existing target of scripts/check.sh rather than
+# re-composing what it runs: the script is the definition of "done", and
+# a CI file that spelled out its own pytest flags or its own tsc call
+# would drift from it the first time either changed. Locally and here,
+# one command means the same thing. backend/tests/test_ci_workflow.py
+# fails if a target called below stops existing in check.sh.
+#
+# Deliberately NOT in CI, each for a reason a runner cannot fix cheaply:
+#
+#   inference  - loads GLiNER, the sentiment model and bge-m3 (~2GB of
+#                wheels plus the weights). The backend's model tests skip
+#                here too, through conftest.py's require_inference,
+#                because nothing listens on INFERENCE_URL. Both stay a
+#                local pass with inference/ up.
+#   slow       - the whole data/raw corpus through the real models.
+#   graph      - needs a running Neo4j, and fails (not skips) without one.
+#   gcp        - needs Docker and two images (Floci, Terraform).
+#
+# No linter or formatter runs: none is configured (no ruff, black or
+# mypy), and that is a decision for now, not an omission - adding one is
+# a separate change with its own clean-up pass.
+
+name: check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  backend:
+    name: backend (./scripts/check.sh backend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # backend/.env is not in git, and Settings refuses to start without
+      # NEO4J_PASSWORD (it has no default, on purpose). Nothing in the
+      # default run reaches Neo4j - the live graph tests carry the
+      # `neo4j` marker, excluded by pyproject's addopts - so a dummy is
+      # enough to construct Settings.
+      NEO4J_PASSWORD: ci-dummy-not-a-secret
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      # --locked: fail if uv.lock no longer matches pyproject.toml,
+      # rather than quietly resolving something nobody committed.
+      - name: uv sync
+        working-directory: backend
+        run: uv sync --locked
+
+      - name: ./scripts/check.sh backend
+        run: ./scripts/check.sh backend
+
+  frontend:
+    name: frontend (./scripts/check.sh frontend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: npm ci
+        working-directory: frontend
+        run: npm ci
+
+      - name: ./scripts/check.sh frontend
+        run: ./scripts/check.sh frontend
+
+  labeller:
+    name: labeller (./scripts/check.sh labeller)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # Plain Python, no uv and no install step: the labeller is standard
+      # library only by design, and its tests must prove that on a bare
+      # interpreter.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: ./scripts/check.sh labeller
+        run: ./scripts/check.sh labeller
