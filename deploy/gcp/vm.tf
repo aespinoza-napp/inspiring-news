@@ -67,14 +67,18 @@ resource "google_compute_instance" "vm" {
   metadata = {
     # In metadata, not metadata_startup_script: a change here then
     # updates the instance in place rather than recreating it.
-    startup-script = templatefile("${path.module}/startup.sh.tftpl", {
+    #
+    # CRs stripped: applied from a Windows checkout made before
+    # .gitattributes pinned *.tftpl to LF, the template is CRLF, and the
+    # VM's bash reads "pipefail\r" as an unknown option on line one.
+    startup-script = replace(templatefile("${path.module}/startup.sh.tftpl", {
       repo_url      = var.repo_url
       repo_ref      = var.repo_ref
       project_id    = var.project_id
       secret_prefix = var.name
       llm_model     = var.llm_model
       site_address  = local.site_address
-    })
+    }), "\r", "")
     enable-oslogin = "TRUE"
   }
 

@@ -13,6 +13,23 @@ npx tsc --noEmit # or ./scripts/check.sh frontend from the repo root
 `npm run lint` is not configured (it drops into the ESLint setup prompt).
 The typecheck is the gate.
 
+## In production
+
+A container from `docker/frontend.Dockerfile` (`docker-compose.prod.yml`),
+which ships the **standalone output** - keep `output: "standalone"` in
+`next.config.js`, or the image's `COPY .next/standalone` fails. It reads
+`BACKEND_URL` and `STORAGE_API_KEY` at request time; nothing is baked in
+at build, which works only because every route that calls the backend is
+dynamic (`next build` lists them as ƒ). A new GET route with no request
+argument and no `cache: "no-store"` would be prerendered at build time,
+against a backend that is not there.
+
+On Google Cloud the whole site sits behind Caddy's password (user
+`editor`) and HTTPS, because these routes attach the API key to
+everything they forward: an open frontend is the backend with the key in
+it (`docs/decisions/deployment.md`, "The front door"). A page meant for
+the public needs an exemption there, decided on purpose.
+
 ## Shape
 
 Eight pages. Every one talks to the backend **only** through the

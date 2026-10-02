@@ -6,5 +6,8 @@ project_id = "your-project-id"
 # zone         = "europe-southwest1-a"
 # machine_type = "e2-standard-4"       # 16 GB is the floor
 # repo_ref     = "main"
+# A bare hostname. Create its A record (terraform output external_ip)
+# before the VM's first boot finishes, so Caddy gets its certificate.
+# Without one, only /healthz is public: use terraform output ui_tunnel.
 # domain       = "factcheck.example.org"
 # alert_email  = "you@example.org"

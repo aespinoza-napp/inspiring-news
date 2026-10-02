@@ -5,10 +5,12 @@
 #     --env-file ../backend/.env up -d --build
 #
 # deploy/gcp/vm/bootstrap.sh runs exactly that on the VM. All this adds
-# is the reverse proxy: everything else a server needs is already in
-# docker-compose.prod.yml, so the same stack runs on any VM, and Google
-# Cloud only differs in what is around it (deploy/gcp/,
-# docs/decisions/deployment.md).
+# is the reverse proxy, the one door from the internet: /healthz to the
+# API, and with a domain the site, over HTTPS, behind a password
+# (caddy/Caddyfile). Everything else a server needs - the frontend
+# included - is already in docker-compose.prod.yml, so the same stack
+# runs on any VM, and Google Cloud only differs in what is around it
+# (deploy/gcp/, docs/decisions/deployment.md).
 #
 # Logs stay on Docker's json-file driver (rotated by the prod file). The
 # Ops Agent on the VM reads those files, parses the backend's JSON lines
@@ -27,9 +29,21 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     environment:
+      # The domain, or ":80" without one (then only /healthz answers).
       - SITE_ADDRESS=${SITE_ADDRESS:-:80}
+      # The site password's bcrypt hash, never the password: Terraform
+      # generates both, Secret Manager holds the hash, bootstrap.sh
+      # renders it into backend/.env single-quoted (it is full of `$`).
+      # Required even without a domain: with an empty hash Caddy refuses
+      # the whole Caddyfile ("username and password cannot be empty"),
+      # and /healthz goes down with it.
+      - SITE_PASSWORD_HASH=${SITE_PASSWORD_HASH:?set SITE_PASSWORD_HASH in backend/.env - deploy/gcp/vm/bootstrap.sh renders it}
+    # Start order only, and not on the backend: that one waits for the
+    # models (10-15 minutes on a first boot), and Caddy would wait with
+    # it. Caddy resolves both upstreams per request and answers 502 while
+    # one is down; started early, it has its certificate by then.
     depends_on:
-      - backend
+      - frontend
     restart: unless-stopped
     logging:
       driver: json-file

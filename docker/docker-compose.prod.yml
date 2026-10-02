@@ -4,11 +4,11 @@
 #     --env-file ../backend/.env up -d --build
 #
 # Everything here is what a server needs and a laptop does not: nothing
-# but the API reachable from outside, every secret required rather than
-# defaulted, restarts after a crash or a reboot, bounded logs, and the
-# LLM as a service of its own instead of an Ollama the host happens to
-# run. Sizing and the reasoning behind each limit:
-# docs/decisions/deployment.md.
+# reachable but the API and the UI, both on loopback; every secret
+# required rather than defaulted; restarts after a crash or a reboot;
+# bounded logs; the LLM as a service of its own instead of an Ollama the
+# host happens to run; and the frontend as a container. Sizing and the
+# reasoning behind each limit: docs/decisions/deployment.md.
 
 x-logging: &logging
   # Docker's default json-file driver never rotates: a stack that logs
@@ -127,6 +127,48 @@ services:
     # lake), and the cgroup hit its limit 10,276 times reclaiming it.
     # Both grow with the corpus; 1g gives them room.
     mem_limit: 1g
+
+  frontend:
+    # The UI, on the same machine as the API it calls - not Cloud Run
+    # (docs/decisions/deployment.md, "Where the frontend runs"). Next's
+    # standalone server, built from frontend/ (docker/frontend.Dockerfile).
+    build:
+      context: ../frontend
+      dockerfile: ../docker/frontend.Dockerfile
+    # Loopback, like the API: on a laptop, http://127.0.0.1:3000; on the
+    # VM, an IAP tunnel to it, or Caddy over the compose network
+    # (docker-compose.gcp.yml), which is the only door from outside.
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      # The compose network's name for the API: no hop through the host.
+      - BACKEND_URL=http://backend:8000
+      # Every server route sends it (frontend/src/app/api/README.md); the
+      # backend refuses all but /healthz, /metrics and job polling
+      # without it. The same variable as the backend's, so the two can
+      # never disagree. Read at request time, never baked into the image.
+      - STORAGE_API_KEY=${STORAGE_API_KEY:?set STORAGE_API_KEY in backend/.env - the frontend sends it on every call}
+    # No depends_on: the frontend starts without the API, and each route
+    # answers 502 "could not reach the backend" until it is up - on a
+    # first boot that is the 10-15 minutes the models take to download,
+    # better spent showing the page than a connection refused.
+    restart: unless-stopped
+    logging: *logging
+    # Measured 2026-10-02 against a stub API: 35MiB idle, a peak RSS of
+    # 121MiB over ~480 page and proxy requests in parallel bursts. The
+    # server holds no state and caches nothing it fetches (every route is
+    # no-store), so it should not grow with the corpus.
+    mem_limit: 256m
+    healthcheck:
+      # The home page: prerendered at build time, so this asks whether
+      # the Node server answers without touching the API - a backend
+      # still loading its models must not make the frontend unhealthy.
+      # Node's own fetch: the image has no curl.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 volumes:
   ollama-models:

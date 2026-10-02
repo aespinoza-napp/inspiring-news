@@ -59,9 +59,19 @@ variable "llm_model" {
 }
 
 variable "domain" {
-  description = "Optional. With a domain pointed at the static IP, Caddy serves HTTPS and the uptime check uses it."
+  # Without one, Caddy serves /healthz alone over plain HTTP, and the UI
+  # only through `terraform output ui_tunnel`: the site's password must
+  # not cross the internet in cleartext (docker/caddy/Caddyfile).
+  description = "Optional. A name whose A record points at external_ip: Caddy gets its certificate and serves the UI over HTTPS, and the uptime check uses it. Empty: /healthz over HTTP only."
   type        = string
   default     = ""
+
+  # Caddy's site address and the uptime check's host, verbatim: a scheme,
+  # a path or a port would make both wrong without failing here.
+  validation {
+    condition     = var.domain == "" || can(regex("^([a-z0-9]([a-z0-9-]*[a-z0-9])?[.])+[a-z]{2,}$", var.domain))
+    error_message = "domain is a bare hostname such as factcheck.example.org - no https://, path or port - or empty."
+  }
 }
 
 variable "alert_email" {

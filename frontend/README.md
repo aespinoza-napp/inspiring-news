@@ -32,3 +32,7 @@ npx tsc --noEmit                   # the typecheck — the only automated gate
 ```
 
 There is no linter configured and no test runner.
+
+In production it runs as a container (`docker/frontend.Dockerfile`, from the standalone output
+`next.config.js` asks for), behind Caddy and a password: `docs/decisions/deployment.md`, "Where the
+frontend runs" and "The front door".

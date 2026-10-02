@@ -1,0 +1,9 @@
+# Shell scripts run under Linux bash - in containers, and on the Google
+# Cloud VM through Terraform's startup script - which reads a CR as part
+# of the command. With core.autocrlf=true (Git for Windows' default) and
+# no rule here, a Windows checkout had them all as CRLF: on 2026-10-02
+# `./scripts/check.sh gcp` died on "$'\r': command not found", and
+# `terraform apply` from that checkout would have handed the VM a startup
+# script whose first `set -euo pipefail` fails the same way.
+*.sh    text eol=lf
+*.tftpl text eol=lf

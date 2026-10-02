@@ -19,7 +19,7 @@ resource "google_project_service" "apis" {
   disable_on_destroy = false
 }
 
-# The VM's own identity: it can read its three secrets and write logs and
+# The VM's own identity: it can read its four secrets and write logs and
 # metrics, and nothing else. Not the default compute service account,
 # which has Editor on the whole project.
 resource "google_service_account" "vm" {
@@ -64,11 +64,25 @@ resource "random_password" "storage_api_key" {
   special = false
 }
 
+# The site's password (user `editor`), in front of the whole UI: the
+# frontend's server routes attach the API key to everything they
+# forward, so an open frontend would be the backend with the key in it
+# (docker/caddy/Caddyfile). Only its bcrypt hash goes to Secret Manager
+# and the VM - Caddy's basic_auth takes nothing else. The password itself
+# is `terraform output -raw site_password`. The hash is computed once and
+# kept in the state: Terraform's bcrypt() function salts anew on every
+# plan, and the secret would never stop changing.
+resource "random_password" "site" {
+  length  = 24
+  special = false
+}
+
 locals {
   secrets = {
-    "neo4j-password"  = random_password.neo4j.result
-    "searxng-secret"  = random_id.searxng.hex
-    "storage-api-key" = random_password.storage_api_key.result
+    "neo4j-password"     = random_password.neo4j.result
+    "searxng-secret"     = random_id.searxng.hex
+    "storage-api-key"    = random_password.storage_api_key.result
+    "site-password-hash" = random_password.site.bcrypt_hash
   }
 }
 
