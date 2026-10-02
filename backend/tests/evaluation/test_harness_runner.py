@@ -469,3 +469,29 @@ def test_check_claim_answers_are_recorded_as_values_not_enums(repository, tmp_pa
 
     assert '"verdict": "TRUE"' in raw
     assert '"reachedStage": "aggregation"' in raw
+
+
+def test_each_session_records_what_it_cost(repository, tmp_path):
+    """Summed per session in run.json, so each resume says what it paid."""
+
+    dataset = load_dataset(write_jsonl(tmp_path / "set.jsonl", [
+        custom_row("fact001", "Uno de cada tres niños en España vive en riesgo de pobreza."),
+    ]))
+
+    meter = UsageMeter()
+
+    llm = metered(stub_llm({
+        "verdict": "TRUE", "confidence": 0.7, "explanation": "x", "cited_evidence": [0],
+    }, usage=(900, 120)), meter)
+
+    runner = runner_for(dataset, full_checker(repository, llm), tmp_path, meter=meter, thresholds=open_gate())
+
+    session = runner.run()
+
+    assert session["usage"]["llmCalls"] == 1
+    assert session["usage"]["promptTokens"] == 900
+    assert session["usage"]["completionTokens"] == 120
+
+    manifest = json.loads((runner.directory / "run.json").read_text(encoding="utf-8"))
+
+    assert manifest["sessions"][-1]["usage"]["promptTokens"] == 900

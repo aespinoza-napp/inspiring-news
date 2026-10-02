@@ -1,0 +1,24 @@
+{
+  "_comment": "Per-token prices for `cli report --prices` and `cli writing report --prices`, per million tokens. Keys are a model name, or provider/model when one name is served by two hosts (provider = the host of LLM_BASE_URL, as each record states it). Fill in the hosted ones from the provider's pricing page on the day of the run, with asOf: a price remembered rather than read is not a price. null means unknown, and the report then says n/a instead of a cost. docs/decisions/evaluation.md, Cost, latency and tokens.",
+  "llama3.2:3b": {
+    "inputPerMTok": 0,
+    "outputPerMTok": 0,
+    "currency": "USD",
+    "source": "Local Ollama: no per-token charge. Its cost is the wall time and the machine, reported beside it.",
+    "asOf": "2026-10-02"
+  },
+  "llama3.1:8b": {
+    "inputPerMTok": 0,
+    "outputPerMTok": 0,
+    "currency": "USD",
+    "source": "Local Ollama: no per-token charge.",
+    "asOf": "2026-10-02"
+  },
+  "api.groq.com/llama-3.1-8b-instant": {
+    "inputPerMTok": null,
+    "outputPerMTok": null,
+    "currency": "USD",
+    "source": "Fill in from https://groq.com/pricing on the day of the run.",
+    "asOf": null
+  }
+}

@@ -186,6 +186,72 @@ stopped after claim k resumes without calling the checker for claims
 `context.url` and x-fact rows no context; every field above is filled
 by the real retriever, ranker, verifier and scorer over the shared fakes.
 
+## Cost, latency and tokens
+
+**Built on 2026-10-02** (Sprint 6, "log cost/latency/quality trade-offs
+per provider"; Phase 5's prerequisite of "a harness that records latency
+and cost"): `backend/src/evaluation/usage.py`. Not measured yet: no
+provider has been run.
+
+- **Where it hooks in.** `LLMClient.complete_json` returns the parsed
+  JSON and nothing else; the provider's `usage` block (prompt and
+  completion tokens) is on the raw response, which never leaves the
+  method. Rather than fork the client or change what it returns to every
+  caller, the harness wraps the OpenAI SDK object the client already
+  holds (`metered`). Everything the client decides (`max_retries=0`, the
+  timeout, the LLM permit, the JSON retry) stays exactly as production
+  has it: the benchmark measures the client the pipeline uses.
+- **Per claim.** Claims run on their own threads and a claim's one LLM
+  call is made on that thread, so each worker opens a meter block around
+  its claim and every call on the thread lands on that claim's record
+  (`usage`: calls, failed calls, prompt and completion tokens, calls that
+  reported no usage, the provider's answer time, and each call). A call
+  made anywhere else is not lost: it is counted in the session's
+  `unattributedLlmCalls`, which stays 0 unless the pipeline moves its LLM
+  call off the claim's thread. A JSON retry is two calls and is billed as
+  two; a model that fails the format costs more, and the record says so.
+- **Two latencies, on purpose.** `usage.latency` is the provider's own
+  answer time, measured inside the LLM permit; `latency.llm`, from the
+  events, also includes waiting for the permit. The gap is a busy model,
+  not a slow one.
+- **Per run.** `totals` sums any set of records: calls, failed calls,
+  tokens (and per claim, over the claims that reported tokens), the LLM's
+  seconds, call latency (median, p90, max), claim latency (median, p90,
+  total) and completion tokens per second, which is what tells a fast
+  provider from a slow one. Each session in `run.json` carries its own
+  totals; the report carries the run's.
+- **Unknown is not zero.** A server behind an OpenAI-shaped URL may send
+  no `usage`; its tokens are `null` and `usageMissing` counts the calls,
+  rather than a mean of zeros passing for a cheap model.
+- **Cost** is priced at report time from `backend/data/evaluation/prices.json`
+  (`--prices`), keyed by model or by `provider/model` when one name is
+  served by two hosts. The user fills in a hosted price from the
+  provider's page on the day of the run, with `asOf`: per-token prices
+  change, and a remembered one is not a price. A `null` price, or unknown
+  tokens, gives `n/a`, never 0. The local Ollama models are priced at 0
+  explicitly; their cost is the wall time, reported beside it.
+
+**Swapping provider is configuration only.** The same command, two
+environments:
+
+```bash
+# Baseline: local Ollama, CPU limits from docker-compose.prod.yml
+LLM_TIMEOUT=180 LLM_MAX_CONCURRENCY=1 \
+  uv run python -m src.evaluation.cli run --dataset <set> --model llama3.2:3b
+
+# Hosted: Groq's OpenAI-compatible endpoint
+LLM_BASE_URL=https://api.groq.com/openai/v1 LLM_API_KEY=<key> \
+  uv run python -m src.evaluation.cli run --dataset <set> --model <groq model id>
+```
+
+`provider` on each record is the host of `LLM_BASE_URL`
+(`localhost:11434`, `api.groq.com`). A hosted provider's rate limit
+(HTTP 429) reaches `LLMClient` as an API error, so a throttled claim
+comes back `llmUnreachable`, is set apart from the scored ones, and is
+re-run by `--retry-unavailable`. Verdict JSON uses
+`response_format={"type": "json_object"}`, which both Ollama and Groq's
+OpenAI-compatible endpoints accept.
+
 ## What is reported apart
 
 Each claim gets exactly one outcome. Only `scored` claims enter the

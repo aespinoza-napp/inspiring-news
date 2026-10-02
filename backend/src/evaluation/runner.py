@@ -57,7 +57,7 @@ from src.evaluation.record import (
     jsonable,
 )
 from src.evaluation.store import ResultsFile, read_json, write_json
-from src.evaluation.usage import UsageMeter, summarise
+from src.evaluation.usage import UsageMeter, summarise, totals
 from src.services.concurrency import bounded_map
 from src.services.fact_checker.claim_selector import ArticleContext
 
@@ -246,6 +246,11 @@ class HarnessRunner:
 
         self._stop = threading.Event()
 
+        # What this session wrote, for its totals in run.json: usage and
+        # time only, not whole records.
+        self._written: list[dict] = []
+        self._written_lock = threading.Lock()
+
         self._provenance = Provenance(
             model=config.model,
             provider=provider,
@@ -312,6 +317,8 @@ class HarnessRunner:
 
         unattributed_before = len(self.meter.unattributed)
 
+        self._written = []
+
         statuses = bounded_map(
             self._run_one,
             todo,
@@ -328,6 +335,9 @@ class HarnessRunner:
             # LLM calls made off the claim's own thread, so not on any
             # record. Zero unless the pipeline moved its LLM call.
             "unattributedLlmCalls": len(self.meter.unattributed) - unattributed_before,
+            # This session's LLM calls, tokens and time. The report sums
+            # the whole run; this says what each resume cost.
+            "usage": totals(self._written),
         })
 
         self._write_manifest(session, finished=True)
@@ -393,6 +403,9 @@ class HarnessRunner:
                 )
 
         self.results.append(record)
+
+        with self._written_lock:
+            self._written.append({"usage": record["usage"], "latency": record["latency"]})
 
         if self.on_record is not None:
             self.on_record(record)
