@@ -19,6 +19,11 @@ class LakeBackend(Protocol):
     JSON-on-disk implementation for MongoDB/Postgres/S3 is a matter of
     writing another class with these five methods - no pipeline change.
     Documents are plain JSON-safe dicts for exactly that reason.
+
+    A sixth, `stamps(layer)`, is optional and deliberately not declared
+    here: it lets a reader tell what changed without reading every record
+    (see DataLakeRepository.stamps). A backend without it still works;
+    its readers just re-list the layer.
     """
 
     def write(self, layer: DataLayer, record_id: str, document: dict) -> None: ...
@@ -115,6 +120,44 @@ class JsonFileLakeBackend:
             for document in self.list(layer)
             if document.get("lineage", {}).get("article_id") == article_id
         ]
+
+    def stamps(self, layer: DataLayer) -> dict[str, tuple[int, int]]:
+        """
+        Every record id in a layer with its file's (mtime, size), from the
+        directory listing alone - no record is opened.
+
+        This is what lets a reader keep an index in step with the lake by
+        re-reading only the records that changed, instead of parsing the
+        whole layer on every request (which is what /scraper/articles
+        still does). Size rides along with the mtime because two writes
+        inside one filesystem tick would otherwise look identical.
+        """
+
+        stamps: dict[str, tuple[int, int]] = {}
+
+        try:
+            entries = os.scandir(self.root / layer.value)
+        except FileNotFoundError:
+            return stamps
+
+        with entries:
+
+            for entry in entries:
+
+                # `.json.tmp` is a write still in flight (see write()):
+                # not a record yet, and it ends in ".tmp", not ".json".
+                if not entry.name.endswith(".json"):
+                    continue
+
+                try:
+                    stat = entry.stat()
+                except OSError:
+                    # Removed between the listing and the stat.
+                    continue
+
+                stamps[entry.name[: -len(".json")]] = (stat.st_mtime_ns, stat.st_size)
+
+        return stamps
 
     def manifest(self, limit: int | None = None) -> list[dict]:
 

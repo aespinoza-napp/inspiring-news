@@ -325,6 +325,19 @@ class DataLakeRepository:
 
         return self.backend.list(layer, limit=limit)
 
+    def stamps(self, layer: DataLayer) -> dict | None:
+        """
+        Record id -> a change stamp, for every record in the layer, without
+        reading any of them - or None when the backend cannot tell, in
+        which case a caller has to fall back to list(). Optional on the
+        backend (see LakeBackend), so a new backend is not obliged to
+        implement it on day one.
+        """
+
+        stamps = getattr(self.backend, "stamps", None)
+
+        return stamps(layer) if stamps else None
+
     def trace(self, article_id: str) -> dict:
         """
         The full lineage chain for one article across all three layers,

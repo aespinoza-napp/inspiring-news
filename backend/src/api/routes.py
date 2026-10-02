@@ -1,7 +1,7 @@
 import secrets
 from logging import getLogger
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, Response
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field, model_validator
 
@@ -14,6 +14,7 @@ from src.container import (
     get_graph_writer,
     get_labelling_batch,
     get_ingestion_service,
+    get_reader_index,
     get_source_check_service,
     get_job_queue,
     get_source_probe,
@@ -636,6 +637,62 @@ def scraped_articles():
     """
 
     return article_stats(get_datalake_repository())
+
+
+# ---------------------------------------------------------------------
+# Reader
+#
+# The reader-facing view: published articles only, as a reader sees them.
+# Read from the lake - nothing is re-run - through an index that reads
+# only what changed since the last request (src/services/reader/).
+#
+# Not behind the storage key, unlike /storage/*: these return exactly
+# what the public reader page shows anyone - publishable articles, their
+# lead rather than their body, and the checks behind them; no lineage,
+# no rejected articles, no scraped pages. A key the frontend attaches for
+# every visitor would protect nothing.
+# ---------------------------------------------------------------------
+
+
+@router.get("/reader/articles")
+def reader_articles(
+    topic: str | None = Query(default=None, max_length=100),
+    language: str | None = Query(default=None, max_length=8),
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=50),
+):
+    """
+    The feed: one entry per published article (its newest run), newest
+    first - by publication date, or by when it was checked if no date was
+    extracted. Filter by `topic` (the article's primary topic) and
+    `language`. Carries facet counts and how many articles the lake holds
+    at all, so an empty feed can say why it is empty.
+    """
+
+    return get_reader_index().feed(
+        topic=topic,
+        language=language,
+        offset=offset,
+        limit=limit,
+    )
+
+
+@router.get("/reader/articles/{article_id}")
+def reader_article(article_id: str = Path(pattern=r"^[0-9a-f]{16}$")):
+    """
+    One published article: every checked claim with its verdict and
+    confidence, the sources it rests on and why each was trusted
+    (reliability and whether it is a real rating, how well it addresses
+    the claim, the ranking factors, whether the model cited it), and a
+    claim whose search or model failed reported as that, not as a verdict.
+    """
+
+    view = get_reader_index().article(article_id)
+
+    if view is None:
+        raise HTTPException(status_code=404, detail="No published article with this id.")
+
+    return view
 
 
 # ---------------------------------------------------------------------

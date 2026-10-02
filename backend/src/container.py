@@ -89,6 +89,8 @@ _graph_reader = None
 
 _labelling_batch = None
 
+_reader_index = None
+
 
 def get_vector_repository() -> VectorRepository:
 
@@ -418,3 +420,30 @@ def get_labelling_batch():
                 )
 
     return _labelling_batch
+
+
+def get_reader_index():
+    """
+    Backs /reader/*. A singleton because it *is* a cache: the feed index
+    over the exploitation layer, kept in step by file stamps so a request
+    reads only what changed (src/services/reader/index.py). Shares the
+    lake singleton, so it reads exactly what the pipeline writes. The
+    source YAMLs are read once, here, for display names - adding a source
+    means restarting, as it does for ingestion.
+    """
+
+    global _reader_index
+
+    if _reader_index is None:
+        with _lock:
+            if _reader_index is None:
+                from src.repositories.source_repository import SourceRepository
+                from src.services.reader.index import ReaderIndex
+                from src.services.reader.views import SourceNames
+
+                _reader_index = ReaderIndex(
+                    get_datalake_repository(),
+                    SourceNames(SourceRepository().list()),
+                )
+
+    return _reader_index
