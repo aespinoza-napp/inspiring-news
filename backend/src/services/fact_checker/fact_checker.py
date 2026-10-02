@@ -16,7 +16,10 @@ from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelect
 from src.services.fact_checker.progress import source_summary
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
 from src.services.fact_checker.retrieval.evidence_retriever import EvidenceRetriever
-from src.services.fact_checker.verification.confidence_scorer import ConfidenceScorer
+from src.services.fact_checker.verification.confidence_scorer import (
+    ConfidenceScorer,
+    below_evidence_floor,
+)
 from src.services.fact_checker.verification.llm_verification import (
     LLMVerificationResult,
     LLMVerifier,
@@ -292,7 +295,7 @@ class FactChecker:
             "cut": self._rejected_summary(ranking.rejected),
         })
 
-        if len(ranked) < thresholds.min_evidence_for_verdict:
+        if below_evidence_floor(ranked, thresholds):
 
             # Below the evidence floor the scorer forces UNVERIFIED
             # whatever the model says, so asking it was the single longest
@@ -393,7 +396,7 @@ class FactChecker:
 
         # Before the evidence floor on purpose: both end in UNVERIFIED
         # with no evidence, and only this one says the web was never asked.
-        if search_unavailable and len(ranked) < thresholds.min_evidence_for_verdict:
+        if search_unavailable and below_evidence_floor(ranked, thresholds):
             return (
                 PipelineStage.EVIDENCE_RETRIEVAL,
                 "Web search was unavailable (SearXNG unreachable or its engines "
@@ -401,7 +404,7 @@ class FactChecker:
                 "nothing about the claim.",
             )
 
-        if len(ranked) < thresholds.min_evidence_for_verdict:
+        if below_evidence_floor(ranked, thresholds):
             return (
                 PipelineStage.CONFIDENCE_RECALIBRATION,
                 "No evidence could be retrieved for this claim; verdict forced to "

@@ -53,6 +53,20 @@ SYSTEM_PROMPT = (
 )
 
 
+def _is_index(value, evidence: list) -> bool:
+    """
+    Whether the model's `value` names one of the evidence items it was
+    shown. `bool` is excluded explicitly: it subclasses `int`, so JSON
+    `true` would otherwise name item 1.
+    """
+
+    return (
+        isinstance(value, int)
+        and not isinstance(value, bool)
+        and 0 <= value < len(evidence)
+    )
+
+
 class EvidenceAssessment(BaseModel):
     """What the model concluded about one specific source."""
 
@@ -165,7 +179,11 @@ class LLMVerifier:
 
     def _normalize(self, result: dict | None, evidence: list[Evidence]) -> LLMVerificationResult:
 
-        if not result:
+        # Valid JSON is not necessarily an object: a model can answer a
+        # bare "TRUE" or a list, and `.get` on either raised out of the
+        # claim's thread and failed the whole article, every other
+        # claim's verdict included (stress-tested 2026-10-02).
+        if not result or not isinstance(result, dict):
             return LLMVerificationResult(
                 verdict=Verdict.UNVERIFIED,
                 confidence=0.0,
@@ -181,19 +199,44 @@ class LLMVerifier:
         except (TypeError, ValueError):
             confidence = 0.0
 
-        cited = [
-            index
-            for index in result.get("cited_evidence", [])
-            if isinstance(index, int) and 0 <= index < len(evidence)
-        ]
-
         return LLMVerificationResult(
             verdict=verdict,
             confidence=confidence,
             explanation=str(result.get("explanation") or "No explanation provided.").strip(),
-            cited_evidence=cited,
+            cited_evidence=self._citations(result.get("cited_evidence"), evidence),
             assessments=self._assessments(result.get("assessments"), evidence),
         )
+
+    @staticmethod
+    def _citations(raw, evidence: list[Evidence]) -> list[int]:
+        """
+        The indices cited, each once, in the order first given.
+
+        Each of these was a way to bluff, found by the 2026-10-02 stress
+        test with an adversarial fake model:
+
+        - `null`, or a bare `0` instead of a list, raised and failed the
+          whole article.
+        - A repeated index counted every time: `ConfidenceScorer` divides
+          the citations by the sources, so `[0, 0, 0, ...]` took a FALSE
+          resting on one source from 0.70 to 1.00 confidence.
+        - JSON `true` is a Python `bool`, which is an `int`: `[true]`
+          counted as citing source 1.
+        """
+
+        if not isinstance(raw, list):
+            return []
+
+        cited: list[int] = []
+
+        for index in raw:
+
+            if not _is_index(index, evidence) or index in cited:
+                continue
+
+            cited.append(index)
+
+        return cited
 
     def _assessments(
         self,
@@ -221,7 +264,7 @@ class LLMVerifier:
 
             index = entry.get("index")
 
-            if not isinstance(index, int) or not 0 <= index < len(evidence):
+            if not _is_index(index, evidence):
                 continue
 
             if index in seen:
@@ -252,6 +295,11 @@ class LLMVerifier:
         all: it is the one part of this output a reader would take at face
         value without clicking through. Anything not found verbatim in the
         source text is dropped.
+
+        The title and the body are searched apart. Joined into one string,
+        the end of the headline and the start of the body read as one
+        sentence that appears in neither, and a quote made of the two
+        passed as verbatim (2026-10-02 stress test).
         """
 
         if not isinstance(quote, str):
@@ -262,9 +310,12 @@ class LLMVerifier:
         if len(candidate) < 10:
             return None
 
-        haystack = _WHITESPACE.sub(" ", f"{item.title} {item.content or item.snippet}")
+        needle = candidate.lower()
 
-        if candidate.lower() not in haystack.lower():
+        if not any(
+            needle in _WHITESPACE.sub(" ", text or "").lower()
+            for text in (item.title, item.content or item.snippet)
+        ):
             logger.debug("Dropped unlocatable quote for %s", item.url)
             return None
 
