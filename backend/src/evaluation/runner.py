@@ -4,9 +4,10 @@ Runs the pipeline's own `check_claim` over a labelled set, resumably.
 What a run is
 -------------
 
-One dataset, one model, one effective set of thresholds, one corpus
-mode: those four (and HARNESS_VERSION) hash into the run's key, and the
-key names its directory. Same four, same directory - so starting the same
+One dataset, one model, one effective set of thresholds, the
+environment's scoring weights, one corpus mode: those five (and
+HARNESS_VERSION) hash into the run's key, and the key names its
+directory. Same five, same directory - so starting the same
 command again *resumes*, and changing any of them starts a new run
 rather than mixing two configurations in one results file.
 
@@ -44,7 +45,7 @@ from pathlib import Path
 from typing import Callable
 from urllib.parse import urlsplit
 
-from src.config.settings import settings
+from src.config.settings import WEIGHT_GROUPS, settings
 from src.config.thresholds import PipelineThresholds
 from src.evaluation.dataset import CUSTOM, Dataset, DatasetRow
 from src.evaluation.record import (
@@ -99,17 +100,37 @@ def thresholds_hash(thresholds: PipelineThresholds) -> str:
     return _digest(thresholds.model_dump())[:12]
 
 
+# The scoring constants that are environment-only, not per-run thresholds
+# (invariant 1's declared exception): read once at import by the ranker,
+# the retriever's funnel and the scorer. They change what a run produces,
+# so they are part of its key. Otherwise a run with CONFIDENCE_LLM_WEIGHT
+# changed in the environment would "resume" the run made before the
+# change - the tuning phase's whole method.
+_SCORING_CONSTANTS = (
+    *(name for names in WEIGHT_GROUPS.values() for name in names),
+    "RANKING_DEFAULT_RELIABILITY",
+    "EVIDENCE_RECENCY_HALF_LIFE_DAYS",
+)
+
+
+def scoring_weights() -> dict[str, float]:
+
+    return {name: getattr(settings, name) for name in _SCORING_CONSTANTS}
+
+
 def run_key(
     dataset_sha256: str,
     model: str,
     thresholds: PipelineThresholds,
     corpus: str,
+    weights: dict[str, float] | None = None,
 ) -> str:
 
     return _digest({
         "dataset": dataset_sha256,
         "model": model,
         "thresholds": thresholds.model_dump(),
+        "weights": weights if weights is not None else scoring_weights(),
         "corpus": corpus,
         "harnessVersion": HARNESS_VERSION,
     })[:12]
@@ -162,10 +183,13 @@ class RunConfig:
 
     root: Path = field(default_factory=default_runs_root)
 
+    # The environment's scoring weights when the run was configured.
+    weights: dict = field(default_factory=scoring_weights)
+
     @property
     def key(self) -> str:
 
-        return run_key(self.dataset.sha256, self.model, self.thresholds, self.corpus)
+        return run_key(self.dataset.sha256, self.model, self.thresholds, self.corpus, self.weights)
 
     @property
     def directory(self) -> Path:
@@ -462,6 +486,7 @@ class HarnessRunner:
             "thresholds": config.thresholds.model_dump(),
             "thresholdsHash": thresholds_hash(config.thresholds),
             "thresholdsOverridden": config.thresholds.overridden_from_defaults(),
+            "weights": config.weights,
             "corpus": {"mode": config.corpus},
             "gitCommit": self.commit,
             "startedAt": now(),

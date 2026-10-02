@@ -141,8 +141,14 @@ backend/data/evaluation/runs/<dataset-stem>/<model-slug>/<key>/
 ```
 
 - **`key`** is the first 12 hex digits of sha256(dataset sha256, model,
-  effective thresholds, corpus mode, `HARNESS_VERSION`). The same command
-  therefore resumes; changing any of the five starts a new run. The git
+  effective thresholds, the environment's scoring weights, corpus mode,
+  `HARNESS_VERSION`). The same command therefore resumes; changing any of
+  the six starts a new run. The weights (`RANKING_*`, `PERTINENCE_*`,
+  `CONFIDENCE_*`, `RANKING_DEFAULT_RELIABILITY`,
+  `EVIDENCE_RECENCY_HALF_LIFE_DAYS`) were added to the design's key:
+  they are environment-only, read once at import, and change what a run
+  produces, so without them a run with a re-tuned weight would have
+  "resumed" the run made before the change. The git
   commit is recorded on every record, not keyed: keying it would throw a
   run away on every commit. A change that alters results bumps
   `HARNESS_VERSION` (now 1), the discipline of
@@ -151,7 +157,8 @@ backend/data/evaluation/runs/<dataset-stem>/<model-slug>/<key>/
   editing a label starts a new run rather than mixing two gold sets.
 - **The manifest** holds the key, the dataset (path, stem, sha256, rows,
   kinds), the model and provider, the full thresholds and those that
-  differ from the defaults, corpus mode and point count, the git commit
+  differ from the defaults, the scoring weights, corpus mode and point
+  count, the git commit
   at start, `HARNESS_VERSION`, the verifier prompt's sha256, `LLM_BASE_URL`
   (credentials stripped), `LLM_TIMEOUT`, `SEARXNG_URL`, `INFERENCE_URL`,
   the DuckDuckGo fallback switch, the concurrency settings and the start
@@ -254,30 +261,41 @@ OpenAI-compatible endpoints accept.
 
 ## What is reported apart
 
-Each claim gets exactly one outcome. Only `scored` claims enter the
-headline metrics.
+**Built on 2026-10-02 (G3)**: `backend/src/evaluation/metrics.py`
+(`outcome`, `temporal_leak`, `verdict_leak`, `newer_uncited`).
+
+Each claim got exactly one outcome, the first that applies. Only
+`scored` claims enter the headline metrics.
 
 1. `error`: the harness or the pipeline crashed. It is retried; any
    still left at report time are listed by id.
 2. `searchUnavailable`: no web query was answered. On Sep 25, 68 of 69
-   searches came back empty; folded into the error rate, that measures
-   SearXNG's uptime.
-3. `llmUnreachable`: the model was never reached.
+   searches came back empty; folded into the error rate, that would have
+   measured SearXNG's uptime. A claim whose search failed is set apart
+   even when the internal corpus gave it a verdict: the web, which the
+   pipeline is about, was never asked.
+3. `llmUnreachable`: the model was never reached (a hosted provider's
+   rate limit lands here too).
 4. `scored`: everything else.
 
 On top of the outcome, two flags. Metrics are reported on all scored
 claims and on scored claims without the flagged ones:
 
 - **`temporalLeak`** (the guide's Rule 3): a *cited* source has a
-  `publishedAt` after `claimDate`. Ranked-but-uncited newer sources are
-  counted, not flagged. The flag is undetermined when either date is
-  missing: that is every one of the 40 chequeado.com pilot rows, which
-  have no `claimDate`.
+  `publishedAt` after `claimDate`, compared by day (same day is not
+  after). Ranked-but-uncited newer sources are counted, not flagged. The
+  flag is undetermined when the claim has no date (every one of the 40
+  chequeado.com pilot rows) or when a cited source has none and no dated
+  one is newer.
 - **`verdictLeak`** (x-fact only): a ranked source is on the row's own
-  `site`, the fact-checker that published the verdict. All 40 chequeado
-  rows list chequeado's own article among their reference links. A
-  verdict read off the fact-checker's page is the answer retrieved, not
-  a claim verified.
+  `site` or a subdomain of it, the fact-checker that published the
+  verdict. All 40 chequeado rows list chequeado's own article among their
+  reference links. A verdict read off the fact-checker's page is the
+  answer retrieved, not a claim verified. Not applicable to the custom
+  set, whose `site` is the article's publisher.
+
+Also counted, per model, and scored as the `UNVERIFIED` it became:
+**`invalidOutput`**, the model answering without usable JSON.
 
 **Not decided: whether to exclude the fact-checkers' domains at
 retrieval time.** Measure first: the pilot says how often it happens.
@@ -286,29 +304,65 @@ in `PipelineThresholds`, with its own goal and its own cache bump.
 
 ## Metrics
 
+**Built on 2026-10-02 (G3)**: `metrics.py` and `report.py`, `cli report
+--run <dir> [--compare <dir>] [--prices f] [--seed n] [--resamples n]`
+and `cli table --run <dir> --run <dir> ...`. Pure Python, no new
+dependency. Not yet run on real results.
+
 - **Classes** are the five `Verdict` values, in this order: `TRUE`,
   `PARTIALLY_TRUE`, `MISLEADING`, `FALSE`, `UNVERIFIED`.
-- **Accuracy, macro-F1, and per-class precision, recall, F1 and
-  support.** Macro-F1 averages over the classes present in the gold
-  labels. A class with no gold support is shown with its predictions, not
-  averaged in: the custom set has no `FALSE` yet (27 of 37 facts are
-  `TRUE`).
+- **Accuracy, macro-F1, and per-class precision, recall, F1, support and
+  predicted count.** Macro-F1 averages over the classes present in the
+  gold labels. A class with no gold support is shown with its
+  predictions (precision, but no recall and no F1), not averaged in: the
+  custom set has no `FALSE` yet (27 of 37 facts are `TRUE`). Precision is
+  undefined for a class never predicted; F1 is 0 for a class with
+  support of which nothing was got right.
+- **Cohen's kappa against gold** (added): the labeller's own
+  self-agreement statistic, so the system and the annotator are compared
+  on one scale. This is the "verdict agreement vs. the human-labelled
+  set" of Sprint 7. Undefined when chance agreement is total.
 - **Confusion matrix**, gold rows by predicted columns.
 - **Coverage and selective accuracy**: the share of definitive verdicts
-  (not `UNVERIFIED`), and the accuracy among them. `UNVERIFIED` is the
-  system's commonest answer with a small local model, and plain accuracy
-  hides that.
+  (not `UNVERIFIED`), and the accuracy among them.
 - **Bootstrap intervals**: percentile 95% CIs over claims, 10,000
-  resamples, seeded, with the seed in the report. Two runs over the same
-  claims (model A against B, before and after the search fix) are
-  compared with a **paired** bootstrap: the interval of the difference,
-  not two intervals that happen to overlap. At 150 claims and 50%
-  accuracy, the interval is about ±8 points (`custom_dataset.tex`).
-- **Breakdowns**: by language for both sets; by topic group,
-  `claimType` and `sourceTier` for the custom set; by site for x-fact.
-- **Pure Python.** No new dependency for arithmetic this small. Every
-  metric is tested against hand-computed values: a wrong metric is a
-  wrong paper (roadmap, testing track, November).
+  resamples, seeded (default 2026), with the seed in the report. All five
+  statistics come from one set of resamples. Records are ordered by id
+  before resampling, so the same run gives the same interval however its
+  claims finished. The class set macro-F1 averages over is the full
+  sample's, so the statistic means the same thing in every resample; a
+  resample in which a statistic is undefined (no definitive verdict, for
+  selective accuracy) is skipped for it and counted. Percentiles
+  interpolate linearly, numpy's default, so the numbers can be
+  re-computed with numpy. 10,000 resamples over the 14-claim fixture,
+  headline, breakdowns and a comparison, took 0.9 s.
+- **Paired comparison** (`--compare <baseline>`): the interval of the
+  difference B − A over the claims both runs scored, resampled together:
+  model A against B, or before and after the search fix. A claim set
+  apart on either side is left out of both and counted, as are claims
+  only one run has. Alongside: how many claims only A got right and how
+  many only B did. Comparing a run with itself gives exactly 0, interval
+  [0, 0], which a test holds.
+- **Breakdowns**: by language for both sets; by topic group, `claimType`
+  and `sourceTier` for the custom set; by site for x-fact. Each with n,
+  accuracy and its interval, macro-F1, coverage and selective accuracy.
+- **Several models** (`cli table`): one row per run over the same
+  dataset (refused otherwise): accuracy and macro-F1 with intervals,
+  coverage, selective accuracy, kappa, invalid outputs, claims set apart,
+  median seconds per claim, completion tokens per claim, tokens per
+  second and cost per 100 claims, into `reports/<dataset>/models.md`.
+  This is the Sprint 7 verification-model comparison, run once per model.
+- **Tested** against hand-computed values on a ten-claim fixture built
+  with `record.py` (`tests/evaluation/test_harness_metrics.py`, every
+  figure worked out in its docstring and comments), plus bootstrap
+  determinism under a fixed seed, the paired bootstrap on identical runs
+  (difference 0), and `report.md` rendered from a fixture run.
+
+The report (`report.md`, with `metrics.json` and a copy of `run.json`)
+has: the headline on all scored claims and without the flagged ones;
+what was set apart, by id; the two flags; per class; the confusion
+matrix; each breakdown; cost, latency and tokens; and the paired
+comparison when asked for.
 
 ## Retrieval evaluation (RQ2)
 

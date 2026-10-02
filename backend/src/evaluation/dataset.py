@@ -150,7 +150,7 @@ def load_dataset(path: str | Path) -> Dataset:
     else:
         raise DatasetError(f"{path}: no such file or directory")
 
-    rows = tuple(_row(raw, where) for where, raw in raw_rows)
+    rows = tuple(parse_row(raw, where) for where, raw in raw_rows)
 
     _refuse_duplicates(rows)
 
@@ -203,7 +203,8 @@ def _read_directory(path: Path) -> tuple[list[tuple[str, dict]], str]:
     return rows, digest.hexdigest()
 
 
-def _row(raw: dict, where: str) -> DatasetRow:
+def parse_row(raw: dict, where: str = "row") -> DatasetRow:
+    """One row of either format; `where` names it in an error."""
 
     if not isinstance(raw, dict):
         raise DatasetError(f"{where}: a row must be a JSON object")

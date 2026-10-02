@@ -259,3 +259,101 @@ def full_checker(repository, llm: LLMClient) -> FactChecker:
 def claim_service(checker: FactChecker) -> ClaimService:
 
     return ClaimService(checker, entity_extractor=FakeEntityExtractor({"ORG": ["INE"]}))
+
+
+# ----------------------------------------------------------------------
+# Records, built with record.py, for the report tests
+# ----------------------------------------------------------------------
+
+
+def source(url: str, *, published: str | None = None, cited_domain: str | None = None) -> Evidence:
+
+    from src.services.fact_checker.retrieval.search_provider import registrable_domain
+
+    return Evidence(
+        url=url,
+        title=f"Title of {url}",
+        origin=EvidenceOrigin.WEB,
+        domain=cited_domain or registrable_domain(url),
+        published_at=published,
+    )
+
+
+def make_record(
+    raw_row: dict,
+    verdict: str = "UNVERIFIED",
+    *,
+    raw_verdict: str | None = None,
+    evidence: list[Evidence] | None = None,
+    cited: list[int] | None = None,
+    rejected: list | None = None,
+    search_unavailable: bool = False,
+    llm_unreachable: bool = False,
+    error: Exception | None = None,
+    model: str = "stub-model",
+    usage: dict | None = None,
+    total: float = 10.0,
+) -> dict:
+    """A results.jsonl line exactly as the harness writes it."""
+
+    from src.evaluation.dataset import parse_row
+    from src.evaluation.record import Provenance, Timing, build_record, error_record
+    from src.evaluation.usage import summarise
+    from src.models.fact_checker.fact_check import FactCheck, Verdict
+
+    row = parse_row(raw_row)
+
+    timing = Timing(started_at="2026-11-10T10:00:00", finished_at="2026-11-10T10:00:10", total=total)
+
+    provenance = Provenance(
+        model=model, provider="localhost:11434", thresholds_hash="t" * 12, git_commit="abc123",
+    )
+
+    usage = usage if usage is not None else summarise([])
+
+    if error is not None:
+        return error_record(row, error, events=[], timing=timing, provenance=provenance, usage=usage)
+
+    check = FactCheck(
+        verdict=Verdict(verdict),
+        raw_verdict=Verdict(raw_verdict or verdict),
+        explanation="",
+        confidence=0.5,
+        claim=row.claim,
+        evidence=evidence or [],
+        cited_evidence_indices=cited or [],
+        evidence_count=len(evidence or []),
+        rejected_sources=rejected or [],
+        search_unavailable=search_unavailable,
+        llm_unreachable=llm_unreachable,
+    )
+
+    return build_record(row, check, events=[], timing=timing, provenance=provenance, usage=usage)
+
+
+def write_run(directory: Path, records: list[dict], *, model: str = "stub-model",
+              key: str = "k" * 12, dataset_sha: str = "d" * 64, stem: str = "fixture",
+              provider: str = "localhost:11434") -> Path:
+    """A run directory as the runner leaves it: run.json and results.jsonl."""
+
+    directory.mkdir(parents=True, exist_ok=True)
+
+    (directory / "run.json").write_text(json.dumps({
+        "key": key,
+        "harnessVersion": 1,
+        "model": model,
+        "provider": provider,
+        "dataset": {"path": f"{stem}.jsonl", "stem": stem, "sha256": dataset_sha,
+                    "rows": len(records), "kinds": sorted({r["dataset"] for r in records})},
+        "thresholdsHash": "t" * 12,
+        "thresholdsOverridden": {},
+        "corpus": {"mode": "none", "points": 0},
+        "sessions": [],
+    }), encoding="utf-8")
+
+    (directory / "results.jsonl").write_text(
+        "".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records),
+        encoding="utf-8",
+    )
+
+    return directory

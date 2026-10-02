@@ -394,9 +394,15 @@ def test_the_run_key_changes_with_what_changes_the_results(tmp_path):
             dataset=dataset, model="a", corpus="none", root=tmp_path,
             thresholds=PipelineThresholds(evidence_min_pertinence=0.5),
         ),
+        # Environment-only, read once at import: a weight changed for the
+        # tuning phase is a different run, not a resumable one.
+        RunConfig(
+            dataset=dataset, model="a", corpus="none", root=tmp_path,
+            weights={**base.weights, "CONFIDENCE_LLM_WEIGHT": 0.6, "CONFIDENCE_EVIDENCE_WEIGHT": 0.4},
+        ),
     ]
 
-    assert len({base.key, *(config.key for config in others)}) == 4
+    assert len({base.key, *(config.key for config in others)}) == 5
 
     assert base.directory == tmp_path / "set" / "a" / base.key
 

@@ -6,6 +6,10 @@ The evaluation harness's one command.
         --model llama3.2:3b [--limit N] [--thresholds f.json] [--corpus snapshot|none] \
         [--retry-unavailable] [--fresh]
 
+    uv run python -m src.evaluation.cli report --run <run dir> [--compare <run dir>]         [--prices data/evaluation/prices.json] [--seed N] [--resamples N]
+
+    uv run python -m src.evaluation.cli table --run <dir> --run <dir> ... [--prices ...]
+
 The provider is configuration, never a flag: LLM_BASE_URL, LLM_API_KEY
 (and LLM_TIMEOUT, LLM_MAX_CONCURRENCY) from the environment or
 backend/.env, exactly as the API reads them. Ollama and Groq differ by
@@ -29,7 +33,10 @@ from pathlib import Path
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
 from src.evaluation.dataset import load_dataset
+from src.evaluation.metrics import DEFAULT_RESAMPLES, DEFAULT_SEED
+from src.evaluation.report import models_table, write_report
 from src.evaluation.runner import CORPUS_MODES, SNAPSHOT, RunConfig, build_runner, default_runs_root
+from src.evaluation.usage import load_prices
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +86,47 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 0 if session["errors"] == 0 else 1
 
 
+def cmd_report(args: argparse.Namespace) -> int:
+
+    target = write_report(
+        args.run,
+        compare_with=args.compare,
+        prices=load_prices(args.prices) if args.prices else None,
+        seed=args.seed,
+        resamples=args.resamples,
+        root=Path(args.out) if args.out else None,
+    )
+
+    print(f"Report written to {target}")
+    print((target / "report.md").read_text(encoding="utf-8"))
+
+    return 0
+
+
+def cmd_table(args: argparse.Namespace) -> int:
+
+    target = models_table(
+        args.run,
+        prices=load_prices(args.prices) if args.prices else None,
+        seed=args.seed,
+        resamples=args.resamples,
+        root=Path(args.out) if args.out else None,
+    )
+
+    print(f"Table written to {target / 'models.md'}")
+    print((target / "models.md").read_text(encoding="utf-8"))
+
+    return 0
+
+
+def _report_options(command: argparse.ArgumentParser) -> None:
+
+    command.add_argument("--prices", help="a prices file (data/evaluation/prices.json) to cost the run")
+    command.add_argument("--seed", type=int, default=DEFAULT_SEED, help="bootstrap seed")
+    command.add_argument("--resamples", type=int, default=DEFAULT_RESAMPLES, help="bootstrap resamples")
+    command.add_argument("--out", help=argparse.SUPPRESS)
+
+
 def _stop_on_first_interrupt(stop) -> None:
 
     def handler(signum, frame):
@@ -117,12 +165,30 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--root", help=argparse.SUPPRESS)
     run.set_defaults(handler=cmd_run)
 
+    report = commands.add_parser("report", help="metrics.json and report.md for a run")
+    report.add_argument("--run", required=True, help="the run directory (runs/<dataset>/<model>/<key>)")
+    report.add_argument("--compare", help="a baseline run to compare against, paired over shared claims")
+    _report_options(report)
+    report.set_defaults(handler=cmd_report)
+
+    table = commands.add_parser("table", help="several runs over one dataset, side by side")
+    table.add_argument("--run", required=True, action="append", help="a run directory; repeat per model")
+    _report_options(table)
+    table.set_defaults(handler=cmd_table)
+
     return root
 
 
 def main(argv: list[str] | None = None) -> int:
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
+    # A Windows console is cp1252, and the reports carry "·" and "−":
+    # printing one raised UnicodeEncodeError after the report had been
+    # written. Replace what the console cannot show instead.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
 
     args = parser().parse_args(argv)
 
