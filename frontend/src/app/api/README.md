@@ -17,11 +17,12 @@ backend (`backend/src/api/routes.py`), not here.
 | `enrich/route.ts` | `POST /enrich` | `/enrich` page |
 | `graph/[...path]/route.ts` | `GET /graph/{schema,presets,articles,related}`, `POST /graph/{query,sync}` | `/graph` page. An allowlist, not a blind catch-all. GETs are `cache: "no-store"` |
 | `evaluation/route.ts` | `GET /evaluation/summary` | `/evaluation` page. `cache: "no-store"`, so a fact saved in the labeller shows on the next refresh |
+| `reader/articles/route.ts`, `reader/articles/[id]/route.ts` | `GET /reader/articles`, `GET /reader/articles/{id}` | `/reader` and `/reader/[id]`. `cache: "no-store"` (a re-check can publish or withdraw an article). The backend leaves these open on purpose; `STORAGE_API_KEY` is still sent when set, so the page survives a deployment that gates every route. A non-JSON answer becomes a 502 rather than a crash |
 
 **Every route sends the API key.** Each file has a `headers(json)` that adds `X-API-Key` from
 `STORAGE_API_KEY` when the server has one, and every `fetch()` passes `headers: headers(...)`. The
-backend requires the key on everything but `/healthz`, `/metrics` and polling a job by id once it
-is set, and production always sets it; the key is sent to the open ones too, so closing them later
+backend requires the key on everything but `/healthz`, `/metrics`, polling a job by id and the
+reader view (`/reader/*`) once it is set, and production always sets it; the key is sent to the open ones too, so closing them later
 is a backend-only change. A new route that skips it works on a laptop with no key and answers 401
 on the server. `backend/tests/api/test_api_key.py` reads these files and fails on a route that does
 not follow the pattern.

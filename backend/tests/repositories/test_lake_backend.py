@@ -191,3 +191,69 @@ def test_records_are_stored_as_readable_json(tmp_path):
     )
 
     assert stored["lineage"]["article_id"] == "a1"
+
+
+# ----------------------------------------------------------------------
+# Stamps: what changed, without reading anything
+# ----------------------------------------------------------------------
+
+
+def test_stamps_name_every_record_in_the_layer_and_nothing_else(tmp_path):
+
+    backend = JsonFileLakeBackend(tmp_path)
+
+    backend.write(DataLayer.EXPLOITATION, "rec1", make_document())
+    backend.write(DataLayer.EXPLOITATION, "rec2", make_document(run_id="r2"))
+    backend.write(DataLayer.RAW, "other-layer", make_document())
+
+    # A write still in flight is not a record yet.
+    (tmp_path / "exploitation" / "rec3.json.tmp").write_text("{", encoding="utf-8")
+
+    assert set(backend.stamps(DataLayer.EXPLOITATION)) == {"rec1", "rec2"}
+
+
+def test_a_stamp_changes_when_its_record_is_rewritten(tmp_path):
+    """
+    The reader index re-reads a record only when its stamp moves, so a
+    rewrite that left the stamp alone would serve the old record forever.
+    Size rides along with the mtime for writes inside one filesystem tick.
+    """
+
+    backend = JsonFileLakeBackend(tmp_path)
+
+    backend.write(DataLayer.EXPLOITATION, "rec1", make_document())
+    before = backend.stamps(DataLayer.EXPLOITATION)["rec1"]
+
+    backend.write(
+        DataLayer.EXPLOITATION,
+        "rec1",
+        make_document(produced_at="2025-06-30T12:00:00.123456"),
+    )
+
+    assert backend.stamps(DataLayer.EXPLOITATION)["rec1"] != before
+
+
+def test_stamps_open_no_record(tmp_path):
+    """A record that does not even parse still gets a stamp: nothing is opened."""
+
+    backend = JsonFileLakeBackend(tmp_path)
+
+    (tmp_path / "exploitation" / "broken.json").write_text("{not json", encoding="utf-8")
+
+    assert set(backend.stamps(DataLayer.EXPLOITATION)) == {"broken"}
+
+
+def test_the_repository_reports_none_for_a_backend_without_stamps(tmp_path):
+    """
+    `stamps` is optional on a backend: the repository says "cannot tell"
+    rather than raising, and readers fall back to listing the layer.
+    """
+
+    from src.repositories.datalake_repository import DataLakeRepository
+
+    class ListOnlyBackend:
+        def list(self, layer, limit=None):
+            return []
+
+    assert DataLakeRepository(backend=ListOnlyBackend()).stamps(DataLayer.EXPLOITATION) is None
+    assert DataLakeRepository(backend=JsonFileLakeBackend(tmp_path)).stamps(DataLayer.EXPLOITATION) == {}

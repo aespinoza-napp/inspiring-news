@@ -414,7 +414,7 @@ wire format as the providers kept and add the least that is new.
 
 ## 💻 Phase 6 — Interface: Reader View (Dec 11–17) · 35h
 
-What the frontend has today is an internal tool — eight pages (`/` analyzer, `/live`, `/claim`, `/enrich`, `/corrector`, `/scraper`, `/sources`, `/graph`).
+Before this sprint the frontend was an internal tool — eight pages (`/` analyzer, `/live`, `/claim`, `/enrich`, `/corrector`, `/scraper`, `/sources`, `/graph`). Since Oct 2, ahead of its week, it also has the reader view: `/reader` and `/reader/[id]`, over `GET /reader/articles` and `GET /reader/articles/{id}`.
 
 ### Sprint 8 (Dec 11–17, one week) · 35h
 
@@ -429,9 +429,9 @@ verification work; none of those four answers anything it asks, and each
 is a subsystem to build, secure and test. What stays is the output a
 journalist or reader actually looks at.
 
-- [ ] 📰 Topic-based feed of publishable articles (read-only) — the ingestion path exists (manual `POST /ingest`, 34 sources); the lake has to be filled before a feed has anything to show
-- [ ] 🧾 Article view: the verdict per claim, the evidence and why each source was trusted — most of it exists on `/` and `/live`, for an operator rather than a reader
-- [ ] 🟡 🎨 Extend the existing hand-written CSS design system (no new UI libs) — the system exists and is what `/live` and `/graph` were built on
+- [x] 📰 Topic-based feed of publishable articles (read-only) — Oct 2. `GET /reader/articles` (`services/reader/`): the newest run of each article the pipeline marked publishable, keyed by host and path so a re-analysis keeps its link and a re-check that turns FALSE withdraws it; topic and language filters with facet counts, paging, and the lake's analysed / publishable counts so an empty feed says why. A request lists the exploitation layer's file stamps and re-reads only records that changed (tested by counting reads). `/reader` shows it. Verified by tests (`tests/services/reader/`, `tests/api/test_reader_routes.py`) and by looking: headless Chrome over the dev stack's lake (8 runs, 2 articles, 1 publishable) and a synthetic lake (25 published, every claim outcome), plus an empty lake, a lake with nothing publishable, and the backend down. Still true: the real lake holds one publishable article, so the feed has little to show until ingestion runs
+- [x] 🧾 Article view: the verdict per claim, the evidence and why each source was trusted — Oct 2. `GET /reader/articles/{id}` and `/reader/[id]`: each claim's verdict and confidence, the model's reasoning, the model's own answer when a guardrail overrode it, and its sources (cited or not, stance, quoted passage, site reliability or "unrated" and the assumed default, how well it addresses the claim, relevance and its factors, which search found it). A claim whose search or model failed reads "Not checked" and is counted apart from the verdicts; an article none of whose claims was judged shows NOT_CHECKED instead of UNVERIFIED. The lead and a link, never the body or a scraped page (tested). Seen rendered on both lakes above
+- [x] 🎨 Extend the existing hand-written CSS design system (no new UI libs) — Oct 2: a reader section in `globals.css`, through its variables only, reusing `.trace-*`, `.badge`, `.claim-verdict-*`; no new dependency. Measured with playwright in the system Chrome: no horizontal overflow at 375px on either page, light or dark; animations off under `prefers-reduced-motion`. The header's nav now wraps on a phone instead of running off it
 - ↪️ E2E test for the feed — in the testing track's final window (Dec 18–24), the week after
 
 ---

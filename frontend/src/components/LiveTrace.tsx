@@ -214,7 +214,7 @@ function FoundRow({ source }: { source: TraceSource }) {
 
 // What each of a claim's queries is asking. Short enough to sit in a
 // chip, because the useful thing is telling them apart at a glance.
-const QUERY_KIND_LABELS: Record<QueryKind, string> = {
+export const QUERY_KIND_LABELS: Record<QueryKind, string> = {
   anchor: "who & what",
   proposition: "what it claims",
   refutation: "counter-evidence",
@@ -273,7 +273,7 @@ function RatedRow({ source }: { source: TraceSource }) {
   );
 }
 
-function Rating({
+export function Rating({
   label,
   value,
   note,

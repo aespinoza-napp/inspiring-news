@@ -41,6 +41,13 @@ OPEN_ENDPOINTS = {
     # Starting one, and listing them, take the key.
     ("GET", "/analyze/jobs/{job_id}"),
     ("GET", "/analyze/jobs/batch"),
+    # The reader view: exactly what the public reader page shows anyone -
+    # publishable articles, their lead rather than their body, and the
+    # checks behind them; no lineage, no rejected articles, no scraped
+    # pages. A key the frontend attaches for every visitor would protect
+    # nothing (src/api/routes.py, "Reader").
+    ("GET", "/reader/articles"),
+    ("GET", "/reader/articles/{article_id}"),
 }
 
 # What was open until 2026-10-02, with a body each would accept: the

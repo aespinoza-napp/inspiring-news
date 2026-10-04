@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/", label: "Analyzer" },
+  { href: "/reader", label: "Reader" },
   { href: "/live", label: "Live" },
   { href: "/claim", label: "Claim Check" },
   { href: "/enrich", label: "Enrichment" },
@@ -21,7 +22,8 @@ export function NavLinks() {
   return (
     <nav>
       {LINKS.map((link) => {
-        const active = pathname === link.href;
+        // A section's own pages count too: /reader/<id> is still Reader.
+        const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
         return (
           <Link
             key={link.href}
