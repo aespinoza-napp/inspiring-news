@@ -370,7 +370,7 @@ Then, from another:
 ```bash
 KEY="$(terraform output -raw storage_api_key)"
 curl -s -o /dev/null -w '%{http_code}\n' -X POST http://127.0.0.1:8000/analyze/jobs   # 401: the key is on
-scripts/smoke.sh http://127.0.0.1:8000 "$KEY"
+scripts/smoke.sh http://127.0.0.1:8000 "$KEY"            # add --claim for one real claim, ~1 min
 ```
 
 With a domain, also: `https://<domain>/` asks for a password (user
