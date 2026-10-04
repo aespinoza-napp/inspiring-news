@@ -16,6 +16,7 @@ backend (`backend/src/api/routes.py`), not here.
 | `verify-claim/route.ts` | `POST /verify-claim` | `/claim` page |
 | `enrich/route.ts` | `POST /enrich` | `/enrich` page |
 | `graph/[...path]/route.ts` | `GET /graph/{schema,presets,articles,related}`, `POST /graph/{query,sync}` | `/graph` page. An allowlist, not a blind catch-all. GETs are `cache: "no-store"`; forwards `STORAGE_API_KEY` as `X-API-Key` |
+| `evaluation/route.ts` | `GET /evaluation/summary` | `/evaluation` page. `cache: "no-store"`, so a fact saved in the labeller shows on the next refresh; forwards `STORAGE_API_KEY` as `X-API-Key` |
 
 All of them use `127.0.0.1`, never `localhost`, for `BACKEND_URL`'s default — see the comment in
 `analyze/route.ts` for why (Node can resolve `localhost` to the IPv6 loopback first, which fails

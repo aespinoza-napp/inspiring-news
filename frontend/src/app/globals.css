@@ -2963,3 +2963,533 @@ button.graph-article.is-active {
     margin-left: 0;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Evaluation (/evaluation)
+
+   One hue for every chart on the page (--accent, stronger is more), the
+   number printed beside every mark, and verdict colours only on the
+   text badges that name a row: as a five-colour chart palette they fail
+   the colour-blind separation check, as labels they are read, not
+   compared.
+   --------------------------------------------------------------------- */
+
+.eval-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: -1.25rem 0 0.5rem;
+}
+
+.eval-refresh {
+  margin-top: 0;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+}
+
+.eval-lead {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  max-width: 62ch;
+}
+
+.eval-callout {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.85rem;
+  border-left: 3px solid var(--misleading);
+  background: color-mix(in srgb, var(--misleading) 10%, transparent);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+}
+
+.eval-empty {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.eval-empty p {
+  margin: 0 0 0.5rem;
+}
+
+.eval-empty p:last-child {
+  margin-bottom: 0;
+}
+
+.eval-muted {
+  color: var(--muted);
+}
+
+.eval-total-of {
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Progress toward the set's target, with the paper's floor marked. */
+
+.eval-progress {
+  margin: 0.25rem 0 1.5rem;
+}
+
+.eval-progress-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.eval-progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.eval-progress-mark {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--fg);
+}
+
+.eval-progress-scale {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  height: 1.2rem;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.eval-progress-scale span[style] {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Two columns of small charts, one on a phone. */
+
+.eval-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.5rem 2rem;
+  margin-bottom: 1rem;
+}
+
+/* ---------- matrix (balance, confusion) ---------- */
+
+.eval-matrix-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.eval-matrix {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.eval-caption {
+  caption-side: bottom;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  font-size: 0.78rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+.eval-matrix th,
+.eval-matrix td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.eval-matrix thead th {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.eval-matrix th[scope="row"] {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.eval-matrix tfoot th,
+.eval-matrix tfoot td {
+  border-bottom: none;
+}
+
+.eval-cell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.eval-cell-full {
+  font-weight: 700;
+}
+
+.eval-cell-mark {
+  font-size: 0.75rem;
+}
+
+.eval-cell-diagonal {
+  box-shadow: inset 0 0 0 2px var(--fg);
+}
+
+.eval-matrix-total {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- bars ---------- */
+
+.eval-bars,
+.eval-stack-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.eval-bar-row,
+.eval-stack-row {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 9rem) 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.eval-bar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eval-bar-track,
+.eval-stack-track {
+  display: flex;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+  overflow: hidden;
+}
+
+.eval-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.eval-bar-value {
+  min-width: 3.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.eval-bar-note {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* The selector's batches: labelled is the accent, skipped grey, not yet
+   judged an outline. A 2px gap between segments, so two of them never
+   read as one bar. */
+
+.eval-selection {
+  margin-bottom: 1.25rem;
+}
+
+.eval-stack-track {
+  background: transparent;
+  gap: 2px;
+}
+
+.eval-seg {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+}
+
+.eval-seg-labelled {
+  background: var(--accent);
+}
+
+.eval-seg-skipped {
+  background: color-mix(in srgb, var(--muted) 55%, transparent);
+}
+
+.eval-seg-pending {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--muted);
+}
+
+.eval-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.eval-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.eval-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.eval-table-toggle {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+}
+
+.eval-table-toggle summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.eval-small-table {
+  margin-top: 0.4rem;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.eval-small-table th,
+.eval-small-table td {
+  padding: 0.25rem 1.25rem 0.25rem 0;
+  text-align: left;
+  color: var(--muted);
+}
+
+.eval-small-table th {
+  font-weight: 600;
+}
+
+.eval-json {
+  max-height: 24rem;
+  overflow: auto;
+  margin: 0.5rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 0.75rem;
+}
+
+/* ---------- model runs ---------- */
+
+.eval-runs .eval-run-selected td {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.eval-link-button {
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: var(--accent);
+  font-size: inherit;
+  font-weight: 600;
+}
+
+.eval-link-button:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+/* A point estimate over its 95% interval on a 0-100% track. */
+
+.eval-ci {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.eval-ci-value {
+  min-width: 3.2rem;
+  font-weight: 600;
+}
+
+.eval-ci-track {
+  position: relative;
+  width: 80px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.eval-ci-range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--accent) 45%, var(--surface));
+}
+
+.eval-ci-dot {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+/* ---------- facts ---------- */
+
+.eval-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.eval-filters label {
+  display: flex;
+  flex-direction: column;
+}
+
+.eval-filters .field-label {
+  margin-bottom: 0.3rem;
+}
+
+.eval-filters select,
+.eval-filters input {
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.eval-filter-search {
+  flex: 1 1 12rem;
+}
+
+.eval-count {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.eval-fact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.eval-fact {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.eval-fact:last-child {
+  border-bottom: none;
+}
+
+.eval-fact-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.eval-fact-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.eval-tag {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.eval-tag-ai {
+  border-color: var(--misleading);
+  color: var(--misleading);
+}
+
+.eval-fact-claim {
+  margin: 0.4rem 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.eval-fact-meta {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.eval-fact-detail {
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+}
+
+.eval-fact-detail summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.eval-fact-note {
+  margin: 0.4rem 0;
+  max-width: 68ch;
+}
+
+.eval-links {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+}
+
+@media (max-width: 520px) {
+  .eval-toolbar {
+    margin-top: -1rem;
+  }
+
+  .eval-bar-row,
+  .eval-stack-row {
+    grid-template-columns: minmax(4.5rem, 6rem) 1fr auto;
+    gap: 0.5rem;
+  }
+
+  .eval-filters label {
+    flex: 1 1 calc(50% - 0.75rem);
+  }
+
+  .eval-filters select,
+  .eval-filters input {
+    width: 100%;
+  }
+}

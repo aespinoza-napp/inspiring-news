@@ -837,3 +837,21 @@ def labelling_batch_state():
     """Whether a batch is being built, and the last one built."""
 
     return get_labelling_batch().state()
+
+
+# ---------------------------------------------------------------------
+# Evaluation results
+#
+# The labelled set, the claim selector's precision over the daily
+# batches, and the harness's reports, for the frontend's /evaluation
+# page. Read-only, from data/evaluation/. Behind the storage key like
+# the other read endpoints that hand out whole records.
+# ---------------------------------------------------------------------
+
+
+@router.get("/evaluation/summary", dependencies=[Depends(require_storage_key)])
+def evaluation_summary_route():
+
+    from src.services.evaluation_summary import evaluation_summary
+
+    return evaluation_summary()

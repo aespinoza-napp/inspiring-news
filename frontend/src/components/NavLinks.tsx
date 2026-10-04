@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/scraper", label: "Scraper" },
   { href: "/sources", label: "Sources" },
   { href: "/graph", label: "Graph" },
+  { href: "/evaluation", label: "Evaluation" },
 ];
 
 export function NavLinks() {
