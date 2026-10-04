@@ -68,7 +68,7 @@ def test_llm_metrics_normalizes_full_response():
         "style": {"score": 70, "summary": "Fine.", "issues": []},
     })
 
-    metrics = corrector._llm_metrics("some text")
+    metrics = corrector.llm_metrics("some text")
 
     assert set(metrics.keys()) == {"grammar", "factConsistency", "seo", "hallucinationIndex", "style"}
     assert metrics["seo"].score == 40
@@ -79,7 +79,7 @@ def test_llm_metrics_defaults_missing_keys():
 
     corrector = make_corrector(llm_response={"grammar": {"score": 90, "summary": "Clean."}})
 
-    metrics = corrector._llm_metrics("some text")
+    metrics = corrector.llm_metrics("some text")
 
     assert metrics["grammar"].score == 90
     assert metrics["style"].score == 0.0
@@ -90,7 +90,7 @@ def test_llm_metrics_defaults_when_client_returns_none():
 
     corrector = make_corrector(llm_response=None)
 
-    metrics = corrector._llm_metrics("some text")
+    metrics = corrector.llm_metrics("some text")
 
     assert all(metric.score == 0.0 for metric in metrics.values())
 
@@ -116,3 +116,41 @@ def test_correct_returns_all_seven_metrics():
         "hallucinationIndex",
         "style",
     }
+
+
+def test_null_issues_lose_nothing_but_the_list():
+    """`"issues": null` raised TypeError and lost all five metrics."""
+
+    corrector = make_corrector(llm_response={
+        "grammar": {"score": 90, "summary": "Clean.", "issues": None},
+        "style": {"score": 70, "summary": "Fine.", "issues": "One long sentence."},
+    })
+
+    metrics = corrector.llm_metrics("some text")
+
+    assert metrics["grammar"].score == 90
+    assert metrics["grammar"].issues == []
+    assert metrics["style"].issues == ["One long sentence."]
+
+
+def test_a_score_that_is_not_a_number_is_unavailable_not_zero():
+    """
+    The writing benchmark averages these per model: a 0 standing in for
+    "high" or a missing score would read as the harshest judgement.
+    """
+
+    corrector = make_corrector(llm_response={
+        "grammar": {"score": "high", "summary": "Clean."},
+        "factConsistency": {"summary": "No score at all."},
+        "seo": {"score": None, "summary": "Null."},
+        "hallucinationIndex": {"score": float("nan"), "summary": "NaN."},
+        "style": {"score": "85", "summary": "A numeric string is still a number."},
+    })
+
+    metrics = corrector.llm_metrics("some text")
+
+    for key in ("grammar", "factConsistency", "seo", "hallucinationIndex"):
+        assert metrics[key].score == 0.0
+        assert "unavailable" in metrics[key].summary.lower(), key
+
+    assert metrics["style"].score == 85

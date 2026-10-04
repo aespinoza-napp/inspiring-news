@@ -491,7 +491,7 @@ class HarnessRunner:
             "gitCommit": self.commit,
             "startedAt": now(),
             "settings": {
-                "LLM_BASE_URL": _without_credentials(settings.LLM_BASE_URL),
+                "LLM_BASE_URL": without_credentials(settings.LLM_BASE_URL),
                 "LLM_TIMEOUT": settings.LLM_TIMEOUT,
                 "SEARXNG_URL": settings.SEARXNG_URL,
                 "INFERENCE_URL": settings.INFERENCE_URL,
@@ -507,7 +507,7 @@ class HarnessRunner:
         }
 
 
-def _without_credentials(url: str) -> str:
+def without_credentials(url: str) -> str:
 
     parts = urlsplit(url)
 

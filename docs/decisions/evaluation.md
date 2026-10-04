@@ -435,6 +435,110 @@ The labeller owns the first two (standard library only, nothing from
 `backend/`): `python labeller/app.py stats` prints them as JSON. The
 harness report owns the last two, since they need the results.
 
+## Writing-model benchmark
+
+**Built on 2026-10-04** (Phase 5, Sprint 6): `backend/src/evaluation/writing.py`,
+tests in `backend/tests/evaluation/test_writing.py`. Not run yet: no
+model has been benchmarked.
+
+**What is benchmarked.** The corrector does not write, it judges: five
+scores and a summary each (grammar, factConsistency, seo,
+hallucinationIndex, style) from one LLM call. Readability and
+coverageVerification are deterministic and do not depend on the model.
+So a model is benchmarked as an editor, by running the corrector's own
+`TextCorrector.llm_metrics`, prompt included; a copy of the call would
+measure the copy. The run records the prompt's sha256, and a comparison
+refuses runs made with different prompts.
+
+**Why planted defects, not human scores.** A human score for "how good
+is this text's SEO" is an opinion per text; a planted defect is a fact.
+`backend/data/evaluation/writing/texts_en_es.jsonl` is six short news
+texts (three English, three Spanish, written for this set), each in a
+clean version and five versions with exactly one defect aimed at one
+metric:
+
+| Variant | Targets | The defect |
+|---|---|---|
+| `grammar` | grammar | agreement, spelling and tense errors |
+| `contradiction` | factConsistency | a figure or date that contradicts an earlier one |
+| `fabrication` | hallucinationIndex | an invented authority and sweeping claims |
+| `seo` | seo | a vague headline; the subject gone from the lead |
+| `style` | style | a casual, repetitive, exclamatory register |
+
+Each defect version against its clean text is a pair whose right answer
+is known: the targeted score should go down. 30 pairs, 15 per language.
+
+**The rubric**, in the order a model is judged:
+
+1. **Format compliance**: the share of judged texts for which all five
+   metrics came back usable. A metric the model left out, or whose score
+   is missing or not a number, is *unusable* - the corrector shows
+   "Evaluation unavailable" for it - and is never averaged as a 0. A
+   model below 95% is out, whatever it scores when it complies: the
+   editor would see "unavailable" on one text in twenty. 95% is reasoned,
+   not fitted.
+2. **Detection**: per pair, 1 when the defect version scored lower on
+   the targeted metric, 0.5 on a tie, 0 when higher, so a model that
+   gives every text the same score sits at 0.5 (chance), not 0. Reported
+   overall with a 95% percentile bootstrap interval over pairs, per
+   metric (with the mean drop) and per language. A pair with no usable
+   score on either side is *unscorable*, counted, and kept out of the
+   mean.
+3. **Defect named**: the share of defect texts whose targeted metric's
+   summary or issues name the defect, matched against the text's
+   `mentions`: whole words or phrases, case-insensitive; a trailing `*`
+   makes a stem (`repetit*`); an all-capitals mention (`WHO`, `OMS`) is
+   matched as written. A test holds that no mention quoted from a defect
+   text also matches its clean text: before that rule, "WHO" matched
+   every "who" and "a probado" matched inside the correct "ha probado".
+4. **Off-target drift** (lower is better): the mean absolute change, on
+   the four metrics a defect was not aimed at. A model that drops
+   everything when anything is wrong detects well and diagnoses badly.
+5. **Consistency** (lower is better): with `--repeats 2` or more, the
+   mean range (max - min) of a text's score across repeats. Temperature
+   is 0, and local models still vary.
+6. **Calibration**, read rather than ranked: each metric's mean score on
+   the clean texts. A model that scores clean, careful copy at 40 is
+   harsh, which is a product problem even when it ranks pairs right.
+7. **Cost and latency** decide between models the rubric cannot
+   separate: median seconds per text, completion tokens per text and per
+   second, and cost per 100 texts from `prices.json` (`n/a` without a
+   price, never 0).
+
+**Comparing models.** The first `--run` is the baseline (the local
+Ollama model). Each later run gets the paired difference in detection
+over the pairs both scored, with its interval. Two models whose paired
+interval includes 0 are not separated by this set, and the cheaper or
+faster one is chosen. With 30 pairs an interval of roughly ±15 points
+is expected, so only large differences will show.
+
+**What it does not measure.** Whether a model's scores agree with an
+editor's on real copy; whether its summaries are *useful*; the two
+deterministic metrics; and anything about writing, since the corrector
+writes nothing.
+
+```bash
+cd backend
+# Baseline, local (CPU limits as for the harness)
+LLM_TIMEOUT=180 LLM_MAX_CONCURRENCY=1 \
+  uv run python -m src.evaluation.cli writing run --model llama3.2:3b --repeats 2
+# Hosted, same command, different environment
+LLM_BASE_URL=https://api.groq.com/openai/v1 LLM_API_KEY=<key> \
+  uv run python -m src.evaluation.cli writing run --model <groq model id> --repeats 2
+# The comparison, baseline first
+uv run python -m src.evaluation.cli writing report \
+  --run data/evaluation/writing/runs/texts_en_es/<model>/<key> --run ... \
+  --prices data/evaluation/prices.json
+```
+
+A run is resumable exactly like the harness's: one fsynced line per
+(text, repeat), keyed by the text set's sha256, the model, the prompt's
+sha256 and `WRITING_VERSION`; units that errored or found the provider
+unreachable run again; raising `--repeats` later adds repeats to the same
+run. Raw runs go to `data/evaluation/writing/runs/` (gitignored); the
+comparison the paper quotes, `comparison.md` and `comparison.json`, to
+`data/evaluation/writing/reports/<set>/` (committed).
+
 ## Where it runs
 
 The harness needs `inference/`, SearXNG and the LLM, like any analysis.
@@ -470,6 +574,8 @@ The harness needs `inference/`, SearXNG and the LLM, like any analysis.
 | `retrieval.py` | retrieval | Reference hits and recall |
 | `attribution.py` | attribution | The stage table above |
 | `effort.py` | effort | Usable and confidently-wrong shares |
+| `usage.py` | cost | Tokens and latency per LLM call, run totals, prices |
+| `writing.py` | writing benchmark | The text set, its runner, the rubric, `writing run` / `writing report` |
 
 Run as `cd backend && uv run python -m src.evaluation.cli run --dataset
 data/evaluation/xfact_en_es_pilot.jsonl --model llama3.2:3b [--limit N]

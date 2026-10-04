@@ -10,6 +10,9 @@ The evaluation harness's one command.
 
     uv run python -m src.evaluation.cli table --run <dir> --run <dir> ... [--prices ...]
 
+    uv run python -m src.evaluation.cli writing run --model llama3.2:3b [--repeats 2] [--texts f.jsonl]
+    uv run python -m src.evaluation.cli writing report --run <dir> --run <dir> ... [--prices ...]
+
 The provider is configuration, never a flag: LLM_BASE_URL, LLM_API_KEY
 (and LLM_TIMEOUT, LLM_MAX_CONCURRENCY) from the environment or
 backend/.env, exactly as the API reads them. Ollama and Groq differ by
@@ -37,6 +40,7 @@ from src.evaluation.metrics import DEFAULT_RESAMPLES, DEFAULT_SEED
 from src.evaluation.report import models_table, write_report
 from src.evaluation.runner import CORPUS_MODES, SNAPSHOT, RunConfig, build_runner, default_runs_root
 from src.evaluation.usage import load_prices
+from src.evaluation.writing import build_writing_runner, load_texts, write_comparison
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +123,39 @@ def cmd_table(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_writing_run(args: argparse.Namespace) -> int:
+
+    runner = build_writing_runner(
+        load_texts(args.texts),
+        args.model or settings.LLM_MODEL,
+        root=Path(args.root) if args.root else None,
+    )
+
+    _stop_on_first_interrupt(runner.stop)
+
+    session = runner.run(repeats=args.repeats, limit=args.limit, fresh=args.fresh)
+
+    print(json.dumps({"run": str(runner.directory), **session}, indent=2))
+
+    return 0 if session["errors"] == 0 else 1
+
+
+def cmd_writing_report(args: argparse.Namespace) -> int:
+
+    target = write_comparison(
+        args.run,
+        prices=load_prices(args.prices) if args.prices else None,
+        seed=args.seed,
+        resamples=args.resamples,
+        root=Path(args.out) if args.out else None,
+    )
+
+    print(f"Comparison written to {target / 'comparison.md'}")
+    print((target / "comparison.md").read_text(encoding="utf-8"))
+
+    return 0
+
+
 def _report_options(command: argparse.ArgumentParser) -> None:
 
     command.add_argument("--prices", help="a prices file (data/evaluation/prices.json) to cost the run")
@@ -131,8 +168,8 @@ def _stop_on_first_interrupt(stop) -> None:
 
     def handler(signum, frame):
         print(
-            "\nStopping: no new claims; the ones in flight finish and are "
-            "written. Ctrl-C again to abort.",
+            "\nStopping: nothing new is started; what is in flight finishes "
+            "and is written. Ctrl-C again to abort.",
             file=sys.stderr,
         )
         stop()
@@ -175,6 +212,33 @@ def parser() -> argparse.ArgumentParser:
     table.add_argument("--run", required=True, action="append", help="a run directory; repeat per model")
     _report_options(table)
     table.set_defaults(handler=cmd_table)
+
+    writing = commands.add_parser(
+        "writing",
+        help="the writing-model benchmark: the corrector's five LLM metrics per model",
+    ).add_subparsers(dest="writing_command", required=True)
+
+    writing_run = writing.add_parser("run", help="run (or resume) a model over the text set")
+    writing_run.add_argument("--model", help=f"the LLM to judge with (default: LLM_MODEL, {settings.LLM_MODEL})")
+    writing_run.add_argument("--texts", help="the text set (default: data/evaluation/writing/texts_en_es.jsonl)")
+    writing_run.add_argument(
+        "--repeats",
+        type=int,
+        default=1,
+        help="times each text is judged; raising it later adds repeats to the same run",
+    )
+    writing_run.add_argument("--limit", type=int, help="only the first N texts")
+    writing_run.add_argument("--fresh", action="store_true", help="set the results aside and start over")
+    writing_run.add_argument("--root", help=argparse.SUPPRESS)
+    writing_run.set_defaults(handler=cmd_writing_run)
+
+    writing_report = writing.add_parser(
+        "report",
+        help="the rubric for one run, or several side by side (the first is the baseline)",
+    )
+    writing_report.add_argument("--run", required=True, action="append", help="a run directory; repeat per model")
+    _report_options(writing_report)
+    writing_report.set_defaults(handler=cmd_writing_report)
 
     return root
 

@@ -392,11 +392,11 @@ baseline against one hosted provider, on the corrector's metrics. **Cut:**
 OpenRouter and Together AI as separate benchmarks - both speak the same
 wire format as the providers kept and add the least that is new.
 
-- [ ] 🦙 Benchmark local Ollama models (baseline, free)
-- [ ] ⚡ Benchmark one hosted provider (Groq: speed)
+- [ ] 🟡 🦙 Benchmark local Ollama models (baseline, free) — **Oct 4: one command**: `cli writing run --model llama3.2:3b --repeats 2`, with the production CPU limits (`docs/decisions/evaluation.md` §Writing-model benchmark). Resumable like the harness. Left: the run.
+- [ ] 🟡 ⚡ Benchmark one hosted provider (Groq: speed) — **Oct 4**: the same command with `LLM_BASE_URL`/`LLM_API_KEY` pointed at Groq. Left: a key, the run, and Groq's price entered in `prices.json` on the day.
 - ✂️ OpenRouter and Together AI benchmarks — cut on Sep 29
-- [ ] 📏 Compare on the corrector's 5 LLM-based metrics: grammar, factConsistency, seo, hallucinationIndex, style (readability and coverageVerification are deterministic and do not depend on the model)
-- [ ] 📊 Build a scoring rubric + comparison table per model
+- [ ] 🟡 📏 Compare on the corrector's 5 LLM-based metrics: grammar, factConsistency, seo, hallucinationIndex, style (readability and coverageVerification are deterministic and do not depend on the model) — **Oct 4: built.** The model is benchmarked as the editor it is: 6 news texts (3 en, 3 es), each clean and with 5 planted defects, one per metric (`data/evaluation/writing/texts_en_es.jsonl`), so each of the 30 pairs has a known right answer: the targeted score should drop. The corrector's own `llm_metrics` runs, prompt included. Two corrector bugs fixed on the way: `"issues": null` lost all five metrics, and a missing or non-numeric score counted as a 0 judgement. Left: the runs.
+- [x] 📊 Build a scoring rubric + comparison table per model — Oct 4: the rubric is `docs/decisions/evaluation.md` §Writing-model benchmark (format compliance as a gate, then detection with a bootstrap interval, defect named, off-target drift, repeat consistency, clean-text calibration, cost and latency); `cli writing report --run A --run B ...` writes `comparison.md`/`.json` with each model paired against the first. 21 tests (`tests/evaluation/test_writing.py`), the rubric checked against scores worked out by hand.
 - [ ] 🟡 💰 Log cost/latency/quality trade-offs per provider — **Oct 2: the logging is built**: every harness and writing-benchmark record carries its LLM calls, tokens and latency (metered under `LLMClient`, so the client measured is production's), summed per session in `run.json` and per run in each report, priced from `data/evaluation/prices.json` (`--prices`). Provider swap stays `LLM_BASE_URL`/`LLM_API_KEY` only. Left: the runs (Ollama, then Groq, same commands with a different environment), the Groq price filled in on the day, and reading the trade-off off `cli table` / `cli writing report`.
 
 ### Sprint 7 (Nov 17 – Dec 10) · 60h — 🕵️ Verification models
