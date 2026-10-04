@@ -21,10 +21,14 @@ _VALID_STANCES = {stance.value for stance in EvidenceStance}
 _WHITESPACE = re.compile(r"\s+")
 
 # The explanation a claim gets when the model *was* reached but sent back
-# nothing usable (an empty or unparseable response). No flag records this
-# case - unlike `llm_unreachable` - so the text is the only trace of it in
-# a stored report. Named so the reader view (services/reader/views.py) can
-# recognise it rather than show it as if the model had judged the claim.
+# nothing usable (an empty or unparseable response, or JSON that is not an
+# object). No flag records this case - unlike `llm_unreachable` - so the
+# text is the only trace of it in a stored report. A constant because two
+# readers match it: the reader view (services/reader/views.py), so it does
+# not show it as if the model had judged the claim, and the evaluation
+# harness, which counts it per model - a small model failing the output
+# format is a model-quality result. A copy of the sentence in either would
+# stop matching the day it is reworded here.
 INVALID_OUTPUT_EXPLANATION = "LLM verification unavailable or returned invalid output."
 
 SYSTEM_PROMPT = (

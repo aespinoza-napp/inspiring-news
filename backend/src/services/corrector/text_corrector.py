@@ -1,3 +1,5 @@
+import math
+
 from src.config.settings import settings
 from src.models.corrector.correction_metric import CorrectionMetric
 from src.models.nlp.quality import Quality
@@ -11,6 +13,14 @@ from src.services.admission.positive_impact import (
 from src.services.llms import LLMClient
 
 LLM_METRIC_KEYS = ("grammar", "factConsistency", "seo", "hallucinationIndex", "style")
+
+# What a metric says when the model did not return a usable entry for it.
+# A constant so the writing benchmark can count these per model: failing
+# the output format is part of what it measures, and a copy of this
+# sentence there would stop matching the day it is reworded here.
+UNAVAILABLE_SUMMARY = (
+    "Evaluation unavailable - the LLM did not return a usable result for this metric."
+)
 
 SYSTEM_PROMPT = (
     "You are an expert editor evaluating a piece of writing for a "
@@ -65,7 +75,7 @@ class TextCorrector:
             "coverageVerification": self._coverage(text, language),
         }
 
-        metrics.update(self._llm_metrics(text))
+        metrics.update(self.llm_metrics(text))
 
         return metrics
 
@@ -104,7 +114,19 @@ class TextCorrector:
             issues=result.reasons,
         )
 
-    def _llm_metrics(self, text: str) -> dict[str, CorrectionMetric]:
+    def llm_metrics(self, text: str) -> dict[str, CorrectionMetric]:
+        """
+        The five model-dependent metrics, from one LLM call.
+
+        Public because the writing benchmark (src/evaluation/writing.py)
+        runs exactly this per model: the two deterministic metrics do not
+        depend on the model, and benchmarking a copy of this call would
+        measure the copy.
+
+        Raises LLMUnavailableError when the provider was never reached,
+        as complete_json does; an answer that is not usable JSON comes
+        back as UNAVAILABLE_SUMMARY on every metric instead.
+        """
 
         result = self.llm.complete_json(SYSTEM_PROMPT, text)
 
@@ -120,17 +142,32 @@ class TextCorrector:
         if not isinstance(item, dict):
             return CorrectionMetric(
                 score=0.0,
-                summary="Evaluation unavailable - the LLM did not return a usable result for this metric.",
+                summary=UNAVAILABLE_SUMMARY,
             )
 
+        # A missing or non-numeric score is a format failure, not a 0: the
+        # writing benchmark averages scores per model, and a 0 standing in
+        # for "high" or null would read as the harshest judgement.
         try:
-            score = max(0.0, min(float(item.get("score", 0.0)), 100.0))
-        except (TypeError, ValueError):
-            score = 0.0
+            score = float(item["score"])
+        except (KeyError, TypeError, ValueError):
+            score = math.nan
+
+        if not math.isfinite(score):
+            return CorrectionMetric(
+                score=0.0,
+                summary=UNAVAILABLE_SUMMARY,
+            )
+
+        score = max(0.0, min(score, 100.0))
+
+        # `or []`: a model that sends "issues": null otherwise raised
+        # TypeError here and lost all five metrics, not just this list.
+        raw_issues = item.get("issues") or []
 
         issues = [
             str(issue)
-            for issue in item.get("issues", [])
+            for issue in (raw_issues if isinstance(raw_issues, list) else [raw_issues])
             if isinstance(issue, (str, int, float))
         ]
 

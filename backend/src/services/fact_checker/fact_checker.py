@@ -185,6 +185,9 @@ class FactChecker:
         claim: Claim,
         on_phase: Optional[OnPhase] = None,
         thresholds: PipelineThresholds | None = None,
+        *,
+        context: ArticleContext | None = None,
+        language: str | None = None,
     ) -> FactCheck:
         """
         Verify one claim on its own: retrieve evidence, rank it, ask the
@@ -195,6 +198,14 @@ class FactChecker:
         exactly this, so the standalone checker and the pipeline cannot
         drift apart in what they consider verified.
 
+        `context` and `language` are what an article run hands every
+        claim, and what the evaluation harness has to hand a labelled
+        one. Without `language` the query builder falls back to English,
+        so a Spanish claim was searched with the English lexicon; without
+        `context.url` the claim's own article could come back as evidence
+        for it. Keyword-only and optional: /verify-claim has neither and
+        passes neither.
+
         Note this skips claim selection: that judges an *article*, and a
         bare claim has none. (Admission is not part of FactChecker at all.)
         """
@@ -203,6 +214,8 @@ class FactChecker:
             claim,
             on_phase or _noop,
             thresholds or PipelineThresholds(),
+            context=context,
+            language=language,
         )
 
     @staticmethod

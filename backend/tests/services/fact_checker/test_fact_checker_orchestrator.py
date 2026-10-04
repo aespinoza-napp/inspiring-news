@@ -672,3 +672,58 @@ def test_a_contradicted_true_is_not_described_as_citing_nothing(repository):
     assert check.verdict == Verdict.PARTIALLY_TRUE
     assert "recalibrated to PARTIALLY_TRUE" in check.stage_note
     assert "cited no evidence" not in check.stage_note
+
+
+def test_check_claim_hands_its_context_and_language_to_retrieval(repository):
+    """
+    An article run always gave each claim its language and article; a
+    lone claim through check_claim got neither, so the evaluation harness
+    would have searched 40 Spanish pilot claims with the English lexicon
+    and let a custom-set claim be "confirmed" by its own article.
+    """
+
+    from src.services.fact_checker.claim_selector import ArticleContext
+
+    claim = create_claim(text="El 30% de la energía fue renovable en 2024.")
+
+    retriever = FakeEvidenceRetriever({})
+
+    checker = FactChecker(
+        repository,
+        evidence_retriever=retriever,
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({}),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    context = ArticleContext(url="https://example.org/own-article")
+
+    checker.check_claim(claim, context=context, language="es")
+
+    _, _, passed_context, passed_language = retriever.calls[0]
+
+    assert passed_context is context
+    assert passed_language == "es"
+
+
+def test_check_claim_without_context_or_language_is_unchanged(repository):
+    """/verify-claim passes neither, and must keep behaving as it did."""
+
+    claim = create_claim(text="A claim with no article around it.")
+
+    retriever = FakeEvidenceRetriever({})
+
+    checker = FactChecker(
+        repository,
+        evidence_retriever=retriever,
+        ranker=FakeRanker(),
+        verifier=FakeVerifier({}),
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    checker.check_claim(claim)
+
+    _, _, passed_context, passed_language = retriever.calls[0]
+
+    assert passed_context is None
+    assert passed_language is None

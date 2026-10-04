@@ -355,8 +355,8 @@ attribution table. Each item has a ready `/goal` in `docs/goals.md`
   are shown, not averaged.
 
 - [ ] ❓ Fix 2–3 research questions, each with the metric that answers it · 3h (by Oct 13) — suggested: **RQ1** how well an open-web, low-cost pipeline verifies claims from constructive news in Spanish and English, against a temporally sound gold set; **RQ2** where it fails - retrieval, ranking or reasoning; **RQ3** how much of the verification work it takes off a journalist. Whatever answers none of them is cut or moved to future work.
-- [ ] 🧰 Harness: run the pipeline's own `check_claim` over a JSONL set (x-fact and the custom set share a format) · 12h — per claim: verdict, raw verdict, confidence, stage reached, the queries sent, every candidate and ranked source, latency; per model, cached and resumable, so a crash at claim 90 does not re-pay claims 1–89
-- [ ] 📐 Metrics · 6h — accuracy, macro-F1 and per-class precision/recall, the confusion matrix, bootstrap confidence intervals; search-unavailable runs and evidence newer than the claim (the guide's Rule 3) reported apart rather than folded into the error rate
+- [x] 🧰 Harness: run the pipeline's own `check_claim` over a JSONL set (x-fact and the custom set share a format) · 12h — per claim: verdict, raw verdict, confidence, stage reached, the queries sent, every candidate and ranked source, latency; per model, cached and resumable, so a crash at claim 90 does not re-pay claims 1–89. **Oct 2 (G2):** `check_claim` takes `context` and `language`; `backend/src/evaluation/` (`dataset`, `record`, `runner`, `store`, `cli`) runs `uv run python -m src.evaluation.cli run --dataset ... --model ...`, keyed by dataset/model/thresholds/corpus, resumable (torn last line cut and re-run, errors retried, `--retry-unavailable`, `--fresh` sets aside), corpus snapshotted per run, first Ctrl-C stops cleanly. Loads the 64-row pilot and the `manual/` directory as they stand. Verified by `backend/tests/evaluation/` with the shared fakes only (G2's five proofs, plus the store, dataset, CLI and usage tests); **not yet run against live services** — that is the pilot.
+- [x] 📐 Metrics · 6h — accuracy, macro-F1 and per-class precision/recall, the confusion matrix, bootstrap confidence intervals; search-unavailable runs and evidence newer than the claim (the guide's Rule 3) reported apart rather than folded into the error rate. **Oct 2 (G3):** `metrics.py`, `report.py`; `cli report --run <dir> [--compare <dir>]` writes `metrics.json`, `report.md` and `run.json` to `data/evaluation/reports/<dataset>/<model>/<key>/`. Also Cohen's kappa against gold, coverage and selective accuracy, seeded percentile bootstrap (10,000) and a paired bootstrap of B − A; error / searchUnavailable / llmUnreachable by id and `temporalLeak` / `verdictLeak` flags apart; breakdowns by language, topic group, claim type, tier and site; `cli table` for several models. Verified against hand-computed values on a ten-claim fixture built with `record.py`, bootstrap determinism, identical runs differing by exactly 0, and `report.md` rendered from a fixture run. Not yet run on real results.
 - [ ] 🔍 Retrieval evaluation · 4h (RQ2) — did the system find the annotator's reference links, or their domains, among its candidates and among the evidence it ranked
 - [ ] 🧭 Attribute every wrong verdict to a stage · 5h (RQ2) — retrieval (nothing pertinent found), ranking (it was found and cut), reasoning (it was ranked and misread) or aggregation - from the trace each run already records
 - [ ] ⏱️ Journalist-effort metrics · 5h (RQ3) — the claim selector's precision (the labelling batch's skip reasons, recorded since Sep 29), time per fact (to add to the labeller), and the share of verdicts usable without re-checking
@@ -392,23 +392,23 @@ baseline against one hosted provider, on the corrector's metrics. **Cut:**
 OpenRouter and Together AI as separate benchmarks - both speak the same
 wire format as the providers kept and add the least that is new.
 
-- [ ] 🦙 Benchmark local Ollama models (baseline, free)
-- [ ] ⚡ Benchmark one hosted provider (Groq: speed)
+- [ ] 🟡 🦙 Benchmark local Ollama models (baseline, free) — **Oct 4: one command**: `cli writing run --model llama3.2:3b --repeats 2`, with the production CPU limits (`docs/decisions/evaluation.md` §Writing-model benchmark). Resumable like the harness. Left: the run.
+- [ ] 🟡 ⚡ Benchmark one hosted provider (Groq: speed) — **Oct 4**: the same command with `LLM_BASE_URL`/`LLM_API_KEY` pointed at Groq. Left: a key, the run, and Groq's price entered in `prices.json` on the day.
 - ✂️ OpenRouter and Together AI benchmarks — cut on Sep 29
-- [ ] 📏 Compare on the corrector's 5 LLM-based metrics: grammar, factConsistency, seo, hallucinationIndex, style (readability and coverageVerification are deterministic and do not depend on the model)
-- [ ] 📊 Build a scoring rubric + comparison table per model
-- [ ] 💰 Log cost/latency/quality trade-offs per provider
+- [ ] 🟡 📏 Compare on the corrector's 5 LLM-based metrics: grammar, factConsistency, seo, hallucinationIndex, style (readability and coverageVerification are deterministic and do not depend on the model) — **Oct 4: built.** The model is benchmarked as the editor it is: 6 news texts (3 en, 3 es), each clean and with 5 planted defects, one per metric (`data/evaluation/writing/texts_en_es.jsonl`), so each of the 30 pairs has a known right answer: the targeted score should drop. The corrector's own `llm_metrics` runs, prompt included. Two corrector bugs fixed on the way: `"issues": null` lost all five metrics, and a missing or non-numeric score counted as a 0 judgement. Left: the runs.
+- [x] 📊 Build a scoring rubric + comparison table per model — Oct 4: the rubric is `docs/decisions/evaluation.md` §Writing-model benchmark (format compliance as a gate, then detection with a bootstrap interval, defect named, off-target drift, repeat consistency, clean-text calibration, cost and latency); `cli writing report --run A --run B ...` writes `comparison.md`/`.json` with each model paired against the first. 21 tests (`tests/evaluation/test_writing.py`), the rubric checked against scores worked out by hand.
+- [ ] 🟡 💰 Log cost/latency/quality trade-offs per provider — **Oct 2: the logging is built**: every harness and writing-benchmark record carries its LLM calls, tokens and latency (metered under `LLMClient`, so the client measured is production's), summed per session in `run.json` and per run in each report, priced from `data/evaluation/prices.json` (`--prices`). Provider swap stays `LLM_BASE_URL`/`LLM_API_KEY` only. Left: the runs (Ollama, then Groq, same commands with a different environment), the Groq price filled in on the day, and reading the trade-off off `cli table` / `cli writing report`.
 
 ### Sprint 7 (Nov 17 – Dec 10) · 60h — 🕵️ Verification models
 
 70h → 60h on Sep 29: the guardrail stress test moved to the testing track.
 
-- [ ] 🔍 Benchmark models for `LLMVerifier` (claim verification accuracy)
+- [ ] 🟡 🔍 Benchmark models for `LLMVerifier` (claim verification accuracy) — **Oct 2: one command per model**: `cli run --dataset <set> --model <m>` (resumable), then `cli table --run <dir> --run <dir> ...` for the side-by-side and `cli report --run B --compare A` for the paired difference. Left: the runs, once the labels are settled (Oct 30).
 - ↪️ Stress-test hallucination guardrails — moved to the testing track (November), Sep 29.
-- [ ] 🎯 Compare verdict agreement vs. human-labeled ground truth set
-- [ ] 🧮 Re-tune `ConfidenceScorer` weights per best-performing model
-- [ ] 🏁 Select final default model(s) + document rationale
-- [ ] 📄 Draft results section for the paper (model comparison data)
+- [ ] 🟡 🎯 Compare verdict agreement vs. human-labeled ground truth set — **Oct 2: computed by every report**: accuracy, macro-F1, Cohen's kappa against gold (the labeller's own agreement statistic), the confusion matrix, with intervals. Left: running it on the joined custom set, `cli run --dataset data/evaluation/custom_en_es.jsonl --model <m>` then `cli report`.
+- [ ] 🧮 Re-tune `ConfidenceScorer` weights per best-performing model — needs real runs. The data: one `cli run` per candidate `CONFIDENCE_*` pair set in the environment (the run key includes the weights since Oct 2, so each is its own run), compared with `cli report --run B --compare A`.
+- [ ] 🏁 Select final default model(s) + document rationale — needs real runs: `cli table` over the verification runs and `cli writing report` over the writing runs are the evidence.
+- [ ] 📄 Draft results section for the paper (model comparison data) — needs real runs; the numbers will come from the committed `data/evaluation/reports/` (`report.md`, `models.md`, `comparison.md`).
 
 ---
 
