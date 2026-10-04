@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import classify
@@ -41,6 +42,10 @@ class DiscoveryResult:
 
     # The last failure, when every strategy came back empty or broken.
     error: str | None = None
+
+    # URL -> when the feed says it was published, for the URLs whose
+    # strategy knows (the RSS feed); the others have none.
+    published: dict[str, datetime] = field(default_factory=dict)
 
 
 class DiscoveryService:
@@ -84,7 +89,8 @@ class DiscoveryService:
             status = None
 
             try:
-                urls = strategy.discover(source=source, topics=topics)
+                entries = _entries(strategy, source, topics)
+                urls = [url for url, _ in entries]
                 outcome = Outcome.OK if urls else Outcome.NO_CONTENT
                 error = None if urls else "no matching article links"
             except Exception as exc:
@@ -108,8 +114,18 @@ class DiscoveryService:
                 result.urls = urls
                 result.method = name
                 result.error = None
+                result.published = {url: at for url, at in entries if at is not None}
                 return result
 
             result.error = f"{name}: {error}"
 
         return result
+
+
+def _entries(strategy: DiscoveryStrategy, source: NewsSource, topics) -> list[tuple[str, datetime | None]]:
+    """(url, feed time) from a strategy that knows the times, (url, None) from one that does not."""
+
+    if hasattr(strategy, "discover_entries"):
+        return strategy.discover_entries(source=source, topics=topics)
+
+    return [(url, None) for url in strategy.discover(source=source, topics=topics)]

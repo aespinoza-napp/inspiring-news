@@ -4,6 +4,7 @@ RSS discovery strategy.
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
 import feedparser
@@ -72,12 +73,27 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         topics: list[str] = None,
     ) -> list[str]:
 
+        return [url for url, _ in self.discover_entries(source, topics)]
+
+    def discover_entries(
+        self,
+        source: NewsSource,
+        topics: list[str] = None,
+    ) -> list[tuple[str, datetime | None]]:
+        """
+        Each article URL with the time the feed says it was published -
+        the most precise publication time there is: an article page
+        often states only its date, a feed item its minute and timezone.
+        It is what the freshness report measures reception against
+        (src/services/freshness.py).
+        """
+
         if not source.rss_url:
             return []
 
         feed = feedparser.parse(self.fetcher.get(str(source.rss_url)).html)
 
-        urls: list[str] = []
+        entries: dict[str, datetime | None] = {}
 
         normalized_topics = {
             topic.lower().strip()
@@ -106,9 +122,9 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
             if by_topic and not matches_url and not self._matches_keywords(entry, keywords):
                 continue
 
-            urls.append(link)
+            entries.setdefault(link, _entry_time(entry))
 
-        return list(dict.fromkeys(urls))
+        return list(entries.items())
 
     @staticmethod
     def _filters_by_topic(source: NewsSource) -> bool:
@@ -219,3 +235,23 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
             or bool(DATED_PATH.search(path))
             or len([word for word in re.split(r"[-_]", slug) if word]) >= MIN_SLUG_WORDS
         )
+
+
+def _entry_time(entry) -> datetime | None:
+    """
+    feedparser normalises pubDate (or, failing it, the updated date) to
+    a UTC struct_time; None when the item has neither, or an unreadable
+    one. Never "now": a missing time must stay missing.
+    """
+
+    for name in ("published_parsed", "updated_parsed"):
+
+        value = getattr(entry, name, None)
+
+        if value:
+            try:
+                return datetime(*value[:6], tzinfo=timezone.utc)
+            except (TypeError, ValueError):
+                continue
+
+    return None

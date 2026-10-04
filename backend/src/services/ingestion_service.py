@@ -38,6 +38,7 @@ from src.models.storage.lineage import DataLayer
 from src.services.concurrency import bounded_map
 from src.services.scraper.article_stats import comparable_url
 from src.services.scraper.discovery import DiscoveryResult, DiscoveryService
+from src.services.scraper.sightings import Sightings, sightings as default_sightings
 
 logger = getLogger(__name__)
 
@@ -92,10 +93,12 @@ class IngestionService:
         sources: list[NewsSource],
         lake,
         discovery: DiscoveryService | None = None,
+        sightings: Sightings | None = None,
     ):
         self.sources = sources
         self.lake = lake
         self.discovery = discovery or DiscoveryService()
+        self.sightings = sightings if sightings is not None else default_sightings
         self.last_run: dict | None = None
 
     def enabled_sources(self) -> list[NewsSource]:
@@ -157,6 +160,18 @@ class IngestionService:
                 # syndicating one article queue it once.
                 known.add(key)
                 fresh.append(url)
+
+            # When we first knew of each new article, and when its feed
+            # says it was published - deferred ones included: the wait
+            # until a later run queues them is part of their delay.
+            # src/services/freshness.py.
+            self.sightings.record(
+                fresh,
+                source_id=source.id,
+                method=result.method,
+                published=result.published,
+                seen_at=started,
+            )
 
             for url in fresh[:per_source]:
 

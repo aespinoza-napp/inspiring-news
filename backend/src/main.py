@@ -9,6 +9,7 @@ from src.container import job_store
 from src.services.job_journal import JobJournal
 from src.services.log_format import configure_logging
 from src.services.scraper.request_stats import request_stats
+from src.services.scraper.sightings import sightings
 
 # Python's root logger defaults to WARNING, so plain logger.info() calls
 # (e.g. src/services/job_runner.py's per-phase timing) would silently
@@ -30,6 +31,9 @@ async def lifespan(app: FastAPI):
         # Same reasoning: counts persist only for the real app, so the
         # tests' fetches never land in the lake's stats file.
         request_stats.attach(settings.LAKE_PATH / "stats" / "scraper_requests.json")
+
+        # When ingestion first saw each article, for the freshness report.
+        sightings.attach(settings.LAKE_PATH / "stats" / "sightings.json")
 
     yield
 

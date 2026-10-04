@@ -19,6 +19,8 @@ downloaded (see `strategies/html.py`).
 from __future__ import annotations
 
 import json
+import re
+from datetime import datetime
 from typing import Iterable
 
 from bs4 import BeautifulSoup, Tag
@@ -123,6 +125,7 @@ def _metadata(soup: BeautifulSoup, declared: dict, selectors: dict) -> dict:
         "title": title,
         "author": author,
         "published_at": _date_only(published),
+        "published_time": _timestamp(published),
         "summary": _meta(soup, "og:description", "description"),
         "lead_image": _meta(soup, "og:image"),
     }
@@ -139,6 +142,33 @@ def _text(value) -> str | None:
     value = " ".join(value.split())
 
     return value or None
+
+
+# A time of day after the date: "2026-10-04T08:15", "2026-10-04 08:15".
+_HAS_TIME = re.compile(r"^\s*\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}")
+
+
+def _timestamp(value: str | None) -> datetime | None:
+    """
+    The full publication time, only when the page states one. A bare
+    date is not a time, and neither is exactly midnight: sites that know
+    only the day write "T00:00:00", and reading that as a time would
+    invent hours of delay. Naive values are kept naive - the page did
+    not say its timezone, and the freshness report counts those apart.
+    """
+
+    if not value or not _HAS_TIME.match(value):
+        return None
+
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+    if (parsed.hour, parsed.minute, parsed.second) == (0, 0, 0):
+        return None
+
+    return parsed
 
 
 def _date_only(value: str | None) -> str | None:

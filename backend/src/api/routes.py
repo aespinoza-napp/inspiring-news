@@ -661,6 +661,22 @@ def scraped_articles():
     return article_stats(get_datalake_repository())
 
 
+@router.get("/scraper/freshness", dependencies=[Depends(require_storage_key)])
+def scraped_freshness():
+    """
+    How long articles take to reach us after they are published, per
+    source: published -> first seen by ingestion -> fetched -> available
+    on the reader, in hours, from the feed's or the page's own time.
+    src/services/freshness.py says what each lag means and what it does
+    not.
+    """
+
+    from src.services.freshness import freshness
+    from src.services.scraper.sightings import sightings
+
+    return freshness(get_datalake_repository(), sightings.all())
+
+
 # ---------------------------------------------------------------------
 # Reader
 #

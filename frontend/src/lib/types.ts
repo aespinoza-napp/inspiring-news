@@ -814,3 +814,54 @@ export interface GraphSyncReport {
   articles: number;
   errors: { item: string; error: string }[];
 }
+
+// GET /scraper/freshness (backend src/services/freshness.py): how long
+// articles take to reach us after they are published.
+
+export type FreshnessLag = "seen" | "queue" | "reception" | "processing" | "available";
+
+export interface FreshnessStat {
+  n: number;
+  median: number | null;
+  p90: number | null;
+  /** Published after we fetched it: a wrong timezone or a rewritten feed time. Kept out of the median. */
+  negative: number;
+}
+
+export interface FreshnessSummary {
+  articles: number;
+  ingested: number;
+  publishable: number;
+  publishedFrom: { feed: number; page: number; date: number; none: number };
+  noTimezone: number;
+  /** Lags in hours, between precise times only. */
+  hours: Record<FreshnessLag, FreshnessStat>;
+  /** Fetched date minus published date, for articles that state only a date. */
+  receptionDays: FreshnessStat;
+}
+
+export interface FreshnessArticle {
+  key: string;
+  url: string;
+  sourceId: string | null;
+  domain: string;
+  title: string | null;
+  via: "ingestion" | "posted";
+  publishedAt: string | null;
+  publishedFrom: "feed" | "page" | "date" | null;
+  noTimezone: boolean;
+  firstSeenAt: string | null;
+  fetchedAt: string | null;
+  analysedAt: string | null;
+  availableAt: string | null;
+  publishable: boolean;
+  lagHours: Record<FreshnessLag, number | null>;
+  receptionDays: number | null;
+}
+
+export interface Freshness {
+  totals: FreshnessSummary;
+  sources: (FreshnessSummary & { source: string })[];
+  articles: FreshnessArticle[];
+  sightings: number;
+}

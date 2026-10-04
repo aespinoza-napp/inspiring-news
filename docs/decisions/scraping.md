@@ -147,6 +147,48 @@ URLs for National Geographic, Reuters, RTVE and SINC return **404** -
 earlier read here as "malformed XML", which was feedparser parsing the
 404 page - and need replacing in their YAMLs.
 
+## Time to reception: when was it published, when did we have it
+
+Added 2026-10-04. Both extractors cut the publication time to a date, and
+discovery threw away the feed item's time, so "how long after publication
+did we get this?" could only be answered to the day. Now:
+
+- **The feed's time is kept.** `RSSDiscoveryStrategy.discover_entries`
+  returns each URL with feedparser's `published_parsed` (or
+  `updated_parsed`), UTC; `DiscoveryResult.published` carries it. Checked
+  live the same day: all 1,248 URLs from the 29 feeds that answered had one.
+  Topic pages and trafilatura's feed search give none.
+- **The page's time is kept,** to the minute, when the page states one
+  (`article:published_time`, JSON-LD `datePublished`, `<time datetime>`):
+  `ExtractionResult.published_time`, stored in the raw record as
+  `article.metadata.publishedTime`. A bare date is not a time, and neither
+  is exactly midnight - date-only sites write `T00:00:00`. Only for stored
+  articles (`TIMED_PURPOSES`: article, ingestion), since it costs one more
+  parse of the page when trafilatura won. Live: 6 of 7 sampled articles
+  stated their time to the second. `published_at` keeps meaning the date.
+- **When ingestion first saw each URL** is recorded
+  (`services/scraper/sightings.py`, `lake/stats/sightings.json`): first
+  sighting kept, keyed by host and path, deferred URLs included. Only
+  ingestion records: the probe, `/sources` and the labelling batch see
+  articles that are never queued.
+
+`services/freshness.py` (`GET /scraper/freshness`, the Time to reception
+panel on `/scraper`) joins those with the lake's own times - the first raw
+`fetched_at`, the first processed record, the first publishable
+exploitation record - and reports per article and per source, in hours:
+**seen** (published -> first seen: the feed and our polling), **queue**
+(first seen -> fetched: our backlog), **reception** (published -> fetched)
+and **available** (published -> on the reader). Precise times only; an
+article with only a date gets `receptionDays`, apart. A negative lag (a
+wrong timezone, a rewritten feed time) is counted, not averaged; a page
+time with no timezone is flagged. The lake's naive timestamps are read as
+the local time of the machine that wrote them.
+
+What it means today: ingestion runs only when someone presses Ingest, so
+"seen" is mostly the time until the next press. Queue and available are
+the pipeline's own. Articles already in the lake before 2026-10-04 have no
+precise time and no sighting; the numbers start with the next ingestion.
+
 ## Topic section pages: articles without a feed
 
 `strategies/topic_pages.py`. Four feed URLs went 404 and their homepages

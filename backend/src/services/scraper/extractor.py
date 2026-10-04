@@ -53,8 +53,14 @@ BROWSER_PURPOSES = {
 # The fields a parser can find the text and still miss.
 METADATA_FIELDS = ("title", "author", "published_at", "summary", "lead_image")
 
+# Articles that are stored, and so get a publication time to the minute
+# for the freshness report (src/services/freshness.py). Trafilatura gives
+# only a date, so it costs one more parse of the page: worth it for the
+# article, not for the dozens of evidence pages a claim reads.
+TIMED_PURPOSES = {Purpose.ARTICLE.value, Purpose.INGESTION.value}
 
-def _fill_metadata(result, source: NewsSource, page):
+
+def _fill_metadata(result, source: NewsSource, page, timed: bool = False):
     """
     Fills whatever metadata the winning parser missed from the same page,
     at no extra request. Trafilatura often finds an article's text and
@@ -62,7 +68,9 @@ def _fill_metadata(result, source: NewsSource, page):
     byline usually is. What the winner found is never overwritten.
     """
 
-    if page is None or all(getattr(result, name) for name in METADATA_FIELDS):
+    fields = METADATA_FIELDS + (("published_time",) if timed else ())
+
+    if page is None or all(getattr(result, name) for name in fields):
         return result
 
     try:
@@ -72,7 +80,7 @@ def _fill_metadata(result, source: NewsSource, page):
 
     missing = {
         name: found[name]
-        for name in METADATA_FIELDS
+        for name in fields
         if not getattr(result, name) and found.get(name)
     }
 
@@ -253,7 +261,12 @@ class ExtractorService:
             last = attempt
 
             if attempt.result is not None:
-                extracted = _fill_metadata(attempt.result, source, attempt.page)
+                extracted = _fill_metadata(
+                    attempt.result,
+                    source,
+                    attempt.page,
+                    timed=purpose_value in TIMED_PURPOSES,
+                )
                 winner = tried[-1]
                 break
 
@@ -312,4 +325,10 @@ class ExtractorService:
             published_at=extracted.published_at,
             content=extracted.body,
             image_url=extracted.lead_image,
+            # Kept in the raw layer for the freshness report; nothing
+            # downstream reads it, so no response shape changes.
+            metadata=(
+                {"publishedTime": extracted.published_time.isoformat()}
+                if extracted.published_time else {}
+            ),
         )

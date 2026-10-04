@@ -13,6 +13,7 @@ backend (`backend/src/api/routes.py`), not here.
 | `jobs/batch/route.ts` | `POST` / `GET /analyze/jobs/batch` | `useBatchAnalysisJobs` — the Analyzer's bulk mode |
 | `jobs/[jobId]/route.ts` | `GET /analyze/jobs/{jobId}` | `useAnalysisJob` — polled every second for progress. **Must keep `cache: "no-store"`** on its `fetch()` — see `CLAUDE.md`, this bit the project once already (stale cached responses made the UI look permanently stuck) |
 | `correct/route.ts` | `POST /correct` | `/corrector` page |
+| `scraper/freshness/route.ts` | `GET /scraper/freshness` | `/scraper` page's Time to reception panel (`components/FreshnessSection.tsx`). `cache: "no-store"`; loaded on demand, not polled - it reads the whole lake |
 | `verify-claim/route.ts` | `POST /verify-claim` | `/claim` page |
 | `enrich/route.ts` | `POST /enrich` | `/enrich` page |
 | `graph/[...path]/route.ts` | `GET /graph/{schema,presets,articles,related}`, `POST /graph/{query,sync}` | `/graph` page. An allowlist, not a blind catch-all. GETs are `cache: "no-store"` |

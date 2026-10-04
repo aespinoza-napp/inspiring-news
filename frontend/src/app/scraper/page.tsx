@@ -9,6 +9,7 @@ import {
   ScraperStats,
 } from "@/lib/types";
 import { DailyBars } from "@/components/DailyBars";
+import { FreshnessSection } from "@/components/FreshnessSection";
 import { IngestPanel } from "@/components/IngestPanel";
 import { SourceProbePanel } from "@/components/SourceProbePanel";
 
@@ -578,6 +579,8 @@ export default function ScraperStatsPage() {
       )}
 
       {articles && <ArticlesSection articles={articles} />}
+
+      <FreshnessSection />
     </>
   );
 }
