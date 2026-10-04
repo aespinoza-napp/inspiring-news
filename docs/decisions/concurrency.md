@@ -187,3 +187,59 @@ The wait for the permit does not count against the timeout - the permit
 is taken before the request is sent (`LLMClient.complete_json`). Same
 article, re-run: four real verdicts, 184 s. The defaults in `settings`
 stay as they are for a machine with a GPU.
+
+## What the concurrency buys, measured (2026-10-04)
+
+Until now the parallel pipeline was only *asserted*, as overlap in
+tests. `scripts/bench_claim_concurrency.py` measures it: the real
+`FactChecker.run` and everything under it (query planner, SearXNG
+client, retriever, scraper and extraction cascade over real HTML,
+ranker with its pertinence gate, verifier, `LLMClient`, scorer), with
+the real permits rebuilt at the ceilings `Settings` declares. Only what
+is past a socket is simulated, each call a fixed time: a search, a page,
+an `/embeddings` call, a model's answer. "Sequential" swaps
+`bounded_map` for a plain loop in every module that fans out. One
+article, four claims, which per article was 12 searches, 20 page
+fetches, 16 embedding calls and 4 LLM calls.
+
+`cd backend && uv run python ../scripts/bench_claim_concurrency.py --scale 0.2`
+(search 1 s, page 0.8 s, embeddings 0.1 s, LLM 3 s, all × 0.2; median of 3):
+
+| Mode | Seconds | Speedup |
+|---|---:|---:|
+| Sequential (every fan-out a plain loop) | 8.62 | — |
+| One claim at a time, concurrent inside | 5.14 | ×1.68 |
+| Concurrent, declared ceilings | 2.53 | ×3.40 |
+| Concurrent, `LLM_MAX_CONCURRENCY=1` | 3.09 | ×2.79 |
+
+The same with the LLM at the 45 s a claim takes on the production CPU
+(`--llm 45 --scale 0.1`, one run each; × 10 for real seconds):
+
+| Mode | Seconds (× 10) | Speedup |
+|---|---:|---:|
+| Sequential | 212.7 | — |
+| One claim at a time, concurrent inside | 194.8 | ×1.09 |
+| Concurrent, declared ceilings | 96.9 | ×2.19 |
+| Concurrent, `LLM_MAX_CONCURRENCY=1` (production) | 183.7 | ×1.16 |
+
+What this says:
+
+- **With a fast model, the concurrency is worth ×3.4** on one article,
+  and every ceiling held: peak in flight was 2 searches, 8 fetches, 4
+  embedding calls and 2 LLM calls, each exactly its ceiling.
+- **On a CPU it is worth ×1.16, because the model is the work.** Four
+  verdicts one at a time are 180 s of the 184 s; everything else now
+  overlaps them. The "declared ceilings" row (×2.19) assumes two model
+  calls run side by side at full speed each, which a GPU with parallel
+  slots does and a CPU does not - the 2026-10-01 incident above. The
+  simulated 184 s matches the production stack's real 184 s for the same
+  shape of article, which is the best evidence the simulation is honest.
+- So on the production VM the speedup is in the search and fetch time
+  hidden behind the LLM, and an analysis is bounded by
+  `claims × LLM seconds`. A faster model, not more threads, is what
+  would make it faster.
+
+Not measured: the live stack's before/after (the journal's timestamps
+make that possible), and sustained load on `/analyze/jobs`.
+`tests/test_bench_claim_concurrency.py` keeps the script runnable and
+checks every ceiling through the whole pipeline at 10 ms latencies.

@@ -463,7 +463,7 @@ the definition of done throughout.
 ### December 1–10 · 10h
 
 - [ ] ☁️ Infra smoke tests (staging) — locally the backend container comes up healthy, but a full analysis inside it is unverified
-- [ ] 📉 Load/performance testing before final deployment — and the parallel pipeline's speedup, asserted as overlap and never measured
+- [ ] 🟡 📉 Load/performance testing before final deployment — and the parallel pipeline's speedup, asserted as overlap and never measured — **Oct 4: the speedup is measured** (`scripts/bench_claim_concurrency.py`, the real `FactChecker.run` over a simulated network at the declared ceilings): ×3.4 on a four-claim article with a fast model; ×1.16 with production's CPU LLM one call at a time, where the model is 180 of the 184 s - the simulation's 184 s matches the production stack's real run. Every ceiling held at exactly its value. `tests/test_bench_claim_concurrency.py` keeps it runnable (3 tests, ~1 s). Left: sustained load on `/analyze/jobs` on the VM, before the final deploy.
 
 ### Final (Dec 18–24) · 20h — after the interface, before the paper
 
