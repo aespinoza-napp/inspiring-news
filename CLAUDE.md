@@ -236,9 +236,12 @@ Phase 1.
   healthcheck stopped sending a real search to every engine every 5
   seconds - likely a cause, not proven. `/metrics` counts empty and
   failed searches (`inspiring_web_searches_total`).
-- **The end-to-end speedup is not measured.** The parallel work is
-  covered by tests that assert overlap, not by a benchmark. The job
-  journal's timestamps make a real before/after possible.
+- **The speedup is measured against a simulated network, not the live
+  stack.** `scripts/bench_claim_concurrency.py` (2026-10-04): ×3.4 on one
+  four-claim article with a fast model, ×1.16 with production's CPU LLM
+  at one call at a time, where the model is 180 of the 184 s
+  (`docs/decisions/concurrency.md`). The job journal's timestamps make a
+  live before/after possible.
 
 ## Conventions
 

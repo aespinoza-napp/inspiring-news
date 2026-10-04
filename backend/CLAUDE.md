@@ -231,6 +231,9 @@ fake_graph_client.py`.
 it enriches whatever real article sorts first there, so it can only
 assert what holds for *any* article. Assertions about a specific
 article belong in `tests/test_real_pipeline_integration.py`, which uses
-committed input. `tests/processors/nlp/test_all_news.py` carries the
+committed input. `tests/test_full_pipeline_integration.py` is the one
+test of the whole `analyze()` from a URL: every real stage, with only
+SearXNG, the page fetches (`FakeFetcher`) and the LLM faked; it skips
+without `inference/`. `tests/processors/nlp/test_all_news.py` carries the
 `slow` marker (the whole corpus through the full stack) and runs via
 `./scripts/check.sh slow` — which now also needs `inference/` up.

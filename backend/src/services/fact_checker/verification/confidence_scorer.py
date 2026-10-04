@@ -10,6 +10,22 @@ from src.services.fact_checker.verification.llm_verification import LLMVerificat
 _DEFINITIVE = (Verdict.TRUE, Verdict.PARTIALLY_TRUE, Verdict.FALSE, Verdict.MISLEADING)
 
 
+def below_evidence_floor(evidence: list, thresholds: PipelineThresholds) -> bool:
+    """
+    Too little evidence to judge: the verdict is forced to UNVERIFIED and
+    the LLM is never asked. One rule for `FactChecker`, which decides
+    whether to ask, and for the scorer, which forces the verdict.
+
+    No evidence is never enough, whatever the floor. A per-run
+    `min_evidence_for_verdict=0` (the override allows it) used to send a
+    claim with nothing retrieved to the model, which answered from its
+    own knowledge - an UNVERIFIED at 0.67 confidence, with no stage note
+    saying why (2026-10-02 stress test).
+    """
+
+    return not evidence or len(evidence) < thresholds.min_evidence_for_verdict
+
+
 class ConfidenceScorer:
 
     # MIN_EVIDENCE now comes from the run's thresholds, not a class
@@ -31,7 +47,7 @@ class ConfidenceScorer:
 
         # Hard rule, not a weight: no evidence means we cannot verify the
         # claim at all, regardless of what the LLM says.
-        if len(evidence) < thresholds.min_evidence_for_verdict:
+        if below_evidence_floor(evidence, thresholds):
             return FactCheck(
                 verdict=Verdict.UNVERIFIED,
                 explanation="No evidence could be retrieved for this claim; verdict forced to UNVERIFIED.",

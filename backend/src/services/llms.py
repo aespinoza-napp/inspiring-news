@@ -29,11 +29,23 @@ class LLMUnavailableError(RuntimeError):
 
 
 def _parse_json(content: str) -> dict | None:
+    """
+    The JSON *object* in `content`, or None.
+
+    Only an object: `json.loads` is just as happy with `"TRUE"`, `[...]`
+    or `true`, and every caller asked for an object and calls `.get` on
+    what comes back. A list that wraps the object (`[{...}]`) still
+    yields it, through the block search below; anything else is the
+    same as no JSON, so `complete_json` retries.
+    """
 
     try:
-        return json.loads(content)
+        parsed = json.loads(content)
     except json.JSONDecodeError:
-        pass
+        parsed = None
+
+    if isinstance(parsed, dict):
+        return parsed
 
     match = _JSON_BLOCK_PATTERN.search(content)
 
@@ -41,9 +53,11 @@ def _parse_json(content: str) -> dict | None:
         return None
 
     try:
-        return json.loads(match.group(0))
+        parsed = json.loads(match.group(0))
     except json.JSONDecodeError:
         return None
+
+    return parsed if isinstance(parsed, dict) else None
 
 
 class LLMClient:
