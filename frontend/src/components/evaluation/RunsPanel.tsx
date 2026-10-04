@@ -5,22 +5,28 @@ import {
   Estimate,
   HarnessRun,
   LABEL_NAMES,
-  asEstimate,
   asNumber,
   asRecord,
   percent,
   pick,
 } from "@/lib/evaluation";
 
-// metrics.json is the harness's own format (docs/decisions/evaluation.md
-// §Metrics). These are the paths tried for each figure, first match wins,
-// so a renamed key in the harness shows as "–" here rather than breaking
-// the page.
-const ACCURACY = ["accuracy", "overall.accuracy", "scored.accuracy", "metrics.accuracy"];
-const MACRO_F1 = ["macroF1", "macro_f1", "overall.macroF1", "scored.macroF1", "metrics.macroF1"];
-const COVERAGE = ["coverage", "overall.coverage", "scored.coverage"];
-const SCORED = ["n", "scored", "counts.scored", "overall.n", "total"];
-const CONFUSION = ["confusion", "confusionMatrix", "overall.confusion", "scored.confusion"];
+// metrics.json as backend/src/evaluation/report.py writes it
+// (docs/decisions/evaluation.md §Metrics): the figures for the scored
+// claims under metrics.scored, each interval beside them under
+// metrics.scored.ci. The backend's tests/services/test_evaluation_summary.py
+// writes a real report and holds these paths to it; a key renamed there
+// shows as "–" here rather than breaking the page.
+const SCORED = "metrics.scored";
+
+/** A scored-claims statistic with its bootstrap interval, if both are there. */
+function scoredEstimate(metrics: unknown, name: string): Estimate | null {
+  const value = asNumber(pick(metrics, `${SCORED}.${name}`));
+  if (value === null) return null;
+
+  const ci = asRecord(pick(metrics, `${SCORED}.ci.${name}`));
+  return { value, low: asNumber(ci?.low), high: asNumber(ci?.high) };
+}
 
 function Interval({ estimate }: { estimate: Estimate | null }) {
   if (!estimate) return <span className="eval-muted">–</span>;
@@ -184,14 +190,17 @@ export function RunsPanel({ runs }: { runs: HarnessRun[] }) {
                   </button>
                 </td>
                 <td>{run.model}</td>
-                <td>{asNumber(pick(run.metrics, ...SCORED)) ?? "–"}</td>
                 <td>
-                  <Interval estimate={asEstimate(pick(run.metrics, ...ACCURACY))} />
+                  {asNumber(pick(run.metrics, `${SCORED}.n`)) ?? "–"}
+                  <span className="eval-muted"> of {asNumber(pick(run.metrics, "run.records")) ?? "–"}</span>
                 </td>
                 <td>
-                  <Interval estimate={asEstimate(pick(run.metrics, ...MACRO_F1))} />
+                  <Interval estimate={scoredEstimate(run.metrics, "accuracy")} />
                 </td>
-                <td>{percent(asNumber(pick(run.metrics, ...COVERAGE)))}</td>
+                <td>
+                  <Interval estimate={scoredEstimate(run.metrics, "macroF1")} />
+                </td>
+                <td>{percent(asNumber(pick(run.metrics, `${SCORED}.coverage`)))}</td>
                 <td className="eval-muted">
                   {new Date(run.modifiedAt * 1000).toLocaleDateString()}
                   {run.error && <span className="stats-bad"> · {run.error}</span>}
@@ -206,7 +215,7 @@ export function RunsPanel({ runs }: { runs: HarnessRun[] }) {
         {current.dataset} · {current.model}
         <span className="section-label-note">{current.key}</span>
       </p>
-      <Confusion value={pick(current.metrics, ...CONFUSION)} />
+      <Confusion value={pick(current.metrics, `${SCORED}.confusion`)} />
 
       <details className="eval-table-toggle">
         <summary>metrics.json as written</summary>

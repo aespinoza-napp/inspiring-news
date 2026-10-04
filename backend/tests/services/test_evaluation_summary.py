@@ -269,3 +269,48 @@ def test_the_route_reads_the_evaluation_folder_behind_the_storage_key(tmp_path, 
 
     assert response.status_code == 200
     assert response.json()["totals"]["total"] == 1
+
+
+def test_a_real_harness_report_has_every_path_the_runs_panel_reads(tmp_path):
+    """
+    The /evaluation page was written before the harness existed and
+    guessed at metrics.json's shape - every guess missed, so the first
+    real run would have shown "–" in every cell. The paths
+    frontend/src/components/evaluation/RunsPanel.tsx reads are held here
+    against a report the harness itself writes (no frontend test runner).
+    """
+
+    from src.evaluation.report import write_report
+
+    from tests.evaluation.support import make_record, write_run, xfact_row
+
+    records = [
+        make_record({**xfact_row("One."), "id": "c1"}, "TRUE"),
+        make_record({**xfact_row("Two.", label="FALSE"), "id": "c2"}, "FALSE"),
+        make_record({**xfact_row("Three.", label="FALSE"), "id": "c3"}, "TRUE"),
+    ]
+
+    run = write_run(tmp_path / "runs" / "fixture" / "stub-model" / ("k" * 12), records)
+
+    write_report(run, resamples=50, root=tmp_path / "reports")
+
+    [listed] = evaluation_summary(tmp_path)["runs"]
+
+    metrics = listed["metrics"]
+    scored = metrics["metrics"]["scored"]
+
+    assert (listed["dataset"], listed["model"]) == ("fixture", "stub-model")
+
+    # RunsPanel: `${SCORED}.n` of `run.records`
+    assert (scored["n"], metrics["run"]["records"]) == (3, 3)
+
+    # scoredEstimate(metrics, name): metrics.scored.<name> and metrics.scored.ci.<name>.{low,high}
+    for name in ("accuracy", "macroF1"):
+        assert isinstance(scored[name], float), name
+        assert {"low", "high"} <= set(scored["ci"][name]), name
+
+    assert scored["accuracy"] == 2 / 3
+
+    # `${SCORED}.coverage` and `${SCORED}.confusion` (gold -> predicted -> count)
+    assert isinstance(scored["coverage"], float)
+    assert scored["confusion"]["FALSE"]["TRUE"] == 1

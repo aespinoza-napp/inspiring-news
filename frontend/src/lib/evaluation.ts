@@ -177,21 +177,3 @@ export interface Estimate {
   low: number | null;
   high: number | null;
 }
-
-export function asEstimate(value: unknown): Estimate | null {
-  const plain = asNumber(value);
-  if (plain !== null) return { value: plain, low: null, high: null };
-
-  const record = asRecord(value);
-  if (!record) return null;
-
-  const point = asNumber(record.value ?? record.point ?? record.estimate ?? record.mean);
-  if (point === null) return null;
-
-  const ci = Array.isArray(record.ci) ? record.ci : null;
-  return {
-    value: point,
-    low: asNumber(record.low ?? record.lower ?? record.ciLow ?? (ci ? ci[0] : null)),
-    high: asNumber(record.high ?? record.upper ?? record.ciHigh ?? (ci ? ci[1] : null)),
-  };
-}
