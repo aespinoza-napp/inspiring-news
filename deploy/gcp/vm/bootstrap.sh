@@ -126,7 +126,7 @@ up() {
 summary() {
   compose ps --format 'table {{.Service}}\t{{.Status}}'
   if [ "${SITE_ADDRESS:-:80}" = ":80" ]; then
-    log "no domain: only http://<external_ip>/healthz is public; the UI is behind 'terraform output ui_tunnel'"
+    log "no domain: only http://<external_ip>/healthz and /reader are public; the rest of the UI is behind 'terraform output ui_tunnel'"
   else
     log "site: https://$SITE_ADDRESS/ (user editor, 'terraform output -raw site_password'); health: https://$SITE_ADDRESS/healthz"
   fi

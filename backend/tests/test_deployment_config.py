@@ -257,13 +257,49 @@ def test_the_ui_is_served_only_over_https_and_behind_a_password():
     handles = caddy_handles()
 
     to_frontend = [matcher for matcher, body in handles if "frontend:" in body]
-    assert to_frontend == ["@https"]
-    assert code.count("frontend:") == 1
+    assert to_frontend == ["@reader", "@https"]
+    assert code.count("frontend:") == 2
     assert re.search(r"^\s*@https\s+protocol\s+https\s*$", code, flags=re.MULTILINE)
 
     ui = dict(handles)["@https"]
     assert "reverse_proxy frontend:3000" in ui
     assert re.search(r"basic_auth\s*\{\s*\{\$SITE_USER:editor\}\s+\{\$SITE_PASSWORD_HASH\}\s*\}", ui)
+
+
+def test_only_the_reader_view_is_served_without_the_password():
+    """
+    /reader is public. What a public visitor may reach is exactly its
+    pages, their two proxies (onto backend routes that are open anyway)
+    and the static bundles; anything added here skips the password, so
+    the list is held. The frontend link list never prefetches past it.
+    """
+
+    code = caddy_code()
+
+    matcher = re.search(r"^\s*@reader\s+path\s+(.+)$", code, flags=re.MULTILINE)
+    assert matcher, "the @reader matcher is gone"
+    assert matcher.group(1).split() == [
+        "/reader", "/reader/*", "/api/reader/*", "/_next/static/*", "/favicon.ico",
+    ]
+
+    reader = dict(caddy_handles())["@reader"]
+    assert reader.strip() == "reverse_proxy frontend:3000"
+    assert "basic_auth" not in reader
+
+    # The open handle comes before the password one, which would
+    # otherwise answer first with 401.
+    matchers = [m for m, _ in caddy_handles()]
+    assert matchers.index("@reader") < matchers.index("@https")
+
+    # Every proxy the reader pages use is one Caddy lets through.
+    proxies = sorted(
+        path.parent.relative_to(FRONTEND / "src" / "app").as_posix()
+        for path in (FRONTEND / "src" / "app" / "api" / "reader").rglob("route.ts")
+    )
+    assert proxies == ["api/reader/articles", "api/reader/articles/[id]"]
+
+    nav = (FRONTEND / "src" / "components" / "NavLinks.tsx").read_text(encoding="utf-8")
+    assert "prefetch={onPublicPage" in nav
 
 
 def test_everything_else_at_the_door_is_a_404():

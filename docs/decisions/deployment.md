@@ -19,6 +19,7 @@ compose files' own comments.
 | Google Cloud infrastructure (`deploy/gcp/`) | `./scripts/check.sh gcp`: applied to Floci, a local Google Cloud emulator | 32 resources apply, the VM's `.env` renders from the secrets they hold (the site password opens the rendered hash), a second plan is empty, destroy is clean |
 | The frontend image (`docker/frontend.Dockerfile`) | Built, then run against a stub API, 2026-10-02 | Builds in 1m19s, 259 MB; every `/api/*` route is dynamic (nothing calls the API at build time); the key reached the API from every proxy tried; runs as `node` |
 | The front door (`docker/caddy/Caddyfile`) | `caddy:2.10.2` in front of that frontend and the stub, both modes, 2026-10-02 | Without a domain: `/healthz` only, all else 404. With TLS (Caddy's internal CA on `localhost` standing in for a domain): HTTP redirected, `/healthz` open, the UI 401 without the password and served with it, no API path forwarded |
+| The public reader (`@reader` in the Caddyfile) | `caddy:2.10.2` in front of a stub frontend, both modes, 2026-10-04 | Without a domain: `/reader`, `/reader/<id>`, `/api/reader/*`, `/_next/static/*` and the favicon 200, every other UI path 404. With TLS: the same five open without the password; `/`, `/evaluation`, `/api/evaluation`, `/live` 401 without it and 200 with it |
 | A real Google Cloud deploy | - | **Not done.** Needs a project with billing: "The first real deploy, step by step" below |
 
 ## The stack, measured (2026-10-01)
@@ -188,6 +189,17 @@ On the evidence it costs more than it gives:
 
 ### The front door
 
+**The reader view is public** (2026-10-04): `/reader`, `/reader/<id>`, their
+two proxies under `/api/reader/`, the static bundles under `/_next/static/`
+and the favicon are served to anyone, on plain HTTP too when there is no
+domain. Safe because each proxy reaches only the backend's `/reader` routes,
+which are open by design (`OPEN_ENDPOINTS`): publishable articles, their lead
+and the checks behind them; and the bundles hold no key, which is read on the
+server. Every other page still asks for the password. On a reader page the
+nav links to operator pages do not prefetch, or each visit would send nine
+requests that answer 401. `test_only_the_reader_view_is_served_without_the_password`
+holds the exact list: a path added there skips the password.
+
 Three rules, held by `backend/tests/test_deployment_config.py` and
 `backend/tests/api/test_api_key.py`:
 
@@ -321,8 +333,8 @@ frontend   Up ... (healthy)
 ```
 
 Without a domain the `site:` line reads `no domain: only
-http://<external_ip>/healthz is public; the UI is behind 'terraform output
-ui_tunnel'`. `install_*` print nothing on a later boot: they are skipped
+http://<external_ip>/healthz and /reader are public; the rest of the UI is
+behind 'terraform output ui_tunnel'`. `install_*` print nothing on a later boot: they are skipped
 once installed. **If it stops after `rendering backend/.env`** with a
 curl 403, the VM could not read its secrets yet: reset it (`gcloud
 compute instances reset inspiring-news --zone europe-southwest1-a`) and
@@ -528,11 +540,5 @@ healthcheck was a search".
   certificate included.
 - **A domain**, chosen and pointed at `external_ip`. The variable, the
   certificate and the fallback without one are in place.
-- **Public pages.** Everything the site serves is behind the password. A
-  page meant for anyone - the reader view - needs its paths, and its
-  `/api` proxies, exempted in the Caddyfile on purpose, and
-  `test_the_ui_is_served_only_over_https_and_behind_a_password` changed
-  to match; its backend routes need the same decision in
-  `OPEN_ENDPOINTS`.
 - **Terraform state in a GCS bucket** once more than one person applies.
 - **Restoring a snapshot**, once, on purpose, before it is needed.

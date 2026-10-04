@@ -16,8 +16,13 @@ const LINKS = [
   { href: "/evaluation", label: "Evaluation" },
 ];
 
+// The pages served without the site password (docker/caddy/Caddyfile,
+// @reader). Everything else answers a public visitor with 401.
+const PUBLIC = "/reader";
+
 export function NavLinks() {
   const pathname = usePathname();
+  const onPublicPage = pathname === PUBLIC || pathname.startsWith(`${PUBLIC}/`);
 
   return (
     <nav>
@@ -28,6 +33,11 @@ export function NavLinks() {
           <Link
             key={link.href}
             href={link.href}
+            // Next.js prefetches every visible link in production. On the
+            // public reader that is nine requests a visitor's browser
+            // cannot pass the password for - a 401 each, and possibly a
+            // password prompt nobody asked for. A click still navigates.
+            prefetch={onPublicPage && link.href !== PUBLIC ? false : undefined}
             className={active ? "nav-link is-active" : "nav-link"}
             aria-current={active ? "page" : undefined}
           >

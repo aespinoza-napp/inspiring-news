@@ -5,7 +5,7 @@ output "external_ip" {
 
 output "site_url" {
   description = "The UI, over HTTPS, once the domain's A record points at external_ip. Without a domain there is none: use ui_tunnel."
-  value       = var.domain != "" ? "https://${var.domain}/" : "(no domain: only http://${google_compute_address.vm.address}/healthz is public - use ui_tunnel)"
+  value       = var.domain != "" ? "https://${var.domain}/" : "(no domain: only http://${google_compute_address.vm.address}/healthz and /reader are public - use ui_tunnel)"
 }
 
 output "ui_tunnel" {

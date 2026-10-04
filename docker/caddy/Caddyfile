@@ -17,7 +17,22 @@
 		reverse_proxy backend:8000
 	}
 
-	# The UI, behind a password, and only over HTTPS.
+	# The reader view, open to anyone: the pages, their two proxies, and
+	# the compiled JS/CSS every page loads. Safe without the password
+	# because each of these reaches only the backend's /reader routes,
+	# which are open by design (test_api_key.py::OPEN_ENDPOINTS):
+	# publishable articles, their lead and the checks behind them. The
+	# static bundles hold no key - it is read on the server, never shipped.
+	# Served on plain HTTP too when there is no domain: nothing here is
+	# secret, and no password crosses the network for it. Everything
+	# else the reader page links to (the operator pages) still asks for
+	# the password below.
+	@reader path /reader /reader/* /api/reader/* /_next/static/* /favicon.ico
+	handle @reader {
+		reverse_proxy frontend:3000
+	}
+
+	# The rest of the UI, behind a password, and only over HTTPS.
 	#
 	# The password because the frontend's server routes attach the API
 	# key to every call they forward (frontend/src/app/api/): an open
