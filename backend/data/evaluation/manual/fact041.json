@@ -1,0 +1,26 @@
+{
+  "language": "es",
+  "site": "france24.com",
+  "claimant": "Daniela Blandón Ramírez",
+  "claim": "Lula estrenó su tercer mandato en 2023 con una expansión del PIB del 3,2%, que llegó al 3,4 % en 2024, para comenzar su ralentización en 2025.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://agenciadenoticias.ibge.gov.br/agencia-noticias/2012-agencia-de-noticias/noticias/42775-pib-fecha-2024-em-3-4-e-registra-maior-taxa-desde-2021",
+    "https://agenciabrasil.ebc.com.br/economia/noticia/2025-11/ibge-confirma-crescimento-de-32-da-economia-em-2023",
+    "https://agenciabrasil.ebc.com.br/educacao/noticia/2026-03/economia-brasileira-cresce-23-em-2025-revela-ibge"
+  ],
+  "split": "test",
+  "id": "fact041",
+  "topic": "employment",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-03-03",
+  "articleUrl": "https://www.france24.com/es/programas/econom%C3%ADa/20261002-brasil-en-cifras-qu%C3%A9-econom%C3%ADa-recibe-el-pr%C3%B3ximo-presidente",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] IBGE national accounts: GDP +3.2% in 2023 (revised figure), +3.4% in 2024, +2.3% in 2025 - the slowdown. Every figure exact.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

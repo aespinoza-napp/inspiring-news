@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "france24.com",
+  "claimant": "Daniela Blandón Ramírez",
+  "claim": "En estos comicios se enfrentan el presidente Luiz Inácio Lula da Silva y el senador Flávio Bolsonaro, hijo del exmandatario Jair Bolsonaro.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.poder360.com.br/poder-eleicoes-2026/lula-registra-candidatura-e-declara-r-48-milhoes-em-bens-ao-tse/",
+    "https://www.brasildefato.com.br/2026/08/14/tse-suspende-sistema-de-filiacao-partidaria-e-flavio-bolsonaro-pl-tem-candidatura-a-presidencia-registrada-apos-problema-com-o-partido-missao/"
+  ],
+  "split": "test",
+  "id": "fact040",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-14",
+  "articleUrl": "https://www.france24.com/es/programas/econom%C3%ADa/20261002-brasil-en-cifras-qu%C3%A9-econom%C3%ADa-recibe-el-pr%C3%B3ximo-presidente",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] Split from a compound sentence (part 2 of 2). Both registered presidential candidacies with the TSE in August 2026: Lula (PT) on 7-8 Aug, senator Flávio Bolsonaro (PL), Jair Bolsonaro's son, on 13 Aug. Thirteen candidacies in all; these two are the front-runners the article means.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

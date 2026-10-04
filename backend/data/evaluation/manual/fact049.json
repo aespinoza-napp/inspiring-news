@@ -1,0 +1,22 @@
+{
+  "language": "en",
+  "site": "newscientist.com",
+  "claimant": "Alice Klein",
+  "claim": "These neurons comprise fewer than 0.001 per cent of all brain cells, making it remarkable that their selective elimination completely blocks the ability to establish viable pregnancies, write Shah and his colleagues.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [],
+  "split": "test",
+  "id": "fact049",
+  "topic": "biology",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": null,
+  "articleUrl": "https://www.newscientist.com/article/2591599-brain-area-discovered-that-may-be-critical-for-viable-pregnancies/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] The paper the claim reports could not be found from this session: New Scientist refuses automated access and searches did not surface the study. No evidence either way, so UNVERIFIED - RE-CHECK against the paper before this fact counts. If the paper states <0.001% of brain cells and a complete loss of viable pregnancies after ablating them, relabel TRUE.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

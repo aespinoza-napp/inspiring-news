@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "europapress.es",
+  "claimant": "Europa Press",
+  "claim": "El Samsung Odyssey OLED G8 (G80SH) tiene un precio de 1.199 euros.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://comprasmartphone.com/monitores/samsung-odyssey-oled-g8-g80sh-32-4k-240hz",
+    "https://www.samsung.com/es/monitors/gaming/odyssey-oled-g8-g80sh-32-inch-4k-uhd-240hz-ls32hg800suxen/"
+  ],
+  "split": "test",
+  "id": "fact043",
+  "topic": "technology",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-06-11",
+  "articleUrl": "https://www.europapress.es/portaltic/videojuegos/noticia-ips-oled-monitor-samsung-odyssey-oled-g8-32-pulgadas-4k-240-hz-cuyo-hdr-vale-oro-20261001161517.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] Split from a compound sentence (part 1 of 2). No independent source gives 1.199 EUR for the 32in G80SH: a Spanish price tracker shows it from 1.088 EUR (historic low 910 EUR) in June 2026, and Samsung's own Spanish store page showed a different figure when checked. Retail prices move and a list price set by Samsung alone would fall under Rule 1. Not enough evidence either way.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

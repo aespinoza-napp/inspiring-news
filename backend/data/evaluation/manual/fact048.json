@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "theconversation.com",
+  "claimant": "Ming Xiao",
+  "claim": "Permafrost is ground that stays at or below 32 degrees Fahrenheit (0 degrees Celsius) for at least two consecutive years.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://nsidc.org/learn/parts-cryosphere/frozen-ground-permafrost"
+  ],
+  "split": "test",
+  "id": "fact048",
+  "topic": "climate",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": null,
+  "articleUrl": "https://theconversation.com/arctic-infrastructure-was-built-on-frozen-ground-drones-and-digital-twins-can-help-spot-the-permafrost-thaw-coming-292097",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] NSIDC: 'Permafrost is soil, sand, sediment, or rock that remains at or below 0 °C (32 °F) for at least two years' - the International Permafrost Association's definition. Undated page, so no evidenceDate.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

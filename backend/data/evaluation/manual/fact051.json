@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "bbc.co.uk",
+  "claimant": "Ben Philip; Ken Banks",
+  "claim": "British champion Liam Byrne, 24, was fatally injured on the Gitschen mountain after taking off from 7,874ft (2,400m) in June last year.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://krdo.com/news/2025/06/23/british-wingsuit-champion-liam-byrne-24-dies-in-swiss-alps-base-jump/",
+    "https://www.irishnews.com/news/uk/tributes-to-wingsuit-flyer-24-who-died-in-crash-in-swiss-alps-UH5Z2J4ZX5NLBKGQAP7XEMELOI/",
+    "https://news.stv.tv/scotland/scottish-wingsuit-flyer-dies-during-jump-in-swiss-alps"
+  ],
+  "split": "test",
+  "id": "fact051",
+  "topic": "fitness",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-06-23",
+  "articleUrl": "https://www.bbc.co.uk/news/articles/crz6zqgpl86eo?at_medium=RSS&at_campaign=rss",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] AP and PA, 23 Jun 2025: Liam Byrne, 24, from Stonehaven, British wingsuit champion (2022), died on 21 Jun 2025 after launching from the Gitschen at ~2,400 m (7,874 ft) in canton Uri. 'June last year' is June 2025 from a 2026 article. Every detail matches.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

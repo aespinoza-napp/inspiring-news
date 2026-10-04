@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": "European Space Agency",
+  "claim": "30 September 2026 marks the start of a new year on Mars.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.planetary.org/articles/2949",
+    "https://earthsky.org/astronomy-essentials/mars-calendar-years-began-in-earth-year-1955"
+  ],
+  "split": "test",
+  "id": "fact046",
+  "topic": "space",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2011-03-09",
+  "articleUrl": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Happy_New_Year_on_Mars",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] Mars Year 39 (Clancy et al. numbering, year 1 = 11 Apr 1955) starts at Ls 0 on 30 Sep 2026, per the Planetary Society's table of Mars year start dates. Independent of ESA (Rule 1).",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": "European Space Agency",
+  "claim": "One year on Mars equals 687 Earth days, or 668 sols, nearly twice as long as an Earth year.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+    "https://www.planetary.org/articles/2949"
+  ],
+  "split": "test",
+  "id": "fact045",
+  "topic": "space",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2011-03-09",
+  "articleUrl": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Happy_New_Year_on_Mars",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] NASA Mars fact sheet: sidereal orbit period 686.98 days, 1.88 Earth years; a Mars year is ~668.6 sols (Planetary Society). The leading '- Years:' list marker of the proposed text is dropped.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "france24.com",
+  "claimant": "Daniela Blandón Ramírez",
+  "claim": "En estos comicios [en Brasil], la primera vuelta tendrá lugar este domingo 4 de octubre.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.oliberal.com/politica/calendario-das-eleicoes-2026-e-aprovado-pelo-tse-veja-as-datas-dos-turnos-1.1091913",
+    "https://www.correiobraziliense.com.br/mundo/2026/08/7472991-pt-confirma-candidatura-de-lula-a-reeleicao-quem-disputa-a-presidencia-em-2026.html"
+  ],
+  "split": "test",
+  "id": "fact039",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-03",
+  "articleUrl": "https://www.france24.com/es/programas/econom%C3%ADa/20261002-brasil-en-cifras-qu%C3%A9-econom%C3%ADa-recibe-el-pr%C3%B3ximo-presidente",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] TSE's 2026 electoral calendar: first round Sunday 4 Oct 2026, run-off 25 Oct. Split from a compound sentence (part 1 of 2); its 'visión social' vs 'neoliberalismo' framing is interpretive and not labelled.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

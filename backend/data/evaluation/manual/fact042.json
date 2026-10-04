@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "europapress.es",
+  "claimant": "Europa Press",
+  "claim": "El Samsung Odyssey OLED G8 (G80SH) es un monitor con panel QD-OLED 4K (3.840 x 2.160) a 240 Hz y conectividad de última generación.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://pcmonitors.info/samsung/samsung-odyssey-oled-g80sh-g8-240hz-qd-oled-with-dp-2-1/",
+    "https://www.oled-info.com/samsung-odyssey-oled-g8-g80sh"
+  ],
+  "split": "test",
+  "id": "fact042",
+  "topic": "technology",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-12-24",
+  "articleUrl": "https://www.europapress.es/portaltic/videojuegos/noticia-ips-oled-monitor-samsung-odyssey-oled-g8-32-pulgadas-4k-240-hz-cuyo-hdr-vale-oro-20261001161517.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] pcmonitors.info: ~32in 3840x2160 Samsung Display QD-OLED panel, 240 Hz, HDMI 2.1, DP 2.1 (UHBR20), USB-C 98 W. Independent coverage, not only Samsung's own pages (Rule 1). The rest of the sentence ('uno de los monitores gaming de referencia absoluta del mercado') is opinion and not labelled.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

@@ -1,0 +1,522 @@
+{
+  "requestId": "cf7e640f1b7d4b5bb8f142a2f856ab68",
+  "seed": "2026-10-02",
+  "createdAt": "2026-10-02T10:21:03+00:00",
+  "requested": {
+    "articles": 10,
+    "claimsPerArticle": 2,
+    "languages": null,
+    "preferTopics": [
+      "space",
+      "technology",
+      "research",
+      "biology",
+      "climate",
+      "nature",
+      "energy",
+      "sustainability",
+      "food",
+      "arts",
+      "entertainment",
+      "heritage",
+      "literature",
+      "inspiration"
+    ],
+    "excluded": 1575
+  },
+  "totals": {
+    "sources": 34,
+    "discovered": 1555,
+    "candidates": 20,
+    "ready": 20,
+    "articles": 10,
+    "claims": 19
+  },
+  "articles": [
+    {
+      "url": "https://www.carbonbrief.org/concerning-low-sea-ice-persists-as-antarctic-hits-third-lowest-winter-peak",
+      "source": "carbon_brief",
+      "title": "‘Concerning’ low sea ice persists as Antarctic hits third-lowest winter peak - Carbon Brief",
+      "site": "carbonbrief.org",
+      "sourceName": "Carbon Brief",
+      "language": "en",
+      "publishedAt": "2026-09-25",
+      "author": "Ayesha Tandon",
+      "topic": "climate",
+      "topics": [
+        "climate",
+        "research",
+        "space",
+        "nature",
+        "sustainability",
+        "food",
+        "technology"
+      ],
+      "claims": [
+        {
+          "text": "Meanwhile, the Arctic recorded its minimum summer sea ice extent on 12 September.",
+          "selectedBy": "anchor",
+          "score": 0.8,
+          "figures": [
+            "12"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact038"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "The chart below shows Antarctic sea ice extent in 2025 (dark blue) and 2026 (red) so far.",
+          "selectedBy": "anchor",
+          "score": 0.776,
+          "figures": [
+            "2025",
+            "2026"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        }
+      ]
+    },
+    {
+      "url": "https://www.france24.com/es/programas/econom%C3%ADa/20261002-brasil-en-cifras-qu%C3%A9-econom%C3%ADa-recibe-el-pr%C3%B3ximo-presidente",
+      "source": "france24_es",
+      "title": "Economía - Brasil en cifras: ¿qué economía recibe el próximo presidente?",
+      "site": "france24.com",
+      "sourceName": "France 24 Español",
+      "language": "es",
+      "publishedAt": "2026-10-02",
+      "author": "Daniela Blandón Ramírez",
+      "topic": "sustainability",
+      "topics": [
+        "sustainability",
+        "employment"
+      ],
+      "claims": [
+        {
+          "text": "En estos comicios, cuya primera vuelta tendrá lugar este domingo 4 de octubre, se enfrentan dos modelos distintos para conducirla: la visión social del presidente Luiz Inácio Lula da Silva y el neoliberalismo del senador Flávio Bolsonaro, hijo del exmandatario Jair Bolsonaro.",
+          "selectedBy": "anchor",
+          "score": 0.721,
+          "figures": [
+            "4"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact039",
+            "fact040"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Lula estrenó su tercer mandato en 2023 con una expansión del PIB del 3,2%, que llegó al 3,4 % en 2024, para comenzar su ralentización en 2025.",
+          "selectedBy": "anchor",
+          "score": 0.719,
+          "figures": [
+            "3,2%",
+            "3,4 %",
+            "2023",
+            "2024",
+            "2025"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact041"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.europapress.es/portaltic/videojuegos/noticia-ips-oled-monitor-samsung-odyssey-oled-g8-32-pulgadas-4k-240-hz-cuyo-hdr-vale-oro-20261001161517.html",
+      "source": "europa_press",
+      "title": "Del IPS al OLED con el monitor Samsung Odyssey OLED G8 de 32 pulgadas: un 4K a 240 Hz cuyo HDR vale oro",
+      "site": "europapress.es",
+      "sourceName": "Europa Press",
+      "language": "es",
+      "publishedAt": "2026-10-01",
+      "author": "Europa Press",
+      "topic": "technology",
+      "topics": [
+        "technology",
+        "nutrition",
+        "sustainability"
+      ],
+      "claims": [
+        {
+          "text": "Antes de revelar la experiencia propia del Samsung Odyssey OLED G8 (G80SH), repasamos las mejores especificaciones de un monitor con panel QD-OLED 4K (3.840 x 2.160) a 240 Hz y conectividad de última generación, que lo convierten en uno de los monitores 'gaming' de referencia absoluta del mercado.",
+          "selectedBy": "anchor",
+          "score": 0.706,
+          "figures": [
+            "8",
+            "80",
+            "4",
+            "3.840",
+            "2.160",
+            "240"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact042"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Para entender el valor del Samsung Odyssey OLED G8 (G80SH), con un precio de 1.199 euros, hay que tener en cuenta que Samsung Display es la que produce la matriz física del panel, que vende a marcas como Dell / Alienware, MSI y ASUS ROG para que fabriquen sus propios monitores, pero que, en la base, no deja de ser el panel QD-OLED de Samsung.",
+          "selectedBy": "anchor",
+          "score": 0.68,
+          "figures": [
+            "8",
+            "80",
+            "1.199"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact043",
+            "fact044"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Happy_New_Year_on_Mars",
+      "source": "esa",
+      "title": "Happy New Year on Mars",
+      "site": "esa.int",
+      "sourceName": "European Space Agency",
+      "language": "en",
+      "publishedAt": "2026-09-30",
+      "author": null,
+      "topic": "space",
+      "topics": [
+        "space",
+        "climate",
+        "energy",
+        "food",
+        "sustainability",
+        "research",
+        "nutrition",
+        "biology",
+        "technology"
+      ],
+      "claims": [
+        {
+          "text": "- Years: One year on Mars equals 687 Earth days, or 668 sols, nearly twice as long as an Earth year.",
+          "selectedBy": "anchor",
+          "score": 0.716,
+          "figures": [
+            "687",
+            "668"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact045"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "30 September 2026 marks the start of a new year on Mars.",
+          "selectedBy": "anchor",
+          "score": 0.701,
+          "figures": [
+            "30",
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact046"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://news.mit.edu/2026/unmasking-zombie-cells-aging-tissue-ai-powered-barcode-0921",
+      "source": "mit_news",
+      "title": "Unmasking “zombie cells” in aging tissue with an AI-powered barcode",
+      "site": "news.mit.edu",
+      "sourceName": "MIT News",
+      "language": "en",
+      "publishedAt": "2026-09-21",
+      "author": "Anne Trafton; MIT News",
+      "topic": "research",
+      "topics": [
+        "research",
+        "biology",
+        "medicine",
+        "nutrition",
+        "sustainability",
+        "space",
+        "mental_health",
+        "nature",
+        "education",
+        "energy",
+        "technology",
+        "climate",
+        "food"
+      ],
+      "claims": [
+        {
+          "text": "When senescent cells accumulate, they may contribute to sagging skin, muscle weakness, and chronic conditions such as osteoarthritis and type 2 diabetes.",
+          "selectedBy": "anchor",
+          "score": 0.484,
+          "figures": [
+            "2"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact047"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“The idea behind the NIH Cellular Senescence Network is to take a very comprehensive approach to understand senescence and identify senescent cells, because it plays a role in so many normal physiological conditions and many pathological conditions.”",
+          "selectedBy": "anchor",
+          "score": 0.411,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        }
+      ]
+    },
+    {
+      "url": "https://theconversation.com/arctic-infrastructure-was-built-on-frozen-ground-drones-and-digital-twins-can-help-spot-the-permafrost-thaw-coming-292097",
+      "source": "the_conversation",
+      "title": "Arctic infrastructure was built on frozen ground – drones and digital twins can help spot the permafrost thaw coming",
+      "site": "theconversation.com",
+      "sourceName": "The Conversation",
+      "language": "en",
+      "publishedAt": "2026-09-29",
+      "author": "Ming Xiao",
+      "topic": "technology",
+      "topics": [
+        "technology",
+        "research",
+        "climate",
+        "cities",
+        "food",
+        "sustainability",
+        "energy",
+        "arts",
+        "heritage",
+        "entertainment",
+        "education",
+        "nature",
+        "public_health"
+      ],
+      "claims": [
+        {
+          "text": "Infrastructure may remain in service for 20, 50 or more years, so mapping today’s underground conditions is not enough.",
+          "selectedBy": "anchor",
+          "score": 0.701,
+          "figures": [
+            "20",
+            "50"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "Permafrost is ground that stays at or below 32 degrees Fahrenheit (0 degrees Celsius) for at least two consecutive years.",
+          "selectedBy": "anchor",
+          "score": 0.63,
+          "figures": [
+            "32",
+            "0"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact048"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://science.nasa.gov/solar-system/10-things-movie-night/",
+      "source": "nasa",
+      "title": "10 Things: Movie Night",
+      "site": "science.nasa.gov",
+      "sourceName": "NASA",
+      "language": "en",
+      "publishedAt": "2026-10-01",
+      "author": "Alicia Cermak; NASA Science Editorial Team",
+      "topic": "space",
+      "topics": [
+        "space",
+        "entertainment",
+        "research",
+        "heritage",
+        "sustainability",
+        "biology",
+        "cities",
+        "climate",
+        "education",
+        "nature",
+        "arts",
+        "nutrition",
+        "food",
+        "community",
+        "energy",
+        "technology",
+        "medicine",
+        "fitness",
+        "mental_health",
+        "inspiration",
+        "literature",
+        "public_health",
+        "employment"
+      ],
+      "claims": [
+        {
+          "text": "NASA's mission is to pioneer the future in space exploration and scientific discovery.",
+          "selectedBy": "anchor",
+          "score": 0.652,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        }
+      ]
+    },
+    {
+      "url": "https://www.newscientist.com/article/2591599-brain-area-discovered-that-may-be-critical-for-viable-pregnancies/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+      "source": "new_scientist",
+      "title": "Brain area discovered that may be critical for viable pregnancies | New Scientist",
+      "site": "newscientist.com",
+      "sourceName": "New Scientist",
+      "language": "en",
+      "publishedAt": "2026-10-02",
+      "author": "Alice Klein",
+      "topic": "biology",
+      "topics": [
+        "biology",
+        "mental_health",
+        "nutrition",
+        "medicine",
+        "research",
+        "nature",
+        "space",
+        "public_health"
+      ],
+      "claims": [
+        {
+          "text": "These neurons comprise fewer than 0.001 per cent of all brain cells, making it remarkable that their selective elimination completely blocks the ability to establish viable pregnancies, write Shah and his colleagues.",
+          "selectedBy": "anchor",
+          "score": 0.702,
+          "figures": [
+            "0.001"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact049"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“Certainly, the fact that when you get rid of these neurons, you lose these pregnancies, is really suggestive,” says Jennifer O’Chan at the Icahn School of Medicine at Mount Sinai, New York.",
+          "selectedBy": "anchor",
+          "score": 0.696,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        }
+      ]
+    },
+    {
+      "url": "https://elpais.com/tecnologia/2026-10-01/google-lanza-su-primer-satelite-para-llevarse-los-centros-de-datos-al-espacio.html",
+      "source": "el_pais",
+      "title": "Google lanza su primer satélite para llevarse los centros de datos al espacio",
+      "site": "elpais.com",
+      "sourceName": "El País",
+      "language": "es",
+      "publishedAt": "2026-10-01",
+      "author": "Nuño Domínguez",
+      "topic": "space",
+      "topics": [
+        "space",
+        "research",
+        "sustainability",
+        "technology",
+        "energy",
+        "cities",
+        "food"
+      ],
+      "claims": [
+        {
+          "text": "Un cohete Falcon 9 ha despegado este jueves desde California con el primer satélite del proyecto Suncatcher, una iniciativa a largo plazo de la tecnológica Google para explorar cómo enviar al espacio centros de datos con una capacidad similar a los terrestres.",
+          "selectedBy": "anchor",
+          "score": 0.823,
+          "figures": [
+            "9"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact050"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Si todo va bien, la empresa planea lanzar otros dos artefactos similares al espacio en 2027 para comenzar a probar su sistema de comunicación.",
+          "selectedBy": "anchor",
+          "score": 0.701,
+          "figures": [
+            "2027"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "prediction"
+        }
+      ]
+    },
+    {
+      "url": "https://www.bbc.co.uk/news/articles/crz6zqgpl86eo?at_medium=RSS&at_campaign=rss",
+      "source": "bbc",
+      "title": "'Potential crime' probe into death of Scots wingsuit flyer dropped",
+      "site": "bbc.co.uk",
+      "sourceName": "BBC",
+      "language": "en",
+      "publishedAt": "2026-10-01",
+      "author": "Ben Philip; Ken Banks",
+      "topic": null,
+      "topics": [],
+      "claims": [
+        {
+          "text": "- Scottish wingsuit flyer Liam Byrne dies during Swiss Alps jump - Published23 June 2025",
+          "selectedBy": "anchor",
+          "score": 0.823,
+          "figures": [
+            "23",
+            "2025"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "British champion Liam Byrne, 24, was fatally injured on the Gitschen mountain after taking off from 7,874ft (2,400m) in June last year.",
+          "selectedBy": "anchor",
+          "score": 0.809,
+          "figures": [
+            "24",
+            "7,874",
+            "2,400"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact051"
+          ],
+          "skipReason": null
+        }
+      ]
+    }
+  ],
+  "skipped": [],
+  "file": "2026-10-02.json",
+  "date": "2026-10-02"
+}

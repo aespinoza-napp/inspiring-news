@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "europapress.es",
+  "claimant": "Europa Press",
+  "claim": "Samsung Display es la que produce la matriz física del panel QD-OLED, que vende a marcas como Dell / Alienware, MSI y ASUS ROG para que fabriquen sus propios monitores.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.notebookcheck.net/The-first-32-inch-4K-240-Hz-OLED-gaming-monitors-are-here-This-is-how-much-Asus-MSI-and-Alienware-charge-for-QD-OLED.802804.0.html",
+    "https://pcmonitors.info/samsung/samsung-odyssey-oled-g80sh-g8-240hz-qd-oled-with-dp-2-1/"
+  ],
+  "split": "test",
+  "id": "fact044",
+  "topic": "technology",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-12-24",
+  "articleUrl": "https://www.europapress.es/portaltic/videojuegos/noticia-ips-oled-monitor-samsung-odyssey-oled-g8-32-pulgadas-4k-240-hz-cuyo-hdr-vale-oro-20261001161517.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] Split from a compound sentence (part 2 of 2). Samsung Display's QD-OLED panel is in Alienware (AW3225QF), Asus ROG Swift (PG32UCDM) and MSI 32in 4K 240 Hz monitors (Notebookcheck, 2024); pcmonitors.info confirms the G80SH uses a Samsung Display QD-OLED panel.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

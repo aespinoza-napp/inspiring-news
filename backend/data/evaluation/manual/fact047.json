@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.mit.edu",
+  "claimant": "Anne Trafton; MIT News",
+  "claim": "When senescent cells accumulate, they may contribute to sagging skin, muscle weakness, and chronic conditions such as osteoarthritis and type 2 diabetes.",
+  "claimDate": "2026-09-21",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://pmc.ncbi.nlm.nih.gov/articles/PMC9599677",
+    "https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2023.1297637/full"
+  ],
+  "split": "test",
+  "id": "fact047",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2023-11-22",
+  "articleUrl": "https://news.mit.edu/2026/unmasking-zombie-cells-aging-tissue-ai-powered-barcode-0921",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] A hedged claim ('may contribute'), and that is what the literature says: senescent cells are implicated in osteoarthritis, metabolic dysfunction and type 2 diabetes, and physical dysfunction (Chaib, Tchkonia & Kirkland, Nat Med 2022), and in skin ageing incl. loss of elasticity and wrinkles (Chin et al., Front Physiol 2023).",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}

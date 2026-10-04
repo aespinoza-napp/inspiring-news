@@ -1,0 +1,26 @@
+{
+  "language": "es",
+  "site": "elpais.com",
+  "claimant": "Nuño Domínguez",
+  "claim": "Un cohete Falcon 9 ha despegado este jueves desde California con el primer satélite del proyecto Suncatcher, una iniciativa a largo plazo de la tecnológica Google para explorar cómo enviar al espacio centros de datos con una capacidad similar a los terrestres.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-02T10:41:50",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.space.com/space-exploration/satellites/spacex-google-project-suncatcher-ai-satellite-transporter-18-mission",
+    "https://starlust.org/watch-space-xs-transporter-18-sends-googles-ai-test-satellite-to-orbit-with-129-other-payloads/",
+    "https://spaceflightnow.com/2026/10/01/live-coverage-ai-datacenter-prototypes-energy-redirection-demonstrators-and-more-launching-on-spacexs-transporter-18/"
+  ],
+  "split": "test",
+  "id": "fact050",
+  "topic": "space",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-01",
+  "articleUrl": "https://elpais.com/tecnologia/2026-10-01/google-lanza-su-primer-satelite-para-llevarse-los-centros-de-datos-al-espacio.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-02 - not yet checked by the human annotator] Falcon 9 (Transporter-18) lifted off from Vandenberg, California, on Thursday 1 Oct 2026 at 11:32 PDT, carrying a pathfinder satellite for Google's Project Suncatcher - the project's first flight hardware. Same-day reports, so Rule 3 holds.",
+  "createdAt": "2026-10-02T10:41:50",
+  "review": null
+}
