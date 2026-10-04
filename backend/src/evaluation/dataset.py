@@ -176,7 +176,18 @@ def _read_jsonl(path: Path) -> tuple[list[tuple[str, dict]], str]:
         except json.JSONDecodeError as exc:
             raise DatasetError(f"{path.name}:{number}: not JSON ({exc})") from exc
 
-    return rows, hashlib.sha256(data).hexdigest()
+    return rows, hashlib.sha256(lf(data)).hexdigest()
+
+
+def lf(data: bytes) -> bytes:
+    """
+    The bytes a hash is taken over: CRLF read as LF. Git for Windows
+    checks text out as CRLF (core.autocrlf=true here), so the same
+    committed set hashed differently on Windows than on Linux or the VM -
+    a different run key, and two runs of one set refused as two sets.
+    """
+
+    return data.replace(b"\r\n", b"\n")
 
 
 def _read_directory(path: Path) -> tuple[list[tuple[str, dict]], str]:
@@ -193,7 +204,7 @@ def _read_directory(path: Path) -> tuple[list[tuple[str, dict]], str]:
 
         data = file.read_bytes()
 
-        digest.update(file.name.encode("utf-8") + b"\0" + data + b"\0")
+        digest.update(file.name.encode("utf-8") + b"\0" + lf(data) + b"\0")
 
         try:
             rows.append((file.name, json.loads(data.decode("utf-8"))))

@@ -46,6 +46,7 @@ from pathlib import Path
 from typing import Callable
 
 from src.config.settings import settings
+from src.evaluation.dataset import lf
 from src.evaluation.runner import git_commit, model_slug, now, provider_of, without_credentials
 from src.evaluation.stats import bootstrap_mean, mean, paired_bootstrap_mean, rounded
 from src.evaluation.store import ResultsFile, read_json, write_json
@@ -216,7 +217,7 @@ def load_texts(path: str | Path | None = None) -> TextSet:
     if not texts:
         raise TextSetError(f"{path.name}: no texts")
 
-    return TextSet(path=path, stem=path.stem, sha256=hashlib.sha256(data).hexdigest(), texts=tuple(texts))
+    return TextSet(path=path, stem=path.stem, sha256=hashlib.sha256(lf(data)).hexdigest(), texts=tuple(texts))
 
 
 def writing_key(texts_sha256: str, model: str, prompt: str) -> str:

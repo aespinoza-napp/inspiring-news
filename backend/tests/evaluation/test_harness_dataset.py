@@ -6,6 +6,7 @@ data/raw and data/processed; the same courtesy holds here).
 """
 
 import ast
+import json
 from pathlib import Path
 
 import pytest
@@ -135,3 +136,35 @@ def test_every_topic_belongs_to_exactly_one_group():
 
     assert sorted(grouped) == sorted(TOPICS)
     assert len(grouped) == len(set(grouped))
+
+
+def test_a_crlf_checkout_hashes_like_an_lf_one(tmp_path):
+    """
+    Git for Windows checks the committed sets out as CRLF: hashed as
+    bytes, one set had a different run key per operating system.
+    """
+
+    rows = [xfact_row("First claim."), xfact_row("Second claim.", language="es")]
+
+    # Bytes, not write_text: on Windows text mode would already be CRLF.
+    lines = "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows).encode("utf-8")
+
+    unix = tmp_path / "unix.jsonl"
+    unix.write_bytes(lines)
+
+    windows = tmp_path / "windows" / "unix.jsonl"
+    windows.parent.mkdir()
+    windows.write_bytes(lines.replace(b"\n", b"\r\n"))
+
+    assert load_dataset(windows).sha256 == load_dataset(unix).sha256
+
+    lf_dir, crlf_dir = tmp_path / "lf", tmp_path / "crlf"
+    lf_dir.mkdir()
+    crlf_dir.mkdir()
+
+    fact = json.dumps(custom_row("fact001", "Uno."), indent=2, ensure_ascii=False)
+
+    (lf_dir / "fact001.json").write_bytes(fact.encode("utf-8"))
+    (crlf_dir / "fact001.json").write_bytes(fact.replace("\n", "\r\n").encode("utf-8"))
+
+    assert load_dataset(crlf_dir).sha256 == load_dataset(lf_dir).sha256

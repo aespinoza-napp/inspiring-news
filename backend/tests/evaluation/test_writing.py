@@ -523,3 +523,21 @@ def test_write_comparison_files_the_report_by_text_set(tmp_path):
 
     assert target == tmp_path / "reports" / "texts"
     assert "Writing models compared: texts" in (target / "comparison.md").read_text(encoding="utf-8")
+
+
+def test_a_crlf_checkout_of_the_text_set_hashes_like_an_lf_one(tmp_path):
+
+    # Bytes, not write_text: on Windows text mode would already be CRLF.
+    lines = small_set(tmp_path).read_bytes().replace(b"\r\n", b"\n")
+
+    unix = tmp_path / "unix" / "texts.jsonl"
+    unix.parent.mkdir()
+    unix.write_bytes(lines)
+
+    windows = tmp_path / "windows" / "texts.jsonl"
+    windows.parent.mkdir()
+    windows.write_bytes(lines.replace(b"\n", b"\r\n"))
+
+    assert b"\r\n" not in unix.read_bytes() and b"\r\n" in windows.read_bytes()
+
+    assert load_texts(windows).sha256 == load_texts(unix).sha256
