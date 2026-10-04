@@ -155,13 +155,21 @@ def test_a_wrong_key_is_rejected(lake, monkeypatch):
     assert response.status_code == 401
 
 
-def test_the_analysis_endpoints_are_not_behind_the_storage_key(monkeypatch):
+def test_the_analysis_endpoints_are_behind_the_same_key(monkeypatch):
     """
-    The key guards stored content, not the ability to run an analysis -
-    locking /analyze would break the frontend for no security gain.
+    This used to assert the opposite: "the key guards stored content, not
+    the ability to run an analysis - locking /analyze would break the
+    frontend for no security gain". Reversed on purpose on 2026-10-02,
+    when the frontend got a public address: an analysis is minutes of
+    CPU, and /enrich can start Chromium. The frontend's server routes
+    send the key, so nothing breaks. tests/api/test_api_key.py covers
+    every endpoint.
     """
 
     monkeypatch.setattr(settings, "STORAGE_API_KEY", SecretStr("s3cret"))
 
-    # 422 (bad body), not 401 - the request reached validation.
-    assert client.post("/enrich", json={}).status_code == 422
+    # 401 before validation: without the key the body is never looked at.
+    assert client.post("/enrich", json={}).status_code == 401
+
+    # 422 (bad body) with it - the request got past the key.
+    assert client.post("/enrich", json={}, headers={"X-API-Key": "s3cret"}).status_code == 422

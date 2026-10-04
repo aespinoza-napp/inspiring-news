@@ -5,6 +5,19 @@ import { NextRequest, NextResponse } from "next/server";
 // IPv4-only by default) is only listening on 127.0.0.1.
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
 
+// Every backend endpoint that costs CPU, starts a browser or writes data
+// takes the API key once STORAGE_API_KEY is set (backend
+// src/api/routes.py::require_storage_key), and production always sets
+// it. Read here, on the server, so the key never reaches the browser.
+function headers(json: boolean): HeadersInit {
+  const apiKey = process.env.STORAGE_API_KEY;
+
+  return {
+    ...(json ? { "Content-Type": "application/json" } : {}),
+    ...(apiKey ? { "X-API-Key": apiKey } : {}),
+  };
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
@@ -13,7 +26,7 @@ export async function POST(request: NextRequest) {
   try {
     response = await fetch(`${BACKEND_URL}/correct`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers(true),
       body: JSON.stringify(body),
     });
   } catch {

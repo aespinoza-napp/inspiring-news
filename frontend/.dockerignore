@@ -1,0 +1,17 @@
+# Build context for docker/frontend.Dockerfile.
+
+# The host's install: platform-specific (Next's SWC compiler is a native
+# binary per OS) and reinstalled from package-lock.json in the image.
+node_modules/
+
+# The host's build output. The image builds its own.
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets: BACKEND_URL and STORAGE_API_KEY reach the container from
+# compose at runtime. Baked into a layer, the key would be readable by
+# anyone who can pull the image.
+.env*
+
+.git/

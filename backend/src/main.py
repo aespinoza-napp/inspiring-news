@@ -44,9 +44,11 @@ logger = logging.getLogger(__name__)
 # so say so at startup rather than letting the choice be silent.
 if settings.STORAGE_API_KEY is None:
     logger.warning(
-        "STORAGE_API_KEY is not set: /storage/* is open to anyone who can "
-        "reach this process, and returns full article bodies and lineage. "
-        "Set it before exposing this beyond localhost."
+        "STORAGE_API_KEY is not set: every endpoint is open to anyone who "
+        "can reach this process - analyses that cost minutes of CPU and can "
+        "start a headless browser, ingestion, the graph console, and "
+        "/storage/*, which returns full article bodies and lineage. Set it "
+        "before exposing this beyond localhost."
     )
 
 if not settings.URL_GUARD_ENABLED:

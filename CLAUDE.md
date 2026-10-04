@@ -40,9 +40,10 @@ src.main:app --port 8001`.
   nothing about topics, thresholds or scoring. See `inference/README.md`.
 - `frontend/` — Next.js 14 (App Router + TypeScript) UI. See
   `frontend/CLAUDE.md`.
-- `docker/` — compose (Neo4j, SearXNG, inference, backend) and the two
-  Dockerfiles; `docker-compose.prod.yml` (+ Ollama) and
-  `docker-compose.gcp.yml` (+ Caddy) layer on top.
+- `docker/` — compose (Neo4j, SearXNG, inference, backend) and the three
+  Dockerfiles; `docker-compose.prod.yml` (+ Ollama, + the frontend) and
+  `docker-compose.gcp.yml` (+ Caddy: `/healthz`, and the site over HTTPS
+  behind a password) layer on top.
 - `deploy/gcp/` — Terraform for the Google Cloud VM, its secrets,
   network, snapshots and alerts; `vm/bootstrap.sh` is what the VM runs
   on boot. Checked against Floci by `./scripts/check.sh gcp`.

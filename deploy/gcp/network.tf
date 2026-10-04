@@ -16,9 +16,11 @@ resource "google_compute_subnetwork" "vm" {
   ip_cidr_range = "10.10.0.0/24"
 }
 
-# 80 and 443 reach Caddy, which forwards /healthz and nothing else
-# (docker/caddy/Caddyfile). Every other port in the stack stays on the
-# compose network or on the VM's loopback.
+# 80 and 443 reach Caddy (docker/caddy/Caddyfile): /healthz, and with a
+# domain the UI over HTTPS behind a password; 80 also answers the ACME
+# challenge and redirects to 443. Every other port in the stack - the
+# API's 8000, the UI's 3000 - stays on the compose network or the VM's
+# loopback.
 resource "google_compute_firewall" "web" {
   name          = "${var.name}-web"
   network       = google_compute_network.vpc.id

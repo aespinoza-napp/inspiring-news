@@ -76,12 +76,26 @@ def metrics():
 
 def require_storage_key(x_api_key: str | None = Header(default=None)) -> None:
     """
-    Guards the /storage/* endpoints, which return whole article bodies
-    and the full lineage of every run.
+    The API key. Named for what it first guarded - /storage/*, which
+    returns whole article bodies and the full lineage of every run - and
+    since 2026-10-02 in front of every endpoint that costs CPU, can
+    launch the headless browser, writes data, reaches someone else's
+    server or returns what was stored. That is everything but /healthz,
+    /metrics and polling a job by its id
+    (tests/api/test_api_key.py::OPEN_ENDPOINTS holds the list).
+
+    The analysis endpoints used to be left open on purpose ("the key
+    guards stored content, not the ability to run an analysis"). That was
+    right while only a browser on the same machine could reach them. With
+    the frontend on a public address, one POST /analyze/jobs is minutes
+    of the server's CPU and a request to an arbitrary site, and two of
+    these can start Chromium. The frontend's server routes send the key,
+    so the browser never sees it.
 
     Open when STORAGE_API_KEY is unset - the local-dev default, and
     src/main.py logs a warning at startup so that is never a silent
-    choice. Compared with secrets.compare_digest so a wrong key cannot be
+    choice. docker-compose.prod.yml refuses to start without one.
+    Compared with secrets.compare_digest so a wrong key cannot be
     recovered by timing the response.
     """
 
@@ -95,7 +109,7 @@ def require_storage_key(x_api_key: str | None = Header(default=None)) -> None:
     ):
         raise HTTPException(
             status_code=401,
-            detail="A valid X-API-Key header is required for storage endpoints.",
+            detail="A valid X-API-Key header is required (STORAGE_API_KEY).",
         )
 
 
@@ -179,7 +193,7 @@ class CreateAnalysisJobsBatchRequest(BaseModel):
     thresholds: ThresholdOverrides | None = None
 
 
-@router.post("/analyze")
+@router.post("/analyze", dependencies=[Depends(require_storage_key)])
 def analyze(request: AnalyzeRequest):
 
     try:
@@ -248,7 +262,7 @@ def _start_job(
     return job.job_id, reused
 
 
-@router.post("/analyze/jobs", status_code=202)
+@router.post("/analyze/jobs", status_code=202, dependencies=[Depends(require_storage_key)])
 def create_analysis_job(request: CreateAnalysisJobRequest):
     """
     Starts an analysis run on the bounded job queue and returns
@@ -267,7 +281,7 @@ def create_analysis_job(request: CreateAnalysisJobRequest):
     return {"jobId": job_id}
 
 
-@router.post("/analyze/jobs/batch", status_code=202)
+@router.post("/analyze/jobs/batch", status_code=202, dependencies=[Depends(require_storage_key)])
 def create_analysis_jobs_batch(request: CreateAnalysisJobsBatchRequest):
     """
     Bulk form of POST /analyze/jobs: submits every URL onto the same
@@ -365,6 +379,14 @@ def get_analysis_jobs_batch(ids: str):
 
 @router.get("/analyze/jobs/{job_id}")
 def get_analysis_job(job_id: str):
+    """
+    One job, every event and its result. Open, like the batch poll above,
+    while everything that starts a job takes the key: a job id is a
+    uuid4 nobody can guess, handed only to whoever started the job, and
+    reading one costs a dictionary lookup. The listing that would
+    enumerate them (GET /analyze/jobs) is behind the key. The frontend
+    sends the key here anyway, so closing this is a backend-only change.
+    """
 
     job = job_store.get(job_id)
 
@@ -374,13 +396,13 @@ def get_analysis_job(job_id: str):
     return _job_view(job)
 
 
-@router.post("/correct")
+@router.post("/correct", dependencies=[Depends(require_storage_key)])
 def correct(request: CorrectRequest):
 
     return get_text_corrector().correct(request.text)
 
 
-@router.post("/verify-claim")
+@router.post("/verify-claim", dependencies=[Depends(require_storage_key)])
 def verify_claim(request: VerifyClaimRequest):
     """
     Verify one claim on its own - no article, no scraping.
@@ -425,7 +447,7 @@ def verify_claim(request: VerifyClaimRequest):
         raise
 
 
-@router.post("/enrich")
+@router.post("/enrich", dependencies=[Depends(require_storage_key)])
 def enrich(request: EnrichRequest):
     """
     Run only the NLP enrichment stage over supplied text: keywords,

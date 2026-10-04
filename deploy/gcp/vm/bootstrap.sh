@@ -10,7 +10,7 @@
 #
 # Configuration comes from the environment the startup script sets:
 #   PROJECT_ID       the Google Cloud project holding the secrets
-#   SECRET_PREFIX    prefix of the three secrets' names (Terraform's `name`)
+#   SECRET_PREFIX    prefix of the four secrets' names (Terraform's `name`)
 #   LLM_MODEL        the Ollama model to pull and verify with
 #   SITE_ADDRESS     Caddy's site address: a domain, or ":80" without one
 #   SECRET_MANAGER_ENDPOINT  default https://secretmanager.googleapis.com;
@@ -50,12 +50,13 @@ secret() {
 # example's other values are the defaults the stack was measured with.
 render_env() {
   local out="$1"
-  local keys="NEO4J_PASSWORD|SEARXNG_SECRET|STORAGE_API_KEY|LLM_MODEL|SITE_ADDRESS|GRAPH_ENABLED|LAKE_ENABLED"
+  local keys="NEO4J_PASSWORD|SEARXNG_SECRET|STORAGE_API_KEY|SITE_PASSWORD_HASH|LLM_MODEL|SITE_ADDRESS|GRAPH_ENABLED|LAKE_ENABLED"
 
-  local neo4j searxng storage
+  local neo4j searxng storage site_hash
   neo4j="$(secret neo4j-password)"
   searxng="$(secret searxng-secret)"
   storage="$(secret storage-api-key)"
+  site_hash="$(secret site-password-hash)"
 
   umask 077
   {
@@ -65,6 +66,10 @@ render_env() {
     echo "NEO4J_PASSWORD=$neo4j"
     echo "SEARXNG_SECRET=$searxng"
     echo "STORAGE_API_KEY=$storage"
+    # Single-quoted: a bcrypt hash is full of `$`, and compose expands
+    # `$x` in an unquoted .env value - the hash Caddy got would be
+    # mangled, and no password would ever match it.
+    echo "SITE_PASSWORD_HASH='$site_hash'"
     echo "LLM_MODEL=${LLM_MODEL:?LLM_MODEL is not set}"
     echo "SITE_ADDRESS=${SITE_ADDRESS:-:80}"
     echo "GRAPH_ENABLED=true"
@@ -103,13 +108,28 @@ install_ops_agent() {
   fi
 }
 
-up() {
+compose() {
   cd "$REPO_DIR/docker"
   # -p: a fixed project name, so volume names do not depend on the
   # checkout's directory name.
   docker compose -p inspiring-news \
     -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.gcp.yml \
-    --env-file ../backend/.env up -d --build --remove-orphans
+    --env-file ../backend/.env "$@"
+}
+
+up() {
+  compose up -d --build --remove-orphans
+}
+
+# What a person following the first boot needs next, at the end of the
+# journal: which containers are up, and where the site is.
+summary() {
+  compose ps --format 'table {{.Service}}\t{{.Status}}'
+  if [ "${SITE_ADDRESS:-:80}" = ":80" ]; then
+    log "no domain: only http://<external_ip>/healthz is public; the UI is behind 'terraform output ui_tunnel'"
+  else
+    log "site: https://$SITE_ADDRESS/ (user editor, 'terraform output -raw site_password'); health: https://$SITE_ADDRESS/healthz"
+  fi
 }
 
 case "${1:-}" in
@@ -123,6 +143,7 @@ case "${1:-}" in
     render_env "$REPO_DIR/backend/.env"
     log "starting the stack (the first boot builds the images and downloads ~10GB of models)"
     up
+    summary
     log "done"
     ;;
   *)

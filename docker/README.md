@@ -39,22 +39,31 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file ../ba
 ```
 
 `docker-compose.prod.yml` is layered on top of this file and changes what a server needs: only the
-API is published, on `127.0.0.1:8000` (a reverse proxy in front of it); every service restarts after a
-crash or reboot and rotates its logs (5 × 10MB); `STORAGE_API_KEY` is required and the URL guard
-forced on; the backend logs JSON; and the LLM runs as an `ollama` service, its model pulled by a
-one-shot `ollama-pull` before the backend starts, one request at a time with a 180 s timeout (the
-dev limits time out on a CPU). Sizing, the measurements behind each memory limit, the server choice
-and monitoring: `docs/decisions/deployment.md`.
+API and the UI are published, on `127.0.0.1:8000` and `127.0.0.1:3000` (a reverse proxy in front of
+them); every service restarts after a crash or reboot and rotates its logs (5 × 10MB);
+`STORAGE_API_KEY` is required and the URL guard forced on; the backend logs JSON; and the LLM runs
+as an `ollama` service, its model pulled by a one-shot `ollama-pull` before the backend starts, one
+request at a time with a 180 s timeout (the dev limits time out on a CPU). Sizing, the measurements
+behind each memory limit, the server choice and monitoring: `docs/decisions/deployment.md`.
+
+It also runs the **frontend** as a container (`frontend.Dockerfile`: Next's standalone server, Node
+22, ~260 MB), reaching the API as `http://backend:8000` and sending `STORAGE_API_KEY` on every call.
+Built from `frontend/` like the backend is from `backend/`; `frontend/.dockerignore` keeps the host's
+`node_modules`, `.next` and `.env*` out. On a laptop, `npm run dev` is still the way to work on it.
 
 `GET /healthz` (200, or 503 naming the dependency that is down) is for an uptime monitor; `GET
 /metrics` serves the run counters in Prometheus' text format.
 
 ## Google Cloud
 
-`docker-compose.gcp.yml` adds Caddy on 80/443, forwarding `/healthz` only. The VM that runs all three
-files is created by `deploy/gcp/` (Terraform) and boots through `deploy/gcp/vm/bootstrap.sh`, which
-renders `backend/.env` from Secret Manager. `./scripts/check.sh gcp` applies it to Floci, a local
-Google Cloud emulator, with nothing but Docker. Everything else: `docs/decisions/deployment.md`.
+`docker-compose.gcp.yml` adds Caddy on 80/443 (`caddy/Caddyfile`): `/healthz` to the API, and with a
+domain the site to the frontend, over HTTPS, behind a password (user `editor`); without a domain,
+`/healthz` alone. It needs `SITE_ADDRESS` and `SITE_PASSWORD_HASH` - the latter single-quoted in
+`backend/.env`, or compose expands the `$`s in it. The VM that runs all three files is created by
+`deploy/gcp/` (Terraform) and boots through `deploy/gcp/vm/bootstrap.sh`, which renders
+`backend/.env`, both of those included, from Secret Manager. `./scripts/check.sh gcp` applies it to
+Floci, a local Google Cloud emulator, with nothing but Docker. Everything else, the step-by-step
+first deploy included: `docs/decisions/deployment.md`.
 
 The backend image also carries Chromium for the last step of the extraction cascade (the `browser`
 extra plus `playwright install --with-deps chromium`, in its own layer). That roughly doubles the
