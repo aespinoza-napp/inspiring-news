@@ -366,24 +366,87 @@ comparison when asked for.
 
 ## Retrieval evaluation (RQ2)
 
-Did the system find what the annotator found?
+**Built on 2026-10-04** (G4): `backend/src/evaluation/retrieval.py`, a
+`## Retrieval` section in every `cli report`, paired retrieval
+differences in every `--compare`, and `cli retrieval` for strategies side
+by side. Tests: `backend/tests/evaluation/test_retrieval.py`. Not run on
+a full set yet.
+
+Did the system find what the annotator found - and, for any set, how
+much and how fast did it find anything?
 
 - **URLs are normalised with the retriever's own `_comparable`**
   (`evidence_retriever.py`): host without `www.`, path without a trailing
   slash, lower case, query dropped. It is imported, not copied, so
   "found" means what the pipeline means by it. Domains are compared the
-  way `Evidence.domain` is computed.
+  way `Evidence.domain` is computed (`registrable_domain`).
 - **The reference set** is `referenceEvidenceLinks`. For x-fact, links
-  on the row's own `site` are removed: they are the verdict, counted as
-  `verdictLeak`.
-- **Per claim, at three depths** (candidates, ranked, cited): was a
-  reference *link* found, and was a reference *domain* found.
-- **Reported**: link and domain recall at each depth, by set and
-  language. The drop from candidates to ranked is what ranking cut, with
-  the cut reasons listed.
+  on the row's own `site` are removed: they are the verdict. They are
+  counted (`selfLinksRemoved`), and ranking one is `verdictLeak`.
+- **Per claim, at three depths** (every candidate seen, the ranked
+  evidence the model was shown, the evidence it cited): was a reference
+  *link* found, and a reference *domain*; and the reciprocal rank of the
+  first one in the ranked list (`linkMRR`, `domainMRR`).
+- **Without references**, for any set: claims with any ranked evidence,
+  candidates and ranked sources per claim, the share cut at ranking (the
+  pertinence gate and the cap), distinct domains among the ranked, the
+  share from rated domains and from the internal corpus, `verdictLeak`,
+  retrieval and ranking seconds, queries per claim, and which query kind
+  (anchor, proposition, refutation) found each ranked source.
+- **Reported**: each as a mean over claims with a 95% percentile
+  bootstrap interval, by set and language, and the cut reasons of
+  references that were found and then cut - the drop between depths.
+  Claims whose search failed, and errors, are counted and left out.
 - **A miss is not proof of failure.** Another source can be as good as
   the annotator's. That is why domain hits are reported beside link hits,
   and why the stage attribution below says which rule produced it.
+
+**Comparing strategies.** A strategy is a run: its thresholds
+(`--thresholds`), its corpus (`--corpus snapshot|none`), its environment
+(engines, `DUCKDUCKGO_FALLBACK_ENABLED`) or its code at a commit, named
+with `--label`. The label is part of the run key, so two code variants
+run with the same settings are two runs, not one resumed. Mode and label
+enter the key only when set: a full, unlabelled run keeps its old key.
+
+```bash
+# Cheap: --retrieval-only stops before the model (a stand-in verifier,
+# no call), so a strategy costs its search and fetch time only.
+uv run python -m src.evaluation.cli run --dataset data/evaluation/xfact_en_es_pilot.jsonl \
+    --retrieval-only --label baseline
+uv run python -m src.evaluation.cli run --dataset data/evaluation/xfact_en_es_pilot.jsonl \
+    --retrieval-only --label no-gate --thresholds no_gate.json   # {"evidence_min_pertinence": 0.0}
+uv run python -m src.evaluation.cli retrieval --run <baseline dir> --run <no-gate dir>
+```
+
+`cli retrieval` writes `reports/<set>/retrieval.md` and `.json`: one row
+per strategy (what differs: label, mode, overridden thresholds, corpus,
+DuckDuckGo fallback, commit), then each later strategy minus the first,
+paired over the claims both searched, with its interval and how many
+claims only one side found a reference for. A claim whose search failed
+on either side is left out of both: an outage is not a strategy. A
+retrieval-only run's report has no verdict metrics, and `cli table`
+refuses one.
+
+**Live check, 2026-10-04**, on the first 6 pilot claims, two
+retrieval-only strategies (`baseline`, and `no-gate`:
+`evidence_min_pertinence` 0.0), corpus `none`, with Google and Brave
+suspended in SearXNG and the rest answering (70-90 results a query):
+0 LLM calls, ~80 s a run. `no-gate` ranked 2.2 more sources and 2.2 more
+distinct domains a claim (paired interval +0.8 to +3.3), with a slightly
+smaller share from rated domains. Reference recall was 0% for both, and
+genuinely so: the 2 PolitiFact rows have only `<LINK NOT AVAILABLE>`
+references (now counted as `referencesUnavailable`), and the chequeado
+rows' references are mostly Facebook and Twitter posts, which no web
+search returns. On the full pilot, expect link recall near zero and read
+domain recall and the gold-free metrics instead.
+
+**Found by it:** two Spanish claims' searches returned adult sites
+(pornhub, xhamster, xnxx, chaturbate: 16 candidates). One claim's anchor
+query was the single word "provincia". The gate and the funnel cut all of
+them, so none was ranked, but they took candidate slots a real source
+could have had. SearXNG runs with no `safe_search` setting. Two candidate
+strategies to measure with this harness rather than adopt untested:
+`safesearch=1` on every query, and refusing an anchor query of one word.
 
 ## Stage attribution (RQ2)
 
@@ -571,7 +634,7 @@ The harness needs `inference/`, SearXNG and the LLM, like any analysis.
 | `runner.py` | harness | Building the checker, running, resuming, writing |
 | `cli.py` | harness, then each goal | `run`, `report [--compare]` |
 | `metrics.py`, `report.py` | metrics | Partitions, metrics, bootstrap, `metrics.json`, `report.md` |
-| `retrieval.py` | retrieval | Reference hits and recall |
+| `retrieval.py` | retrieval | Reference recall at three depths, MRR, the gold-free retrieval metrics, paired strategy comparison |
 | `attribution.py` | attribution | The stage table above |
 | `effort.py` | effort | Usable and confidently-wrong shares |
 | `usage.py` | cost | Tokens and latency per LLM call, run totals, prices |

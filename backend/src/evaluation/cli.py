@@ -10,6 +10,9 @@ The evaluation harness's one command.
 
     uv run python -m src.evaluation.cli table --run <dir> --run <dir> ... [--prices ...]
 
+    uv run python -m src.evaluation.cli run --dataset <set> --retrieval-only --label <strategy>
+    uv run python -m src.evaluation.cli retrieval --run <dir> --run <dir> ...
+
     uv run python -m src.evaluation.cli writing run --model llama3.2:3b [--repeats 2] [--texts f.jsonl]
     uv run python -m src.evaluation.cli writing report --run <dir> --run <dir> ... [--prices ...]
 
@@ -37,8 +40,17 @@ from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
 from src.evaluation.dataset import load_dataset
 from src.evaluation.metrics import DEFAULT_RESAMPLES, DEFAULT_SEED
-from src.evaluation.report import models_table, write_report
-from src.evaluation.runner import CORPUS_MODES, SNAPSHOT, RunConfig, build_runner, default_runs_root
+from src.evaluation.report import models_table, retrieval_table, write_report
+from src.evaluation.runner import (
+    CORPUS_MODES,
+    FULL,
+    RETRIEVAL,
+    RETRIEVAL_ONLY_MODEL,
+    SNAPSHOT,
+    RunConfig,
+    build_runner,
+    default_runs_root,
+)
 from src.evaluation.usage import load_prices
 from src.evaluation.writing import build_writing_runner, load_texts, write_comparison
 
@@ -66,10 +78,13 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     config = RunConfig(
         dataset=dataset,
-        model=args.model or settings.LLM_MODEL,
+        # No model is asked in a retrieval-only run; its directory says so.
+        model=RETRIEVAL_ONLY_MODEL if args.retrieval_only else (args.model or settings.LLM_MODEL),
         thresholds=load_thresholds(args.thresholds),
         corpus=args.corpus,
         root=Path(args.root) if args.root else default_runs_root(),
+        mode=RETRIEVAL if args.retrieval_only else FULL,
+        label=args.label,
     )
 
     runner, close = build_runner(config)
@@ -156,6 +171,21 @@ def cmd_writing_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_retrieval(args: argparse.Namespace) -> int:
+
+    target = retrieval_table(
+        args.run,
+        seed=args.seed,
+        resamples=args.resamples,
+        root=Path(args.out) if args.out else None,
+    )
+
+    print(f"Table written to {target / 'retrieval.md'}")
+    print((target / "retrieval.md").read_text(encoding="utf-8"))
+
+    return 0
+
+
 def _report_options(command: argparse.ArgumentParser) -> None:
 
     command.add_argument("--prices", help="a prices file (data/evaluation/prices.json) to cost the run")
@@ -199,6 +229,16 @@ def parser() -> argparse.ArgumentParser:
         help="also re-run claims whose search or LLM was never reached",
     )
     run.add_argument("--fresh", action="store_true", help="set the results aside and start over")
+    run.add_argument(
+        "--retrieval-only",
+        action="store_true",
+        help="stop before the model: measure retrieval for its search and fetch time alone",
+    )
+    run.add_argument(
+        "--label",
+        help="a name for the strategy this run measures; part of the run key, so two code "
+        "variants with the same settings are two runs",
+    )
     run.add_argument("--root", help=argparse.SUPPRESS)
     run.set_defaults(handler=cmd_run)
 
@@ -212,6 +252,14 @@ def parser() -> argparse.ArgumentParser:
     table.add_argument("--run", required=True, action="append", help="a run directory; repeat per model")
     _report_options(table)
     table.set_defaults(handler=cmd_table)
+
+    strategies = commands.add_parser(
+        "retrieval",
+        help="retrieval strategies over one dataset, side by side, each paired against the first",
+    )
+    strategies.add_argument("--run", required=True, action="append", help="a run directory; repeat per strategy")
+    _report_options(strategies)
+    strategies.set_defaults(handler=cmd_retrieval)
 
     writing = commands.add_parser(
         "writing",

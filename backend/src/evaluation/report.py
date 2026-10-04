@@ -33,7 +33,8 @@ from src.evaluation.metrics import (
     OUTCOMES,
     SCORED,
 )
-from src.evaluation.runner import MANIFEST, RESULTS, model_slug
+from src.evaluation import retrieval
+from src.evaluation.runner import FULL, MANIFEST, RESULTS, RETRIEVAL, model_slug
 from src.evaluation.store import ResultsFile, read_json, write_json
 from src.evaluation.usage import cost, price_for, totals
 
@@ -148,6 +149,8 @@ def evaluate(
             "thresholdsHash": run.manifest.get("thresholdsHash"),
             "thresholdsOverridden": run.manifest.get("thresholdsOverridden"),
             "corpus": run.manifest.get("corpus"),
+            "mode": run.manifest.get("mode") or FULL,
+            "label": run.manifest.get("label"),
             "gitCommits": sorted({record.get("gitCommit") or "unknown" for record in records}),
             "records": len(records),
             "notRun": max(0, rows - len(records)) if isinstance(rows, int) else None,
@@ -168,6 +171,7 @@ def evaluate(
             "scoredUnflagged": scored_metrics(unflagged, seed=seed, resamples=resamples),
         },
         "breakdowns": _breakdowns(scored, seed=seed, resamples=resamples),
+        "retrieval": retrieval.retrieval_metrics(records, seed=seed, resamples=resamples),
         "usage": {
             **run_totals,
             "cost": cost(run_totals, price_for(prices, run.model, run.manifest.get("provider"))),
@@ -288,6 +292,9 @@ def compare(
         },
         "discordant": metrics.discordant(pairs_a, pairs_b),
         "difference": metrics.paired_bootstrap(pairs_a, pairs_b, seed=seed, resamples=resamples),
+        "retrieval": retrieval.compare_retrieval(
+            baseline.records, candidate.records, seed=seed, resamples=resamples,
+        ),
     }
 
 
@@ -351,6 +358,14 @@ def models_table(
 
     if len(datasets) != 1:
         raise ValueError("every run in a table must be over the same dataset (sha256 differs)")
+
+    retrieval_only = [str(run.directory) for run in runs if run.manifest.get("mode") == RETRIEVAL]
+
+    if retrieval_only:
+        raise ValueError(
+            "retrieval-only runs have no verdicts to compare: use `cli retrieval` for them "
+            f"({', '.join(retrieval_only)})"
+        )
 
     rows = []
 
@@ -455,8 +470,11 @@ def render(result: dict) -> str:
 
     dataset = run.get("dataset") or {}
 
+    if run.get("mode") == RETRIEVAL:
+        return _render_retrieval_only(result)
+
     parts = [
-        f"# {dataset.get('stem', 'run')} · {run['model']}",
+        f"# {dataset.get('stem', 'run')} · {run['model']}" + (f" · {run['label']}" if run.get("label") else ""),
         "",
         f"Run `{run['key']}` · provider `{run.get('provider')}` · harness v{run.get('harnessVersion')} · "
         f"thresholds `{run.get('thresholdsHash')}` · corpus `{(run.get('corpus') or {}).get('mode')}`"
@@ -527,10 +545,38 @@ def render(result: dict) -> str:
             "",
         ]
 
+    parts += retrieval.render_section(result["retrieval"])
+
     parts += _render_usage(result["usage"])
 
     if result.get("comparison"):
         parts += _render_comparison(result["comparison"])
+
+    return "\n".join(parts).rstrip() + "\n"
+
+
+def _render_retrieval_only(result: dict) -> str:
+    """A retrieval-only run: no model was asked, so no verdict metric."""
+
+    run = result["run"]
+    dataset = run.get("dataset") or {}
+
+    parts = [
+        f"# {dataset.get('stem', 'run')} · retrieval only" + (f" · {run['label']}" if run.get("label") else ""),
+        "",
+        f"Run `{run['key']}` · harness v{run.get('harnessVersion')} · thresholds `{run.get('thresholdsHash')}` · "
+        f"corpus `{(run.get('corpus') or {}).get('mode')}`. Commits: "
+        + ", ".join(f"`{commit[:12]}`" for commit in run.get("gitCommits") or []),
+        "",
+        "No model was asked: every verdict is a placeholder, so this report has retrieval metrics only.",
+        "",
+        *retrieval.render_section(result["retrieval"]),
+    ]
+
+    if result.get("comparison"):
+        parts += retrieval.render_comparison(
+            result["comparison"]["retrieval"], result["comparison"]["baseline"]["key"], run["key"],
+        )
 
     return "\n".join(parts).rstrip() + "\n"
 
@@ -600,6 +646,7 @@ def _render_comparison(comparison: dict) -> list[str]:
         f"Only A right: {comparison['discordant']['onlyA']}; only B right: {comparison['discordant']['onlyB']}. "
         "An interval that excludes 0 is a difference the resampling cannot explain away.",
         "",
+        *retrieval.render_comparison(comparison["retrieval"], "A", "B"),
     ]
 
 
@@ -643,3 +690,154 @@ def render_table(table: dict) -> str:
         ], rows),
         "",
     ])
+
+
+# ----------------------------------------------------------------------
+# Retrieval strategies, one table
+# ----------------------------------------------------------------------
+
+
+def _strategy(run: Run) -> dict:
+    """What a run's retrieval was: everything that can differ between two strategies."""
+
+    manifest = run.manifest
+
+    return {
+        "label": manifest.get("label"),
+        "mode": manifest.get("mode") or FULL,
+        "model": run.model,
+        "key": run.key,
+        "thresholdsOverridden": manifest.get("thresholdsOverridden") or {},
+        "corpus": (manifest.get("corpus") or {}).get("mode"),
+        "gitCommit": manifest.get("gitCommit"),
+        "duckduckgoFallback": (manifest.get("settings") or {}).get("DUCKDUCKGO_FALLBACK_ENABLED"),
+        "directory": str(run.directory),
+    }
+
+
+def retrieval_table(
+    run_directories: list[str | Path],
+    *,
+    seed: int = DEFAULT_SEED,
+    resamples: int = DEFAULT_RESAMPLES,
+    root: Path | None = None,
+) -> Path:
+    """
+    Retrieval strategies over one dataset, side by side, and each later
+    one paired against the first: `reports/<dataset-stem>/retrieval.md`
+    and `.json`. Full and retrieval-only runs mix freely - only what was
+    retrieved is compared.
+    """
+
+    runs = [load_run(directory) for directory in run_directories]
+
+    datasets = {(run.manifest.get("dataset") or {}).get("sha256") for run in runs}
+
+    if len(datasets) != 1:
+        raise ValueError("every run in a table must be over the same dataset (sha256 differs)")
+
+    baseline = runs[0]
+
+    rows = []
+
+    for run in runs:
+
+        row = {
+            "strategy": _strategy(run),
+            "metrics": retrieval.retrieval_metrics(run.records, seed=seed, resamples=resamples),
+        }
+
+        if run is not baseline:
+            row["vsBaseline"] = retrieval.compare_retrieval(
+                baseline.records, run.records, seed=seed, resamples=resamples,
+            )
+
+        rows.append(row)
+
+    table = {
+        "dataset": baseline.manifest.get("dataset"),
+        "bootstrap": {"seed": seed, "resamples": resamples},
+        "runs": rows,
+    }
+
+    target = Path(root or default_reports_root()) / baseline.dataset_stem
+
+    target.mkdir(parents=True, exist_ok=True)
+
+    write_json(target / "retrieval.json", table)
+
+    (target / "retrieval.md").write_text(render_retrieval_table(table), encoding="utf-8", newline="\n")
+
+    return target
+
+
+# The columns of the side-by-side table: the reference metrics first,
+# then what any set can say.
+RETRIEVAL_COLUMNS = (
+    "linkRecall@candidates",
+    "linkRecall@ranked",
+    "domainRecall@ranked",
+    "domainMRR",
+    "hasEvidence",
+    "ranked",
+    "gateCut",
+    "uniqueDomains",
+    "ratedShare",
+    "retrievalSeconds",
+)
+
+
+def _strategy_name(strategy: dict) -> str:
+
+    return strategy["label"] or f"{strategy['model']} {strategy['key']}"
+
+
+def render_retrieval_table(table: dict) -> str:
+
+    dataset = table.get("dataset") or {}
+
+    rows = []
+
+    for row in table["runs"]:
+
+        metrics_ = row["metrics"]
+        blocks = {**metrics_["gold"], **metrics_["goldFree"]}
+
+        rows.append([
+            f"`{_strategy_name(row['strategy'])}`",
+            metrics_["claims"]["searched"],
+            *(retrieval.with_interval(name, blocks[name]) for name in RETRIEVAL_COLUMNS),
+        ])
+
+    strategies = []
+
+    for row in table["runs"]:
+
+        s = row["strategy"]
+
+        changed = ", ".join(f"{name}={value}" for name, value in sorted(s["thresholdsOverridden"].items())) or "defaults"
+
+        strategies.append(
+            f"- `{_strategy_name(s)}`: {s['mode']} run, thresholds {changed}, corpus {s['corpus']}, "
+            f"DuckDuckGo fallback {s['duckduckgoFallback']}, commit `{(s['gitCommit'] or 'unknown')[:12]}`."
+        )
+
+    parts = [
+        f"# {dataset.get('stem', 'dataset')}: retrieval strategies compared",
+        "",
+        f"Dataset sha256 `{(dataset.get('sha256') or '')[:12]}`, {dataset.get('rows')} rows. "
+        f"Bootstrap seed {table['bootstrap']['seed']}, {table['bootstrap']['resamples']} resamples. "
+        "The first run is the baseline. docs/decisions/evaluation.md §Retrieval evaluation.",
+        "",
+        *strategies,
+        "",
+        _table(["Strategy", "Searched", *(retrieval.LABELS[name] for name in RETRIEVAL_COLUMNS)], rows),
+        "",
+    ]
+
+    baseline = _strategy_name(table["runs"][0]["strategy"])
+
+    for row in table["runs"][1:]:
+        parts += retrieval.render_comparison(row["vsBaseline"], baseline, _strategy_name(row["strategy"]))
+
+    return "\n".join(parts).rstrip() + "\n"

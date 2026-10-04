@@ -68,6 +68,20 @@ SNAPSHOT = "snapshot"
 NONE = "none"
 CORPUS_MODES = (SNAPSHOT, NONE)
 
+# What a run asks of the pipeline. `retrieval` stops before the model: a
+# stand-in verifier answers UNVERIFIED without a call, so a retrieval
+# strategy is measured for its search and fetch time alone. Its verdicts
+# mean nothing and its report has no classification metrics.
+FULL = "full"
+RETRIEVAL = "retrieval"
+MODES = (FULL, RETRIEVAL)
+
+# The "model" of a retrieval-only run: its directory and its records say
+# no model was asked.
+RETRIEVAL_ONLY_MODEL = "retrieval-only"
+
+RETRIEVAL_ONLY_EXPLANATION = "Retrieval-only run: the model was not asked."
+
 MANIFEST = "run.json"
 RESULTS = "results.jsonl"
 CORPUS_DIR = "vector_db"
@@ -124,16 +138,32 @@ def run_key(
     thresholds: PipelineThresholds,
     corpus: str,
     weights: dict[str, float] | None = None,
+    mode: str = FULL,
+    label: str | None = None,
 ) -> str:
+    """
+    The mode and the label count only when set, so a full, unlabelled
+    run keeps the key it had before either existed. The label is what
+    separates two strategies the settings cannot tell apart - the same
+    thresholds over two commits of the retriever.
+    """
 
-    return _digest({
+    keyed = {
         "dataset": dataset_sha256,
         "model": model,
         "thresholds": thresholds.model_dump(),
         "weights": weights if weights is not None else scoring_weights(),
         "corpus": corpus,
         "harnessVersion": HARNESS_VERSION,
-    })[:12]
+    }
+
+    if mode != FULL:
+        keyed["mode"] = mode
+
+    if label:
+        keyed["label"] = label
+
+    return _digest(keyed)[:12]
 
 
 def _digest(value) -> str:
@@ -186,10 +216,18 @@ class RunConfig:
     # The environment's scoring weights when the run was configured.
     weights: dict = field(default_factory=scoring_weights)
 
+    mode: str = FULL
+
+    # A name for the strategy this run measures (`--label`), keyed.
+    label: str | None = None
+
     @property
     def key(self) -> str:
 
-        return run_key(self.dataset.sha256, self.model, self.thresholds, self.corpus, self.weights)
+        return run_key(
+            self.dataset.sha256, self.model, self.thresholds, self.corpus, self.weights,
+            mode=self.mode, label=self.label,
+        )
 
     @property
     def directory(self) -> Path:
@@ -488,6 +526,8 @@ class HarnessRunner:
             "thresholdsOverridden": config.thresholds.overridden_from_defaults(),
             "weights": config.weights,
             "corpus": {"mode": config.corpus},
+            "mode": config.mode,
+            "label": config.label,
             "gitCommit": self.commit,
             "startedAt": now(),
             "settings": {
@@ -592,9 +632,12 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
 
     meter = UsageMeter()
 
-    llm = metered(LLMClient(model=config.model), meter)
+    if config.mode == RETRIEVAL:
+        verifier = RetrievalOnlyVerifier()
+    else:
+        verifier = LLMVerifier(client=metered(LLMClient(model=config.model), meter))
 
-    checker = FactChecker(repository, verifier=LLMVerifier(client=llm))
+    checker = FactChecker(repository, verifier=verifier)
 
     claims = ClaimService(checker, entity_extractor=EntityExtractor())
 
@@ -614,3 +657,22 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
     )
 
     return runner, database.close
+
+
+class RetrievalOnlyVerifier:
+    """
+    Stands in for LLMVerifier in a retrieval-only run: no call, an
+    UNVERIFIED that says why. Everything before it - queries, search,
+    fetch, ranking, the pertinence gate - is the real pipeline's.
+    """
+
+    def verify(self, claim, evidence, context=None):
+
+        from src.models.fact_checker.fact_check import Verdict
+        from src.services.fact_checker.verification.llm_verification import LLMVerificationResult
+
+        return LLMVerificationResult(
+            verdict=Verdict.UNVERIFIED,
+            confidence=0.0,
+            explanation=RETRIEVAL_ONLY_EXPLANATION,
+        )
