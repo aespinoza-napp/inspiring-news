@@ -4,7 +4,7 @@ The plan, and what is true of it **today**. Every checkbox below was checked
 against the code, not against the plan. `[x]` means done *and* working as
 described; anything less is `[ ]` with a note saying exactly how far it got.
 
-- **As of:** 2026-10-01 — week 1 of Sprint 4 (development) and of the validation set (evaluation), run side by side.
+- **As of:** 2026-10-05 — week 2 of Sprint 4 (development) and of the validation set (evaluation), run side by side. Oct 5 added discovery by topic, the selection step, the newsroom flow, and an 18h block of experiments on the stages before the verdict (Phase 4, not yet funded).
 - **Hours** are the planned budget. There is no time log in the repo, so
   nothing here claims hours actually spent.
 - **Rebalanced on Sep 28**, still 900h: the custom validation set turned
@@ -264,6 +264,10 @@ labels - so it runs first, and the search is fixed before any benchmark.
 - ↪️ Tune `RANKING_*`, `CONFIDENCE_*` and `EVIDENCE_MIN_PERTINENCE` with real data — moved to Phase 4 (Nov 10–16), Sep 30.
 - [ ] 🟡 🏷️ Improve topic classifier accuracy — **de-scoped on Sep 29 to "only if time"**: on no research question's path (topics steer admission and balance, not verdicts). Keyword coverage was widened from misclassified real articles; there is no labelled set to measure accuracy on. The labelling batch's wrong topic guesses are a free sample of its errors.
 - [x] 🧪 Regression tests for new ranking/confidence behavior — ranking (lexical factor, pertinence gate both ways, run-threshold not env) was already covered. Sep 28: confidence golden values and properties (`test_confidence_weights.py`); the frozen class weights are now pinned for the suite (they had been running on the local `.env`); weight groups that do not sum to 1.0 refuse to start - the committed `.env-example` had ranking at 1.2. Still not *measured*: that is the tuning item above.
+- [x] 🎯 **Discovery by topic group** (not in the original plan, Oct 5) — pick up to 3 of the 5 groups (society, science, environment, culture, health); only the sources whose YAML names one are read, and only for those groups' topics. One backend definition of the groups (`src/config/topics.py`), a `groups:` list in every source YAML (each group has an English and a Spanish source, held by a test). Discovery now drops off-mission sections (sport, celebrity, horoscopes, lotteries, weather), links filed under a topic not asked for unless they mention one that was, section-page navigation, and - when scoped - Spanish items without a topic word in their title (`TOPIC_KEYWORDS_ES`). Live, Oct 5: Environment read 14 of 34 sources and 10% of the baseline's links; El País kept 18 of 159 items instead of all, election coverage gone. `docs/decisions/selection.md`
+- [x] 🗳️ **Choose up to 20 before analysing, by a person or the AI** (not in the original plan, Oct 5) — a candidate round lists what was found with its feed title and summary; the AI selection (LLM over titles and summaries, ten per call, in the background) scores each 0-10 for positive impact with a reason and ticks its picks; the editor keeps or changes them; only those become analysis jobs. Every round is recorded (`lake/stats/selection/`) with who chose and how far the AI's proposal was kept. Live on llama3.1: 26 candidates, 3 calls, 167 s, every election story and the comedy-photo awards at 0. Its own timeout (`AI_SELECTION_TIMEOUT`): the dev `LLM_TIMEOUT` failed every selection. `POST /ingest/rounds/*`, `src/services/selection/`
+- [x] 🧭 **One newsroom flow in the frontend** (not in the original plan, Oct 5) — the nav in two groups, newsroom (Discover → Analyze → Live → Reader, with a step bar on each) and lab (the per-stage tools); a `/discover` page for the two items above, its round in the URL so a reload resumes; the Scraper page's one-shot ingest panel removed in its favour; one `safeHref` instead of three copies.
+- [x] 🐛 **Found Oct 5: topic-page discovery re-read the dead feed** — since Oct 4's feed times, discovery asked every strategy for items, and the topic-page step inherited the RSS strategy's feed reader: National Geographic, Reuters and SINC found nothing for a day. Fixed, with a test that runs the step through `DiscoveryService`.
 - [x] ⏱️ Time to reception (not in the original plan, Oct 4) — how long an article takes to reach us after it is published. The RSS strategy now keeps each item's publication time (all 1,248 URLs from 29 live feeds had one), the extractor keeps the page's own `article:published_time` for stored articles (6 of 7 live pages stated it to the second), and ingestion records when it first saw each URL (`lake/stats/sightings.json`). `GET /scraper/freshness` and a Time to reception panel on `/scraper`: per source, hours from publication to first seen, to fetched and to the reader, between precise times only; date-only articles in days, apart. `docs/decisions/scraping.md`. The numbers start with the next ingestion: older lake records have neither time.
 
 ---
@@ -362,6 +366,26 @@ attribution table. Each item has a ready `/goal` in `docs/goals.md`
 - [ ] 🧭 Attribute every wrong verdict to a stage · 5h (RQ2) — retrieval (nothing pertinent found), ranking (it was found and cut), reasoning (it was ranked and misread) or aggregation - from the trace each run already records
 - [ ] ⏱️ Journalist-effort metrics · 5h (RQ3) — the claim selector's precision (the labelling batch's skip reasons, recorded since Sep 29), time per fact (to add to the labeller), and the share of verdicts usable without re-checking
 - [ ] 🧪 Pilot on the 64-claim x-fact set, end to end · 5h — shakes out the harness before the custom set is ready; its first numbers are the baseline for the fixed search
+
+### Experiments on the stages before the verdict (Oct 6 – Nov 16) · 18h — **new on Oct 5, not yet funded**
+
+The harness measures verdicts; these measure what decides which articles
+get one - discovery, selection, admission, the topic classifier - and
+give the paper its numbers on cost and on the editor's effort (RQ3). One
+command, `uv run python -m src.evaluation.experiments <name>`, each run
+writing `result.json` and `report.md` to
+`backend/data/evaluation/experiments/`; how to run and read each is in
+`docs/experiments.md`. The 18h are on top of the 900h: take them from
+somewhere, or accept the overrun.
+
+- [x] 🧰 Experiment tools · Oct 5 — `discovery` (sources, attempts, links, candidates and time per topic-group setting against the every-topic baseline), `selection` (editor against AI: precision, recall, Jaccard, AUC of the AI score; blind and assisted rounds apart), `blind-ai` (the AI run on a round already sent, so it cannot anchor the editor), `admission` (each candidate through `/enrich` once, cached; the topic and impact thresholds replayed offline with the pipeline's own classes), `topics` (the classifier against the labelled facts' articles). 9 tests on hand-built data. First runs: Environment reads 0.41× the sources and 0.10× the links; the classifier gets the group right 0.73 [0.59, 0.85] of the time and leaves 10% of articles with no topic at its 0.35 floor.
+- [ ] 🔎 Scraping — discovery yield per topic group · 2h — `discovery` with each group, three useful pairs and the baseline, on five different days (feeds change through the day): the reduction in sources and links with an interval, and the language balance of what is left.
+- [ ] 🩺 Scraping — source health and extraction · 3h — the source probe (`/scraper` → Source health) once a week for four weeks, plus `/sources`: up / degraded / down per source, extraction success per strategy, and the time-to-reception medians, as one table.
+- [ ] 🗳️ Selection — the AI against the editor · 5h — ten **blind** rounds (choose and send first, then `blind-ai --round <id>`) and ten assisted ones: precision, recall and Jaccard of the AI's picks, the AUC of its score, blind against assisted. A journalist-effort measure for RQ3, beside the claim selector's precision.
+- [ ] 🚪 Admission thresholds · 3h — `admission` over at least 100 round candidates the editor chose for or against: admission rate, precision and recall over topic minimum 0.30–0.45 × impact minimum 0.10–0.30, and the AUC of the positive-impact score (it ranked a match report above a decarbonisation analysis on Oct 5). Feeds the defaults chosen in the tuning below.
+- [ ] 🏷️ Topic classifier · 1h — `topics` again at 100 and at 150 facts: top-1, top-3, group accuracy, the no-topic rate and the group confusion; decide whether `TOPIC_CLASSIFIER_THRESHOLD` stays at 0.35. Replaces the de-scoped "improve topic classifier accuracy" item's missing measurement.
+- [ ] ⏲️ Time per stage · 2h — over the pilot and one ingestion round: enrichment, admission, retrieval, ranking and the LLM, from `/metrics` and the job journal, on the dev GPU and on the production CPU - the cost side of every result.
+- [ ] 📝 The tables into the paper · 2h — discovery, selection, admission and topics, in the evaluation section, each with the command that reproduces it.
 
 ### Tuning against the labels (Nov 10–16) · 10h
 
