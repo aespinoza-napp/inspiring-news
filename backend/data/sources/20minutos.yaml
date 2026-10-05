@@ -26,6 +26,11 @@ tags:
   - science
   - technology
 
+groups:
+  - society
+  - science
+  - health
+
 metadata:
   extractor: trafilatura
   discovery:

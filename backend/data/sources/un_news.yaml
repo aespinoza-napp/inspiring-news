@@ -26,6 +26,11 @@ tags:
   - health
   - climate
 
+groups:
+  - society
+  - health
+  - environment
+
 metadata:
   extractor: trafilatura
   discovery:

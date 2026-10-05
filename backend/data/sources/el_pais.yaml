@@ -28,6 +28,12 @@ tags:
   - science
   - culture
 
+groups:
+  - society
+  - science
+  - environment
+  - culture
+
 metadata:
   extractor: trafilatura
   discovery:

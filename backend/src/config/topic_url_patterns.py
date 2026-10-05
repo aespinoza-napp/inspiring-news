@@ -270,7 +270,7 @@ TOPIC_SECTION_PATTERNS_ES = {
     "technology": ("/tecnologia/", "/ciencia-y-tecnologia/"),
     "research": ("/ciencia/", "/investigacion/"),
     "biology": ("/biologia/", "/genetica/"),
-    "climate": ("/clima/", "/medio-ambiente/", "/medioambiente/", "/cambio-climatico/"),
+    "climate": ("/clima/", "/medio-ambiente/", "/medioambiente/", "/cambio-climatico/", "/clima-y-medio-ambiente/"),
     "nature": ("/naturaleza/", "/animales/", "/biodiversidad/"),
     "energy": ("/energia/",),
     "sustainability": ("/sostenibilidad/",),
@@ -286,3 +286,44 @@ TOPIC_SECTION_PATTERNS_ES = {
     "fitness": ("/deporte-y-salud/",),
     "public_health": ("/salud-publica/",),
 }
+
+# Sections that are never this publication's subject, whatever topic was
+# asked for: match reports, celebrity news, horoscopes, lotteries. A link
+# filed under one is dropped at discovery, before anything is fetched or
+# scored. On 2026-10-05 the labelling batch drew a La Vanguardia
+# /deportes/ match report (Barça 7-0 Real Madrid), and the positive-impact
+# score - which counts upbeat words - put it above an analysis of Chinese
+# industry leaving fossil fuels (0.34 against 0.28). Each entry is a whole
+# path segment, so the fitness sections "/sports-health/" and
+# "/deporte-y-salud/" do not match.
+OFF_MISSION_SECTIONS = (
+    "/sport/",
+    "/sports/",
+    "/deportes/",
+    "/deporte/",
+    "/futbol/",
+    "/football/",
+    "/soccer/",
+    "/motor/",
+    "/motorsport/",
+    "/formula1/",
+    "/baloncesto/",
+    "/tenis/",
+    "/gente/",
+    "/famosos/",
+    "/celebrities/",
+    "/celebrity/",
+    "/corazon/",
+    "/horoscopo/",
+    "/horoscope/",
+    "/horoscopes/",
+    "/loterias/",
+    "/loteria/",
+    "/lottery/",
+    "/apuestas/",
+    "/betting/",
+    # Forecast pages, not stories: BBC's /weather/<location> came back as
+    # Environment candidates from its topic pages on 2026-10-05.
+    "/weather/",
+    "/el-tiempo/",
+)

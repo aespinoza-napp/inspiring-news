@@ -242,6 +242,13 @@ class Settings(BaseSettings):
     # request still costs at most 2 x this (complete_json's own retry;
     # the SDK's own retries are off, see LLMClient).
     LLM_TIMEOUT: float = 30.0
+    # One AI selection call scores a batch of candidates and writes a
+    # reason for each - several times a verdict's output. Measured
+    # 2026-10-05 on llama3.1 (8B, local GPU): 13 candidates took 72s, so
+    # LLM_TIMEOUT's 30s failed every selection. Its own limit, for the
+    # same reason LLM_TIMEOUT has one: a request the model cannot finish
+    # in time is retried once and then the whole selection fails, loudly.
+    AI_SELECTION_TIMEOUT: float = 240.0
     # Base delay before complete_json's retry after a connection/timeout
     # failure, doubled each attempt and capped at 5s.
     LLM_RETRY_BACKOFF_SECONDS: float = 0.5

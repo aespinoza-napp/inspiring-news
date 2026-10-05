@@ -69,6 +69,8 @@ src.main:app --port 8001`.
 | What is searched for; why a source is cut | `docs/decisions/retrieval.md` |
 | Why a given rule exists; what broke before | `docs/decisions/incidents.md` |
 | The extraction cascade and what it counts | `docs/decisions/scraping.md` |
+| Discovering by topic group; choosing up to 20 to analyse (person or AI) | `docs/decisions/selection.md` |
+| Experiments on discovery, selection, admission and the topic classifier | `docs/experiments.md` |
 | The Neo4j graph: schema, write path, console | `docs/decisions/graph.md` |
 | Pages, polling hook, API proxies | `frontend/CLAUDE.md` |
 | Running the stack | `docker/README.md` |
@@ -141,15 +143,18 @@ the declared exception, deliberately.
 The code invites several confident wrong conclusions. It is cheaper to
 write them down than to have each be rediscovered.
 
-- **Ingestion runs only when someone asks.** `POST /ingest` (the
-  Scraper page's panel) discovers from the configured sources and queues
-  each new article as an ordinary analysis job. Nothing runs on a timer.
-  Three configured feed URLs (National Geographic, Reuters, SINC) return
+- **Ingestion runs only when someone asks.** `/discover` (`POST
+  /ingest/rounds`) reads the sources of up to three topic groups and
+  lists candidates; a person or the AI picks at most twenty, and only
+  those become analysis jobs. `POST /ingest` still queues everything it
+  finds (optionally scoped to groups). Nothing runs on a timer. Three
+  configured feed URLs (National Geographic, Reuters, SINC) return
   404 and no replacement feed exists: they are discovered from topic
   section pages instead. EFE and Reuters refuse this scraper outright
-  (403/401). The topic keywords are English only,
-  so Spanish sources are not pre-filtered by topic
-  (`docs/decisions/scraping.md`).
+  (403/401). Spanish feeds are keyword-filtered only when a run is
+  scoped to some groups (`TOPIC_KEYWORDS_ES`, titles only); asked for
+  every topic they are not pre-filtered at all
+  (`docs/decisions/selection.md`, `docs/decisions/scraping.md`).
 - **The headless browser is optional and usually absent locally.**
   `playwright` is the `browser` extra; `./scripts/check.sh` never
   installs it, and without it (or without `playwright install chromium`)

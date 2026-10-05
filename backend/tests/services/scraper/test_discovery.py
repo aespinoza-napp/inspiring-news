@@ -232,19 +232,72 @@ def test_homepages_sections_and_videos_are_not_articles(url):
 def test_a_spanish_feed_is_not_filtered_by_english_keywords(monkeypatch):
     """
     Every TOPICS keyword is English; against a Spanish feed they kept 5 of
-    El País's 149 entries, at random. Topic is left to the admission filter.
+    El País's 149 entries, at random. Asked for every topic - ingestion
+    without groups, the labelling batch - a Spanish feed keeps every
+    article, and topic is left to the admission filter.
     """
+
+    from src.config.topics import TOPICS
 
     entries = [
         entry("https://elpais.com/espana/2026-09-23/una-donante-anonima-paga-el-alquiler.html",
               "Una donante anónima se ofrece a pagar el alquiler"),
+        entry("https://elpais.com/espana/2026-10-05/sanchez-adelanta-las-elecciones.html",
+              "Sánchez adelanta las elecciones al 29 de noviembre"),
     ]
 
     monkeypatch.setattr(feedparser, "parse", lambda text: FakeFeed(entries))
 
-    urls = RSSDiscoveryStrategy().discover(make_source(language="es"), topics=["space"])
+    urls = RSSDiscoveryStrategy().discover(make_source(language="es"), topics=list(TOPICS))
 
-    assert urls == [entries[0].link]
+    assert urls == [item.link for item in entries]
+
+
+def test_a_narrowed_spanish_feed_is_filtered_by_spanish_keywords(monkeypatch):
+    """
+    2026-10-05: an Environment round listed El País's and elDiario's
+    election coverage, because Spanish feeds were never filtered.
+    """
+
+    from src.config.topics import TOPIC_GROUPS
+
+    elections = entry("https://elpais.com/espana/2026-10-05/sanchez-adelanta-las-elecciones.html",
+                      "Sánchez adelanta las elecciones al 29 de noviembre")
+    birds = entry("https://elpais.com/2026-10-05/el-delta-recupera-sus-colonias.html",
+                  "El delta del Ebro recupera aves que no anidaban desde 1990")
+    wind = entry("https://www.eldiario.es/economia/2026-10-05/record-eolico.html",
+                 "La energía eólica cubrió la mitad de la demanda")
+    speech = entry("https://www.eldiario.es/politica/2026-10-05/discurso.html",
+                   "Lee el discurso completo sobre las elecciones anticipadas",
+                   summary="... las renovables, la cosecha, el medioambiente y la energía ...")
+
+    monkeypatch.setattr(feedparser, "parse", lambda text: FakeFeed([elections, birds, wind, speech]))
+
+    urls = RSSDiscoveryStrategy().discover(make_source(language="es"), topics=TOPIC_GROUPS["environment"])
+
+    # The wind record is filed under /economia/ but speaks of energy: kept.
+    # The speech only mentions energy in its summary, which is not read.
+    assert urls == [birds.link, wind.link]
+
+
+def test_a_spanish_section_of_a_topic_asked_for_needs_no_keyword(monkeypatch):
+
+    link = "https://elpais.com/clima-y-medio-ambiente/2026-10-05/un-informe-sin-palabras-clave.html"
+    monkeypatch.setattr(feedparser, "parse", lambda text: FakeFeed([entry(link, "Un informe")]))
+
+    assert RSSDiscoveryStrategy().discover(make_source(language="es"), topics=["climate"]) == [link]
+
+
+def test_spanish_keywords_start_words_and_short_ones_are_whole_words():
+
+    from src.services.scraper.strategies.rss import _mentions
+
+    arts = {"arte ", "museo"}
+
+    assert _mentions(entry("https://x.es/a", "El arte urbano llega al barrio"), arts)
+    assert not _mentions(entry("https://x.es/a", "Una parte del presupuesto"), arts)
+    assert _mentions(entry("https://x.es/a", "La energía eólica"), {"energ"})
+    assert not _mentions(entry("https://x.es/a", "Sinergias políticas"), {"energ"})
 
 
 def test_an_english_feed_is_still_filtered_by_topic(monkeypatch):
@@ -256,3 +309,84 @@ def test_an_english_feed_is_still_filtered_by_topic(monkeypatch):
     monkeypatch.setattr(feedparser, "parse", lambda text: FakeFeed(entries))
 
     assert RSSDiscoveryStrategy().discover(make_source(language="en"), topics=["space"]) == []
+
+
+# ----------------------------------------------------------------------
+# Off-mission sections, sections of another topic, and what a candidate
+# list shows (src/services/ingestion_service.py's candidate rounds)
+# ----------------------------------------------------------------------
+
+
+def test_an_off_mission_section_is_dropped_whatever_was_asked(monkeypatch):
+    """2026-10-05: a /deportes/ match report reached the labelling batch."""
+
+    entries = [
+        entry("https://www.lavanguardia.com/deportes/futbol-femenino/20261005/11651238/claudia-pina.html", "Claudia Pina"),
+        entry("https://www.lavanguardia.com/natural/20261005/11651300/rewilding-the-ebro-delta.html", "Rewilding"),
+    ]
+
+    monkeypatch.setattr(feedparser, "parse", lambda url: FakeFeed(entries))
+
+    urls = RSSDiscoveryStrategy().discover(make_source(language="es"), topics=None)
+
+    assert urls == ["https://www.lavanguardia.com/natural/20261005/11651300/rewilding-the-ebro-delta.html"]
+
+
+def test_a_fitness_section_is_not_mistaken_for_sport(monkeypatch):
+
+    link = "https://www.example.es/deporte-y-salud/20261005/caminar-diez-mil-pasos.html"
+    monkeypatch.setattr(feedparser, "parse", lambda url: FakeFeed([entry(link, "Caminar")]))
+
+    assert RSSDiscoveryStrategy().discover(make_source(language="es"), topics=["fitness"]) == [link]
+
+
+def test_a_link_filed_under_a_topic_not_asked_for_is_dropped(monkeypatch):
+    """
+    A Spanish feed is not keyword-filtered (the keywords are English),
+    so its section names are what narrow it to the groups picked.
+    """
+
+    science = "https://elpais.com/ciencia/2026-10-05/un-telescopio-descubre-agua.html"
+    climate = "https://elpais.com/clima-y-medio-ambiente/2026-10-05/el-delta-recupera-aves.html"
+    unfiled = "https://elpais.com/2026-10-05/una-historia-sin-seccion-en-la-ruta.html"
+
+    entries = [
+        entry(science, "Un telescopio descubre agua"),
+        entry(climate, "x"),
+        entry(unfiled, "Vuelven las aves al delta"),
+    ]
+    monkeypatch.setattr(feedparser, "parse", lambda url: FakeFeed(entries))
+
+    urls = RSSDiscoveryStrategy().discover(make_source(language="es"), topics=["climate", "nature"])
+
+    assert urls == [climate, unfiled]
+
+    from src.services.scraper.strategies.rss import filed_under
+
+    assert filed_under(climate) == {"climate"} and filed_under(unfiled) == set()
+
+
+def test_asking_for_every_topic_drops_nothing_for_its_section(monkeypatch):
+
+    science = "https://elpais.com/ciencia/2026-10-05/un-telescopio-descubre-agua.html"
+    monkeypatch.setattr(feedparser, "parse", lambda url: FakeFeed([entry(science, "x")]))
+
+    from src.config.topics import TOPICS
+
+    assert RSSDiscoveryStrategy().discover(make_source(language="es"), topics=list(TOPICS)) == [science]
+
+
+def test_items_carry_the_feeds_title_and_a_plain_text_summary(monkeypatch):
+
+    link = "https://example.com/environment/2026/10/05/mangroves-cut-storm-waves"
+    summary = "<p>Mangroves cut storm waves by <b>59%</b> &amp; more.</p>" + " word" * 200
+
+    monkeypatch.setattr(
+        feedparser, "parse", lambda url: FakeFeed([entry(link, "Mangroves &amp; waves", summary)])
+    )
+
+    [item] = RSSDiscoveryStrategy().discover_items(make_source(), topics=["climate"])
+
+    assert item.title == "Mangroves & waves"
+    assert item.summary.startswith("Mangroves cut storm waves by 59% & more.")
+    assert len(item.summary) <= 401 and item.summary.endswith("…")

@@ -25,6 +25,9 @@ tags:
   - climate
   - wildlife
 
+groups:
+  - environment
+
 metadata:
   extractor: trafilatura
   discovery:

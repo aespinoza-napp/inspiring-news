@@ -26,6 +26,10 @@ tags:
   - environment
   - solutions
 
+groups:
+  - society
+  - environment
+
 metadata:
   extractor: trafilatura
   discovery:

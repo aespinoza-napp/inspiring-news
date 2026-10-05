@@ -26,6 +26,11 @@ tags:
   - health
   - space
 
+groups:
+  - science
+  - culture
+  - health
+
 metadata:
   extractor: trafilatura
   discovery:

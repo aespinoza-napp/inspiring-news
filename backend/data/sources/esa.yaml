@@ -25,6 +25,9 @@ tags:
   - space
   - astronomy
 
+groups:
+  - science
+
 metadata:
   extractor: trafilatura
   discovery:

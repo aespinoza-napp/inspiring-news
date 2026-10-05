@@ -521,6 +521,121 @@ export interface IngestSource {
   language: string;
   rssUrl: string | null;
   requiresJavascript: boolean;
+  /** The topic groups this source is read for (its YAML's `groups`). */
+  groups: string[];
+}
+
+/** One of the five topic groups (backend src/config/topics.py TOPIC_GROUPS). */
+export interface TopicGroup {
+  id: string;
+  name: string;
+  topics: { id: string; name: string }[];
+  /** Enabled sources that cover it. */
+  sources: number;
+}
+
+/** GET /ingest/sources */
+export interface IngestSourcesResponse {
+  sources: IngestSource[];
+  groups: TopicGroup[];
+  maxGroups: number;
+  maxSelected: number;
+  lastRun: IngestReport | null;
+}
+
+/** One article a round found, before anything about it is fetched. */
+export interface Candidate {
+  url: string;
+  source: string;
+  sourceName: string;
+  language: string;
+  groups: string[];
+  /** The feed's title, or one made from the URL's slug (`titleFrom: "url"`). */
+  title: string | null;
+  titleFrom: "feed" | "url";
+  summary: string | null;
+  publishedAt: string | null;
+  method: string | null;
+}
+
+export interface CandidateSourceRow {
+  source: string;
+  name: string;
+  language: string;
+  method: string | null;
+  discovered: number;
+  alreadyStored: number;
+  candidates: number;
+  deferred: number;
+  error: string | null;
+}
+
+export interface ScoredCandidate {
+  url: string;
+  /** 0-10; null when the model left it out. */
+  score: number | null;
+  reason: string | null;
+}
+
+export interface AISelectionState {
+  status: "running" | "done" | "failed";
+  startedAt: string;
+  finishedAt?: string;
+  limit: number;
+  minScore: number;
+  picks?: ScoredCandidate[];
+  scored?: ScoredCandidate[];
+  model?: string;
+  calls?: number;
+  unusable?: number;
+  elapsedMs?: number;
+  notes?: string[];
+  error?: string;
+}
+
+export interface QueuedSelection {
+  at: string;
+  urls: string[];
+  jobs: { url: string; jobId: string | null; reused: boolean; error?: string }[];
+  /** Worked out by the backend from the AI's proposal, not claimed by the page. */
+  selectedBy: "user" | "ai" | "ai+user";
+  aiProposed: number;
+  aiKept: number;
+  aiDropped: number;
+  userAdded: number;
+}
+
+/** POST /ingest/rounds, GET /ingest/rounds/{id} */
+export interface CandidateRound {
+  id: string;
+  startedAt: string;
+  groups: string[];
+  topics: string[];
+  perSource: number;
+  sources: CandidateSourceRow[];
+  candidates: Candidate[];
+  totals: {
+    sources: number;
+    discovered: number;
+    alreadyStored: number;
+    candidates: number;
+    deferred: number;
+    failed: number;
+  };
+  aiSelection: AISelectionState | null;
+  queued: QueuedSelection | null;
+}
+
+/** GET /ingest/rounds */
+export interface CandidateRoundSummary {
+  id: string;
+  startedAt: string | null;
+  groups: string[] | null;
+  totals: CandidateRound["totals"] | null;
+  aiStatus: AISelectionState["status"] | null;
+  aiPicks: number;
+  queued: number;
+  selectedBy: QueuedSelection["selectedBy"] | null;
 }
 
 export interface IngestSourceRun {

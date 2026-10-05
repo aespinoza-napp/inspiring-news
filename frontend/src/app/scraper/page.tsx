@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   ScrapedArticles,
@@ -10,7 +11,6 @@ import {
 } from "@/lib/types";
 import { DailyBars } from "@/components/DailyBars";
 import { FreshnessSection } from "@/components/FreshnessSection";
-import { IngestPanel } from "@/components/IngestPanel";
 import { SourceProbePanel } from "@/components/SourceProbePanel";
 
 // How often the counts refresh on their own. The page answers "is the
@@ -459,7 +459,16 @@ export default function ScraperStatsPage() {
 
       <SourceProbePanel />
 
-      <IngestPanel onQueued={load} />
+      <section className="card">
+        <div className="section-label">Ingesting articles</div>
+        <p className="claims-note">
+          Articles are found and sent to analysis from{" "}
+          <Link href="/discover">Discover</Link>: pick up to three topics, and
+          only the sources that cover them are read; then choose up to twenty
+          articles, yourself or with the AI, before any is analysed. The runs
+          show on <Link href="/live">Live</Link> and their requests here.
+        </p>
+      </section>
 
       <h2>Requests</h2>
 

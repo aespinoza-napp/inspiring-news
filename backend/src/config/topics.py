@@ -302,3 +302,74 @@ TOPICS = {
         ],
     ),
 }
+
+# The five groups this file is laid out in. The backend's one definition:
+# ingestion discovers from the sources of up to three groups
+# (src/services/ingestion_service.py, each source YAML's `groups`), and
+# the evaluation balances its labelled facts over them, because 23 topics
+# are too thin at 150 facts. labeller/ keeps its own copy - it imports
+# nothing from backend/ - and tests/evaluation/test_harness_dataset.py
+# holds the two equal and every topic above to exactly one group.
+TOPIC_GROUPS = {
+    "society": ["education", "community", "employment", "cities"],
+    "science": ["space", "technology", "research", "biology"],
+    "environment": ["climate", "nature", "energy", "sustainability", "food"],
+    "culture": ["arts", "entertainment", "heritage", "literature", "inspiration"],
+    "health": ["medicine", "mental_health", "nutrition", "fitness", "public_health"],
+}
+
+TOPIC_GROUP_NAMES = {
+    "society": "Society",
+    "science": "Science",
+    "environment": "Environment",
+    "culture": "Culture",
+    "health": "Health",
+}
+
+GROUP_OF = {topic: group for group, topics in TOPIC_GROUPS.items() for topic in topics}
+
+
+# Spanish words for each topic, read only by discovery's feed filter
+# (src/services/scraper/strategies/rss.py) when a run is narrowed to some
+# topic groups. TOPICS' keywords above are English: against a Spanish feed
+# they kept 5 of El País's 149 entries, at random, so Spanish feeds were
+# never filtered at all - and on 2026-10-05 an Environment round listed
+# El País's and elDiario's election coverage. Matched against an item's
+# title and categories, not its summary: a general feed's summaries are
+# long, and a campaign speech mentions renewables, harvests and the
+# political "clima" in passing (measured the same day: summaries let the
+# elections through, titles did not). Written without accents and
+# matched against accent-free text; each entry is the start of a word
+# ("energ" is energía and energético), so short words that are the start
+# of others (arte: artes, but also not "parte") are matched as whole words
+# by ending them with a space. Kept apart from TOPICS so the classifier's
+# keyword scoring is unchanged.
+TOPIC_KEYWORDS_ES = {
+    "education": ["educacion", "educativ", "escuela", "colegio", "universidad", "alumn", "estudiante", "profesor", "docente", "aprendizaje"],
+    "community": ["solidari", "voluntari", "comunidad", "vecin", "ayuda humanitaria", "inclusion", "donacion", "donante", "beneficencia", "refugiad"],
+    "employment": ["empleo", "laboral", "trabajador", "emprend", "contratacion", "salario"],
+    "cities": ["ciudad", "urban", "vivienda", "movilidad", "transporte publico", "barrio", "municipal"],
+    "space": ["espacial", "astronaut", "astronom", "satelite", "galaxia", "cohete", "telescopio", "marte ", "asteroide", "orbita"],
+    "technology": ["tecnolog", "inteligencia artificial", "robot", "software", "digital", "ciberseguridad", "algoritmo", "innovacion"],
+    # Not "investigacion" or "estudio": a police investigation and a
+    # recording studio both matched.
+    "research": ["investigador", "cientific", "descubr", "laboratorio", "ciencia"],
+    "biology": ["biolog", "genetic", "genoma", "adn ", "especie", "celula", "bacteria", "evolucion", "microb"],
+    # Not "clima" alone ("el clima político" is in every campaign), nor
+    # "emisiones" (a concert's broadcasts matched).
+    "climate": ["climatic", "cambio climatico", "calentamiento", "efecto invernadero", "co2 ", "carbono", "descarboniz", "sequia", "ola de calor", "medio ambiente", "medioambient"],
+    "nature": ["naturaleza", "biodivers", "especie", "fauna", "flora", "animal", "bosque", "selva", "conservacion", "extincion", "aves ", "oceano", "humedal", "reforest"],
+    "energy": ["energ", "renovable", "solar", "eolic", "hidrogeno", "bateria", "fotovoltaic", "electricidad"],
+    "sustainability": ["sostenib", "reciclaj", "residuo", "plastico", "economia circular", "contaminacion", "reutiliz"],
+    "food": ["agricult", "agrari", "alimentacion", "alimento", "cosecha", "ganader", "pesca", "cultivo", "agroecolog"],
+    "arts": ["arte ", "artista", "museo", "exposicion", "pintor", "pintura", "escultur", "arquitect", "danza", "teatro"],
+    "entertainment": ["cine ", "pelicula", "musica", "concierto", "festival", "documental"],
+    "heritage": ["historia", "historic", "patrimonio", "arqueolog", "yacimiento", "tradicion", "monumento"],
+    "literature": ["libro", "novela", "literatura", "escritor", "escritora", "poesia", "poeta", "lectura"],
+    "inspiration": ["inspira", "superacion", "logro", "heroe", "heroina", "ejemplo"],
+    "medicine": ["salud", "medic", "hospital", "enfermedad", "tratamiento", "vacuna", "cancer", "paciente", "terapia", "farmac"],
+    "mental_health": ["salud mental", "psicolog", "ansiedad", "depresion", "bienestar", "estres", "emocional"],
+    "nutrition": ["nutricion", "dieta", "alimentacion saludable", "receta", "vitamina", "azucar"],
+    "fitness": ["ejercicio", "actividad fisica", "caminar", "entrenamiento", "gimnasio"],
+    "public_health": ["salud publica", "epidemi", "prevencion", "sanidad", "oms ", "sanitari", "vacunacion", "pandemia"],
+}

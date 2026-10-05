@@ -197,3 +197,45 @@ def test_an_empty_section_says_so():
     assert section.outcome == "ok"
     assert section.links == []
     assert section.error == "no article links on the page"
+
+
+def test_through_discovery_the_sections_are_crawled_not_the_feed():
+    """
+    DiscoveryService asks for items. The strategy inherits a feed reader
+    from RSSDiscoveryStrategy; from 2026-10-04 to 2026-10-05 that is what
+    answered, re-reading the dead feed instead of crawling a section.
+    """
+
+    from src.services.scraper.discovery import DiscoveryService
+    from src.services.scraper.request_stats import RequestStats
+
+    topic_pages, fetcher = strategy({HOME: anchors("/science/"), SCIENCE: anchors(ARTICLE)})
+
+    result = DiscoveryService([topic_pages], stats=RequestStats()).run(
+        source(rss_url="https://news.example/dead-feed.xml"), topics=["research"]
+    )
+
+    assert result.urls == [ARTICLE]
+    assert "https://news.example/dead-feed.xml" not in fetcher.requested
+
+
+def test_links_in_an_off_mission_section_are_not_kept():
+    """A science section's sidebar still links the match reports."""
+
+    match_report = "https://news.example/sport/2026/10/05/a-seven-nil-win"
+
+    topic_pages, _ = strategy({HOME: anchors("/science/"), SCIENCE: anchors(ARTICLE, match_report)})
+
+    assert topic_pages.discover(source(), topics=["research"]) == [ARTICLE]
+
+
+def test_a_section_pages_own_navigation_is_not_an_article():
+    """2026-10-05: BBC's section pages gave /culture/music as a candidate."""
+
+    navigation = ["https://news.example/science/space", "https://news.example/science/strategy/"]
+    article = "https://news.example/science/articles/c0abc123"
+
+    topic_pages, _ = strategy({HOME: anchors("/science/"), SCIENCE: anchors(*navigation, article, ARTICLE)})
+
+    assert topic_pages.discover(source(), topics=["research"]) == [article, ARTICLE]
+

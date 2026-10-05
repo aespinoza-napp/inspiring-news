@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   AnalysisJob,
@@ -16,6 +17,7 @@ import { QualityRadar } from "@/components/QualityRadar";
 import { TopicRadar } from "@/components/TopicRadar";
 import { TopicKeywords } from "@/components/TopicKeywords";
 import { PhaseStepper } from "@/components/PhaseStepper";
+import { FlowSteps } from "@/components/FlowSteps";
 import { buildTrace, ClaimStep } from "@/lib/liveTrace";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
 import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
@@ -41,11 +43,14 @@ export default function AnalyzerPage() {
 
   return (
     <>
+      <FlowSteps current="analyze" />
+
       <h1>News Analyzer</h1>
       <p className="subtitle">
         Paste one or more article URLs (one per line) to run them through the
         full pipeline: scraping, enrichment, validation and fact-checking.
-        Progress updates every second as each phase completes.
+        Progress updates every second as each phase completes. To find
+        articles by topic instead, start from <Link href="/discover">Discover</Link>.
       </p>
 
       <form onSubmit={handleSubmit}>

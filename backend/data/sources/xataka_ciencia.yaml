@@ -24,6 +24,9 @@ tags:
   - science
   - technology
 
+groups:
+  - science
+
 metadata:
   extractor: trafilatura
   discovery:

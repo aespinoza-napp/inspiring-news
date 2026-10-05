@@ -25,6 +25,9 @@ tags:
   - medicine
   - world
 
+groups:
+  - health
+
 metadata:
   extractor: trafilatura
   discovery:

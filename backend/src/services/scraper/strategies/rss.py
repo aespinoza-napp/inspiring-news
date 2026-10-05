@@ -3,7 +3,10 @@ RSS discovery strategy.
 """
 from __future__ import annotations
 
+import html
 import re
+import unicodedata
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
@@ -11,8 +14,12 @@ import feedparser
 
 from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import Fetcher
-from src.config.topic_url_patterns import TOPIC_URL_PATTERNS
-from src.config.topics import TOPICS
+from src.config.topic_url_patterns import (
+    OFF_MISSION_SECTIONS,
+    TOPIC_SECTION_PATTERNS_ES,
+    TOPIC_URL_PATTERNS,
+)
+from src.config.topics import TOPIC_KEYWORDS_ES, TOPICS
 from .base import DiscoveryStrategy
 
 
@@ -26,6 +33,59 @@ MIN_SLUG_WORDS = 4
 # The language TOPICS' keywords are written in. Matching them against a
 # feed in another language filters at random - see _filters_by_topic.
 KEYWORD_LANGUAGE = "en"
+
+# A feed summary is often the whole lead in HTML; the candidate list and
+# the AI selection need a sentence or two, not the article.
+SUMMARY_CHARS = 400
+
+# Section path segment -> the topics it files an article under, English
+# and Spanish section names together. Read only to decide whether a link
+# belongs to a topic that was *not* asked for (filed_under); whether a
+# link looks like an article at all is still _is_article's call.
+_SECTIONS = {
+    topic: tuple(TOPIC_URL_PATTERNS.get(topic, ())) + tuple(TOPIC_SECTION_PATTERNS_ES.get(topic, ()))
+    for topic in TOPICS
+}
+
+
+def off_mission(url: str) -> bool:
+    """Filed under a section this publication never covers (OFF_MISSION_SECTIONS)."""
+
+    path = urlsplit(url.lower()).path
+
+    return any(section in path for section in OFF_MISSION_SECTIONS)
+
+
+def filed_under(url: str) -> set[str]:
+    """
+    The topics a link's own path files it under - "/ciencia/" is
+    research, "/medio-ambiente/" climate - or an empty set when its path
+    names no section (a dated slug, /digest/...). The path only, so a
+    host name cannot match.
+    """
+
+    path = urlsplit(url.lower()).path
+
+    return {
+        topic
+        for topic, sections in _SECTIONS.items()
+        if any(section in path for section in sections)
+    }
+
+
+@dataclass(frozen=True)
+class DiscoveredLink:
+    """One feed item: its link, and what the feed says about it."""
+
+    url: str
+
+    # When the feed says it was published; None when it does not say.
+    published: datetime | None = None
+
+    title: str | None = None
+
+    # The feed's own summary, as plain text and cut to SUMMARY_CHARS.
+    summary: str | None = None
 
 
 class RSSDiscoveryStrategy(DiscoveryStrategy):
@@ -88,12 +148,38 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         (src/services/freshness.py).
         """
 
+        return [(item.url, item.published) for item in self.discover_items(source, topics)]
+
+    def discover_items(
+        self,
+        source: NewsSource,
+        topics: list[str] = None,
+    ) -> list[DiscoveredLink]:
+        """
+        Every article link the feed carries for the topics asked for,
+        with its time, title and summary - what a person or the AI
+        selection reads to choose among candidates before any page is
+        fetched (src/services/ingestion_service.py).
+
+        Dropped here, before anything is fetched: links that do not look
+        like articles, links in an off-mission section (sport, celebrity,
+        horoscopes - OFF_MISSION_SECTIONS), and, when topics were asked
+        for, links whose own path files them under a topic that was not
+        (an El País "/ciencia/" link when only Environment was picked)
+        unless the item mentions one that was.
+        A link whose path names no section is left to the keyword
+        filter: on an English feed, always; on a Spanish one, only when
+        the run was narrowed to some topics (TOPIC_KEYWORDS_ES) - asked
+        for everything, a Spanish feed keeps every article and topic is
+        the admission filter's call, as it always was.
+        """
+
         if not source.rss_url:
             return []
 
         feed = feedparser.parse(self.fetcher.get(str(source.rss_url)).html)
 
-        entries: dict[str, datetime | None] = {}
+        items: dict[str, DiscoveredLink] = {}
 
         normalized_topics = {
             topic.lower().strip()
@@ -104,6 +190,12 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         url_patterns = self._url_patterns_for(normalized_topics)
         by_topic = self._filters_by_topic(source)
 
+        spanish = (
+            _spanish_keywords_for(normalized_topics)
+            if _language(source) == "es" and _narrowed(normalized_topics)
+            else set()
+        )
+
         for entry in feed.entries:
 
             link = getattr(entry, "link", None)
@@ -111,7 +203,19 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
             if not link:
                 continue
 
-            if not self._is_article(link):
+            if not self._is_article(link) or off_mission(link):
+                continue
+
+            filed = filed_under(link)
+            in_section = bool(filed & normalized_topics)
+
+            mentions_en = by_topic and self._matches_keywords(entry, keywords)
+            mentions_es = bool(spanish) and _mentions(entry, spanish)
+
+            # Filed under a topic not asked for, and saying nothing about
+            # one that was. A section is a coarse label: elDiario files
+            # wind-power records under /economia/, and those stay.
+            if normalized_topics and filed and not in_section and not (mentions_en or mentions_es):
                 continue
 
             matches_url = any(
@@ -119,12 +223,21 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
                 for pattern in url_patterns
             )
 
-            if by_topic and not matches_url and not self._matches_keywords(entry, keywords):
+            if by_topic and not matches_url and not mentions_en:
                 continue
 
-            entries.setdefault(link, _entry_time(entry))
+            if spanish and not in_section and not mentions_es:
+                continue
 
-        return list(entries.items())
+            if link not in items:
+                items[link] = DiscoveredLink(
+                    url=link,
+                    published=_entry_time(entry),
+                    title=_plain(getattr(entry, "title", None)),
+                    summary=_plain(getattr(entry, "summary", None), SUMMARY_CHARS),
+                )
+
+        return list(items.values())
 
     @staticmethod
     def _filters_by_topic(source: NewsSource) -> bool:
@@ -138,7 +251,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         each, not a fact-check.
         """
 
-        return (source.language or KEYWORD_LANGUAGE).lower()[:2] == KEYWORD_LANGUAGE
+        return _language(source) == KEYWORD_LANGUAGE
 
     def _keywords_for(self, topics: set[str]) -> set[str]:
         """
@@ -255,3 +368,93 @@ def _entry_time(entry) -> datetime | None:
                 continue
 
     return None
+
+
+_TAGS = re.compile(r"<[^>]+>")
+_SPACES = re.compile(r"\s+")
+
+
+def _plain(value, limit: int | None = None) -> str | None:
+    """A feed field as one line of plain text: tags and entities gone, cut to `limit`."""
+
+    if not value:
+        return None
+
+    text = _SPACES.sub(" ", html.unescape(_TAGS.sub(" ", str(value)))).strip()
+
+    if limit and len(text) > limit:
+        text = text[:limit].rsplit(" ", 1)[0] + "…"
+
+    return text or None
+
+
+# Path segments that name an article page whatever its section.
+ARTICLE_SEGMENTS = ("/article/", "/articles/", "/story/", "/stories/")
+
+
+def article_shaped(url: str) -> bool:
+    """
+    A link that looks like an article by its own shape - a date in the
+    path, a headline-length slug, an /article/ segment - not by the
+    section it sits in. What a section page's links are judged by: every
+    link on /culture/ contains "/culture/", so _is_article's section
+    patterns say nothing there, and on 2026-10-05 BBC's section pages
+    gave /culture/music and /sustainability/strategy as Environment
+    candidates.
+    """
+
+    lowered = url.lower()
+
+    if "/video/" in lowered or "/videos/" in lowered:
+        return False
+
+    path = urlsplit(lowered).path
+    slug = re.sub(r"\.html?$", "", path.rstrip("/").rsplit("/", 1)[-1])
+
+    return (
+        any(segment in path for segment in ARTICLE_SEGMENTS)
+        or bool(DATED_PATH.search(path))
+        or len([word for word in re.split(r"[-_]", slug) if word]) >= MIN_SLUG_WORDS
+    )
+
+
+def _language(source: NewsSource) -> str:
+
+    return (source.language or KEYWORD_LANGUAGE).lower()[:2]
+
+
+def _narrowed(topics: set[str]) -> bool:
+    """Asked for some topics, not all of them: a topic-scoped run (/discover, POST /ingest with groups)."""
+
+    return bool(topics) and not set(TOPICS) <= topics
+
+
+def _spanish_keywords_for(topics: set[str]) -> set[str]:
+
+    return {keyword for topic in topics for keyword in TOPIC_KEYWORDS_ES.get(topic, ())}
+
+
+_NOT_WORD = re.compile(r"[^\w]+")
+
+
+def _folded(text: str) -> str:
+    """Lower case, no accents, words separated by single spaces and padded: " el delta recupera aves "."""
+
+    decomposed = unicodedata.normalize("NFKD", text.lower())
+    plain = "".join(char for char in decomposed if not unicodedata.combining(char))
+
+    return " " + _NOT_WORD.sub(" ", plain).strip() + " "
+
+
+def _mentions(entry, keywords: set[str]) -> bool:
+    """
+    Whether a feed item's title or categories contain a word starting
+    with one of `keywords` - "energ" finds "energía" and "energético"; a
+    keyword ending in a space ("arte ") is a whole word, so "parte" is
+    not "arte". Not the summary: see TOPIC_KEYWORDS_ES.
+    """
+
+    categories = " ".join(tag.get("term", "") for tag in getattr(entry, "tags", []))
+    text = _folded(f"{getattr(entry, 'title', '')} {categories}")
+
+    return any(f" {keyword}" in text for keyword in keywords)

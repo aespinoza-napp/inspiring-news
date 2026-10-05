@@ -26,6 +26,11 @@ tags:
   - society
   - solutions
 
+groups:
+  - society
+  - environment
+  - culture
+
 metadata:
   extractor: trafilatura
   discovery:

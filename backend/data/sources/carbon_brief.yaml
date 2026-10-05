@@ -25,6 +25,9 @@ tags:
   - environment
   - energy
 
+groups:
+  - environment
+
 metadata:
   extractor: trafilatura
   discovery:

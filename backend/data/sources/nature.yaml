@@ -26,6 +26,10 @@ tags:
   - medicine
   - biology
 
+groups:
+  - science
+  - health
+
 metadata:
   extractor: trafilatura
   discovery:

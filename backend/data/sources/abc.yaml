@@ -26,6 +26,11 @@ tags:
   - culture
   - science
 
+groups:
+  - society
+  - science
+  - culture
+
 metadata:
   extractor: trafilatura
   discovery:

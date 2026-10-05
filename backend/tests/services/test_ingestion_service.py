@@ -295,3 +295,89 @@ def test_trafilatura_discovery_tries_the_homepage_when_the_feed_is_gone(monkeypa
 
     assert asked == ["https://example.com/rss.xml", "https://example.com/"]
     assert urls == ["https://example.com/2026/09/23/nasa-launches-telescope"]
+
+
+# ----------------------------------------------------------------------
+# Topic groups and candidate lists
+# ----------------------------------------------------------------------
+
+
+def grouped_sources():
+
+    return [
+        build_source(id="e360", name="Yale E360", groups=["environment"]),
+        build_source(id="nasa", name="NASA", groups=["science"]),
+        build_source(id="pais", name="El País", language="es", groups=["society", "science", "environment"]),
+    ]
+
+
+def test_groups_narrow_the_sources_read_and_the_topics_asked_for():
+
+    from src.config.topics import TOPIC_GROUPS
+
+    ingestion = service({"e360": [], "pais": []}, sources=grouped_sources())
+
+    report = ingestion.run(Jobs(), groups=["environment"])
+
+    assert [row["source"] for row in report["sources"]] == ["e360", "pais"]
+    assert ingestion.discovery.topics_seen == [TOPIC_GROUPS["environment"]] * 2
+    assert report["groups"] == ["environment"]
+
+
+def test_groups_and_source_ids_together_read_only_what_both_allow():
+
+    ingestion = service({}, sources=grouped_sources())
+
+    assert [s.id for s in ingestion.sources_for(["science"], ["pais", "e360"])] == ["pais"]
+
+
+class DetailedDiscovery(FakeDiscovery):
+    """Discovery that also reports what the feed said about each link."""
+
+    def run(self, source, topics=None):
+        self.topics_seen.append(topics)
+        urls = list(self.urls_by_source.get(source.id) or [])
+        details = {url: {"title": f"Title of {url.rsplit('/', 1)[-1]}", "summary": "A summary."} for url in urls[:1]}
+        return DiscoveryResult(urls=urls, method="RSSDiscoveryStrategy", details=details)
+
+
+def test_candidates_are_listed_with_what_the_feed_says_and_nothing_is_queued():
+
+    ingestion = IngestionService(
+        sources=grouped_sources(),
+        lake=FakeLake(stored_urls=["https://e360.yale.edu/old"]),
+        discovery=DetailedDiscovery({
+            "e360": ["https://e360.yale.edu/digest/a", "https://e360.yale.edu/old"],
+            "pais": [
+                "https://elpais.com/clima/2026-10-05/el-delta-del-ebro-recupera-aves.html",
+                "https://elpais.com/clima/2026-10-05/b.html",
+                "https://elpais.com/clima/2026-10-05/c.html",
+            ],
+        }),
+    )
+
+    round_ = ingestion.discover_candidates(["environment"], per_source=2)
+
+    assert [c["url"] for c in round_["candidates"]] == [
+        "https://e360.yale.edu/digest/a",
+        "https://elpais.com/clima/2026-10-05/el-delta-del-ebro-recupera-aves.html",
+        "https://elpais.com/clima/2026-10-05/b.html",
+    ]
+
+    [e360, pais, _] = round_["candidates"]
+    assert (e360["title"], e360["titleFrom"], e360["summary"]) == ("Title of a", "feed", "A summary.")
+    assert e360["groups"] == ["environment"] and pais["groups"] == ["environment"]
+    assert pais["language"] == "es"
+
+    [e360_row, pais_row] = round_["sources"]
+    assert (e360_row["alreadyStored"], e360_row["candidates"]) == (1, 1)
+    assert (pais_row["candidates"], pais_row["deferred"]) == (2, 1)
+    assert round_["totals"]["candidates"] == 3
+
+
+def test_a_link_with_no_feed_title_gets_one_from_its_slug():
+
+    from src.services.ingestion_service import title_from_url
+
+    assert title_from_url("https://www.lavanguardia.com/natural/20261005/11651300/rewilding-the-ebro-delta.html") == "Rewilding the ebro delta"
+    assert title_from_url("https://e360.yale.edu/digest/x") is None

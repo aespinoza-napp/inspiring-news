@@ -91,6 +91,8 @@ _labelling_batch = None
 
 _reader_index = None
 
+_selection_service = None
+
 
 def get_vector_repository() -> VectorRepository:
 
@@ -280,6 +282,27 @@ def get_ingestion_service() -> IngestionService:
                 )
 
     return _ingestion_service
+
+
+def get_selection_service():
+    """
+    Backs /ingest/rounds: candidate rounds over the ingestion service's
+    discovery, the AI selection and the queue. A singleton because an AI
+    selection runs in the background and only one may run at a time - the
+    model is shared and slow. The rounds themselves are on disk
+    (src/services/selection/rounds.py), so a restart loses none.
+    """
+
+    global _selection_service
+
+    if _selection_service is None:
+        with _lock:
+            if _selection_service is None:
+                from src.services.selection.selection_service import SelectionService
+
+                _selection_service = SelectionService(ingestion=get_ingestion_service())
+
+    return _selection_service
 
 
 def get_source_check_service():

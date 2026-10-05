@@ -37,7 +37,7 @@ from src.config.topic_url_patterns import TOPIC_SECTION_PATTERNS_ES, TOPIC_URL_P
 from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import Fetcher, classify
 
-from .rss import RSSDiscoveryStrategy
+from .rss import DiscoveredLink, RSSDiscoveryStrategy, article_shaped, off_mission
 
 
 # A section page is a short path: /science/, /news/science/,
@@ -110,6 +110,22 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
     ) -> list[str]:
 
         return self.crawl(source, topics).urls
+
+    def discover_items(
+        self,
+        source: NewsSource,
+        topics: list[str] = None,
+    ) -> list[DiscoveredLink]:
+        """
+        The section pages' article links, with no feed time or summary -
+        there is no feed. Overridden because DiscoveryService asks for
+        items, and the one inherited from RSSDiscoveryStrategy reads the
+        feed: from 2026-10-04 (when discovery started asking for feed
+        times) to 2026-10-05 this step re-read the dead feed of every
+        source it exists for instead of crawling a single section.
+        """
+
+        return [DiscoveredLink(url=url) for url in self.crawl(source, topics).urls]
 
     def crawl(
         self,
@@ -200,7 +216,9 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
             if _normalised(link) == _normalised(url):
                 continue
 
-            if self._is_article(link):
+            # By its own shape, not its section (article_shaped); and a
+            # science section's sidebar still links the match reports.
+            if article_shaped(link) and not off_mission(link):
                 links.append(link)
 
         section.links = list(dict.fromkeys(links))

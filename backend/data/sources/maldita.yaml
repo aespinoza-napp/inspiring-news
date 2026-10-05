@@ -28,6 +28,10 @@ tags:
   - health
   - society
 
+groups:
+  - society
+  - health
+
 metadata:
   extractor: trafilatura
   discovery:

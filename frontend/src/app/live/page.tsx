@@ -6,12 +6,15 @@ import { useLiveJobs } from "@/lib/useLiveJobs";
 import { buildTrace } from "@/lib/liveTrace";
 import { LiveTrace } from "@/components/LiveTrace";
 import { CURRENT_PHASE_LABELS } from "@/components/PhaseStepper";
+import { FlowSteps } from "@/components/FlowSteps";
 
 export default function LivePage() {
   const { jobs, loading, error } = useLiveJobs();
 
   return (
     <>
+      <FlowSteps current="live" />
+
       <h1>Live</h1>
       <p className="subtitle">
         Everything being verified right now, from any screen: what was

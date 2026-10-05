@@ -110,7 +110,12 @@ a candidate for `requires_javascript`.
 ## Discovery and ingestion
 
 `POST /ingest` (`services/ingestion_service.py`) turns configured sources
-into analysis jobs. Discovery is cheapest first too:
+into analysis jobs; since 2026-10-05 the usual way in is `/discover`,
+which scopes discovery to up to three topic groups and lets a person or
+the AI choose what is analysed. What discovery drops for that - off-mission
+sections, links filed under another topic, Spanish items without a topic
+word, section-page navigation - is in `selection.md`. Discovery is
+cheapest first too:
 
 1. the source's `rss_url`, fetched through `Fetcher` (URL guard and a
    timeout - feedparser's own HTTP has neither) and parsed by feedparser;

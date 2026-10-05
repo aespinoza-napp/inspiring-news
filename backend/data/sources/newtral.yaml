@@ -31,6 +31,10 @@ tags:
   - science
   - health
 
+groups:
+  - society
+  - health
+
 metadata:
   extractor: trafilatura
   discovery:

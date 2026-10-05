@@ -27,6 +27,11 @@ tags:
   - biology
   - environment
 
+groups:
+  - science
+  - health
+  - environment
+
 metadata:
   extractor: trafilatura
   discovery:

@@ -15,6 +15,7 @@ from src.container import (
     get_labelling_batch,
     get_ingestion_service,
     get_reader_index,
+    get_selection_service,
     get_source_check_service,
     get_job_queue,
     get_source_probe,
@@ -153,12 +154,70 @@ class EnrichRequest(BaseModel):
         return self
 
 
+def _known_groups(groups: list[str] | None) -> list[str] | None:
+    """Topic groups as asked for: known ones only, each once, at most MAX_GROUPS."""
+
+    from src.config.topics import TOPIC_GROUPS
+    from src.services.ingestion_service import MAX_GROUPS
+
+    if groups is None:
+        return None
+
+    groups = list(dict.fromkeys(groups))
+    unknown = sorted(set(groups) - set(TOPIC_GROUPS))
+
+    if unknown:
+        raise ValueError(f"Unknown topic group(s): {', '.join(unknown)}. Expected some of {', '.join(TOPIC_GROUPS)}.")
+
+    if not 1 <= len(groups) <= MAX_GROUPS:
+        raise ValueError(f"Choose between 1 and {MAX_GROUPS} topic groups.")
+
+    return groups
+
+
 class IngestRequest(BaseModel):
     # Source ids to discover from; omitted means every enabled source.
     sources: list[str] | None = None
+    # Up to three topic groups (src/config/topics.py TOPIC_GROUPS): only
+    # their sources are read, for their topics only. Omitted means all.
+    groups: list[str] | None = None
     # New articles queued per source per run. Each one is a full analysis
     # (scrape, enrichment, an LLM call per claim), so the ceiling is low.
     perSource: int = Field(default=3, ge=1, le=20)
+    forceRefresh: bool = False
+    thresholds: ThresholdOverrides | None = None
+
+    @model_validator(mode="after")
+    def _groups(self):
+        self.groups = _known_groups(self.groups)
+        return self
+
+
+class RoundRequest(BaseModel):
+    # Required here: a round is the topic-scoped way in.
+    groups: list[str]
+    # Further limited to these source ids; omitted means every enabled
+    # source of the groups.
+    sources: list[str] | None = None
+    # Candidates listed per source. Listing costs only the feeds; the
+    # cost comes later, per article sent to analysis.
+    perSource: int = Field(default=3, ge=1, le=10)
+
+    @model_validator(mode="after")
+    def _groups(self):
+        self.groups = _known_groups(self.groups)
+        return self
+
+
+class AISelectionRequest(BaseModel):
+    limit: int = Field(default=20, ge=1, le=20)
+    # 0-10, the score a candidate needs to be picked
+    # (src/services/selection/ai_selector.py DEFAULT_MIN_SCORE).
+    minScore: float = Field(default=6.0, ge=0.0, le=10.0)
+
+
+class QueueRoundRequest(BaseModel):
+    urls: list[str] = Field(min_length=1, max_length=20)
     forceRefresh: bool = False
     thresholds: ThresholdOverrides | None = None
 
@@ -493,7 +552,12 @@ def enrich(request: EnrichRequest):
 def ingestion_sources():
     """The enabled configured sources, and the report of the last run."""
 
+    from src.config.topics import TOPIC_GROUP_NAMES, TOPIC_GROUPS, TOPICS
+    from src.services.ingestion_service import MAX_GROUPS
+    from src.services.selection.selection_service import MAX_SELECTED
+
     service = get_ingestion_service()
+    sources = service.enabled_sources()
 
     return {
         "sources": [
@@ -503,9 +567,21 @@ def ingestion_sources():
                 "language": source.language,
                 "rssUrl": str(source.rss_url) if source.rss_url else None,
                 "requiresJavascript": source.requires_javascript,
+                "groups": source.groups,
             }
-            for source in service.enabled_sources()
+            for source in sources
         ],
+        "groups": [
+            {
+                "id": group,
+                "name": TOPIC_GROUP_NAMES[group],
+                "topics": [{"id": topic, "name": TOPICS[topic].name} for topic in topics],
+                "sources": sum(1 for source in sources if group in source.groups),
+            }
+            for group, topics in TOPIC_GROUPS.items()
+        ],
+        "maxGroups": MAX_GROUPS,
+        "maxSelected": MAX_SELECTED,
         "lastRun": service.last_run,
     }
 
@@ -542,7 +618,106 @@ def ingest(request: IngestRequest):
         ),
         source_ids=request.sources,
         per_source=request.perSource,
+        groups=request.groups,
     )
+
+
+# ---------------------------------------------------------------------
+# Candidate rounds: discover -> choose up to 20 (a person or the AI) ->
+# analyse. src/services/selection/.
+# ---------------------------------------------------------------------
+
+# Round ids are minted by SelectionService: 16 hex characters.
+ROUND_ID = Path(pattern=r"^[0-9a-f]{16}$")
+
+
+def _unknown_sources(source_ids: list[str] | None) -> list[str]:
+
+    return sorted(
+        set(source_ids or []) - {source.id for source in get_ingestion_service().enabled_sources()}
+    )
+
+
+@router.post("/ingest/rounds", dependencies=[Depends(require_storage_key)])
+def create_round(request: RoundRequest):
+    """
+    Lists the new articles from the sources of up to three topic groups,
+    with each one's feed title and summary. Reads feeds and section
+    pages only: nothing is fetched or analysed until a selection is
+    queued.
+    """
+
+    unknown = _unknown_sources(request.sources)
+
+    if unknown:
+        raise HTTPException(status_code=422, detail=f"Unknown or disabled sources: {', '.join(unknown)}")
+
+    return get_selection_service().create_round(request.groups, request.sources, request.perSource)
+
+
+@router.get("/ingest/rounds", dependencies=[Depends(require_storage_key)])
+def list_rounds(limit: int = Query(default=20, ge=1, le=200)):
+    """The newest rounds, summarised."""
+
+    return {"rounds": get_selection_service().list(limit)}
+
+
+@router.get("/ingest/rounds/{round_id}", dependencies=[Depends(require_storage_key)])
+def get_round(round_id: str = ROUND_ID):
+    """A round in full: candidates, the AI selection (polled while it runs), what was queued."""
+
+    from src.services.selection.selection_service import RoundNotFound
+
+    try:
+        return get_selection_service().get(round_id)
+    except RoundNotFound:
+        raise HTTPException(status_code=404, detail="No such round.")
+
+
+@router.post("/ingest/rounds/{round_id}/ai-selection", status_code=202, dependencies=[Depends(require_storage_key)])
+def start_ai_selection(request: AISelectionRequest, round_id: str = ROUND_ID):
+    """
+    The LLM scores every candidate from its title and summary and picks
+    up to `limit`, in the background - poll GET /ingest/rounds/{id}. One
+    at a time: 409 while another runs.
+    """
+
+    from src.services.selection.selection_service import InvalidSelection, RoundNotFound, SelectionBusy
+
+    try:
+        return get_selection_service().start_ai_selection(round_id, request.limit, request.minScore)
+    except RoundNotFound:
+        raise HTTPException(status_code=404, detail="No such round.")
+    except SelectionBusy:
+        raise HTTPException(status_code=409, detail="An AI selection is already running.")
+    except InvalidSelection as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+
+@router.post("/ingest/rounds/{round_id}/queue", dependencies=[Depends(require_storage_key)])
+def queue_round(request: QueueRoundRequest, round_id: str = ROUND_ID):
+    """
+    Sends up to 20 of the round's candidates to analysis, as ordinary
+    jobs with purpose "ingestion" (follow them on /live), and records who
+    chose them and how far that matched the AI's proposal.
+    """
+
+    from src.services.selection.selection_service import InvalidSelection, RoundNotFound
+
+    thresholds = PipelineThresholds.resolve(request.thresholds)
+
+    try:
+        return get_selection_service().queue(
+            round_id,
+            request.urls,
+            start_job=lambda url: _start_job(
+                url, request.forceRefresh, thresholds, purpose="ingestion"
+            ),
+        )
+    except RoundNotFound:
+        raise HTTPException(status_code=404, detail="No such round.")
+    except InvalidSelection as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
 
 
 # ---------------------------------------------------------------------

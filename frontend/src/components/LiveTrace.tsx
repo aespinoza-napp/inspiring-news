@@ -1,5 +1,6 @@
 import { ClaimStep, ClaimTrace, JobTrace, TraceRejected, TraceSource } from "@/lib/liveTrace";
 import { QueryKind } from "@/lib/types";
+import { safeHref } from "@/lib/links";
 import { VerdictBadge } from "@/components/VerdictBadge";
 
 const STEP_LABELS: Record<ClaimStep, string> = {
@@ -316,15 +317,6 @@ function RejectedRow({ item }: { item: TraceRejected }) {
       <span className="trace-muted">{item.reason}</span>
     </li>
   );
-}
-
-/**
- * Source URLs come from web search results, which this app does not
- * control. Only http(s) may become a link: anything else (a `javascript:`
- * URL in a hostile result) is shown as text, not made clickable.
- */
-function safeHref(url: string): string | undefined {
-  return /^https?:\/\//i.test(url) ? url : undefined;
 }
 
 function hostOf(url: string): string {

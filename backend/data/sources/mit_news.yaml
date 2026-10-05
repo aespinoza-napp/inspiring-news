@@ -26,6 +26,10 @@ tags:
   - research
   - education
 
+groups:
+  - science
+  - society
+
 metadata:
   extractor: trafilatura
   discovery:

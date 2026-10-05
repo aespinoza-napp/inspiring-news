@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { ProbeSource, ProbeState, ProbeStatus } from "@/lib/types";
+import { safeHref } from "@/lib/links";
 
 const PER_SOURCE_OPTIONS = [0, 3, 5, 10, 20];
 
@@ -22,12 +23,6 @@ const STATUS_CLASS: Record<ProbeStatus, string> = {
 function feedName(method: string | null): string {
   if (!method) return "none";
   return method.includes("Trafilatura") ? "found from homepage" : "RSS";
-}
-
-// Feed entries and section-page links are other sites' HTML: only an
-// http(s) URL becomes a link (the same rule as LiveTrace's safeHref).
-function safeHref(url: string): string | undefined {
-  return /^https?:\/\//i.test(url) ? url : undefined;
 }
 
 function pathOf(url: string): string {

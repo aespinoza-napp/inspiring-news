@@ -31,6 +31,8 @@ from collections import Counter
 from logging import getLogger
 from pathlib import Path
 
+from src.config.topics import GROUP_OF as _GROUP_OF, TOPIC_GROUPS as _TOPIC_GROUPS
+
 logger = getLogger(__name__)
 
 EVALUATION_PATH = Path("data/evaluation")
@@ -40,16 +42,10 @@ EVALUATION_PATH = Path("data/evaluation")
 LABELS = ("TRUE", "PARTIALLY_TRUE", "MISLEADING", "FALSE", "UNVERIFIED")
 
 # labeller/app.py's TOPIC_GROUPS - balance is steered over these five
-# groups, not the 23 topics (too thin at 150 facts). Held to the
-# labeller's copy by a test.
-TOPIC_GROUPS = {
-    "society": ["education", "community", "employment", "cities"],
-    "science": ["space", "technology", "research", "biology"],
-    "environment": ["climate", "nature", "energy", "sustainability", "food"],
-    "culture": ["arts", "entertainment", "heritage", "literature", "inspiration"],
-    "health": ["medicine", "mental_health", "nutrition", "fitness", "public_health"],
-}
-GROUP_OF = {t: g for g, topics in TOPIC_GROUPS.items() for t in topics}
+# groups, not the 23 topics (too thin at 150 facts). The backend's one
+# definition is src/config/topics.py; held to the labeller's by a test.
+TOPIC_GROUPS = _TOPIC_GROUPS
+GROUP_OF = _GROUP_OF
 
 CLAIM_TYPES = ("factual", "numerical", "interpretive")
 SOURCE_TIERS = ("primary", "reference_media", "press_release", "social_media")

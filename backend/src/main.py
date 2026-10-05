@@ -10,6 +10,7 @@ from src.services.job_journal import JobJournal
 from src.services.log_format import configure_logging
 from src.services.scraper.request_stats import request_stats
 from src.services.scraper.sightings import sightings
+from src.services.selection.rounds import selection_rounds
 
 # Python's root logger defaults to WARNING, so plain logger.info() calls
 # (e.g. src/services/job_runner.py's per-phase timing) would silently
@@ -34,6 +35,10 @@ async def lifespan(app: FastAPI):
 
         # When ingestion first saw each article, for the freshness report.
         sightings.attach(settings.LAKE_PATH / "stats" / "sightings.json")
+
+        # Every candidate round: what was found, what the AI proposed,
+        # what was sent to analysis (src/services/selection/rounds.py).
+        selection_rounds.attach(settings.LAKE_PATH / "stats" / "selection")
 
     yield
 

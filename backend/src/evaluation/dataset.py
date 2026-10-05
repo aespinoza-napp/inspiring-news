@@ -29,25 +29,19 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from src.config.topics import GROUP_OF as _GROUP_OF, TOPIC_GROUPS as _TOPIC_GROUPS
 from src.models.fact_checker.fact_check import Verdict
 
 XFACT = "xfact"
 CUSTOM = "custom"
 
-# The five groups topics.py is laid out in, as the labeller balances them
-# (labeller/app.py's TOPIC_GROUPS). Copied rather than imported: the
-# labeller imports nothing from backend/ and backend/ imports nothing
-# from it. tests/evaluation/test_dataset.py holds the two copies equal,
-# and holds every topic in src/config/topics.py to exactly one group.
-TOPIC_GROUPS = {
-    "society": ["education", "community", "employment", "cities"],
-    "science": ["space", "technology", "research", "biology"],
-    "environment": ["climate", "nature", "energy", "sustainability", "food"],
-    "culture": ["arts", "entertainment", "heritage", "literature", "inspiration"],
-    "health": ["medicine", "mental_health", "nutrition", "fitness", "public_health"],
-}
+# The five groups, as the labeller balances them. The backend's copy
+# lives in src/config/topics.py (ingestion selects sources by them too);
+# tests/evaluation/test_harness_dataset.py holds it equal to
+# labeller/app.py's, which imports nothing from backend/.
+TOPIC_GROUPS = _TOPIC_GROUPS
 
-GROUP_OF = {topic: group for group, topics in TOPIC_GROUPS.items() for topic in topics}
+GROUP_OF = _GROUP_OF
 
 _VERDICTS = {verdict.value for verdict in Verdict}
 

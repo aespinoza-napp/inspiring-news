@@ -26,6 +26,11 @@ tags:
   - culture
   - wildlife
 
+groups:
+  - culture
+  - science
+  - environment
+
 metadata:
   extractor: trafilatura
   discovery:

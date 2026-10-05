@@ -21,18 +21,31 @@ it exists to spend it only on articles worth it:
    so a tracking parameter does not make an old article new;
 4. at most `per_source` new articles per source per run.
 
-Triggered by hand (POST /ingest), never on a timer: every queued article
-costs a scrape, an enrichment and an LLM call per claim.
+Triggered by hand, never on a timer: every queued article costs a scrape,
+an enrichment and an LLM call per claim. Two ways in:
+
+- POST /ingest queues every new article found, up to `per_source`;
+- a candidate round (`discover_candidates`, owned by
+  src/services/selection/) only lists them, with the feed's title and
+  summary, so a person or the AI selection can choose up to twenty before
+  anything is fetched.
+
+Both can be narrowed to up to three topic groups (src/config/topics.py
+TOPIC_GROUPS): only the sources whose YAML names one of them are read, and
+discovery is asked for those groups' topics alone - fewer feeds, fewer
+section pages, and fewer off-topic articles scraped only to be rejected.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from logging import getLogger
 from typing import Callable
+from urllib.parse import urlsplit
 
-from src.config.topics import TOPICS
+from src.config.topics import TOPIC_GROUPS, TOPICS
 from src.models.core.source import NewsSource
 from src.models.storage.lineage import DataLayer
 from src.services.concurrency import bounded_map
@@ -50,6 +63,40 @@ DISCOVERY_CONCURRENCY = 4
 # StartJob(url) -> (job_id, reused). The route's _start_job, with the
 # purpose and thresholds already bound.
 StartJob = Callable[[str], tuple[str, bool]]
+
+# At most this many topic groups per run: more is close to "everything",
+# which is what the narrowing exists to avoid.
+MAX_GROUPS = 3
+
+
+def topics_for(groups: list[str] | None) -> list[str]:
+    """The topic keys of `groups`, in TOPICS order; every topic when no group is given."""
+
+    if not groups:
+        return list(TOPICS)
+
+    wanted = {topic for group in groups for topic in TOPIC_GROUPS[group]}
+
+    return [topic for topic in TOPICS if topic in wanted]
+
+
+def title_from_url(url: str) -> str | None:
+    """
+    A readable stand-in title from the URL's slug, for a link whose feed
+    gave none (section pages give only links): ".../rewilding-the-ebro-
+    delta.html" -> "Rewilding the ebro delta". None for a slug too short
+    to say anything.
+    """
+
+    slug = re.sub(r"\.html?$", "", urlsplit(url).path.rstrip("/").rsplit("/", 1)[-1])
+    words = [word for word in re.split(r"[-_]+", slug) if word and not word.isdigit()]
+
+    if len(words) < 3:
+        return None
+
+    text = " ".join(words)
+
+    return text[0].upper() + text[1:]
 
 
 @dataclass
@@ -108,20 +155,32 @@ class IngestionService:
             key=lambda source: source.id,
         )
 
+    def sources_for(
+        self,
+        groups: list[str] | None = None,
+        source_ids: list[str] | None = None,
+    ) -> list[NewsSource]:
+        """The enabled sources covering any of `groups`, further limited to `source_ids` when given."""
+
+        return [
+            source
+            for source in self.enabled_sources()
+            if (not groups or set(source.groups) & set(groups))
+            and (source_ids is None or source.id in source_ids)
+        ]
+
     def run(
         self,
         start_job: StartJob,
         source_ids: list[str] | None = None,
         per_source: int = 3,
+        groups: list[str] | None = None,
     ) -> dict:
 
         started = datetime.now(timezone.utc)
 
-        sources = [
-            source
-            for source in self.enabled_sources()
-            if source_ids is None or source.id in source_ids
-        ]
+        sources = self.sources_for(groups, source_ids)
+        topics = topics_for(groups)
 
         known = self._stored_urls()
 
@@ -129,7 +188,7 @@ class IngestionService:
         # queueing in order afterwards, on this thread, so the jobs are
         # submitted in a stable order and the known-set is not shared.
         discovered = bounded_map(
-            self._discover,
+            lambda source: self._discover(source, topics),
             sources,
             max_workers=DISCOVERY_CONCURRENCY,
             thread_name_prefix="discovery",
@@ -187,6 +246,7 @@ class IngestionService:
         report = {
             "startedAt": started.isoformat(timespec="seconds"),
             "perSource": per_source,
+            "groups": list(groups or []),
             "totals": {
                 "sources": len(runs),
                 "discovered": sum(run.discovered for run in runs),
@@ -202,10 +262,116 @@ class IngestionService:
 
         return report
 
-    def _discover(self, source: NewsSource) -> DiscoveryResult:
+    def discover_candidates(
+        self,
+        groups: list[str] | None = None,
+        source_ids: list[str] | None = None,
+        per_source: int = 3,
+    ) -> dict:
+        """
+        Discovery without queueing: up to `per_source` new articles from
+        each source covering `groups`, each with what its feed says about
+        it (title, summary, time), for someone to choose from. Nothing is
+        fetched beyond the feeds and section pages, and nothing is
+        analysed - src/services/selection/ owns what happens next.
+        """
+
+        started = datetime.now(timezone.utc)
+
+        sources = self.sources_for(groups, source_ids)
+        topics = topics_for(groups)
+
+        known = self._stored_urls()
+
+        discovered = bounded_map(
+            lambda source: self._discover(source, topics),
+            sources,
+            max_workers=DISCOVERY_CONCURRENCY,
+            thread_name_prefix="discovery",
+        )
+
+        rows = []
+        candidates = []
+
+        for source, result in zip(sources, discovered):
+
+            fresh = []
+            already = 0
+
+            for url in result.urls:
+
+                key = comparable_url(url)
+
+                if key in known:
+                    already += 1
+                    continue
+
+                known.add(key)
+                fresh.append(url)
+
+            # The record ingestion keeps of when an article was first
+            # seen, for the freshness report: a candidate nobody picks
+            # was still seen.
+            self.sightings.record(
+                fresh,
+                source_id=source.id,
+                method=result.method,
+                published=result.published,
+                seen_at=started,
+            )
+
+            for url in fresh[:per_source]:
+
+                details = result.details.get(url) or {}
+                published = result.published.get(url)
+                feed_title = details.get("title")
+
+                candidates.append({
+                    "url": url,
+                    "source": source.id,
+                    "sourceName": source.name,
+                    "language": source.language,
+                    "groups": [group for group in source.groups if not groups or group in groups],
+                    "title": feed_title or title_from_url(url),
+                    "titleFrom": "feed" if feed_title else "url",
+                    "summary": details.get("summary"),
+                    "publishedAt": published.isoformat(timespec="seconds") if published else None,
+                    "method": result.method,
+                })
+
+            rows.append({
+                "source": source.id,
+                "name": source.name,
+                "language": source.language,
+                "method": result.method,
+                "discovered": len(result.urls),
+                "alreadyStored": already,
+                "candidates": min(len(fresh), per_source),
+                "deferred": max(len(fresh) - per_source, 0),
+                "error": result.error if not result.urls else None,
+            })
+
+        return {
+            "startedAt": started.isoformat(timespec="seconds"),
+            "groups": list(groups or []),
+            "topics": topics,
+            "perSource": per_source,
+            "sources": rows,
+            "candidates": candidates,
+            "totals": {
+                "sources": len(rows),
+                "discovered": sum(row["discovered"] for row in rows),
+                "alreadyStored": sum(row["alreadyStored"] for row in rows),
+                "candidates": len(candidates),
+                "deferred": sum(row["deferred"] for row in rows),
+                "failed": sum(1 for row in rows if row["error"] and not row["discovered"]),
+            },
+        }
+
+    def _discover(self, source: NewsSource, topics: list[str] | None = None) -> DiscoveryResult:
 
         try:
-            return self.discovery.run(source, topics=list(TOPICS))
+            return self.discovery.run(source, topics=topics if topics is not None else list(TOPICS))
         except Exception as exc:
             logger.warning("Discovery failed for %s", source.id, exc_info=True)
             return DiscoveryResult(error=str(exc))

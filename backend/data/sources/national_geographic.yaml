@@ -28,6 +28,11 @@ tags:
   - exploration
   - history
 
+groups:
+  - environment
+  - science
+  - culture
+
 metadata:
   extractor: trafilatura
   discovery:

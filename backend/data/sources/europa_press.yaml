@@ -26,6 +26,11 @@ tags:
   - society
   - economy
 
+groups:
+  - society
+  - science
+  - health
+
 metadata:
   extractor: trafilatura
   discovery:

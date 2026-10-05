@@ -1,7 +1,9 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, field_validator
+
+from src.config.topics import TOPIC_GROUPS
 
 
 class SourceType(str, Enum):
@@ -46,4 +48,25 @@ class NewsSource(BaseModel):
 
     tags: list[str] = Field(default_factory=list)
 
+    # Which of the five topic groups (src/config/topics.py TOPIC_GROUPS)
+    # this source is worth reading for. Ingestion discovers only from the
+    # sources of the groups asked for, so a generalist names the groups it
+    # has real sections for, not all five. Free-form `tags` stay as they
+    # were; these are the ones the code reads.
+    groups: list[str] = Field(default_factory=list)
+
     metadata: dict = Field(default_factory=dict)
+
+    @field_validator("groups")
+    @classmethod
+    def _known_groups(cls, groups: list[str]) -> list[str]:
+
+        unknown = sorted(set(groups) - set(TOPIC_GROUPS))
+
+        if unknown:
+            raise ValueError(
+                f"unknown topic group(s) {', '.join(unknown)}; "
+                f"expected some of {', '.join(TOPIC_GROUPS)}"
+            )
+
+        return groups

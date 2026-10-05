@@ -1,4 +1,5 @@
 import { GraphNode } from "@/lib/types";
+import { safeHref as linkHref } from "@/lib/links";
 
 /**
  * How each node label is drawn on the /graph page, in the schema view and
@@ -98,7 +99,7 @@ export function truncate(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
-/** Only http(s) values become links: evidence URLs come from web search. */
+/** Only http(s) values become links: evidence URLs come from web search (lib/links.ts). */
 export function safeHref(value: unknown): string | null {
-  return typeof value === "string" && /^https?:\/\//i.test(value) ? value : null;
+  return linkHref(value) ?? null;
 }

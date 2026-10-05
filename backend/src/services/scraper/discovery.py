@@ -25,7 +25,7 @@ from src.services.scraper.fetcher import classify
 from src.services.scraper.request_stats import Outcome, Purpose, RequestStats, request_stats
 
 from .strategies.base import DiscoveryStrategy
-from .strategies.rss import RSSDiscoveryStrategy
+from .strategies.rss import DiscoveredLink, RSSDiscoveryStrategy
 from .strategies.topic_pages import TopicPageDiscoveryStrategy
 from .strategies.trafilatura_feeds import TrafilaturaFeedDiscoveryStrategy
 
@@ -46,6 +46,11 @@ class DiscoveryResult:
     # URL -> when the feed says it was published, for the URLs whose
     # strategy knows (the RSS feed); the others have none.
     published: dict[str, datetime] = field(default_factory=dict)
+
+    # URL -> {"title", "summary"} from the feed item, for the URLs whose
+    # strategy reads a feed. What the candidate list shows and the AI
+    # selection reads before any article page is fetched.
+    details: dict[str, dict] = field(default_factory=dict)
 
 
 class DiscoveryService:
@@ -89,8 +94,8 @@ class DiscoveryService:
             status = None
 
             try:
-                entries = _entries(strategy, source, topics)
-                urls = [url for url, _ in entries]
+                items = _items(strategy, source, topics)
+                urls = [item.url for item in items]
                 outcome = Outcome.OK if urls else Outcome.NO_CONTENT
                 error = None if urls else "no matching article links"
             except Exception as exc:
@@ -114,7 +119,12 @@ class DiscoveryService:
                 result.urls = urls
                 result.method = name
                 result.error = None
-                result.published = {url: at for url, at in entries if at is not None}
+                result.published = {item.url: item.published for item in items if item.published is not None}
+                result.details = {
+                    item.url: {"title": item.title, "summary": item.summary}
+                    for item in items
+                    if item.title or item.summary
+                }
                 return result
 
             result.error = f"{name}: {error}"
@@ -122,10 +132,20 @@ class DiscoveryService:
         return result
 
 
-def _entries(strategy: DiscoveryStrategy, source: NewsSource, topics) -> list[tuple[str, datetime | None]]:
-    """(url, feed time) from a strategy that knows the times, (url, None) from one that does not."""
+def _items(strategy: DiscoveryStrategy, source: NewsSource, topics) -> list[DiscoveredLink]:
+    """
+    Each link as a DiscoveredLink: with its feed time, title and summary
+    from a strategy that reads a feed, with the URL alone from one that
+    does not.
+    """
+
+    if hasattr(strategy, "discover_items"):
+        return strategy.discover_items(source=source, topics=topics)
 
     if hasattr(strategy, "discover_entries"):
-        return strategy.discover_entries(source=source, topics=topics)
+        return [
+            DiscoveredLink(url=url, published=at)
+            for url, at in strategy.discover_entries(source=source, topics=topics)
+        ]
 
-    return [(url, None) for url in strategy.discover(source=source, topics=topics)]
+    return [DiscoveredLink(url=url) for url in strategy.discover(source=source, topics=topics)]

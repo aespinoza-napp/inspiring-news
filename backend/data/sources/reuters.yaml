@@ -26,6 +26,9 @@ tags:
   - business
   - world
 
+groups:
+  - society
+
 metadata:
   extractor: trafilatura
   discovery:

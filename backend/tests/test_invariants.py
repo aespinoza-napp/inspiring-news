@@ -153,6 +153,10 @@ NON_THRESHOLD_SETTINGS = {
     "EMBEDDING_MODEL", "EMBEDDING_DIMENSION", "SENTIMENT_MODEL",
     "LLM_MODEL", "LLM_BASE_URL", "LLM_API_KEY", "LLM_TIMEOUT",
     "LLM_RETRY_BACKOFF_SECONDS",
+    # The AI selection's own per-call limit (src/services/selection/):
+    # infrastructure, like LLM_TIMEOUT - how long to wait on the model,
+    # not how a run judges anything.
+    "AI_SELECTION_TIMEOUT",
     "INFERENCE_URL", "INFERENCE_TIMEOUT",
     "SEARXNG_URL", "SEARXNG_TIMEOUT", "SEARXNG_MAX_RESULTS",
     "DUCKDUCKGO_FALLBACK_ENABLED", "DUCKDUCKGO_URL", "DUCKDUCKGO_TIMEOUT",
