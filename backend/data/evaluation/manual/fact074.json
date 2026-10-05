@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "3 years on from the illegal felling of Britain’s famous Sycamore Gap tree, new aerial images reveal how the stump is flourishing, and the basal sprouts that emerged are growing fast.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.northumberlandnationalpark.org.uk/shoots-of-hope-new-pictures-show-sycamore-gap-tree-in-recovery-three-years-after-it-was-felled/",
+    "https://www.itv.com/news/tyne-tees/2026-09-28/sycamore-gap-stump-shows-ring-of-shoots-three-years-on-from-felling"
+  ],
+  "split": "test",
+  "id": "fact074",
+  "topic": "nature",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://www.goodnewsnetwork.org/flourishing-sycamore-gap-tree-has-ring-of-new-shoots-already-3-feet-tall/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] National Trust images released 28 Sep 2026 (Northumberland National Park; ITV Tyne Tees, 28 Sep): aerial photos show a thick ring of shoots two to three feet tall around the stump, three years after the felling on 28 Sep 2023.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

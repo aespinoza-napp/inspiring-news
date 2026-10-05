@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Edurne Concejo",
+  "claim": "El bar Gol, que su madre [de Claudia Pina], Beatriz Medina, abrió en 2024 en honor a su hija mayor, está en el centro de Montcada, muy cerca del colegio La Salle, donde empezó su pasión por el fútbol sala, primero y por el fútbol once después.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.telecinco.es/gastronomia/restaurantes/20250718/claudia-pina-bar-madre-gol-barcelona_18_016066469.html",
+    "https://en.ara.cat/sports/the-extraordinary-normality-of-claudia-pina_130_5346390.html"
+  ],
+  "split": "test",
+  "id": "fact073",
+  "topic": "fitness",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-07-18",
+  "articleUrl": "https://www.lavanguardia.com/deportes/futbol-femenino/20261005/11651238/claudia-pina-nueva-estrella-camp-nou-mas-antimidrista-cata.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Telecinco (18 Jul 2025): Beatriz Medina, Claudia Pina's mother, opened Bar Gol at Carrer Major 20, Montcada i Reixac, in early 2024, as a place for her daughter's fans. Ara (12 Apr 2025): Claudia started at La Salle Montcada, in futsal before 11-a-side, a few minutes from the bar; her sister Lucía is younger, so 'hija mayor' holds. Not split: one biographical detail, every part holds. The opening ('A ambas se las puede ver cualquier tarde en...') is not checkable and is dropped.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "bbc.co.uk",
+  "claimant": "Stewart Whittingham",
+  "claim": "People attending the party's conference in Birmingham have been handed water bottles featuring the image and labelled \"Bottler Burnham\" and \"0% strength\".",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://uk.news.yahoo.com/artist-hits-tories-party-uses-120236493.html",
+    "https://www.weareresonate.com/2026/10/stanley-chow-tories-andy-burnham-artwork-copyright-infringement/"
+  ],
+  "split": "test",
+  "id": "fact060",
+  "topic": "arts",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-05",
+  "articleUrl": "https://www.bbc.co.uk/news/articles/cj62yg157prxo?at_medium=RSS&at_campaign=rss",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] The Conservative conference was in Birmingham; its water bottles carried the portrait with 'Bottler Burnham' above and '0 per cent strength' below (The Independent and Resonate, 5 Oct 2026).",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

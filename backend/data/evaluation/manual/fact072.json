@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Edurne Concejo",
+  "claim": "En el Camp Nou [Claudia Pina] ofreció una exhibición histórica apuntándose un póquer de goles en la mayor paliza al Real Madrid.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.vavel.com/es/futbol/2026/10/04/futbol-femenino/1273956-liga-f-claudia-pina-lidera-la-exhibicion-cule-en-el-clasico.html",
+    "https://www.catalunyapress.es/articulo/deportes/2026-10-05/6039602-historico-7-0-barca-femenino-real-madrid-mayor-goleada-historia-clasico"
+  ],
+  "split": "test",
+  "id": "fact072",
+  "topic": "fitness",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-05",
+  "articleUrl": "https://www.lavanguardia.com/deportes/futbol-femenino/20261005/11651238/claudia-pina-nueva-estrella-camp-nou-mas-antimidrista-cata.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Barça 7-0 Real Madrid at the Camp Nou, Liga F, Sunday 4 Oct 2026, with four goals from Pina (VAVEL, 4 Oct); Catalunya Press (5 Oct): the biggest win in the history of the women's Clásico. The aside ('se consagró, si es que aún le quedan cosas por demostrar') is dropped and the article's 'Cam Nou' corrected.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

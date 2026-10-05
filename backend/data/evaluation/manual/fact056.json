@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "positive.news",
+  "claimant": "Positive News",
+  "claim": "A prestigious annual photography award for bird lovers has announced its 2026 winners.",
+  "claimDate": "2026-09-22",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.birdpoty.com/2026-winners",
+    "https://www.popsci.com/environment/bird-photographer-of-the-year-2026-winners/",
+    "https://www.dpreview.com/news/bird-photographer-of-the-year-2026-winners-the-competitions-best-shots-from-a-moonlit-owl-to-a-diving-gannet/"
+  ],
+  "split": "test",
+  "id": "fact056",
+  "topic": "arts",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-22",
+  "articleUrl": "https://www.positive.news/environment/winners-of-bird-photographer-of-the-year-announced/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Bird Photographer of the Year announced its 2026 winners by 21 Sep 2026 (Popular Science, 21 Sep; DPReview, 22 Sep; the competition's own winners page). 'Prestigious' is the article's characterisation and is not checked.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

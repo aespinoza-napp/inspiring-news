@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Sarah Kuta",
+  "claim": "The blaze was reported around 1:30 a.m. on September 27 in the Neighborway, a paved pedestrian and bicycle path on the site’s grounds.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://indianacitizen.org/senseless-act-of-vandalism-arson-suspected-in-destruction-of-polymer-statue-of-benjamin-harrison/",
+    "https://hoodline.com/2026/09/fire-torches-new-benjamin-harrison-statue-in-indianapolis-police-probe-arson/"
+  ],
+  "split": "test",
+  "id": "fact069",
+  "topic": "heritage",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-29",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/an-arson-investigation-is-underway-after-a-suspected-sensless-act-of-vandalism-destroys-a-newly-installed-benjamin-harrison-statue-180989605/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] The Indiana Citizen (29 Sep 2026): security video shows the fire starting around 1:30 a.m. on 27 Sept; the Neighborway is a brick path for pedestrians and cyclists through the site, linking Delaware and Pennsylvania streets. Hoodline (29 Sep) gives the same time. Not split: the second part only describes the place.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

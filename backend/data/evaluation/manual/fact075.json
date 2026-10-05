@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "One of the UK’s most famous trees—a 150-year-old sycamore growing in a gap along the Roman-era Hadrian’s Wall—was cut down by vandals in 2023.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://cps.gov.uk/north-east/news/pair-who-felled-sycamore-gap-tree-jailed",
+    "https://www.nationaltrust.org.uk/who-we-are/news/sycamore-gap-saplings-planted-across-the-uk"
+  ],
+  "split": "test",
+  "id": "fact075",
+  "topic": "nature",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-07-15",
+  "articleUrl": "https://www.goodnewsnetwork.org/flourishing-sycamore-gap-tree-has-ring-of-new-shoots-already-3-feet-tall/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] CPS (15 Jul 2025): the tree, planted in the late 19th century, stood in a natural gap next to Hadrian's Wall and was felled overnight on 27-28 Sept 2023 by Daniel Graham and Adam Carruthers, jailed for criminal damage. Late-19th-century planting makes it about 150 years old; the National Trust's 'more than 120 years' is compatible. Some coverage said 200 years (CNN) - an outlier. The article's 'For those who didn't read or weren't aware,' is dropped.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

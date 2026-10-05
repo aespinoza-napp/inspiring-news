@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.mongabay.com",
+  "claimant": "Morgan Erickson-Davis",
+  "claim": "New research presents a model by which to predict how much mangroves can reduce — or attenuate — large waves associated with severe storms such as typhoons.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1016/j.crm.2026.100874",
+    "https://openalex.org/W7203926659"
+  ],
+  "split": "test",
+  "id": "fact052",
+  "topic": "climate",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-21",
+  "articleUrl": "https://news.mongabay.com/2026/10/mangroves-keep-waves-at-bay-a-new-study-helps-scientists-predict-how/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Hu et al., 'Mangrove forests as natural protection from record-high storm waves', Climate Risk Management 54:100874, online 21 Aug 2026. Its abstract: 'a new predictive method outperforms traditional approaches in predicting wave evolution across mangroves', made into a web application that predicts storm-wave attenuation from fair-weather field data. Read from the abstract (OpenAlex): ScienceDirect refuses automated access. The article's leading '- ' (a bullet) is dropped.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

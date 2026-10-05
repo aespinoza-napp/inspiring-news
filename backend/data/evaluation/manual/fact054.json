@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "20minutos.es",
+  "claimant": "Ines Gutiérrez",
+  "claim": "La deshidratación es una causa frecuente del mareo al levantarse (la bajada de tensión al ponerse de pie).",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://my.clevelandclinic.org/health/diseases/9385-low-blood-pressure-orthostatic-hypotension"
+  ],
+  "split": "test",
+  "id": "fact054",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": null,
+  "articleUrl": "https://www.20minutos.es/salud/por-que-nos-mareamos-levantarnos-sofa-como-evitarlo-cardiologo_7034452_0.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Split from a compound sentence, the cardiologist José Abellán's words (part 1 of 2). Cleveland Clinic lists low blood volume from dehydration among the causes of orthostatic hypotension, the drop in blood pressure on standing; 'frecuente' read as 'common'. The page is undated.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

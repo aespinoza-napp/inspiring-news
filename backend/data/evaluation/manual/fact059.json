@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "bbc.co.uk",
+  "claimant": "Stewart Whittingham",
+  "claim": "An artist has said he is taking legal advice after accusing the Conservative Party of copying his portrait of Andy Burnham at their party conference.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://uk.news.yahoo.com/artist-hits-tories-party-uses-120236493.html",
+    "https://www.weareresonate.com/2026/10/stanley-chow-tories-andy-burnham-artwork-copyright-infringement/"
+  ],
+  "split": "test",
+  "id": "fact059",
+  "topic": "arts",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-05",
+  "articleUrl": "https://www.bbc.co.uk/news/articles/cj62yg157prxo?at_medium=RSS&at_campaign=rss",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] The Independent (via Yahoo) and Resonate, both 5 Oct 2026: Manchester illustrator Stanley Chow said on Instagram that the Conservatives had used his Burnham artwork without permission at their Birmingham conference and that he would be 'seeking legal advice'. A Conservative source called it 'nonsense' (drawn by their own designers); the claim is only that he accused them, which holds.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

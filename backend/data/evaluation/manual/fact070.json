@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Sarah Kuta",
+  "claim": "Police are conducting an arson investigation after a fire engulfed a new, life-size statue of the nation’s 23rd president at the Benjamin Harrison Presidential Site in Indianapolis.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.wishtv.com/news/crime-watch-8/arson-investigation-underway-after-benjamin-harrison-statue-destroyed-by-fire/",
+    "https://indianacitizen.org/senseless-act-of-vandalism-arson-suspected-in-destruction-of-polymer-statue-of-benjamin-harrison/"
+  ],
+  "split": "test",
+  "id": "fact070",
+  "topic": "heritage",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-29",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/an-arson-investigation-is-underway-after-a-suspected-sensless-act-of-vandalism-destroys-a-newly-installed-benjamin-harrison-statue-180989605/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] WISH-TV (28 Sep) and The Indiana Citizen (29 Sep 2026): IMPD's arson unit is investigating the fire that destroyed the life-size (5 ft 6 in) 3D-printed statue of Benjamin Harrison, the 23rd president, at the Benjamin Harrison Presidential Site.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

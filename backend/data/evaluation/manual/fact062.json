@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Jan Rosenow",
+  "claim": "By several measures, Chinese industry is becoming less dependent on fossil fuels, according to a new analysis.",
+  "claimDate": "2026-09-09",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://ember-energy.org/latest-insights/china-energy-transition-review-2026/",
+    "https://ember-energy.org/app/uploads/2026/09/China-Energy-Transition-Review-2026.pdf"
+  ],
+  "split": "test",
+  "id": "fact062",
+  "topic": "energy",
+  "claimType": "interpretive",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-08",
+  "articleUrl": "https://e360.yale.edu/digest/china-industry-peak-fossil-fuels",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Ember's China Energy Transition Review 2026 (8 Sep 2026): fossil-fuel use has fallen 26-71% from its peak in eight industrial sectors; electricity supplies about three-quarters of final energy in light manufacturing; even metals smelting shows early signs of plateauing. 'By several measures' matches.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

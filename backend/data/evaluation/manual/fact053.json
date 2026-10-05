@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "news.mongabay.com",
+  "claimant": "Morgan Erickson-Davis",
+  "claim": "Throughout the monitoring period, mangroves at their site reliably decreased wave height from between 44%-70%.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1016/j.crm.2026.100874"
+  ],
+  "split": "test",
+  "id": "fact053",
+  "topic": "climate",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-21",
+  "articleUrl": "https://news.mongabay.com/2026/10/mangroves-keep-waves-at-bay-a-new-study-helps-scientists-predict-how/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] The paper (Hu et al. 2026, Climate Risk Management, open access) could not be read from this session: ScienceDirect refuses automated access. Its abstract gives one figure, 59% attenuation of storm waves up to 0.88 m (Typhoon Yagi, Zhanjiang), which is inside the claimed range but does not establish it; nothing independent of the article states 44-70% for the monitoring period. RE-CHECK against the paper's results before this fact counts: if it reports 44-70% wave-height reduction over the Aug-Sep 2024 monitoring, relabel TRUE.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

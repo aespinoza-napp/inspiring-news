@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "positive.news",
+  "claimant": "Positive News",
+  "claim": "Taking first place for Young Bird Photographer of the Year was 16-year-old photographer Parham Pourahmad, from the US, with the shot Moonlit Night.",
+  "claimDate": "2026-09-22",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.birdpoty.com/2026-winners",
+    "https://newatlas.com/photography/2026-bird-photographer-year/",
+    "https://www.popsci.com/environment/bird-photographer-of-the-year-2026-winners/"
+  ],
+  "split": "test",
+  "id": "fact057",
+  "topic": "arts",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-21",
+  "articleUrl": "https://www.positive.news/environment/winners-of-bird-photographer-of-the-year-announced/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] The competition's 2026 winners page: Young Bird Photographer of the Year, Parham Pourahmad, 16, United States, 'Moonlit Night' (a great horned owl against a full moon). New Atlas and Popular Science (21 Sep) agree; New Atlas puts him in the 15-17 category. '(below)' dropped: it points at a photo.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

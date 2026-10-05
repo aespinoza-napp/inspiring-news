@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.un.org",
+  "claimant": "UN News",
+  "claim": "They [two WFP-contracted trucks hit by an aerial attack in South Kordofan] were clearly marked as humanitarian vehicles, the UN agency said in a statement.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.wfp.org/news/wfp-strongly-condemns-attack-trucks-south-kordofan-killing-one-driver",
+    "https://allafrica.com/stories/202610040063.html"
+  ],
+  "split": "test",
+  "id": "fact067",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "press_release",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-04",
+  "articleUrl": "https://news.un.org/feed/view/en/story/2026/10/1168519",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Labelled as an attribution, as the sentence makes it: WFP's statement of 4 Oct 2026 says the contracted trucks, en route from Dilling to Kadugli, were 'clearly marked as humanitarian vehicles'. That they were marked rests on WFP alone - read as a bare fact, rule 1 would make it UNVERIFIED. Subject added in brackets: alone, the claim does not say what 'they' were.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

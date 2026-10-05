@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "20minutos.es",
+  "claimant": "Ines Gutiérrez",
+  "claim": "Tomar entre 300 y 500 ml de agua ayuda a elevar la tensión arterial.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1161/JAHA.122.029645",
+    "https://doi.org/10.1111/j.1468-1331.2004.00840.x"
+  ],
+  "split": "test",
+  "id": "fact055",
+  "topic": "medicine",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2023-11-06",
+  "articleUrl": "https://www.20minutos.es/salud/por-que-nos-mareamos-levantarnos-sofa-como-evitarlo-cardiologo_7034452_0.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Split (part 2 of 2). Oyewunmi et al. 2023 (JAHA), a systematic review and meta-analysis of a rapid 350-500 mL water bolus: systolic BP +24 mmHg in orthostatic hypotension, +2.3 mmHg in healthy participants. 300 against 350 mL is within reasonable rounding (rule 2). Mathias & Young 2004 (Eur J Neurol): ~500 mL raises BP in older people and much more in autonomic failure, not in healthy young people - real, but small for most healthy readers.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.un.org",
+  "claimant": "UN News",
+  "claim": "The Sudanese Armed Forces (SAF) and former allies the Rapid Support Forces (RSF) have been fighting since April 2023.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://reliefweb.int/report/sudan/sudan-clashes-between-sudanese-armed-forces-and-rapid-support-forces-flash-update-16-april-2023-enar",
+    "https://www.cfr.org/global-conflict-tracker/conflict/power-struggle-sudan"
+  ],
+  "split": "test",
+  "id": "fact068",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2023-04-16",
+  "articleUrl": "https://news.un.org/feed/view/en/story/2026/10/1168519",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] OCHA flash update (16 Apr 2023): clashes between the SAF and the RSF erupted in Khartoum on 15 April 2023. CFR's conflict tracker: the SAF (Burhan) and RSF (Hemedti) jointly carried out the 2019 coup, and Hemedti was Burhan's deputy on the Sovereignty Council - hence 'former allies'.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

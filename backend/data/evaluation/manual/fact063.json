@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Jan Rosenow",
+  "claim": "New clean power more than met the growth in demand across China last year, leading to a small decline in coal output, according to think tank Ember.",
+  "claimDate": "2026-09-09",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://ember-energy.org/latest-insights/china-energy-transition-review-2026/",
+    "https://ember-energy.org/app/uploads/2026/09/China-Energy-Transition-Review-2026.pdf",
+    "https://www.climatechangenews.com/2026/09/08/chinas-industrial-engine-starts-to-break-its-fossil-fuel-habit/"
+  ],
+  "split": "test",
+  "id": "fact063",
+  "topic": "energy",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-08",
+  "articleUrl": "https://e360.yale.edu/digest/china-industry-peak-fossil-fuels",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Ember (8 Sep 2026): clean electricity met all of China's additional power demand in 2025 (demand +5%), pushing thermal generation down 0.7%, most of it coal - the first fall since 2015. 'Coal output' read as coal-fired generation, which is what Ember measures; 'small decline' fits 0.7%.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

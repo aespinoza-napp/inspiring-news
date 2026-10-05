@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "bbc.co.uk",
+  "claimant": "Stewart Whittingham",
+  "claim": "Labour supporter Stanley Chow, who created the image for Burnham's 2021 mayoral campaign in Greater Manchester, has claimed the party did not ask for permission to use the image.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://uk.news.yahoo.com/artist-hits-tories-party-uses-120236493.html",
+    "https://ilovemanchester.com/stanley-chow-andy-burnham-charity",
+    "https://www.thebusinessdesk.com/northwest/news/2173454-artist-stanley-chow-takes-legal-action-against-reform-uk-over-unauthorised-use-of-andy-burnham-portrait"
+  ],
+  "split": "test",
+  "id": "fact061",
+  "topic": "arts",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-05",
+  "articleUrl": "https://www.bbc.co.uk/news/articles/cj62yg157prxo?at_medium=RSS&at_campaign=rss",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] The central claim holds: Chow says the Conservatives did not ask permission (The Independent, 5 Oct 2026). The detail does not quite: the portrait was first posted in Nov 2020 as Chow's own tribute to Burnham's stand during the pandemic, became Burnham's Twitter profile picture and was sold as prints for the Mayor's Charity (I Love Manchester, 20 Nov 2020) - not created for the 2021 campaign, though TheBusinessDesk (6 Jun 2026) says it was 'commissioned ahead of' it, i.e. licensed for it afterwards. 'Labour supporter' is in no other source found. Borderline: read loosely, 'created for' would make this TRUE.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

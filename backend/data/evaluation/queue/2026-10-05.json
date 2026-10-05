@@ -1,0 +1,595 @@
+{
+  "requestId": "74713929a3e5476dae80f0464064f769",
+  "seed": "2026-10-05",
+  "createdAt": "2026-10-05T14:16:53+00:00",
+  "requested": {
+    "articles": 10,
+    "claimsPerArticle": 3,
+    "languages": null,
+    "preferTopics": [
+      "climate",
+      "nature",
+      "energy",
+      "sustainability",
+      "food",
+      "arts",
+      "entertainment",
+      "heritage",
+      "literature",
+      "inspiration",
+      "medicine",
+      "mental_health",
+      "nutrition",
+      "fitness",
+      "public_health"
+    ],
+    "excluded": 1329
+  },
+  "totals": {
+    "sources": 34,
+    "discovered": 1298,
+    "candidates": 20,
+    "ready": 20,
+    "articles": 10,
+    "claims": 30
+  },
+  "articles": [
+    {
+      "url": "https://news.mongabay.com/2026/10/mangroves-keep-waves-at-bay-a-new-study-helps-scientists-predict-how/",
+      "source": "mongabay",
+      "title": "Mangroves keep waves at bay. A new study helps scientists predict how",
+      "site": "news.mongabay.com",
+      "sourceName": "Mongabay",
+      "language": "en",
+      "publishedAt": "2026-10-01",
+      "author": "Morgan Erickson-Davis",
+      "topic": "climate",
+      "topics": [
+        "climate",
+        "nature",
+        "sustainability",
+        "energy",
+        "mental_health",
+        "technology",
+        "community",
+        "cities",
+        "food",
+        "research",
+        "education",
+        "entertainment"
+      ],
+      "claims": [
+        {
+          "text": "- New research presents a model by which to predict how much mangroves can reduce — or attenuate — large waves associated with severe storms such as typhoons.",
+          "selectedBy": "anchor",
+          "score": 0.743,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact052"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Now, new research has found a way to predict just how much mangroves can diminish waves associated with severe storms.",
+          "selectedBy": "anchor",
+          "score": 0.719,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "duplicate"
+        },
+        {
+          "text": "Throughout the monitoring period, mangroves at their site reliably decreased wave height from between 44%-70%.",
+          "selectedBy": "anchor",
+          "score": 0.7,
+          "figures": [
+            "44%",
+            "70%"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact053"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.20minutos.es/salud/por-que-nos-mareamos-levantarnos-sofa-como-evitarlo-cardiologo_7034452_0.html",
+      "source": "20minutos",
+      "title": "José Abellán, cardiólogo: \"Si te mareas al levantarte, pon en práctica estas cinco medidas\"",
+      "site": "20minutos.es",
+      "sourceName": "20minutos",
+      "language": "es",
+      "publishedAt": "2026-10-05",
+      "author": "Ines Gutiérrez",
+      "topic": "mental_health",
+      "topics": [
+        "mental_health",
+        "nutrition",
+        "public_health",
+        "fitness",
+        "medicine",
+        "climate",
+        "research",
+        "space",
+        "nature"
+      ],
+      "claims": [
+        {
+          "text": "En general, no se trata de algo grave, pero si ocurre con frecuencia, Abellán recomienda poner en práctica \"5 medidas que la ciencia ha demostrado que funcionan\".",
+          "selectedBy": "anchor",
+          "score": 0.784,
+          "figures": [
+            "5"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "De esta experiencia ha querido hablar en sus redes sociales el cardiólogo José Abellán, explicando en primer lugar por qué se produce este efecto.",
+          "selectedBy": "anchor",
+          "score": 0.631,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "\"La deshidratación es una causa frecuente y tomar entre 300 y 500 ml ayuda a elevar la tensión arterial\".",
+          "selectedBy": "anchor",
+          "score": 0.417,
+          "figures": [
+            "300",
+            "500"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact054",
+            "fact055"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.positive.news/environment/winners-of-bird-photographer-of-the-year-announced/",
+      "source": "positive_news",
+      "title": "Gallery: winning pictures from Bird Photographer of the Year",
+      "site": "positive.news",
+      "sourceName": "Positive News",
+      "language": "en",
+      "publishedAt": "2026-09-22",
+      "author": "Positive News",
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "research",
+        "energy",
+        "climate",
+        "space",
+        "nutrition",
+        "sustainability",
+        "fitness"
+      ],
+      "claims": [
+        {
+          "text": "A prestigious annual photography award for bird lovers has announced its 2026 winners.",
+          "selectedBy": "anchor",
+          "score": 0.806,
+          "figures": [
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact056"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Taking first place for Young Bird Photographer of the Year was 16-year-old photographer Parham Pourahmad, from the US, with the shot Moonlit Night (below).",
+          "selectedBy": "anchor",
+          "score": 0.577,
+          "figures": [
+            "16"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact057"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Competition organisers say that conservation is at the heart of this competition, and that this year it has donated over £5,000 to its partner charity Birds on the Brink, which in turn funds grassroots bird conservation projects globally.",
+          "selectedBy": "anchor",
+          "score": 0.49,
+          "figures": [
+            "5,000"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact058"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.bbc.co.uk/news/articles/cj62yg157prxo?at_medium=RSS&at_campaign=rss",
+      "source": "bbc",
+      "title": "Artist 'taking legal advice' over Tories' use of Andy Burnham portrait",
+      "site": "bbc.co.uk",
+      "sourceName": "BBC",
+      "language": "en",
+      "publishedAt": "2026-10-05",
+      "author": "Stewart Whittingham",
+      "topic": "climate",
+      "topics": [
+        "climate"
+      ],
+      "claims": [
+        {
+          "text": "An artist has said he is taking legal advice after accusing the Conservative Party of copying his portrait of Andy Burnham at their party conference.",
+          "selectedBy": "anchor",
+          "score": 0.665,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact059"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "People attending the party's conference in Birmingham have been handed water bottles featuring the image and labelled \"Bottler Burnham\" and \"0% strength\".",
+          "selectedBy": "anchor",
+          "score": 0.647,
+          "figures": [
+            "0%"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact060"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Labour supporter Stanley Chow, who created the image for Burnham's 2021 mayoral campaign in Greater Manchester, has claimed the party did not ask for permission to use the image.",
+          "selectedBy": "anchor",
+          "score": 0.626,
+          "figures": [
+            "2021"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact061"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://e360.yale.edu/digest/china-industry-peak-fossil-fuels",
+      "source": "yale_e360",
+      "title": "Chinese Industry Is Starting to Wean Off Fossil Fuels",
+      "site": "e360.yale.edu",
+      "sourceName": "Yale Environment 360",
+      "language": "en",
+      "publishedAt": "2026-09-09",
+      "author": "Jan Rosenow",
+      "topic": "sustainability",
+      "topics": [
+        "sustainability",
+        "climate",
+        "energy",
+        "food",
+        "entertainment",
+        "cities"
+      ],
+      "claims": [
+        {
+          "text": "By several measures, Chinese industry is becoming less dependent on fossil fuels, according to a new analysis.",
+          "selectedBy": "anchor",
+          "score": 0.726,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact062"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "New clean power more than met the growth in demand across China last year, leading to a small decline in coal output, according to think tank Ember.",
+          "selectedBy": "anchor",
+          "score": 0.674,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact063"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "In eight of 11 industrial sectors — including textiles, food, pharmaceuticals, and machinery — fossil fuel use has already peaked, the analysis found.",
+          "selectedBy": "anchor",
+          "score": 0.656,
+          "figures": [
+            "11"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact064"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://elpais.com/economia/negocios/entrevistas-afterwork/2026-10-05/ignacio-calvo-de-mora-bodegas-benjamin-de-rothschild-vega-sicilia-mi-querida-suegra-dice-que-tengo-gusto-de-champan-y-bolsillo-de-cerveza.html",
+      "source": "el_pais",
+      "title": "Ignacio Calvo de Mora (Bodegas Benjamin de Rothschild & Vega Sicilia): “Mi querida suegra dice que tengo gusto de champán y bolsillo de cerveza”",
+      "site": "elpais.com",
+      "sourceName": "El País",
+      "language": "es",
+      "publishedAt": "2026-10-05",
+      "author": "David Fernández",
+      "topic": "sustainability",
+      "topics": [
+        "sustainability",
+        "inspiration",
+        "nutrition",
+        "mental_health",
+        "cities"
+      ],
+      "claims": [
+        {
+          "text": "Ignacio Calvo de Mora (Oporto, 53 años) es el director general de Bodegas Benjamin de Rothschild & Vega Sicilia (Macán), el proyecto conjunto con sede en Samaniego (La Rioja) de estas dos familias tan ligadas al mundo del vino.",
+          "selectedBy": "anchor",
+          "score": 0.699,
+          "figures": [
+            "53"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact065",
+            "fact066"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Ignacio Calvo de Mora (Bodegas Benjamin de Rothschild & Vega Sicilia): “Mi querida suegra dice que tengo gusto de champán y bolsillo de cerveza”",
+          "selectedBy": "anchor",
+          "score": 0.658,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "El responsable de la bodega riojana reconoce que un fin de semana perfecto pasa porque el Real Madrid gane al Barça en el Bernabéu",
+          "selectedBy": "anchor",
+          "score": 0.525,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        }
+      ]
+    },
+    {
+      "url": "https://news.un.org/feed/view/en/story/2026/10/1168519",
+      "source": "un_news",
+      "title": "Sudan: Driver killed in aerial attack on aid trucks in South Kordofan",
+      "site": "news.un.org",
+      "sourceName": "UN News",
+      "language": "en",
+      "publishedAt": "2026-10-05",
+      "author": "UN News",
+      "topic": "food",
+      "topics": [
+        "food",
+        "cities",
+        "community",
+        "public_health"
+      ],
+      "claims": [
+        {
+          "text": "They were clearly marked as humanitarian vehicles, the UN agency said in a statement.",
+          "selectedBy": "anchor",
+          "score": 0.559,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact067"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“These incidents underscore the increasingly challenging security environment in Sudan and the risks that aid workers face when delivering life-saving assistance to communities in need,” the statement said.",
+          "selectedBy": "anchor",
+          "score": 0.52,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "The Sudanese Armed Forces (SAF) and former allies the Rapid Support Forces (RSF) have been fighting since April 2023.",
+          "selectedBy": "anchor",
+          "score": 0.471,
+          "figures": [
+            "2023"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact068"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.smithsonianmag.com/smart-news/an-arson-investigation-is-underway-after-a-suspected-sensless-act-of-vandalism-destroys-a-newly-installed-benjamin-harrison-statue-180989605/",
+      "source": "smithsonian",
+      "title": "An Arson Investigation Is Underway After a Suspected ‘Senseless Act of Vandalism’ Destroys a Newly Installed Benjamin Harrison Statue",
+      "site": "smithsonianmag.com",
+      "sourceName": "Smithsonian Magazine",
+      "language": "en",
+      "publishedAt": "2026-10-02",
+      "author": "Sarah Kuta",
+      "topic": "heritage",
+      "topics": [
+        "heritage"
+      ],
+      "claims": [
+        {
+          "text": "The blaze was reported around 1:30 a.m. on September 27 in the Neighborway, a paved pedestrian and bicycle path on the site’s grounds.",
+          "selectedBy": "anchor",
+          "score": 0.677,
+          "figures": [
+            "1",
+            "30",
+            "27"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact069"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Police are conducting an arson investigation after a fire engulfed a new, life-size statue of the nation’s 23rd president at the Benjamin Harrison Presidential Site in Indianapolis.",
+          "selectedBy": "anchor",
+          "score": 0.647,
+          "figures": [
+            "23"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact070"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "The statue was installed on September 16 during Constitution Week, part of the nation’s 250th anniversary celebrations.",
+          "selectedBy": "anchor",
+          "score": 0.59,
+          "figures": [
+            "16",
+            "250"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact071"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.lavanguardia.com/deportes/futbol-femenino/20261005/11651238/claudia-pina-nueva-estrella-camp-nou-mas-antimidrista-cata.html",
+      "source": "la_vanguardia",
+      "title": "Claudia Pina, la nueva estrella del Camp Nou: “Soy más antimidrista que Cata”",
+      "site": "lavanguardia.com",
+      "sourceName": "La Vanguardia",
+      "language": "es",
+      "publishedAt": "2026-10-05",
+      "author": "Edurne Concejo",
+      "topic": null,
+      "topics": [],
+      "claims": [
+        {
+          "text": "“Soy más antimadridista que Cata”, afirmaba sonriendo.",
+          "selectedBy": "anchor",
+          "score": 0.623,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "En el Cam Nou se consagró -si es que aún le quedan cosas por demostrar- y ofreció una exhibición histórica apuntándose un póquer de goles en la mayor paliza al Real Madrid.",
+          "selectedBy": "anchor",
+          "score": 0.597,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact072"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "A ambas se las puede ver cualquier tarde en el bar Gol, que su madre, Beatriz Medina, abrió en 2024 en honor a su hija mayor, en el centro de Montcada, muy cerca del colegio La Salle, donde empezó su pasión por el fútbol sala, primero y por el fútbol once después.",
+          "selectedBy": "anchor",
+          "score": 0.541,
+          "figures": [
+            "2024"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact073"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.goodnewsnetwork.org/flourishing-sycamore-gap-tree-has-ring-of-new-shoots-already-3-feet-tall/",
+      "source": "good_news_network",
+      "title": "'Flourishing' Sycamore Gap Tree Has Ring of New Shoots Already 3-Feet Tall",
+      "site": "goodnewsnetwork.org",
+      "sourceName": "Good News Network",
+      "language": "en",
+      "publishedAt": "2026-10-01",
+      "author": "Andy Corbley",
+      "topic": null,
+      "topics": [],
+      "claims": [
+        {
+          "text": "3 years on from the illegal felling of Britain’s famous Sycamore Gap tree, new aerial images reveal how the stump is flourishing, and the basal sprouts that emerged are growing fast.",
+          "selectedBy": "anchor",
+          "score": 0.785,
+          "figures": [
+            "3"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact074"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "For those who didn’t read or weren’t aware, one of the UK’s most famous trees—a 150-year-old sycamore growing in a gap along the Roman-era Hadrian’s Wall—was cut down by vandals in 2023.",
+          "selectedBy": "anchor",
+          "score": 0.754,
+          "figures": [
+            "150",
+            "2023"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact075"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "As the tree regrows, the Trust continues to work with partners and local communities to celebrate the tree’s legacy, which has involved 49 saplings grown from the tree’s seed, distributed to communities across the UK.",
+          "selectedBy": "anchor",
+          "score": 0.472,
+          "figures": [
+            "49"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact076"
+          ],
+          "skipReason": null
+        }
+      ]
+    }
+  ],
+  "skipped": [],
+  "file": "2026-10-05.json",
+  "date": "2026-10-05"
+}

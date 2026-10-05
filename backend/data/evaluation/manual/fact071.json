@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Sarah Kuta",
+  "claim": "The statue was installed on September 16 during Constitution Week, part of the nation’s 250th anniversary celebrations.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://indianacitizen.org/senseless-act-of-vandalism-arson-suspected-in-destruction-of-polymer-statue-of-benjamin-harrison/",
+    "https://hoodline.com/2026/09/fire-torches-new-benjamin-harrison-statue-in-indianapolis-police-probe-arson/"
+  ],
+  "split": "test",
+  "id": "fact071",
+  "topic": "heritage",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-29",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/an-arson-investigation-is-underway-after-a-suspected-sensless-act-of-vandalism-destroys-a-newly-installed-benjamin-harrison-statue-180989605/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Installed on 16 Sept (The Indiana Citizen, 29 Sep 2026); 'unveiled as part of Constitution Week and tied to the nation's 250th-birthday celebrations' (Hoodline, 29 Sep). Constitution Week is formally 17-23 Sept, so the 16th is its eve; counted as holding because the unveiling was presented as part of it.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Jan Rosenow",
+  "claim": "In eight of 11 industrial sectors — including textiles, food, pharmaceuticals, and machinery — fossil fuel use has already peaked, the analysis found.",
+  "claimDate": "2026-09-09",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://ember-energy.org/app/uploads/2026/09/China-Energy-Transition-Review-2026.pdf",
+    "https://www.climatechangenews.com/2026/09/08/chinas-industrial-engine-starts-to-break-its-fossil-fuel-habit/"
+  ],
+  "split": "test",
+  "id": "fact064",
+  "topic": "energy",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-08",
+  "articleUrl": "https://e360.yale.edu/digest/china-industry-peak-fossil-fuels",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Ember: absolute fossil-fuel use has fallen 26-71% from its peak across eight industrial sectors, naming textiles, machinery, food and beverages; Climate Home News (8 Sep) gives 'eight of 11 tracked'. Pharmaceuticals is the one detail not confirmed: Ember's text names it only as a sector where electricity is approaching parity with fossil fuels, and Climate Home's list (extraction, textiles, machinery, food and beverages, transport equipment, chemical materials) omits it. RE-CHECK the sector chart on p. 23 of Ember's PDF: if pharmaceuticals is not among the eight, relabel PARTIALLY_TRUE.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

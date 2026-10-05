@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "elpais.com",
+  "claimant": "David Fernández",
+  "claim": "Bodegas Benjamin de Rothschild & Vega Sicilia (Macán) es el proyecto conjunto, con sede en Samaniego (La Rioja), de estas dos familias [los Rothschild y la de Vega Sicilia] tan ligadas al mundo del vino.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://macan-wine.com/en/benjamin-de-rothschild/",
+    "https://okdiario.com/coolthelifestyle/lifestyle/vega-sicilia-rothschild-macan-bodegas-entrevista-542724"
+  ],
+  "split": "test",
+  "id": "fact066",
+  "topic": "food",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2023-09-04",
+  "articleUrl": "https://elpais.com/economia/negocios/entrevistas-afterwork/2026-10-05/ignacio-calvo-de-mora-bodegas-benjamin-de-rothschild-vega-sicilia-mi-querida-suegra-dice-que-tengo-gusto-de-champan-y-bolsillo-de-cerveza.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Split (part 2 of 2). The joint venture holds: Macán was founded in 2004 by Benjamin de Rothschild and Pablo Álvarez, president of Vega Sicilia (Macán's own site). The location detail does not: Samaniego is in Álava (Basque Country) - the winery's address is 01307 Samaniego, Álava - in the Rioja Alavesa part of the Rioja appellation, not in La Rioja. Borderline: '(La Rioja)' for the wine region is common usage (OKDiario does the same).",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

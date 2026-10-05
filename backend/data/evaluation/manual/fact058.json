@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "positive.news",
+  "claimant": "Positive News",
+  "claim": "Competition organisers say that this year it has donated over £5,000 to its partner charity Birds on the Brink, which in turn funds grassroots bird conservation projects globally.",
+  "claimDate": "2026-09-22",
+  "reviewDate": "2026-10-05T14:42:57",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.popsci.com/environment/bird-photographer-of-the-year-2026-winners/",
+    "https://www.dpreview.com/news/bird-photographer-of-the-year-2026-winners-the-competitions-best-shots-from-a-moonlit-owl-to-a-diving-gannet/"
+  ],
+  "split": "test",
+  "id": "fact058",
+  "topic": "arts",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-22",
+  "articleUrl": "https://www.positive.news/environment/winners-of-bird-photographer-of-the-year-announced/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Labelled as an attribution, as the sentence makes it: Popular Science (21 Sep) and DPReview (22 Sep) report the competition giving more than £5,000 to Birds on the Brink, a charity funding grassroots bird conservation worldwide. The figure itself comes only from the organisers - read as a bare statement of fact, rule 1 would make it UNVERIFIED. The opening clause ('conservation is at the heart of this competition') is the organisers' opinion and is not labelled.",
+  "createdAt": "2026-10-05T14:42:57",
+  "review": null
+}

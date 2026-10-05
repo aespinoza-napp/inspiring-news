@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "elpais.com",
+  "claimant": "David Fernández",
+  "claim": "Ignacio Calvo de Mora es el director general de Bodegas Benjamin de Rothschild & Vega Sicilia (Macán).",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.elespanol.com/invertia/mis-finanzas/fondos-de-inversion/20251103/edmond-rothschild-crea-consejo-asesor-espana-ismael-clemente-xandra-falco-inigo-sagardoy/1003743997500_0.html",
+    "https://okdiario.com/coolthelifestyle/lifestyle/vega-sicilia-rothschild-macan-bodegas-entrevista-542724"
+  ],
+  "split": "test",
+  "id": "fact065",
+  "topic": "food",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-11-03",
+  "articleUrl": "https://elpais.com/economia/negocios/entrevistas-afterwork/2026-10-05/ignacio-calvo-de-mora-bodegas-benjamin-de-rothschild-vega-sicilia-mi-querida-suegra-dice-que-tengo-gusto-de-champan-y-bolsillo-de-cerveza.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] Split from a compound sentence (part 1 of 2). El Español (3 Nov 2025) and OKDiario (4 Sep 2023) both name him director general of Bodegas Benjamin de Rothschild & Vega Sicilia (Macán). His birthplace (Oporto) and age (53) were not checked and are not labelled.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}

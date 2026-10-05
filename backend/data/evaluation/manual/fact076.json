@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "As the tree regrows, the Trust continues to work with partners and local communities to celebrate the tree’s legacy, which has involved 49 saplings grown from the tree’s seed, distributed to communities across the UK.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-05T14:42:58",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.nationaltrust.org.uk/who-we-are/news/sycamore-gap-saplings-planted-across-the-uk",
+    "https://museumsandheritage.com/advisor/posts/felled-sycamore-gap-tree-lives-on-in-saplings-planted-across-uk/",
+    "https://www.northumberlandnationalpark.org.uk/shoots-of-hope-new-pictures-show-sycamore-gap-tree-in-recovery-three-years-after-it-was-felled/"
+  ],
+  "split": "test",
+  "id": "fact076",
+  "topic": "nature",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://www.goodnewsnetwork.org/flourishing-sycamore-gap-tree-has-ring-of-new-shoots-already-3-feet-tall/",
+  "annotatorNote": "[AI label: Claude, 2026-10-05 - not yet checked by the human annotator] The National Trust's 'Trees of Hope': 49 saplings, one per foot of the tree's height, grown from seeds of the original sycamore at its Plant Conservation Centre and given to community groups across the UK, chosen from almost 500 applicants. The Trust's 28 Sep 2026 update (Northumberland National Park) lists its continuing legacy work with partners: an exhibition at The Sill and commissioned artworks.",
+  "createdAt": "2026-10-05T14:42:58",
+  "review": null
+}
