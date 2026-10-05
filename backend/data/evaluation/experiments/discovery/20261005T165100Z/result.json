@@ -1,0 +1,67 @@
+{
+ "perSource": 2,
+ "settings": [
+  {
+   "groups": null,
+   "label": "all (baseline)",
+   "topics": 23,
+   "sources": 34,
+   "attempts": 44,
+   "failedAttempts": 12,
+   "links": 1536,
+   "candidates": 64,
+   "candidatesByLanguage": {
+    "es": 26,
+    "en": 38
+   },
+   "sourcesFindingNothing": 2,
+   "seconds": 14.93,
+   "sourcesVsBaseline": 1.0,
+   "attemptsVsBaseline": 1.0,
+   "linksVsBaseline": 1.0
+  },
+  {
+   "groups": [
+    "environment"
+   ],
+   "label": "environment",
+   "topics": 5,
+   "sources": 14,
+   "attempts": 20,
+   "failedAttempts": 8,
+   "links": 153,
+   "candidates": 24,
+   "candidatesByLanguage": {
+    "en": 20,
+    "es": 4
+   },
+   "sourcesFindingNothing": 2,
+   "seconds": 10.3,
+   "sourcesVsBaseline": 0.412,
+   "attemptsVsBaseline": 0.455,
+   "linksVsBaseline": 0.1
+  },
+  {
+   "groups": [
+    "culture",
+    "health"
+   ],
+   "label": "culture, health",
+   "topics": 10,
+   "sources": 23,
+   "attempts": 31,
+   "failedAttempts": 8,
+   "links": 596,
+   "candidates": 45,
+   "candidatesByLanguage": {
+    "es": 21,
+    "en": 24
+   },
+   "sourcesFindingNothing": 0,
+   "seconds": 14.55,
+   "sourcesVsBaseline": 0.676,
+   "attemptsVsBaseline": 0.705,
+   "linksVsBaseline": 0.388
+  }
+ ]
+}

@@ -1,0 +1,55 @@
+{
+ "roundsRead": 3,
+ "roundsUsable": 0,
+ "summary": {
+  "blind": {
+   "rounds": 0,
+   "precision": {
+    "mean": null,
+    "low": null,
+    "high": null,
+    "n": 0
+   },
+   "recall": {
+    "mean": null,
+    "low": null,
+    "high": null,
+    "n": 0
+   },
+   "jaccard": {
+    "mean": null,
+    "low": null,
+    "high": null,
+    "n": 0
+   },
+   "aucAiScore": null,
+   "scoredPicked": 0,
+   "scoredSkipped": 0
+  },
+  "assisted": {
+   "rounds": 0,
+   "precision": {
+    "mean": null,
+    "low": null,
+    "high": null,
+    "n": 0
+   },
+   "recall": {
+    "mean": null,
+    "low": null,
+    "high": null,
+    "n": 0
+   },
+   "jaccard": {
+    "mean": null,
+    "low": null,
+    "high": null,
+    "n": 0
+   },
+   "aucAiScore": null,
+   "scoredPicked": 0,
+   "scoredSkipped": 0
+  }
+ },
+ "rounds": []
+}

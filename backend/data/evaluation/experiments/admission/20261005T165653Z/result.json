@@ -1,0 +1,87 @@
+{
+ "articles": 42,
+ "enriched": 41,
+ "failed": 1,
+ "labelled": 0,
+ "chosen": 0,
+ "noTopicAtAll": 4,
+ "aucImpactScore": null,
+ "defaults": {
+  "topicMin": 0.35,
+  "impactMin": 0.3
+ },
+ "grid": [
+  {
+   "topicMin": 0.3,
+   "impactMin": 0.1,
+   "admitted": 39,
+   "rate": 0.9512,
+   "precision": null,
+   "recall": null
+  },
+  {
+   "topicMin": 0.3,
+   "impactMin": 0.2,
+   "admitted": 38,
+   "rate": 0.9268,
+   "precision": null,
+   "recall": null
+  },
+  {
+   "topicMin": 0.3,
+   "impactMin": 0.3,
+   "admitted": 31,
+   "rate": 0.7561,
+   "precision": null,
+   "recall": null
+  },
+  {
+   "topicMin": 0.35,
+   "impactMin": 0.1,
+   "admitted": 35,
+   "rate": 0.8537,
+   "precision": null,
+   "recall": null
+  },
+  {
+   "topicMin": 0.35,
+   "impactMin": 0.2,
+   "admitted": 35,
+   "rate": 0.8537,
+   "precision": null,
+   "recall": null
+  },
+  {
+   "topicMin": 0.35,
+   "impactMin": 0.3,
+   "admitted": 29,
+   "rate": 0.7073,
+   "precision": null,
+   "recall": null
+  },
+  {
+   "topicMin": 0.4,
+   "impactMin": 0.1,
+   "admitted": 25,
+   "rate": 0.6098,
+   "precision": null,
+   "recall": null
+  },
+  {
+   "topicMin": 0.4,
+   "impactMin": 0.2,
+   "admitted": 25,
+   "rate": 0.6098,
+   "precision": null,
+   "recall": null
+  },
+  {
+   "topicMin": 0.4,
+   "impactMin": 0.3,
+   "admitted": 20,
+   "rate": 0.4878,
+   "precision": null,
+   "recall": null
+  }
+ ]
+}

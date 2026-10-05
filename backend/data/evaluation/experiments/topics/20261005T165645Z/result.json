@@ -1,0 +1,461 @@
+{
+ "articles": 41,
+ "top1": {
+  "mean": 0.5366,
+  "low": 0.3659,
+  "high": 0.6829,
+  "n": 41
+ },
+ "top3": {
+  "mean": 0.7805,
+  "low": 0.6579,
+  "high": 0.9024,
+  "n": 41
+ },
+ "group": {
+  "mean": 0.7317,
+  "low": 0.5854,
+  "high": 0.8537,
+  "n": 41
+ },
+ "noTopic": {
+  "mean": 0.0976,
+  "low": 0.0244,
+  "high": 0.1951,
+  "n": 41
+ },
+ "confusion": {
+  "society": {
+   "society": 4,
+   "environment": 5
+  },
+  "science": {
+   "science": 6
+  },
+  "environment": {
+   "environment": 9,
+   "science": 2
+  },
+  "culture": {
+   "environment": 2,
+   "culture": 4
+  },
+  "health": {
+   "health": 7,
+   "science": 1,
+   "environment": 1
+  }
+ },
+ "rows": [
+  {
+   "url": "https://lacarabuenadelmundo.com/noticias/sociedad/romper-el-circulo-de-la-pobreza-hereditaria/",
+   "gold": "community",
+   "goldGroup": "society",
+   "top": "community",
+   "topGroup": "society",
+   "inTop3": true,
+   "topConfidence": 0.4485,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://inspiringnews.ai/cultura/bordalo-ii-convierte-basura-en-animales-gigantes/",
+   "gold": "arts",
+   "goldGroup": "culture",
+   "top": "sustainability",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.3953,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.20minutos.es/musica/entrevista-paco-pastor-formula-v-fuimos-primer-grupo-que-cruzo-charco-alli-se-nos-respetaba-espana-hubo-un-momento-que-no_7034554_0.html",
+   "gold": "inspiration",
+   "goldGroup": "culture",
+   "top": "entertainment",
+   "topGroup": "culture",
+   "inTop3": false,
+   "topConfidence": 0.3937,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.elmundo.es/ciencia/2026/09/21/6ab11a2cfc6c83a6348b457e.html",
+   "gold": "climate",
+   "goldGroup": "environment",
+   "top": "climate",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.408,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.eldebate.com/ciencia/20260928/este-tipo-sangre-tienes-probabilidades-llegar-100-anos-cns_462034.html",
+   "gold": "research",
+   "goldGroup": "science",
+   "top": "biology",
+   "topGroup": "science",
+   "inTop3": false,
+   "topConfidence": 0.4437,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.diariodenavarra.es/noticias/vivir/2026/09/29/pasos-hay-dar-dia-velocidad-cuidar-salud-836935-108.html",
+   "gold": "fitness",
+   "goldGroup": "health",
+   "top": "fitness",
+   "topGroup": "health",
+   "inTop3": true,
+   "topConfidence": 0.5034,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/in-a-first-sea-turtles-were-spotted-nesting-on-the-us-west-coast-scientists-say-the-super-el-nino-could-have-brought-them-there-180989574/",
+   "gold": "nature",
+   "goldGroup": "environment",
+   "top": "nature",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.3975,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.agenciasinc.es/Noticias/Starship-ameriza-con-exito-tras-su-primer-viaje-alrededor-de-la-Tierra",
+   "gold": "space",
+   "goldGroup": "science",
+   "top": "space",
+   "topGroup": "science",
+   "inTop3": true,
+   "topConfidence": 0.4315,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.abc.es/sevilla/ciudad/nuevos-barrios-norte-sevilla-uniran-carretera-verde-20260930174134-nts.html",
+   "gold": "cities",
+   "goldGroup": "society",
+   "top": "cities",
+   "topGroup": "society",
+   "inTop3": true,
+   "topConfidence": 0.4492,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/mri-scans-might-reveal-signs-of-alzheimers-disease-seven-years-before-a-telltale-marker-appears-in-the-brain-180989570/",
+   "gold": "medicine",
+   "goldGroup": "health",
+   "top": "medicine",
+   "topGroup": "health",
+   "inTop3": true,
+   "topConfidence": 0.4397,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.theguardian.com/technology/2026/sep/28/ai-godfathers-warn-of-runaway-intelligence-explosion",
+   "gold": "technology",
+   "goldGroup": "science",
+   "top": "technology",
+   "topGroup": "science",
+   "inTop3": true,
+   "topConfidence": 0.5136,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://reasonstobecheerful.world/nairobi-libraries-civic-hubs/",
+   "gold": "cities",
+   "goldGroup": "society",
+   "top": "cities",
+   "topGroup": "society",
+   "inTop3": true,
+   "topConfidence": 0.4527,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/korean-drone-rescue-program-helps-mozambique-achieve-zero-fatalities-during-worst-flood-in-decades/",
+   "gold": "community",
+   "goldGroup": "society",
+   "top": "community",
+   "topGroup": "society",
+   "inTop3": true,
+   "topConfidence": 0.4076,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://e360.yale.edu/features/julian-aguon-interview",
+   "gold": "climate",
+   "goldGroup": "environment",
+   "top": "climate",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.4896,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://theconversation.com/why-do-some-chimpanzee-mothers-carry-their-dead-infants-for-months-292509",
+   "gold": "nature",
+   "goldGroup": "environment",
+   "top": "nature",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.4043,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cr89j4g7v05wo?at_medium=RSS&at_campaign=rss",
+   "gold": "entertainment",
+   "goldGroup": "culture",
+   "top": "entertainment",
+   "topGroup": "culture",
+   "inTop3": true,
+   "topConfidence": 0.3957,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.nationalgeographic.com/animals/article/striped-mullet-fish-migration",
+   "gold": "nature",
+   "goldGroup": "environment",
+   "top": "nature",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.4373,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://e360.yale.edu/digest/environmental-defenders-killed-2025",
+   "gold": "community",
+   "goldGroup": "society",
+   "top": "climate",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.4178,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.france24.com/es/salud/20261001-octubre-rosa-equidad-y-detecci%C3%B3n-temprana-los-grandes-desaf%C3%ADos-ante-el-c%C3%A1ncer-de-mama-en-latinoam%C3%A9rica",
+   "gold": "public_health",
+   "goldGroup": "health",
+   "top": "medicine",
+   "topGroup": "health",
+   "inTop3": false,
+   "topConfidence": 0.4504,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://news.mit.edu/2026/governor-healey-mit-president-kornbluth-kick-festivities-mit-future-fest",
+   "gold": "education",
+   "goldGroup": "society",
+   "top": "sustainability",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.4234,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://news.un.org/feed/view/en/story/2026/09/1168476",
+   "gold": "community",
+   "goldGroup": "society",
+   "top": "climate",
+   "topGroup": "environment",
+   "inTop3": false,
+   "topConfidence": 0.4097,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/salud/muertes-por-ebola-congo.html",
+   "gold": "public_health",
+   "goldGroup": "health",
+   "top": "public_health",
+   "topGroup": "health",
+   "inTop3": true,
+   "topConfidence": 0.3962,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.theguardian.com/us-news/2026/sep/28/dengue-fever-cases-florida-counties",
+   "gold": "public_health",
+   "goldGroup": "health",
+   "top": "mental_health",
+   "topGroup": "health",
+   "inTop3": true,
+   "topConfidence": 0.3836,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.carbonbrief.org/concerning-low-sea-ice-persists-as-antarctic-hits-third-lowest-winter-peak",
+   "gold": "climate",
+   "goldGroup": "environment",
+   "top": "climate",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.4569,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.france24.com/es/programas/econom%C3%ADa/20261002-brasil-en-cifras-qu%C3%A9-econom%C3%ADa-recibe-el-pr%C3%B3ximo-presidente",
+   "gold": "community",
+   "goldGroup": "society",
+   "top": "sustainability",
+   "topGroup": "environment",
+   "inTop3": false,
+   "topConfidence": 0.4042,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.europapress.es/portaltic/videojuegos/noticia-ips-oled-monitor-samsung-odyssey-oled-g8-32-pulgadas-4k-240-hz-cuyo-hdr-vale-oro-20261001161517.html",
+   "gold": "technology",
+   "goldGroup": "science",
+   "top": "technology",
+   "topGroup": "science",
+   "inTop3": true,
+   "topConfidence": 0.3693,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Happy_New_Year_on_Mars",
+   "gold": "space",
+   "goldGroup": "science",
+   "top": "space",
+   "topGroup": "science",
+   "inTop3": true,
+   "topConfidence": 0.4503,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://news.mit.edu/2026/unmasking-zombie-cells-aging-tissue-ai-powered-barcode-0921",
+   "gold": "medicine",
+   "goldGroup": "health",
+   "top": "research",
+   "topGroup": "science",
+   "inTop3": true,
+   "topConfidence": 0.4607,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://theconversation.com/arctic-infrastructure-was-built-on-frozen-ground-drones-and-digital-twins-can-help-spot-the-permafrost-thaw-coming-292097",
+   "gold": "climate",
+   "goldGroup": "environment",
+   "top": "technology",
+   "topGroup": "science",
+   "inTop3": true,
+   "topConfidence": 0.4521,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.newscientist.com/article/2591599-brain-area-discovered-that-may-be-critical-for-viable-pregnancies/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+   "gold": "biology",
+   "goldGroup": "science",
+   "top": "biology",
+   "topGroup": "science",
+   "inTop3": true,
+   "topConfidence": 0.4363,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/crz6zqgpl86eo?at_medium=RSS&at_campaign=rss",
+   "gold": "fitness",
+   "goldGroup": "health",
+   "top": "fitness",
+   "topGroup": "health",
+   "inTop3": true,
+   "topConfidence": 0.3313,
+   "noTopicAtFloor": true
+  },
+  {
+   "url": "https://news.mongabay.com/2026/10/mangroves-keep-waves-at-bay-a-new-study-helps-scientists-predict-how/",
+   "gold": "climate",
+   "goldGroup": "environment",
+   "top": "climate",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.4327,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.20minutos.es/salud/por-que-nos-mareamos-levantarnos-sofa-como-evitarlo-cardiologo_7034452_0.html",
+   "gold": "medicine",
+   "goldGroup": "health",
+   "top": "mental_health",
+   "topGroup": "health",
+   "inTop3": false,
+   "topConfidence": 0.4277,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.positive.news/environment/winners-of-bird-photographer-of-the-year-announced/",
+   "gold": "arts",
+   "goldGroup": "culture",
+   "top": "nature",
+   "topGroup": "environment",
+   "inTop3": false,
+   "topConfidence": 0.408,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cj62yg157prxo?at_medium=RSS&at_campaign=rss",
+   "gold": "arts",
+   "goldGroup": "culture",
+   "top": "entertainment",
+   "topGroup": "culture",
+   "inTop3": true,
+   "topConfidence": 0.3434,
+   "noTopicAtFloor": true
+  },
+  {
+   "url": "https://e360.yale.edu/digest/china-industry-peak-fossil-fuels",
+   "gold": "energy",
+   "goldGroup": "environment",
+   "top": "sustainability",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.4543,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://elpais.com/economia/negocios/entrevistas-afterwork/2026-10-05/ignacio-calvo-de-mora-bodegas-benjamin-de-rothschild-vega-sicilia-mi-querida-suegra-dice-que-tengo-gusto-de-champan-y-bolsillo-de-cerveza.html",
+   "gold": "food",
+   "goldGroup": "environment",
+   "top": "sustainability",
+   "topGroup": "environment",
+   "inTop3": false,
+   "topConfidence": 0.368,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168519",
+   "gold": "community",
+   "goldGroup": "society",
+   "top": "food",
+   "topGroup": "environment",
+   "inTop3": true,
+   "topConfidence": 0.3829,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/an-arson-investigation-is-underway-after-a-suspected-sensless-act-of-vandalism-destroys-a-newly-installed-benjamin-harrison-statue-180989605/",
+   "gold": "heritage",
+   "goldGroup": "culture",
+   "top": "heritage",
+   "topGroup": "culture",
+   "inTop3": true,
+   "topConfidence": 0.3554,
+   "noTopicAtFloor": false
+  },
+  {
+   "url": "https://www.lavanguardia.com/deportes/futbol-femenino/20261005/11651238/claudia-pina-nueva-estrella-camp-nou-mas-antimidrista-cata.html",
+   "gold": "fitness",
+   "goldGroup": "health",
+   "top": "climate",
+   "topGroup": "environment",
+   "inTop3": false,
+   "topConfidence": 0.3218,
+   "noTopicAtFloor": true
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/flourishing-sycamore-gap-tree-has-ring-of-new-shoots-already-3-feet-tall/",
+   "gold": "nature",
+   "goldGroup": "environment",
+   "top": "research",
+   "topGroup": "science",
+   "inTop3": true,
+   "topConfidence": 0.3198,
+   "noTopicAtFloor": true
+  }
+ ]
+}
