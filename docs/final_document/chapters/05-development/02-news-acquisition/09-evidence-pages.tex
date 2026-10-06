@@ -1,0 +1,44 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Reading Evidence Pages
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Reading Evidence Pages}
+\label{subsec:scraping-evidence}
+
+The same extractor reads the web pages that evidence retrieval finds
+for each claim (\path{services/fact_checker/retrieval/scraper.py}),
+rather than a second scraping stack. A search result has no configured
+source, so it is extracted with a generic placeholder source (neutral
+reliability, never stored), and the extractor still matches its domain
+against the catalogue, so a hit on a configured outlet is read with
+that outlet's selectors. Three things differ from article extraction:
+
+\begin{itemize}
+    \item \textbf{No browser and no publication time.} Evidence is the
+    most frequent purpose and already has a fallback, so the expensive
+    steps are left out (Section~\ref{subsec:scraping-cascade}).
+    \item \textbf{A failed page keeps its search result.} When a page
+    cannot be read, the evidence keeps the title and snippet the search
+    engine returned, and the claim is judged on that rather than losing
+    the source.
+    \item \textbf{Concurrent, and in input order.} A claim's pages are
+    fetched at once instead of one after another; this was the
+    pipeline's longest step apart from the language model, with one
+    slow host holding up the others for no reason. A process-wide
+    ceiling of eight concurrent fetches (\texttt{SCRAPE\_MAX\_CONCURRENCY})
+    is held around each fetch only, because several claims and several
+    articles reach this point at once. The pages come back in the
+    order they were requested, not the order they finished: the list
+    is ranked, cut and handed to the language model as a numbered list
+    that it cites by index, so completion order would silently point
+    every citation at a different source
+    (Section~\ref{sec:design-concurrency}).
+\end{itemize}
+
+How many search results are read per claim is itself a per-run
+threshold (\path{evidence_fetch_candidates}, eight by default),
+because widening recall is the first thing to try when a claim comes
+back \texttt{UNVERIFIED} for lack of evidence.

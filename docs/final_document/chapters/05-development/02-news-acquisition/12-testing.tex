@@ -1,0 +1,59 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Testing
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Testing}
+\label{subsec:scraping-testing}
+
+The acquisition layer has 181 unit tests in
+\path{backend/tests/services/scraper/}, part of the suite that
+\texttt{./scripts/check.sh} runs. None of them reaches the network:
+pages are served by fake fetchers, the HTTP client and the browser are
+replaced by stand-ins, and name resolution is patched for the URL
+guard. Table~\ref{tab:scraping-tests} lists what each module covers.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Unit tests of the acquisition layer, by module.}
+\label{tab:scraping-tests}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Module & What it holds \\
+\midrule
+Discovery             & The order of the strategies, the age limit and
+                        stale feeds, topic and language filters, the
+                        article shape, and the section-page strategy run
+                        through the discovery service. \\
+Extractor             & The cascade's stop and escalation rules, routing
+                        by domain, metadata filling, and the requests
+                        counted. \\
+Strategies            & trafilatura and the shared fetch (redirects
+                        followed hop by hop through the guard, a
+                        redirect loop abandoned, each failure reported
+                        as its outcome), BeautifulSoup (selectors,
+                        JSON-LD, densest block), the browser step (guard
+                        on every request and redirect, unavailable
+                        without a browser), and the section-page
+                        crawl. \\
+URL guard             & Schemes, ports, private and reserved addresses,
+                        names resolved rather than trusted, every
+                        resolved address checked, and the allow-list. \\
+Probe and check       & The up, degraded and down rules; working,
+                        partial and broken. \\
+Statistics            & Counting per extraction and per domain, and
+                        persistence. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two properties of the catalogue are also enforced as tests rather than
+conventions: no two sources share a domain, and every enabled source
+names at least one topic group while every group has an English and a
+Spanish source. The strategy tests that mocked trafilatura's call are
+the reason the missing-title incident went unnoticed
+(Section~\ref{subsec:scraping-metadata}); one test now runs it for
+real and checks that the page's title comes back.

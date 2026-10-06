@@ -1,0 +1,56 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: Tie-Break Rules
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% ============================================================
+
+\subsection{Tie-Break Rules}
+\label{subsec:custom-rules}
+
+The decisions that cause the most hesitation during annotation are
+also those on which a single annotator is least consistent with
+themself over time. The following four rules were therefore fixed
+before labelling began and are applied without exception; the
+\texttt{annotatorNote} records which rule decided a close call.
+
+\paragraph{Rule 1 --- The organisation's own source.}
+Positive-news claims frequently originate in the press release of
+the very NGO, company or institution the article is about. A claim
+for which the \emph{only} available evidence is that organisation's
+own communication (press release, report, website or social media
+post) is labelled \emph{not enough evidence}
+(\texttt{UNVERIFIED}), and the source is named in the note. An
+organisation reporting on itself is not independent confirmation,
+and a claim the system could only confirm by reading the claimant's
+own release is not one it has verified.
+
+\paragraph{Rule 2 --- Numeric tolerance.}
+A figure is considered supported when it lies within $\pm10\%$ in
+relative terms of the figure in the source (an article's ``30\%''
+against a source's ``28\%'' is supported), or when it is a reasonable
+rounding of it (``nearly 3,000'' for 2,870). Beyond that margin, the
+claim is \emph{partially supported} if the figure is a detail of an
+otherwise correct claim, and \emph{refuted} if the figure is the
+claim.
+
+\paragraph{Rule 3 --- Date of the evidence.}
+Only evidence available on the article's publication date is
+admissible, as in AVeriTeC \cite{schlichtkrull2023averitec}, which
+restricts evidence to documents published before the claim to avoid
+temporal leakage. A claim that could not be checked when it was
+published and was confirmed later remains \emph{not enough evidence};
+the verdict does not change. Evidence that did not yet exist cannot
+have made a claim well-founded when it was made, and fact-checking
+evaluations that ignore this condition have been shown to overstate
+what a system could do in practice \cite{glockner2022missing}.
+
+\paragraph{Rule 4 --- Hierarchy of sources.}
+Sources are ranked as follows: primary source (a report, official
+statistic or peer-reviewed study) $>$ reference media outlet $>$
+press release $>$ social media. When sources conflict, the higher
+tier prevails; when sources of the same tier conflict and none is
+decisive, the claim is labelled \emph{conflicting evidence}
+(\texttt{MISLEADING}). The tier of the strongest source used is
+recorded in \texttt{sourceTier}, which also allows the evaluation to
+be broken down by how well-sourced each claim was.

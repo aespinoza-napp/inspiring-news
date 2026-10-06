@@ -1,0 +1,64 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: Annotation Procedure
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% ============================================================
+
+\subsection{Annotation Procedure}
+\label{subsec:custom-procedure}
+
+Claims are taken from articles published by the positive-news and
+science sources the system ingests, and neither the articles nor the
+claims are chosen by the annotator. Each day a batch of about ten
+articles is drawn at random from the sources' current feeds and topic
+pages: at most one article per source, the two languages alternated,
+every article already labelled or previously proposed excluded, and
+articles whose predicted topic belongs to an under-filled topic group
+preferred, after articles published within the previous sixty days,
+which keep small the gap between the evidence admissible under
+Rule~3 and the present-day web the system searches. The draw is seeded
+with the date, so the same set of candidate links yields the same
+draw.
+For each article, the system's own claim extractor and anchor-claim
+selector propose between one and three claims, which are therefore
+the claims the system would itself verify.
+
+The annotator either labels a proposed claim or rejects it with a
+recorded reason: an opinion or interpretation, a prediction, a
+checkable but trivial statement, a fragment of a sentence, or a
+duplicate. Those rejections are kept, and the share of proposals
+accepted is reported as the precision of the system's claim
+selection as judged by the annotator. Each record holds one atomic
+claim, kept in the article's own wording; a proposed sentence that
+asserts two things is split into two records, following the claim
+decomposition practice of real-world fact-checking datasets
+\cite{guo2022survey}. The annotator then searches for evidence
+independently of the system, records the links on which the verdict
+rests, and assigns the label under the rules of
+Section~\ref{subsec:custom-rules}. The system's verdict is never
+shown during annotation.
+
+Records are entered through a small web form built for this purpose
+and kept apart from the system itself: a single program using only the
+Python standard library, so that labelling depends neither on the
+system's services nor on any installed package. Its fields are exactly
+the keys of Table~\ref{tab:custom-format}, and it enforces the rules
+that can be checked mechanically at the moment a record is saved:
+a verdict other than \texttt{UNVERIFIED} requires at least one
+evidence link; a claim backed only by its protagonist's own source
+must be labelled \texttt{UNVERIFIED} and the source named; and an
+evidence date later than the article's publication date is rejected.
+The same form shows the running count per verdict and topic group
+against the targets of Section~\ref{subsec:custom-size}, which is how
+balance is steered during annotation rather than assessed after it.
+
+Each record is stored as its own file (\texttt{fact001.json},
+\texttt{fact002.json}, \ldots) in the project's version-controlled
+repository. Every verified claim is therefore individually visible,
+and every later correction is recorded as a change to that one file,
+which leaves an audit trail of the annotation. Once the set is
+complete, the files are validated again and merged, in order, into a
+single JSON Lines file in the X-Fact format, which is what the
+evaluation harness reads. The per-record files remain the source, and
+the merged file is derived from them.

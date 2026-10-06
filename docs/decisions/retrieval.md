@@ -302,7 +302,7 @@ Items 1 and 3 above still stand.
   clients read and is tested on sample pages only: no real results page
   has come back from here. It was not made to look like a browser to get
   past the challenge. An API-keyed engine (Brave Search API) is future
-  work, `docs/final_document/sections/future_work.tex`: cost, credentials
+  work, `docs/final_document/chapters/09-conclusions/04-future-work/`: cost, credentials
   and reproducibility against a route that answers automated requests by
   design.
 - **Accuracy is still unmeasured.** There is no labelled set, so the

@@ -1,0 +1,136 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: The Extraction Cascade
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{The Extraction Cascade}
+\label{subsec:scraping-cascade}
+
+\texttt{ExtractorService} (\path{services/scraper/extractor.py}) tries
+three strategies in order of cost (Table~\ref{tab:cascade}).
+
+\begin{table}[ht]
+\centering
+\small
+\caption{The extraction cascade.}
+\label{tab:cascade}
+\begin{tabularx}{\linewidth}{@{}clX@{}}
+\toprule
+Step & Strategy & Cost \\
+\midrule
+1 & trafilatura           & One HTTP request. \\
+2 & BeautifulSoup         & None: it parses the HTML step 1 already
+                            fetched. \\
+3 & Headless browser      & A second request, a full render with
+                            JavaScript, seconds; never for evidence
+                            pages. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{When to escalate.} A failed step only passes the page on
+when a different strategy could plausibly succeed
+(Table~\ref{tab:escalation}). A dead source therefore costs one request
+per URL, not one per strategy.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{What happens after a failed step.}
+\label{tab:escalation}
+\begin{tabularx}{\linewidth}{@{}p{5.2cm}X@{}}
+\toprule
+Outcome of the step & Next \\
+\midrule
+No article in the page, too short, parse error
+& The next strategy; an HTML parser gets the same page. \\
+HTTP 401, 403 or 429 (a bot wall or a rate limit)
+& Skip the HTML parsers, which would be refused the same way; go to the
+  browser. \\
+Any other HTTP error (404, 500\ldots), timeout, connection error,
+refused by the guard
+& Stop: no strategy can fix a page that is not there. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Step 1: trafilatura.} The main extractor, chosen because it
+isolates the article body from navigation, comments and advertising on
+most news layouts without any per-site configuration. On the
+23~September~2026 check of two articles per readable source it
+produced the article for every source that answered.
+
+\paragraph{Step 2: BeautifulSoup.} Written for the layouts trafilatura
+misses, it looks, in order, at:
+\begin{enumerate}
+    \item the CSS selectors in the source's own file, for layouts
+    nothing else guesses;
+    \item what the page declares about itself: the JSON-LD
+    \texttt{NewsArticle}, whose \texttt{articleBody} often holds the
+    full text behind a teaser, and the meta tags;
+    \item the usual containers (\texttt{article},
+    \texttt{[itemprop=articleBody]}, \texttt{main}), and finally
+    whichever element holds the most paragraph text of its own.
+\end{enumerate}
+On the same pages it extracted comparable text, but on a CNN live blog
+it picked a much smaller block, which is why it comes second.
+
+\paragraph{Step 3: the headless browser.} Some pages build their text
+with JavaScript, and some servers refuse clients that do not behave
+like a browser. The third strategy renders the page with Playwright and
+Chromium, and then reads the rendered HTML with the same two parsers,
+so there is one notion of where an article is, not a third one written
+against the browser's API. It is restricted in four ways:
+
+\begin{itemize}
+    \item \textbf{Never for evidence.} Evidence pages are read by the
+    handful for every claim and already fall back to their search
+    snippet, so rendering them would multiply the cost of the most
+    expensive step by the most frequent purpose for very little. The
+    browser is reserved for articles, ingestion, the enrichment page,
+    the labelling batch, and the health checks that ask what ingestion
+    would get.
+    \item \textbf{Guarded like every other fetch.} The start URL is
+    checked before a browser is launched, every request the page makes
+    goes through the URL guard, and the redirect chain is checked after
+    the page lands; content that arrived by way of a forbidden address
+    is discarded.
+    \item \textbf{Capped.} At most two renders run at once in the whole
+    process (\path{BROWSER_MAX_CONCURRENCY}), one Chromium per
+    render, because the browser's synchronous objects are bound to the
+    thread that created them and extraction runs on many threads.
+    \item \textbf{Optional.} The browser is an optional dependency,
+    installed in the Docker image and usually absent on a development
+    machine. Without it the attempt is \texttt{unavailable}, and the
+    extraction keeps the previous step's outcome with a note that it
+    was not escalated, so the statistics still say why the page failed.
+\end{itemize}
+
+It was checked live on 23~September~2026: a page whose text is built by
+JavaScript has 29 characters of text in its HTML; trafilatura's result
+is refused as too short, BeautifulSoup finds nothing, and the browser
+renders 1,097 characters, for two requests and 11~seconds on a cold
+start. An ordinary NASA page never gets past trafilatura: one request,
+no browser.
+
+\paragraph{Routing by source.} A URL posted for analysis arrives
+without a source, so an El País article used to be treated as a
+generic web page. The extractor now matches every URL against the
+enabled sources by domain (the source's host or a subdomain of it, the
+most specific match winning), so that the source's selectors and
+browser flag apply and the stored article carries the real source.
+Setting \texttt{requires\_javascript} puts the browser first, because
+the two cheap steps are known to fail for that site and would each cost
+a request to find that out again; they still run after it, for when no
+browser is installed. The flag is meant to be set from evidence rather
+than guessed: the monitoring page flags a domain whose every article
+came from the browser. No source has needed it so far, and El País, the
+case it was built for, answers 403 to the headless browser as well.
+
+\paragraph{Validation.} An extraction is accepted only when its body
+reaches the run's minimum length (500 characters by default, a per-run
+threshold like every other tunable of the pipeline), which turns
+paywall stubs, cookie walls and photo galleries into
+\texttt{too\_short} rather than into articles with nothing to check.

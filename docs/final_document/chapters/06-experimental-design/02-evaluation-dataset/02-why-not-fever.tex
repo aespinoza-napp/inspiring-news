@@ -1,0 +1,65 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Selection and Justification of the Evaluation Dataset
+%     Subsection: Why FEVER Is Not Suitable for This Work
+% Included from chapters/06-experimental-design/02-evaluation-dataset/evaluation-dataset.tex
+% ============================================================
+
+\subsection{Why FEVER Is Not Suitable for This Work}
+\label{subsec:discard-justification}
+
+The system developed in this thesis --- described in detail in
+Chapter~\ref{ch:methodology} --- does not perform verification
+against a closed corpus. Its architecture is organised into six
+sequential stages:
+
+\begin{enumerate}
+    \item \textbf{Admission}: ingestion and decomposition of the
+    news article into atomic, verifiable claims.
+    \item \textbf{Selection}: entity extraction and formulation of
+    search queries from each claim.
+    \item \textbf{Retrieval}: retrieval of candidate documents via
+    SearXNG, a metasearch engine that queries multiple search
+    engines over the open web in real time.
+    \item \textbf{Ranking}: ordering of the retrieved sources by
+    relevance to the claim.
+    \item \textbf{LLM check}: reasoning over the ranked evidence by a
+    language model (Llama 3.1, run locally via Ollama) to produce a
+    preliminary verdict.
+    \item \textbf{Recalibration}: adjustment of the verdict and its
+    associated confidence, propagating the result to the article's
+    overall verdict.
+\end{enumerate}
+
+This architecture --- referred to throughout this work as the
+\textbf{proposed method} --- therefore performs
+\textbf{open-domain retrieval}: no fixed corpus exists against which
+claims are compared; instead, evidence is searched for \textit{on
+the fly} on the live web at verification time, exactly as a human
+fact-checker would.
+
+Evaluating this system against FEVER or its multilingual variants
+would introduce a serious methodological mismatch, for two reasons:
+
+\begin{itemize}
+    \item \textbf{Invalid-evidence bias.} The system could locate,
+    through SearXNG, evidence that is perfectly valid and sufficient
+    in a source other than the predefined Wikipedia sentence, and
+    still be penalised for not matching the expected evidence
+    verbatim. The resulting metric would systematically underestimate
+    the system's true performance.
+    \item \textbf{Partial evaluation of the architecture.} Since
+    FEVER fixes the source corpus in advance, evaluation against this
+    benchmark would measure almost exclusively the \textit{LLM check}
+    stage, leaving the \textit{Selection}, \textit{Retrieval}, and
+    \textit{Ranking} stages unevaluated --- precisely the stages that
+    constitute the most original, and also the most fragile,
+    contribution of the system, as discussed in
+    Chapter~\ref{ch:results}.
+\end{itemize}
+
+For these reasons, FEVER/XFEVER was discarded as the primary
+evaluation benchmark: not out of convenience or expected performance,
+but because the dataset's own design assumes a (closed) retrieval
+paradigm incompatible with the (open) retrieval paradigm underlying
+the proposed system.

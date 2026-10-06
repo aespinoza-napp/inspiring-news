@@ -1,0 +1,106 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: What Discovery Keeps
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{What Discovery Keeps}
+\label{subsec:scraping-filters}
+
+A feed or a section page lists far more than articles worth offering:
+section indexes, live blogs, opinion columns, sport, items from years
+ago and articles already analysed. Every link is filtered before any
+article page is fetched, which is the cheapest point at which to say
+no. Table~\ref{tab:discovery-filters} summarises the rules; each was
+added after a concrete case, given in the table.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Rules applied to discovered links, and the case behind each.}
+\label{tab:discovery-filters}
+\begin{tabularx}{\linewidth}{@{}p{3.3cm}X@{}}
+\toprule
+Rule & What is dropped, and why \\
+\midrule
+Article shape
+& A link must look like an article: a date in its path
+  (\texttt{/2026/09/23/}, \texttt{/20260923/}), a slug of at least four
+  words, or an \texttt{/article/} or \texttt{/story/} segment. The
+  previous English section-name patterns had kept 0 of El Mundo's 26
+  feed items, 5 of El País's 149 and 0 of NASA's 10. \\
+Off-mission sections
+& Sport, celebrity, horoscopes, lotteries, betting, weather, crime
+  (\texttt{/sucesos/}) and El País's lifestyle magazine
+  (\texttt{/icon/}), as whole path segments, so that
+  \texttt{/sports-health/} (fitness) stays. Trigger: a match report
+  scored above an analysis of Chinese industry leaving fossil fuels on
+  the positive-impact score (0.34 against 0.28). \\
+Live coverage and opinion
+& Live pages are streams of updates, not articles; a column's claims
+  are interpretation (\texttt{/opinion/}, \texttt{/commentisfree/}). \\
+Index pages
+& \texttt{/categoria/}, \texttt{/tag/}, \texttt{/especiales/},
+  \texttt{/autor/}\ldots, whose slugs read like headlines. \\
+Section navigation
+& On a section page every link contains the section, so a link there
+  must look like an article by its own shape: BBC's section pages had
+  given \texttt{/culture/music} as a candidate. \\
+Outside the section
+& A section page's links outside its own section are dropped when it
+  has any inside it: ABC's \texttt{/cultura/} page linked the day's
+  election stories. \\
+Another topic's section
+& A link filed under a section of a topic not asked for, unless the
+  item mentions a topic that was: elDiario files wind-power records
+  under \texttt{/economia/}, and those stay. \\
+Topic keywords
+& English items must match a requested topic's section name or
+  keywords in their title, summary or categories. Spanish items, only
+  when the round is scoped, must contain a Spanish topic word in their
+  title or categories (Spanish summaries of general feeds mention
+  renewables or the political ``clima'' in campaign speeches). \\
+Age
+& Older than 30 days, by the feed's time or, without one, by a date in
+  the link (including ABC's slug timestamps). Undated links stay. \\
+Already stored
+& The URL's host and path are already in the data lake, so tracking
+  parameters do not make an old article new. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Keywords and language.} The topic keywords are English.
+Matched against a Spanish feed they kept 5 of El País's 149 items at
+random, so Spanish feeds were at first not filtered at all, and an
+Environment round then listed El País's and elDiario's election
+coverage. A Spanish keyword list is now read when, and only when, a
+round is narrowed to some topics, and only against an item's title and
+categories. Measured on the live feeds on 5~October~2026, Environment
+kept 18 of El País's 159 items and 6 of elDiario's 109, nearly all on
+topic. When every topic is asked for (the one-shot ingestion endpoint
+and the labelling batch), Spanish feeds are not filtered, and topic is
+left to the admission filter, which rejects before any language-model
+call.
+
+\paragraph{The age limit.} Thirty days was chosen from a sample of
+6~October~2026: 38 of 363 dated candidates were older (24 of them from
+the World Health Organization, back to 2025), while a 14-day limit
+would also have cut nine MIT News research stories. A link with no
+feed time can still be dated by its path, which is how ABC's mortgage
+and income-tax calculators, stamped in May, stopped being offered as
+news in October. That date is used only for the age check: a day is
+not a publication time. The labelling batch has its own discovery and
+is not cut by this limit; it prefers articles from the last 60 days
+instead.
+
+\paragraph{How many per source.} At most \texttt{perSource} new
+articles are taken from each source per run (three by default); the
+rest are reported as deferred rather than silently lost. Before that
+cap, the mission screen reads up to five times as many of each
+source's new articles and leaves out those nearer politics, crime,
+disasters, war, celebrity, sport, markets or service pages than any
+topic, so that a source's slots go to what passes. The screen, the
+ranking of the candidates and the choice among them are part of
+selection, described in Section~\ref{sec:design-selection}.

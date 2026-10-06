@@ -39,7 +39,7 @@ class DuckDuckGoClient:
     (SearxngClient's `fallback`).
 
     Keyless means scraping a page, with two consequences written down in
-    docs/final_document/sections/future_work.tex. It refuses by IP: on
+    docs/final_document/chapters/09-conclusions/04-future-work/. It refuses by IP: on
     2026-09-25 it CAPTCHA'd every request SearXNG sent it, and on
     2026-09-30 it challenged every direct request too. And the parser
     depends on markup that can change without notice - so a page it does

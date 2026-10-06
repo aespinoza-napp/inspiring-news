@@ -1,0 +1,38 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Selection and Justification of the Evaluation Dataset
+%     Subsection: The Closed-Retrieval Paradigm: FEVER
+% Included from chapters/06-experimental-design/02-evaluation-dataset/evaluation-dataset.tex
+% ============================================================
+
+\subsection{The Closed-Retrieval Paradigm: FEVER}
+\label{subsec:fever}
+
+FEVER (\textit{Fact Extraction and VERification}) \cite{thorne2018fever}
+is, to date, the most influential dataset in automated
+fact-verification research. It consists of 185,445 claims generated
+through the controlled alteration of sentences extracted from
+Wikipedia, each subsequently labelled by human annotators ---
+without knowledge of the original sentence --- as
+\texttt{SUPPORTED}, \texttt{REFUTED}, or \texttt{NOT ENOUGH INFO}.
+For each supported or refuted claim, the sentence or set of
+sentences from Wikipedia constituting the necessary evidence for
+that verdict is additionally recorded.
+
+The aspect of FEVER most relevant to this work is its
+\textbf{closed-domain retrieval paradigm}: both the claim and its
+correct evidence originate from a fixed, bounded corpus --- a static
+dump of English Wikipedia --- and systems evaluated against this
+benchmark typically index that same corpus to perform evidence
+retrieval. The original paper itself characterises the task as the
+combination of three subtasks evaluated jointly: document selection,
+sentence selection within those documents, and final verdict
+classification, all operating over the same closed corpus.
+
+Direct multilingual extensions of FEVER also exist, such as XFEVER,
+which automatically translate (via DeepL) the original claim-evidence
+pairs into other languages, including Spanish. However, these
+extensions inherit the same structural limitation as the original
+dataset: the \textit{correct} evidence remains defined as a specific
+sentence within a closed, translated corpus, rather than as any
+valid evidence available on the open web.

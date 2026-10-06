@@ -1,0 +1,35 @@
+% ============================================================
+% Cover (Art. 12)
+% Included from main.tex
+% ============================================================
+
+% Cover (Art. 12). The FIB can generate the standard cover; if it
+% is used instead, replace this titlepage with
+%   \includepdf{cover.pdf}   (\usepackage{pdfpages})
+\begin{titlepage}
+    \centering
+    \IfFileExists{figures/logo-upc-fib.pdf}%
+        {\includegraphics[width=0.55\textwidth]{logo-upc-fib.pdf}\par}{}
+    \vspace*{2cm}
+
+    {\LARGE\bfseries \thesistitle \par}
+    \vspace{2.5cm}
+
+    \begin{tabular}{@{}r@{\hspace{1em}}l@{}}
+        \textbf{Author:}        & \thesisauthor \\[0.5em]
+        \textbf{Defence date:}  & \defencedate \\[0.5em]
+        \textbf{Director:}      & \thesisdirector \\
+                                & \textit{\directoraffiliation} \\[0.5em]
+        % \textbf{Co-director:} & [Name] \\
+        %                       & \textit{[Department / institution / company]} \\[0.5em]
+        % \textbf{Ponent:}      & [Name] \\
+        %                       & \textit{[Department]} \\[0.5em]
+        \textbf{Degree:}        & \thesisdegree \\
+        % \textbf{Carried out at:} & \hostinstitution \\  % (h) modalities B and D
+    \end{tabular}
+
+    \vfill
+    {\large FACULTAT D'INFORMÀTICA DE BARCELONA (FIB)\par}
+    \vspace{0.3em}
+    {\large UNIVERSITAT POLITÈCNICA DE CATALUNYA (UPC) -- BarcelonaTech\par}
+\end{titlepage}

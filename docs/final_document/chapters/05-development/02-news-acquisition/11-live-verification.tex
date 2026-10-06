@@ -1,0 +1,73 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Verification Against the Live Sources
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Verification Against the Live Sources}
+\label{subsec:scraping-live}
+
+Unit tests show that the code does what it was written to do; only the
+real sources show whether that is enough. The acquisition layer was
+checked against them at each stage of its construction
+(Table~\ref{tab:scraping-live}).
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Checks of the acquisition layer against the live sources
+(2026).}
+\label{tab:scraping-live}
+\begin{tabularx}{\linewidth}{@{}lp{1.5cm}X@{}}
+\toprule
+Date & Sources & Result \\
+\midrule
+23 Sep & 12
+& Discovery went from 4 sources producing links to 9. One NASA article
+  went from discovery to stored analysis in 52~s, and the next run
+  reported it as already stored. \\
+24 Sep & 12
+& Source check: 6 working, every sample with title, author and date;
+  6 broken (five discover nothing; El País gives 147 links and answers
+  403 to every article, headless browser included). \\
+25 Sep & 12
+& First probe: 6 up, 3 degraded (dead feeds rescued by section pages:
+  113, 115 and 64 links, 6 of 6 articles each), 3 down (EFE 403,
+  Reuters 401, El País 403 on articles). Feeds 395 links, section pages
+  1,272 more; 53 of 60 articles extracted. \\
+29 Sep & 34
+& Probe: 29 up, 4 degraded, 1 down; 156 of 165 sampled articles
+  extracted (95\%). Feeds 1,314 links, section pages 3,604 more. \\
+4 Oct  & 29 feeds
+& All 1,248 discovered URLs carry a publication time. \\
+6 Oct  & 2
+& EFE and Reuters disabled: in the container's statistics since
+  23~September, 21 and 24 attempts, none delivered. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Three observations follow from these runs.
+
+\paragraph{Section pages are not a fallback of last resort.} On both
+probes the section pages found several times more links than the feeds
+(1,272 against 395, then 3,604 against 1,314). They are still tried
+last, because a feed gives a time, a title and a summary for every
+link, and a section page gives none of them.
+
+\paragraph{What fails is access, not parsing.} Every article that
+extracted on 25~September was extracted by trafilatura, the first
+step. The failures were refusals (403, 401) and dead feeds, which is
+why the cascade spends its effort on deciding when to stop rather than
+on more parsers. Of the 29~September failures, El País gave 2 of 5
+(the other three answered 403, and that host had no Chromium to
+escalate to), Reuters refused everything, and Positive News' two
+failures were section pages taken for articles, not failures of the
+site.
+
+\paragraph{Diagnoses can be wrong in instructive ways.} The four dead
+feeds of 23~September had first been read as ``malformed XML'': the
+feed library was parsing the HTML of the 404 page. Classifying the
+outcome of the fetch before parsing it (Section~\ref{subsec:scraping-fetcher})
+is what made the real cause visible.

@@ -1,0 +1,30 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Selection and Justification of the Evaluation Dataset
+%     Subsection: Domain Limitation and a Custom Validation Set
+% Included from chapters/06-experimental-design/02-evaluation-dataset/evaluation-dataset.tex
+% ============================================================
+
+\subsection{Domain Limitation and a Custom Validation Set}
+\label{subsec:custom-gold-set}
+
+Nevertheless, X-Fact does not fully capture the nature of this
+work's application domain either. Its claims originate predominantly
+from political discourse and controversial public statements, while
+the developed system is applied to editorial articles from a
+positive-news outlet, with claims combining verifiable facts
+(figures, dates, events) with analytical or cultural
+interpretations --- a type of claim virtually absent from X-Fact and
+which, as documented in Chapter~\ref{ch:results}, exposes a real
+limitation of the system in its current version.
+
+For this reason, the quantitative evaluation in this work relies on
+\textbf{two complementary sources}: X-Fact \cite{gupta2021xfact}, as
+a standardised benchmark enabling comparison of the proposed method
+against the state of the art in multilingual, open-retrieval fact
+verification; and a custom validation set, built from claims
+extracted from real articles published by the outlet under study and
+manually labelled, specifically designed to expose and measure the
+system's behaviour on interpretive claims --- the real use case for
+which the system was conceived, and one that no existing academic
+benchmark adequately covers.

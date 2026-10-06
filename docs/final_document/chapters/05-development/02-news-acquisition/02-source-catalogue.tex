@@ -1,0 +1,80 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: The Source Catalogue
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{The Source Catalogue}
+\label{subsec:scraping-sources}
+
+Each news source is one YAML file in \path{backend/data/sources/},
+loaded by \texttt{SourceRepository} into a \texttt{NewsSource} model.
+Only an identifier, a name and a base URL are required; the fields
+that matter to acquisition are listed in
+Table~\ref{tab:source-fields}.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Fields of a source that acquisition reads.}
+\label{tab:source-fields}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Field & Use \\
+\midrule
+\texttt{rss\_url}             & The feed read first by discovery. \\
+\texttt{language}             & \texttt{en} or \texttt{es}; selects the
+                                 keyword lists and section names used to
+                                 filter its links. \\
+\texttt{groups}               & The topic groups the source has real
+                                 sections for
+                                 (Section~\ref{subsec:scraping-groups}). \\
+\texttt{reliability\_index}   & Editorial reliability in $[0,1]$, used
+                                 when its pages are ranked as evidence
+                                 and when its candidates are ranked. \\
+\texttt{enabled}              & Whether the source is ingested at all. \\
+\texttt{requires\_javascript} & Sends its articles to the browser first
+                                 (Section~\ref{subsec:scraping-cascade}). \\
+\texttt{positive\_editorial}  & The outlet publishes only positive news;
+                                 the mission screen does not apply to it. \\
+\texttt{metadata.selectors}   & Optional CSS selectors for the title,
+                                 body, author and date, for layouts no
+                                 generic parser understands. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Composition.} The catalogue holds 36 sources, 20 in English
+and 16 in Spanish: 26 news outlets, four public bodies (NASA, the
+European Space Agency, the World Health Organization and UN News), four
+academic publishers (MIT News, \textit{Nature}, The Conversation and
+Yale Environment 360) and two blogs. Three of them (Good News Network,
+Positive News and Reasons to be Cheerful) publish only positive news.
+Appendix~\ref{app:sources} lists them all.
+
+\paragraph{Enabled and disabled.} 32 sources are enabled, 19 in English
+and 13 in Spanish. A disabled source is not ingested, probed or
+recognised from a posted URL, but it is still read by the reliability
+map, so its pages keep their rating when they are found as evidence.
+That is the mechanism for rating a domain without ingesting it, and it
+is used for two different reasons. The fact-checkers Newtral and
+Maldita are disabled because a fact-check quotes the claim it
+debunks, and claim extraction would take that quotation for the
+article's own claim. Agencia EFE and Reuters are disabled because they
+refused every request from 23~September to 6~October~2026 (HTTP 403
+and 401 respectively).
+
+\paragraph{One source per domain.} Reliability and the recognition of
+posted URLs are both looked up by domain, so a second file on the same
+domain (BBC Mundo on \texttt{bbc.com}, for instance) would silently
+override the first. A test of the repository fails on any such pair.
+
+\paragraph{How a source is admitted.} The catalogue grew from 12 to 36
+sources on 28~September~2026, and every addition passed the same test
+before its file was committed: its feed had to produce article links,
+and two of those articles had to extract through the real cascade.
+Seven candidates failed it: NPR, Phys.org and El Confidencial (the
+feed worked, the articles would not extract), ScienceDaily, DW Español
+and CSIC (no article links in the feed) and the Associated Press
+(HTTP 403). RTVE's dead feed was replaced the same day.

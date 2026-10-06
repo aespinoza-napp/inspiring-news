@@ -7,7 +7,7 @@ Hand-labelling used to start with a search - pick an outlet, pick an
 article, read it, decide which sentence was worth checking - and that
 search took longer than the verification. It also biased the set: the
 annotator picked what looked easy to check (see the Limitations of
-docs/final_document/sections/custom_dataset.tex). Here the choice is
+docs/final_document/chapters/06-experimental-design/03-custom-validation-set/). Here the choice is
 made by chance and by the system:
 
 1. **Discovery** over every enabled source, exactly as ingestion does it.

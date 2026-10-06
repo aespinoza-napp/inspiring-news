@@ -1,0 +1,50 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+% Included from chapters/05-development/development.tex
+%
+% Written from docs/decisions/scraping.md, docs/decisions/selection.md
+% (discovery), backend/data/sources/README.md, the code under
+% backend/src/services/scraper/ and the dated measurements in
+% docs/roadmap.md.
+% ============================================================
+
+\section{News Acquisition: Discovery and Extraction}
+\label{sec:dev-scraping}
+
+Every article the system analyses, and every web page it reads as
+evidence, is obtained by the acquisition layer described in this
+section. Its job is narrow and adversarial at the same time: find the
+articles a configured news source has published recently, and turn any
+URL into clean article text with its title, author and publication
+time, while the servers on the other side are slow, inconsistent,
+occasionally hostile to automated clients, and never under the
+system's control. The layer is implemented in
+\path{backend/src/services/scraper/} and is shared by every part of the
+pipeline that needs a page.
+
+\input{chapters/05-development/02-news-acquisition/01-overview}
+
+\input{chapters/05-development/02-news-acquisition/02-source-catalogue}
+
+\input{chapters/05-development/02-news-acquisition/03-fetcher-and-guard}
+
+\input{chapters/05-development/02-news-acquisition/04-discovery-strategies}
+
+\input{chapters/05-development/02-news-acquisition/05-topic-groups}
+
+\input{chapters/05-development/02-news-acquisition/06-discovery-filters}
+
+\input{chapters/05-development/02-news-acquisition/07-extraction-cascade}
+
+\input{chapters/05-development/02-news-acquisition/08-metadata-and-time}
+
+\input{chapters/05-development/02-news-acquisition/09-evidence-pages}
+
+\input{chapters/05-development/02-news-acquisition/10-observability}
+
+\input{chapters/05-development/02-news-acquisition/11-live-verification}
+
+\input{chapters/05-development/02-news-acquisition/12-testing}
+
+\input{chapters/05-development/02-news-acquisition/13-limitations}

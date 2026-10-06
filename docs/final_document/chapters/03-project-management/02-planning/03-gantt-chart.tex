@@ -1,0 +1,96 @@
+% ============================================================
+% Chapter 3: Project Management
+%   Section: Planning
+%     Subsection: Gantt Chart
+% Included from chapters/03-project-management/02-planning/planning.tex
+% ============================================================
+
+\subsection{Gantt Chart}
+\label{subsec:gantt}
+
+Figure~\ref{fig:gantt} shows the plan. Green bars were done when
+the plan was last revised; blue bars are planned; the orange bar is
+work added on 5 October and not yet funded.
+
+\begin{landscape}
+\begin{figure}[p]
+\centering
+\begin{adjustbox}{max width=\linewidth, max totalheight=0.88\textheight}
+\begin{ganttchart}[
+    time slot format=isodate,
+    x unit=0.075cm,
+    y unit title=0.6cm,
+    y unit chart=0.48cm,
+    hgrid={*1{draw=black!8}},
+    title/.append style={fill=black!8, draw=black!30},
+    title label font=\footnotesize\bfseries,
+    bar label font=\footnotesize,
+    group label font=\footnotesize\bfseries,
+    milestone label font=\footnotesize\itshape,
+    bar/.append style={fill=ganttplan, draw=ganttplan!70!black},
+    bar height=0.55,
+    group/.append style={fill=black!70},
+    group height=0.25,
+    group peaks height=0.15,
+    group peaks width=2,
+    milestone/.append style={fill=BrickRed, draw=BrickRed!70!black},
+    milestone height=0.55,
+    today=2026-10-06,
+    today label={\footnotesize 6 Oct},
+    today rule/.style={draw=BrickRed, dashed, thick},
+]{2026-06-01}{2026-12-31}
+\gantttitlecalendar{month=name} \\
+% ---- Phase 0 ----
+\ganttgroup{Phase 0: Foundations (300 h)}{2026-06-01}{2026-07-31} \\
+\ganttbar[bar/.append style={fill=ganttdone}]{Sprint 0.1: Setup and scraping core (80 h)}{2026-06-01}{2026-06-14} \\
+\ganttbar[bar/.append style={fill=ganttdone}]{Sprint 0.2: Enrichment pipeline (80 h)}{2026-06-15}{2026-06-28} \\
+\ganttbar[bar/.append style={fill=ganttdone}]{Sprint 0.3: Fact-checking pipeline v1 (80 h)}{2026-06-29}{2026-07-12} \\
+\ganttbar[bar/.append style={fill=ganttdone}]{Sprint 0.4: Job API, frontend v1, fixes (60 h)}{2026-07-13}{2026-07-31} \\
+\ganttbar[bar/.append style={fill=ganttpause}]{Vacation pause (0 h)}{2026-08-01}{2026-08-31} \\
+% ---- Phase 1 ----
+\ganttgroup{Phase 1: Pipeline completion (140 h)}{2026-09-01}{2026-09-28} \\
+\ganttbar[bar/.append style={fill=ganttdone}]{Sprint 1: Stabilise the core pipeline (70 h)}{2026-09-01}{2026-09-14} \\
+\ganttbar[bar/.append style={fill=ganttdone}]{Sprint 2: Testing and bugfixing (70 h)}{2026-09-15}{2026-09-28} \\
+% ---- Phase 2 ----
+% Sprint 3 was built in September, beside Sprint 2; the roadmap dates
+% work already done when it was done and gives it no future calendar.
+\ganttgroup{Phase 2: Development (120 h)}{2026-09-15}{2026-10-19} \\
+\ganttbar[bar/.append style={fill=ganttdone}]{Sprint 3: Scraping strategies (70 h)}{2026-09-15}{2026-09-28} \\
+\ganttbar{Sprint 4: Enrichment and fact-checking (50 h)}{2026-09-29}{2026-10-19} \\
+% ---- Phase 3 ----
+\ganttgroup{Phase 3: Neo4j and infrastructure (50 h)}{2026-09-29}{2026-11-09} \\
+\ganttmilestone{Neo4j integrated (20 h, done)}{2026-09-29} \\
+\ganttbar{Infrastructure deployment (30 h)}{2026-10-20}{2026-11-09} \\
+% ---- Phase 4 ----
+\ganttgroup{Phase 4: Evaluation (90 h)}{2026-09-29}{2026-11-16} \\
+\ganttbar{Validation set: label facts 1--150 (34 h)}{2026-09-29}{2026-10-19} \\
+\ganttbar{Research questions (3 h)}{2026-10-06}{2026-10-12} \\
+\ganttbar{Blind re-label, agreement, join (6 h)}{2026-10-26}{2026-10-30} \\
+\ganttmilestone{Labels settled}{2026-10-30} \\
+\ganttbar{Evaluation harness (37 h)}{2026-10-20}{2026-11-09} \\
+\ganttmilestone{Harness ready}{2026-11-09} \\
+\ganttbar[bar/.append style={fill=ganttextra}]{Experiments before the verdict (18 h, unfunded)}{2026-10-06}{2026-11-16} \\
+\ganttbar{Tuning against the labels (10 h)}{2026-11-10}{2026-11-16} \\
+% ---- Phase 5 ----
+\ganttgroup{Phase 5: AI model testing (80 h)}{2026-11-10}{2026-12-10} \\
+\ganttbar{Sprint 6: Writing models (20 h)}{2026-11-10}{2026-11-23} \\
+\ganttbar{Sprint 7: Verification models (60 h)}{2026-11-17}{2026-12-10} \\
+% ---- Phase 6 ----
+\ganttgroup{Phase 6: Interface (35 h)}{2026-12-11}{2026-12-17} \\
+\ganttbar{Sprint 8: Reader view (35 h)}{2026-12-11}{2026-12-17} \\
+% ---- Testing ----
+\ganttgroup{Testing and QA, transversal (50 h)}{2026-09-29}{2026-12-24} \\
+\ganttbar{October (8 h)}{2026-09-29}{2026-10-31} \\
+\ganttbar{November (12 h)}{2026-11-01}{2026-11-30} \\
+\ganttbar{December 1--10 (10 h)}{2026-12-01}{2026-12-10} \\
+\ganttbar{Final regression and deployment (20 h)}{2026-12-18}{2026-12-24} \\
+% ---- Phase 7 ----
+\ganttgroup{Phase 7: Thesis report (35 h)}{2026-12-25}{2026-12-31} \\
+\ganttbar{Sprint 9: Writing the report (35 h)}{2026-12-25}{2026-12-31}
+\end{ganttchart}
+\end{adjustbox}
+\caption{Gantt chart of the project (docs/roadmap.md, as of
+6 October 2026). The dashed line marks the date of this plan.}
+\label{fig:gantt}
+\end{figure}
+\end{landscape}

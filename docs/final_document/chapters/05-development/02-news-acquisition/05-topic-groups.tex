@@ -1,0 +1,71 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Discovery by Topic Group
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Discovery by Topic Group}
+\label{subsec:scraping-groups}
+
+Until 5~October~2026, ingestion read every enabled source and sent
+every new article it found to a full analysis: a scrape, an enrichment
+and one language-model call per claim, for each. Discovery is now
+scoped to what the editor asks for.
+
+\paragraph{Five groups.} The 23 topics of the topic classifier are
+organised into five groups: society, science, environment, culture and
+health, the same groups over which the custom validation set is
+balanced (Section~\ref{sec:custom-dataset}). They are defined once, in
+\path{src/config/topics.py}. A round asks for groups rather than topics
+because several topics are covered by only one or two sources, so a
+topic picker would often return nothing; and it asks for at most three,
+because four of five is close to everything, which is what scoping
+exists to avoid.
+
+\paragraph{Which sources a group reads.} Each source file lists its
+\texttt{groups}: a decision taken by hand from what the source actually
+publishes, not derived from its free-form tags, so a generalist outlet
+names only the groups it has real sections for. Tests hold every
+enabled source to at least one group, and every group to at least one
+English and one Spanish source, so no choice of groups returns a list
+in one language only; an unknown group name is refused when the file
+is read. Table~\ref{tab:group-coverage} shows the coverage of the
+enabled sources.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Enabled sources per topic group and language. A source may
+cover several groups.}
+\label{tab:group-coverage}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Group & English & Spanish \\
+\midrule
+Society     &  8 & 9 \\
+Science     & 11 & 11 \\
+Environment & 11 & 3 \\
+Culture     &  4 & 5 \\
+Health      &  8 & 7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Only the sources that name a requested group are read, and only for
+the topics of the requested groups: the section names searched, the
+keywords matched and the links accepted all follow from those topics.
+
+\paragraph{What it saves.} The discovery experiment
+(\texttt{python -m src.evaluation.experiments discovery}) measures each
+setting against a baseline that reads every source for every topic. On
+5~October~2026, with two candidates per source, Environment alone read
+14 of the 34 sources then enabled ($0.41\times$) and 153 of 1,536 links
+($0.10\times$), in 10~s against 15~s; Culture and Health together read
+23 sources ($0.68\times$) and 596 links ($0.39\times$). Feeds change
+during the day, so settings are compared within one run, and repeated
+on several days for an interval (Section~\ref{sec:experiments-pre-verdict}).
+
+The table also shows the catalogue's weak spot: Environment has three
+Spanish sources against eleven English ones, so an Environment round
+is mostly in English.

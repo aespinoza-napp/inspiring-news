@@ -1,0 +1,55 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Limitations
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Limitations}
+\label{subsec:scraping-limitations}
+
+\paragraph{Refusals are not worked around.} El País answers 403 to
+most article requests, the headless browser's included; EFE and Reuters
+refused everything for two weeks and are disabled. The system does not
+rotate addresses or disguise itself to get past a refusal: a source
+that does not want automated clients is treated as unavailable. The
+cost is coverage, and it falls on Spanish news agencies in particular.
+
+\paragraph{\texttt{robots.txt} is not read.} The scraper names itself
+in its User-Agent, reads a few articles per source per round, caps its
+concurrency per external service, and runs only when someone asks for
+it, but it does not consult a site's \texttt{robots.txt} before
+fetching. Section~\ref{subsec:third-party-content} discusses what that
+means for the collection of third-party content.
+
+\paragraph{Section pages give less.} A candidate found on a section
+page has no summary and no publication time. The AI selection scores
+such candidates low for lack of information, and when the link carries
+no date in its path either (CNN's and National Geographic's section
+links), the age limit cannot apply to it. Dating them would cost a
+request per candidate before anything is chosen.
+
+\paragraph{The guard has two known gaps.} The address is checked
+before the request, so the window between the guard's name resolution
+and the HTTP client's own (DNS rebinding) is not closed. And in the
+browser, a forbidden redirect hop is detected only after it has been
+requested: its response is discarded, but the request was made.
+Closing either needs a proxy in front of the fetchers.
+
+\paragraph{Unused paths.} No source has \texttt{requires\_javascript}
+set, the browser is usually absent on a development machine, and the
+browser-based discovery strategy
+(\path{strategies/playwright_discover.py}) is still an unwired
+placeholder. The browser step has been verified on test pages, not yet
+on a source that needs it.
+
+\paragraph{Hand-written vocabularies.} The section names, the
+off-mission sections and the Spanish topic words are lists maintained
+by hand from the cases met so far; a new outlet with different
+conventions will need entries of its own.
+
+\paragraph{Duplicates by address only.} An article already in the lake
+is recognised by its host and path, so the same story from two outlets,
+or under two different addresses, is acquired twice; grouping versions
+of one story happens later, when candidates are ranked
+(Section~\ref{sec:design-selection}).

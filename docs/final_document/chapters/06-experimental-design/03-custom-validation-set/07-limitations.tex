@@ -1,0 +1,35 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: Limitations
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% ============================================================
+
+\subsection{Limitations}
+\label{subsec:custom-limitations}
+
+\begin{itemize}
+    \item \textbf{One annotator.} Self-agreement measures the
+    consistency of the guide's application, not its validity: a
+    systematic misreading applied twice agrees with itself.
+    \item \textbf{Selection by the system.} Articles are drawn at
+    random and claims are proposed by the system, which removes the
+    annotator's tendency to pick the most checkable cases, but ties
+    the set to the claims the system's selector favours. A claim the
+    selector would never propose cannot enter the set, so the
+    evaluation measures verification on the system's own claim
+    choice, not on an independent sample of all check-worthy claims.
+    The first six records were labelled before the daily draw existed
+    and were chosen by hand; they are identified as such (no batch
+    refers to them) and reported separately.
+    \item \textbf{Temporal asymmetry.} Rule~3 restricts the
+    annotator to evidence available at publication time, whereas the
+    system searches today's web, without a date restriction. A system
+    verdict informed by later evidence can therefore be scored as an
+    error; such cases are identified from the evidence dates and
+    reported separately rather than silently absorbed into the error
+    rate.
+    \item \textbf{Size.} As computed in
+    Section~\ref{subsec:custom-size}, differences of a few points
+    between models are within the uncertainty of a 150-claim set.
+\end{itemize}

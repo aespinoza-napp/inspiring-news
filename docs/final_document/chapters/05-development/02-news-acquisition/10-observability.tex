@@ -1,0 +1,71 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Monitoring the Sources
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Monitoring the Sources}
+\label{subsec:scraping-observability}
+
+A source that stops delivering does not raise an error: ingestion
+simply finds nothing new. Three tools make the state of every source
+visible, from cheapest to most thorough, and a fourth measures how
+quickly articles arrive.
+
+\paragraph{Request statistics.} Every page wanted is one entry, not
+every strategy attempt: its final outcome, the strategy that produced
+the article, every strategy tried, the HTTP requests actually sent
+(none for a guard refusal, one for trafilatura and BeautifulSoup
+together, two once the browser steps in), the purpose and the domain.
+The counts are thread-safe, persisted in the lake, and shown on the
+\texttt{/scraper} page, where ``which step does the work for this
+source'' and ``why did it fail'' can be read per domain.
+
+\paragraph{The source probe.} The statistics only know about pages
+someone happened to ask for. The probe (\texttt{POST /scraper/probe}
+and the ``Source health'' panel) asks on purpose, for each enabled
+source: its feed (both feed steps), its topic section pages (always,
+since how many links they add is part of the answer), and a real
+extraction of a sample of the links found, split between the two. It
+classifies each source as:
+
+\begin{itemize}
+    \item \textbf{up}: the feed gives links and at least half of the
+    sample extracts;
+    \item \textbf{degraded}: articles can be had, but not the normal
+    way: a dead feed rescued by section pages, or under half the sample
+    extracting;
+    \item \textbf{down}: nothing extracts.
+\end{itemize}
+
+It also sends one query per language to the search engine and reports
+which engines answered, since evidence retrieval depends on them. A
+probe costs ten to fifteen requests per source, so it runs only when
+asked, on a background thread (a second request while one is running
+is refused), behind the storage API key, and keeps its last report in
+the lake.
+
+\paragraph{The source check.} The probe answers ``is the source up'';
+the check (\texttt{POST /sources/check}, the \texttt{/sources} page)
+answers ``does every configured page still give a complete article''.
+It runs discovery and then extracts a few links through the same
+cascade as ingestion, browser included, stores and analyses nothing,
+and includes disabled sources. A source is \textbf{working} when every
+sample extracted with a title, author and date, \textbf{partial} when
+some failed or one lacked those fields, and \textbf{broken} when
+discovery found nothing or no sample extracted.
+
+\paragraph{Time to reception.} The freshness report
+(\texttt{GET /scraper/freshness}) joins the three times of
+Section~\ref{subsec:scraping-metadata} with the lake's own records and
+reports, per article and per source, four delays in hours:
+\textbf{seen} (publication to first sighting: the feed's delay and the
+system's polling), \textbf{queue} (first sighting to fetch: the
+system's backlog), \textbf{reception} (publication to fetch) and
+\textbf{available} (publication to the reader view). Only precise times
+are used; an article dated only by day is reported in days, apart. A
+negative delay (a wrong time zone, a rewritten feed time) is counted
+rather than averaged in. Because ingestion runs only when someone asks
+for it, ``seen'' currently measures mostly the time until the next
+round; queue and available are the pipeline's own.

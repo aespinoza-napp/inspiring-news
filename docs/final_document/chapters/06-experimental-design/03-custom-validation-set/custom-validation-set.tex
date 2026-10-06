@@ -1,0 +1,40 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+% Included from chapters/06-experimental-design/experimental-design.tex
+% ============================================================
+
+% Follows ../02-evaluation-dataset/, whose subsection "Domain
+% Limitation and a Custom Validation Set" (\ref{subsec:custom-gold-set})
+% motivates this set. Requires booktabs, tabularx and natbib in the
+% main preamble; its BibTeX entries are in references.bib.
+
+\section{Construction of the Custom Validation Set}
+\label{sec:custom-dataset}
+
+Section~\ref{subsec:custom-gold-set} argued that X-Fact
+\cite{gupta2021xfact}, although methodologically aligned with the
+open-retrieval architecture of the proposed method, does not cover
+its application domain: X-Fact is dominated by political statements,
+whereas the system is applied to positive-news articles about
+science, the environment, health, culture and society, whose claims
+mix checkable facts with interpretive readings of them. This section
+describes how the complementary, hand-labelled validation set was
+built: its size and stratification, the record format, the label
+vocabulary, the annotation procedure, the tie-break rules fixed
+\emph{before} labelling began, and the protocol used to verify the
+consistency of the labels.
+
+\input{chapters/06-experimental-design/03-custom-validation-set/01-size-stratification}
+
+\input{chapters/06-experimental-design/03-custom-validation-set/02-record-format}
+
+\input{chapters/06-experimental-design/03-custom-validation-set/03-label-vocabulary}
+
+\input{chapters/06-experimental-design/03-custom-validation-set/04-annotation-procedure}
+
+\input{chapters/06-experimental-design/03-custom-validation-set/05-tie-break-rules}
+
+\input{chapters/06-experimental-design/03-custom-validation-set/06-verification-labels}
+
+\input{chapters/06-experimental-design/03-custom-validation-set/07-limitations}

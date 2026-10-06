@@ -1,0 +1,100 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Discovery Strategies
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Discovery Strategies}
+\label{subsec:scraping-discovery}
+
+Discovery tries three strategies per source, cheapest first, and stops
+at the first that returns links (Table~\ref{tab:discovery-strategies}).
+Every attempt is recorded under the purpose \texttt{discovery}, so a
+feed that starts failing appears on the monitoring page next to the
+articles it no longer delivers.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Discovery strategies, in the order they are tried.}
+\label{tab:discovery-strategies}
+\begin{tabularx}{\linewidth}{@{}lXl@{}}
+\toprule
+Strategy & Tried when & Gives per link \\
+\midrule
+1. RSS feed            & Always, if the source has a feed URL.
+                       & time, title, summary \\
+2. Feed discovery      & The feed gave nothing: it is searched for on
+                         the feed URL and then on the homepage.
+                       & URL only \\
+3. Topic section pages & There is no feed at all.
+                       & URL only \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{The RSS feed.} The feed is downloaded through the shared
+fetcher, so it is guarded and has a timeout (the feed library's own
+HTTP client has neither), and is then parsed with \texttt{feedparser}.
+Each item keeps its publication time (in UTC), its title and a summary
+reduced to 400 characters of plain text: what the candidate list shows
+and the AI selection reads before any article is opened. On
+4~October~2026, all 1,248 URLs from the 29 feeds that answered carried
+a time.
+
+\paragraph{Feed discovery.} When the configured feed yields nothing,
+\texttt{trafilatura}'s feed discovery looks for one, first on the
+configured feed URL and then on the homepage. It is lenient with
+malformed XML and finds the feed a site advertises today rather than
+the one it advertised when the source was configured.
+
+\paragraph{Topic section pages.} Four configured feed URLs were found
+to answer 404 (National Geographic, Reuters, RTVE and SINC), and their
+homepages advertised no other feed, so those sources produced nothing
+although their sites were up. Every news site files its articles under
+sections, and the sections this project wants are the ones its topic
+configuration already names. The third strategy
+(\path{strategies/topic_pages.py}) reads those section pages as HTML
+and keeps the article links on them:
+
+\begin{enumerate}
+    \item first, the sections the homepage itself links to (a short
+    path, at most three segments, ending in a topic's section name), so
+    that nothing is spent on a guess;
+    \item then guesses, the base URL followed by a section name, one per
+    topic, with at most six section pages per source in all, and none
+    when the homepage already refused the request (EFE and Reuters
+    refused every guess in the same way they refused the homepage).
+\end{enumerate}
+
+Spanish sources also get Spanish section names (\texttt{/ciencia/},
+\texttt{/salud/}, \texttt{/cultura/}\ldots), kept in a separate table on
+purpose, because the English table also decides whether a feed link
+looks like an article, and that behaviour was already settled on the
+English feeds. A link is kept when it is on the source's host or one
+of its subdomains (NASA's science sections live on
+\texttt{science.nasa.gov}), is not itself a section, and passes the
+same article-shape test as feed links
+(Section~\ref{subsec:scraping-filters}). A section page gives no title
+or summary; the candidate list shows a title built from the link's
+slug and marks it as such.
+
+\paragraph{Stale feeds.} A feed whose items are all older than the
+age limit counts as empty, so the next strategy runs. RTVE's feed has
+carried only items from June~2022 since then; until this rule existed,
+a Culture round listed two of them.
+
+\paragraph{Concurrency.} Sources are discovered four at a time: feeds
+are other people's servers and several are slow (two timed out in the
+check of 23~September), and four at once keeps a round to seconds
+without leaning on anyone. Results come back in the order the sources
+were given, whatever order they finish in.
+
+\paragraph{A regression found in use.} From 4~October, when discovery
+started asking every strategy for publication times, the
+topic-page strategy inherited the RSS strategy's feed reader and read
+the dead feed again instead of crawling the sections: National
+Geographic, Reuters and SINC found nothing for a day. It was fixed on
+5~October, with a test that runs the strategy through
+\texttt{DiscoveryService} as discovery does rather than in isolation.

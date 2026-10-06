@@ -1,0 +1,17 @@
+% ============================================================
+% Chapter 3: Project Management
+%   Section: Methodology
+%     Subsection: Definition of Done and Status Tracking
+% Included from chapters/03-project-management/01-methodology/methodology.tex
+% ============================================================
+
+\subsection{Definition of Done and Status Tracking}
+\label{subsec:done}
+
+A task is done when \texttt{./scripts/check.sh} passes: the backend
+and inference tests, the frontend typecheck and the labelling tool's
+tests. The rules most costly to break are enforced as tests
+(\texttt{backend/tests/test\_invariants.py}) rather than kept as
+conventions. The roadmap marks each item done, partly done (with
+what is left), or not done, and states the verification behind each
+mark; it records planned hours, not hours spent.

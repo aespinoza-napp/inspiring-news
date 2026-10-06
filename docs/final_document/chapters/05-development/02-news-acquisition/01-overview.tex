@@ -1,0 +1,116 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Overview
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Overview}
+\label{subsec:scraping-overview}
+
+Acquisition is two steps, composed by the \texttt{Scraper} class
+(Figure~\ref{fig:acquisition}):
+
+\begin{enumerate}
+    \item \textbf{Discovery} (\texttt{DiscoveryService}) takes a
+    configured source and returns the URLs of its recent articles,
+    together with whatever the source says about each one before it is
+    opened: a title, a summary and a publication time.
+    \item \textbf{Extraction} (\texttt{ExtractorService}) takes one
+    URL and returns the article: its body, title, author, date and,
+    when the page states it, the publication time to the minute.
+\end{enumerate}
+
+The two steps are used separately. Discovery feeds the candidate
+rounds from which a person or the AI chooses what to analyse
+(Section~\ref{sec:design-selection}), the one-shot ingestion endpoint
+and the daily labelling batch. Extraction is called for every chosen
+candidate, for every URL posted to the analysis endpoint, for every
+web page read as evidence for a claim, and by the tools that check the
+sources' health. Each call states its \emph{purpose}
+(\texttt{article}, \texttt{evidence}, \texttt{enrichment},
+\texttt{ingestion}, \texttt{discovery}, \texttt{source\_check},
+\texttt{probe}, \texttt{labelling}), which decides how much the call
+may spend and under which heading it is counted.
+
+Four principles run through the implementation, each introduced after
+a measured failure that is cited where it is described:
+
+\begin{itemize}
+    \item \textbf{Cheapest first.} Discovery and extraction both try
+    their strategies in order of cost, and only go to the next one when
+    it could plausibly succeed where the previous one failed.
+    \item \textbf{Every fetch is guarded.} Every URL is checked against
+    an address-based guard before any request is sent, and again at
+    every redirect.
+    \item \textbf{Everything is counted.} Every page wanted is recorded
+    with its outcome, the strategies tried and the requests actually
+    sent, so a source that stops working shows up as such rather than
+    as an absence of news.
+    \item \textbf{Sources are configuration, not code.} Adding a source
+    means adding a YAML file; nothing in the code names a particular
+    outlet.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=6mm and 14mm,
+    box/.style={draw, rounded corners=2pt, align=center,
+                font=\footnotesize, text width=5.2cm,
+                minimum height=7mm, inner sep=3pt},
+    io/.style={box, fill=black!6},
+    stage/.style={box, fill=ganttplan!20},
+    gate/.style={box, fill=ganttextra!30},
+    arr/.style={-{Stealth[length=2mm]}, thick},
+    alt/.style={-{Stealth[length=2mm]}, dashed},
+    lbl/.style={font=\scriptsize\itshape, fill=white, inner sep=1pt},
+]
+% ---- Discovery ----
+\node[io]                   (src)    {Source catalogue\\(one YAML file per source)};
+\node[stage, below=of src]  (rss)    {1. The source's RSS feed};
+\node[stage, below=of rss]  (feeds)  {2. Feed discovery (trafilatura)};
+\node[stage, below=of feeds](pages)  {3. Topic section pages};
+\node[gate,  below=of pages](filt)   {Discovery filters: shape, topic,\\
+                                      off-mission sections, age,\\
+                                      already stored};
+\node[io,    below=of filt] (round)  {Candidates $\rightarrow$ selection};
+
+\draw[arr] (src) -- (rss);
+\draw[alt] (rss) -- node[lbl]{nothing found} (feeds);
+\draw[alt] (feeds) -- node[lbl]{nothing found} (pages);
+\draw[arr] (pages) -- (filt);
+\draw[arr] (filt) -- (round);
+\coordinate (dl) at ($(rss.west)+(-5mm,0)$);
+\draw[thick] (rss.west) -- (dl);
+\draw[thick] (feeds.west) -- (dl |- feeds.west);
+\draw[arr] (dl) |- (filt.west);
+
+% ---- Extraction ----
+\node[io,    right=of src]  (in)     {A URL: a chosen candidate, a posted\\article, an evidence page};
+\node[gate,  below=of in]   (guard)  {URL guard, one shared fetch};
+\node[stage, below=of guard](traf)   {1. trafilatura};
+\node[stage, below=of traf] (bs)     {2. BeautifulSoup, same HTML};
+\node[stage, below=of bs]   (pw)     {3. Headless browser (Playwright)};
+\node[io,    below=of pw]   (out)    {Validated article and metadata};
+
+\draw[arr] (in) -- (guard);
+\draw[arr] (guard) -- (traf);
+\draw[alt] (traf) -- node[lbl]{no article in the page} (bs);
+\draw[alt] (bs) -- node[lbl]{still none} (pw);
+\draw[alt] (traf.east) -- ++(5mm,0) |- node[lbl, pos=0.25, right, xshift=1mm]{401/403/429} (pw.east);
+\draw[arr] (pw) -- (out);
+\coordinate (el) at ($(traf.west)+(-5mm,0)$);
+\draw[thick] (traf.west) -- (el);
+\draw[thick] (bs.west) -- (el |- bs.west);
+\draw[arr] (el) |- (out.west);
+
+\node[font=\footnotesize\bfseries, above=2mm of src] {Discovery};
+\node[font=\footnotesize\bfseries, above=2mm of in]  {Extraction};
+\end{tikzpicture}
+\caption{The acquisition layer. Solid arrows are the normal path;
+dashed arrows are escalations, taken only when the previous step could
+not help. A missing page, a timeout or a guard refusal stops the
+extraction at once.}
+\label{fig:acquisition}
+\end{figure}

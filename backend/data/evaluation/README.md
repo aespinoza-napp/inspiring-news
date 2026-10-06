@@ -5,7 +5,7 @@ labelled claims with human verdicts, to benchmark `LLMVerifier` against
 instead of eyeballing output. Source: X-Fact (Gupta & Srikumar, 2021,
 <https://github.com/utahnlp/x-fact>), chosen over FEVER because it is an
 open-retrieval benchmark - see
-`docs/final_document/sections/evaluation_dataset.tex` for the full
+`docs/final_document/chapters/06-experimental-design/02-evaluation-dataset/` for the full
 justification, which this repo's paper draft already settled on
 independently of this file.
 
@@ -87,7 +87,7 @@ the point of the benchmark.
 ## The custom set (`manual/`, joined into `custom_en_es.jsonl`)
 
 What the paper calls the **custom validation set**
-(`docs/final_document/sections/custom_dataset.tex`): claims from
+(`docs/final_document/chapters/06-experimental-design/03-custom-validation-set/`): claims from
 positive-news articles, which x-fact's political statements do not cover.
 Labelled by hand with `python labeller/app.py` (standard library only;
 `labeller/README.md`), **one file per fact** so each verified fact is

@@ -1,0 +1,52 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: Label Vocabulary
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% ============================================================
+
+\subsection{Label Vocabulary}
+\label{subsec:custom-labels}
+
+X-Fact preserves each fact-checker's original label
+(\texttt{labelRaw}) next to a normalised one (\texttt{label}); the
+custom set does the same. The annotation guide names its labels after
+AVeriTeC \cite{schlichtkrull2023averitec}, the real-world,
+open-web claim verification benchmark whose four classes ---
+\emph{Supported}, \emph{Refuted}, \emph{Not Enough Evidence} and
+\emph{Conflicting Evidence/Cherry-picking} --- are defined by the
+evidence available rather than by an absolute notion of truth, which
+is the stance this work also takes. A fifth label,
+\emph{partially supported}, is added because the system's own
+\texttt{Verdict} distinguishes a claim whose central assertion holds
+while a detail does not, the outcome in which real verification most
+often lands. Table~\ref{tab:custom-labels} gives the correspondence.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+\textbf{\texttt{labelRaw}} & \textbf{\texttt{label}} &
+\textbf{Definition} \\
+\midrule
+supported & \texttt{TRUE} & The evidence supports the claim as
+stated. \\
+partially supported & \texttt{PARTIALLY\_TRUE} & The central claim
+holds; a detail does not. \\
+conflicting evidence/cherrypicking & \texttt{MISLEADING} & Sources
+of equal standing conflict, or the claim is true but selected to
+mislead. \\
+refuted & \texttt{FALSE} & The evidence refutes the claim. \\
+not enough evidence & \texttt{UNVERIFIED} & There is not enough
+independent evidence to decide either way. \\
+\bottomrule
+\end{tabularx}
+\caption{Annotation labels, after AVeriTeC
+\cite{schlichtkrull2023averitec}, and the system verdicts they map
+to. The X-Fact mapping used in this work sends X-Fact's
+\emph{partly true/misleading} to \texttt{MISLEADING} and its
+\emph{complicated/hard to categorise} to \texttt{UNVERIFIED}, so both
+sets are scored on the same five classes.}
+\label{tab:custom-labels}
+\end{table}

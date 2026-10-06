@@ -88,7 +88,7 @@ checked mechanically are refused on save:
 
 Plus: any verdict other than `UNVERIFIED` needs an evidence link. The
 method is written up for the paper in
-`docs/final_document/sections/custom_dataset.tex`.
+`docs/final_document/chapters/06-experimental-design/03-custom-validation-set/`.
 
 ## Tests
 

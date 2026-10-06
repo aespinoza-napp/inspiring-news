@@ -1,0 +1,76 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: Record Format
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% ============================================================
+
+\subsection{Record Format}
+\label{subsec:custom-format}
+
+Every record reproduces, key for key and in the same order, the
+format into which X-Fact was converted for this work
+(Section~\ref{subsec:xfact}), so that the harness that scores the
+system against X-Fact scores it against this set without
+modification. The shared keys are listed in
+Table~\ref{tab:custom-format}; the custom set appends its own keys
+after them, which a reader of the X-Fact format ignores.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\textbf{Key} & \textbf{Content in the custom set} \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Shared with X-Fact}} \\
+\texttt{language} & \texttt{en} or \texttt{es}. \\
+\texttt{site} & Domain of the outlet in which the claim was read
+(X-Fact records the fact-checking organisation here). \\
+\texttt{claimant} & Who makes the claim: a person, organisation or
+the outlet itself. \\
+\texttt{claim} & One atomic, checkable assertion, as the article
+states it. \\
+\texttt{claimDate} & Publication date of the article. \\
+\texttt{reviewDate} & When the label was last set. \\
+\texttt{labelRaw} & The label in the annotation guide's vocabulary
+(Table~\ref{tab:custom-labels}). \\
+\texttt{label} & The label in the system's \texttt{Verdict}
+vocabulary. \\
+\texttt{referenceEvidenceLinks} & URLs of the evidence on which the
+verdict rests. \\
+\texttt{split} & Always \texttt{test}: no claim is ever used to
+train or tune on. \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Added by the custom set}} \\
+\texttt{id} & The record's file name (\texttt{fact001},
+\texttt{fact002}, \ldots), in the order of annotation. \\
+\texttt{topic} & One of the 23 classifier topics; its group is
+derived. \\
+\texttt{claimType} & \texttt{factual}, \texttt{numerical} or
+\texttt{interpretive}. \\
+\texttt{sourceTier} & Tier of the strongest evidence used
+(Rule~4, Section~\ref{subsec:custom-rules}). \\
+\texttt{onlyOwnSource} & Whether only the organisation the story is
+about backs the claim (Rule~1). \\
+\texttt{evidenceDate} & Date of the newest evidence used
+(Rule~3). \\
+\texttt{articleUrl} & The article the claim was taken from. \\
+\texttt{annotatorNote} & The reasoning behind a close call, and the
+rule that decided it. \\
+\texttt{review} & The blind second label, when the record is in the
+verification sample (Section~\ref{subsec:custom-review}). \\
+\bottomrule
+\end{tabularx}
+\caption{Record format of the custom validation set. The first ten
+keys are those of the X-Fact records used in this work, in the same
+order.}
+\label{tab:custom-format}
+\end{table}
+
+As in X-Fact, the evidence links are kept for inspecting a
+disagreement, not fed to the system: the system retrieves its own
+evidence from the open web at verification time, and handing it the
+annotator's sources would measure the reasoning stage alone, which is
+precisely the flaw for which FEVER was discarded
+(Section~\ref{subsec:discard-justification}).

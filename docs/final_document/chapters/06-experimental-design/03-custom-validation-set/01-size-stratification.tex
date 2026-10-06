@@ -1,0 +1,46 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: Size and Stratification
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% ============================================================
+
+\subsection{Size and Stratification}
+\label{subsec:custom-size}
+
+The set targets \textbf{150 claims}, with 100 as the minimum below
+which per-stratum counts stop being informative. With 150 claims, a
+95\% confidence interval on an accuracy near 50\% is approximately
+$\pm 8$ percentage points ($1.96\sqrt{0.25/150}\approx0.080$), which
+is sufficient to separate the models compared in
+Chapter~\ref{ch:results} when they differ substantially, and
+insufficient to rank models that differ by a few points. That limit
+is stated here rather than discovered later.
+
+The claims are stratified along two axes, so that neither a single
+verdict nor a single subject dominates the metrics:
+
+\begin{itemize}
+    \item \textbf{Verdict}: the five labels of the system's own
+    \texttt{Verdict} enumeration (Table~\ref{tab:custom-labels}).
+    \item \textbf{Topic}: each claim carries one of the 23 topics of
+    the system's topic classifier (\texttt{src/config/topics.py}).
+    Because 23 topics over 150 claims leaves six or seven claims per
+    topic, too few to balance on, balance is sought over the five
+    \emph{topic groups} into which those topics are already
+    organised: society, science, environment, culture and health.
+\end{itemize}
+
+Five verdicts by five groups gives 25 cells, with a target of six
+claims each (30 per verdict and 30 per group). Language (English or
+Spanish) and claim type (factual, numerical or interpretive) are
+recorded and reported, but not targeted.
+
+The targets are a goal, not a quota. Positive-news articles are
+predominantly accurate, so the \texttt{FALSE} and \texttt{MISLEADING}
+cells are expected to be the hardest to fill from the outlet's own
+articles. A cell that remains short is reported with its real count
+rather than padded with claims from outside the domain, and the
+evaluation reports macro-averaged $F_1$ alongside accuracy for that
+reason: under class imbalance, accuracy rewards a system that
+predicts the majority verdict.

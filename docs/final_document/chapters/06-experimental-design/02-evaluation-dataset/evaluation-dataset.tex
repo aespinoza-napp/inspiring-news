@@ -1,0 +1,30 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Selection and Justification of the Evaluation Dataset
+% Included from chapters/06-experimental-design/experimental-design.tex
+% ============================================================
+
+% Requires natbib in the main preamble; its BibTeX entries are in
+% references.bib.
+
+\section{Selection and Justification of the Evaluation Dataset}
+\label{sec:dataset-selection}
+
+In order to quantitatively evaluate the performance of the
+fact-verification system proposed in this work, a reference dataset
+(\textit{benchmark}) is required against which standard
+classification metrics (precision, recall, and $F_1$) can be
+measured relative to a verified \textit{ground truth}. This section
+describes the process followed to select such a dataset, justifying
+why the most widely cited benchmark in the automated fact-checking
+literature --- FEVER \cite{thorne2018fever} --- was discarded in
+favour of X-Fact \cite{gupta2021xfact}, and how this decision is
+directly motivated by the architecture of the developed system.
+
+\input{chapters/06-experimental-design/02-evaluation-dataset/01-fever}
+
+\input{chapters/06-experimental-design/02-evaluation-dataset/02-why-not-fever}
+
+\input{chapters/06-experimental-design/02-evaluation-dataset/03-x-fact-as-open-retrieval-benchmark}
+
+\input{chapters/06-experimental-design/02-evaluation-dataset/04-domain-limitation}

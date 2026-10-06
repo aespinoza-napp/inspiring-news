@@ -1,0 +1,93 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: The Shared Fetcher and the URL Guard
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{The Shared Fetcher and the URL Guard}
+\label{subsec:scraping-fetcher}
+
+\paragraph{One fetch per page.} Every HTTP request of the acquisition
+layer goes through one class, \texttt{Fetcher}
+(\path{services/scraper/fetcher.py}). It sends a single \texttt{GET}
+with a 20-second timeout and a User-Agent that names the system
+(\texttt{InspiringNewsBot/1.0}), and returns the page as the server
+sent it. The HTML parsers of the extraction cascade share that page:
+before this, each strategy fetched for itself, so falling back to a
+second parser doubled the requests sent to exactly the sites that were
+already the hardest to scrape. Only a strategy that needs something
+plain HTML cannot give, a rendered page, goes back to the network.
+
+\paragraph{The URL guard.} All fetching happens on the server, and the
+URLs come from outside: the analysis endpoint takes them from its
+caller, and evidence retrieval from whatever the search engine
+returned. Without a check, the service would be an HTTP proxy into its
+own network. In the development stack that network contains the graph
+database and the search engine, and on a cloud host the instance
+metadata endpoint is one request away. The guard
+(\path{services/scraper/url_guard.py}) is therefore applied to every
+URL before it is fetched, and it is deny-by-address rather than
+allow-by-domain: an allow-list of news domains would defeat the purpose
+of an endpoint that accepts any article the user found, while what must
+never be reachable is the infrastructure, which is a question of
+address space. A URL is refused when:
+
+\begin{itemize}
+    \item its scheme is not \texttt{http} or \texttt{https}, or it has
+    no host;
+    \item its port is one of twelve ports used by internal services and
+    never by a public web page (SSH, SMTP, SMB, PostgreSQL, MySQL,
+    Redis, Neo4j's two ports, Elasticsearch, Memcached, MongoDB and
+    Telnet);
+    \item any address its host resolves to is private, loopback,
+    link-local (where cloud metadata services live), reserved,
+    multicast or unspecified. The name is resolved by the guard itself
+    rather than trusted, because a public name can have the address
+    \texttt{127.0.0.1}, and a name that resolves to both a public and a
+    private address is refused.
+\end{itemize}
+
+A host that does not resolve at all is still refused, but counted as a
+connection failure rather than as a block, since a mistyped or dead
+domain is not the guard protecting anything. An explicit list of
+allowed hosts, empty by default, exists for staging servers on a
+private network, so that nobody has to switch the guard off to reach
+one.
+
+\paragraph{Redirects.} An HTTP library that follows redirects by
+itself would walk straight past the guard: a public URL can redirect
+to \texttt{127.0.0.1}. The fetcher therefore follows redirects itself,
+one hop at a time, checking each new location with the guard, and
+gives up after five.
+
+\paragraph{Outcomes.} A failed fetch is classified once, in the same
+way for discovery and for extraction, so that a 403 on a feed and a
+403 on an article are counted alike. Table~\ref{tab:fetch-outcomes}
+lists the outcomes; only \texttt{ok} produced an article.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Outcomes of an extraction attempt.}
+\label{tab:fetch-outcomes}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Outcome & Meaning \\
+\midrule
+\texttt{ok}                & An article was extracted. \\
+\texttt{too\_short}        & Parsed, but shorter than the run's minimum
+                             body length: a paywall stub, a cookie wall,
+                             a gallery. \\
+\texttt{no\_content}       & Fetched, but no article text was found. \\
+\texttt{http\_error}       & The server answered 4xx or 5xx (the status
+                             is kept). \\
+\texttt{timeout}, \texttt{connection\_error} & The server did not
+                             answer, or could not be reached. \\
+\texttt{blocked}           & Refused by the URL guard; never sent. \\
+\texttt{unavailable}       & The strategy cannot run here (no headless
+                             browser installed). \\
+\texttt{error}             & Anything else. \\
+\bottomrule
+\end{tabularx}
+\end{table}

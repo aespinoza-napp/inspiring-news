@@ -1,0 +1,176 @@
+% ============================================================
+% Master's thesis (TFM) -- Master's Degree in Data Science (MDS)
+% Facultat d'Informatica de Barcelona (FIB), UPC
+%
+% Structure follows the "Normativa del treball de fi d'estudis de
+% la FIB" (consolidated text, CP.FIB/2024/05/06, 2025/05/08 and
+% 2025/10/09):
+%   - Art. 12: mandatory cover (fields a-g, plus h for modalities
+%     B and D), mandatory abstract, mandatory sustainability and
+%     ethics analysis, recommended chapter list.
+%   - Art. 61: every document of an MDS thesis is in English.
+%   - Art. 62: 30 ECTS x 30 h = 900 h, the budget of docs/roadmap.md.
+%   - Art. 65: the sustainability and ethics report is carried out
+%     through the gender competence (inclusive language; ethics,
+%     equity and bias in data management and analysis).
+%
+% Planning, methodology and the Gantt chart follow docs/roadmap.md.
+% Every \pending{} block says what goes there and which document of
+% the repository it is written from; set \showpendingfalse to hide
+% them all when compiling a clean draft.
+%
+% Layout: this file holds the preamble and the order of the parts.
+%   frontmatter/   cover, abstract, acknowledgements, acronyms
+%   chapters/NN-topic/topic.tex          one folder per chapter
+%   chapters/NN-topic/NN-section.tex     a section with no subsections
+%   chapters/NN-topic/NN-section/        a section with subsections:
+%       section.tex                      its heading and \input list
+%       NN-subsection.tex                one file per subsection
+%   appendices/    one file per appendix
+%   references.bib
+% Every \input path is relative to this directory.
+%
+% Build: latexmk -pdf main.tex   (pdflatex + bibtex)
+% ============================================================
+
+\documentclass[11pt,a4paper,oneside]{report}
+
+% ---------- Encoding and language ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ---------- Layout ----------
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+% Long identifiers in \texttt cannot be hyphenated; let a line stretch
+% a little rather than run into the margin.
+\setlength{\emergencystretch}{2.5em}
+\usepackage{parskip}
+\usepackage{pdflscape}
+\usepackage{adjustbox}
+
+% ---------- Mathematics ----------
+\usepackage{amsmath,amssymb}
+
+% ---------- Tables (booktabs and tabularx are required by
+%            sections/custom_dataset.tex and sections/future_work.tex) ----------
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+
+% ---------- Figures ----------
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{subcaption}
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc}
+\usepackage{pgfgantt}
+
+% ---------- Lists and code ----------
+\usepackage{enumitem}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small, breaklines=true, frame=single,
+        columns=fullflexible, keepspaces=true}
+
+% ---------- Bibliography (the section files use \cite) ----------
+\usepackage[numbers,sort&compress]{natbib}
+
+% ---------- Links (load last) ----------
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+% ---------- Placeholders ----------
+\definecolor{pendingcolor}{RGB}{120,120,120}
+\newif\ifshowpending
+\showpendingtrue          % \showpendingfalse hides every placeholder
+\newcommand{\pending}[1]{%
+  \ifshowpending
+    \par\noindent{\color{pendingcolor}\small\itshape\raggedright\sloppy
+    [To write: #1]\par}
+  \fi}
+
+% ---------- Gantt styles ----------
+\definecolor{ganttdone}{RGB}{120,170,120}
+\definecolor{ganttplan}{RGB}{110,150,210}
+\definecolor{ganttextra}{RGB}{230,180,90}
+\definecolor{ganttpause}{RGB}{200,200,200}
+
+% ============================================================
+% Cover data (Art. 12, fields a-h)
+% ============================================================
+\newcommand{\thesistitle}{[Thesis title]}                         % (a)
+\newcommand{\thesisauthor}{Adria Espinoza}                         % (b)
+\newcommand{\defencedate}{[Defence date]}                          % (c)
+\newcommand{\thesisdirector}{[Director's name]}                    % (d)
+\newcommand{\directoraffiliation}{[Department / institution / company]}
+% (d) One line per co-director, same format; a ponent (modalities B
+% and D) goes on a line below the director(s), same format.
+\newcommand{\thesisdegree}{Master's Degree in Data Science}        % (e)
+% Official name: Master universitari en Ciencia de Dades (MDS).
+% (h) Modalities B and D only: the centre, institution or company
+% where the thesis was carried out. Uncomment its line on the cover.
+\newcommand{\hostinstitution}{[Company / institution]}
+
+\hypersetup{pdftitle={\thesistitle}, pdfauthor={\thesisauthor}}
+
+% ============================================================
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ---------- Front matter ----------
+\input{frontmatter/cover}
+
+\pagenumbering{roman}
+\input{frontmatter/abstract}
+\input{frontmatter/acknowledgements}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\input{frontmatter/acronyms}
+
+\cleardoublepage
+\pagenumbering{arabic}
+
+% ---------- Chapters ----------
+% One folder per chapter (chapters/NN-topic/topic.tex). In it, a
+% section is one file, or - when it has subsections - a folder
+% holding the section file and one file per subsection.
+\input{chapters/01-introduction/introduction}
+\input{chapters/02-state-of-the-art/state-of-the-art}
+\input{chapters/03-project-management/project-management}
+\input{chapters/04-proposed-method/proposed-method}
+\input{chapters/05-development/development}
+\input{chapters/06-experimental-design/experimental-design}
+\input{chapters/07-results/results}
+\input{chapters/08-sustainability-ethics/sustainability-ethics}
+\input{chapters/09-conclusions/conclusions}
+
+% ---------- References ----------
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{References}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+% ---------- Appendices ----------
+\appendix
+
+\input{appendices/A-detailed-planning}
+\input{appendices/B-news-source-catalogue}
+\input{appendices/C-annotation-guide}
+\input{appendices/D-reproducibility}
+
+\end{document}

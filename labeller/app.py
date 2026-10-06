@@ -21,7 +21,7 @@ itself still needs nothing. Batches are saved beside the facts, in
 backend/data/evaluation/queue/.
 
 The labelling guide (the tie-break rules this file enforces) is
-docs/final_document/sections/custom_dataset.tex.
+docs/final_document/chapters/06-experimental-design/03-custom-validation-set/.
 """
 
 from __future__ import annotations

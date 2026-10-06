@@ -1,0 +1,47 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: Verification of the Labels
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% ============================================================
+
+\subsection{Verification of the Labels}
+\label{subsec:custom-review}
+
+The set is labelled by a single annotator, so inter-annotator
+agreement cannot be measured. What can be measured is
+\textbf{intra-annotator agreement}: whether the guide, applied by the
+same person at a different time, produces the same label. Once
+labelling is complete, 20\% of the records are labelled a second
+time:
+
+\begin{itemize}
+    \item \textbf{The sample is not chosen by the annotator.} It is
+    the first $\lceil 0.2\,n \rceil$ records in the order of a
+    cryptographic hash (SHA-256) of their identifier, which is fixed
+    in advance and independent of content.
+    \item \textbf{The second pass is blind.} The review view shows
+    the claim, its source article, dates, topic and evidence links,
+    but not the first label, the \texttt{onlyOwnSource} flag or the
+    annotator's note, all of which reveal it.
+    \item \textbf{It takes place at least a week after the first
+    pass}, so that the second label is produced by the guide rather
+    than recalled.
+\end{itemize}
+
+Agreement is reported as observed agreement and as Cohen's $\kappa$
+\cite{cohen1960coefficient}, which discounts the agreement two
+labellings would reach by chance given how often each used every
+label; this matters here because the label distribution is expected
+to be uneven. Following the conventions reviewed by Artstein and
+Poesio \cite{artstein2008intercoder}, $\kappa \geq 0.6$ (``substantial''
+on the scale of Landis and Koch \cite{landis1977measurement}) is taken
+as the threshold for the guide to be considered consistently
+applicable; below it, the rules behind the disagreements are revised
+and the affected strata relabelled.
+
+Disagreements are resolved against the guide and, where the first
+label proves wrong, the record is corrected. Agreement remains
+measured on the \emph{first} label, which the record keeps beside the
+second: correcting a record after its review must not turn a
+disagreement into an agreement.

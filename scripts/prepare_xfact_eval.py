@@ -7,7 +7,7 @@ missing (docs/roadmap.md, "Also this sprint" / docs/decisions - Phase 4
 is 140h of benchmarking with nothing to benchmark against).
 
 X-Fact was chosen over FEVER precisely because it is an open-retrieval
-benchmark (see docs/final_document/sections/evaluation_dataset.tex):
+benchmark (see docs/final_document/chapters/06-experimental-design/02-evaluation-dataset/):
 its claims are real-world statements verified against the open web, not
 against a closed corpus, which matches this pipeline's own architecture.
 

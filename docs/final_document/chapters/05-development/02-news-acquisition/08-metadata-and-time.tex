@@ -1,0 +1,47 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition: Discovery and Extraction
+%     Subsection: Metadata and Publication Time
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% ============================================================
+
+\subsection{Metadata and Publication Time}
+\label{subsec:scraping-metadata}
+
+\paragraph{Metadata from the same page.} A strategy can find the text
+of an article and still miss its title, author, date, summary or lead
+image. When that happens, the missing fields are read from the same
+HTML with BeautifulSoup, JSON-LD first and then meta tags, at no extra
+request, and never overwriting what the winning strategy found. The
+rule came from an incident: trafilatura~2 leaves the title, author and
+date out unless asked for its metadata, and the strategy's tests
+mocked the call, so every article in the data lake had been analysed
+with an empty title, and every retrieval fallback built on the headline
+was dead. One test now runs the extractor for real. On the probe of 25~September~2026, 53 of the 60
+sampled articles extracted, all of them with a title, 52 with a date
+and 44 with an author.
+
+\paragraph{Publication time.} Both extractors reduce the publication
+time to a date, and discovery originally threw away the feed's time, so
+the delay between publication and reception could only be measured in
+days. Since 4~October~2026 three times are kept:
+
+\begin{itemize}
+    \item \textbf{The feed's time} for each discovered URL
+    (Section~\ref{subsec:scraping-discovery}).
+    \item \textbf{The page's own time}, to the minute, when the page
+    states one (\path{article:published_time}, the JSON-LD
+    \texttt{datePublished}, or a \texttt{<time datetime>} element). A
+    bare date is not a time, and neither is exactly midnight, which is
+    how date-only sites write it. This costs one more parse of the page
+    when trafilatura won, so it is done only for articles that are
+    stored, not for the dozens of evidence pages a claim reads. Six of
+    seven live articles sampled that day stated their time to the
+    second.
+    \item \textbf{When ingestion first saw the URL}, recorded by host
+    and path in the lake's statistics (\path{lake/stats/sightings.json}),
+    deferred URLs included.
+\end{itemize}
+
+Section~\ref{subsec:scraping-observability} describes the report built
+from them.

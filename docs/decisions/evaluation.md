@@ -15,7 +15,7 @@ built and what it measured, like every other file in this folder.
 ## Research questions
 
 Proposed on Sep 29; the first goal settles them (by Oct 13), writes them
-into `docs/final_document/sections/research_questions.tex`, and keeps
+into `docs/final_document/chapters/06-experimental-design/01-research-questions-metrics.tex`, and keeps
 this table in step with it. Whatever answers none of them is cut or
 moved to future work.
 
