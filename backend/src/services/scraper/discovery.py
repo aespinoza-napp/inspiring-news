@@ -18,14 +18,14 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import classify
 from src.services.scraper.request_stats import Outcome, Purpose, RequestStats, request_stats
 
 from .strategies.base import DiscoveryStrategy
-from .strategies.rss import DiscoveredLink, RSSDiscoveryStrategy
+from .strategies.rss import DiscoveredLink, RSSDiscoveryStrategy, date_from_url
 from .strategies.topic_pages import TopicPageDiscoveryStrategy
 from .strategies.trafilatura_feeds import TrafilaturaFeedDiscoveryStrategy
 
@@ -52,6 +52,9 @@ class DiscoveryResult:
     # selection reads before any article page is fetched.
     details: dict[str, dict] = field(default_factory=dict)
 
+    # Items the strategy found but dropped as older than max_age.
+    stale: int = 0
+
 
 class DiscoveryService:
 
@@ -59,6 +62,7 @@ class DiscoveryService:
         self,
         strategies: list[DiscoveryStrategy] | None = None,
         stats: RequestStats | None = None,
+        max_age: timedelta | None = None,
     ):
 
         self.strategies = strategies if strategies is not None else [
@@ -68,6 +72,16 @@ class DiscoveryService:
         ]
 
         self.stats = stats if stats is not None else request_stats
+
+        # Items older than this are dropped - by the feed's time, or the
+        # date in the link's own path (date_from_url) when there is no
+        # feed; None keeps everything. Items dated neither way stay: a
+        # missing date is not an old one. A feed
+        # with nothing newer counts as empty, so the next step is tried:
+        # RTVE's feed has carried only June 2022 items since then, and a
+        # 2026-10-06 Culture round listed two of them (a tanker crash on
+        # the AP-7 among them).
+        self.max_age = max_age
 
     def discover(
         self,
@@ -93,11 +107,15 @@ class DiscoveryService:
             started = time.perf_counter()
             status = None
 
+            stale = 0
+
             try:
-                items = _items(strategy, source, topics)
+                found = _items(strategy, source, topics)
+                items = self._recent(found)
+                stale = len(found) - len(items)
                 urls = [item.url for item in items]
                 outcome = Outcome.OK if urls else Outcome.NO_CONTENT
-                error = None if urls else "no matching article links"
+                error = None if urls else _nothing_found(found, self.max_age)
             except Exception as exc:
                 urls = []
                 outcome, status, error = classify(exc)
@@ -125,11 +143,41 @@ class DiscoveryService:
                     for item in items
                     if item.title or item.summary
                 }
+                result.stale = stale
                 return result
 
             result.error = f"{name}: {error}"
 
         return result
+
+    def _recent(self, items: list[DiscoveredLink]) -> list[DiscoveredLink]:
+
+        if self.max_age is None:
+            return items
+
+        oldest = datetime.now(timezone.utc) - self.max_age
+
+        return [item for item in items if (when := _dated(item)) is None or when >= oldest]
+
+
+def _dated(item: DiscoveredLink) -> datetime | None:
+    """
+    The feed's time, or failing it the date the link carries in its path:
+    ABC's section pages listed a mortgage calculator stamped 2026-05-25 as
+    news on 2026-10-06. Neither: undated, and kept.
+    """
+
+    return item.published or date_from_url(item.url)
+
+
+def _nothing_found(found: list[DiscoveredLink], max_age: timedelta | None) -> str:
+
+    if not found:
+        return "no matching article links"
+
+    newest = max(when for when in map(_dated, found) if when is not None)
+
+    return f"only items older than {max_age.days} days (newest {newest.date().isoformat()})"
 
 
 def _items(strategy: DiscoveryStrategy, source: NewsSource, topics) -> list[DiscoveredLink]:

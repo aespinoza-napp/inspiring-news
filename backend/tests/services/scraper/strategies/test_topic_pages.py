@@ -229,6 +229,29 @@ def test_links_in_an_off_mission_section_are_not_kept():
     assert topic_pages.discover(source(), topics=["research"]) == [ARTICLE]
 
 
+def test_a_section_that_files_its_articles_under_itself_keeps_only_those():
+    """2026-10-06: ABC's /cultura/ page linked the day's election stories under /espana/."""
+
+    top_story = "https://news.example/politics/2026/10/05/the-election-is-called"
+
+    topic_pages, _ = strategy({HOME: anchors("/science/"), SCIENCE: anchors(ARTICLE, top_story, OTHER_ARTICLE)})
+
+    assert topic_pages.discover(source(), topics=["research"]) == [ARTICLE, OTHER_ARTICLE]
+
+
+def test_a_section_whose_articles_carry_no_section_keeps_every_article_link():
+    """SINC files every article under /Noticias/, whatever its section."""
+
+    flat = [
+        "https://news.example/Noticias/la-obesidad-activa-un-mecanismo-del-corazon",
+        "https://news.example/2026/10/05/rover-lands-safely",
+    ]
+
+    topic_pages, _ = strategy({HOME: anchors("/science/"), SCIENCE: anchors(*flat)})
+
+    assert topic_pages.discover(source(), topics=["research"]) == flat
+
+
 def test_a_section_pages_own_navigation_is_not_an_article():
     """2026-10-05: BBC's section pages gave /culture/music as a candidate."""
 

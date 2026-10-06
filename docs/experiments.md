@@ -113,6 +113,56 @@ top 3 0.78 [0.66, 0.90], group 0.73 [0.59, 0.85], no topic at the floor
 0.10 [0.02, 0.20]. Society is the weak group: 5 of its 9 articles were
 classified as environment.
 
+## The mission screen's margin (one-off, 2026-10-06)
+
+Not a command yet: run once, inside the backend container (it needs
+`inference/`), to choose `MARGIN` in
+`src/services/selection/mission_screen.py`. 527 candidates from Culture,
+Society and Health rounds at 40 per source; each title and summary
+embedded and compared with the 23 topics' descriptions and the seven
+off-mission ones, exactly as the screen does, plus the sentiment model.
+
+| Margin above | Left out (all 527) | Left out (484, positive outlets exempt) |
+|---|---|---|
+| 0.00 | 184 | - |
+| 0.02 | 110 | 105 |
+| 0.03 | 89 | 85 |
+| 0.04 | 70 | 68 |
+| 0.05 | 59 | 58 |
+
+Read by hand: above 0.04 nearly all elections, crime, accidents, storms,
+market wire items and celebrity interviews; doubtful were four National
+Geographic war-history pieces and one data-centre regulation story.
+Between 0.03 and 0.04 about 3 of 17 were worth keeping. Good News
+Network's curated stories were the main false positives at every margin
+(a prison-to-firefighter jobs law as "crime", a diaper drive as
+"service"), hence `positive_editorial`. The sentiment model rated stories
+of a problem being solved as negative (an endangered primate's birth
+0.89, a lost theatre reborn 0.89, restoring hearing 0.62) and was not
+used. Re-measure before changing `MARGIN` or any `OFF_MISSION`
+description: the numbers above are for those exact texts.
+
+**Second run, the same day**, after a Science and Society round
+(11:21 UTC, 3 per source) still listed strikes, ABC's calculators, an
+obituary and a drone strike: the 527 above plus that round's 80
+candidates and 34 left out (titles only for those), 545 unique from
+general outlets, scored under the old descriptions and two proposals.
+
+| Descriptions | Left out above 0.04 | Notes |
+|---|---|---|
+| The first seven | 80 | |
+| + `labour`, `markets`, `obituary` (broad); `politics` widened | 119 | `obituary` left out two SINC pieces on ageing research and the Smithsonian's identified Revolutionary War soldiers |
+| `obituary` narrowed, `conflict` widened | 119 | now Unamuno and a poet's letters out, "Jeffrey Archer dies aged 86" in |
+| **No `obituary`; `labour`, `markets`, wider `politics` and `conflict`** (kept) | **115** | the 36 new all strikes, union-employer disputes, protests, finance, election politics, the drone strike, an outbreak at a military academy; one back in (a TV reaction to the election call) |
+
+Death reports by headline phrase instead: 6 of 639 titles matched, all
+deaths. Politics between 0 and 0.04: 15 items, 14 party politics, hence
+politics' margin of 0 (`MARGINS`). The remaining policy and social
+stories from the Spanish front pages scored -0.02 to -0.07, among good
+stories (a teacher's poetry prize at -0.07): no margin separates them.
+Re-run live the same round with all of it: 59 left out instead of 34,
+38 dropped as old instead of 7 (link dates).
+
 ## Thresholds of the fact-check itself
 
 Those belong to the harness, not here: `cli run --thresholds f.json` runs

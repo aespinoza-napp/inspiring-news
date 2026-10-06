@@ -322,8 +322,46 @@ OFF_MISSION_SECTIONS = (
     "/lottery/",
     "/apuestas/",
     "/betting/",
+    # El País's ICON is its lifestyle and celebrity magazine (a Brad Pitt
+    # stunt double in the 2026-10-06 Culture round); /sucesos/ is the
+    # Spanish papers' crime section.
+    "/icon/",
+    "/sucesos/",
     # Forecast pages, not stories: BBC's /weather/<location> came back as
     # Environment candidates from its topic pages on 2026-10-05.
     "/weather/",
     "/el-tiempo/",
+    # Columns, not reporting: the AI selection's definition scores opinion
+    # low, and its claims are interpretation nothing can be retrieved for.
+    "/opinion/",
+    "/commentisfree/",
+)
+
+# Live coverage, wherever it is filed: a stream of updates on breaking
+# news, not an article - El País's election night and France 24's student
+# protests were Science and Society candidates on 2026-10-06. Matched
+# anywhere in the path, slug included.
+LIVE_COVERAGE = (
+    "/live/",
+    "/directo/",
+    "en-directo",
+    "live-updates",
+    "minuto-a-minuto",
+)
+
+# Index pages, not articles, though their slugs read like headlines: on
+# 2026-10-06 SINC's /Especiales/Incendios-forestales-en-Espana and
+# Xataka's /categoria/no-te-lo-creas were offered as candidates. Whole
+# path segments, compared in lower case.
+INDEX_SEGMENTS = (
+    "/categoria/",
+    "/category/",
+    "/tag/",
+    "/tags/",
+    "/etiqueta/",
+    "/etiquetas/",
+    "/especiales/",
+    "/autor/",
+    "/author/",
+    "/authors/",
 )

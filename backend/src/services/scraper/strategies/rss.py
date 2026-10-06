@@ -15,6 +15,8 @@ import feedparser
 from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import Fetcher
 from src.config.topic_url_patterns import (
+    INDEX_SEGMENTS,
+    LIVE_COVERAGE,
     OFF_MISSION_SECTIONS,
     TOPIC_SECTION_PATTERNS_ES,
     TOPIC_URL_PATTERNS,
@@ -26,6 +28,10 @@ from .base import DiscoveryStrategy
 # A date in the path is the most language-independent sign of an article:
 # /2026/09/23/, /2026-09-23/, /20260923/.
 DATED_PATH = re.compile(r"/(20\d{2})[/-]?(0[1-9]|1[0-2])[/-]?(0[1-9]|[12]\d|3[01])(/|$|-)")
+
+# ABC stamps its slugs with the moment of publication, to the second:
+# ".../calcula-hipoteca-20260525124640-nt.html".
+SLUG_TIMESTAMP = re.compile(r"(?<!\d)(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])[0-5]\d[0-5]\d(?!\d)")
 
 # A slug this many words long is a headline, not a section name.
 MIN_SLUG_WORDS = 4
@@ -49,11 +55,39 @@ _SECTIONS = {
 
 
 def off_mission(url: str) -> bool:
-    """Filed under a section this publication never covers (OFF_MISSION_SECTIONS)."""
+    """Filed under a section this publication never covers (OFF_MISSION_SECTIONS), or live coverage."""
 
     path = urlsplit(url.lower()).path
 
-    return any(section in path for section in OFF_MISSION_SECTIONS)
+    return any(marker in path for marker in OFF_MISSION_SECTIONS + LIVE_COVERAGE)
+
+
+def date_from_url(url: str) -> datetime | None:
+    """
+    The publication date a link carries in its own path - /2026/10/06/,
+    /2026-10-06/, /20261006/, or ABC's slug stamp - as midnight UTC; None
+    when it carries none. Only for judging an undated link's age: day
+    precision is no publication time (the freshness report keeps to
+    feed times).
+    """
+
+    path = urlsplit(url).path
+
+    found = DATED_PATH.search(path) or SLUG_TIMESTAMP.search(path)
+
+    if not found:
+        return None
+
+    try:
+        return datetime(int(found.group(1)), int(found.group(2)), int(found.group(3)), tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _index_page(path: str) -> bool:
+    """A category, tag, author or special-collection index (INDEX_SEGMENTS)."""
+
+    return any(segment in path for segment in INDEX_SEGMENTS)
 
 
 def filed_under(url: str) -> set[str]:
@@ -111,7 +145,6 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         "/features/",
         "/feature/",
         "/latest/",
-        "/live/"
     )
 
     _ALL_TOPIC_URL_PATTERNS = {
@@ -335,6 +368,9 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
 
         path = urlsplit(url).path
 
+        if _index_page(path):
+            return False
+
         # The English section names above missed nearly every Spanish
         # article (El Mundo 26 of 26, La Vanguardia 130 of 132) and every
         # NASA one. A date in the path or a headline-length slug says
@@ -409,6 +445,10 @@ def article_shaped(url: str) -> bool:
         return False
 
     path = urlsplit(lowered).path
+
+    if _index_page(path):
+        return False
+
     slug = re.sub(r"\.html?$", "", path.rstrip("/").rsplit("/", 1)[-1])
 
     return (

@@ -275,10 +275,12 @@ def get_ingestion_service() -> IngestionService:
         with _lock:
             if _ingestion_service is None:
                 from src.repositories.source_repository import SourceRepository
+                from src.services.selection.mission_screen import MissionScreen
 
                 _ingestion_service = IngestionService(
                     sources=SourceRepository().list(),
                     lake=get_datalake_repository(),
+                    screen=MissionScreen(),
                 )
 
     return _ingestion_service

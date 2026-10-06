@@ -55,6 +55,13 @@ class NewsSource(BaseModel):
     # were; these are the ones the code reads.
     groups: list[str] = Field(default_factory=list)
 
+    # An outlet that publishes only positive news, chosen by its own
+    # editors (Good News Network, Positive News, Reasons to be Cheerful).
+    # Discovery's mission screen leaves its items alone: on 2026-10-06 it
+    # would have dropped Good News Network's ex-prisoners-as-firefighters
+    # jobs story as "crime" (src/services/selection/mission_screen.py).
+    positive_editorial: bool = False
+
     metadata: dict = Field(default_factory=dict)
 
     @field_validator("groups")

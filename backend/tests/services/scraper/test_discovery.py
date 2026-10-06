@@ -332,6 +332,63 @@ def test_an_off_mission_section_is_dropped_whatever_was_asked(monkeypatch):
     assert urls == ["https://www.lavanguardia.com/natural/20261005/11651300/rewilding-the-ebro-delta.html"]
 
 
+def test_lifestyle_and_crime_sections_are_off_mission():
+    """2026-10-06: El País's ICON gave a Brad Pitt stunt double as a Culture candidate."""
+
+    from src.services.scraper.strategies.rss import off_mission
+
+    assert off_mission("https://elpais.com/icon/2026-10-06/joel-el-espanol-que-ha-doblado-las-escenas-de-riesgo-de-brad-pitt.html")
+    assert off_mission("https://www.lavanguardia.com/sucesos/20261005/11651111/detenido-en-cornella.html")
+    assert not off_mission("https://elpais.com/cultura/2026-10-06/norman-foster-en-vivienda.html")
+
+
+@pytest.mark.parametrize("url", [
+    # 2026-10-06, a Science and Society round: election night and student protests, live.
+    "https://elpais.com/espana/2026-10-06/elecciones-generales-del-29-n-en-directo.html",
+    "https://www.france24.com/es/francia/20261006-en-directo-sindicatos-se-suman-a-protestas-estudiantiles",
+    "https://www.bbc.co.uk/news/live/c4g0yq9l2zpt",
+    "https://elpais.com/opinion/2026-10-06/si-ya-dicen-lo-que-dicen.html",
+    "https://www.theguardian.com/commentisfree/2026/oct/06/a-column",
+])
+def test_live_coverage_and_opinion_are_off_mission(url):
+
+    from src.services.scraper.strategies.rss import off_mission
+
+    assert off_mission(url)
+
+
+@pytest.mark.parametrize("url", [
+    "https://www.agenciasinc.es/Especiales/Incendios-forestales-en-Espana",
+    "https://www.xatakaciencia.com/categoria/no-te-lo-creas",
+    "https://news.example/tag/climate-change-and-the-oceans",
+    "https://news.example/author/maria-lopez-garcia-ruiz",
+])
+def test_index_pages_are_not_articles_however_their_slugs_read(url):
+
+    from src.services.scraper.strategies.rss import article_shaped
+
+    assert not article_shaped(url)
+    assert not RSSDiscoveryStrategy()._is_article(url)
+
+
+@pytest.mark.parametrize("url, day", [
+    ("https://www.abc.es/economia/cuentas-corrientes/calcula-hipoteca-20260525124640-nt.html", "2026-05-25"),
+    ("https://www.rtve.es/television/20260623/preparate-para-noche-magica/17128523.shtml", "2026-06-23"),
+    ("https://elpais.com/clima/2026-10-05/el-delta-del-ebro-recupera-aves.html", "2026-10-05"),
+    ("https://www.elmundo.es/espana/2026/10/05/6ac3cf9121efa09b738b459c.html", "2026-10-05"),
+    ("https://www.bbc.co.uk/news/articles/cq203mymlvkeo", None),
+    # Not a date: an id that happens to start with 20.
+    ("https://news.example/story/20261399887766-a-long-headline-here", None),
+])
+def test_a_link_can_carry_its_own_date(url, day):
+
+    from src.services.scraper.strategies.rss import date_from_url
+
+    found = date_from_url(url)
+
+    assert (found.date().isoformat() if found else None) == day
+
+
 def test_a_fitness_section_is_not_mistaken_for_sport(monkeypatch):
 
     link = "https://www.example.es/deporte-y-salud/20261005/caminar-diez-mil-pasos.html"

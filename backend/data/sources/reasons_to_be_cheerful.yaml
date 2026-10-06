@@ -30,6 +30,10 @@ groups:
   - society
   - environment
 
+# Publishes only positive news: discovery's mission screen leaves it
+# alone (src/models/core/source.py).
+positive_editorial: true
+
 metadata:
   extractor: trafilatura
   discovery:

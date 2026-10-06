@@ -31,6 +31,14 @@ def test_every_group_has_an_english_and_a_spanish_source(group):
     assert {"en", "es"} <= languages
 
 
+def test_only_the_outlets_that_publish_nothing_but_positive_news_skip_the_mission_screen():
+    """A general outlet marked positive would let its election coverage through unscreened."""
+
+    exempt = sorted(source.id for source in sources() if source.positive_editorial)
+
+    assert exempt == ["good_news_network", "positive_news", "reasons_to_be_cheerful"]
+
+
 def test_an_unknown_group_is_refused_when_the_yaml_is_read():
 
     with pytest.raises(ValueError, match="unknown topic group"):

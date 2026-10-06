@@ -16,10 +16,15 @@ it exists to spend it only on articles worth it:
    discovery - see src/services/scraper/discovery.py);
 2. discovery keeps only links that look like articles and match a
    configured topic, so off-topic pieces are never fetched just to be
-   rejected by the admission filter;
+   rejected by the admission filter, and only items from the last
+   MAX_CANDIDATE_AGE when the feed dates them;
 3. articles already in the lake are skipped - compared by host and path,
    so a tracking parameter does not make an old article new;
-4. at most `per_source` new articles per source per run.
+4. the mission screen leaves out what the publication never covers -
+   elections, crime, accidents, celebrity (src/services/selection/
+   mission_screen.py) - before the per-source cap, so a source's slots go
+   to what is left;
+5. at most `per_source` new articles per source per run.
 
 Triggered by hand, never on a timer: every queued article costs a scrape,
 an enrichment and an LLM call per claim. Two ways in:
@@ -40,7 +45,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from logging import getLogger
 from typing import Callable
 from urllib.parse import urlsplit
@@ -52,6 +57,7 @@ from src.services.concurrency import bounded_map
 from src.services.scraper.article_stats import comparable_url
 from src.services.scraper.discovery import DiscoveryResult, DiscoveryService
 from src.services.scraper.sightings import Sightings, sightings as default_sightings
+from src.services.selection.mission_screen import MARGIN, MARGINS, Candidate, MissionScreen
 
 logger = getLogger(__name__)
 
@@ -67,6 +73,18 @@ StartJob = Callable[[str], tuple[str, bool]]
 # At most this many topic groups per run: more is close to "everything",
 # which is what the narrowing exists to avoid.
 MAX_GROUPS = 3
+
+# Older items are not offered: this is news. On 2026-10-06 the feeds of a
+# Culture, Society and Health round carried 38 items older than this -
+# WHO's back to 2025, RTVE's from June 2022 - and 54 older than 14 days,
+# 9 of them MIT News research stories still worth reading.
+MAX_CANDIDATE_AGE = timedelta(days=30)
+
+# The mission screen reads this many of a source's new articles per one
+# wanted from it, in feed order, and the source's slots are filled from
+# what passes. Screening all of El País's 159 to keep two would embed the
+# whole feed for nothing.
+SCREEN_DEPTH = 5
 
 
 def topics_for(groups: list[str] | None) -> list[str]:
@@ -85,18 +103,29 @@ def title_from_url(url: str) -> str | None:
     A readable stand-in title from the URL's slug, for a link whose feed
     gave none (section pages give only links): ".../rewilding-the-ebro-
     delta.html" -> "Rewilding the ebro delta". None for a slug too short
-    to say anything.
+    to say anything. The segment before the last when the last is only an
+    id: RTVE's ".../asi-se-hace-autentico-bacalao/17174859.shtml" came
+    back untitled - and so unjudged by the mission screen - on 2026-10-06.
     """
 
-    slug = re.sub(r"\.html?$", "", urlsplit(url).path.rstrip("/").rsplit("/", 1)[-1])
-    words = [word for word in re.split(r"[-_]+", slug) if word and not word.isdigit()]
+    segments = [segment for segment in urlsplit(url).path.split("/") if segment]
 
-    if len(words) < 3:
-        return None
+    for segment in reversed(segments[-2:]):
 
-    text = " ".join(words)
+        slug = re.sub(r"\.s?html?$", "", segment)
+        words = [word for word in re.split(r"[-_]+", slug) if word and not word.isdigit()]
 
-    return text[0].upper() + text[1:]
+        if len(words) >= 3:
+            text = " ".join(words)
+            return text[0].upper() + text[1:]
+
+    return None
+
+
+def _title(url: str, result: DiscoveryResult) -> str | None:
+    """A candidate's title: its feed's, or one made from its slug."""
+
+    return (result.details.get(url) or {}).get("title") or title_from_url(url)
 
 
 @dataclass
@@ -117,6 +146,12 @@ class SourceRun:
     # New articles found beyond per_source, left for a later run.
     deferred: int = 0
 
+    # Left out by the mission screen, and dropped as older than
+    # MAX_CANDIDATE_AGE.
+    screened: int = 0
+
+    stale: int = 0
+
     error: str | None = None
 
     def to_dict(self) -> dict:
@@ -129,8 +164,24 @@ class SourceRun:
             "alreadyStored": self.already_stored,
             "queued": self.queued,
             "deferred": self.deferred,
+            "screened": self.screened,
+            "stale": self.stale,
             "error": self.error,
         }
+
+
+@dataclass
+class _Picked:
+    """One source's share of a run, after the screen and the cap."""
+
+    # At most per_source, in feed order.
+    urls: list[str]
+
+    # Left out by the mission screen, with why.
+    screened: list[dict]
+
+    # New, and neither picked nor left out: for a later run.
+    deferred: int
 
 
 class IngestionService:
@@ -141,11 +192,16 @@ class IngestionService:
         lake,
         discovery: DiscoveryService | None = None,
         sightings: Sightings | None = None,
+        screen: MissionScreen | None = None,
     ):
         self.sources = sources
         self.lake = lake
-        self.discovery = discovery or DiscoveryService()
+        self.discovery = discovery or DiscoveryService(max_age=MAX_CANDIDATE_AGE)
         self.sightings = sightings if sightings is not None else default_sightings
+
+        # None: nothing is screened (the tests' default); the app passes one.
+        self.screen = screen
+
         self.last_run: dict | None = None
 
     def enabled_sources(self) -> list[NewsSource]:
@@ -195,6 +251,7 @@ class IngestionService:
         )
 
         runs = []
+        fresh_by_source = []
 
         for source, result in zip(sources, discovered):
 
@@ -203,9 +260,11 @@ class IngestionService:
 
             run.method = result.method
             run.discovered = len(result.urls)
+            run.stale = result.stale
             run.error = result.error if not result.urls else None
 
             fresh = []
+            fresh_by_source.append(fresh)
 
             for url in result.urls:
 
@@ -232,7 +291,11 @@ class IngestionService:
                 seen_at=started,
             )
 
-            for url in fresh[:per_source]:
+        picked, screen = self._pick(sources, discovered, fresh_by_source, per_source)
+
+        for run, choice in zip(runs, picked):
+
+            for url in choice.urls:
 
                 try:
                     job_id, reused = start_job(url)
@@ -241,18 +304,23 @@ class IngestionService:
                     logger.warning("Could not queue %s: %s", url, exc)
                     run.error = f"could not queue {url}: {exc}"
 
-            run.deferred = max(len(fresh) - per_source, 0)
+            run.deferred = choice.deferred
+            run.screened = len(choice.screened)
 
         report = {
             "startedAt": started.isoformat(timespec="seconds"),
             "perSource": per_source,
             "groups": list(groups or []),
+            "screen": screen,
+            "screened": [entry for choice in picked for entry in choice.screened],
             "totals": {
                 "sources": len(runs),
                 "discovered": sum(run.discovered for run in runs),
                 "alreadyStored": sum(run.already_stored for run in runs),
                 "queued": sum(len(run.queued) for run in runs),
                 "deferred": sum(run.deferred for run in runs),
+                "screened": sum(run.screened for run in runs),
+                "stale": sum(run.stale for run in runs),
                 "failed": sum(1 for run in runs if run.error and not run.discovered),
             },
             "sources": [run.to_dict() for run in runs],
@@ -292,6 +360,8 @@ class IngestionService:
 
         rows = []
         candidates = []
+        fresh_by_source = []
+        already_by_source = []
 
         for source, result in zip(sources, discovered):
 
@@ -309,6 +379,9 @@ class IngestionService:
                 known.add(key)
                 fresh.append(url)
 
+            fresh_by_source.append(fresh)
+            already_by_source.append(already)
+
             # The record ingestion keeps of when an article was first
             # seen, for the freshness report: a candidate nobody picks
             # was still seen.
@@ -320,7 +393,11 @@ class IngestionService:
                 seen_at=started,
             )
 
-            for url in fresh[:per_source]:
+        picked, screen = self._pick(sources, discovered, fresh_by_source, per_source)
+
+        for source, result, already, choice in zip(sources, discovered, already_by_source, picked):
+
+            for url in choice.urls:
 
                 details = result.details.get(url) or {}
                 published = result.published.get(url)
@@ -346,8 +423,10 @@ class IngestionService:
                 "method": result.method,
                 "discovered": len(result.urls),
                 "alreadyStored": already,
-                "candidates": min(len(fresh), per_source),
-                "deferred": max(len(fresh) - per_source, 0),
+                "candidates": len(choice.urls),
+                "deferred": choice.deferred,
+                "screened": len(choice.screened),
+                "stale": result.stale,
                 "error": result.error if not result.urls else None,
             })
 
@@ -358,15 +437,101 @@ class IngestionService:
             "perSource": per_source,
             "sources": rows,
             "candidates": candidates,
+            "screen": screen,
+            "screened": [entry for choice in picked for entry in choice.screened],
             "totals": {
                 "sources": len(rows),
                 "discovered": sum(row["discovered"] for row in rows),
                 "alreadyStored": sum(row["alreadyStored"] for row in rows),
                 "candidates": len(candidates),
                 "deferred": sum(row["deferred"] for row in rows),
+                "screened": sum(row["screened"] for row in rows),
+                "stale": sum(row["stale"] for row in rows),
                 "failed": sum(1 for row in rows if row["error"] and not row["discovered"]),
             },
         }
+
+    def _pick(
+        self,
+        sources: list[NewsSource],
+        results: list[DiscoveryResult],
+        fresh_by_source: list[list[str]],
+        per_source: int,
+    ) -> tuple[list[_Picked], dict]:
+        """
+        Each source's share: the mission screen over the first
+        per_source x SCREEN_DEPTH of its new articles, then the first
+        per_source of those it kept. One batched pass over every source's
+        share, not one per source. The screen's state comes back with it
+        - "ok", "off" (none configured) or "unavailable" (inference/ could
+        not be reached: nothing was left out, and the round says so).
+        """
+
+        screening = [
+            self.screen is not None and not source.positive_editorial
+            for source in sources
+        ]
+
+        pools = [
+            fresh[: per_source * SCREEN_DEPTH] if screened else []
+            for fresh, screened in zip(fresh_by_source, screening)
+        ]
+
+        titled = [
+            (url, Candidate(
+                title=_title(url, result),
+                summary=(result.details.get(url) or {}).get("summary"),
+                language=source.language,
+            ))
+            for source, pool, result in zip(sources, pools, results)
+            for url in pool
+        ]
+
+        state = {"status": "off" if self.screen is None else "ok", "margin": MARGIN, "margins": MARGINS, "error": None}
+        verdicts = {}
+
+        if titled:
+            try:
+                for (url, _), verdict in zip(titled, self.screen.screen([candidate for _, candidate in titled])):
+                    if verdict is not None:
+                        verdicts[url] = verdict
+            except Exception as exc:
+                # Every candidate is kept and the round says why: a screen
+                # that fails must not look like one that passed everything.
+                logger.warning("Mission screen unavailable; nothing left out", exc_info=True)
+                state.update(status="unavailable", error=str(exc))
+                pools = [[] for _ in pools]
+                verdicts = {}
+
+        picked = []
+
+        for source, result, fresh, pool in zip(sources, results, fresh_by_source, pools):
+
+            if not pool:
+                urls = fresh[:per_source]
+                out = []
+            else:
+                urls = [url for url in pool if url not in verdicts][:per_source]
+                out = [url for url in pool if url in verdicts]
+
+            picked.append(_Picked(
+                urls=urls,
+                screened=[
+                    {
+                        "url": url,
+                        "source": source.id,
+                        "sourceName": source.name,
+                        "title": _title(url, result),
+                        "offMission": verdicts[url].off_mission,
+                        "margin": verdicts[url].margin,
+                        "nearestTopic": verdicts[url].nearest_topic,
+                    }
+                    for url in out
+                ],
+                deferred=len(fresh) - len(urls) - len(out),
+            ))
+
+        return picked, state
 
     def _discover(self, source: NewsSource, topics: list[str] | None = None) -> DiscoveryResult:
 

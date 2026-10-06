@@ -61,6 +61,17 @@ class Lexicon:
     # already opinion signals, just scored for a different purpose.
     opinion: frozenset[str]
 
+    # ---- discovery ----------------------------------------------------
+    # Phrases that make a headline a death report - matched whole, after
+    # folding case and accents, against the title only. Read by the
+    # mission screen (src/services/selection/mission_screen.py): an
+    # embedding takes an obituary and a biography for the same thing,
+    # and dropped pieces on Unamuno and on Revolutionary War soldiers
+    # while it let "Jeffrey Archer dies aged 86" through. Present tense
+    # only, the tense news reports a death in: Spanish "murió" is the
+    # tense of history ("Carlos II ... murió sin descendencia").
+    death_report: frozenset[str]
+
     # Stopwords used only by the language detector, never for scoring.
     stopwords: frozenset[str] = field(default_factory=frozenset)
 
@@ -139,6 +150,9 @@ ENGLISH = Lexicon(
         "impressive", "disappointing", "worrying", "welcome",
         "best", "worst", "better", "worse", "good", "bad", "great",
         "beautiful", "wonderful", "inspiring", "encouraging",
+    ),
+    death_report=_s(
+        "dies at", "dies aged", "dies after", "has died", "dead at", "obituary",
     ),
     measurement_words=_s(
         "percent", "km", "m", "cm", "kg", "g", "ton", "tons", "tonnes",
@@ -234,6 +248,9 @@ SPANISH = Lexicon(
         "notable*", "impresionante*", "decepcionante*", "preocupante*",
         "mejor*", "peor*", "buen*", "mal*", "gran", "grande*",
         "hermos*", "maravillos*", "inspirador*", "alentador*",
+    ),
+    death_report=_s(
+        "muere", "fallece", "ha muerto", "ha fallecido", "obituario",
     ),
     measurement_words=_s(
         "ciento", "por ciento", "km", "m", "cm", "kg", "g", "tonelada",

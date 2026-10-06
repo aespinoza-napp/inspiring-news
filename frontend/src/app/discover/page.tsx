@@ -16,6 +16,20 @@ import {
 
 const PER_SOURCE_OPTIONS = [1, 2, 3, 5, 10];
 
+// The mission screen's reasons (backend src/services/selection/mission_screen.py OFF_MISSION).
+const OFF_MISSION: Record<string, string> = {
+  politics: "politics",
+  labour: "strike or protest",
+  crime: "crime",
+  disaster: "accident or disaster",
+  conflict: "war or conflict",
+  celebrity: "celebrity",
+  sport: "sport",
+  markets: "markets or personal finance",
+  service: "service page",
+  obituary: "death or obituary",
+};
+
 // While the AI selection runs, the round is re-read this often. On the
 // production CPU model a selection is minutes; on a GPU, seconds.
 const POLL_MS = 2000;
@@ -421,9 +435,45 @@ export default function DiscoverPage() {
             {round.totals.candidates} new articles from {round.totals.sources} sources in{" "}
             {round.groups.map(groupName).join(", ")} · {round.totals.alreadyStored} already analysed ·{" "}
             {round.totals.deferred} more left for another round
+            {(round.totals.stale ?? 0) > 0 && ` · ${round.totals.stale} older than a month`}
             {round.totals.failed > 0 && ` · ${round.totals.failed} sources found nothing`}{" "}
             <span className="stats-muted">({when(round.startedAt)})</span>
           </p>
+
+          {round.screen?.status === "unavailable" && (
+            <p className="claims-note">
+              The mission screen could not run ({round.screen.error}), so nothing was left out
+              for being off-mission: elections, crime or celebrity pieces may be in this list.
+            </p>
+          )}
+
+          {round.screened && round.screened.length > 0 && (
+            <details className="claims-note">
+              <summary>
+                {round.screened.length} left out as off-mission (elections, strikes, crime,
+                accidents, markets, obituaries…) before choosing
+              </summary>
+              <ul className="screened-list">
+                {round.screened.map((item) => {
+                  const href = safeHref(item.url);
+                  return (
+                    <li key={item.url}>
+                      {href ? (
+                        <a href={href} target="_blank" rel="noopener noreferrer">
+                          {item.title ?? item.url}
+                        </a>
+                      ) : (
+                        item.title ?? item.url
+                      )}{" "}
+                      <span className="stats-muted">
+                        · {item.sourceName} · {OFF_MISSION[item.offMission] ?? item.offMission}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          )}
 
           {!locked && round.candidates.length > 0 && (
             <div className="discover-toolbar">

@@ -221,7 +221,7 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
             if article_shaped(link) and not off_mission(link):
                 links.append(link)
 
-        section.links = list(dict.fromkeys(links))
+        section.links = _within_section(list(dict.fromkeys(links)), page.url)
 
         if not section.links:
             section.error = "no article links on the page"
@@ -275,6 +275,23 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
             for topic, patterns in table.items()
             if (wanted is None or topic in wanted) and patterns
         ))
+
+
+def _within_section(links: list[str], section_url: str) -> list[str]:
+    """
+    A section page's own articles, when it files them under its path:
+    ABC's /cultura/ page also links the day's top stories, and on
+    2026-10-06 two election pieces under /espana/ came back as Culture
+    candidates. A site whose article URLs carry no section (SINC's
+    /Noticias/...) keeps every link, as before - there is nothing to
+    tell them apart by.
+    """
+
+    prefix = "/" + urlsplit(section_url).path.strip("/").lower() + "/"
+
+    own = [link for link in links if urlsplit(link).path.lower().startswith(prefix)]
+
+    return own or links
 
 
 def _wanted_topics(topics: list[str] | None) -> set[str] | None:

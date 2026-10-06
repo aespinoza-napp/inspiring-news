@@ -567,6 +567,32 @@ export interface CandidateSourceRow {
   alreadyStored: number;
   candidates: number;
   deferred: number;
+  /** Left out by the mission screen; absent on rounds before 2026-10-06. */
+  screened?: number;
+  /** Dropped as older than the discovery age limit. */
+  stale?: number;
+  error: string | null;
+}
+
+/** A candidate the mission screen left out, and why. */
+export interface ScreenedCandidate {
+  url: string;
+  source: string;
+  sourceName: string;
+  title: string | null;
+  /** politics, labour, crime, disaster, conflict, celebrity, sport, markets, service or obituary. */
+  offMission: string;
+  /** How much nearer that is than the nearest topic; null when the headline decided (obituary). */
+  margin: number | null;
+  nearestTopic: string | null;
+}
+
+export interface MissionScreenState {
+  /** off: none configured; unavailable: inference/ unreachable, nothing left out. */
+  status: "ok" | "off" | "unavailable";
+  margin: number;
+  /** Categories held to another margin (politics: 0). */
+  margins?: Record<string, number>;
   error: string | null;
 }
 
@@ -614,12 +640,17 @@ export interface CandidateRound {
   perSource: number;
   sources: CandidateSourceRow[];
   candidates: Candidate[];
+  /** Absent on rounds made before the screen existed. */
+  screen?: MissionScreenState;
+  screened?: ScreenedCandidate[];
   totals: {
     sources: number;
     discovered: number;
     alreadyStored: number;
     candidates: number;
     deferred: number;
+    screened?: number;
+    stale?: number;
     failed: number;
   };
   aiSelection: AISelectionState | null;
