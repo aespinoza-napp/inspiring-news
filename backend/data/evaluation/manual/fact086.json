@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "agenciasinc.es",
+  "claimant": "SINC",
+  "claim": "Según la primera autora, Antonella Ausiello, también investigadora en el CNIC, los resultados muestran que “la obesidad y la hiperglucemia provocan la remodelación molecular más intensa y extensa, con cambios en distintos tipos de células presentes en el corazón: cardiomiocitos, fibroblastos, células endoteliales y macrófagos”.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1093/cvr/cvag193",
+    "https://www.cnic.es/es/noticias/cardiovascular-research-obesidad-activa-un-mecanismo-especifico-que-altera-relajacion"
+  ],
+  "split": "test",
+  "id": "fact086",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-30",
+  "articleUrl": "https://www.agenciasinc.es/Noticias/La-obesidad-activa-un-mecanismo-que-altera-la-relajacion-del-corazon",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] The quote is the CNIC's release word for word, and Ausiello is the paper's first author. The paper's abstract backs what she says: the obesity and hyperglycaemia models showed extensive transcriptional changes in cardiomyocytes, fibroblasts, endothelial cells and macrophages, against modest ones with hypertension and hypoxia.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "elmundo.es",
+  "claimant": "Víctor Mondelo",
+  "claim": "Reducir los 13 escaños de diferencia que le separaron de la número uno por Barcelona, Meritxell Batet, es un objetivo primordial para los populares, que saben que, sin un obtener un apoyo razonable en Cataluña, certificar el cambio de Gobierno se dificultaría.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://en.wikipedia.org/wiki/Results_breakdown_of_the_2023_Spanish_general_election_(Congress)",
+    "https://www.elindependiente.com/espana/2023/06/07/batet-repite-como-numero-uno-por-barcelona-con-la-mision-de-superar-a-erc-tambien-el-23j/amp/"
+  ],
+  "split": "test",
+  "id": "fact091",
+  "topic": "cities",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2023-07-23",
+  "articleUrl": "https://www.elmundo.es/cataluna/2026/10/05/6ac3e3cc21efa0b0648b4593.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] General election of 23 Jul 2023: across Catalonia PSC 19 seats, PP 6 - a gap of 13. In Barcelona province, where Batet headed the PSC list, PSC 13 and PP 5 - a gap of 8. The 13 is right for Catalonia, but the sentence ties it to Batet's Barcelona list. Borderline: FALSE if read strictly as the Barcelona gap. The PP's 'objetivo primordial' is interpretation, not checked. evidenceDate is the night the results came out.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

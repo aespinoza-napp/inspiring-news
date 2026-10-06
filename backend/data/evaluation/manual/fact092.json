@@ -1,0 +1,26 @@
+{
+  "language": "es",
+  "site": "elmundo.es",
+  "claimant": "Víctor Mondelo",
+  "claim": "Junts tumbó en el Congreso los decretos de vivienda del Gobierno, lo que propició el fin de la presente legislatura.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.moncloa.com/2026/10/02/pp-tumba-decretos-vivienda-congreso-3441704/",
+    "https://www.elsaltodiario.com/politica/congreso-tumba-dos-decretos-vivienda-deja-legislatura-al-borde-del-fin",
+    "https://www.biobiochile.cl/noticias/internacional/europa/2026/10/05/por-que-pedro-sanchez-adelanto-las-elecciones-en-espana-y-que-implica-su-decision.shtml"
+  ],
+  "split": "test",
+  "id": "fact092",
+  "topic": "cities",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-05",
+  "articleUrl": "https://www.elmundo.es/cataluna/2026/10/05/6ac3e3cc21efa0b0648b4593.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] Split from a compound sentence: its only checkable part. The rest is opinion ('el socialismo está dejando de atraer', 'ha dejado de ser un socio fiable') and an unnamed poll's projection for Illa, not labelled. On 2 Oct 2026 Congress rejected both housing decrees with the votes of PP, Vox and Junts, whose 7 deputies decided it; on 5 Oct Sánchez dissolved the Cortes and called general elections for 29 Nov after that defeat.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

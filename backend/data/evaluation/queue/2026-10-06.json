@@ -1,0 +1,655 @@
+{
+  "requestId": "2765a8c2d4a943d8a1f099ab1bdb3c37",
+  "seed": "2026-10-06",
+  "createdAt": "2026-10-06T09:41:04+00:00",
+  "requested": {
+    "articles": 10,
+    "claimsPerArticle": 3,
+    "languages": null,
+    "preferTopics": [
+      "space",
+      "technology",
+      "research",
+      "biology",
+      "arts",
+      "entertainment",
+      "heritage",
+      "literature",
+      "inspiration",
+      "medicine",
+      "mental_health",
+      "nutrition",
+      "fitness",
+      "public_health"
+    ],
+    "excluded": 1485
+  },
+  "totals": {
+    "sources": 34,
+    "discovered": 1448,
+    "candidates": 20,
+    "ready": 18,
+    "articles": 10,
+    "claims": 30
+  },
+  "articles": [
+    {
+      "url": "https://www.theguardian.com/science/2026/sep/28/can-you-solve-it-isaac-newtons-tower-drop-puzzle",
+      "source": "guardian",
+      "title": "Can you solve it? Isaac Newton’s tower drop puzzle",
+      "site": "theguardian.com",
+      "sourceName": "The Guardian",
+      "language": "en",
+      "publishedAt": "2026-09-28",
+      "author": "Alex Bellos",
+      "topic": "space",
+      "topics": [
+        "space",
+        "heritage",
+        "technology",
+        "climate",
+        "arts",
+        "research",
+        "fitness",
+        "education",
+        "biology",
+        "employment",
+        "community",
+        "literature",
+        "nutrition",
+        "sustainability",
+        "cities",
+        "nature",
+        "inspiration"
+      ],
+      "claims": [
+        {
+          "text": "Or, in the words of Isaac Newton, who posed the problem in a letter he wrote to Robert Hooke in 1679, the answer is “quite contrary to ye opinion of ye vulgar.”",
+          "selectedBy": "anchor",
+          "score": 0.8,
+          "figures": [
+            "1679"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact077"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "I’ll be back at 5pm UK with the solution.",
+          "selectedBy": "anchor",
+          "score": 0.44,
+          "figures": [
+            "5"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "prediction"
+        },
+        {
+          "text": "I’ve been setting a puzzle here on alternate Mondays since 2015.",
+          "selectedBy": "anchor",
+          "score": 0.351,
+          "figures": [
+            "2015"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        }
+      ]
+    },
+    {
+      "url": "https://www.europapress.es/portaltic/sector/noticia-openai-anadira-marca-agua-invisible-texto-chatgpt-codex-ue-cumplir-ley-ia-20261006103525.html",
+      "source": "europa_press",
+      "title": "OpenAI añadirá una marca de agua invisible al texto de ChatGPT y Codex en la UE para cumplir con la Ley de IA",
+      "site": "europapress.es",
+      "sourceName": "Europa Press",
+      "language": "es",
+      "publishedAt": "2026-10-06",
+      "author": "Europa Press",
+      "topic": "technology",
+      "topics": [
+        "technology",
+        "research",
+        "climate",
+        "sustainability",
+        "energy",
+        "education"
+      ],
+      "claims": [
+        {
+          "text": "OpenAI ha anunciado sus planes para cumplir con parte de las nuevas directrices de transparencia de Inteligencia Artificial (IA) de la Unión Europea, que obligan a que el texto generado sea identificable, en este caso mediante una marca de agua invisible tanto en ChatGPT como en Codex.",
+          "selectedBy": "anchor",
+          "score": 0.778,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact078"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "El laboratorio de IA ha dado los detalles del sistema textGrain, que introduce una señal estadística invisible en las selecciones de palabras del modelo, que posteriormente se detectan con un sistema propio, que busca esa señal para evaluar si un fragmento de texto contiene la marca de agua de OpenAI.",
+          "selectedBy": "anchor",
+          "score": 0.632,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact079"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Por otro lado, OpenAI ha publicado un informe más completo en el que describe el funcionamiento de textGrain.",
+          "selectedBy": "anchor",
+          "score": 0.571,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact080"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.newscientist.com/article/2591415-ai-finds-bafflingly-complex-but-beautiful-symmetrical-venn-diagram/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+      "source": "new_scientist",
+      "title": "AI finds bafflingly complex but beautiful symmetrical Venn diagram | New Scientist",
+      "site": "newscientist.com",
+      "sourceName": "New Scientist",
+      "language": "en",
+      "publishedAt": "2026-10-05",
+      "author": "Matthew Sparkes",
+      "topic": "research",
+      "topics": [
+        "research",
+        "technology",
+        "arts",
+        "sustainability",
+        "education"
+      ],
+      "claims": [
+        {
+          "text": "In 2012, an 11-set Venn diagram that met those criteria was discovered, and another with 13 sets was found in 2014.",
+          "selectedBy": "anchor",
+          "score": 0.763,
+          "figures": [
+            "2012",
+            "11",
+            "13",
+            "2014"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact081"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Software developer Chris Dzoba decided to try using AI to find the next largest diagram – one with 17 sets.",
+          "selectedBy": "anchor",
+          "score": 0.656,
+          "figures": [
+            "17"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact082"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“Back then [when the 13-set diagram was found], 13 was a clear stopping point.",
+          "selectedBy": "anchor",
+          "score": 0.611,
+          "figures": [
+            "13",
+            "13"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        }
+      ]
+    },
+    {
+      "url": "https://www.esa.int/ESA_Multimedia/Images/2026/08/Roman_lifts_off_on_a_mission_to_survey_the_infrared_sky",
+      "source": "esa",
+      "title": "Roman lifts off on a mission to survey the infrared sky",
+      "site": "esa.int",
+      "sourceName": "European Space Agency",
+      "language": "en",
+      "publishedAt": "2026-08-31",
+      "author": null,
+      "topic": "space",
+      "topics": [
+        "space",
+        "research",
+        "technology",
+        "sustainability"
+      ],
+      "claims": [
+        {
+          "text": "NASA’s Nancy Grace Roman Space Telescope lifted off on a SpaceX Falcon Heavy rocket from NASA’s Kennedy Space Center in Florida, USA, at 07:26 EDT / 12:26 BST/ 13:26 CEST on 30 August 2026.",
+          "selectedBy": "anchor",
+          "score": 0.828,
+          "figures": [
+            "07",
+            "26",
+            "12",
+            "26",
+            "13",
+            "26",
+            "30",
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact083"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "[Image description: A SpaceX Falcon Heavy rocket with NASA’s Nancy Grace Roman Space Telescope on board is seen transiting the Sun during launch from Launch Complex 39A, on Sunday 30 August 2026, at NASA’s Kennedy Space Center in Florida, US.]",
+          "selectedBy": "anchor",
+          "score": 0.695,
+          "figures": [
+            "39",
+            "30",
+            "2026"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "After launch, Roman is on a steady course to the second Sun-Earth Lagrange point (L2), nearly 1.5 million km away from Earth.",
+          "selectedBy": "anchor",
+          "score": 0.499,
+          "figures": [
+            "2",
+            "1.5"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact084"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.agenciasinc.es/Noticias/La-obesidad-activa-un-mecanismo-que-altera-la-relajacion-del-corazon",
+      "source": "sinc",
+      "title": "La obesidad activa un mecanismo que altera la relajación del corazón",
+      "site": "agenciasinc.es",
+      "sourceName": "SINC",
+      "language": "es",
+      "publishedAt": "2026-10-02",
+      "author": "SINC",
+      "topic": "nutrition",
+      "topics": [
+        "nutrition",
+        "fitness",
+        "mental_health",
+        "medicine",
+        "cities",
+        "sustainability"
+      ],
+      "claims": [
+        {
+          "text": "Un estudio liderado por el Centro Nacional de Investigaciones Cardiovasculares Carlos III (CNIC) ha identificado la activación del receptor de glucocorticoides como un mecanismo causal de la disfunción diastólica temprana asociada a la obesidad.",
+          "selectedBy": "anchor",
+          "score": 0.73,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact085"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Según la primera autora, Antonella Ausiello, también investigadora en el CNIC, los resultados muestran que “la obesidad y la hiperglucemia provocan la remodelación molecular más intensa y extensa, con cambios en distintos tipos de células presentes en el corazón: cardiomiocitos, fibroblastos, células endoteliales y macrófagos”.",
+          "selectedBy": "anchor",
+          "score": 0.622,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact086"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Una investigación liderada por el Centro Nacional de Investigaciones Cardiovasculares Carlos III identifica el proceso específico que causa la disfunción diastólica temprana que se relaciona con la obesidad.",
+          "selectedBy": "anchor",
+          "score": 0.612,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "duplicate"
+        }
+      ]
+    },
+    {
+      "url": "https://www.bbc.co.uk/news/articles/c670pzpv9gk4o?at_medium=RSS&at_campaign=rss",
+      "source": "bbc",
+      "title": "Yemen: Children brave snipers and mortars to go to school near front line",
+      "site": "bbc.co.uk",
+      "sourceName": "BBC",
+      "language": "en",
+      "publishedAt": "2026-10-06",
+      "author": "Nawal Al-Maghafi",
+      "topic": "technology",
+      "topics": [
+        "technology",
+        "cities",
+        "medicine"
+      ],
+      "claims": [
+        {
+          "text": "Every morning at 6am, 10-year-old Rafeef and her younger brother get ready for school, putting on their cream and brown uniforms.",
+          "selectedBy": "anchor",
+          "score": 0.765,
+          "figures": [
+            "6",
+            "10"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "- Who are the Houthis and what do they want? - Published24 September",
+          "selectedBy": "anchor",
+          "score": 0.638,
+          "figures": [
+            "24"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "According to Unicef, roughly 3.2 million children in Yemen were out of school even before the war escalated last month.",
+          "selectedBy": "anchor",
+          "score": 0.609,
+          "figures": [
+            "3.2"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact087"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.nationalgeographic.com/health/article/can-cartilage-regrow-osteoarthritis-treatment",
+      "source": "national_geographic",
+      "title": "Doctors have long said cartilage can’t regenerate. They're now rethinking that.",
+      "site": "nationalgeographic.com",
+      "sourceName": "National Geographic",
+      "language": "en",
+      "publishedAt": "2026-10-03",
+      "author": "Lindsay Kalter",
+      "topic": "medicine",
+      "topics": [
+        "medicine",
+        "technology",
+        "fitness",
+        "research",
+        "biology",
+        "nutrition",
+        "education",
+        "sustainability",
+        "mental_health",
+        "heritage",
+        "food",
+        "climate",
+        "arts",
+        "nature",
+        "employment"
+      ],
+      "claims": [
+        {
+          "text": "It’s a marker of life,” says Samuel Stupp, a chemist and material scientist at Northwestern University.",
+          "selectedBy": "anchor",
+          "score": 0.513,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "Blau and her colleague, Nidhi Bhutani, an associate professor of orthopedic surgery, discovered that in older mice, blocking 15‑PGDH reversed the cartilage loss that normally accompanies aging in the knee.",
+          "selectedBy": "anchor",
+          "score": 0.332,
+          "figures": [
+            "15"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact088"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“People with joint pain are desperate to find relief, and they have very limited options,” says Blau.",
+          "selectedBy": "anchor",
+          "score": 0.319,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        }
+      ]
+    },
+    {
+      "url": "https://www.positive.news/environment/meet-the-14-year-old-uncovering-londons-lost-history/",
+      "source": "positive_news",
+      "title": "Meet the 14-year-old uncovering London’s lost history",
+      "site": "positive.news",
+      "sourceName": "Positive News",
+      "language": "en",
+      "publishedAt": "2026-10-05",
+      "author": "Fleur Britten",
+      "topic": "sustainability",
+      "topics": [
+        "sustainability",
+        "nature",
+        "heritage",
+        "climate",
+        "research",
+        "education",
+        "arts",
+        "food",
+        "cities",
+        "inspiration",
+        "biology",
+        "entertainment",
+        "employment",
+        "mental_health",
+        "literature",
+        "community",
+        "fitness",
+        "technology"
+      ],
+      "claims": [
+        {
+          "text": "I’m with 14-year-old Emmylou Vaxby, a London schoolgirl, mudlark – a forager of artefacts on a riverbank – and author of A Guide to Mudlarking on the River Thames.",
+          "selectedBy": "anchor",
+          "score": 0.763,
+          "figures": [
+            "14"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact089"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "It’s a mild Sunday morning in late September, and I’m on the north bank of the Thames near Wapping.",
+          "selectedBy": "anchor",
+          "score": 0.63,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "“It’s like in the Great Stink,” she adds, referring to the hot, dry summer of 1858, when the Thames – and all the raw sewage and rubbish dumped into it, rotting flesh and all – became a foul-smelling health hazard.",
+          "selectedBy": "anchor",
+          "score": 0.568,
+          "figures": [
+            "1858"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact090"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://news.mit.edu/2026/nanoscale-mechanics-could-enable-brain-inspired-computing-0916",
+      "source": "mit_news",
+      "title": "Nanoscale mechanics could enable brain-inspired computing",
+      "site": "news.mit.edu",
+      "sourceName": "MIT News",
+      "language": "en",
+      "publishedAt": "2026-09-16",
+      "author": "Adam Zewe; MIT News",
+      "topic": "sustainability",
+      "topics": [
+        "sustainability",
+        "research",
+        "technology",
+        "mental_health",
+        "biology",
+        "energy",
+        "climate",
+        "food",
+        "education",
+        "space",
+        "nutrition",
+        "medicine",
+        "cities",
+        "nature",
+        "community",
+        "fitness",
+        "entertainment",
+        "heritage",
+        "employment",
+        "inspiration",
+        "arts"
+      ],
+      "claims": [
+        {
+          "text": "They researchers used this performance to demonstrate an artificial neuron.",
+          "selectedBy": "anchor",
+          "score": 0.58,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "Thomas Guertin Professor of Chemistry at MIT; Maxwell Conte, a graduate student in the Department of Materials Science and Engineering; Teddy Hsieh, an EECS graduate student; postdoc Eduard Bobylev; and Srinidhi Venkatesh ’25.",
+          "selectedBy": "anchor",
+          "score": 0.541,
+          "figures": [
+            "25"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "This could enable levels of energy efficiency, autonomy, and reconfigurability in nanoscale devices and systems that are challenging to achieve with conventional computing platforms,” says Farnaz Niroui, an associate professor of electrical engineering and computer science (EECS), a member of the Research Laboratory of Electronics (RLE), and senior author of a paper on this device.",
+          "selectedBy": "anchor",
+          "score": 0.498,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "prediction"
+        }
+      ]
+    },
+    {
+      "url": "https://www.elmundo.es/cataluna/2026/10/05/6ac3e3cc21efa0b0648b4593.html",
+      "source": "el_mundo",
+      "title": "¿Por qué Cataluña volverá a decidir las elecciones en España?",
+      "site": "elmundo.es",
+      "sourceName": "El Mundo",
+      "language": "es",
+      "publishedAt": "2026-10-05",
+      "author": "Víctor Mondelo",
+      "topic": "cities",
+      "topics": [
+        "cities",
+        "climate"
+      ],
+      "claims": [
+        {
+          "text": "Reducir los 13 escaños de diferencia que le separaron de la número uno por Barcelona, Meritxell Batet, es un objetivo primordial para los populares, que saben que, sin un obtener un apoyo razonable en Cataluña, certificar el cambio de Gobierno se dificultaría.",
+          "selectedBy": "anchor",
+          "score": 0.671,
+          "figures": [
+            "13"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact091"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "- Partidos Frente Amplio y Podemos: una contrarreloj de 11 días para pactar y un órdago de Irene Montero para hacer primarias los días 14 y 15",
+          "selectedBy": "anchor",
+          "score": 0.62,
+          "figures": [
+            "11",
+            "14",
+            "15"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "El socialismo está dejando de atraer a los catalanes -Salvador Illa perdería 11 diputados si hubiera autonómicas- y también se derrumba Junts, quien, además, ha dejado de ser un socio fiable para el PSOE, como demostró tumbando los decretos de vivienda que propiciaron el fin de la presente legislatura.",
+          "selectedBy": "anchor",
+          "score": 0.547,
+          "figures": [
+            "11"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact092"
+          ],
+          "skipReason": null
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "url": "https://www.20minutos.es/tecnologia/ciberseguridad/webs-falsas-amazon-multiplican-durante-prime-day-espana-cuidado-estas-senales_7045098_0.html",
+      "source": "20minutos",
+      "reason": "no article text could be extracted"
+    },
+    {
+      "url": "https://elpais.com/quadern/2026-10-06/microagenda-doctubre-festival-biennal-i-animal.html",
+      "source": "el_pais",
+      "reason": "no article text could be extracted"
+    }
+  ],
+  "file": "2026-10-06.json",
+  "date": "2026-10-06"
+}

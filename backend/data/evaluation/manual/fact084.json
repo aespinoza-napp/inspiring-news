@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": null,
+  "claim": "After launch, Roman is on a steady course to the second Sun-Earth Lagrange point (L2), nearly 1.5 million km away from Earth.",
+  "claimDate": "2026-08-31",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://science.nasa.gov/blogs/roman/2026/08/30/nasas-roman-space-telescope-launch-updates/",
+    "https://www.space.com/space-exploration/launches-spacecraft/nasa-roman-space-telescope-launch-success-on-a-spacex-falcon-heavy-rocket-spectacular-launch-video"
+  ],
+  "split": "test",
+  "id": "fact084",
+  "topic": "space",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-30",
+  "articleUrl": "https://www.esa.int/ESA_Multimedia/Images/2026/08/Roman_lifts_off_on_a_mission_to_survey_the_infrared_sky",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] NASA's launch-day updates: 'Roman will travel about 1 million miles from Earth to orbit around the second Sun-Earth Lagrange point, or L2'; the spacecraft separated from the rocket after launch. 1 million miles is 1.6 million km and L2 is about 1.5 million km away, so 'nearly 1.5 million km' is within rule 2. 'On a steady course' is only as specific as the launch-day reports.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

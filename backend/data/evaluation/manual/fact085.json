@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "agenciasinc.es",
+  "claimant": "SINC",
+  "claim": "Un estudio liderado por el Centro Nacional de Investigaciones Cardiovasculares Carlos III (CNIC) ha identificado la activación del receptor de glucocorticoides como un mecanismo causal de la disfunción diastólica temprana asociada a la obesidad.",
+  "claimDate": "2026-10-02",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1093/cvr/cvag193",
+    "https://www.cnic.es/es/noticias/cardiovascular-research-obesidad-activa-un-mecanismo-especifico-que-altera-relajacion"
+  ],
+  "split": "test",
+  "id": "fact085",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-30",
+  "articleUrl": "https://www.agenciasinc.es/Noticias/La-obesidad-activa-un-mecanismo-que-altera-la-relajacion-del-corazon",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] Ausiello ... Lara-Pezzi, 'Comorbidity-specific molecular programmes of early diastolic dysfunction identify glucocorticoid receptor activation as a causal driver in obesity', Cardiovascular Research, online 30 Sep 2026: obesity-induced GR activation 'emerges as a causal and actionable driver of diastolic dysfunction'; GR inhibition restored relaxation. Led by the CNIC (its release).",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

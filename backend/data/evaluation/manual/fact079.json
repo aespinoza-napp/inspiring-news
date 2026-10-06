@@ -1,0 +1,26 @@
+{
+  "language": "es",
+  "site": "europapress.es",
+  "claimant": "Europa Press",
+  "claim": "El laboratorio de IA ha dado los detalles del sistema textGrain, que introduce una señal estadística invisible en las selecciones de palabras del modelo, que posteriormente se detectan con un sistema propio, que busca esa señal para evaluar si un fragmento de texto contiene la marca de agua de OpenAI.",
+  "claimDate": "2026-10-06",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://cdn.openai.com/pdf/e9508624-d767-41b6-a26d-e34ca798ada6/textgrain-entropy-calibrated-watermarking-for-language-model-text.pdf",
+    "https://community.openai.com/t/openais-approach-to-eu-text-provenance-rules/1403521",
+    "https://help.openai.com/en/articles/8912793-provenance-signals-in-openai-generated-content"
+  ],
+  "split": "test",
+  "id": "fact079",
+  "topic": "technology",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-05",
+  "articleUrl": "https://www.europapress.es/portaltic/sector/noticia-openai-anadira-marca-agua-invisible-texto-chatgpt-codex-ue-cumplir-ley-ia-20261006103525.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] OpenAI's post: textGrain 'adds a statistical signal through the model's word choices'; detection 'will initially be limited to approved researchers and expert organizations'. The technical report (5 Oct 2026): 'Watermarking embeds a statistical signal by modifying this sampling using pseudorandom values derived from a secret key'; 'the detector requires only the generated text and the secret key'. Not only OpenAI's own word (rule 1): the report's authors include researchers at the University of Pennsylvania and Yale.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

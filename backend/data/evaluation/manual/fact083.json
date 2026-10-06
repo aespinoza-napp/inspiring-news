@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": null,
+  "claim": "NASA’s Nancy Grace Roman Space Telescope lifted off on a SpaceX Falcon Heavy rocket from NASA’s Kennedy Space Center in Florida, USA, at 07:26 EDT / 12:26 BST/ 13:26 CEST on 30 August 2026.",
+  "claimDate": "2026-08-31",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://science.nasa.gov/blogs/roman/2026/08/30/nasas-roman-space-telescope-launches/",
+    "https://www.space.com/space-exploration/launches-spacecraft/nasa-roman-space-telescope-launch-success-on-a-spacex-falcon-heavy-rocket-spectacular-launch-video"
+  ],
+  "split": "test",
+  "id": "fact083",
+  "topic": "space",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-30",
+  "articleUrl": "https://www.esa.int/ESA_Multimedia/Images/2026/08/Roman_lifts_off_on_a_mission_to_survey_the_infrared_sky",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] NASA (30 Aug 2026): launched 'at 7:26 a.m. EDT aboard a SpaceX Falcon Heavy from Launch Complex 39A at NASA's Kennedy Space Center in Florida' on Sunday 30 August 2026. The conversions hold: 07:26 EDT = 11:26 UTC = 12:26 BST = 13:26 CEST.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

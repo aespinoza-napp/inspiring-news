@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "nationalgeographic.com",
+  "claimant": "Lindsay Kalter",
+  "claim": "Blau and her colleague, Nidhi Bhutani, an associate professor of orthopedic surgery, discovered that in older mice, blocking 15‑PGDH reversed the cartilage loss that normally accompanies aging in the knee.",
+  "claimDate": "2026-10-03",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://med.stanford.edu/news/all-news/2025/11/joint-cartilage-aging.html",
+    "https://www.sciencedaily.com/releases/2026/01/260120000333.htm"
+  ],
+  "split": "test",
+  "id": "fact088",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-01-20",
+  "articleUrl": "https://www.nationalgeographic.com/health/article/can-cartilage-regrow-osteoarthritis-treatment",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] Stanford Medicine (27 Nov 2025), on the team's paper in Science: Bhutani is 'associate professor of orthopaedic surgery'; Blau a professor of microbiology and immunology. 15-PGDH roughly doubles in old mice's knee cartilage, and a small-molecule inhibitor (given systemically, then injected into the knee) thickened the age-thinned cartilage, which proved to be hyaline cartilage.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

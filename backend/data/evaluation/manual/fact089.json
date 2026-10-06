@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "positive.news",
+  "claimant": "Fleur Britten",
+  "claim": "I’m with 14-year-old Emmylou Vaxby, a London schoolgirl, mudlark – a forager of artefacts on a riverbank – and author of A Guide to Mudlarking on the River Thames.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.pen-and-sword.co.uk/a-guide-to-mudlarking-on-the-river-thames/p/61792",
+    "https://www.amazon.com/Guide-Mudlarking-River-Thames-Treasure/dp/1036147010",
+    "https://www.emmylouthemudlark.com/"
+  ],
+  "split": "test",
+  "id": "fact089",
+  "topic": "heritage",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-07-23",
+  "articleUrl": "https://www.positive.news/environment/meet-the-14-year-old-uncovering-londons-lost-history/",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] Pen & Sword's Fonthill imprint publishes 'A Guide to Mudlarking on the River Thames' by Emmylou Vaxby (23 Jul 2026, ISBN 9781036147013); her site, Emmylou The Mudlark, records her finds on the Thames foreshore. Borderline: her age (14) and that she is a schoolgirl come only from this article - the publisher's page has no biography and her site refused the connection from this session.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

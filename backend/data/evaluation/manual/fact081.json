@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "newscientist.com",
+  "claimant": "Matthew Sparkes",
+  "claim": "In 2012, an 11-set Venn diagram that met those criteria was discovered, and another with 13 sets was found in 2014.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://arxiv.org/abs/1207.6452",
+    "https://www.cs.uvic.ca/~ruskey/Publications/Venn11/Venn11.html",
+    "https://arxiv.org/abs/2609.26546v1"
+  ],
+  "split": "test",
+  "id": "fact081",
+  "topic": "research",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-22",
+  "articleUrl": "https://www.newscientist.com/article/2591415-ai-finds-bafflingly-complex-but-beautiful-symmetrical-venn-diagram/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] Mamakani and Ruskey, 'A New Rose: The First Simple Symmetric 11-Venn Diagram' (arXiv, 27 Jul 2012); the 13-curve diagrams are in their 'New Roses: Simple Symmetric Venn Diagrams with 11 and 13 Curves' (Discrete & Computational Geometry, 2014). Dzoba's preprint (22 Sep 2026): simple symmetric ones 'were known only up to 13 curves (Mamakani and Ruskey, 2014)'. 2014 is the publication year; whether the 13-curve diagrams were found earlier was not established.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

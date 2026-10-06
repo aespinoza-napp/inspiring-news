@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "bbc.co.uk",
+  "claimant": "Nawal Al-Maghafi",
+  "claim": "According to Unicef, roughly 3.2 million children in Yemen were out of school even before the war escalated last month.",
+  "claimDate": "2026-10-06",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.unicef.org/media/179566/file/2026-HAC-Yemen.pdf",
+    "https://www.unicef.org/yemen/press-releases/renewed-hostilities-yemen-push-over-12-million-children-deeper-crisis-unicef"
+  ],
+  "split": "test",
+  "id": "fact087",
+  "topic": "education",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-16",
+  "articleUrl": "https://www.bbc.co.uk/news/articles/c670pzpv9gk4o?at_medium=RSS&at_campaign=rss",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] UNICEF's 2026 Humanitarian Action for Children appeal for Yemen (issued before September's escalation; its figures run to December 2025): 'Around 3.2 million children are out of school.' UNICEF's release of 16 Sep 2026 repeats '3.2 million school-aged children are out of school'. The same appeal's highlights box says '4.5 million children remain out of school': UNICEF's own figures differ, and the claim matches the one in the body and in the September release.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

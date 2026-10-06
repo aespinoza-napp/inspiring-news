@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "positive.news",
+  "claimant": "Fleur Britten",
+  "claim": "“It’s like in the Great Stink,” she adds, referring to the hot, dry summer of 1858, when the Thames – and all the raw sewage and rubbish dumped into it, rotting flesh and all – became a foul-smelling health hazard.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.history.co.uk/articles/the-great-stink-londons-unbearable-summer-of-1858",
+    "https://historic-uk.com/HistoryUK/HistoryofBritain/Londons-Great-Stink",
+    "https://www.mprnews.org/story/2017/07/20/npr-books-one-hot-summer"
+  ],
+  "split": "test",
+  "id": "fact090",
+  "topic": "heritage",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2017-07-20",
+  "articleUrl": "https://www.positive.news/environment/meet-the-14-year-old-uncovering-londons-lost-history/",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] The Great Stink: in the heatwave of summer 1858 the untreated sewage London emptied into the Thames fermented; the smell drove MPs from the Commons and got Bazalgette's sewers approved within weeks. 'Health hazard' as the Victorians saw it (miasma); the real danger was cholera in the water.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Alex Bellos",
+  "claim": "Or, in the words of Isaac Newton, who posed the problem in a letter he wrote to Robert Hooke in 1679, the answer is “quite contrary to ye opinion of ye vulgar.”",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://sites.berry.edu/ttimberlake/wp-content/uploads/sites/37/2015/08/NewtonHookeLong.pdf",
+    "https://onlinelibrary.wiley.com/doi/abs/10.1002/andp.201010457"
+  ],
+  "split": "test",
+  "id": "fact077",
+  "topic": "research",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "1679-11-28",
+  "articleUrl": "https://www.theguardian.com/science/2026/sep/28/can-you-solve-it-isaac-newtons-tower-drop-puzzle",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] Newton's reply to Hooke of 28 Nov 1679 proposed dropping a body from a high tower to show the Earth's rotation: it would land east of the perpendicular, 'quite contrary to the opinion of the vulgar who think that, if the earth moved, heavy bodies in falling would be outrun by its parts and fall on the west side of the perpendicular' (Timberlake's transcription; the Guardian keeps Newton's 'ye'). Annalen der Physik (2010) covers the same debate. The quote was read from a search excerpt of Timberlake's paper: the PDF refused the connection from this session. evidenceDate is the letter's date.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

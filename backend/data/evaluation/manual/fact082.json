@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "newscientist.com",
+  "claimant": "Matthew Sparkes",
+  "claim": "Software developer Chris Dzoba decided to try using AI to find the next largest diagram – one with 17 sets.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://arxiv.org/abs/2609.26546v1",
+    "https://github.com/dzoba/venn17"
+  ],
+  "split": "test",
+  "id": "fact082",
+  "topic": "research",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-22",
+  "articleUrl": "https://www.newscientist.com/article/2591415-ai-finds-bafflingly-complex-but-beautiful-symmetrical-venn-diagram/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] Dzoba, 'Simple symmetric Venn diagrams with 17 and 19 curves' (arXiv 2609.26546, 22 Sep 2026): the work was 'carried out by two AI systems working under the author's direction over five days'; certificates and a Lean 4 proof on GitHub. 17 is the next size after 13 (rotational symmetry needs a prime number of curves). 'Software developer' is not in the paper; a CreativeLive profile of a software engineer of the same name fits but was not confirmed to be him.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

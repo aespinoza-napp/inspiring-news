@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "europapress.es",
+  "claimant": "Europa Press",
+  "claim": "Por otro lado, OpenAI ha publicado un informe más completo en el que describe el funcionamiento de textGrain.",
+  "claimDate": "2026-10-06",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://cdn.openai.com/pdf/e9508624-d767-41b6-a26d-e34ca798ada6/textgrain-entropy-calibrated-watermarking-for-language-model-text.pdf",
+    "https://www.businesstoday.in/technology/artificial-intelligence/story/openai-plans-to-watermark-chatgpt-and-codex-text-output-in-eu-amid-ai-transparency-push-559728-2026-10-06"
+  ],
+  "split": "test",
+  "id": "fact080",
+  "topic": "technology",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-06",
+  "articleUrl": "https://www.europapress.es/portaltic/sector/noticia-openai-anadira-marca-agua-invisible-texto-chatgpt-codex-ue-cumplir-ley-ia-20261006103525.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] 'textGrain: Entropy-Calibrated Watermarking for Language Model Text', a 'technical report accompanying OpenAI's October 5th blog post' (Li, Wen, Chen, Long, Jain, Joly, Lam, Song, Su; 5 Oct 2026): it 'provides the mathematical details of the textGrain watermark'. Business Today (6 Oct) cites the 'separate technical report'.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}

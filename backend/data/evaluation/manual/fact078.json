@@ -1,0 +1,26 @@
+{
+  "language": "es",
+  "site": "europapress.es",
+  "claimant": "Europa Press",
+  "claim": "OpenAI ha anunciado sus planes para cumplir con parte de las nuevas directrices de transparencia de Inteligencia Artificial (IA) de la Unión Europea, que obligan a que el texto generado sea identificable, en este caso mediante una marca de agua invisible tanto en ChatGPT como en Codex.",
+  "claimDate": "2026-10-06",
+  "reviewDate": "2026-10-06T09:53:49",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://openai.com/index/eu-text-provenance/",
+    "https://community.openai.com/t/openais-approach-to-eu-text-provenance-rules/1403521",
+    "https://www.businesstoday.in/technology/artificial-intelligence/story/openai-plans-to-watermark-chatgpt-and-codex-text-output-in-eu-amid-ai-transparency-push-559728-2026-10-06"
+  ],
+  "split": "test",
+  "id": "fact078",
+  "topic": "technology",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-05",
+  "articleUrl": "https://www.europapress.es/portaltic/sector/noticia-openai-anadira-marca-agua-invisible-texto-chatgpt-codex-ue-cumplir-ley-ia-20261006103525.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-06 - not yet checked by the human annotator] OpenAI, 'Our approach to EU text provenance rules' (5 Oct 2026, mirrored on its developer forum): 'Over the coming weeks, OpenAI will also add an invisible watermark to eligible ChatGPT and Codex text generated in the EU', to meet text provenance under the EU AI Act. Business Today (6 Oct, 10:14 IST, before this article) reports the same. openai.com refused automated access; read through the forum copy.",
+  "createdAt": "2026-10-06T09:53:49",
+  "review": null
+}
