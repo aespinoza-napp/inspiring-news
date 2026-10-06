@@ -44,7 +44,9 @@ exact defaults).
 `enabled: false` keeps a source out of ingestion, the probe and posted-URL recognition — but **not** out
 of the reliability map, which reads every YAML. That makes it the way to *rate* a domain without
 *ingesting* it: `newtral.yaml` and `maldita.yaml` are disabled because a fact-check quotes the claim it
-debunks, and claim extraction would take that quote for the article's own claim.
+debunks, and claim extraction would take that quote for the article's own claim. `efe.yaml` and
+`reuters.yaml` are disabled because they refused every request (HTTP 403 and 401) from 2026-09-23 to
+2026-10-06; their pages still rank as evidence.
 
 **One source per domain.** Reliability and posted-URL recognition are both looked up by domain, so a
 second YAML on the same domain (BBC Mundo on bbc.com, The Conversation's Spanish edition) silently

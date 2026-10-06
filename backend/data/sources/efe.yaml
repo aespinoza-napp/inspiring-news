@@ -1,3 +1,10 @@
+# Disabled 2026-10-06: it never answered this scraper. In two weeks of
+# scraper stats (from 2026-09-23) 21 attempts, none extracted; the probe
+# that day: homepage HTTP 403 and no feed, so no section pages either.
+# Rated, not ingested: the reliability map (EvidenceRanker) reads every
+# YAML, enabled or not, so EFE pages found as evidence keep their rating.
+# Re-enable when the /sources page extracts from it again.
+
 id: efe
 
 name: Agencia EFE
@@ -16,7 +23,7 @@ source_type: news
 
 reliability_index: 0.95
 
-enabled: true
+enabled: false
 
 requires_javascript: false
 

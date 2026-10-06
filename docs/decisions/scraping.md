@@ -251,6 +251,14 @@ a title on 53, a date on 52 and an author on 44 (the metadata fix above
 holds). El País and EFE are what the browser step is for; the host run
 could not try it.
 
+**2026-10-06: EFE and Reuters disabled** (`enabled: false`). In the
+container's scraper stats since 2026-09-23 neither delivered once (21 and
+24 attempts: 403, 401, no links); the probe that day found EFE's homepage
+403 with no feed, Reuters' homepage 401 and its feed 404. EFE had
+answered the 2026-09-29 host probe through its section pages, but never
+the container. Their YAMLs stay: the reliability map reads every file,
+so their pages still rank as evidence (`backend/data/sources/README.md`).
+
 ## Checked against real sources (2026-09-23)
 
 Two articles from each configured feed that could be read, both parsers

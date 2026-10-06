@@ -147,13 +147,14 @@ write them down than to have each be rediscovered.
   /ingest/rounds`) reads the sources of up to three topic groups and
   lists candidates; a person or the AI picks at most twenty, and only
   those become analysis jobs. `POST /ingest` still queues everything it
-  finds (optionally scoped to groups). Nothing runs on a timer. Three
-  configured feed URLs (National Geographic, Reuters, SINC) return
-  404 and no replacement feed exists: they are discovered from topic
-  section pages instead. EFE and Reuters refuse this scraper outright
-  (403/401). Spanish feeds are keyword-filtered only when a run is
-  scoped to some groups (`TOPIC_KEYWORDS_ES`, titles only); asked for
-  every topic they are not pre-filtered at all
+  finds (optionally scoped to groups). Nothing runs on a timer. Two
+  configured feed URLs (National Geographic, SINC) return 404 and no
+  replacement feed exists: they are discovered from topic section pages
+  instead. EFE (403) and Reuters (401) refused every request from
+  2026-09-23 to 2026-10-06 and are disabled (`enabled: false`): still
+  rated as evidence, never ingested. Spanish feeds are keyword-filtered
+  only when a run is scoped to some groups (`TOPIC_KEYWORDS_ES`, titles
+  only); asked for every topic they are not pre-filtered at all
   (`docs/decisions/selection.md`, `docs/decisions/scraping.md`).
 - **The headless browser is optional and usually absent locally.**
   `playwright` is the `browser` extra; `./scripts/check.sh` never
