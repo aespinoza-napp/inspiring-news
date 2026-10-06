@@ -4190,17 +4190,53 @@ button.button-link:hover:not(:disabled) {
   padding: 0;
 }
 
+/* Stays in view while the list scrolls (discover/page.tsx): every action
+   on the list, Refresh to Analyse, one bar. */
 .discover-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.6rem 1rem;
   flex-wrap: wrap;
+  margin: 0.75rem -0.5rem 0;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.discover-toolbar button {
+  margin-top: 0;
+}
+
+.discover-toolbar .discover-analyse {
+  margin-left: auto;
 }
 
 .discover-count {
-  margin-top: 1rem;
   font-size: 0.85rem;
   color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.candidate-rank {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+}
+
+.rank-score {
+  flex: none;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 

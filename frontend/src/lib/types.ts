@@ -540,7 +540,32 @@ export interface IngestSourcesResponse {
   groups: TopicGroup[];
   maxGroups: number;
   maxSelected: number;
+  /** Candidates a round shows, best first, and the most it shows when asked for more. */
+  listed: number;
+  maxListed: number;
   lastRun: IngestReport | null;
+}
+
+/** What the embeddings said about a candidate (backend mission_screen.Reading), cosine similarities. */
+export interface CandidateReading {
+  nearestTopic: string;
+  topic: number;
+  nearestOff: string;
+  off: number;
+  /** Nearness to the description of positive impact. */
+  impact: number;
+}
+
+/** A candidate's place in the ranking (backend src/services/selection/ranking.py). */
+export interface CandidateRank {
+  /** 0-1: news 60%, source record 25%, reliability 15% (the round's `ranking.weights`). */
+  score: number;
+  /** 0-1, from the story's own title and summary; null when nothing was read. */
+  news: number | null;
+  /** 0-1: the share of the source's newest items the mission screen kept this round, smoothed. */
+  record: number;
+  /** The source's configured reliability rating, as is. */
+  reliability: number;
 }
 
 /** One article a round found, before anything about it is fetched. */
@@ -556,6 +581,11 @@ export interface Candidate {
   summary: string | null;
   publishedAt: string | null;
   method: string | null;
+  /** Absent on rounds made before the ranking (2026-10-06). */
+  reading?: CandidateReading | null;
+  rank?: CandidateRank;
+  /** The same story as this url, ranked better: placed after every distinct story. */
+  sameStoryAs?: string;
 }
 
 export interface CandidateSourceRow {
@@ -567,6 +597,8 @@ export interface CandidateSourceRow {
   alreadyStored: number;
   candidates: number;
   deferred: number;
+  /** How many of its newest the mission screen ruled on (0 for a positive outlet); the source record's base. */
+  judged?: number;
   /** Left out by the mission screen; absent on rounds before 2026-10-06. */
   screened?: number;
   /** Dropped as older than the discovery age limit. */
@@ -639,7 +671,12 @@ export interface CandidateRound {
   topics: string[];
   perSource: number;
   sources: CandidateSourceRow[];
+  /** The ones shown and choosable, best first: 20, up to 40 when asked for more. */
   candidates: Candidate[];
+  /** Ranked below those shown; POST .../more brings the next into view. */
+  reserve?: Candidate[];
+  /** Absent on rounds made before the ranking. `sameStory`: the similarity at which two candidates are one story. */
+  ranking?: { weights: Record<string, number>; sameStory?: number };
   /** Absent on rounds made before the screen existed. */
   screen?: MissionScreenState;
   screened?: ScreenedCandidate[];
@@ -652,6 +689,8 @@ export interface CandidateRound {
     screened?: number;
     stale?: number;
     failed: number;
+    /** The same story again, ranked after every distinct one. */
+    sameStory?: number;
   };
   aiSelection: AISelectionState | null;
   queued: QueuedSelection | null;

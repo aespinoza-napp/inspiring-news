@@ -500,26 +500,43 @@ def test_ingestion_discovers_only_recent_items_by_default():
 
 
 class FakeScreen:
-    """Leaves out every candidate whose title contains one of `off`; records what it read."""
+    """
+    Leaves out every candidate whose title contains one of `off`, unless
+    exempt; reads each as `impact[title]` near positive impact (0.45, as
+    near as to politics, by default). Records what it read and what it
+    judged.
+    """
 
-    def __init__(self, off=(), error=None):
+    def __init__(self, off=(), error=None, impact=None, vectors=None):
         self.off = off
         self.error = error
+        self.impact = impact or {}
+        self.vectors = vectors or {}
         self.read = []
+        self.judged = []
 
-    def screen(self, candidates):
+    def assess(self, candidates, exempt=None):
 
-        from src.services.selection.mission_screen import Verdict
+        from src.services.selection.mission_screen import Assessment, Reading, Verdict
 
         if self.error:
             raise self.error
 
+        exempt = exempt or [False] * len(candidates)
         self.read.extend(candidates)
+        self.judged.extend(candidate for candidate, spared in zip(candidates, exempt) if not spared)
 
         return [
-            Verdict(off_mission="politics", margin=0.09, nearest_topic="cities")
-            if any(word in (candidate.title or "") for word in self.off) else None
-            for candidate in candidates
+            Assessment(
+                verdict=Verdict(off_mission="politics", margin=0.09, nearest_topic="cities")
+                if not spared and any(word in (candidate.title or "") for word in self.off) else None,
+                reading=Reading(
+                    nearest_topic="cities", topic=0.5, nearest_off="politics", off=0.45,
+                    impact=self.impact.get(candidate.title, 0.45),
+                    vector=self.vectors.get(candidate.title),
+                ),
+            )
+            for candidate, spared in zip(candidates, exempt)
         ]
 
 
@@ -596,7 +613,7 @@ def test_the_screen_reads_only_a_few_per_slot_not_the_whole_feed():
     assert round_["sources"][0]["deferred"] == 38
 
 
-def test_a_positive_outlet_is_not_screened():
+def test_a_positive_outlet_is_read_but_not_screened():
     """Good News Network's ex-prisoners-as-firefighters story read as "crime"."""
 
     gnn = build_source(id="gnn", name="Good News Network", groups=["culture"], positive_editorial=True)
@@ -607,7 +624,11 @@ def test_a_positive_outlet_is_not_screened():
     ).discover_candidates(["culture"], per_source=2)
 
     assert [c["url"] for c in round_["candidates"]] == ["https://goodnewsnetwork.org/ex-prisoners-fight-wildfires"]
-    assert screen.read == []
+    assert screen.judged == []
+    # Read all the same, and only what it can offer: per_source, not SCREEN_DEPTH times that.
+    assert [c.title for c in screen.read] == ["ex-prisoners-fight-wildfires"]
+    assert round_["candidates"][0]["reading"]["impact"] == 0.45
+    assert round_["sources"][0]["judged"] == 0
 
 
 def test_when_the_screen_cannot_run_every_candidate_stays_and_the_round_says_so():
@@ -625,6 +646,8 @@ def test_when_the_screen_cannot_run_every_candidate_stays_and_the_round_says_so(
     assert round_["screened"] == []
     assert round_["screen"]["status"] == "unavailable"
     assert "connection refused" in round_["screen"]["error"]
+    # Ranked by the sources alone: nothing was read.
+    assert all(c["rank"]["news"] is None and c["reading"] is None for c in round_["candidates"])
 
 
 def test_without_a_screen_nothing_is_left_out_and_the_round_says_it_was_off():
@@ -683,3 +706,115 @@ def test_post_ingest_screens_before_it_queues():
     assert jobs.urls == ["https://elpais.com/cultura/museo-abre"]
     assert report["totals"]["screened"] == 1
     assert report["sources"][0]["screened"] == 1
+
+
+# ----------------------------------------------------------------------
+# Best first (src/services/selection/ranking.py)
+# ----------------------------------------------------------------------
+
+
+def test_candidates_come_best_first_with_the_parts_of_their_score():
+
+    from src.services.selection import ranking
+
+    sources = [
+        build_source(id="nasa", name="NASA", groups=["culture"], reliability_index=1.0),
+        build_source(id="pais", name="El País", language="es", groups=["culture"], reliability_index=0.9),
+    ]
+    screen = FakeScreen(impact={"museo-abre": 0.48, "telescope-finds-water": 0.46})
+
+    round_ = screened_service(
+        {
+            "nasa": ["https://nasa.gov/news/telescope-finds-water"],
+            "pais": ["https://elpais.com/cultura/concierto-cancelado", "https://elpais.com/cultura/museo-abre"],
+        },
+        screen,
+        sources=sources,
+    ).discover_candidates(["culture"], per_source=2)
+
+    listed = [c["url"].rsplit("/", 1)[-1] for c in round_["candidates"]]
+    scores = [c["rank"]["score"] for c in round_["candidates"]]
+
+    assert scores == sorted(scores, reverse=True)
+    # Same source, same record and rating: the story itself decides.
+    assert listed.index("museo-abre") < listed.index("concierto-cancelado")
+
+    museum = next(c for c in round_["candidates"] if c["url"].endswith("museo-abre"))
+    assert set(museum["rank"]) == {"score", "news", "record", "reliability"}
+    assert museum["rank"]["reliability"] == 0.9
+    assert museum["reading"]["impact"] == 0.48
+    assert round_["ranking"]["weights"] == ranking.WEIGHTS
+
+
+def test_a_source_whose_newest_items_are_mostly_off_mission_ranks_lower():
+    """2026-10-06: eldiario and 20minutos kept about half of what the screen read; science outlets all of it."""
+
+    sources = [
+        build_source(id="abc", name="ABC", language="es", groups=["society"], reliability_index=0.9),
+        build_source(id="sinc", name="SINC", language="es", groups=["society"], reliability_index=0.9),
+    ]
+    noisy = [f"https://abc.es/espana/elecciones-{i}" for i in range(4)] + ["https://abc.es/sociedad/un-huerto-escolar"]
+
+    round_ = screened_service(
+        {"abc": noisy, "sinc": ["https://agenciasinc.es/una-biblioteca-escolar"]},
+        FakeScreen(off=("elecciones",)),
+        sources=sources,
+    ).discover_candidates(["society"], per_source=1)
+
+    assert [c["source"] for c in round_["candidates"]] == ["sinc", "abc"]
+
+    sinc, abc = (c["rank"] for c in round_["candidates"])
+    assert sinc["news"] == abc["news"]
+    assert abc["record"] < sinc["record"]
+    assert [(row["judged"], row["screened"]) for row in round_["sources"]] == [(5, 4), (1, 0)]
+
+
+def test_one_story_from_two_outlets_is_offered_once_before_any_story_twice():
+    """2026-10-06: the physics Nobel, from nine outlets, took 8 of a round's first twenty places."""
+
+    import numpy as np
+
+    sources = [
+        build_source(id="guardian", name="The Guardian", groups=["science"], reliability_index=0.9),
+        build_source(id="sinc", name="SINC", language="es", groups=["science"], reliability_index=0.9),
+    ]
+    screen = FakeScreen(
+        impact={"nobel-physics": 0.50, "nobel-fisica": 0.49, "telescope-finds-water": 0.46},
+        vectors={
+            "nobel-physics": np.array([1.0, 0.0]),
+            "nobel-fisica": np.array([0.8, 0.6]),
+            "telescope-finds-water": np.array([0.0, 1.0]),
+        },
+    )
+
+    round_ = screened_service(
+        {
+            "guardian": ["https://theguardian.com/science/nobel-physics", "https://theguardian.com/science/telescope-finds-water"],
+            "sinc": ["https://agenciasinc.es/nobel-fisica"],
+        },
+        screen,
+        sources=sources,
+    ).discover_candidates(["science"], per_source=2)
+
+    assert [c["url"].rsplit("/", 1)[-1] for c in round_["candidates"]] == ["nobel-physics", "telescope-finds-water", "nobel-fisica"]
+    assert round_["candidates"][-1]["sameStoryAs"] == "https://theguardian.com/science/nobel-physics"
+    assert round_["totals"]["sameStory"] == 1
+    # The vectors stay in memory: the round records the reading without them.
+    assert "vector" not in round_["candidates"][0]["reading"]
+
+
+def test_without_a_screen_the_sources_alone_decide_the_order():
+
+    sources = [
+        build_source(id="cnn", name="CNN", groups=["health"], reliability_index=0.72),
+        build_source(id="who", name="WHO", groups=["health"], reliability_index=0.97),
+    ]
+
+    round_ = screened_service(
+        {"cnn": ["https://cnn.com/health/a-new-vaccine"], "who": ["https://who.int/news/malaria-falls"]},
+        screen=None,
+        sources=sources,
+    ).discover_candidates(["health"])
+
+    assert [c["source"] for c in round_["candidates"]] == ["who", "cnn"]
+    assert all(c["rank"]["news"] is None for c in round_["candidates"])

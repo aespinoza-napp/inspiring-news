@@ -6,7 +6,10 @@ analysis. A round puts a choice in between:
 
 1. **Candidates** (`create_round`): discovery over the sources of up to
    three topic groups, each article listed with its feed's title and
-   summary. Nothing beyond the feeds and section pages is fetched.
+   summary, best first (src/services/selection/ranking.py). The first
+   LISTED are shown; the rest stay in the round as its `reserve`, and
+   `show_more` brings up to MAX_LISTED into view. Nothing beyond the feeds
+   and section pages is fetched.
 2. **Selection**, by a person or by the AI (`start_ai_selection`, an LLM
    reading titles and summaries - src/services/selection/ai_selector.py).
    The AI's picks are a proposal: the person sees them ticked, with the
@@ -38,6 +41,15 @@ logger = getLogger(__name__)
 # enrichment and an LLM call per claim; on the production CPU model one
 # article is about three minutes.
 MAX_SELECTED = 20
+
+# Candidates a round shows, best first, and the most it shows when asked
+# for more. A three-group round finds 60-80; read top to bottom in the
+# sources' order, the first twenty of a Science and Society round on
+# 2026-10-06 held 8 stories not worth offering, ranked 1. Only what is
+# shown can be chosen, by the person or the AI - which also keeps the AI
+# selection to two or four calls.
+LISTED = 20
+MAX_LISTED = 40
 
 StartJob = Callable[[str], tuple[str, bool]]
 
@@ -78,18 +90,52 @@ class SelectionService:
         groups: list[str],
         source_ids: list[str] | None = None,
         per_source: int = 3,
+        listed: int = LISTED,
     ) -> dict:
 
         discovered = self.ingestion.discover_candidates(groups, source_ids, per_source)
 
+        # Best first already; `totals.candidates` keeps counting all found.
+        found = discovered["candidates"]
+        listed = max(1, min(listed, MAX_LISTED))
+
         round_ = {
             "id": uuid.uuid4().hex[:16],
             **discovered,
+            "candidates": found[:listed],
+            "reserve": found[listed:],
             "aiSelection": None,
             "queued": None,
         }
 
         self.rounds.save(round_)
+
+        return round_
+
+    def show_more(self, round_id: str) -> dict:
+        """
+        The next of the reserve into view, best first, up to MAX_LISTED
+        shown. Not once the round was sent to analysis, and not while the
+        AI selection reads the list it would change.
+        """
+
+        round_ = self.get(round_id)
+
+        if round_.get("queued"):
+            raise InvalidSelection("This round was already sent to analysis.")
+
+        with self._lock:
+
+            if self._running == round_id:
+                raise SelectionBusy(round_id)
+
+            room = MAX_LISTED - len(round_["candidates"])
+            reserve = round_.get("reserve") or []
+
+            if room > 0 and reserve:
+                round_["candidates"] = round_["candidates"] + reserve[:room]
+                round_["reserve"] = reserve[room:]
+                self.rounds.save(round_)
 
         return round_
 

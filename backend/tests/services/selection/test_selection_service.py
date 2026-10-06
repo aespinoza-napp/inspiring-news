@@ -6,6 +6,8 @@ from src.services.llms import LLMUnavailableError
 from src.services.selection.ai_selector import AISelection, Scored
 from src.services.selection.rounds import SelectionRounds
 from src.services.selection.selection_service import (
+    LISTED,
+    MAX_LISTED,
     MAX_SELECTED,
     InvalidSelection,
     RoundNotFound,
@@ -214,3 +216,75 @@ def test_rounds_survive_a_restart_and_are_listed_newest_first(tmp_path):
 def test_an_id_that_is_not_hex_never_reaches_the_file_system(tmp_path):
 
     assert SelectionRounds(tmp_path).get("../../etc/passwd") is None
+
+
+# ----------------------------------------------------------------------
+# Twenty shown, best first; forty on request
+# ----------------------------------------------------------------------
+
+
+def urls(first: int, last: int) -> list[str]:
+
+    return [f"https://news.example/{i}" for i in range(first, last + 1)]
+
+
+def test_a_round_shows_the_best_twenty_and_keeps_the_rest(tmp_path):
+
+    round_ = service(tmp_path, found=LISTED + 5).create_round(["society"])
+
+    assert [c["url"] for c in round_["candidates"]] == urls(1, LISTED)
+    assert [c["url"] for c in round_["reserve"]] == urls(LISTED + 1, LISTED + 5)
+    assert round_["totals"]["candidates"] == LISTED + 5
+
+
+def test_asking_for_more_shows_the_next_up_to_forty(tmp_path):
+
+    selection = service(tmp_path, found=MAX_LISTED + 10)
+    round_ = selection.create_round(["society"])
+
+    shown = selection.show_more(round_["id"])
+
+    assert [c["url"] for c in shown["candidates"]] == urls(1, MAX_LISTED)
+    assert len(shown["reserve"]) == 10
+    assert len(selection.show_more(round_["id"])["candidates"]) == MAX_LISTED
+    assert len(SelectionRounds(tmp_path).get(round_["id"])["candidates"]) == MAX_LISTED
+
+
+def test_forty_can_be_asked_for_at_once_and_never_more(tmp_path):
+
+    selection = service(tmp_path, found=MAX_LISTED + 10)
+
+    assert len(selection.create_round(["society"], listed=MAX_LISTED)["candidates"]) == MAX_LISTED
+    assert len(selection.create_round(["society"], listed=500)["candidates"]) == MAX_LISTED
+
+
+def test_only_what_is_shown_can_be_sent_or_read_by_the_ai(tmp_path):
+
+    ai = FakeSelector()
+    selection = service(tmp_path, found=LISTED + 7, selector=ai)
+    round_ = selection.create_round(["society"])
+
+    selection.run_ai_selection(round_["id"], limit=20, min_score=6.0)
+
+    assert ai.calls[0][0] == LISTED
+
+    with pytest.raises(InvalidSelection, match="Not a candidate"):
+        selection.queue(round_["id"], urls(LISTED + 1, LISTED + 1), Jobs())
+
+
+def test_more_is_refused_once_sent_and_while_the_ai_reads_the_list(tmp_path, monkeypatch):
+
+    selection = service(tmp_path, found=LISTED + 5)
+
+    sent = selection.create_round(["society"])
+    selection.queue(sent["id"], urls(1, 1), Jobs())
+
+    with pytest.raises(InvalidSelection, match="already sent"):
+        selection.show_more(sent["id"])
+
+    reading = selection.create_round(["society"])
+    monkeypatch.setattr("threading.Thread.start", lambda self: None)
+    selection.start_ai_selection(reading["id"])
+
+    with pytest.raises(SelectionBusy):
+        selection.show_more(reading["id"])

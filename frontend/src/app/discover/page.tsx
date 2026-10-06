@@ -6,6 +6,7 @@ import { FlowSteps } from "@/components/FlowSteps";
 import { safeHref } from "@/lib/links";
 import {
   Candidate,
+  CandidateRank,
   CandidateRound,
   CandidateRoundSummary,
   IngestSource,
@@ -65,6 +66,41 @@ function when(value: string | null): string {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 }
 
+function percent(value: number | undefined): string {
+  return value === undefined ? "–" : `${Math.round(value * 100)}%`;
+}
+
+// A candidate's score and what it is made of (backend
+// src/services/selection/ranking.py): the story's own title and summary,
+// how much of its source's news the screen kept this round, and the
+// source's reliability rating.
+function RankLine({ rank, place }: { rank: CandidateRank; place: number | undefined }) {
+  return (
+    <div className="candidate-rank">
+      <span
+        className="rank-score"
+        title="Ranking score, 0-100: the story itself, its source's record this round and the source's reliability rating"
+      >
+        {place !== undefined && `#${place} · `}
+        {Math.round(rank.score * 100)}
+      </span>
+      <span className="stats-muted">
+        <span title="How much nearer its title and summary come to positive impact than to anything off-mission">
+          story {rank.news === null ? "not read" : Math.round(rank.news * 100)}
+        </span>
+        {" · "}
+        <span title="The share of this source's newest articles the mission screen kept this round, smoothed">
+          source {Math.round(rank.record * 100)}% on-mission
+        </span>
+        {" · "}
+        <span title="The source's configured reliability rating, the one its pages get as evidence">
+          rated {rank.reliability.toFixed(2)}
+        </span>
+      </span>
+    </div>
+  );
+}
+
 // The round id lives in the URL, so a reload - or coming back from Live -
 // returns to the same candidates and the same AI proposal.
 function roundFromUrl(): string | null {
@@ -90,11 +126,15 @@ export default function DiscoverPage() {
   const [chosen, setChosen] = useState<Set<string>>(new Set());
   const [recent, setRecent] = useState<CandidateRoundSummary[]>([]);
 
-  const [busy, setBusy] = useState<"discovering" | "starting-ai" | "queueing" | null>(null);
+  const [busy, setBusy] = useState<
+    "discovering" | "refreshing" | "more" | "starting-ai" | "queueing" | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
 
   const maxGroups = catalogue?.maxGroups ?? 3;
   const maxSelected = catalogue?.maxSelected ?? 20;
+  const listed = catalogue?.listed ?? 20;
+  const maxListed = catalogue?.maxListed ?? 40;
 
   const loadRecent = useCallback(async () => {
     try {
@@ -207,15 +247,44 @@ export default function DiscoverPage() {
     [round]
   );
 
-  // Best AI score first once there are scores; the feed's order before.
+  // The round comes best first (its ranking); once the AI has scored,
+  // best AI score first, ties left in the ranking's order.
   const candidates: Candidate[] = useMemo(() => {
     const list = [...(round?.candidates ?? [])];
     if (scores.size === 0) return list;
     return list.sort((a, b) => (scores.get(b.url)?.score ?? -1) - (scores.get(a.url)?.score ?? -1));
   }, [round, scores]);
 
+  // Each candidate's place in the ranking, which an AI sort does not change.
+  const places = useMemo(() => {
+    const byUrl = new Map<string, number>();
+    (round?.candidates ?? []).forEach((candidate, index) => byUrl.set(candidate.url, index + 1));
+    return byUrl;
+  }, [round]);
+
+  // A story's other outlets, shown or not: the url its repeats point to ->
+  // their sources' names.
+  const alsoIn = useMemo(() => {
+    const byLead = new Map<string, string[]>();
+    for (const candidate of [...(round?.candidates ?? []), ...(round?.reserve ?? [])]) {
+      if (!candidate.sameStoryAs) continue;
+      byLead.set(candidate.sameStoryAs, [...(byLead.get(candidate.sameStoryAs) ?? []), candidate.sourceName]);
+    }
+    return byLead;
+  }, [round]);
+
   const queued = round?.queued ?? null;
   const locked = queued !== null;
+
+  // How many more the round can show: what is ranked below, up to maxListed in all.
+  const more = round
+    ? Math.max(0, Math.min(round.reserve?.length ?? 0, maxListed - round.candidates.length))
+    : 0;
+
+  const unscored =
+    round?.aiSelection?.status === "done"
+      ? (round.candidates ?? []).filter((candidate) => !scores.has(candidate.url)).length
+      : 0;
 
   function toggleGroup(id: string) {
     setGroups((current) =>
@@ -246,14 +315,15 @@ export default function DiscoverPage() {
     });
   }
 
-  async function discover() {
-    setBusy("discovering");
+  async function discover(again?: { groups: string[]; sources: string[]; perSource: number }) {
+    setBusy(again ? "refreshing" : "discovering");
     setError(null);
     try {
       const created = await post<CandidateRound>("/api/ingest/rounds", {
-        groups,
-        sources: included.map((source) => source.id),
-        perSource,
+        groups: again?.groups ?? groups,
+        sources: again?.sources ?? included.map((source) => source.id),
+        perSource: again?.perSource ?? perSource,
+        listed,
       });
       setRound(created);
       setChosen(new Set());
@@ -261,6 +331,40 @@ export default function DiscoverPage() {
       loadRecent();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Discovery failed.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  // The same topics, sources and articles per source, read again - from
+  // the list itself. It used to take "New round" at the list's end, then
+  // "Find articles" back up in step 2.
+  async function refresh() {
+    if (!round) return;
+    if (
+      chosen.size > 0 &&
+      !window.confirm(
+        `Read the sources again? The ${chosen.size} you ticked will be cleared; this round stays under Recent rounds.`
+      )
+    ) {
+      return;
+    }
+    await discover({
+      groups: round.groups,
+      sources: round.sources.map((row) => row.source),
+      perSource: round.perSource,
+    });
+  }
+
+  // The next of the ranking into view, up to maxListed: only when asked.
+  async function showMore() {
+    if (!round) return;
+    setBusy("more");
+    setError(null);
+    try {
+      setRound(await post<CandidateRound>(`/api/ingest/rounds/${round.id}/more`, {}));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not show more.");
     } finally {
       setBusy(null);
     }
@@ -331,9 +435,10 @@ export default function DiscoverPage() {
       <h1>Discover</h1>
       <p className="subtitle">
         Pick up to {maxGroups} topics: only the sources that cover them are
-        read, and only for those topics. Then choose up to {maxSelected} of
-        the articles found - yourself, or let the AI propose a selection
-        you can change - and send them to analysis.
+        read, and only for those topics. The articles found come best first,
+        by the story and its source - the {listed} best shown, up to{" "}
+        {maxListed} if you ask for more. Choose up to {maxSelected} of them,
+        yourself or from the AI&apos;s proposal, and send them to analysis.
       </p>
 
       {error && (
@@ -412,7 +517,7 @@ export default function DiscoverPage() {
                 ))}
               </select>
             </label>
-            <button type="button" onClick={discover} disabled={busy !== null || included.length === 0}>
+            <button type="button" onClick={() => discover()} disabled={busy !== null || included.length === 0}>
               {busy === "discovering" && <span className="spinner" aria-hidden="true" />}
               {busy === "discovering"
                 ? "Reading the feeds…"
@@ -433,17 +538,34 @@ export default function DiscoverPage() {
           <div className="section-label">3 · Choose up to {maxSelected}</div>
           <p className="claims-note">
             {round.totals.candidates} new articles from {round.totals.sources} sources in{" "}
-            {round.groups.map(groupName).join(", ")} · {round.totals.alreadyStored} already analysed ·{" "}
-            {round.totals.deferred} more left for another round
+            {round.groups.map(groupName).join(", ")}
+            {round.ranking &&
+              (round.candidates.length < round.totals.candidates
+                ? ` · the best ${round.candidates.length} shown`
+                : " · all shown")}{" "}
+            · {round.totals.alreadyStored} already analysed · {round.totals.deferred} more left for another round
             {(round.totals.stale ?? 0) > 0 && ` · ${round.totals.stale} older than a month`}
-            {round.totals.failed > 0 && ` · ${round.totals.failed} sources found nothing`}{" "}
+            {(round.totals.sameStory ?? 0) > 0 &&
+              ` · ${round.totals.sameStory} repeat a story another outlet tells, ranked last`}
+            {round.totals.failed > 0 &&
+              ` · ${round.totals.failed} ${round.totals.failed === 1 ? "source" : "sources"} found nothing`}{" "}
             <span className="stats-muted">({when(round.startedAt)})</span>
           </p>
+
+          {round.ranking && round.candidates.length > 0 && (
+            <p className="claims-note">
+              Best first, by the story and its source: how near its title and summary come to
+              positive impact rather than to anything off-mission ({percent(round.ranking.weights.news)}),
+              how much of its source&apos;s news was on-mission this round ({percent(round.ranking.weights.record)}),
+              and the source&apos;s reliability rating ({percent(round.ranking.weights.reliability)}).
+            </p>
+          )}
 
           {round.screen?.status === "unavailable" && (
             <p className="claims-note">
               The mission screen could not run ({round.screen.error}), so nothing was left out
-              for being off-mission: elections, crime or celebrity pieces may be in this list.
+              for being off-mission: elections, crime or celebrity pieces may be in this list, and
+              its order comes from the sources alone.
             </p>
           )}
 
@@ -475,30 +597,56 @@ export default function DiscoverPage() {
             </details>
           )}
 
-          {!locked && round.candidates.length > 0 && (
+          {/* Every action on the list in one bar that stays in view while
+              it scrolls: Refresh, the AI, the count and Analyse used to be
+              split between its top and its end. */}
+          {!locked && (
             <div className="discover-toolbar">
               <button
                 type="button"
                 className="button-secondary"
-                onClick={askAI}
+                onClick={refresh}
                 disabled={busy !== null || aiStatus === "running"}
+                title="Read the same sources again, for the same topics"
               >
-                {(busy === "starting-ai" || aiStatus === "running") && (
-                  <span className="spinner" aria-hidden="true" />
-                )}
-                {aiStatus === "running"
-                  ? "The AI is reading the list…"
-                  : aiStatus === "done"
-                    ? "Ask the AI again"
-                    : "Let the AI choose"}
+                {busy === "refreshing" && <span className="spinner" aria-hidden="true" />}
+                {busy === "refreshing" ? "Reading the feeds…" : "Refresh"}
               </button>
-              <span className="discover-count" aria-live="polite">
-                {chosen.size} / {maxSelected} chosen
-              </span>
-              {chosen.size > 0 && (
-                <button type="button" className="button-link" onClick={() => setChosen(new Set())}>
-                  Clear
-                </button>
+              {round.candidates.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    onClick={askAI}
+                    disabled={busy !== null || aiStatus === "running"}
+                  >
+                    {(busy === "starting-ai" || aiStatus === "running") && (
+                      <span className="spinner" aria-hidden="true" />
+                    )}
+                    {aiStatus === "running"
+                      ? "The AI is reading the list…"
+                      : aiStatus === "done"
+                        ? "Ask the AI again"
+                        : "Let the AI choose"}
+                  </button>
+                  <span className="discover-count" aria-live="polite">
+                    {chosen.size} / {maxSelected} chosen
+                  </span>
+                  {chosen.size > 0 && (
+                    <button type="button" className="button-link" onClick={() => setChosen(new Set())}>
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="discover-analyse"
+                    onClick={analyse}
+                    disabled={busy !== null || chosen.size === 0}
+                  >
+                    {busy === "queueing" && <span className="spinner" aria-hidden="true" />}
+                    {`Analyse ${chosen.size} ${chosen.size === 1 ? "article" : "articles"}`}
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -506,12 +654,14 @@ export default function DiscoverPage() {
           {round.aiSelection?.status === "done" && (
             <p className="claims-note">
               The AI proposed {round.aiSelection.picks?.length ?? 0} of{" "}
-              {round.candidates.length}, scoring each from its title and summary
+              {round.candidates.length - unscored}, scoring each from its title and summary
               against the publication&apos;s idea of positive impact ({round.aiSelection.model},{" "}
               {round.aiSelection.calls} {round.aiSelection.calls === 1 ? "call" : "calls"},{" "}
               {Math.round((round.aiSelection.elapsedMs ?? 0) / 1000)} s). Its picks are ticked;
               change them freely.
               {(round.aiSelection.notes ?? []).map((note) => ` ${note}`)}
+              {unscored > 0 &&
+                ` The ${unscored} shown since have no AI score: ask the AI again to include them.`}
             </p>
           )}
 
@@ -563,8 +713,20 @@ export default function DiscoverPage() {
                       <div className="candidate-meta">
                         {candidate.sourceName} · {candidate.language}
                         {candidate.publishedAt && ` · ${when(candidate.publishedAt)}`}
+                        {alsoIn.has(candidate.url) && (
+                          <span title={`Also in: ${alsoIn.get(candidate.url)?.join(", ")}`}>
+                            {` · the same story in ${alsoIn.get(candidate.url)?.length} more ${
+                              alsoIn.get(candidate.url)?.length === 1 ? "source" : "sources"
+                            }, ranked after the rest`}
+                          </span>
+                        )}
+                        {candidate.sameStoryAs &&
+                          ` · the same story as ${
+                            places.has(candidate.sameStoryAs) ? `#${places.get(candidate.sameStoryAs)}` : "one ranked above"
+                          }`}
                       </div>
                       {candidate.summary && <p className="candidate-summary">{candidate.summary}</p>}
+                      {candidate.rank && <RankLine rank={candidate.rank} place={places.get(candidate.url)} />}
                       {scored && (
                         <div className="candidate-ai">
                           <span
@@ -586,12 +748,20 @@ export default function DiscoverPage() {
           {!locked && (
             <div className="ingest-controls">
               <button type="button" className="button-link" onClick={startOver} disabled={busy !== null}>
-                New round
+                New round: other topics or sources
               </button>
-              <button type="button" onClick={analyse} disabled={busy !== null || chosen.size === 0}>
-                {busy === "queueing" && <span className="spinner" aria-hidden="true" />}
-                {`Analyse ${chosen.size} ${chosen.size === 1 ? "article" : "articles"}`}
-              </button>
+              {more > 0 && (
+                <button
+                  type="button"
+                  className="button-secondary"
+                  onClick={showMore}
+                  disabled={busy !== null || aiStatus === "running"}
+                  title={`Up to ${maxListed} in all; ranked below the ones shown`}
+                >
+                  {busy === "more" && <span className="spinner" aria-hidden="true" />}
+                  {`Show ${more} more`}
+                </button>
+              )}
             </div>
           )}
         </section>

@@ -163,6 +163,68 @@ stories (a teacher's poetry prize at -0.07): no margin separates them.
 Re-run live the same round with all of it: 59 left out instead of 34,
 38 dropped as old instead of 7 (link dates).
 
+## The ranking's weights (one-off, 2026-10-06)
+
+Not a command yet either: run once to choose the weights in
+`src/services/selection/ranking.py`. The labelled set, every candidate's
+readings and the AI's scores are in
+`backend/data/evaluation/experiments/ranking/20261006T133348Z/`
+(`result.json`, `report.md`), so other weights can be tried without
+embedding anything again.
+
+The 117 unique candidates of the five rounds recorded that day (Culture;
+Society three times; Science and Society), each read and labelled by
+hand before any score was computed (Claude; not yet checked by a person):
+22 clearly positive, 33 worth offering, 62 not worth offering. Each title
+and summary embedded as the screen does; the app's own AI selection
+(llama3.2:3b) run over each round with its topics, writing nowhere but a
+file (72 s for all 117). AUC over the 86 today's screen keeps, 95%
+bootstrap interval (2,000 resamples, seed 20261005):
+
+| Signal | Worth offering vs not | Clearly positive vs the rest |
+|---|---|---|
+| **The chosen score** (story 0.6, source record 0.25, reliability 0.15) | **0.778 [0.673, 0.868]** | **0.806 [0.679, 0.916]** |
+| Story and source record only (0.75, 0.25) | 0.785 [0.680, 0.876] | 0.822 [0.706, 0.923] |
+| The story: nearness to `IMPACT` minus the nearest off-mission | 0.753 [0.647, 0.850] | 0.812 [0.692, 0.917] |
+| the same, `IMPACT` worded as the AI selector's `DEFINITION` | 0.718 [0.599, 0.828] | 0.785 [0.660, 0.897] |
+| the same, `IMPACT` in one short line | 0.777 [0.669, 0.871] | 0.839 [0.734, 0.928] |
+| Source record: share of its items the screen kept | 0.684 [0.556, 0.797] | 0.664 [0.503, 0.808] |
+| Source reliability rating | 0.486 [0.356, 0.605] | 0.425 [0.294, 0.566] |
+| Nearest topic of the round's groups | 0.582 [0.450, 0.711] | 0.573 [0.442, 0.694] |
+| Freshness (newer first) | 0.301 [0.195, 0.416] | 0.420 [0.269, 0.584] |
+| The AI selection's 0-10 score (llama3.2:3b) | 0.650 [0.533, 0.759] | 0.755 [0.612, 0.881] |
+
+Not worth offering / clearly positive among each round's first twenty,
+today's screen applied, in the sources' order and ranked (the record
+from the round's own screening where it had one):
+
+| Round | Topics | Kept today | Sources' order | Ranked |
+|---|---|---|---|---|
+| 09:43 | Culture | 12 | 1 / 3 | 1 / 3 |
+| 10:43 | Society | 15 | 4 / 5 | 4 / 5 |
+| 11:19 | Society | 20 | 7 / 7 | 7 / 7 |
+| 11:21 | Science, Society | 63 | 8 / 6 | **1 / 14** |
+| 12:16 | Society | 30 | 15 / 3 | **6 / 8** |
+
+Rounds of twenty or fewer show everything either way; the ranking only
+orders them. Read: the story's own reading carries most of it; the
+source's record adds a little; the reliability rating none (it is in on
+purpose, `docs/decisions/selection.md`); freshness points the wrong way.
+The wording of `IMPACT` was fixed before the measurement and kept: the
+short line did better on this sample, inside the same intervals. The 3B
+model behind "Let the AI choose" gave 0 to 13 stories labelled not worth
+offering and 4 labelled clearly positive, and 9 or 10 to 8 of the former.
+
+**The same round live on the new code** (Science and Society, 3 per
+source, 57-66 s): 79 found, 58 left out, 40 too old. Ranked, its first
+twenty held the physics Nobel 8 times, from nine outlets in two
+languages. All 3,081 pairs of the 79 compared by their embeddings: the
+Nobel's versions at 0.68-0.88, each within 0.75 of another; the nearest
+two different stories at 0.69. Hence `SAME_STORY` = 0.75, single link
+(a version near any already-placed version of a story joins it): it
+grouped the eight Nobel repeats and one explainer of the medicine Nobel,
+nothing else, and the first twenty became twenty different stories.
+
 ## Thresholds of the fact-check itself
 
 Those belong to the harness, not here: `cli run --thresholds f.json` runs

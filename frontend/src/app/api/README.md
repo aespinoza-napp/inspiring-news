@@ -14,7 +14,7 @@ backend (`backend/src/api/routes.py`), not here.
 | `jobs/[jobId]/route.ts` | `GET /analyze/jobs/{jobId}` | `useAnalysisJob` — polled every second for progress. **Must keep `cache: "no-store"`** on its `fetch()` — see `CLAUDE.md`, this bit the project once already (stale cached responses made the UI look permanently stuck) |
 | `correct/route.ts` | `POST /correct` | `/corrector` page |
 | `ingest/route.ts`, `ingest/sources/route.ts` | `POST /ingest`, `GET /ingest/sources` | `/discover` (the groups and sources). `POST /ingest` has no page since the Scraper's ingest panel gave way to `/discover`; kept for direct use. GET is `cache: "no-store"` |
-| `ingest/rounds/[[...path]]/route.ts` | `POST` / `GET /ingest/rounds`, `GET /ingest/rounds/{id}`, `POST /ingest/rounds/{id}/{ai-selection,queue}` | `/discover`. An allowlist like graph's: a round id must be 16 hex characters and the action one of the two. GETs are `cache: "no-store"` - a round changes while its AI selection runs |
+| `ingest/rounds/[[...path]]/route.ts` | `POST` / `GET /ingest/rounds`, `GET /ingest/rounds/{id}`, `POST /ingest/rounds/{id}/{ai-selection,queue,more}` | `/discover`. An allowlist like graph's: a round id must be 16 hex characters and the action one of the three. GETs are `cache: "no-store"` - a round changes while its AI selection runs |
 | `scraper/freshness/route.ts` | `GET /scraper/freshness` | `/scraper` page's Time to reception panel (`components/FreshnessSection.tsx`). `cache: "no-store"`; loaded on demand, not polled - it reads the whole lake |
 | `verify-claim/route.ts` | `POST /verify-claim` | `/claim` page |
 | `enrich/route.ts` | `POST /enrich` | `/enrich` page |

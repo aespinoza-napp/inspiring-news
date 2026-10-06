@@ -4,6 +4,7 @@ import pytest
 from src.config.topics import TOPICS
 from src.services.inference_client import InferenceUnavailable
 from src.services.selection.mission_screen import (
+    IMPACT,
     MARGIN,
     OFF_MISSION,
     Candidate,
@@ -13,7 +14,7 @@ from src.services.selection.mission_screen import (
 )
 
 
-NAMES = [TOPICS[t].name for t in TOPICS] + [OFF_MISSION[o][0] for o in OFF_MISSION]
+NAMES = [TOPICS[t].name for t in TOPICS] + [OFF_MISSION[o][0] for o in OFF_MISSION] + [IMPACT[0]]
 
 
 def axis(name: str) -> np.ndarray:
@@ -63,8 +64,8 @@ def embeddings(**kwargs) -> FakeEmbeddings:
     return FakeEmbeddings({
         # Nearer politics than any topic by 0.10.
         ELECTION: 0.6 * axis("Politics") + 0.5 * axis(TOPICS["cities"].name),
-        # Nearer a topic than anything off-mission.
-        MUSEUM: 0.7 * axis(TOPICS["arts"].name) + 0.68 * axis("Service pages"),
+        # Nearer a topic than anything off-mission, and near positive impact.
+        MUSEUM: 0.7 * axis(TOPICS["arts"].name) + 0.68 * axis("Service pages") + 0.55 * axis(IMPACT[0]),
         # Off-mission ahead, but by less than MARGIN: kept.
         NEAR_TIE: (0.5 + MARGIN * 0.75) * axis("Crime") + 0.5 * axis(TOPICS["entertainment"].name),
         # Politics ahead by as little: politics needs no lead (MARGINS).
@@ -136,7 +137,8 @@ def test_the_descriptions_are_embedded_once_per_screen():
     screen.screen(titled(MUSEUM))
 
     assert len(service.calls) == 3
-    assert len(service.calls[0]) == len(TOPICS) + len(OFF_MISSION)
+    # IMPACT is read in the same pass, for the ranking.
+    assert len(service.calls[0]) == len(TOPICS) + len(OFF_MISSION) + 1
 
 
 def test_an_unreachable_model_raises_and_leaves_nothing_half_built():
@@ -150,6 +152,42 @@ def test_an_unreachable_model_raises_and_leaves_nothing_half_built():
     service.fail = False
 
     assert screen.screen(titled(ELECTION))[0].off_mission == "politics"
+
+
+# ----------------------------------------------------------------------
+# The reading behind each verdict, for the ranking
+# ----------------------------------------------------------------------
+
+
+def test_each_kept_candidate_comes_with_what_the_embeddings_said():
+
+    [museum] = MissionScreen(embedding_service=embeddings()).assess(titled(MUSEUM))
+
+    assert museum.verdict is None
+    assert (museum.reading.nearest_topic, museum.reading.nearest_off) == ("arts", "service")
+    assert (museum.reading.topic, museum.reading.off, museum.reading.impact) == pytest.approx((0.7, 0.68, 0.55))
+    assert museum.reading.margin == pytest.approx(-0.02)
+    assert museum.reading.to_dict()["nearestOff"] == "service"
+    # Its own embedding too, for telling one story told twice; never recorded.
+    assert museum.reading.vector is not None and "vector" not in museum.reading.to_dict()
+
+
+def test_an_exempt_candidate_is_read_but_never_left_out():
+    """A positive outlet's: its editors chose; the ranking still needs its reading."""
+
+    election, death = MissionScreen(embedding_service=embeddings()).assess(
+        titled(ELECTION, "Muere un poeta", language="es"), exempt=[True, True],
+    )
+
+    assert election.verdict is None and election.reading.nearest_off == "politics"
+    assert death.verdict is None and death.reading is not None
+
+
+def test_a_death_report_has_no_reading():
+
+    [death] = MissionScreen(embedding_service=embeddings()).assess(titled("Muere un poeta", language="es"))
+
+    assert death.verdict.off_mission == "obituary" and death.reading is None
 
 
 def test_a_candidate_is_judged_by_its_title_and_summary():

@@ -113,6 +113,7 @@ def test_the_groups_and_their_source_counts_are_listed(monkeypatch):
 
     assert [group["id"] for group in body["groups"]] == ["society", "science", "environment", "culture", "health"]
     assert (body["maxGroups"], body["maxSelected"]) == (3, 20)
+    assert (body["listed"], body["maxListed"]) == (20, 40)
     assert body["groups"][1]["topics"][0] == {"id": "space", "name": "Space"}
 
 
@@ -121,8 +122,8 @@ class FakeSelection:
     def __init__(self):
         self.calls = []
 
-    def create_round(self, groups, source_ids, per_source):
-        self.calls.append(("create", groups, source_ids, per_source))
+    def create_round(self, groups, source_ids, per_source, listed=20):
+        self.calls.append(("create", groups, source_ids, per_source, listed))
         return {"id": "0123456789abcdef", "candidates": []}
 
     def get(self, round_id):
@@ -130,6 +131,10 @@ class FakeSelection:
         if round_id != "0123456789abcdef":
             raise RoundNotFound(round_id)
         return {"id": round_id}
+
+    def show_more(self, round_id):
+        self.calls.append(("more", round_id))
+        return {**self.get(round_id), "candidates": []}
 
     def list(self, limit=20):
         return []
@@ -159,11 +164,27 @@ def test_a_round_needs_groups_and_known_sources(monkeypatch):
     assert client.post("/ingest/rounds", json={}).status_code == 422
     assert client.post("/ingest/rounds", json={"groups": ["science"], "sources": ["nope"]}).status_code == 422
     assert client.post("/ingest/rounds", json={"groups": ["science"], "perSource": 50}).status_code == 422
+    # Twenty shown by default, forty at most.
+    assert client.post("/ingest/rounds", json={"groups": ["science"], "listed": 41}).status_code == 422
 
     response = client.post("/ingest/rounds", json={"groups": ["science"], "sources": ["nasa"], "perSource": 4})
 
     assert response.status_code == 200
-    assert selection.calls == [("create", ["science"], ["nasa"], 4)]
+    assert selection.calls == [("create", ["science"], ["nasa"], 4, 20)]
+
+    client.post("/ingest/rounds", json={"groups": ["science"], "listed": 40})
+
+    assert selection.calls[-1] == ("create", ["science"], None, 3, 40)
+
+
+def test_more_of_a_round_is_shown_only_when_asked(monkeypatch):
+
+    selection, _ = use_selection(monkeypatch)
+
+    assert client.post("/ingest/rounds/0123456789abcdef/more").status_code == 200
+    assert selection.calls == [("more", "0123456789abcdef")]
+    assert client.post("/ingest/rounds/fedcba9876543210/more").status_code == 404
+    assert client.post("/ingest/rounds/not-a-round/more").status_code == 422
 
 
 def test_the_ai_selection_starts_in_the_background(monkeypatch):

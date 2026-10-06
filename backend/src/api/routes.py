@@ -202,6 +202,10 @@ class RoundRequest(BaseModel):
     # Candidates listed per source. Listing costs only the feeds; the
     # cost comes later, per article sent to analysis.
     perSource: int = Field(default=3, ge=1, le=10)
+    # How many of the ranked candidates are shown, best first; the rest
+    # are kept as the round's reserve (selection_service LISTED,
+    # MAX_LISTED).
+    listed: int = Field(default=20, ge=1, le=40)
 
     @model_validator(mode="after")
     def _groups(self):
@@ -554,7 +558,7 @@ def ingestion_sources():
 
     from src.config.topics import TOPIC_GROUP_NAMES, TOPIC_GROUPS, TOPICS
     from src.services.ingestion_service import MAX_GROUPS
-    from src.services.selection.selection_service import MAX_SELECTED
+    from src.services.selection.selection_service import LISTED, MAX_LISTED, MAX_SELECTED
 
     service = get_ingestion_service()
     sources = service.enabled_sources()
@@ -582,6 +586,8 @@ def ingestion_sources():
         ],
         "maxGroups": MAX_GROUPS,
         "maxSelected": MAX_SELECTED,
+        "listed": LISTED,
+        "maxListed": MAX_LISTED,
         "lastRun": service.last_run,
     }
 
@@ -642,9 +648,10 @@ def _unknown_sources(source_ids: list[str] | None) -> list[str]:
 def create_round(request: RoundRequest):
     """
     Lists the new articles from the sources of up to three topic groups,
-    with each one's feed title and summary. Reads feeds and section
-    pages only: nothing is fetched or analysed until a selection is
-    queued.
+    with each one's feed title and summary, best first: the first
+    `listed` are shown, the rest kept as the round's reserve. Reads feeds
+    and section pages only: nothing is fetched or analysed until a
+    selection is queued.
     """
 
     unknown = _unknown_sources(request.sources)
@@ -652,7 +659,7 @@ def create_round(request: RoundRequest):
     if unknown:
         raise HTTPException(status_code=422, detail=f"Unknown or disabled sources: {', '.join(unknown)}")
 
-    return get_selection_service().create_round(request.groups, request.sources, request.perSource)
+    return get_selection_service().create_round(request.groups, request.sources, request.perSource, request.listed)
 
 
 @router.get("/ingest/rounds", dependencies=[Depends(require_storage_key)])
@@ -672,6 +679,25 @@ def get_round(round_id: str = ROUND_ID):
         return get_selection_service().get(round_id)
     except RoundNotFound:
         raise HTTPException(status_code=404, detail="No such round.")
+
+
+@router.post("/ingest/rounds/{round_id}/more", dependencies=[Depends(require_storage_key)])
+def show_more_of_round(round_id: str = ROUND_ID):
+    """
+    Shows the next of the round's ranked candidates, up to forty in all.
+    Nothing is discovered again. 409 while its AI selection runs.
+    """
+
+    from src.services.selection.selection_service import InvalidSelection, RoundNotFound, SelectionBusy
+
+    try:
+        return get_selection_service().show_more(round_id)
+    except RoundNotFound:
+        raise HTTPException(status_code=404, detail="No such round.")
+    except SelectionBusy:
+        raise HTTPException(status_code=409, detail="The AI is reading this round's list; wait until it is done.")
+    except InvalidSelection as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
 
 
 @router.post("/ingest/rounds/{round_id}/ai-selection", status_code=202, dependencies=[Depends(require_storage_key)])

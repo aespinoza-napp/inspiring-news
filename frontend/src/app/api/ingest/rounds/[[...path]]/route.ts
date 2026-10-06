@@ -9,7 +9,7 @@ const UNREACHABLE = `Could not reach the backend at ${BACKEND_URL}. Is it runnin
 // forwarded: like graph/[...path], this proxy names what it relays rather
 // than passing any path through with the storage key attached.
 const ROUND_ID = /^[0-9a-f]{16}$/;
-const ACTIONS = new Set(["ai-selection", "queue"]);
+const ACTIONS = new Set(["ai-selection", "queue", "more"]);
 
 // Every backend endpoint that costs CPU, starts a browser or writes data
 // takes the API key once STORAGE_API_KEY is set (backend
@@ -68,6 +68,7 @@ export async function GET(
 // POST /api/ingest/rounds                    -> discover candidates
 // POST /api/ingest/rounds/<id>/ai-selection  -> start the AI selection
 // POST /api/ingest/rounds/<id>/queue         -> send the chosen ones to analysis
+// POST /api/ingest/rounds/<id>/more          -> show the next ranked candidates, up to 40
 export async function POST(
   request: NextRequest,
   { params }: { params: { path?: string[] } }

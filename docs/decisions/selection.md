@@ -13,6 +13,9 @@ Two things changed:
    reading titles and summaries, chooses at most twenty; only those are
    analysed.
 
+Since 2026-10-06 the candidates come best first and a round shows the
+best twenty, forty on request ("The ranking", below).
+
 The page is `/discover`; the API is `POST /ingest/rounds` and its
 children; the code is `src/services/selection/` (README there) on top of
 `src/services/ingestion_service.py`.
@@ -196,9 +199,10 @@ positive news there is a judgement: the AI selection's.
 
 ## The candidate round
 
-`POST /ingest/rounds {groups, sources?, perSource}` lists, per source, up
-to `perSource` new articles, each with its feed title (or one made from
-the URL's slug, marked as such), summary, time and language. It reads
+`POST /ingest/rounds {groups, sources?, perSource, listed?}` finds, per
+source, up to `perSource` new articles, each with its feed title (or one
+made from the URL's slug, marked as such), summary, time and language,
+ranks them all and shows the best `listed` (twenty by default). It reads
 feeds and section pages only. Every round is written to
 `lake/stats/selection/<id>.json` as it changes: what was found, what the
 AI proposed and why, what was sent, who chose it. That file is the
@@ -210,6 +214,82 @@ minutes) of the round's own candidates to analysis as ordinary
 `ingestion` jobs. A round is sent once. `selectedBy` - `user`, `ai`,
 `ai+user` - and how many AI picks were kept, dropped and added are worked
 out by the backend from the AI's proposal, not claimed by the page.
+
+## The ranking: which twenty are shown
+
+Added 2026-10-06. A round over two or three groups finds 60-80
+candidates, and they were listed in the order the sources are named -
+20minutos, ABC and BBC first. Now every candidate is scored, and the
+round shows the best **twenty** (`LISTED`). **Show more** brings the next
+ones into view (`POST /ingest/rounds/{id}/more`, at most `MAX_LISTED`,
+forty, in all), and the rest stay in the round as its `reserve`, ranked.
+Only what is shown can be chosen, or read by the AI selection, which also
+keeps that to two calls (four at forty).
+
+The score (`src/services/selection/ranking.py`) is in [0, 1], from what
+the round already holds: no page fetched, no LLM asked.
+
+| Part | Weight | What it is |
+|---|---|---|
+| The story | 0.6 | How much nearer its title and summary come to a description of positive impact (`IMPACT` in `mission_screen.py`) than to the nearest off-mission one. The screen's embedding pass, one more label |
+| The source's record | 0.25 | The share of the source's newest items the screen kept this round (`judged`, and `judged - screened` kept), smoothed towards 0.8 with the weight of five items. A positive outlet counts 1 |
+| The source's reliability | 0.15 | Its `reliability_index`, the rating its pages get as evidence |
+
+Each candidate keeps its `reading` (the similarities) and its `rank`
+(score and parts) in the round, and the round its `ranking.weights`, so
+the weights can be refitted from recorded rounds without embedding
+anything again. On `/discover` each candidate shows its place, its score
+and the three parts.
+
+**Measured 2026-10-06** (`docs/experiments.md`; the labelled set and
+every reading in `backend/data/evaluation/experiments/ranking/`): the 117
+candidates of the five rounds recorded that day, each read and labelled
+by hand before any score existed - 62 not worth offering, 33 worth
+offering, 22 clearly positive. Over the 86 today's screen keeps, AUC for
+worth offering against not, and clearly positive against the rest: the
+story alone 0.75 and 0.81, with the source's record 0.79 and 0.82, the
+chosen score 0.78 and 0.81, the app's own AI selection (llama3.2:3b)
+0.65 and 0.75. In the rounds: the first twenty of the 11:21 Science and
+Society round held 8 stories not worth offering in the sources' order
+and 1 ranked, 14 clearly positive instead of 6. The 12:16 Society round,
+30 candidates of which about 14 were worth offering, went from 15 not
+worth offering in its first twenty to 6.
+
+- **Reliability is in on purpose, with the smallest say.** It does not
+  separate a positive story from another (AUC 0.49): Good News Network is
+  rated 0.65, a general outlet's election coverage 0.9. It is in because
+  how far a source is trusted is part of what the publication offers;
+  it costs 0.01 of AUC, inside intervals of about 0.1 either way.
+- **Freshness is out.** Within the 30-day limit, newer ranked worse (AUC
+  0.30): the day's breaking news is mostly the day's politics.
+- **Once the AI has scored, its order wins** on the page (ties in the
+  ranking's order), and its picks are ticked as before. On this sample
+  the 3B model separated the stories less well than the ranking; the 8B
+  model of 2026-10-05 was not measured against it.
+- **The words of `IMPACT` are not tuned.** Written before the
+  measurement; two other wordings, the AI selector's `DEFINITION` among
+  them, did as well within the intervals.
+- **One story, once.** Run live on the new code, the same Science and
+  Society round put the physics Nobel in 8 of its first twenty places:
+  nine outlets in two languages, each rightly scored high. A candidate
+  whose embedding is within 0.75 (`SAME_STORY`) of any version of a story
+  already placed is marked `sameStoryAs` that story's best-ranked one and
+  moved after every distinct story - not dropped. In that round the
+  versions paired at 0.68-0.88 and each was within 0.75 of another; the
+  nearest two different stories came to 0.69 (two Nature editorials; two
+  Muy Interesante pieces on ancient viruses). It grouped exactly the
+  eight other physics-Nobel pieces and The Conversation's explainer of
+  the medicine Nobel, and the first twenty became twenty stories. The
+  vectors are the screen's own, held in memory, never recorded.
+
+**What it cannot do**: order is not supply. A round of thirty with
+fourteen worth offering still shows six that are not. The labels are an
+AI's (Claude's), not yet checked by a person, and the sample is one day.
+
+The page's toolbar - **Refresh** (the same topics, sources and articles
+per source, read again: a new round), the AI, the count, **Analyse** -
+stays in view while the list scrolls. Refresh used to be "New round" at
+the end of the list, then "Find articles" back up in step 2.
 
 ## The AI selection
 

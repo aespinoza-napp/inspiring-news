@@ -32,8 +32,8 @@ an enrichment and an LLM call per claim. Two ways in:
 - POST /ingest queues every new article found, up to `per_source`;
 - a candidate round (`discover_candidates`, owned by
   src/services/selection/) only lists them, with the feed's title and
-  summary, so a person or the AI selection can choose up to twenty before
-  anything is fetched.
+  summary, best first (src/services/selection/ranking.py), so a person or
+  the AI selection can choose up to twenty before anything is fetched.
 
 Both can be narrowed to up to three topic groups (src/config/topics.py
 TOPIC_GROUPS): only the sources whose YAML names one of them are read, and
@@ -57,7 +57,8 @@ from src.services.concurrency import bounded_map
 from src.services.scraper.article_stats import comparable_url
 from src.services.scraper.discovery import DiscoveryResult, DiscoveryService
 from src.services.scraper.sightings import Sightings, sightings as default_sightings
-from src.services.selection.mission_screen import MARGIN, MARGINS, Candidate, MissionScreen
+from src.services.selection import ranking
+from src.services.selection.mission_screen import MARGIN, MARGINS, Candidate, MissionScreen, Reading
 
 logger = getLogger(__name__)
 
@@ -182,6 +183,13 @@ class _Picked:
 
     # New, and neither picked nor left out: for a later run.
     deferred: int
+
+    # How many of its new articles the screen ruled on (0 for a positive
+    # outlet, which it only reads): the source's record for the ranking.
+    judged: int = 0
+
+    # What the embeddings said about each picked one.
+    readings: dict[str, Reading] = field(default_factory=dict)
 
 
 class IngestionService:
@@ -339,9 +347,11 @@ class IngestionService:
         """
         Discovery without queueing: up to `per_source` new articles from
         each source covering `groups`, each with what its feed says about
-        it (title, summary, time), for someone to choose from. Nothing is
-        fetched beyond the feeds and section pages, and nothing is
-        analysed - src/services/selection/ owns what happens next.
+        it (title, summary, time), best first - its score and the parts
+        of it as `rank` (src/services/selection/ranking.py) - for someone
+        to choose from. Nothing is fetched beyond the feeds and section
+        pages, and nothing is analysed - src/services/selection/ owns what
+        happens next, how many of them are shown included.
         """
 
         started = datetime.now(timezone.utc)
@@ -397,11 +407,19 @@ class IngestionService:
 
         for source, result, already, choice in zip(sources, discovered, already_by_source, picked):
 
+            standing = ranking.Standing(
+                reliability=source.reliability_index,
+                positive_editorial=source.positive_editorial,
+                judged=choice.judged,
+                kept=choice.judged - len(choice.screened),
+            )
+
             for url in choice.urls:
 
                 details = result.details.get(url) or {}
                 published = result.published.get(url)
                 feed_title = details.get("title")
+                reading = choice.readings.get(url)
 
                 candidates.append({
                     "url": url,
@@ -414,6 +432,10 @@ class IngestionService:
                     "summary": details.get("summary"),
                     "publishedAt": published.isoformat(timespec="seconds") if published else None,
                     "method": result.method,
+                    # Kept whole, so the weights can be refitted from the
+                    # recorded rounds without embedding anything again.
+                    "reading": reading.to_dict() if reading else None,
+                    "rank": ranking.rank(reading, standing),
                 })
 
             rows.append({
@@ -425,10 +447,20 @@ class IngestionService:
                 "alreadyStored": already,
                 "candidates": len(choice.urls),
                 "deferred": choice.deferred,
+                "judged": choice.judged,
                 "screened": len(choice.screened),
                 "stale": result.stale,
                 "error": result.error if not result.urls else None,
             })
+
+        vectors = {
+            url: reading.vector
+            for choice in picked
+            for url, reading in choice.readings.items()
+            if reading.vector is not None
+        }
+
+        candidates = ranking.one_per_story(ranking.best_first(candidates), vectors)
 
         return {
             "startedAt": started.isoformat(timespec="seconds"),
@@ -437,6 +469,7 @@ class IngestionService:
             "perSource": per_source,
             "sources": rows,
             "candidates": candidates,
+            "ranking": {"weights": ranking.WEIGHTS, "sameStory": ranking.SAME_STORY},
             "screen": screen,
             "screened": [entry for choice in picked for entry in choice.screened],
             "totals": {
@@ -448,6 +481,8 @@ class IngestionService:
                 "screened": sum(row["screened"] for row in rows),
                 "stale": sum(row["stale"] for row in rows),
                 "failed": sum(1 for row in rows if row["error"] and not row["discovered"]),
+                # Ranked after every distinct story: the same story again.
+                "sameStory": sum(1 for candidate in candidates if candidate.get("sameStoryAs")),
             },
         }
 
@@ -461,24 +496,22 @@ class IngestionService:
         """
         Each source's share: the mission screen over the first
         per_source x SCREEN_DEPTH of its new articles, then the first
-        per_source of those it kept. One batched pass over every source's
-        share, not one per source. The screen's state comes back with it
-        - "ok", "off" (none configured) or "unavailable" (inference/ could
-        not be reached: nothing was left out, and the round says so).
+        per_source of those it kept. A positive outlet's first per_source
+        are read, not judged: the ranking needs every candidate's reading.
+        One batched pass over every source's share, not one per source.
+        The screen's state comes back with it - "ok", "off" (none
+        configured) or "unavailable" (inference/ could not be reached:
+        nothing was left out or read, and the round says so).
         """
 
-        screening = [
-            self.screen is not None and not source.positive_editorial
-            for source in sources
-        ]
-
         pools = [
-            fresh[: per_source * SCREEN_DEPTH] if screened else []
-            for fresh, screened in zip(fresh_by_source, screening)
+            fresh[: per_source * (1 if source.positive_editorial else SCREEN_DEPTH)]
+            if self.screen is not None else []
+            for source, fresh in zip(sources, fresh_by_source)
         ]
 
         titled = [
-            (url, Candidate(
+            (url, source.positive_editorial, Candidate(
                 title=_title(url, result),
                 summary=(result.details.get(url) or {}).get("summary"),
                 language=source.language,
@@ -488,20 +521,26 @@ class IngestionService:
         ]
 
         state = {"status": "off" if self.screen is None else "ok", "margin": MARGIN, "margins": MARGINS, "error": None}
-        verdicts = {}
+        verdicts, readings = {}, {}
 
         if titled:
             try:
-                for (url, _), verdict in zip(titled, self.screen.screen([candidate for _, candidate in titled])):
-                    if verdict is not None:
-                        verdicts[url] = verdict
+                assessments = self.screen.assess(
+                    [candidate for _, _, candidate in titled],
+                    exempt=[exempt for _, exempt, _ in titled],
+                )
+                for (url, _, _), assessment in zip(titled, assessments):
+                    if assessment.verdict is not None:
+                        verdicts[url] = assessment.verdict
+                    if assessment.reading is not None:
+                        readings[url] = assessment.reading
             except Exception as exc:
                 # Every candidate is kept and the round says why: a screen
                 # that fails must not look like one that passed everything.
                 logger.warning("Mission screen unavailable; nothing left out", exc_info=True)
                 state.update(status="unavailable", error=str(exc))
                 pools = [[] for _ in pools]
-                verdicts = {}
+                verdicts, readings = {}, {}
 
         picked = []
 
@@ -529,6 +568,8 @@ class IngestionService:
                     for url in out
                 ],
                 deferred=len(fresh) - len(urls) - len(out),
+                judged=0 if source.positive_editorial else len(pool),
+                readings={url: readings[url] for url in urls if url in readings},
             ))
 
         return picked, state

@@ -54,7 +54,9 @@ solved reads as negative.
 
 Outlets with `positive_editorial` are not screened: their editors already
 chose, and the screen would have dropped Good News Network's
-ex-prisoners-as-firefighters jobs story as "crime".
+ex-prisoners-as-firefighters jobs story as "crime". Their items are still
+read (`assess`, `exempt`): the ranking needs the same reading of every
+candidate (src/services/selection/ranking.py).
 
 Needs inference/ (the embeddings). When it is unreachable the caller keeps
 every candidate and says the screen did not run - never a silent pass.
@@ -64,7 +66,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from threading import Lock
 
 import numpy as np
@@ -126,6 +128,19 @@ OFF_MISSION = {
     ),
 }
 
+# Not a reason to leave anything out: what the ranking measures each
+# candidate against (src/services/selection/ranking.py) - how much nearer
+# it is to this than to its nearest OFF_MISSION description. Embedded with
+# the screen's own labels, in the same pass. Written before it was
+# measured; two other wordings, the AI selector's DEFINITION among them,
+# separated the hand-labelled candidates as well within noise
+# (docs/experiments.md).
+IMPACT = (
+    "Positive impact",
+    "A real change that improves things for people or the planet: progress, a solution that works, a recovery, a discovery with a use, people helping others, a breakthrough, an award for an achievement.",
+    ["solution", "progress", "breakthrough", "recovery", "discovery", "improves", "helps", "success", "achievement", "hope"],
+)
+
 # Left out by its headline, not by the embeddings (see the docstring).
 OBITUARY = "obituary"
 
@@ -172,6 +187,53 @@ class Verdict:
     # The topic it came closest to, for whoever reads the round; None
     # when the headline decided.
     nearest_topic: str | None = None
+
+
+@dataclass(frozen=True)
+class Reading:
+    """What the embeddings say about one candidate, as cosine similarities."""
+
+    nearest_topic: str
+
+    topic: float
+
+    nearest_off: str
+
+    off: float
+
+    # Nearness to IMPACT.
+    impact: float
+
+    # The candidate's own embedding, which the ranking compares candidates
+    # by to find the same story twice. Not recorded with the round.
+    vector: np.ndarray | None = field(default=None, repr=False, compare=False)
+
+    @property
+    def margin(self) -> float:
+        """What the screen judges by: nearest off-mission minus nearest topic."""
+
+        return self.off - self.topic
+
+    def to_dict(self) -> dict:
+
+        return {
+            "nearestTopic": self.nearest_topic,
+            "topic": round(self.topic, 4),
+            "nearestOff": self.nearest_off,
+            "off": round(self.off, 4),
+            "impact": round(self.impact, 4),
+        }
+
+
+@dataclass(frozen=True)
+class Assessment:
+    """One candidate's verdict (None: kept) and the reading behind it."""
+
+    verdict: Verdict | None
+
+    # None when nothing was embedded: a death report, decided by its
+    # headline, or a candidate with nothing to read.
+    reading: Reading | None = None
 
 
 def _describe(name: str, description: str, keywords: list[str]) -> str:
@@ -222,10 +284,11 @@ class MissionScreen:
         self.margin = margin
         self.margins = MARGINS if margins is None else margins
 
-        # (topic ids, off-mission ids, one row per description), embedded
-        # on first use - the ingestion service that holds this screen is
-        # a process singleton. Assigned whole: a failure partway leaves
-        # None, not a half-filled cache (the TopicClassifier lesson).
+        # (topic ids, off-mission ids, one row per description, IMPACT
+        # last), embedded on first use - the ingestion service that holds
+        # this screen is a process singleton. Assigned whole: a failure
+        # partway leaves None, not a half-filled cache (the TopicClassifier
+        # lesson).
         self._labels: tuple[list[str], list[str], np.ndarray] | None = None
         self._labels_lock = Lock()
 
@@ -237,40 +300,61 @@ class MissionScreen:
         reached; the caller decides what that means.
         """
 
+        return [assessment.verdict for assessment in self.assess(candidates)]
+
+    def assess(self, candidates: list[Candidate], exempt: list[bool] | None = None) -> list[Assessment]:
+        """
+        `screen`, with the reading behind each verdict. An `exempt`
+        candidate (a positive outlet's) is read but never left out.
+        """
+
+        exempt = exempt or [False] * len(candidates)
+
         verdicts: list[Verdict | None] = [
-            Verdict(off_mission=OBITUARY) if reports_a_death(candidate.title, candidate.language) else None
-            for candidate in candidates
+            Verdict(off_mission=OBITUARY)
+            if not spared and reports_a_death(candidate.title, candidate.language)
+            else None
+            for candidate, spared in zip(candidates, exempt)
         ]
 
+        readings: list[Reading | None] = [None] * len(candidates)
+
         texts = [screen_text(candidate.title, candidate.summary) for candidate in candidates]
-        judged = [i for i, text in enumerate(texts) if text and verdicts[i] is None]
+        to_read = [i for i, text in enumerate(texts) if text and verdicts[i] is None]
 
-        if not judged:
-            return verdicts
+        if to_read:
 
-        topic_ids, off_ids, labels = self._label_vectors()
+            topic_ids, off_ids, labels = self._label_vectors()
 
-        for start in range(0, len(judged), BATCH):
+            for start in range(0, len(to_read), BATCH):
 
-            chunk = judged[start:start + BATCH]
-            vectors = self.embedding_service.encode_many([texts[i] for i in chunk])
-            similarities = np.asarray(vectors) @ labels.T
+                chunk = to_read[start:start + BATCH]
+                vectors = np.asarray(self.embedding_service.encode_many([texts[i] for i in chunk]))
+                similarities = vectors @ labels.T
 
-            for i, row in zip(chunk, similarities):
+                for i, vector, row in zip(chunk, vectors, similarities):
 
-                on = row[: len(topic_ids)]
-                off = row[len(topic_ids):]
-                margin = float(off.max() - on.max())
-                nearest = off_ids[int(off.argmax())]
+                    on = row[: len(topic_ids)]
+                    off = row[len(topic_ids): len(topic_ids) + len(off_ids)]
 
-                if margin > self.margins.get(nearest, self.margin):
-                    verdicts[i] = Verdict(
-                        off_mission=nearest,
-                        margin=round(margin, 4),
+                    reading = Reading(
                         nearest_topic=topic_ids[int(on.argmax())],
+                        topic=float(on.max()),
+                        nearest_off=off_ids[int(off.argmax())],
+                        off=float(off.max()),
+                        impact=float(row[-1]),
+                        vector=vector,
                     )
+                    readings[i] = reading
 
-        return verdicts
+                    if not exempt[i] and reading.margin > self.margins.get(reading.nearest_off, self.margin):
+                        verdicts[i] = Verdict(
+                            off_mission=reading.nearest_off,
+                            margin=round(reading.margin, 4),
+                            nearest_topic=reading.nearest_topic,
+                        )
+
+        return [Assessment(verdict, reading) for verdict, reading in zip(verdicts, readings)]
 
     def _label_vectors(self) -> tuple[list[str], list[str], np.ndarray]:
 
@@ -285,6 +369,7 @@ class MissionScreen:
 
                     texts = [_describe(TOPICS[t].name, TOPICS[t].description, TOPICS[t].keywords) for t in topic_ids]
                     texts += [_describe(*OFF_MISSION[o]) for o in off_ids]
+                    texts += [_describe(*IMPACT)]
 
                     labels = np.asarray(self.embedding_service.encode_many(texts))
 
