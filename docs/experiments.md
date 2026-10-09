@@ -225,6 +225,61 @@ two different stories at 0.69. Hence `SAME_STORY` = 0.75, single link
 grouped the eight Nobel repeats and one explainer of the medicine Nobel,
 nothing else, and the first twenty became twenty different stories.
 
+## Alignment with the mission and the groups (one-off, 2026-10-09)
+
+Five one-group rounds (three per source) run live, then again after each
+of four changes and once more an hour later; 324 candidates labelled by hand from title, summary and
+link (Claude; not yet checked by a person) as clearly positive / worth
+offering / not worth offering, with the groups each story belongs to and
+whether it is an article at all. Everything, every reading included, is in
+`backend/data/evaluation/experiments/alignment/20261009T120000Z/`
+(`labelled.json`, `runs.json`, `report.md`).
+
+The first twenty of the five rounds (100 candidates):
+
+| Run | Not an article | Another group | Not worth offering | Clearly positive |
+|---|---|---|---|---|
+| before (ce61d89) | 13 | 21 | 29 | 34 |
+| format rules, group fit, sitemap and JSON listings, word-aware keywords | 3 | 13 | 22 | 34 |
+| + section pages' headlines, more branded and live markers | 0 | 12 | 19 | 32 |
+| + a source's own sections, smaller margins for five categories | 0 | 12 | 19 | 31 |
+| + The Optimist Daily, Health for two positive outlets | **0** | **13** | **17** | **34** |
+| the same code an hour later (only 6 of 100 new) | 0 | 13 | 16 | 33 |
+
+Health, the weakest round, from 5 / 5 / 10 / 3 to 0 / 2 / 3 / 4. Format
+rules: 28 of the 35 non-articles caught, no article. Group fit: AUC 0.874
+[0.809, 0.930] over 149 articles. The screen's margin by category: between
+0.02 and 0.04, 15 of 16 market, service, labour, disaster and celebrity
+candidates not worth offering (both days' labels), so those went to 0.02;
+crime and war stayed. Tried and rejected: a description for lifestyle
+advice (3 left out at 0.04, all but one caught already). The ranking's own
+AUC, worth offering vs not, 0.752 before and 0.749 after; clearly positive
+vs the rest 0.720 and 0.628 [0.514, 0.731] - to watch: real headlines
+changed the story part's reading. What remains: the Spanish front pages'
+politics and economy under the margins, lifestyle advice in Health.
+
+**The topic part of the score** (same day, after a person picked
+Environment and got Culture - a page bug, above - and asked that the rating
+say how well a story fits the topic picked). Over the ten labelled
+one-group rounds of the last two runs, the score with a fourth part, the
+group fit scaled between -0.05 and 0.10, at weight w and the other three
+scaled by 1-w; first twenty of each:
+
+| w | Of another group | Worth offering, of the round's group | Clearly positive, of the round's group | Not worth offering |
+|---|---|---|---|---|
+| 0 | 26 | 150 | 61 | 33 |
+| 0.10 | 16 | 149 | 59 | 36 |
+| **0.15** | **15** | **150** | **60** | **35** |
+| 0.20 | 13 | 146 | 57 | 34 |
+| 0.25 | 9 | 145 | 57 | 33 |
+| 0.35 | 6 | 141 | 53 | 35 |
+
+0.15 is the largest weight that loses none of the round's own stories
+worth offering. AUC for a story of the round's group against another's:
+0.625 at 0, 0.724 at 0.15; for worth offering against not, 0.749 and
+0.730. Live afterwards, an Environment round's first twenty were all
+Environment stories but a tortoise's longevity study.
+
 ## Thresholds of the fact-check itself
 
 Those belong to the harness, not here: `cli run --thresholds f.json` runs

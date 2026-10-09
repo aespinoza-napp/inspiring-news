@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.un.org",
+  "claimant": "UN News",
+  "claim": "Sixty-nine Palestinians – more than half of them children – were displaced on Tuesday after Israeli authorities green lit the demolition of their residential building in the At Tur area of East Jerusalem, the UN aid coordination office (OCHA) has reported.",
+  "claimDate": "2026-10-06",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://kuwaittimes.com/article/51086/top-stories/zionists-demolish-jerusalem-building-displacing-dozens-of-palestinians/",
+    "https://press.un.org/en/2026/db261006.doc.htm"
+  ],
+  "split": "test",
+  "id": "fact098",
+  "topic": "cities",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-06",
+  "articleUrl": "https://news.un.org/feed/view/en/story/2026/10/1168539",
+  "annotatorNote": "AFP (via Kuwait Times, 6 Oct 2026 21:13): Israeli authorities demolished a building in the At-Tur neighbourhood of east Jerusalem 'home to about 70 people' - 69 within Rule 2. The count of 69 and 'more than half of them children' are OCHA's, as the claim says; the UN's briefing of the same day gives them. AFP gives no count of children.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "Two days later, last Friday, a stranger arrived at Kirk’s debris-laden front lawn in Wyandotte County, and said he’d be back in 30 minutes with a tarp, some lumber, and a crew to cover up the maple-shaped gash in Kirk’s house.",
+  "claimDate": "2026-10-07",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.kctv5.com/2026/10/04/stranger-keeps-promise-cover-storm-damaged-wyandotte-county-home-with-tarp/"
+  ],
+  "split": "test",
+  "id": "fact106",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-03",
+  "articleUrl": "https://www.goodnewsnetwork.org/strangers-showed-up-to-mans-destroyed-house-to-put-up-a-tarp-having-seen-his-televised-plea/",
+  "annotatorNote": "KCTV5, 3 Oct 2026 22:12 CDT (Wyandotte County, Kan.): 'On Friday, a stranger walked into his yard and made him a promise': 'I'll be back in about thirty minutes and we'll get some material and tarp and a crew'; he came back 'with a load of lumber'. Lumber was brought, not promised by name - within the claim.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

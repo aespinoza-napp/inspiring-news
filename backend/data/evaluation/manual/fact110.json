@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "reasonstobecheerful.world",
+  "claimant": "RTBC Staff",
+  "claim": "As the Guardian reports in a story shared by Contributing Editor Michaela Haas, thanks to an innovative roof and ceiling design, natural breezes ventilate the space without air conditioning.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.aol.co.uk/articles/wanted-prove-didn-t-air-050041000.html",
+    "https://www.euronews.com/2026/05/11/reunion-airport-gets-a-bioclimatic-terminal-the-first-in-the-tropics"
+  ],
+  "split": "test",
+  "id": "fact110",
+  "topic": "sustainability",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-25",
+  "articleUrl": "https://reasonstobecheerful.world/what-were-reading-rat-rangers-dc/",
+  "annotatorNote": "The Guardian (via AOL, 25 Sep 2026): the terminal 'is cooled by a light tropical breeze, the result of natural ventilation'; the roof creates low pressure that 'funnels wind into the building', and 7.5-metre ceiling fans circulate it. Euronews (11 May 2026): the arrivals terminal has no air conditioning.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

@@ -11,15 +11,19 @@
 Claims are taken from articles published by the positive-news and
 science sources the system ingests, and neither the articles nor the
 claims are chosen by the annotator. Each day a batch of about ten
-articles is drawn at random from the sources' current feeds and topic
-pages: at most one article per source, the two languages alternated,
-every article already labelled or previously proposed excluded, and
-articles whose predicted topic belongs to an under-filled topic group
-preferred, after articles published within the previous sixty days,
-which keep small the gap between the evidence admissible under
-Rule~3 and the present-day web the system searches. The draw is seeded
-with the date, so the same set of candidate links yields the same
-draw.
+articles is drawn at random from what the sources published in the
+previous thirty days, which keeps small the gap between the evidence
+admissible under Rule~3 and the present-day web the system searches.
+Before the draw, the candidates pass the same screen that keeps the
+system's own discovery to the publication's mission: pages that are not
+articles (podcasts, photo galleries, roundups, media advisories,
+shopping) and stories the publication never covers (party politics,
+crime, sport, celebrity) are left out, so the set is drawn from what the
+system would itself analyse. The draw takes at most one article per
+source, alternates the two languages, excludes every article already
+labelled or previously proposed, and prefers articles whose predicted
+topic belongs to an under-filled topic group. It is seeded with the
+date, so the same set of candidate links yields the same draw.
 For each article, the system's own claim extractor and anchor-claim
 selector propose between one and three claims, which are therefore
 the claims the system would itself verify.

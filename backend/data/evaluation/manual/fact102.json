@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Ivan Comas i Parra",
+  "claim": "Maricarmen Abascal iba a firmar este jueves el contrato de alquiler para volver a su casa.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.lavozdelsur.es/actualidad/sociedad/historica-marcha-desde-sol-hasta-la-casa-de-maricarmen-este-jueves-firmaba-el-contrato-para-regresar-a-su-vivenda.html"
+  ],
+  "split": "test",
+  "id": "fact102",
+  "topic": "cities",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-08",
+  "articleUrl": "https://www.lavanguardia.com/politica/20261008/11654566/marcha-pacifica-multitudinaria-despide-maricarmen-madrid.html",
+  "annotatorNote": "Split from a compound sentence: its main clause. La Voz del Sur, 8 Oct 2026: 'Este jueves, precisamente, Maricarmen iba a firmar el contrato que le iba a permitir volver a su casa.' That the protests 'culminated' in the early election is interpretation, not labelled.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

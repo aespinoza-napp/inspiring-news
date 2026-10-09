@@ -33,6 +33,10 @@ groups:
   - society
   - environment
   - culture
+  # Added 2026-10-09: it files medical research under Health (a heart-failure
+  # treatment from pomegranate compounds that day), and Health had no
+  # outlet that chooses its stories for positive impact.
+  - health
 
 # Publishes only positive news: discovery's mission screen leaves it
 # alone (src/models/core/source.py).

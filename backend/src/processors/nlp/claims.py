@@ -39,6 +39,25 @@ class ClaimExtractor(BaseProcessor):
 
     QUOTE_PATTERN = re.compile("[\"“”«»']")
 
+    # A claim is a sentence, and a sentence ends: a heading, a list entry,
+    # a photo credit or a line cut short does not. Over the labelling
+    # batches of 2026-09-29 to 10-06, of the proposed claims without end
+    # punctuation 1 in 6 was labelled (4 of the 5 skipped as fragments),
+    # against 79 of 116 whole sentences; on 2026-10-09 they were
+    # "Gustavo Sylvestre (Mañana Sylvestre – Radio 10)" from a list of
+    # nominees and "Archivo - Imagen de la serie Galaxy S26 de Samsung. -
+    # SAMSUNG - Archivo", a caption.
+    SENTENCE_END = re.compile(r"[.!?…][\"”’'»)\]]*\s*$")
+
+    # A full stop after one of these does not end the sentence: on
+    # 2026-10-09 NASA's "...on Monday, Oct. 15, to preview..." and "at 4
+    # p.m. EDT" were cut into fragments. Months, titles, a.m./p.m. and a
+    # single capital (an initial, "U.S."). Case-sensitive: "no." ends one.
+    ABBREVIATION = re.compile(
+        r"(?:\b(?:Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec|Mr|Mrs|Ms|Dr|Dra|Prof|St|Sr|Sra|Srta|Jr|Gen|Gov|Sen|Rep|Lt|Col|Mt|No|Nos|vs)"
+        r"|\b[ap]\.m|\b[A-Z])\.$"
+    )
+
     # A number with its percent sign attached, so `_facts` reports "35%"
     # rather than a bare 35 that means nothing on its own in a query.
     PERCENT_FIGURE = re.compile(r"\d+(?:[.,]\d+)?\s*%")
@@ -87,6 +106,9 @@ class ClaimExtractor(BaseProcessor):
         claims = []
 
         for sentence in self._split_sentences(text):
+
+            if not self.SENTENCE_END.search(sentence):
+                continue
 
             entities = self.entity_extractor.process(sentence, entity_threshold)
 
@@ -203,14 +225,29 @@ class ClaimExtractor(BaseProcessor):
         #   "sentence", and the fact-checker searched for all of it.
         # - A full stop only ends one when a sentence can start after it.
         #   "infrastructure for A.I. before..." was cut after "A.I.".
-        return [
-            s.strip()
-            for s in re.split(
-                r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑÜ¿¡\"“«'‘(\d])|\s*\n\s*",
-                text,
-            )
-            if s.strip()
-        ]
+        # - Nor when it closes an abbreviation (ABBREVIATION): "Monday,
+        #   Oct. 15" and "4 p.m. EDT" were cut on 2026-10-09.
+        sentences = []
+
+        for line in re.split(r"\s*\n\s*", text):
+
+            pieces = [
+                piece.strip()
+                for piece in re.split(r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑÜ¿¡\"“«'‘(\d])", line)
+                if piece.strip()
+            ]
+
+            merged: list[str] = []
+
+            for piece in pieces:
+                if merged and self.ABBREVIATION.search(merged[-1]):
+                    merged[-1] = f"{merged[-1]} {piece}"
+                else:
+                    merged.append(piece)
+
+            sentences.extend(merged)
+
+        return sentences
 
     ##########################################################
 

@@ -1,0 +1,22 @@
+{
+  "language": "en",
+  "site": "carbonbrief.org",
+  "claimant": "Carbon Brief Staff",
+  "claim": "The UK has avoided the need for gas imports worth £5.9bn since the start of the Hormuz crisis as a result of record generation from wind and solar, reveals Carbon Brief analysis.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [],
+  "split": "test",
+  "id": "fact099",
+  "topic": "energy",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": true,
+  "evidenceDate": null,
+  "articleUrl": "https://www.carbonbrief.org/analysis-wind-and-solar-save-uk-from-gas-imports-worth-5-9bn-during-hormuz-crisis",
+  "annotatorNote": "Rule 1: the £5.9bn is Carbon Brief's own analysis ('reveals Carbon Brief analysis'); no independent estimate of the gas imports avoided since the start of the Hormuz crisis was found.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

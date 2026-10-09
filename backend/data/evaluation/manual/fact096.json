@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Andrew Gregory",
+  "claim": "In May, the Guardian reported how a man whose testicular tissue was frozen before he had chemotherapy as a child and retransplanted 16 years later had been able to produce sperm.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.progress.org.uk/evidence-of-sperm-production-following-testicular-tissue-transplant/"
+  ],
+  "split": "test",
+  "id": "fact096",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-05-11",
+  "articleUrl": "https://www.theguardian.com/society/2026/oct/08/teenager-first-person-testicular-tissue-transplant-uk-cancer-chemotherapy-fertility",
+  "annotatorNote": "PET/BioNews, 11 May 2026, citing a Guardian article of 4 May 2026: a man who 'had received extensive chemotherapy as a child' (sickle cell disease) had testicular tissue cryopreserved; 'Sixteen years later, the tissue fragments were thawed and grafted back'; spermatogenesis in two grafts and 'a single mature sperm cell'. 'Able to produce sperm' holds, on a non-peer-reviewed preprint. The Guardian's own page was not retrieved.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

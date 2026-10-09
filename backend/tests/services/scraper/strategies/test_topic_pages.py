@@ -262,3 +262,70 @@ def test_a_section_pages_own_navigation_is_not_an_article():
 
     assert topic_pages.discover(source(), topics=["research"]) == [article, ARTICLE]
 
+
+
+
+def test_a_section_pages_links_are_titled_with_their_headlines():
+    """
+    Until 2026-10-09 a section page's candidates were titled from their
+    slugs ("Aniversario bizum cambio nuestra forma pagar cumple anos").
+    The page links each with its headline; an image link has none.
+    """
+
+    from src.services.scraper.strategies.topic_pages import TopicPageDiscoveryStrategy
+
+    section = """<html><body>
+      <a href="/noticias/20261009/aniversario-bizum-cumple-10-anos/17258658.shtml"><img src="x.jpg"></a>
+      <a href="/noticias/20261009/aniversario-bizum-cumple-10-anos/17258658.shtml">Noticia: Bizum cumple diez años: así cambió nuestra forma de pagar</a>
+      <a href="/noticias/20261009/otro-articulo-sin-titular-largo/17258659.shtml">Leer más</a>
+    </body></html>"""
+
+    class Pages:
+        def get(self, url):
+            html = '<a href="/cultura/">Cultura</a>' if url.rstrip("/").endswith("rtve.es") else section
+            return type("Page", (), {"url": url, "status": 200, "html": html})()
+
+    from tests.builders.source_builder import build_source
+
+    items = TopicPageDiscoveryStrategy(fetcher=Pages()).discover_items(
+        build_source(id="rtve", base_url="https://www.rtve.es", language="es"), topics=["arts"],
+    )
+
+    titles = {item.url.rsplit("/", 2)[-2]: item.title for item in items}
+    assert titles["aniversario-bizum-cumple-10-anos"] == "Bizum cumple diez años: así cambió nuestra forma de pagar"
+    assert titles["otro-articulo-sin-titular-largo"] is None
+
+
+
+def test_a_source_that_names_its_sections_is_read_there_not_where_topic_names_guess():
+    """Smithsonian: a guessed /food/ gave food travel as Environment; its section is /science-nature/."""
+
+    from src.services.scraper.strategies.topic_pages import TopicPageDiscoveryStrategy
+    from tests.builders.source_builder import build_source
+
+    asked = []
+
+    class Pages:
+        def get(self, url):
+            asked.append(url)
+            return type("Page", (), {"url": url, "status": 200, "html": "<html></html>"})()
+
+    smithsonian = build_source(
+        id="smithsonian", base_url="https://www.smithsonianmag.com",
+        groups=["environment", "culture"],
+        sections={"environment": ["/science-nature/"], "culture": ["/arts-culture/", "/history/"]},
+    )
+
+    TopicPageDiscoveryStrategy(fetcher=Pages()).crawl(smithsonian, topics=["climate", "nature", "energy", "sustainability", "food"])
+
+    assert asked == ["https://www.smithsonianmag.com/", "https://www.smithsonianmag.com/science-nature/"]
+
+
+def test_a_section_for_an_unknown_group_is_refused():
+
+    import pytest
+    from pydantic import ValidationError
+    from tests.builders.source_builder import build_source
+
+    with pytest.raises(ValidationError, match="unknown topic group"):
+        build_source(sections={"sports": ["/sport/"]})

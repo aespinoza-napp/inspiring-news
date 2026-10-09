@@ -29,6 +29,9 @@ tags:
 groups:
   - society
   - environment
+  # Added 2026-10-09, as for Good News Network: "Gen Z Is Rescuing
+  # Millions in Medical Supplies" was a Society candidate that day.
+  - health
 
 # Publishes only positive news: discovery's mission screen leaves it
 # alone (src/models/core/source.py).

@@ -1,13 +1,30 @@
 """
-Finding article URLs for a configured source, cheapest first.
+Finding article URLs for a configured source, cheapest and richest first.
 
 1. The source's own RSS feed, read with feedparser - one request, and
-   titles and summaries to filter on.
-2. trafilatura's feed discovery - lenient with broken XML, and able to
-   find a feed from the homepage - only when step 1 found nothing.
-3. The source's topic section pages (/science/, /ciencia/...), read as
-   HTML - only when there is no feed to be found at all. See
-   strategies/topic_pages.py.
+   titles, summaries and times to filter on.
+2. Its JSON listing (`json_feed`) - only for a source that names one
+   (WHO), and only when the feed found nothing new. Titles and times.
+3. Its Google News sitemap (`news_sitemap_url`) - the same, for a
+   source that names one (CNN): the last two days, titled and timed.
+   Both in strategies/listings.py.
+4. The source's topic section pages (/science/, /ciencia/...), read as
+   HTML: links only, filed by section. See strategies/topic_pages.py.
+5. trafilatura's feed discovery - lenient with broken XML, and able to
+   find a feed from the homepage - only when nothing else found
+   anything. Links only, not filed by anything but their own slugs.
+
+Steps 2 and 3 are skipped for a source that names nothing for them
+(`applies`), so they cost no request and no line in the stats.
+
+**The order changed on 2026-10-09.** trafilatura was second, but from
+2026-10-04 it had not run at all: DiscoveryService asks a step for
+`discover_items` first, and it had inherited the feed step's, so it read
+the dead feed again (strategies/trafilatura_feeds.py). Section pages were
+the fallback in practice. Run for real that day it would have replaced
+them with worse: ABC's homepage feeds gave 38 links of every section to a
+Culture round, unfiltered and untitled; WHO's dead feed gave 21 items
+from 2024-2025 that read as undated. So it is last.
 
 Every attempt is counted in the scraper stats under the purpose
 `discovery`, so a feed that has started failing shows up on /scraper
@@ -25,6 +42,7 @@ from src.services.scraper.fetcher import classify
 from src.services.scraper.request_stats import Outcome, Purpose, RequestStats, request_stats
 
 from .strategies.base import DiscoveryStrategy
+from .strategies.listings import JsonFeedDiscoveryStrategy, NewsSitemapDiscoveryStrategy
 from .strategies.rss import DiscoveredLink, RSSDiscoveryStrategy, date_from_url
 from .strategies.topic_pages import TopicPageDiscoveryStrategy
 from .strategies.trafilatura_feeds import TrafilaturaFeedDiscoveryStrategy
@@ -67,8 +85,10 @@ class DiscoveryService:
 
         self.strategies = strategies if strategies is not None else [
             RSSDiscoveryStrategy(),
-            TrafilaturaFeedDiscoveryStrategy(),
+            JsonFeedDiscoveryStrategy(),
+            NewsSitemapDiscoveryStrategy(),
             TopicPageDiscoveryStrategy(),
+            TrafilaturaFeedDiscoveryStrategy(),
         ]
 
         self.stats = stats if stats is not None else request_stats
@@ -100,6 +120,11 @@ class DiscoveryService:
         result = DiscoveryResult()
 
         for strategy in self.strategies:
+
+            # A step with nothing configured for this source (no JSON
+            # listing, no news sitemap) is not a step tried.
+            if not getattr(strategy, "applies", lambda _: True)(source):
+                continue
 
             name = type(strategy).__name__
             result.tried.append(name)

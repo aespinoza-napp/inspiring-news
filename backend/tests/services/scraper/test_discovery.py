@@ -358,6 +358,73 @@ def test_live_coverage_and_opinion_are_off_mission(url):
 
 
 @pytest.mark.parametrize("url", [
+    # 2026-10-09: the live pages that got through, each with its own marker.
+    "https://www.20minutos.es/nacional/ultimas-noticias-maricarmen-vivienda-acampadas-sol-campana-electoral-29-n-directo_7046881_6.html",
+    "https://www.rtve.es/noticias/20261009/premio-nobel-paz-2026-ganador-directo-video-cronica/17259964.shtml",
+    "https://www.rtve.es/noticias/20261009/elecciones-ultima-hora-espana-directo-hoy-cronica/17259683.shtml",
+    "https://www.france24.com/en/france/20261009-live-141-french-high-schools-closed-as-student-protests-continue-for-fifth-day",
+    "https://www.rtve.es/noticias/20261008/premio-nobel-literatura-2026-directo-cronica/17258339.shtml",
+    "https://www.rtve.es/noticias/20261010/directo-hoy-dia-mundial-salud-mental-2026-cronica/17259451.shtml",
+])
+def test_live_pages_are_told_by_their_slugs_too(url):
+
+    from src.services.scraper.strategies.rss import off_mission
+
+    assert off_mission(url)
+
+
+@pytest.mark.parametrize("url", [
+    # "live" is a verb in headlines, and "directo" a word: neither alone marks a live page.
+    "https://www.france24.com/en/europe/20261009-where-people-live-longest-in-europe",
+    "https://elpais.com/economia/2026-10-09/el-pago-directo-a-los-agricultores-llega-antes.html",
+])
+def test_live_and_directo_inside_a_headline_are_not_live_coverage(url):
+
+    from src.services.scraper.strategies.rss import off_mission
+
+    assert not off_mission(url)
+
+
+@pytest.mark.parametrize("url", [
+    # Every one a candidate on 2026-10-09.
+    "https://www.theguardian.com/science/audio/2026/oct/07/all-the-news-and-science-from-the-2026-nobel-prizes-podcast",
+    "https://edition.cnn.com/audio/podcasts/all-there-is-with-anderson-cooper",
+    "https://science.nasa.gov/image-article/apod-2026-october-9-stickney-crater/",
+    "https://www.eldiario.es/edcreativo/descarbonizar-reutilizar-digitalizar-cambiando-gestion-agua_1_13532481.html",
+    "https://www.lavanguardia.com/comprar/mas-valorados/20260429/11524304/mejores-telescopios-comparativa-mkt-eo.html",
+    "https://muyinteresante.okdiario.com/bazar/roborock-planta-cara-a-irobot-con-una-potente-rebaja-en-su-robot-aspirador-qrevo-2-prox.html",
+    "https://elpais.com/gastronomia/el-comidista/2026-10-09/calamares-de-campo-la-receta-de-posguerra-que-sigue-estando-buenisima.html",
+    "https://www.eldiario.es/sociedad/fotos-espana-sale-calle-maricarmen-imagenes_3_13573853.html",
+    "https://www.20minutos.es/bc/dos-alternativas-movilidad-eficiente-kia-stonic-ev3_7046665_5.html",
+    # A slug before an id: RTVE's.
+    "https://www.rtve.es/television/20261006/receta-quiche-salmon-santiago-segura-masterchef-celebrity-legends/17254090.shtml",
+    # CNN's news sitemap lists its shopping deals.
+    "https://www.cnn.com/cnn-underscored/deals/best-amazon-prime-day-deals-2026-10-09",
+])
+def test_podcasts_galleries_branded_shopping_and_recipes_are_not_articles(url):
+
+    from src.services.scraper.strategies.rss import article_shaped
+
+    assert not article_shaped(url)
+    assert not RSSDiscoveryStrategy()._is_article(url)
+
+
+@pytest.mark.parametrize("url", [
+    # MIT News ends its slugs with the date: four words with it.
+    "https://news.mit.edu/2026/supporting-systems-success-1008",
+    # "Recetas" as a metaphor, not a recipe: only a slug that starts "receta-" is one.
+    "https://www.eldiario.es/economia/recetas-responsable-economico-vox-rumbo-privatizacion-pensiones-irpf-medida-ricos_1_13572527.html",
+    "https://www.agenciasinc.es/Noticias/La-receta-electronica-llega-a-todas-las-farmacias",
+])
+def test_headlines_that_only_resemble_those_formats_are_articles(url):
+
+    from src.services.scraper.strategies.rss import article_shaped
+
+    assert article_shaped(url)
+    assert RSSDiscoveryStrategy()._is_article(url)
+
+
+@pytest.mark.parametrize("url", [
     "https://www.agenciasinc.es/Especiales/Incendios-forestales-en-Espana",
     "https://www.xatakaciencia.com/categoria/no-te-lo-creas",
     "https://news.example/tag/climate-change-and-the-oceans",
@@ -377,6 +444,8 @@ def test_index_pages_are_not_articles_however_their_slugs_read(url):
     ("https://elpais.com/clima/2026-10-05/el-delta-del-ebro-recupera-aves.html", "2026-10-05"),
     ("https://www.elmundo.es/espana/2026/10/05/6ac3cf9121efa09b738b459c.html", "2026-10-05"),
     ("https://www.bbc.co.uk/news/articles/cq203mymlvkeo", None),
+    # WHO dates its links day first; its dead feed's 2025 items read as undated.
+    ("https://www.who.int/news/item/06-03-2025-strengthening-public-health-across-lebanon-with-eib-global", "2025-03-06"),
     # Not a date: an id that happens to start with 20.
     ("https://news.example/story/20261399887766-a-long-headline-here", None),
 ])

@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "reasonstobecheerful.world",
+  "claimant": "RTBC Staff",
+  "claim": "With the rat population growing in Washington, D.C., a group of residents is working to educate their neighbors about ways to prevent infestations without using rodenticides, according to an NPR story that caught Executive Editor Will Doig’s attention.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.wunc.org/2026-09-28/how-to-limit-the-rat-numbers-train-the-humans"
+  ],
+  "split": "test",
+  "id": "fact108",
+  "topic": "cities",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://reasonstobecheerful.world/what-were-reading-rat-rangers-dc/",
+  "annotatorNote": "NPR (via WUNC), 28 Sep 2026: 'rat numbers in Washington, D.C. are on the rise'; the D.C. Rat Rangers lead night walks teaching residents to prevent infestations with 'behavioral solutions that do not use rodenticides'. Will Doig's attention is not checked.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

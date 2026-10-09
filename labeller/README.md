@@ -51,9 +51,10 @@ later edit.
   (`LABELLER_BACKEND_URL`, default `http://127.0.0.1:8000`; `STORAGE_API_KEY`
   is sent if set) for ~10 articles drawn at random from the configured
   sources - one per source, languages alternated, seeded by the date,
-  never an article already labelled or proposed, preferring articles from
-  the last 60 days and then the topic groups the balance table is short
-  of - each with the 1-3 claims the
+  never an article already labelled or proposed, none older than 30 days
+  and none the mission screen leaves out (not an article, or not a story
+  the publication covers - since 2026-10-09), preferring the topic groups
+  the balance table is short of - each with the 1-3 claims the
   pipeline's own claim selector would check. It takes 2-4 minutes; the
   page polls. The batch is saved as `backend/data/evaluation/queue/
   YYYY-MM-DD.json` (then `-2`, `-3` the same day). **Label** fills the form

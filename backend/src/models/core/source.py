@@ -14,6 +14,34 @@ class SourceType(str, Enum):
     SOCIAL = "social"
 
 
+class JsonFeed(BaseModel):
+    """
+    Where a JSON listing of a source's articles keeps them: the items, and
+    in each its link, title and time, by key. WHO's news API on
+    2026-10-09: items under "value", the link in "ItemDefaultUrl" (a path,
+    after https://www.who.int/news/item), the title in "Title", the time in
+    "PublicationDateAndTime" - while its RSS feed's newest item was from
+    February.
+    """
+
+    url: HttpUrl
+
+    # Dotted path to the list of items; "" when the document is the list.
+    items: str = ""
+
+    link: str
+
+    # Put before a link that is only a path.
+    link_prefix: Optional[str] = None
+
+    title: str
+
+    summary: Optional[str] = None
+
+    # An ISO 8601 time.
+    published: Optional[str] = None
+
+
 class NewsSource(BaseModel):
     """
     Represents a news source or publisher.
@@ -28,6 +56,16 @@ class NewsSource(BaseModel):
     source_type: SourceType = SourceType.NEWS
 
     rss_url: Optional[HttpUrl] = None
+
+    # A Google News sitemap: every article of the last two days with its
+    # title and publication time, for publishers whose feed has died
+    # (CNN's stopped in 2024). Read when the feed finds nothing.
+    news_sitemap_url: Optional[HttpUrl] = None
+
+    # A JSON listing of articles (JsonFeed), for publishers with neither
+    # a live feed nor a news sitemap (WHO). Read when the feed finds
+    # nothing.
+    json_feed: Optional[JsonFeed] = None
 
     search_url: Optional[str] = None
 
@@ -55,6 +93,14 @@ class NewsSource(BaseModel):
     # were; these are the ones the code reads.
     groups: list[str] = Field(default_factory=list)
 
+    # A group -> the section paths that cover it on this site, for the
+    # topic-page step to read instead of guessing them from topic names.
+    # Smithsonian's Environment candidates all came from a guessed /food/
+    # on 2026-10-09 - food history and travel, three of the round's first
+    # six - while /climate/, /nature/ and /energy/ were 404s; its section
+    # is /science-nature/.
+    sections: dict[str, list[str]] = Field(default_factory=dict)
+
     # An outlet that publishes only positive news, chosen by its own
     # editors (Good News Network, Positive News, Reasons to be Cheerful).
     # Discovery's mission screen leaves its items alone: on 2026-10-06 it
@@ -63,6 +109,14 @@ class NewsSource(BaseModel):
     positive_editorial: bool = False
 
     metadata: dict = Field(default_factory=dict)
+
+    @field_validator("sections")
+    @classmethod
+    def _known_section_groups(cls, sections: dict[str, list[str]]) -> dict[str, list[str]]:
+
+        cls._known_groups(list(sections))
+
+        return sections
 
     @field_validator("groups")
     @classmethod

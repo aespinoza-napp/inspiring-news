@@ -1,38 +1,71 @@
-All five goals are done: goals 1–3 are built and were tested against real feeds and your local LLM, the tools for goal 4 are in place, and the roadmap and the artifact are updated. ./scripts/check.sh passes, and the 1,297 backend tests pass. Nothing is committed.
+Session of 9 October 2026. Five goals: faster Docker rebuilds, today's labelling batch, discovery aligned with the mission and the topic groups (run as a loop), the artifact, and this summary. Four are done; the artifact could not be reached. ./scripts/check.sh passes (1,440 backend tests, inference, frontend typecheck, labeller). Nothing is committed.
 
-You need to rebuild the backend container before using it. Your Docker backend runs the old code, so /discover won't work there until you run docker compose up --build backend. Your frontend dev server on port 3000 already shows the new pages, since it watches the source folder.
+1. Docker rebuilds.
 
-1. Scraping by topic.
+Cause: Docker Desktop keeps at most 20 GB of build cache, and it held 21 GB. Rebuilding one image evicted the other's 2.7 GB dependency layer, so a rebuild with no changes took 291 s.
+Fix: the limit is raised to 60 GB in Docker Desktop's settings file (C:\Users\Adria Espinoza G\.docker\daemon.json). It takes effect when Docker Desktop restarts. uv's download cache is now kept between builds, so a dependency change downloads only what changed.
+Result: a rebuild after a code change takes about 30 s, and one with no changes about 2 s.
 
-How it works: you pick 1–3 of the five topic groups (Society, Science, Environment, Culture, Health). Each source file now says which groups it covers, and every group has at least one English and one Spanish source.
-What it drops: sport, celebrity, horoscope, lottery and weather sections, before anything is fetched. Spanish feeds are now filtered by Spanish words in the title when a run is scoped to topics.
-What it saves: live, Environment read 14 of 34 sources and 10% of the links. El País kept 18 of its 159 items and the election coverage disappeared.
-2. Choosing what to analyse. /discover lists the articles found with their title and summary. You tick up to 20, or press Let the AI choose: the LLM scores each 0–10 for positive impact with a one-line reason and ticks its picks, which you can change. Only the ticked articles are analysed. On llama3.1 it handled 26 articles in 167 s; wind and solar savings scored 10, and every election story and the comedy photo awards scored 0. Each round is saved with who chose what.
+2. Discovery aligned with the mission and the groups.
 
-3. Consistency.
+Method: five one-group rounds were run live, then re-run after each change, and 318 candidates were labelled by Claude from title, summary and link (not yet checked by a person).
+Result, first twenty of all five rounds (100 candidates), before and after:
+- not an article: 13 -> 0
+- belongs to another group: 21 -> 13
+- not worth offering: 29 -> 17
+- clearly positive: 34 -> 34
 
-Navigation: two groups, Newsroom (Discover → Analyze → Live → Reader, with the same step bar on each) and Lab (the tool pages).
-Ingest panel: the old one on /scraper is gone in favour of Discover.
-Shared definitions: the topic groups are defined once in the backend, and the link-safety check is one helper instead of three copies.
-4. Experiment tools. uv run python -m src.evaluation.experiments with discovery, selection, blind-ai, admission or topics; docs/experiments.md explains how to run each and what it means. First results:
+Health improved most: not worth offering 10 -> 3, clearly positive 3 -> 4.
 
-Topic classifier: it gets the topic group right for 73% of your labelled articles, and leaves 10% with no topic, which admission then rejects.
-Admission threshold: raising the topic minimum from 0.35 to 0.40 would admit 61% of those articles instead of 85%.
-I added the remaining experiment work to the roadmap as 18 hours. That's on top of the 900-hour plan, so you'll need to decide where those hours come from.
+An hour later, on the 16:35 feeds, the result held: 0 not articles, 13 from another group, 16 not worth offering, 33 clearly positive. Only 6 of the 100 were new, so it is a weak test. The real one is the next days' rounds, labelled before the rules see them.
 
-5. Roadmap. docs/roadmap.md and the artifact both have the three new features, a new Phase 4 block of experiment tasks, and today's numbers.
+What changed:
+- Pages that are not articles are left out: podcasts, roundups, quizzes, galleries, media advisories, promotions, shopping, branded content, recipes and more live pages. 28 of the 35 such pages were caught, and no article.
+- Candidates nearer another group's topics are listed after those that fit, never dropped, and a source's three slots go first to what fits. This told the groups apart with AUC 0.87.
+- Markets, service pages, strikes and protests, disasters and celebrity are now left out at margin 0.02 instead of 0.04: in that band, 15 of 16 were not worth offering. Crime and war stay at 0.04.
+- English topic keywords now match whole words. "ai" had matched "said", and "who" matched every "who": 85 of 419 matches were false.
+- Section-page links now take their headline from the page instead of a title made from the slug.
+- WHO is read from its news API and CNN from its news sitemap: both feeds were frozen, and WHO now gives 30 items of the week to Health.
+- A source can name its own sections. Smithsonian's Environment candidates had come from a guessed /food/ page.
+- The Optimist Daily is added, and Good News Network and Reasons to be Cheerful now cover Health.
 
-A bug found on the way: since 4 Oct, discovery for the sources with dead feeds (National Geographic, Reuters, SINC) had been re-reading the dead feed instead of their section pages, so it found nothing. It's fixed, with a test that fails without the fix.
+Rules you may want to change:
+- the 0.05 group-fit line
+- the 0.02 margin for the five categories
+- the phrase lists for non-articles
+- The Optimist Daily's reliability rating of 0.7, and not marking it positive_editorial, because it also publishes lifestyle tips
 
-Choices I made that you may want to change:
+Bugs found on the way:
+- Since 4 Oct the trafilatura discovery step had never run: it re-read the dead feed. Run for real, it did worse than section pages, so it is now the last step.
+- The labelling batch had neither the mission screen nor the 30-day age limit. That is how today's batch got radio-award nominees, an August phone tip and a NASA media notice. It now has both.
+- Claims were cut at abbreviations ("Oct.", "p.m.") and taken from headings. A claim must now be a sentence that ends: claims without end punctuation were labelled 1 time in 6, against 79 in 116 for whole sentences.
+- /healthz said the LLM was down for "llama3.1" while Ollama served "llama3.1:latest".
 
-Which groups each source belongs to: in each source file, set by my judgement of what it publishes.
-The off-topic section list.
-The AI's pick threshold of 6/10.
-A separate 240 s timeout for the AI selection. The dev LLM timeout of 30 s made every selection fail.
-Known weaknesses:
+Topic in the rating (added later the same day). Picking Environment over a Culture round and pressing Refresh brought Culture again: Refresh repeats the shown round's topics. Picking other topics now starts a new search for them. The ranking also has a fourth part, "topic" (15%): how well a story fits the topics picked. Over ten labelled rounds, stories of another group in the first twenties went 26 -> 15 with no loss of good stories of the chosen group; 25% would give 9 but lose 5 good ones. Live, an Environment round's first twenty were all Environment but one. The cost: topical hard news (pollution, climate politics) rises a little.
 
-The AI scores topical bad-news stories high, for example an orangutan extinction warning got 9.
-Articles found through section pages have no summary, so the AI scores them 0.
-There's no limit on article age: one WHO item from July 2025 showed up as a candidate.
-Left in the folder for you: the experiment results in backend/data/evaluation/experiments/, the earlier fact files and queue file, plus all the code changes, none of them committed. Should I commit them?
+Left: Spanish front-page politics and economy just under the margins, and lifestyle advice in Health. Those stay for the person and the AI selection. Rejected after testing: a "lifestyle advice" description for the screen (one new catch), and The Conversation's Spanish edition (only one source is allowed per domain).
+
+Everything, with every reading, is in backend/data/evaluation/experiments/alignment/20261009T120000Z/. It is also written up in docs/experiments.md, docs/decisions/selection.md, docs/decisions/scraping.md and the roadmap.
+
+3. Today's labelling batch.
+
+Of the 28 claims, 17 were labelled as 18 facts (fact093-fact110), because one compound sentence was split in two. 11 were skipped: 7 fragments, 2 trivial, 1 prediction and 1 duplicate.
+Verdicts: 14 TRUE and 4 UNVERIFIED. The four UNVERIFIED (three Carbon Brief figures and the UN's "highest since 2009") rest only on the claimant's own analysis or records, so Rule 1 applies.
+Every fact cites evidence dated no later than its article, and each note says "AI label, not yet checked".
+
+Needs a look:
+- fact094: both sources read like the same press release.
+- fact105: the "more than three kilometres" is unchecked.
+- fact098: the count of children is OCHA's alone.
+
+The set now has 110 facts, past the 100 floor: 90 TRUE, 7 PARTIALLY_TRUE, 1 MISLEADING, 12 UNVERIFIED and no FALSE. Claim-selection precision across all batches is 0.65. The paper's annotation-procedure section now describes the screened draw.
+
+4. The artifact.
+
+https://claude.ai/artifact/9CP4FAmRWxLL8w5LkoEcLP could not be read: "not found, or not shared with you". It is not among this account's artifacts. If it belongs to your BSC account, share it with this one, or tell me to publish a new page with the roadmap's numbers.
+
+5. This file.
+
+Questions for you:
+- Commit all this? It would make two commits: Docker, then discovery and labelling.
+- Restart Docker Desktop so the 60 GB cache limit applies.

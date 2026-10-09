@@ -6,6 +6,18 @@ base_url: https://www.who.int
 
 rss_url: https://www.who.int/rss-feeds/news-english.xml
 
+# The feed above carried nothing newer than February 2026 on 2026-10-09,
+# and the news page lists nothing without JavaScript. The API that page
+# reads from returned that week's releases. Read when the feed finds
+# nothing new (src/services/scraper/strategies/listings.py).
+json_feed:
+  url: https://www.who.int/api/news/newsitems?sf_culture=en&$orderby=PublicationDateAndTime%20desc&$top=30
+  items: value
+  link: ItemDefaultUrl
+  link_prefix: https://www.who.int/news/item
+  title: Title
+  published: PublicationDateAndTime
+
 search_url: https://www.who.int/home/search-results?indexCatalogue=genericsearchindex1&searchQuery={query}
 
 language: en

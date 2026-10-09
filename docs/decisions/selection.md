@@ -67,8 +67,8 @@ limit is `DiscoveryService`'s and the section rule `topic_pages.py`'s:
   the AP-7 among them) until its section pages took over. Measured on a
   2026-10-06 sample: 38 of 363 dated candidates older than 30 days (24 of
   them WHO's, back to 2025); 14 days would also have cut 9 MIT News
-  research stories. The labelling batch has its own discovery and is
-  not cut.
+  research stories. Since 2026-10-09 the labelling batch is
+  cut the same way, and screened (below).
 - **A section page's links outside its own section**, when the page has
   any inside it (`_within_section` in `topic_pages.py`): ABC's
   `/cultura/` page links the day's top stories, and two `/espana/`
@@ -110,6 +110,16 @@ limit is `DiscoveryService`'s and the section rule `topic_pages.py`'s:
   day: Environment kept 18 of El País's 159 items and 6 of elDiario's
   109, nearly all on topic. Asked for every topic (`POST /ingest` without
   groups, the labelling batch), Spanish feeds are not filtered, as before.
+- **Pages that are not articles** (`NOT_ARTICLE_SEGMENTS`,
+  `NOT_ARTICLE_SLUG_STARTS`, added 2026-10-09): podcasts (`/audio/`,
+  `/podcasts/`), galleries (`/image-article/`, a slug starting "fotos-"),
+  branded content (elDiario's `/edcreativo/` and 20minutos's `/bc/`, which
+  say so on the page), shopping (`/comprar/`, `/bazar/`,
+  `/cnn-underscored/`) and recipes (`/el-comidista/`, a slug starting
+  "receta-"); and more live pages (`-directo_`, `directo-cronica`,
+  `ultima-hora`, CNN's `/live-news/`, France 24's `/20261009-live-`).
+  "Receta" only at the start: "Las recetas del responsable económico de
+  Vox" is a metaphor.
 
 **Fixed on the way:** from 2026-10-04 (when discovery started asking for
 feed times) the topic-page step re-read the dead feed of every source it
@@ -124,8 +134,17 @@ Keywords say nothing about tone. A 2026-10-06 Culture round listed
 election polls, a cancelled concert and celebrity interviews beside a
 free-music-education programme - all on topic by their words.
 `src/services/selection/mission_screen.py` leaves a candidate out on
-either of two grounds:
+any of three grounds:
 
+0. **It is not an article** (`FORMATS`, `SUMMARY_FORMATS`, added
+   2026-10-09): a podcast, a roundup ("What We're Reading", "Books in
+   brief", Positive News's weekly "What went right"), a quiz, a gallery,
+   a media advisory ("Media are invited to join NASA..."), a promotion
+   (a magazine's new issue) or shopping - by phrases in its title, and for
+   podcasts and advisories the start of its summary. A positive outlet's
+   too: a format, not a subject. On that day's five rounds the URL rules
+   and these caught 28 of 35 candidates labelled as not articles, and no
+   article.
 1. **Its headline reports a death** - one of the language's
    `death_report` phrases (`src/config/lexicons.py`: "dies aged",
    "dies at", "muere", "fallece"...), title only, present tense only
@@ -135,7 +154,11 @@ either of two grounds:
    publication never covers - politics, strikes and protests, crime,
    accidents and disasters, war, celebrity, sport, markets and personal
    finance, service pages - than every one of the 23 topics, by more than
-   **0.04**; for politics, by any amount (`MARGINS`).
+   **0.04**; for politics, by any amount; for markets, service pages,
+   labour disputes, disasters and celebrity, by more than 0.02 (`MARGINS`,
+   2026-10-09: between 0.02 and 0.04 15 of 16 of those were not worth
+   offering, over that day's and 2026-10-06's labels; crime's and war's
+   band held a prison-stigma story and history pieces).
 
 It runs before the per-source cap, over the first `per_source x 5` new
 articles of each source (`SCREEN_DEPTH`), so a source's slots go to what
@@ -231,9 +254,28 @@ the round already holds: no page fetched, no LLM asked.
 
 | Part | Weight | What it is |
 |---|---|---|
-| The story | 0.6 | How much nearer its title and summary come to a description of positive impact (`IMPACT` in `mission_screen.py`) than to the nearest off-mission one. The screen's embedding pass, one more label |
-| The source's record | 0.25 | The share of the source's newest items the screen kept this round (`judged`, and `judged - screened` kept), smoothed towards 0.8 with the weight of five items. A positive outlet counts 1 |
-| The source's reliability | 0.15 | Its `reliability_index`, the rating its pages get as evidence |
+| The story | 0.51 | How much nearer its title and summary come to a description of positive impact (`IMPACT` in `mission_screen.py`) than to the nearest off-mission one. The screen's embedding pass, one more label |
+| The topic | 0.15 | How well it fits the groups the round asked for: its group fit (below), scaled between -0.05 and 0.10. Added 2026-10-09 |
+| The source's record | 0.21 | The share of the source's newest items the screen kept this round (`judged`, and `judged - screened` kept), smoothed towards 0.8 with the weight of five items. A positive outlet counts 1 |
+| The source's reliability | 0.13 | Its `reliability_index`, the rating its pages get as evidence |
+
+The topic part (2026-10-09): within the group-fit line a story of another
+group was ranked on its own merits alone, and an Environment round's first
+twenty held the T. rex, a tortoise's longevity and a hospital dog. Over ten
+labelled one-group rounds, at 0.15 (the other three keeping their
+proportions, 0.6 / 0.25 / 0.15 of the rest) stories of another group in
+the first twenties went from 26 to 15 and those worth offering of the
+round's own group stayed at 150; at 0.25, 9 and 145; at 0.35, 6 and 141.
+The cost is topical hard news: it fits its topic squarely, and the same
+Environment round now lists a fishmeal-pollution investigation higher.
+That remains the AI selection's and the person's to judge.
+
+**On `/discover`, other topics are another search** (2026-10-09). With a
+round on screen the topic buttons still switched, but the only way to
+read the feeds again was Refresh, which repeats the round's own topics:
+Environment was picked over a Culture round and Refresh brought Culture
+three times. Picking other topics now clears the round (it stays under
+Recent rounds) and shows the sources for them.
 
 Each candidate keeps its `reading` (the similarities) and its `rank`
 (score and parts) in the round, and the round its `ranking.weights`, so
@@ -281,6 +323,20 @@ worth offering in its first twenty to 6.
   eight other physics-Nobel pieces and The Conversation's explainer of
   the medicine Nobel, and the first twenty became twenty stories. The
   vectors are the screen's own, held in memory, never recorded.
+
+**The groups asked for, first** (`fitting_first`, 2026-10-09). A source
+names every group it has sections for and its feed is read for all of
+them: a Health round listed the chemistry Nobel and a Japanese headband's
+symbolism; Environment and Culture both listed Positive News's breakfast
+advice. A candidate whose nearest topic in the round's groups trails its
+nearest topic elsewhere by more than 0.05 (`GROUP_FIT`) is marked
+`otherGroup` and listed after every candidate that fits - moved, never
+dropped - and a source's slots go first to what fits. Over 149 labelled
+articles of that day's one-group rounds the fit told a story of the
+round's group from one of another's with AUC 0.874 [0.81, 0.93]; at -0.05
+it moves 18 of the 34 of another group and 10 of the 115 of the round's,
+each of those a story whose first group is another. The fit is recorded
+with each candidate's reading (`groupFit`).
 
 **What it cannot do**: order is not supply. A round of thirty with
 fourteen worth offering still shows six that are not. The labels are an

@@ -6,6 +6,12 @@ base_url: https://edition.cnn.com
 
 rss_url: http://rss.cnn.com/rss/edition.rss
 
+# The feed above stopped in 2024. CNN's Google News sitemap lists the last
+# two days, titled and timed: 268 articles on 2026-10-09, where its section
+# pages gave undated links titled from their slugs. Read when the feed finds
+# nothing new (src/services/scraper/strategies/listings.py).
+news_sitemap_url: https://www.cnn.com/sitemap/news.xml
+
 search_url: https://edition.cnn.com/search?q={query}
 
 language: en

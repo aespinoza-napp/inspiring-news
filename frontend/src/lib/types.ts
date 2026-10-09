@@ -554,14 +554,26 @@ export interface CandidateReading {
   off: number;
   /** Nearness to the description of positive impact. */
   impact: number;
+  /**
+   * Nearest topic of the round's groups minus nearest topic of any other:
+   * below -0.05 the candidate is listed after those that fit. Null when no
+   * group was picked; absent on rounds before 2026-10-09.
+   */
+  groupFit?: number | null;
 }
 
 /** A candidate's place in the ranking (backend src/services/selection/ranking.py). */
 export interface CandidateRank {
-  /** 0-1: news 60%, source record 25%, reliability 15% (the round's `ranking.weights`). */
+  /** 0-1: story 51%, topic 15%, source record 21%, reliability 13% (the round's `ranking.weights`). */
   score: number;
   /** 0-1, from the story's own title and summary; null when nothing was read. */
   news: number | null;
+  /**
+   * 0-1: how well it fits the topics the round asked for (its group fit,
+   * scaled); null when no group was picked or nothing was read. Absent on
+   * rounds before 2026-10-09.
+   */
+  topic?: number | null;
   /** 0-1: the share of the source's newest items the mission screen kept this round, smoothed. */
   record: number;
   /** The source's configured reliability rating, as is. */
@@ -586,6 +598,8 @@ export interface Candidate {
   rank?: CandidateRank;
   /** The same story as this url, ranked better: placed after every distinct story. */
   sameStoryAs?: string;
+  /** Nearer a topic of this other group than of the round's: placed after the candidates that fit. */
+  otherGroup?: string;
 }
 
 export interface CandidateSourceRow {
@@ -612,9 +626,13 @@ export interface ScreenedCandidate {
   source: string;
   sourceName: string;
   title: string | null;
-  /** politics, labour, crime, disaster, conflict, celebrity, sport, markets, service or obituary. */
+  /**
+   * politics, labour, crime, disaster, conflict, celebrity, sport, markets,
+   * service or obituary; or, not an article at all: podcast, roundup, quiz,
+   * gallery, advisory, promotion or shopping.
+   */
   offMission: string;
-  /** How much nearer that is than the nearest topic; null when the headline decided (obituary). */
+  /** How much nearer that is than the nearest topic; null when the headline decided (obituary, not an article). */
   margin: number | null;
   nearestTopic: string | null;
 }

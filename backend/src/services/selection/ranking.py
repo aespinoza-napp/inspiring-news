@@ -22,6 +22,11 @@ no LLM is asked):
    1: their editors chose, and they are not screened.
 3. **Reliability** - the source's configured `reliability_index`, the
    rating its pages get as evidence in the fact-check.
+4. **Topic** (added 2026-10-09) - how well it fits the groups the round
+   asked for: its `group_fit`, scaled. Within GROUP_FIT a story of
+   another group was ranked on its own merits alone - the T. rex, a
+   tortoise's longevity and a hospital dog among an Environment round's
+   first twenty.
 
 Measured on 2026-10-06 (docs/experiments.md; the labelled set and every
 reading in data/evaluation/experiments/ranking/) against 117 candidates
@@ -50,6 +55,16 @@ twenty places - nine outlets, two languages, each scored high on its own.
 A candidate whose embedding is within SAME_STORY of one already placed is
 marked `sameStoryAs` that story's best-ranked candidate and goes after
 every distinct story; nothing is dropped.
+
+**The groups asked for, first** (`fitting_first`). A source names every
+group it has sections for, and its feed is read for all of them: on
+2026-10-09 a Health round listed the chemistry Nobel and a Japanese
+headband's symbolism, Environment and Culture both listed Positive News's
+breakfast advice, and Society an MIT sensor sheet and Meta's business.
+A candidate whose nearest topic in the round's groups is further than
+GROUP_FIT behind its nearest topic elsewhere is marked `otherGroup` (the
+group of that nearest topic) and goes after every candidate that fits -
+moved, like a repeat, never dropped: a story can belong to two groups.
 """
 
 from __future__ import annotations
@@ -58,10 +73,26 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from src.config.topics import GROUP_OF
 from src.services.selection.mission_screen import Reading
 
 # How much each part counts. They sum to 1, so a score is in [0, 1].
-WEIGHTS = {"news": 0.6, "record": 0.25, "reliability": 0.15}
+#
+# The topic part's 0.15, the other three keeping their proportions, was
+# measured on 2026-10-09 (docs/experiments.md) over ten labelled one-group
+# rounds: among their first twenty, stories of another group went from 26
+# to 15 and stories worth offering of the round's own group stayed at 150
+# (clearly positive ones 61 -> 60). At 0.25 the other-group ones fell to 9
+# but 5 worth offering of the round's own group went with them, and at
+# 0.35 to 6 for 9. The three older parts' weights, 0.6 / 0.25 / 0.15, are
+# the 2026-10-06 measurement's.
+WEIGHTS = {"news": 0.51, "topic": 0.15, "record": 0.21, "reliability": 0.13}
+
+# group_fit scaled to [0, 1] between these: GROUP_FIT, where a candidate
+# starts to be listed after the rest, and the fit of a story squarely on
+# the round's topics (an Environment round's rhino translocation 0.04, its
+# compost-everything story 0.09).
+TOPIC_RANGE = (-0.05, 0.10)
 
 # impact minus nearest off-mission, scaled to [0, 1] between these: the
 # 5th and 95th percentiles over the 86 measured candidates the screen
@@ -90,6 +121,18 @@ UNREAD = 0.5
 # Muy Interesante pieces on ancient viruses in our genome).
 SAME_STORY = 0.75
 
+# How far a candidate's nearest topic in the round's groups may trail its
+# nearest topic in any other before it is listed after those that fit.
+# Measured 2026-10-09 (docs/experiments.md; data/evaluation/experiments/
+# alignment/): over 149 articles of that day's five one-group rounds,
+# labelled by hand with the groups each story belongs to, the fit told a
+# story of the round's group from one of another's with AUC 0.874 [0.81,
+# 0.93]. At -0.05 it moves 18 of the 34 that belonged elsewhere and 10 of
+# the 115 that belonged - 4 of those clearly positive, and each of the 10
+# a story whose first group is another (a testicular-tissue transplant in
+# a Science round).
+GROUP_FIT = -0.05
+
 
 @dataclass(frozen=True)
 class Standing:
@@ -115,6 +158,15 @@ def news_part(reading: Reading | None) -> float | None:
     return _scaled(reading.impact - reading.off, NEWS_RANGE)
 
 
+def topic_part(fit: float | None) -> float | None:
+    """How well the candidate fits the round's groups, in [0, 1]; None when no group was asked for or nothing was read."""
+
+    if fit is None:
+        return None
+
+    return _scaled(fit, TOPIC_RANGE)
+
+
 def record_part(standing: Standing) -> float:
     """The source's part from this round's screen, in [0, 1]."""
 
@@ -124,17 +176,21 @@ def record_part(standing: Standing) -> float:
     return (standing.kept + RECORD_PRIOR * RECORD_STRENGTH) / (standing.judged + RECORD_STRENGTH)
 
 
-def rank(reading: Reading | None, standing: Standing) -> dict:
+def rank(reading: Reading | None, standing: Standing, fit: float | None = None) -> dict:
     """
     The score and its parts, as the round records them: `reliability` is
-    the configured rating itself, the others in [0, 1].
+    the configured rating itself, the others in [0, 1]. `fit` is the
+    candidate's group_fit for the round's groups (None in a round over
+    every topic, where the topic part is the same for all).
     """
 
     news = news_part(reading)
+    topic = topic_part(fit)
     record = record_part(standing)
 
     score = (
         WEIGHTS["news"] * (UNREAD if news is None else news)
+        + WEIGHTS["topic"] * (UNREAD if topic is None else topic)
         + WEIGHTS["record"] * record
         + WEIGHTS["reliability"] * _scaled(standing.reliability, RELIABILITY_RANGE)
     )
@@ -142,6 +198,7 @@ def rank(reading: Reading | None, standing: Standing) -> dict:
     return {
         "score": round(score, 3),
         "news": None if news is None else round(news, 3),
+        "topic": None if topic is None else round(topic, 3),
         "record": round(record, 3),
         "reliability": standing.reliability,
     }
@@ -151,6 +208,49 @@ def best_first(candidates: list[dict]) -> list[dict]:
     """By score; candidates scored alike keep their order."""
 
     return sorted(candidates, key=lambda candidate: candidate["rank"]["score"], reverse=True)
+
+
+def group_fit(reading: Reading | None, topics: list[str]) -> float | None:
+    """
+    How much nearer the candidate comes to the nearest of `topics` (the
+    round's groups') than to the nearest other topic: positive when it
+    fits, negative when another group's topic is nearer. None when
+    nothing was read, or every topic was asked for.
+    """
+
+    if reading is None or not reading.topics:
+        return None
+
+    inside = [similarity for topic, similarity in reading.topics.items() if topic in topics]
+    outside = [similarity for topic, similarity in reading.topics.items() if topic not in topics]
+
+    if not inside or not outside:
+        return None
+
+    return max(inside) - max(outside)
+
+
+def fitting_first(candidates: list[dict], fits: dict[str, float], nearest: dict[str, str]) -> list[dict]:
+    """
+    `candidates` (best first) with those whose fit (`fits`, by url) is
+    below GROUP_FIT moved after the rest, each part in its order, and
+    marked `otherGroup`: the group of their nearest topic (`nearest`). A
+    candidate without a fit stays where it is.
+    """
+
+    fitting, others = [], []
+
+    for candidate in candidates:
+
+        fit = fits.get(candidate["url"])
+
+        if fit is not None and fit < GROUP_FIT:
+            candidate["otherGroup"] = GROUP_OF.get(nearest.get(candidate["url"]))
+            others.append(candidate)
+        else:
+            fitting.append(candidate)
+
+    return fitting + others
 
 
 def one_per_story(candidates: list[dict], vectors: dict[str, np.ndarray]) -> list[dict]:

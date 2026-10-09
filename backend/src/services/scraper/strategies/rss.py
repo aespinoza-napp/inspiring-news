@@ -17,11 +17,14 @@ from src.services.scraper.fetcher import Fetcher
 from src.config.topic_url_patterns import (
     INDEX_SEGMENTS,
     LIVE_COVERAGE,
+    LIVE_COVERAGE_PATTERNS,
+    NOT_ARTICLE_SEGMENTS,
+    NOT_ARTICLE_SLUG_STARTS,
     OFF_MISSION_SECTIONS,
     TOPIC_SECTION_PATTERNS_ES,
     TOPIC_URL_PATTERNS,
 )
-from src.config.topics import TOPIC_KEYWORDS_ES, TOPICS
+from src.config.topics import TOPIC_GROUPS, TOPIC_KEYWORDS_ES, TOPICS
 from .base import DiscoveryStrategy
 
 
@@ -32,6 +35,14 @@ DATED_PATH = re.compile(r"/(20\d{2})[/-]?(0[1-9]|1[0-2])[/-]?(0[1-9]|[12]\d|3[01
 # ABC stamps its slugs with the moment of publication, to the second:
 # ".../calcula-hipoteca-20260525124640-nt.html".
 SLUG_TIMESTAMP = re.compile(r"(?<!\d)(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])[0-5]\d[0-5]\d(?!\d)")
+
+# WHO dates its links day first: "/news/item/25-02-2026-who-director-...".
+# Only for the age limit; on 2026-10-09 its dead feed's 21 items from 2024
+# and 2025 read as undated, and so as new.
+DAY_FIRST_PATH = re.compile(r"/(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-(20\d{2})(-|/|$)")
+
+# A topic keyword this short matches only a whole word (keyword_in).
+SHORT_KEYWORD = 4
 
 # A slug this many words long is a headline, not a section name.
 MIN_SLUG_WORDS = 4
@@ -59,7 +70,10 @@ def off_mission(url: str) -> bool:
 
     path = urlsplit(url.lower()).path
 
-    return any(marker in path for marker in OFF_MISSION_SECTIONS + LIVE_COVERAGE)
+    return (
+        any(marker in path for marker in OFF_MISSION_SECTIONS + LIVE_COVERAGE)
+        or any(re.search(pattern, path) for pattern in LIVE_COVERAGE_PATTERNS)
+    )
 
 
 def date_from_url(url: str) -> datetime | None:
@@ -75,19 +89,71 @@ def date_from_url(url: str) -> datetime | None:
 
     found = DATED_PATH.search(path) or SLUG_TIMESTAMP.search(path)
 
-    if not found:
-        return None
-
     try:
-        return datetime(int(found.group(1)), int(found.group(2)), int(found.group(3)), tzinfo=timezone.utc)
+        if found:
+            return datetime(int(found.group(1)), int(found.group(2)), int(found.group(3)), tzinfo=timezone.utc)
+
+        found = DAY_FIRST_PATH.search(path)
+
+        if found:
+            return datetime(int(found.group(3)), int(found.group(2)), int(found.group(1)), tzinfo=timezone.utc)
+
     except ValueError:
         return None
+
+    return None
+
+
+def keyword_in(text: str, keyword: str, cased: bool = True) -> bool:
+    """
+    Whether `text` mentions a topic keyword. Long keywords anywhere, as
+    before; short ones only as a whole word (or its plural); an acronym
+    (WHO, NASA, AI) as a whole word in capitals, unless `cased` is off (a
+    slug is all lower case). Until 2026-10-09 every keyword was a plain
+    substring: "art" matched "start" and "heart", "who" every "who",
+    "ai" "said" and "detained", "city" "electricity" - CNN's news sitemap
+    put "Leading pro-Kremlin war blogger detained" in a Science round.
+    """
+
+    if keyword.isupper() and cased:
+        return re.search(rf"(?<!\w){re.escape(keyword)}s?(?!\w)", text) is not None
+
+    lowered, word = text.lower(), keyword.lower()
+
+    if len(word) <= SHORT_KEYWORD:
+        return re.search(rf"(?<!\w){re.escape(word)}s?(?!\w)", lowered) is not None
+
+    return word in lowered
 
 
 def _index_page(path: str) -> bool:
     """A category, tag, author or special-collection index (INDEX_SEGMENTS)."""
 
     return any(segment in path for segment in INDEX_SEGMENTS)
+
+
+def _not_an_article(path: str) -> bool:
+    """
+    A podcast, gallery, branded, shopping or recipe page
+    (NOT_ARTICLE_SEGMENTS, NOT_ARTICLE_SLUG_STARTS). The slug is the last
+    segment or the one before it: RTVE puts an id last
+    (".../receta-quiche-salmon.../17254090.shtml").
+    """
+
+    slugs = [segment for segment in path.split("/") if segment][-2:]
+
+    return (
+        any(segment in path for segment in NOT_ARTICLE_SEGMENTS)
+        or any(slug.startswith(NOT_ARTICLE_SLUG_STARTS) for slug in slugs)
+    )
+
+
+def _headline_slug(path: str) -> bool:
+    """A slug of MIN_SLUG_WORDS words or more."""
+
+    slug = re.sub(r"\.html?$", "", path.rstrip("/").rsplit("/", 1)[-1])
+
+    return len([word for word in re.split(r"[-_]", slug) if word]) >= MIN_SLUG_WORDS
 
 
 def filed_under(url: str) -> set[str]:
@@ -207,10 +273,10 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         the admission filter's call, as it always was.
         """
 
-        if not source.rss_url:
-            return []
+        entries = self._entries(source)
 
-        feed = feedparser.parse(self.fetcher.get(str(source.rss_url)).html)
+        if not entries:
+            return []
 
         items: dict[str, DiscoveredLink] = {}
 
@@ -221,7 +287,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
 
         keywords = self._keywords_for(normalized_topics)
         url_patterns = self._url_patterns_for(normalized_topics)
-        by_topic = self._filters_by_topic(source)
+        by_topic = self._filters_by_topic(source) and not covers_only(source, normalized_topics)
 
         spanish = (
             _spanish_keywords_for(normalized_topics)
@@ -229,7 +295,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
             else set()
         )
 
-        for entry in feed.entries:
+        for entry in entries:
 
             link = getattr(entry, "link", None)
 
@@ -272,6 +338,24 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
 
         return list(items.values())
 
+    def applies(self, source: NewsSource) -> bool:
+        """Whether this step has anything to read for `source`; the feed step always tries."""
+
+        return True
+
+    def _entries(self, source: NewsSource) -> list:
+        """
+        The feed's items as feedparser gives them - `link`, `title`,
+        `summary`, `tags`, `published_parsed` - and [] without a feed.
+        The steps that read a news sitemap or a JSON listing give theirs
+        the same shape and share every filter below.
+        """
+
+        if not source.rss_url:
+            return []
+
+        return feedparser.parse(self.fetcher.get(str(source.rss_url)).html).entries
+
     @staticmethod
     def _filters_by_topic(source: NewsSource) -> bool:
         """
@@ -295,7 +379,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         """
 
         return {
-            keyword.lower()
+            keyword
             for topic in topics
             if topic in TOPICS
             for keyword in TOPICS[topic].keywords
@@ -330,14 +414,9 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
             for tag in getattr(entry, "tags", [])
         )
 
-        searchable = (
-            f"{title} {summary} {categories}"
-        ).lower()
+        searchable = f"{title} {summary} {categories}"
 
-        return any(
-            keyword in searchable
-            for keyword in keywords
-        )
+        return any(keyword_in(searchable, keyword) for keyword in keywords)
 
     def _is_article(
         self,
@@ -368,7 +447,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
 
         path = urlsplit(url).path
 
-        if _index_page(path):
+        if _index_page(path) or _not_an_article(path):
             return False
 
         # The English section names above missed nearly every Spanish
@@ -376,13 +455,11 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         # NASA one. A date in the path or a headline-length slug says
         # "article" in any language; a homepage or a section index has
         # neither.
-        slug = re.sub(r"\.html?$", "", path.rstrip("/").rsplit("/", 1)[-1])
-
         return (
             any(pattern in url for pattern in self.ARTICLE_PATTERNS)
             or any(pattern in url for pattern in self._ALL_TOPIC_URL_PATTERNS)
             or bool(DATED_PATH.search(path))
-            or len([word for word in re.split(r"[-_]", slug) if word]) >= MIN_SLUG_WORDS
+            or _headline_slug(path)
         )
 
 
@@ -446,15 +523,13 @@ def article_shaped(url: str) -> bool:
 
     path = urlsplit(lowered).path
 
-    if _index_page(path):
+    if _index_page(path) or _not_an_article(path):
         return False
-
-    slug = re.sub(r"\.html?$", "", path.rstrip("/").rsplit("/", 1)[-1])
 
     return (
         any(segment in path for segment in ARTICLE_SEGMENTS)
         or bool(DATED_PATH.search(path))
-        or len([word for word in re.split(r"[-_]", slug) if word]) >= MIN_SLUG_WORDS
+        or _headline_slug(path)
     )
 
 
@@ -467,6 +542,22 @@ def _narrowed(topics: set[str]) -> bool:
     """Asked for some topics, not all of them: a topic-scoped run (/discover, POST /ingest with groups)."""
 
     return bool(topics) and not set(TOPICS) <= topics
+
+
+def covers_only(source: NewsSource, topics: set[str]) -> bool:
+    """
+    Whether everything `source` publishes is on `topics`: a run narrowed
+    to some topics that include every topic of every group the source
+    names. Its items need no keyword to show they belong - WHO names only
+    Health, and on 2026-10-09 the English keywords dropped its "New global
+    roadmap launched to tackle hypertension in pregnancy" from a Health
+    round. Asked for everything, nothing changes: the keywords still run.
+    """
+
+    if not source.groups or not _narrowed(topics):
+        return False
+
+    return all(set(TOPIC_GROUPS[group]) <= topics for group in source.groups)
 
 
 def _spanish_keywords_for(topics: set[str]) -> set[str]:
@@ -484,6 +575,14 @@ def _folded(text: str) -> str:
     plain = "".join(char for char in decomposed if not unicodedata.combining(char))
 
     return " " + _NOT_WORD.sub(" ", plain).strip() + " "
+
+
+def slug_mentions(url: str, keywords: set[str]) -> bool:
+    """`_mentions` for a link alone: the words of its path, for a step that has no title."""
+
+    text = _folded(urlsplit(url).path.replace("-", " ").replace("_", " "))
+
+    return any(f" {keyword}" in text for keyword in keywords)
 
 
 def _mentions(entry, keywords: set[str]) -> bool:

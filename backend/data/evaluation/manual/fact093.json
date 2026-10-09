@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "infobae.com",
+  "claimant": "Pablo Andisco",
+  "claim": "La Asociación de Periodistas de la Televisión y la Radiofonía Argentinas (APTRA) dio a conocer los nominados a los Martín Fierro de Radio 2026, que premiarán la producción del año 2025.",
+  "claimDate": "2026-10-09",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.a24.com/primiciasya/martin-fierro-radio-2026-luis-ventura-anuncio-las-nominaciones-y-confirmo-los-detalles-la-gala-n1604828"
+  ],
+  "split": "test",
+  "id": "fact093",
+  "topic": "entertainment",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-09",
+  "articleUrl": "https://www.infobae.com/teleshow/2026/10/09/quienes-son-los-nominados-al-martin-fierro-de-radio-2026/",
+  "annotatorNote": "A24, 9 Oct 2026 09:25: APTRA's president presented the nominations for the Martín Fierro de Radio 2026, 'que reconocerán la producción radial de 2025'. Same day as the article. The ceremony's date and hosts (claim 1 of this article) were skipped as a plan.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

@@ -211,17 +211,95 @@ def test_a_broken_feed_falls_back_and_both_attempts_are_counted():
     assert entry["outcomes"] == {"http_error": 1, "ok": 1}
 
 
-def test_topic_pages_are_the_last_discovery_step():
-    """Only after both feed steps: they cost one request, it costs up to seven."""
+def test_the_steps_that_give_titles_and_times_come_before_those_that_give_links():
+    """
+    The feed, then a source's JSON listing and its news sitemap, then
+    section pages, and trafilatura last: run for real on 2026-10-09 it
+    gave ABC's every section to a Culture round, untitled, where section
+    pages filter by topic.
+    """
 
+    from src.services.scraper.strategies.listings import JsonFeedDiscoveryStrategy, NewsSitemapDiscoveryStrategy
     from src.services.scraper.strategies.rss import RSSDiscoveryStrategy
     from src.services.scraper.strategies.topic_pages import TopicPageDiscoveryStrategy
     from src.services.scraper.strategies.trafilatura_feeds import TrafilaturaFeedDiscoveryStrategy
 
     assert [type(s) for s in DiscoveryService(stats=RequestStats()).strategies] == [
         RSSDiscoveryStrategy,
-        TrafilaturaFeedDiscoveryStrategy,
+        JsonFeedDiscoveryStrategy,
+        NewsSitemapDiscoveryStrategy,
         TopicPageDiscoveryStrategy,
+        TrafilaturaFeedDiscoveryStrategy,
+    ]
+
+
+def test_a_step_with_nothing_configured_for_the_source_is_not_tried():
+
+    class NotHere(Canned):
+        def applies(self, source):
+            return False
+
+    skipped = NotHere(["https://bbc.com/never"])
+    stats = RequestStats()
+
+    result = DiscoveryService([Canned([]), skipped, Canned(["https://bbc.com/a"])], stats=stats).run(build_source())
+
+    assert result.urls == ["https://bbc.com/a"]
+    assert skipped.calls == 0
+    assert result.tried == ["Canned", "Canned"]
+    assert stats.snapshot()["domains"][0]["purposes"] == {"discovery": 2}
+
+
+def test_the_trafilatura_step_runs_trafilatura_not_the_feed_again(monkeypatch):
+    """
+    From 2026-10-04 to 2026-10-09 DiscoveryService asked it for
+    `discover_items`, which it inherited from the feed step: it re-read
+    the feed that had just found nothing.
+    """
+
+    from src.services.scraper.strategies.trafilatura_feeds import TrafilaturaFeedDiscoveryStrategy
+
+    class NoFeed:
+        def get(self, url):
+            raise AssertionError(f"the feed step's reader was used: {url}")
+
+    monkeypatch.setattr(
+        "src.services.scraper.strategies.trafilatura_feeds.trafilatura.feeds.find_feed_urls",
+        lambda url: ["https://example.com/2026/10/09/nasa-launches-telescope"],
+    )
+    monkeypatch.setattr("src.services.scraper.strategies.trafilatura_feeds.check_url", lambda url: url)
+
+    result = DiscoveryService([TrafilaturaFeedDiscoveryStrategy(fetcher=NoFeed())], stats=RequestStats()).run(
+        build_source(rss_url="https://example.com/rss.xml"), topics=["space"],
+    )
+
+    assert result.urls == ["https://example.com/2026/10/09/nasa-launches-telescope"]
+    assert result.method == "TrafilaturaFeedDiscoveryStrategy"
+
+
+def test_trafilatura_links_from_a_narrowed_spanish_source_must_name_a_topic_asked_for(monkeypatch):
+    """2026-10-09: unfiltered, ABC's homepage feeds gave a Culture round 38 links of every section."""
+
+    from src.services.scraper.strategies.trafilatura_feeds import TrafilaturaFeedDiscoveryStrategy
+
+    monkeypatch.setattr(
+        "src.services.scraper.strategies.trafilatura_feeds.trafilatura.feeds.find_feed_urls",
+        lambda url: [
+            "https://www.abc.es/cultura/arte/recuperados-dos-cuadros-renoir-robados-museo-20261009141345-nt.html",
+            "https://www.abc.es/economia/el-ibex-cierra-la-semana-en-positivo-20261009141345-nt.html",
+            "https://www.abc.es/sociedad/una-exposicion-de-pintura-abre-gratis-en-madrid-20261009141345-nt.html",
+        ],
+    )
+    monkeypatch.setattr("src.services.scraper.strategies.trafilatura_feeds.check_url", lambda url: url)
+
+    urls = TrafilaturaFeedDiscoveryStrategy().discover(
+        build_source(base_url="https://www.abc.es", language="es"), topics=["arts"],
+    )
+
+    # Filed under /cultura/, or naming painting ("pintura") in its slug.
+    assert urls == [
+        "https://www.abc.es/cultura/arte/recuperados-dos-cuadros-renoir-robados-museo-20261009141345-nt.html",
+        "https://www.abc.es/sociedad/una-exposicion-de-pintura-abre-gratis-en-madrid-20261009141345-nt.html",
     ]
 
 
@@ -277,7 +355,7 @@ def test_trafilatura_discovery_tries_the_homepage_when_the_feed_is_gone(monkeypa
         asked.append(url)
         if url.endswith("rss.xml"):
             return []
-        return ["https://example.com/2026/09/23/nasa-launches-telescope"]
+        return ["https://example.com/2026/09/23/la-nasa-lanza-un-telescopio"]
 
     monkeypatch.setattr(
         "src.services.scraper.strategies.trafilatura_feeds.trafilatura.feeds.find_feed_urls",
@@ -294,7 +372,7 @@ def test_trafilatura_discovery_tries_the_homepage_when_the_feed_is_gone(monkeypa
     )
 
     assert asked == ["https://example.com/rss.xml", "https://example.com/"]
-    assert urls == ["https://example.com/2026/09/23/nasa-launches-telescope"]
+    assert urls == ["https://example.com/2026/09/23/la-nasa-lanza-un-telescopio"]
 
 
 # ----------------------------------------------------------------------
@@ -507,11 +585,13 @@ class FakeScreen:
     judged.
     """
 
-    def __init__(self, off=(), error=None, impact=None, vectors=None):
+    def __init__(self, off=(), error=None, impact=None, vectors=None, topics=None):
         self.off = off
         self.error = error
         self.impact = impact or {}
         self.vectors = vectors or {}
+        # title -> {topic: similarity}; the nearest of them is its nearest topic.
+        self.topics = topics or {}
         self.read = []
         self.judged = []
 
@@ -531,9 +611,14 @@ class FakeScreen:
                 verdict=Verdict(off_mission="politics", margin=0.09, nearest_topic="cities")
                 if not spared and any(word in (candidate.title or "") for word in self.off) else None,
                 reading=Reading(
-                    nearest_topic="cities", topic=0.5, nearest_off="politics", off=0.45,
+                    nearest_topic=(
+                        max(self.topics[candidate.title], key=self.topics[candidate.title].get)
+                        if candidate.title in self.topics else "cities"
+                    ),
+                    topic=0.5, nearest_off="politics", off=0.45,
                     impact=self.impact.get(candidate.title, 0.45),
                     vector=self.vectors.get(candidate.title),
+                    topics=self.topics.get(candidate.title),
                 ),
             )
             for candidate, spared in zip(candidates, exempt)
@@ -625,7 +710,7 @@ def test_a_positive_outlet_is_read_but_not_screened():
 
     assert [c["url"] for c in round_["candidates"]] == ["https://goodnewsnetwork.org/ex-prisoners-fight-wildfires"]
     assert screen.judged == []
-    # Read all the same, and only what it can offer: per_source, not SCREEN_DEPTH times that.
+    # Read all the same: the ranking needs its reading.
     assert [c.title for c in screen.read] == ["ex-prisoners-fight-wildfires"]
     assert round_["candidates"][0]["reading"]["impact"] == 0.45
     assert round_["sources"][0]["judged"] == 0
@@ -740,7 +825,7 @@ def test_candidates_come_best_first_with_the_parts_of_their_score():
     assert listed.index("museo-abre") < listed.index("concierto-cancelado")
 
     museum = next(c for c in round_["candidates"] if c["url"].endswith("museo-abre"))
-    assert set(museum["rank"]) == {"score", "news", "record", "reliability"}
+    assert set(museum["rank"]) == {"score", "news", "topic", "record", "reliability"}
     assert museum["rank"]["reliability"] == 0.9
     assert museum["reading"]["impact"] == 0.48
     assert round_["ranking"]["weights"] == ranking.WEIGHTS
@@ -818,3 +903,103 @@ def test_without_a_screen_the_sources_alone_decide_the_order():
 
     assert [c["source"] for c in round_["candidates"]] == ["who", "cnn"]
     assert all(c["rank"]["news"] is None for c in round_["candidates"])
+
+
+def test_a_positive_outlets_roundup_gives_its_slot_to_the_next_story():
+    """2026-10-09: Positive News's weekly roundup and a magazine promotion were Society's 2nd and 3rd."""
+
+    from src.services.selection.mission_screen import Assessment, MissionScreen, _by_headline
+
+    class HeadlinesOnly(MissionScreen):
+        """The real format rules, and nothing that needs the model."""
+
+        def assess(self, candidates, exempt=None):
+            exempt = exempt or [False] * len(candidates)
+            return [Assessment(_by_headline(c, spared)) for c, spared in zip(candidates, exempt)]
+
+    class Titled(FakeDiscovery):
+        def run(self, source, topics=None):
+            titles = {
+                "https://www.positive.news/society/week-41": "What went right this week: the good news that matters",
+                "https://www.positive.news/society/community-fridges": "Community fridges cut food waste in Leeds",
+            }
+            return DiscoveryResult(
+                urls=list(titles), method="RSSDiscoveryStrategy",
+                details={url: {"title": title, "summary": None} for url, title in titles.items()},
+            )
+
+    positive = build_source(id="positive_news", name="Positive News", groups=["society"], positive_editorial=True)
+
+    round_ = IngestionService(
+        sources=[positive], lake=FakeLake(), discovery=Titled({}), screen=HeadlinesOnly(embedding_service=object()),
+    ).discover_candidates(["society"], per_source=1)
+
+    assert [c["title"] for c in round_["candidates"]] == ["Community fridges cut food waste in Leeds"]
+    assert [s["offMission"] for s in round_["screened"]] == ["roundup"]
+
+
+def test_a_candidate_nearer_another_groups_topic_is_listed_after_those_that_fit():
+    """2026-10-09, a Health round: the chemistry Nobel ranked first."""
+
+    import pytest
+
+    nature = build_source(id="nature", name="Nature", groups=["health", "science"])
+    screen = FakeScreen(
+        impact={"chemistry-nobel": 0.60, "aids-prevention": 0.45},
+        topics={
+            "chemistry-nobel": {"research": 0.60, "medicine": 0.45},
+            "aids-prevention": {"public_health": 0.60, "research": 0.50},
+        },
+    )
+
+    round_ = screened_service(
+        {"nature": ["https://nature.com/articles/chemistry-nobel", "https://nature.com/articles/aids-prevention"]},
+        screen,
+        sources=[nature],
+    ).discover_candidates(["health"], per_source=2)
+
+    first, second = round_["candidates"]
+    # The topic part is in the score: 0.10 fits squarely, -0.15 not at all.
+    assert (first["rank"]["topic"], second["rank"]["topic"]) == (1.0, 0.0)
+    assert (first["url"], second["url"]) == (
+        "https://nature.com/articles/aids-prevention", "https://nature.com/articles/chemistry-nobel",
+    )
+    assert second["otherGroup"] == "science" and "otherGroup" not in first
+    assert second["reading"]["groupFit"] == pytest.approx(-0.15)
+    assert first["reading"]["groupFit"] == pytest.approx(0.10)
+    assert round_["totals"]["otherGroup"] == 1
+
+
+def test_a_round_over_every_group_judges_no_fit():
+
+    nature = build_source(id="nature", name="Nature", groups=["health", "science"])
+    screen = FakeScreen(topics={"chemistry-nobel": {"research": 0.60, "medicine": 0.45}})
+
+    round_ = screened_service(
+        {"nature": ["https://nature.com/articles/chemistry-nobel"]}, screen, sources=[nature],
+    ).discover_candidates(None, per_source=2)
+
+    [candidate] = round_["candidates"]
+    assert candidate["reading"]["groupFit"] is None and "otherGroup" not in candidate
+
+
+def test_a_sources_slots_go_first_to_what_fits_the_groups_asked_for():
+    """2026-10-09: Positive News's breakfast advice took one of its slots in Environment and in Culture."""
+
+    positive = build_source(id="positive_news", name="Positive News", groups=["environment", "culture"], positive_editorial=True)
+    screen = FakeScreen(topics={
+        "slow-breakfast": {"nutrition": 0.60, "food": 0.45},
+        "elephant-conservation": {"nature": 0.60, "community": 0.50},
+    })
+
+    round_ = screened_service(
+        {"positive_news": [
+            "https://www.positive.news/lifestyle/slow-breakfast",
+            "https://www.positive.news/environment/elephant-conservation",
+        ]},
+        screen,
+        sources=[positive],
+    ).discover_candidates(["environment"], per_source=1)
+
+    assert [c["url"] for c in round_["candidates"]] == ["https://www.positive.news/environment/elephant-conservation"]
+    assert round_["sources"][0]["deferred"] == 1

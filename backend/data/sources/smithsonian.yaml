@@ -26,6 +26,18 @@ tags:
   - culture
   - wildlife
 
+# Its own sections, read instead of guessed ones: a guessed /food/ gave
+# food history and travel as Environment on 2026-10-09.
+sections:
+  environment:
+    - /science-nature/
+  science:
+    - /science-nature/
+    - /innovation/
+  culture:
+    - /arts-culture/
+    - /history/
+
 groups:
   - culture
   - science

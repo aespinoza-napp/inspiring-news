@@ -347,6 +347,75 @@ LIVE_COVERAGE = (
     "en-directo",
     "live-updates",
     "minuto-a-minuto",
+    # 2026-10-09: 20minutos's election-campaign live page ends its slug in
+    # "-directo_7046881_6.html", RTVE's in "-directo-video-cronica/" and
+    # "...-ultima-hora-espana-directo-hoy-cronica/".
+    "-directo_",
+    "directo-video",
+    "directo-cronica",
+    "directo-hoy",
+    # CNN's, in its news sitemap: "/2026/10/09/world/live-news/...".
+    "/live-news/",
+    "ultima-hora",
+    "-en-vivo",
+)
+
+# The same, where only a pattern says it: France 24 dates its live pages'
+# slugs ("/20261009-live-141-french-high-schools-closed..."), and "-live-"
+# alone is a verb in too many headlines.
+LIVE_COVERAGE_PATTERNS = (
+    r"/\d{8}-live-",
+)
+
+# Pages that are not articles at all, whatever they are about: podcasts,
+# photo galleries, branded content, shopping and recipes. On 2026-10-09
+# the five rounds listed the Guardian's Nobel podcast (/science/audio/),
+# two CNN podcast pages (/audio/podcasts/), NASA's picture of the day
+# (/image-article/), elDiario's branded content (/edcreativo/: its pages
+# say "branded-content"), La Vanguardia's telescope comparison
+# (/comprar/), a robot-vacuum discount (/bazar/) and El País's recipes
+# (/el-comidista/); CNN's news sitemap carries its shopping deals under
+# /cnn-underscored/. Whole path segments, compared in lower case.
+NOT_ARTICLE_SEGMENTS = (
+    "/audio/",
+    "/podcast/",
+    "/podcasts/",
+    "/image-article/",
+    "/gallery/",
+    "/galleries/",
+    "/galeria/",
+    "/galerias/",
+    "/fotogalerias/",
+    "/in-pictures/",
+    "/edcreativo/",
+    # 20minutos's: "Contenido de marca" on the page (a Kia advertorial in
+    # the Society round of 2026-10-09).
+    "/bc/",
+    "/branded/",
+    "/brandstudio/",
+    "/brand-studio/",
+    "/contenido-patrocinado/",
+    "/patrocinado/",
+    "/sponsored/",
+    "/partner-content/",
+    "/paid-content/",
+    "/comprar/",
+    "/bazar/",
+    "/cnn-underscored/",
+    "/el-comidista/",
+    "/recetas/",
+)
+
+# The same, told by how a slug starts: elDiario's galleries
+# ("fotos-espana-sale-calle-maricarmen-imagenes") and RTVE's recipes
+# ("receta-huevo-relleno-pannacotta..."). A start, not anywhere: "receta"
+# inside a slug is as often a prescription ("receta-electronica").
+NOT_ARTICLE_SLUG_STARTS = (
+    "fotos-",
+    "galeria-",
+    "receta-",
+    "recipe-",
+    "podcast-",
 )
 
 # Index pages, not articles, though their slugs read like headlines: on

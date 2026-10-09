@@ -5,6 +5,7 @@ from src.config.topics import TOPICS
 from src.services.inference_client import InferenceUnavailable
 from src.services.selection.mission_screen import (
     IMPACT,
+    format_of,
     MARGIN,
     OFF_MISSION,
     Candidate,
@@ -170,9 +171,13 @@ def test_each_kept_candidate_comes_with_what_the_embeddings_said():
     assert museum.reading.to_dict()["nearestOff"] == "service"
     # Its own embedding too, for telling one story told twice; never recorded.
     assert museum.reading.vector is not None and "vector" not in museum.reading.to_dict()
+    # And its nearness to every topic, which the ranking judges group fit by; never recorded.
+    assert museum.reading.topics["arts"] == pytest.approx(0.7)
+    assert set(museum.reading.topics) == set(TOPICS)
+    assert "topics" not in museum.reading.to_dict()
 
 
-def test_an_exempt_candidate_is_read_but_never_left_out():
+def test_an_exempt_candidate_is_read_but_never_left_out_for_its_subject():
     """A positive outlet's: its editors chose; the ranking still needs its reading."""
 
     election, death = MissionScreen(embedding_service=embeddings()).assess(
@@ -251,3 +256,89 @@ def test_the_death_report_is_read_in_the_headline_only():
 
     assert verdict is None
     assert service.calls != []
+
+
+# ----------------------------------------------------------------------
+# Not an article at all: told by the title, or the start of the summary
+# ----------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("title, summary, kind", [
+    # Every one a candidate on 2026-10-09.
+    ("What went right this week: the good news that matters", None, "roundup"),
+    ("What We’re Reading: Rat Rangers to the Rescue", None, "roundup"),
+    ("The life of Darwin and the science of clouds: Books in brief", None, "roundup"),
+    ("A future worth building. What to expect in the new issue of Positive News magazine", None, "promotion"),
+    ("¿Cómo acompañas a tus hijos en su vida digital? Descúbrelo en este test", None, "quiz"),
+    ("¿Qué tipo de pareja sois? Responde a estas 10 preguntas y descubre cuál es vuestro perfil", None, "quiz"),
+    ("FOTOS | España sale a la calle por Maricarmen, en imágenes", None, "gallery"),
+    ("APOD: 2026 October 9 – Stickney Crater", None, "gallery"),
+    ("All the news and science from the 2026 Nobel prizes – podcast", None, "podcast"),
+    ("Los 20 chollos de Amazon que más merecen la pena esta semana", None, "shopping"),
+    # Nothing in the title or the link; the summary says it.
+    (
+        "Ratko Mladić: the war criminal who became a martyr for Bosnian Serbs",
+        "On The Conversation Weekly podcast, an international law expert explains why",
+        "podcast",
+    ),
+    (
+        "NASA Briefing to Highlight Contributions to Martian Moons Mission",
+        "Media are invited to join NASA for a media teleconference at 4 p.m. EDT",
+        "advisory",
+    ),
+])
+def test_what_is_not_an_article_is_told_by_its_title_or_summary(title, summary, kind):
+
+    assert format_of(title, summary) == kind
+
+
+@pytest.mark.parametrize("title, summary", [
+    ("A new blood test detects pancreatic cancer early", None),
+    ("Floods hit this week in Valencia as the rain returns", None),
+    ("Photosynthesis, rebuilt: a faster enzyme for crops", None),
+    ("Teenager becomes first person to have testicular tissue transplant in UK", None),
+    # A podcast mentioned late in a long summary is not the story's format.
+    ("Gen Z Is Rescuing Millions in Medical Supplies", "In early August, a freight truck pulled up to an OhioHealth facility in Columbus and took roughly 30,000 pounds of supplies. The founder later told a podcast"),
+])
+def test_ordinary_headlines_are_articles(title, summary):
+
+    assert format_of(title, summary) is None
+
+
+def test_a_positive_outlets_roundup_is_left_out_and_never_embedded():
+    """A format, not a subject: Positive News's weekly roundup was Society's second on 2026-10-09."""
+
+    service = embeddings()
+
+    [roundup] = MissionScreen(embedding_service=service).assess(
+        titled("What went right this week: the good news that matters"), exempt=[True],
+    )
+
+    assert roundup.verdict.off_mission == "roundup"
+    assert roundup.verdict.margin is None and roundup.reading is None
+    assert service.calls == []
+
+
+
+def test_markets_and_the_like_need_a_smaller_lead_than_crime_and_war():
+    """
+    2026-10-09: between 0.02 and 0.04, 15 of 16 market, service, labour,
+    disaster and celebrity candidates were not worth offering; crime and
+    war kept a prison-stigma story and history pieces.
+    """
+
+    from src.services.selection.mission_screen import MARGINS
+
+    BUDGET = "El Gobierno improvisa un apunte contable para encajar en los PGE los 10.000 millones"
+    HEIST = "Thieves Pulled Off Another Shocking Art Heist in France"
+
+    service = FakeEmbeddings({
+        BUDGET: 0.53 * axis("Markets and personal finance") + 0.5 * axis(TOPICS["cities"].name),
+        HEIST: 0.53 * axis("Crime") + 0.5 * axis(TOPICS["arts"].name),
+    })
+
+    budget, heist = MissionScreen(embedding_service=service).screen(titled(BUDGET, HEIST))
+
+    assert MARGINS["markets"] < 0.03 < MARGIN
+    assert budget.off_mission == "markets"
+    assert heist is None

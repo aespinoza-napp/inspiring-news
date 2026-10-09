@@ -119,11 +119,31 @@ cheapest first too:
 
 1. the source's `rss_url`, fetched through `Fetcher` (URL guard and a
    timeout - feedparser's own HTTP has neither) and parsed by feedparser;
-2. only if that finds nothing: trafilatura's feed discovery, on the
-   `rss_url` and then the homepage - lenient with broken XML, and able to
-   find the feed a site advertises today;
-3. only if there is no feed at all: the source's **topic section pages**
-   (below).
+2. only if that finds nothing new: the source's **JSON listing**
+   (`json_feed`: WHO's news API) and then its **Google News sitemap**
+   (`news_sitemap_url`: CNN's), each only for a source that names one -
+   titled and timed like a feed (`strategies/listings.py`);
+3. then the source's **topic section pages** (below), or the sections it
+   names for a group (`sections`: Smithsonian's `/science-nature/` for
+   Environment, where a guessed `/food/` gave food travel);
+4. last: trafilatura's feed discovery, on the `rss_url` and then the
+   homepage - lenient with broken XML, and able to find the feed a site
+   advertises today.
+
+**Since 2026-10-09.** trafilatura was second, but from 2026-10-04 it had
+not run at all: `DiscoveryService` asks a step for `discover_items` first,
+and it had inherited the feed step's, so it re-read the dead feed. Section
+pages were the fallback in practice. Run for real it was worse than them -
+ABC's homepage feeds gave a Culture round 38 links of every section,
+unfiltered and untitled, and WHO's dead feed 21 items from 2024-2025 that
+read as undated (WHO dates its links day first: `date_from_url` now reads
+that too) - so it is last, and narrowed Spanish sources' links must name a
+topic in their slug. A section page's links are now **titled with the text
+they are linked with** (ABC 94 of 96, National Geographic 42/44, France 24
+59/59), not made up from their slugs: the mission screen, the ranking and
+the same-story check read those titles. WHO's feed's newest item was from
+February and CNN's stopped in 2024; ABC's `sitemap_news.xml` still lists
+2021 and WHO's sitemap index dates from 2018, so neither is configured.
 
 Then, before anything is queued:
 
@@ -132,7 +152,12 @@ Then, before anything is queued:
   0 of NASA's 10. A date in the path or a four-word slug now counts.
 - **Topic**, for English sources only. Every TOPICS keyword is English;
   against a Spanish feed they matched at random. Spanish articles are left
-  to the admission filter, which rejects before any LLM call.
+  to the admission filter, which rejects before any LLM call. Short
+  keywords match whole words and acronyms in capitals (`keyword_in`):
+  as substrings, "ai" matched "said" and "detained", "who" (the WHO) every
+  "who", "art" "start" - 85 of 419 matches on the 2026-10-09 English feeds,
+  every one politics, sport or war let into Science or Health. A source
+  all of whose groups were asked for (WHO in Health) needs no keyword.
 - **Not already in the lake** (host and path, so tracking parameters do
   not make an old article new; a syndicated article is queued once).
 - **At most `perSource`** per source per run; the rest are reported as

@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Ivan Comas i Parra",
+  "claim": "Su inesperado fallecimiento en la víspera ha provocado la organización de una marcha de más de tres kilómetros que ha recorrido el centro de Madrid, partiendo de la acampada de la Puerta del Sol hasta el número 46 de la calle Alcalde Sainz de Baranda, el edificio donde vivió durante más de siete décadas.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.lavozdelsur.es/actualidad/sociedad/historica-marcha-desde-sol-hasta-la-casa-de-maricarmen-este-jueves-firmaba-el-contrato-para-regresar-a-su-vivenda.html",
+    "https://www.infolibre.es/politica/madrid-marcha-maricarmen-acampada-sol-casa-lucha-sigue_1_2237733.html"
+  ],
+  "split": "test",
+  "id": "fact105",
+  "topic": "cities",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-08",
+  "articleUrl": "https://www.lavanguardia.com/politica/20261008/11654566/marcha-pacifica-multitudinaria-despide-maricarmen-madrid.html",
+  "annotatorNote": "La Voz del Sur, 8 Oct 2026: died 'este pasado miércoles' (the eve of Thursday's march); lived there 'durante 70 años'; the march went from the Puerta del Sol to number 46 of Alcalde Sainz de Baranda (also infoLibre). Neither gives the route's length: the 'más de tres kilómetros' is unchecked.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

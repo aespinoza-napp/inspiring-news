@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Andrew Gregory",
+  "claim": "The UK's first testicular tissue transplant, on a 19-year-old, took place in August.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://htworld.co.uk/news/life-sciences/teen-receives-uks-first-testicular-tissue-transplant-in-fertility-breakthrough-mipo26/"
+  ],
+  "split": "test",
+  "id": "fact095",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-08",
+  "articleUrl": "https://www.theguardian.com/society/2026/oct/08/teenager-first-person-testicular-tissue-transplant-uk-cancer-chemotherapy-fertility",
+  "annotatorNote": "Split from a compound sentence: its only checkable part. The rest ('Doctors should know in a matter of months whether... has enabled the 19-year-old to produce viable sperm') is a prediction, not labelled. Health Tech World, 8 Oct 2026: 'The operation, carried out in August'.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

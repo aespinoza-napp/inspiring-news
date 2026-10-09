@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "carbonbrief.org",
+  "claimant": "Carbon Brief Staff",
+  "claim": "In September 2026 to date, gas prices have averaged 189p per therm, reaching their highest level since the global energy crisis in 2022, as shown in the figure below.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://tradingeconomics.com/commodity/uk-natural-gas/news/580137"
+  ],
+  "split": "test",
+  "id": "fact101",
+  "topic": "energy",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-01",
+  "articleUrl": "https://www.carbonbrief.org/analysis-wind-and-solar-save-uk-from-gas-imports-worth-5-9bn-during-hormuz-crisis",
+  "annotatorNote": "No September average was found in sources of the article's date. Trading Economics, 1 Sep 2026: 'UK Gas increased to 179.26 GBp/thm', 'the highest since March 2026' - so daily prices were higher in March, which a monthly average of 189p might still exceed; 'highest since 2022' cannot be checked without the monthly series.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

@@ -442,6 +442,9 @@ def get_labelling_batch():
                     enrichment=pipeline,
                     selector=ClaimSelector(EmbeddingService()),
                     claim_extractor=pipeline.claims,
+                    # The rounds' own screen: its descriptions are embedded
+                    # once for both.
+                    screen=get_ingestion_service().screen,
                 )
 
     return _labelling_batch

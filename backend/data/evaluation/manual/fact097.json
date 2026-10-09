@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.un.org",
+  "claimant": "UN News",
+  "claim": "This is the highest number of people displaced in a single demolition in occupied East Jerusalem since UN records began in 2009.",
+  "claimDate": "2026-10-06",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://press.un.org/en/2026/db261006.doc.htm",
+    "https://english.news.cn/20261007/5e7f626de2ef4593899379f8c445c1dd/c.html"
+  ],
+  "split": "test",
+  "id": "fact097",
+  "topic": "cities",
+  "claimType": "numerical",
+  "sourceTier": "press_release",
+  "onlyOwnSource": true,
+  "evidenceDate": null,
+  "articleUrl": "https://news.un.org/feed/view/en/story/2026/10/1168539",
+  "annotatorNote": "Rule 1: the record rests only on the UN's own data - OCHA's records since 2009, given in the UN Spokesperson's briefing of 6 Oct 2026 and repeated by Xinhua on 7 Oct (after the article: Rule 3). No independent count of East Jerusalem demolitions was found to confirm it.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

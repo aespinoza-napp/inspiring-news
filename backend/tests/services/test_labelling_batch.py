@@ -274,3 +274,83 @@ def test_recent_articles_come_before_old_ones_and_before_a_wanted_topic():
     ).run(BatchRequest(articles=2, prefer_topics=["medicine"], seed="2026-09-29"))
 
     assert [a["url"] for a in result["articles"]] == ["https://d.example/a0", "https://a.example/a0"]
+
+
+
+# ----------------------------------------------------------------------
+# The mission screen and the age limit, as discovery rounds have them
+# ----------------------------------------------------------------------
+
+
+class Screen:
+    """Leaves out every URL containing one of `off`; records what it read."""
+
+    def __init__(self, off=(), error=None):
+        self.off = off
+        self.error = error
+        self.read = []
+
+    def assess(self, candidates, exempt=None):
+
+        from src.services.selection.mission_screen import Assessment, Verdict
+
+        if self.error:
+            raise self.error
+
+        self.read.extend(candidates)
+
+        return [
+            Assessment(Verdict(off_mission="celebrity") if any(o in (c.title or "") for o in self.off) else None)
+            for c in candidates
+        ]
+
+
+def test_what_the_screen_leaves_out_is_never_extracted():
+    """2026-10-09: the batch drew the Martin Fierro radio nominees and an awards-night photo gallery."""
+
+    extractor = FakeExtractor()
+    sources = [source(s) for s in "abcd"]
+    urls = {i: [f"https://{i}.example/premios-martin-fierro-nominados-radio", f"https://{i}.example/rescued-turtle-returns-to-sea-today"] for i in "abcd"}
+
+    screen = Screen(off=("Premios martin fierro",))
+    labelling = LabellingBatch(
+        sources=sources, extractor=extractor, enrichment=FakeEnrichment(), selector=FakeSelector(),
+        claim_extractor=FakeClaimExtractor(), discovery=FakeDiscovery(urls), screen=screen,
+    )
+
+    result = labelling.run(BatchRequest(articles=4, seed="2026-10-09"))
+
+    assert all("martin-fierro" not in a["url"] for a in result["articles"])
+    assert len(result["articles"]) == 4
+    assert result["screen"]["status"] == "ok"
+    assert {s["offMission"] for s in result["screened"]} == {"celebrity"}
+    assert result["totals"]["screened"] == len(result["screened"]) > 0
+    # Read by the title made from its slug, as a round reads a section page's link.
+    assert any(c.title == "Premios martin fierro nominados radio" for c in screen.read)
+
+
+def test_when_the_screen_cannot_run_the_batch_keeps_everything_and_says_so():
+
+    labelling = LabellingBatch(
+        sources=[source("a")], extractor=FakeExtractor(), enrichment=FakeEnrichment(), selector=FakeSelector(),
+        claim_extractor=FakeClaimExtractor(), discovery=FakeDiscovery(urls_for("a")),
+        screen=Screen(error=InferenceUnavailable("connection refused")),
+    )
+
+    result = labelling.run(BatchRequest(articles=1, seed="2026-10-09"))
+
+    assert result["screen"]["status"] == "unavailable"
+    assert result["screened"] == [] and len(result["articles"]) == 1
+
+
+def test_the_batch_discovers_only_what_a_round_would_offer():
+    """Its own discovery used to have no age limit: a Samsung how-to from August was in the 2026-10-09 batch."""
+
+    from src.services.ingestion_service import MAX_CANDIDATE_AGE
+
+    labelling = LabellingBatch(
+        sources=[], extractor=FakeExtractor(), enrichment=FakeEnrichment(), selector=FakeSelector(),
+        claim_extractor=FakeClaimExtractor(),
+    )
+
+    assert labelling.discovery.max_age == MAX_CANDIDATE_AGE

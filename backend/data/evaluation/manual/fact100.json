@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "carbonbrief.org",
+  "claimant": "Carbon Brief Staff",
+  "claim": "In total, wind and solar have generated a record 41% share of the UK’s electricity needs in 2026 to date, compared with 25% from gas, according to Carbon Brief’s analysis.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://www.gov.uk/government/statistics/energy-trends-and-prices-statistical-release-29-september-2026/energy-trends-and-prices-statistical-release-29-september-2026"
+  ],
+  "split": "test",
+  "id": "fact100",
+  "topic": "energy",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": true,
+  "evidenceDate": "2026-09-29",
+  "articleUrl": "https://www.carbonbrief.org/analysis-wind-and-solar-save-uk-from-gas-imports-worth-5-9bn-during-hormuz-crisis",
+  "annotatorNote": "Rule 1: 'according to Carbon Brief's analysis', of 'the UK's electricity needs' (demand, imports included) for 2026 to date. Official statistics on the article's date (DESNZ, 29 Sep 2026) stop at July and measure generation, not needs (May-July, major power producers: renewables 48.5%, gas 35.9%) - not comparable either way.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

@@ -10,8 +10,12 @@ cancelled concert beside a free-music-education programme. The AI
 selection would have scored them low, but it is optional and slow, and a
 person reading the list should not have to wade through them.
 
-Two judgements, cheapest first:
+Three judgements, cheapest first:
 
+0. **Not an article** - a podcast, a roundup, a quiz, a gallery, a media
+   advisory, a promotion or shopping, by phrases in its title or the start
+   of its summary (FORMATS, SUMMARY_FORMATS; 2026-10-09). A positive
+   outlet's too: a format, not a subject.
 1. **A death report** - a headline with one of the language's
    `death_report` phrases ("dies aged", "muere"; src/config/lexicons.py),
    title only. An embedding cannot do this one: it takes an obituary and
@@ -128,6 +132,57 @@ OFF_MISSION = {
     ),
 }
 
+# Not articles at all, told by phrases in the title - a format, not a
+# subject, so the positive outlets are held to it too: on 2026-10-09
+# Positive News's weekly roundup and the promotion of its new magazine
+# issue were Society's 2nd and 3rd, and Reasons to be Cheerful's "What
+# We're Reading" roundups mix two stories in one page (a Washington rat
+# programme and a French station's ventilation, in that day's labelling
+# batch). The same day also listed 20minutos's quizzes, Nature's "Books in
+# brief", NASA's media teleconference notice and a telescope comparison.
+# Matched as whole words in the folded title (_folded); a leading "^"
+# matches only at its start. Podcasts and media advisories are also told
+# by the summary (`SUMMARY_FORMATS`): The Conversation's podcast episodes
+# carry no sign of it in the title or the link.
+FORMATS = {
+    "podcast": ("podcast",),
+    "roundup": (
+        "what we re reading", "what went right this week", "books in brief",
+        "^the week in", "week in review", "weekly roundup",
+        "news roundup", "good news stories from week",
+        "lo mejor de la semana", "resumen de la semana", "resumen semanal",
+    ),
+    "quiz": (
+        "quiz", "responde a estas", "haz el test", "este test", "test de personalidad",
+        "pon a prueba tus conocimientos",
+    ),
+    "gallery": (
+        "en imagenes", "in pictures", "photo gallery", "galeria de fotos", "fotogaleria",
+        "^fotos", "^photos", "^apod",
+    ),
+    "advisory": ("media advisory", "sets coverage", "convocatoria de prensa"),
+    "promotion": ("new issue of", "in this issue", "en este numero", "giveaway", "sorteamos"),
+    "shopping": (
+        "chollos", "best deals", "prime day", "black friday", "cyber monday",
+        "comparativa", "guia de compra", "buying guide", "mejores ofertas", "ofertas del dia",
+    ),
+}
+
+# The same, from the first SUMMARY_CHARS of the summary: "On The
+# Conversation Weekly podcast...", "Media are invited to join NASA for a
+# media teleconference". A podcast as the page's own format ("this",
+# "our", "weekly podcast"), not one a story mentions ("told a podcast").
+SUMMARY_FORMATS = {
+    "podcast": (
+        "weekly podcast", "this podcast", "our podcast", "the podcast",
+        "en el podcast", "este podcast", "nuestro podcast",
+    ),
+    "advisory": ("media are invited", "media teleconference", "media accreditation", "acreditacion de prensa"),
+}
+
+SUMMARY_CHARS = 160
+
+
 # Not a reason to leave anything out: what the ranking measures each
 # candidate against (src/services/selection/ranking.py) - how much nearer
 # it is to this than to its nearest OFF_MISSION description. Embedded with
@@ -156,7 +211,25 @@ MARGIN = 0.04
 # arithmetic, regional elections); the one that was not, workers' new
 # right to company information. No other category's band was that clean:
 # crime's held a UN story on breaking prison stigma.
-MARGINS = {"politics": 0.0}
+#
+# Markets, service pages, labour disputes, disasters and celebrity are held
+# to 0.02 (2026-10-09, docs/experiments.md): between 0.02 and 0.04, 15 of
+# the 16 candidates of those five kinds labelled over that day's and
+# 2026-10-06's rounds were not worth offering - the Bank of Spain's
+# forecasts, the government's budget arithmetic, a farmers' tractor
+# protest, student protests, a raffle fine, Shakira - and the one that was
+# a history piece (the Second World War and women in factories). Crime and
+# conflict stay at MARGIN: their band held a story on breaking prison
+# stigma and the identified soldiers of the Revolutionary War. Labels by
+# Claude, not yet checked by a person.
+MARGINS = {
+    "politics": 0.0,
+    "markets": 0.02,
+    "service": 0.02,
+    "labour": 0.02,
+    "disaster": 0.02,
+    "celebrity": 0.02,
+}
 
 # Candidates per request to inference/: one permit each (concurrency.py).
 BATCH = 32
@@ -207,6 +280,11 @@ class Reading:
     # The candidate's own embedding, which the ranking compares candidates
     # by to find the same story twice. Not recorded with the round.
     vector: np.ndarray | None = field(default=None, repr=False, compare=False)
+
+    # Its similarity to each of the 23 topics, by key: what the ranking
+    # judges a candidate's fit with the round's groups by
+    # (ranking.group_fit). Not recorded; the fit itself is.
+    topics: dict[str, float] | None = field(default=None, repr=False, compare=False)
 
     @property
     def margin(self) -> float:
@@ -260,6 +338,35 @@ def _folded(text: str) -> str:
     return " " + _NOT_WORD.sub(" ", plain).strip() + " "
 
 
+def _says(folded: str, phrases: tuple[str, ...]) -> bool:
+
+    return any(
+        folded.startswith(f" {phrase[1:]} ") if phrase.startswith("^") else f" {phrase} " in folded
+        for phrase in phrases
+    )
+
+
+def format_of(title: str | None, summary: str | None) -> str | None:
+    """
+    What a candidate is when it is not an article - "podcast", "roundup",
+    "quiz", "gallery", "advisory", "promotion" or "shopping" - from its
+    title, or the start of its summary; None for an article.
+    """
+
+    folded_title = _folded(title) if title else ""
+    folded_summary = _folded(summary[:SUMMARY_CHARS]) if summary else ""
+
+    for kind, phrases in FORMATS.items():
+        if folded_title and _says(folded_title, phrases):
+            return kind
+
+    for kind, phrases in SUMMARY_FORMATS.items():
+        if folded_summary and _says(folded_summary, phrases):
+            return kind
+
+    return None
+
+
 def reports_a_death(title: str | None, language: str | None) -> bool:
     """Whether a headline reports someone's death, by its language's `death_report` phrases."""
 
@@ -269,6 +376,24 @@ def reports_a_death(title: str | None, language: str | None) -> bool:
     folded = _folded(title)
 
     return any(f" {_folded(phrase).strip()} " in folded for phrase in lexicon_for(language).death_report)
+
+
+def _by_headline(candidate: Candidate, exempt: bool) -> Verdict | None:
+    """
+    The judgements that need no model: not an article (every candidate,
+    a positive outlet's too - it is a format, not a subject), then a
+    death report (not a positive outlet's).
+    """
+
+    kind = format_of(candidate.title, candidate.summary)
+
+    if kind is not None:
+        return Verdict(off_mission=kind)
+
+    if not exempt and reports_a_death(candidate.title, candidate.language):
+        return Verdict(off_mission=OBITUARY)
+
+    return None
 
 
 class MissionScreen:
@@ -311,9 +436,7 @@ class MissionScreen:
         exempt = exempt or [False] * len(candidates)
 
         verdicts: list[Verdict | None] = [
-            Verdict(off_mission=OBITUARY)
-            if not spared and reports_a_death(candidate.title, candidate.language)
-            else None
+            _by_headline(candidate, spared)
             for candidate, spared in zip(candidates, exempt)
         ]
 
@@ -344,6 +467,7 @@ class MissionScreen:
                         off=float(off.max()),
                         impact=float(row[-1]),
                         vector=vector,
+                        topics={topic: float(similarity) for topic, similarity in zip(topic_ids, on)},
                     )
                     readings[i] = reading
 

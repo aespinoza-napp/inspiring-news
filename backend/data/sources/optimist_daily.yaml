@@ -1,0 +1,44 @@
+id: optimist_daily
+
+name: The Optimist Daily
+
+base_url: https://www.optimistdaily.com
+
+rss_url: https://www.optimistdaily.com/feed/
+
+search_url: https://www.optimistdaily.com/?s={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+# Solutions journalism that mostly retells other outlets' reporting with
+# links to them, like Good News Network (0.65) and Positive News (0.78).
+reliability_index: 0.7
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - solutions
+  - environment
+  - health
+  - society
+
+# Added 2026-10-09: Health had no outlet that chooses solutions stories,
+# and the day's Health round was half topical bad news. Not marked
+# positive_editorial: its feed also carries lifestyle tips ("How to choose
+# running shoes"), which the mission screen should judge like anyone's.
+groups:
+  - environment
+  - society
+  - health
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

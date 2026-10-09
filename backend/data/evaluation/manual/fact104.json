@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Ivan Comas i Parra",
+  "claim": "Con pancartas con lemas como “El rentismo mata” y consignas como “No toleramos ni un desahucio más”, la marcha fue sumando manifestantes hasta las 20 mil personas, según la Delegación del Gobierno en Madrid, dejando atrás la Puerta del Sol.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.infolibre.es/politica/madrid-marcha-maricarmen-acampada-sol-casa-lucha-sigue_1_2237733.html",
+    "https://www.lavozdelsur.es/actualidad/sociedad/historica-marcha-desde-sol-hasta-la-casa-de-maricarmen-este-jueves-firmaba-el-contrato-para-regresar-a-su-vivenda.html"
+  ],
+  "split": "test",
+  "id": "fact104",
+  "topic": "cities",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-08",
+  "articleUrl": "https://www.lavanguardia.com/politica/20261008/11654566/marcha-pacifica-multitudinaria-despide-maricarmen-madrid.html",
+  "annotatorNote": "infoLibre, 8 Oct 2026 21:12: 'Miles de personas, 20.000 según Delegación del Gobierno, han recorrido este jueves las calles de Madrid'; La Voz del Sur the same figure. The slogans are not checked.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

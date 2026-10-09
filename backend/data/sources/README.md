@@ -26,6 +26,18 @@ requires_javascript: false   # true: articles go to the headless browser first, 
 tags:
   - general
   - world
+news_sitemap_url: https://www.cnn.com/sitemap/news.xml   # optional - a Google News sitemap,
+                              # read when the feed finds nothing new (CNN's feed stopped in 2024)
+json_feed:                   # optional - a JSON listing, read when the feed finds nothing new
+  url: https://www.who.int/api/news/newsitems?...   # (WHO's: its feed's newest item was from February)
+  items: value               # dotted path to the list of items
+  link: ItemDefaultUrl       # each item's link, title and ISO time, by key
+  link_prefix: https://www.who.int/news/item
+  title: Title
+  published: PublicationDateAndTime
+sections:                    # optional - a group -> the site's own section paths, read instead of
+  environment:               # guessing them from topic names (a guessed /food/ gave Smithsonian's
+    - /science-nature/       # food travel as Environment)
 metadata:                    # free-form, strategy-specific hints
   extractor: trafilatura
   discovery:
@@ -56,7 +68,14 @@ overrides the first. `tests/repositories/test_source_repository.py` fails on it.
 `/sources` page does both for every YAML. English feeds are filtered by topic keyword, so a feed with
 nothing on the configured topics discovers zero links even when it works. Feeds tried on 2026-09-28
 and left out: NPR, Phys.org and El Confidencial (feed fine, articles would not extract), ScienceDaily,
-DW Español and CSIC (no article links), AP (403).
+DW Español and CSIC (no article links), AP (403). Tried on 2026-10-09
+for sources that choose their stories for positive impact: The Optimist
+Daily added (not as `positive_editorial`: its feed also carries lifestyle
+tips); The Conversation's Spanish edition (50 items in 14 days) cannot be,
+one source per domain; Squirrel News publishes weekly roundups, which the
+mission screen leaves out; YES! Magazine's newest item was a month old;
+Ballena Blanca stopped in 2022; Noticias Positivas has no feed; El País's
+Planeta Futuro is mostly hard development news.
 
 `reliability_index` matters beyond discovery: `EvidenceRanker` looks it up by domain (via
 `SourceRepository`) when scoring a piece of evidence during fact-checking, with a neutral default for

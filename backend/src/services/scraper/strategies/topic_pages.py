@@ -28,17 +28,28 @@ the article URLs found are guarded again when they are extracted.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from urllib.parse import urldefrag, urljoin, urlsplit
 
 from bs4 import BeautifulSoup
 
 from src.config.topic_url_patterns import TOPIC_SECTION_PATTERNS_ES, TOPIC_URL_PATTERNS
+from src.config.topics import GROUP_OF
 from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import Fetcher, classify
 
 from .rss import DiscoveredLink, RSSDiscoveryStrategy, article_shaped, off_mission
 
+
+# A link's text is its headline when it has at least this many words
+# ("Leer más", "Ciencia", "9 oct 2026" are not), cut to HEADLINE_CHARS.
+HEADLINE_WORDS = 4
+HEADLINE_CHARS = 300
+
+# RTVE labels each link with its kind: "Noticia: Así se hace el auténtico
+# bacalao de Valderas". Not part of the headline.
+CONTENT_LABEL = re.compile(r"^(?:Noticia|Noticias|News)\s*:\s*", re.IGNORECASE)
 
 # A section page is a short path: /science/, /news/science/,
 # /es/ciencia/. Anything deeper is an article or a sub-sub-section.
@@ -63,6 +74,9 @@ class SectionPage:
     error: str | None = None
 
     links: list[str] = field(default_factory=list)
+
+    # link -> the headline the page links it with (see _anchors).
+    titles: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
 
@@ -94,6 +108,17 @@ class TopicPagesResult:
             link for section in self.sections for link in section.links
         ))
 
+    @property
+    def titles(self) -> dict[str, str]:
+
+        titles: dict[str, str] = {}
+
+        for section in self.sections:
+            for link, title in section.titles.items():
+                titles.setdefault(link, title)
+
+        return titles
+
 
 class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
 
@@ -117,15 +142,19 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
         topics: list[str] = None,
     ) -> list[DiscoveredLink]:
         """
-        The section pages' article links, with no feed time or summary -
-        there is no feed. Overridden because DiscoveryService asks for
-        items, and the one inherited from RSSDiscoveryStrategy reads the
-        feed: from 2026-10-04 (when discovery started asking for feed
-        times) to 2026-10-05 this step re-read the dead feed of every
-        source it exists for instead of crawling a single section.
+        The section pages' article links, each titled with the headline the
+        page links it with - no feed time or summary: there is no feed.
+        Overridden because DiscoveryService asks for items, and the one
+        inherited from RSSDiscoveryStrategy reads the feed: from 2026-10-04
+        (when discovery started asking for feed times) to 2026-10-05 this
+        step re-read the dead feed of every source it exists for instead of
+        crawling a single section.
         """
 
-        return [DiscoveredLink(url=url) for url in self.crawl(source, topics).urls]
+        result = self.crawl(source, topics)
+        titles = result.titles
+
+        return [DiscoveredLink(url=url, title=titles.get(url)) for url in result.urls]
 
     def crawl(
         self,
@@ -202,8 +231,15 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
         section.status = page.status
 
         links = []
+        headlines: dict[str, str] = {}
 
-        for link in _links(page.url, page.html):
+        for link, text in _anchors(page.url, page.html):
+
+            # The longest readable text a link carries on the page: a
+            # teaser's image link has none, its headline link has it.
+            text = CONTENT_LABEL.sub("", text)
+            if _headline(text) and len(text) > len(headlines.get(link, "")):
+                headlines[link] = text[:HEADLINE_CHARS]
 
             if not _same_site(link, str(source.base_url)):
                 continue
@@ -222,6 +258,7 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
                 links.append(link)
 
         section.links = _within_section(list(dict.fromkeys(links)), page.url)
+        section.titles = {link: headlines[link] for link in section.links if link in headlines}
 
         if not section.links:
             section.error = "no article links on the page"
@@ -243,6 +280,11 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
     @staticmethod
     def _section_patterns(source: NewsSource, topics: list[str] | None) -> list[str]:
 
+        configured = _configured_sections(source, topics)
+
+        if configured:
+            return configured
+
         wanted = _wanted_topics(topics)
 
         tables = [TOPIC_URL_PATTERNS]
@@ -260,7 +302,12 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
 
     @staticmethod
     def _first_per_topic(source: NewsSource, topics: list[str] | None) -> list[str]:
-        """One guess per topic - the name the site is likeliest to use."""
+        """One guess per topic - the name the site is likeliest to use - or the sections the source names."""
+
+        configured = _configured_sections(source, topics)
+
+        if configured:
+            return configured
 
         wanted = _wanted_topics(topics)
 
@@ -275,6 +322,17 @@ class TopicPageDiscoveryStrategy(RSSDiscoveryStrategy):
             for topic, patterns in table.items()
             if (wanted is None or topic in wanted) and patterns
         ))
+
+
+def _configured_sections(source: NewsSource, topics: list[str] | None) -> list[str]:
+    """The section paths `source` names for the groups of `topics` (every group when None); [] when it names none."""
+
+    wanted = _wanted_topics(topics)
+    groups = {GROUP_OF[topic] for topic in wanted if topic in GROUP_OF} if wanted is not None else set(source.sections)
+
+    return list(dict.fromkeys(
+        path for group, paths in source.sections.items() if group in groups for path in paths
+    ))
 
 
 def _within_section(links: list[str], section_url: str) -> list[str]:
@@ -304,9 +362,22 @@ def _wanted_topics(topics: list[str] | None) -> set[str] | None:
 
 def _links(page_url: str, html: str) -> list[str]:
 
+    return [link for link, _ in _anchors(page_url, html)]
+
+
+def _anchors(page_url: str, html: str) -> list[tuple[str, str]]:
+    """
+    Every absolute http(s) link on the page, with the text it is linked
+    with (its own text, else its aria-label or title attribute). A section
+    page's links come with their headlines: until 2026-10-09 they were
+    dropped and the candidate was titled from its slug ("Aniversario bizum
+    cambio nuestra forma pagar cumple anos"), and the mission screen, the
+    ranking and the same-story check all read that.
+    """
+
     soup = BeautifulSoup(html or "", "html.parser")
 
-    links = []
+    anchors = []
 
     for anchor in soup.find_all("a", href=True):
 
@@ -318,9 +389,17 @@ def _links(page_url: str, html: str) -> list[str]:
         absolute, _ = urldefrag(urljoin(page_url, href))
 
         if absolute.lower().startswith(("http://", "https://")):
-            links.append(absolute)
+            text = " ".join(anchor.get_text(" ", strip=True).split())
+            text = text or (anchor.get("aria-label") or anchor.get("title") or "").strip()
+            anchors.append((absolute, text))
 
-    return links
+    return anchors
+
+
+def _headline(text: str) -> bool:
+    """Text that reads as a headline: a few words, not "Read more" or a date."""
+
+    return len(text.split()) >= HEADLINE_WORDS
 
 
 def _host(url: str) -> str:

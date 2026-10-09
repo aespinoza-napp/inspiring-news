@@ -3,16 +3,21 @@ import pytest
 
 from src.services.selection.mission_screen import Reading
 from src.services.selection.ranking import (
+    GROUP_FIT,
     NEWS_RANGE,
+    TOPIC_RANGE,
     RECORD_PRIOR,
     SAME_STORY,
     WEIGHTS,
     Standing,
     best_first,
+    fitting_first,
+    group_fit,
     news_part,
     one_per_story,
     rank,
     record_part,
+    topic_part,
 )
 
 
@@ -71,7 +76,13 @@ def test_the_round_records_the_rating_itself_and_the_other_parts_scaled():
 
     parts = rank(reading(MIDDLE), Standing(reliability=0.94, judged=5, kept=5))
 
-    assert parts == {"score": pytest.approx(0.6 * 0.5 + 0.25 * 0.9 + 0.15 * 0.85, abs=1e-3), "news": 0.5, "record": 0.9, "reliability": 0.94}
+    assert parts == {
+        "score": pytest.approx(0.51 * 0.5 + 0.15 * 0.5 + 0.21 * 0.9 + 0.13 * 0.85, abs=1e-3),
+        "news": 0.5,
+        "topic": None,
+        "record": 0.9,
+        "reliability": 0.94,
+    }
 
 
 def test_reliability_has_the_smallest_say():
@@ -154,3 +165,93 @@ def test_stories_below_the_threshold_and_unread_candidates_stay_apart():
 
     assert [c["url"] for c in ranked] == ["nature-ai", "unread", "nature-preprints"]
     assert not any("sameStoryAs" in c for c in ranked)
+
+
+# ----------------------------------------------------------------------
+# The groups asked for, first
+# ----------------------------------------------------------------------
+
+HEALTH = ["medicine", "mental_health", "nutrition", "fitness", "public_health"]
+
+
+def near(**topics: float) -> Reading:
+    """A reading whose nearness to each topic is given; every other topic at 0.2."""
+
+    from src.config.topics import TOPICS
+
+    similarities = {topic: 0.2 for topic in TOPICS}
+    similarities.update(topics)
+
+    return Reading(
+        nearest_topic=max(similarities, key=similarities.get), topic=max(similarities.values()),
+        nearest_off="politics", off=0.3, impact=0.4, topics=similarities,
+    )
+
+
+def test_a_story_of_the_groups_asked_for_fits_and_one_of_another_does_not():
+    """2026-10-09, a Health round: the chemistry Nobel came nearest "research"."""
+
+    assert group_fit(near(public_health=0.6, research=0.5), HEALTH) == pytest.approx(0.1)
+    assert group_fit(near(research=0.6, medicine=0.45), HEALTH) == pytest.approx(-0.15)
+
+
+def test_there_is_no_fit_without_a_reading_or_when_every_topic_was_asked_for():
+
+    from src.config.topics import TOPICS
+
+    assert group_fit(None, HEALTH) is None
+    assert group_fit(reading(0.5), HEALTH) is None
+    assert group_fit(near(medicine=0.6), list(TOPICS)) is None
+
+
+def test_a_candidate_that_fits_another_group_goes_after_those_that_fit():
+
+    ranked = fitting_first(
+        listed("nobel-chemistry", "aids-prevention", "hachimaki", "menopause"),
+        fits={"nobel-chemistry": -0.15, "aids-prevention": 0.08, "hachimaki": GROUP_FIT, "menopause": 0.02},
+        nearest={"nobel-chemistry": "research", "aids-prevention": "public_health", "hachimaki": "fitness", "menopause": "medicine"},
+    )
+
+    # Exactly at the line still fits; the rest keep their order.
+    assert [c["url"] for c in ranked] == ["aids-prevention", "hachimaki", "menopause", "nobel-chemistry"]
+    assert ranked[-1]["otherGroup"] == "science"
+    assert not any("otherGroup" in c for c in ranked[:-1])
+
+
+def test_a_candidate_without_a_fit_stays_where_it_is():
+
+    ranked = fitting_first(listed("unread", "breakfast"), fits={"breakfast": -0.12}, nearest={"breakfast": "nutrition"})
+
+    assert [c["url"] for c in ranked] == ["unread", "breakfast"]
+    assert ranked[1]["otherGroup"] == "health"
+
+
+
+def test_the_topic_part_is_the_fit_scaled_and_absent_without_groups():
+
+    low, high = TOPIC_RANGE
+
+    assert topic_part(low) == 0.0 and topic_part(high) == 1.0
+    assert topic_part(GROUP_FIT) == 0.0
+    assert topic_part((low + high) / 2) == pytest.approx(0.5)
+    assert topic_part(None) is None
+
+
+def test_of_two_stories_alike_the_one_on_the_rounds_topics_ranks_first():
+    """2026-10-09: an Environment round's T. rex discoveries (fit -0.03) above a rhino translocation (0.04)."""
+
+    standing = Standing(reliability=0.9, judged=10, kept=9)
+
+    t_rex = rank(reading(0.5), standing, fit=-0.03)
+    rhinos = rank(reading(0.5), standing, fit=0.04)
+
+    assert rhinos["score"] > t_rex["score"]
+    assert rhinos["topic"] == pytest.approx(0.6)
+
+
+def test_the_story_still_counts_most():
+    """A clearly better story of the round's group outranks a weaker one that fits more squarely."""
+
+    standing = Standing(reliability=0.9, judged=10, kept=9)
+
+    assert rank(reading(0.52), standing, fit=0.0)["score"] > rank(reading(0.44), standing, fit=0.10)["score"]

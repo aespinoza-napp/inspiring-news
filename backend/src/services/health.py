@@ -49,10 +49,21 @@ def _check_llm() -> None:
         f"{settings.LLM_BASE_URL.rstrip('/')}/models",
         headers={"Authorization": f"Bearer {settings.LLM_API_KEY.get_secret_value()}"},
     )
-    served = {model.get("id") for model in response.json().get("data", [])}
+    served = {_tagged(model.get("id") or "") for model in response.json().get("data", [])}
 
-    if settings.LLM_MODEL not in served:
+    if _tagged(settings.LLM_MODEL) not in served:
         raise CheckFailed(f"model {settings.LLM_MODEL} is not served")
+
+
+def _tagged(model: str) -> str:
+    """
+    A model name with its tag: Ollama serves "llama3.1" as
+    "llama3.1:latest", and answers a request for either. Compared as
+    given, /healthz reported the dev LLM down on 2026-10-09 while every
+    verification it served succeeded.
+    """
+
+    return model if ":" in model else f"{model}:latest"
 
 
 def _check_neo4j() -> None:

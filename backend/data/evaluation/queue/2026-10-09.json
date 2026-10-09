@@ -1,0 +1,567 @@
+{
+  "requestId": "758ee50750d04153869f5f98b5a04bf4",
+  "seed": "2026-10-09",
+  "createdAt": "2026-10-09T12:10:04+00:00",
+  "requested": {
+    "articles": 10,
+    "claimsPerArticle": 3,
+    "languages": null,
+    "preferTopics": [
+      "arts",
+      "entertainment",
+      "heritage",
+      "literature",
+      "inspiration",
+      "medicine",
+      "mental_health",
+      "nutrition",
+      "fitness",
+      "public_health"
+    ],
+    "excluded": 1464
+  },
+  "totals": {
+    "sources": 32,
+    "discovered": 1418,
+    "candidates": 20,
+    "ready": 19,
+    "articles": 10,
+    "claims": 28
+  },
+  "articles": [
+    {
+      "url": "https://www.infobae.com/teleshow/2026/10/09/quienes-son-los-nominados-al-martin-fierro-de-radio-2026/",
+      "source": "infobae",
+      "title": "Quiénes son los nominados al Martín Fierro de Radio 2026",
+      "site": "infobae.com",
+      "sourceName": "Infobae",
+      "language": "es",
+      "publishedAt": "2026-10-09",
+      "author": "Pablo Andisco",
+      "topic": "entertainment",
+      "topics": [
+        "entertainment",
+        "technology",
+        "community"
+      ],
+      "claims": [
+        {
+          "text": "La ceremonia se realizará el 21 de octubre en el Goldencenter de Parque Norte, con la conducción de Luciana Rubinska y Luis Novaresio.",
+          "selectedBy": "anchor",
+          "score": 0.689,
+          "figures": [
+            "21"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "prediction"
+        },
+        {
+          "text": "La Asociación de Periodistas de la Televisión y la Radiofonía Argentinas (APTRA) dio a conocer los nominados a los Martín Fierro de Radio 2026, que premiarán la producción del año 2025.",
+          "selectedBy": "anchor",
+          "score": 0.681,
+          "figures": [
+            "2026",
+            "2025"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact093"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Gustavo Sylvestre (Mañana Sylvestre – Radio 10)",
+          "selectedBy": "anchor",
+          "score": 0.547,
+          "figures": [
+            "10"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        }
+      ]
+    },
+    {
+      "url": "https://www.abc.es/salud/entrega-premios-abc-salud-2026-imagenes-20261007225522-ga.html",
+      "source": "abc",
+      "title": "La entrega de los premios ABC Salud 2026, en imágenes",
+      "site": "abc.es",
+      "sourceName": "ABC",
+      "language": "es",
+      "publishedAt": "2026-10-08",
+      "author": "ABC",
+      "topic": "medicine",
+      "topics": [
+        "medicine",
+        "public_health",
+        "mental_health",
+        "inspiration",
+        "technology",
+        "nutrition",
+        "community",
+        "research"
+      ],
+      "claims": [
+        {
+          "text": "La entrega de los premios ABC Salud 2026, en imágenes",
+          "selectedBy": "anchor",
+          "score": 0.798,
+          "figures": [
+            "2026"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        }
+      ]
+    },
+    {
+      "url": "https://www.theguardian.com/society/2026/oct/08/teenager-first-person-testicular-tissue-transplant-uk-cancer-chemotherapy-fertility",
+      "source": "guardian",
+      "title": "Teenager becomes first person to have testicular tissue transplant in UK",
+      "site": "theguardian.com",
+      "sourceName": "The Guardian",
+      "language": "en",
+      "publishedAt": "2026-10-08",
+      "author": "Andrew Gregory",
+      "topic": "medicine",
+      "topics": [
+        "medicine",
+        "climate",
+        "biology",
+        "public_health"
+      ],
+      "claims": [
+        {
+          "text": "The operation is the first of its kind in the UK, and only the second reported to have taken place worldwide.",
+          "selectedBy": "anchor",
+          "score": 0.557,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact094"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Doctors should know in a matter of months whether the procedure, which took place in August, has enabled the 19-year-old to produce viable sperm.",
+          "selectedBy": "anchor",
+          "score": 0.551,
+          "figures": [
+            "19"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact095"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "In May, the Guardian reported how a man whose testicular tissue was frozen before he had chemotherapy as a child and retransplanted 16 years later had been able to produce sperm.",
+          "selectedBy": "anchor",
+          "score": 0.494,
+          "figures": [
+            "16"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact096"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://news.un.org/feed/view/en/story/2026/10/1168539",
+      "source": "un_news",
+      "title": "Israeli demolition in East Jerusalem displaces 69 Palestinians",
+      "site": "news.un.org",
+      "sourceName": "UN News",
+      "language": "en",
+      "publishedAt": "2026-10-06",
+      "author": "UN News",
+      "topic": "cities",
+      "topics": [
+        "cities",
+        "community",
+        "climate"
+      ],
+      "claims": [
+        {
+          "text": "This is the highest number of people displaced in a single demolition in occupied East Jerusalem since UN records began in 2009.",
+          "selectedBy": "anchor",
+          "score": 0.7,
+          "figures": [
+            "2009"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact097"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Sixty-nine Palestinians – more than half of them children – were displaced on Tuesday after Israeli authorities green lit the demolition of their residential building in the At Tur area of East Jerusalem, the UN aid coordination office (OCHA) has reported.",
+          "selectedBy": "anchor",
+          "score": 0.654,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact098"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Israeli demolition in East Jerusalem displaces 69 Palestinians",
+          "selectedBy": "anchor",
+          "score": 0.611,
+          "figures": [
+            "69"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "duplicate"
+        }
+      ]
+    },
+    {
+      "url": "https://www.carbonbrief.org/analysis-wind-and-solar-save-uk-from-gas-imports-worth-5-9bn-during-hormuz-crisis",
+      "source": "carbon_brief",
+      "title": "Analysis: Wind and solar save UK from gas imports worth £5.9bn during Hormuz crisis - Carbon Brief",
+      "site": "carbonbrief.org",
+      "sourceName": "Carbon Brief",
+      "language": "en",
+      "publishedAt": "2026-09-30",
+      "author": "Carbon Brief Staff",
+      "topic": "energy",
+      "topics": [
+        "energy",
+        "climate",
+        "sustainability",
+        "food"
+      ],
+      "claims": [
+        {
+          "text": "The UK has avoided the need for gas imports worth £5.9bn since the start of the Hormuz crisis as a result of record generation from wind and solar, reveals Carbon Brief analysis.",
+          "selectedBy": "anchor",
+          "score": 0.752,
+          "figures": [
+            "5.9"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact099"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "In total, wind and solar have generated a record 41% share of the UK’s electricity needs in 2026 to date, compared with 25% from gas, according to Carbon Brief’s analysis.",
+          "selectedBy": "anchor",
+          "score": 0.729,
+          "figures": [
+            "41%",
+            "25%",
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact100"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "In September 2026 to date, gas prices have averaged 189p per therm, reaching their highest level since the global energy crisis in 2022, as shown in the figure below.",
+          "selectedBy": "anchor",
+          "score": 0.703,
+          "figures": [
+            "2026",
+            "189",
+            "2022"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact101"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.lavanguardia.com/politica/20261008/11654566/marcha-pacifica-multitudinaria-despide-maricarmen-madrid.html",
+      "source": "la_vanguardia",
+      "title": "Madrid despide a Maricarmen con una marcha multitudinaria",
+      "site": "lavanguardia.com",
+      "sourceName": "La Vanguardia",
+      "language": "es",
+      "publishedAt": "2026-10-08",
+      "author": "Ivan Comas i Parra",
+      "topic": "cities",
+      "topics": [
+        "cities"
+      ],
+      "claims": [
+        {
+          "text": "Maricarmen Abascal, la mujer de 87 años cuyo desahucio el pasado 23 de septiembre desató una ola de protestas por el derecho a la vivienda que ha culminado con un adelanto electoral en España, iba a firmar este jueves el contrato de alquiler para volver a su casa.",
+          "selectedBy": "anchor",
+          "score": 0.838,
+          "figures": [
+            "87",
+            "23"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact102",
+            "fact103"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Con pancartas con lemas como “El rentismo mata” y consignas como “No toleramos ni un desahucio más”, la marcha fue sumando manifestantes hasta las 20 mil personas, según la Delegación del Gobierno en Madrid, dejando atrás la Puerta del Sol.",
+          "selectedBy": "anchor",
+          "score": 0.654,
+          "figures": [
+            "20"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact104"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Su inesperado fallecimiento en la víspera ha provocado la organización de una marcha de más de tres kilómetros que ha recorrido el centro de Madrid, partiendo de la acampada de la Puerta del Sol hasta el número 46 de la calle Alcalde Sainz de Baranda, el edificio donde vivió durante más de siete décadas.",
+          "selectedBy": "anchor",
+          "score": 0.624,
+          "figures": [
+            "46"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact105"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.nasa.gov/news-release/nasa-briefing-to-highlight-contributions-to-martian-moons-mission/",
+      "source": "nasa",
+      "title": "NASA Briefing to Highlight Contributions to Martian Moons Mission - NASA",
+      "site": "nasa.gov",
+      "sourceName": "NASA",
+      "language": "en",
+      "publishedAt": "2026-10-08",
+      "author": "Jessica Taveau",
+      "topic": "space",
+      "topics": [
+        "space",
+        "climate",
+        "sustainability",
+        "research",
+        "mental_health",
+        "energy"
+      ],
+      "claims": [
+        {
+          "text": "The mission is scheduled to launch from JAXA’s Tanegashima Space Center in Japan on Monday, Oct.",
+          "selectedBy": "anchor",
+          "score": 0.658,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "15, to preview the agency’s contributions to JAXA’s (Japan Aerospace Exploration Agency) Martian Moons eXploration (MMX) mission.",
+          "selectedBy": "anchor",
+          "score": 0.631,
+          "figures": [
+            "15"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "Media are invited to join NASA for a media teleconference at 4 p.m.",
+          "selectedBy": "anchor",
+          "score": 0.573,
+          "figures": [
+            "4"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        }
+      ]
+    },
+    {
+      "url": "https://www.europapress.es/portaltic/software/noticia-menu-secreto-galeria-samsung-permite-guardar-imagenes-pdf-bloquear-albumes-pin-20260821152408.html",
+      "source": "europa_press",
+      "title": "El menú secreto de la Galería de Samsung que permite guardar imágenes en PDF y bloquear álbumes con un PIN",
+      "site": "europapress.es",
+      "sourceName": "Europa Press",
+      "language": "es",
+      "publishedAt": "2026-08-21",
+      "author": "Europa Press",
+      "topic": null,
+      "topics": [],
+      "claims": [
+        {
+          "text": "Archivo - Imagen de la serie Galaxy S26 de Samsung. - SAMSUNG - Archivo",
+          "selectedBy": "anchor",
+          "score": 0.642,
+          "figures": [
+            "26"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        },
+        {
+          "text": "Una vez dentro de Gallery Labs, todas las funciones extra que se pueden activar están ordenadas por la versión de One UI en la que se lanzaron.",
+          "selectedBy": "anchor",
+          "score": 0.509,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "De hecho, la primera de ellas es de One UI 8 y ofrece la posibilidad de elegir categorías opcionales para las colecciones, para organizar y agrupar varios álbumes bajo una categoría superior.",
+          "selectedBy": "anchor",
+          "score": 0.297,
+          "figures": [
+            "8"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        }
+      ]
+    },
+    {
+      "url": "https://www.goodnewsnetwork.org/strangers-showed-up-to-mans-destroyed-house-to-put-up-a-tarp-having-seen-his-televised-plea/",
+      "source": "good_news_network",
+      "title": "Strangers Showed Up to Man's Destroyed House to Put Up a Tarp Having Seen His Televised Plea",
+      "site": "goodnewsnetwork.org",
+      "sourceName": "Good News Network",
+      "language": "en",
+      "publishedAt": "2026-10-07",
+      "author": "Andy Corbley",
+      "topic": "community",
+      "topics": [
+        "community",
+        "cities"
+      ],
+      "claims": [
+        {
+          "text": "Two days later, last Friday, a stranger arrived at Kirk’s debris-laden front lawn in Wyandotte County, and said he’d be back in 30 minutes with a tarp, some lumber, and a crew to cover up the maple-shaped gash in Kirk’s house.",
+          "selectedBy": "anchor",
+          "score": 0.624,
+          "figures": [
+            "30"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact106"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“Oh, it’s unbelievable, the way the community has come together,” Kirk said.",
+          "selectedBy": "anchor",
+          "score": 0.623,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact107"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "KCTV called the men ‘strangers’ but the crew who installed the tarp on Kirk’s roof identified themselves in a Facebook post from the network as local residents Kirk Mata, Steven Vega, Dominic Foreman, and Brigette Henson, while another community member, Phil Lopez, commented that he first helped Mr.",
+          "selectedBy": "anchor",
+          "score": 0.568,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "fragment"
+        }
+      ]
+    },
+    {
+      "url": "https://reasonstobecheerful.world/what-were-reading-rat-rangers-dc/",
+      "source": "reasons_to_be_cheerful",
+      "title": "What We’re Reading: Rat Rangers to the Rescue",
+      "site": "reasonstobecheerful.world",
+      "sourceName": "Reasons to be Cheerful",
+      "language": "en",
+      "publishedAt": "2026-09-30",
+      "author": "RTBC Staff",
+      "topic": "climate",
+      "topics": [
+        "climate",
+        "cities",
+        "technology",
+        "community",
+        "sustainability",
+        "food",
+        "nature",
+        "inspiration",
+        "fitness",
+        "energy",
+        "entertainment",
+        "nutrition",
+        "research",
+        "medicine"
+      ],
+      "claims": [
+        {
+          "text": "With the rat population growing in Washington, D.C., a group of residents is working to educate their neighbors about ways to prevent infestations without using rodenticides, according to an NPR story that caught Executive Editor Will Doig’s attention.",
+          "selectedBy": "anchor",
+          "score": 0.668,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact108"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Keeping the air moving changes the perceived temperature: “Our objective is to maintain an indoor air temperature identical to the outdoor temperature while generating an airflow of one meter per second to reduce the perceived temperature for passengers,” explains Éric Bussolino, engineering and environment director at AIA Life Designers, which led the project.",
+          "selectedBy": "anchor",
+          "score": 0.556,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact109"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "As the Guardian reports in a story shared by Contributing Editor Michaela Haas, thanks to an innovative roof and ceiling design, natural breezes ventilate the space without air conditioning.",
+          "selectedBy": "anchor",
+          "score": 0.38,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact110"
+          ],
+          "skipReason": null
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "url": "https://elpais.com/economia/negocios/2026-10-03/combatir-la-agenda-neoliberal-desde-la-izquierda-asi-son-las-recetas-de-los-mejores-economistas-progresistas-del-mundo.html",
+      "source": "el_pais",
+      "reason": "no article text could be extracted"
+    }
+  ],
+  "file": "2026-10-09.json",
+  "date": "2026-10-09"
+}

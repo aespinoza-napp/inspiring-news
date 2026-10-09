@@ -150,7 +150,9 @@ write them down than to have each be rediscovered.
   finds (optionally scoped to groups). Nothing runs on a timer. Two
   configured feed URLs (National Geographic, SINC) return 404 and no
   replacement feed exists: they are discovered from topic section pages
-  instead. EFE (403) and Reuters (401) refused every request from
+  instead. CNN's feed stopped in 2024 and WHO's in February 2026: they are
+  read from CNN's news sitemap and WHO's news API (`news_sitemap_url`,
+  `json_feed`; `docs/decisions/scraping.md`). EFE (403) and Reuters (401) refused every request from
   2026-09-23 to 2026-10-06 and are disabled (`enabled: false`): still
   rated as evidence, never ingested. Spanish feeds are keyword-filtered
   only when a run is scoped to some groups (`TOPIC_KEYWORDS_ES`, titles

@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Ivan Comas i Parra",
+  "claim": "Maricarmen Abascal, de 87 años, fue desahuciada el 23 de septiembre.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://crhoy.com/mundo/protestas-en-madrid-contra-desahucio-de-maricarmen-una-mujer-de-87-anos/"
+  ],
+  "split": "test",
+  "id": "fact103",
+  "topic": "cities",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-26",
+  "articleUrl": "https://www.lavanguardia.com/politica/20261008/11654566/marcha-pacifica-multitudinaria-despide-maricarmen-madrid.html",
+  "annotatorNote": "Split from the same sentence. CRHoy (EFE), 26 Sep 2026: 'Maricarmen Abascal', 'una mujer de 87 años', taken out of her flat in Madrid 'el miércoles' - Wednesday 23 September 2026.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

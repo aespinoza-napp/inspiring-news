@@ -1,0 +1,3487 @@
+{
+ "date": "2026-10-09",
+ "labelledBy": "Claude (AI), from title, summary and link, before any group-fit score was computed; not yet checked by a person",
+ "labels": {
+  "hand": {
+   "2": "clearly positive",
+   "1": "worth offering",
+   "0": "not worth offering"
+  },
+  "belongsTo": "the topic groups the story itself belongs to",
+  "kind": "article, or what it is instead: podcast, roundup, quiz, gallery, advisory, promotion, shopping, sponsored, recipe, live, index, fiction, untitled"
+ },
+ "candidates": [
+  {
+   "url": "https://e360.yale.edu/digest/india-solar-coal-power",
+   "source": "yale_e360",
+   "title": "In India, a Surge of Solar Is Keeping Coal Power in Check",
+   "summary": "India, a country of nearly 1.5 billion people, has long relied on coal to power its growing economy. But over the last two years, it has seen a remarkable shift",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://e360.yale.edu/digest/japan-solar-golf-courses",
+   "source": "yale_e360",
+   "title": "Short on Land, Japan Is Building Solar Farms on Old Golf Courses",
+   "summary": "Mountainous, densely populated Japan has little land available for large solar farms, so developers are erecting arrays on many of the now disused golf courses ",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://e360.yale.edu/digest/jonathan-giant-tortoise-aging",
+   "source": "yale_e360",
+   "title": "Jonathan, a 192-Year-Old Giant Tortoise, Holds Insights for Aging Well",
+   "summary": "At 192 years old, Jonathan the giant tortoise is the oldest known living land animal. A new study offers clues as to his incredible longevity. Read more on E360",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://e360.yale.edu/digest/new-giant-waterlily-instagram",
+   "source": "yale_e360",
+   "title": "Instagram Photo Reveals New Species of Giant Waterlily",
+   "summary": "Researchers have recorded a new species of giant waterlily after first spotting the plant in an Instagram photo. Read more on E360 →",
+   "hand": 1,
+   "belongsTo": [
+    "environment",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://e360.yale.edu/features/developing-countries-solar-boom",
+   "source": "yale_e360",
+   "title": "The Solar Boom in Developing Nations: Fast, Chaotic, and Unequal",
+   "summary": "Soaring energy costs are driving a solar rush in developing countries, but as households unplug from the grid, those who remain face higher electricity bills. I",
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://e360.yale.edu/features/public-comment-environment-regulations-permits",
+   "source": "yale_e360",
+   "title": "The U.S. Public Is Losing Its Say on Environmental Policy",
+   "summary": "Federal agencies have long been required to seek public comment when writing new regulations or approving large projects, from highways to data centers. The Tru",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://edition.cnn.com/2026/09/29/tech/anthropic-ipo-details-leak",
+   "source": "cnn",
+   "title": "Anthropic ipo details leak",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://edition.cnn.com/2026/10/08/health/pneumonic-plague-russia",
+   "source": "cnn",
+   "title": "Pneumonic plague russia",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://edition.cnn.com/audio/podcasts/all-there-is-with-anderson-cooper",
+   "source": "cnn",
+   "title": "All there is with anderson cooper",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "podcast"
+  },
+  {
+   "url": "https://edition.cnn.com/audio/podcasts/terms-of-service-with-clare-duffy",
+   "source": "cnn",
+   "title": "Terms of service with clare duffy",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "podcast"
+  },
+  {
+   "url": "https://edition.cnn.com/business/abu-dhabi-energizes-investments-in-china-with-a-jolt-of-coffee-spc",
+   "source": "cnn",
+   "title": "Abu dhabi energizes investments in china with a jolt of coffee spc",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://edition.cnn.com/business/ai-powered-nobi-lamps-reduce-falls-spc",
+   "source": "cnn",
+   "title": "Ai powered nobi lamps reduce falls spc",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science",
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://edition.cnn.com/business/digital-humans-ai-dj-dex-spc",
+   "source": "cnn",
+   "title": "Digital humans ai dj dex spc",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://edition.cnn.com/politics/president-donald-trump-47",
+   "source": "cnn",
+   "title": "President donald trump",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "index"
+  },
+  {
+   "url": "https://edition.cnn.com/science/african-wild-dogs-zambia-mating-journey-intl-spc",
+   "source": "cnn",
+   "title": "African wild dogs zambia mating journey intl spc",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://edition.cnn.com/science/korea-origami-inspired-rover-wheels-explore-moon-hnk-spc",
+   "source": "cnn",
+   "title": "Korea origami inspired rover wheels explore moon hnk spc",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://edition.cnn.com/us/ice-immigration-detentions-arrests-deportations-deaths-vis",
+   "source": "cnn",
+   "title": "Ice immigration detentions arrests deportations deaths vis",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/ciencia/2026-10-08/muere-margaret-hamilton-la-pionera-de-la-informatica-que-hizo-posible-la-llegada-a-la-luna.html",
+   "source": "el_pais",
+   "title": "Muere Margaret Hamilton, la mujer que enseñó al ordenador del Apolo a no perder los nervios sobre la Luna",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/clima-y-medio-ambiente/2026-10-09/atenas-la-tortuga-que-arrastraba-la-mitad-de-su-peso-en-basura-redes-bolsas-cabos-y-hasta-una-caja.html",
+   "source": "el_pais",
+   "title": "‘Atenas’, la tortuga que arrastraba la mitad de su peso en basura: redes, bolsas, cabos y hasta una caja",
+   "summary": "El ejemplar fue rescatado en la costa de Tarragona con la maraña plástica enganchada a una aleta, que se le tuvo que amputar",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/cultura/2026-10-08/un-faro-para-la-creacion-y-las-ideas.html",
+   "source": "el_pais",
+   "title": "Un faro para la creación y las ideas",
+   "summary": "Un mes después de su apertura, Faro Santander reúne cinco siglos de arte, tecnología, educación y participación en un edificio que quiere volver a “colocar Cant",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/cultura/2026-10-09/asi-suena-la-colaboracion-entre-rosalia-y-fontaines-dc.html",
+   "source": "el_pais",
+   "title": "Así suena la colaboración entre Rosalía y Fontaines DC",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/cultura/2026-10-09/eleni-aggelakopoulou-conservadora-jefa-en-la-acropolis-de-atenas-yo-tambien-he-llorado-ante-el-partenon.html",
+   "source": "el_pais",
+   "title": "Eleni Aggelakopoulou, conservadora jefa en la Acrópolis de Atenas: “Yo también he llorado ante el Partenón”",
+   "summary": "La especialista, que lleva 15 años trabajando en el monumento, recalca que los colores que lo cubrían no lo hacían para nada kitsch",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/cultura/cine/2026-10-09/el-precio-de-la-red-colgados-de-las-redes-luego-pasa-lo-que-pasa.html",
+   "source": "el_pais",
+   "title": "‘El precio de la red’: colgados de las redes. Luego pasa lo que pasa",
+   "summary": "Hay guionistas y directores que te obligan a seguirles continuamente la pista, como Aaron Sorkin, aunque la temática de algunas de sus obras me resulte tan ajen",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/cultura/cine/2026-10-09/naza-el-triunfo-de-la-alianza-entre-periodismo-y-cine-para-denunciar-el-exterminio-en-gaza.html",
+   "source": "el_pais",
+   "title": "‘NAZA’: el triunfo de la alianza entre periodismo y cine para denunciar el exterminio en Gaza",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/economia/2026-10-08/bruselas-exige-contencion-en-el-gasto-ante-la-presion-del-mercado-sobre-la-deuda-soberana.html",
+   "source": "el_pais",
+   "title": "Bruselas exige contención en el gasto ante la presión del mercado sobre la deuda soberana",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/economia/2026-10-09/el-banco-de-espana-mejora-la-prevision-de-crecimiento-hasta-el-26-para-2026-pero-alerta-de-un-duro-repunte-de-la-inflacion.html",
+   "source": "el_pais",
+   "title": "El Banco de España mejora la previsión de crecimiento hasta el 2,6% para 2026, pero alerta de un duro repunte de la inflación",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/economia/vivienda/2026-10-09/el-decreto-de-vivienda-frena-la-estrategia-de-los-fondos-de-vender-sus-casas-de-alquiler.html",
+   "source": "el_pais",
+   "title": "El decreto de vivienda frena la estrategia de los fondos de vender sus casas de alquiler",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/eps/2026-10-09/jordi-savall-hoy-todas-las-orquestas-suenan-igual-y-eso-es-muy-grave.html",
+   "source": "el_pais",
+   "title": "Jordi Savall: “Hoy todas las orquestas suenan igual y eso es muy grave”",
+   "summary": "En 1991, la banda sonora de la película ‘Todas las mañanas del mundo’ hizo de él una estrella como compositor de música antigua e intérprete de la viola de gamb",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/eps/2026-10-09/rosa-montero-se-puede-intentar-salvar-el-mundo-siendo-buena-persona.html",
+   "source": "el_pais",
+   "title": "Rosa Montero: “Se puede intentar salvar el mundo siendo buena persona”",
+   "summary": "En el segundo episodio de esta temporada de ‘Tercer Acto’, la escritora conversa con Fernando Navarro sobre sus ganas de vivir, en qué consiste la sabiduría, los referentes negativos de la edad de jub",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/escaparate/estilo-de-vida/movistar-plus-real-madrid.html",
+   "source": "el_pais",
+   "title": "Cómo ver los próximos partidos del Real Madrid al mejor precio",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/escaparate/ofertas-y-descuentos/chollos-semana-amazon-9-octubre.html",
+   "source": "el_pais",
+   "title": "Los 20 chollos de Amazon que más merecen la pena esta semana",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "shopping"
+  },
+  {
+   "url": "https://elpais.com/espana/catalunya/2026-10-09/el-gobierno-de-aragon-anuncia-que-preve-recibir-parte-de-las-pinturas-de-sijena-el-5-de-noviembre.html",
+   "source": "el_pais",
+   "title": "El Gobierno de Aragón anuncia que prevé recibir parte de las pinturas de Sijena el 5 de noviembre",
+   "summary": "El Ejecutivo da permiso al MNAC para iniciar los trabajos de la denominada obra “profana”, que esperaban de una decisión de traslado desde el pasado mes de juni",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/espana/madrid/2026-10-08/booking-asegura-que-la-estafa-de-retiro-se-debe-al-hackeo-a-uno-de-sus-anunciantes.html",
+   "source": "el_pais",
+   "title": "Booking asegura que la estafa de Retiro se debe al ‘hackeo’ a uno de sus anunciantes",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/espana/madrid/2026-10-09/a-arbol-viejo-no-se-le-trasplanta.html",
+   "source": "el_pais",
+   "title": "A árbol viejo no se lo trasplanta",
+   "summary": "No podemos olvidar el legado de Maricarmen. Su lucha. Su resistencia. Su deseo de que luchemos por nuestros derechos porque, si no, serán arrebatados. Y no vamos a parar",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/espana/madrid/2026-10-09/la-jueza-del-caso-fp-reclama-facturas-de-obras-bajo-sospecha-y-cita-a-un-exalto-cargo-del-gobierno-de-ayuso.html",
+   "source": "el_pais",
+   "title": "La jueza del ‘caso FP’ reclama facturas de obras bajo sospecha y cita a un exalto cargo del Gobierno de Ayuso",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/gastronomia/el-comidista/2026-10-09/calamares-de-campo-la-receta-de-posguerra-que-sigue-estando-buenisima.html",
+   "source": "el_pais",
+   "title": "Calamares de campo, la receta de posguerra que sigue estando buenísima",
+   "summary": "Con cebolla, pimiento, harina, sal y aceite se puede preparar un aperitivo propio de los años de escasez que vale la pena conocer hoy",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "recipe"
+  },
+  {
+   "url": "https://elpais.com/internacional/2026-10-09/premio-nobel-de-la-paz.html",
+   "source": "el_pais",
+   "title": "La jurista sudafricana Navi Pillay, Premio Nobel de la Paz 2026",
+   "summary": "El Comité Noruego reconoce sus esfuerzos en promover la paz y el derecho internacional y en traer “esperanza a las víctimas de la violencia y el conflicto”",
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/planeta-futuro/2026-10-09/como-los-recortes-de-financiacion-al-desarrollo-de-ee-uu-dejaron-a-los-ninos-de-nepal-expuestos-a-riadas-mortales.html",
+   "source": "el_pais",
+   "title": "Cómo los recortes de financiación al desarrollo de EE UU dejaron a los niños de Nepal expuestos a riadas mortales",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "health",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/sociedad/2026-10-09/el-hombre-que-asesino-a-su-mujer-en-un-pueblo-de-cuenca-saco-a-sus-hijas-de-la-casa-antes-de-matarla.html",
+   "source": "el_pais",
+   "title": "El hombre que asesinó a su mujer en un pueblo de Cuenca sacó a sus hijas de la casa antes de matarla",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/sociedad/2026-10-09/el-tribunal-europeo-de-derechos-humanos-declara-inadmisible-la-demanda-del-mar-menor-contra-espana.html",
+   "source": "el_pais",
+   "title": "El Tribunal Europeo de Derechos Humanos declara inadmisible la demanda del Mar Menor contra España",
+   "summary": "La corte estima que la laguna no puede ser considerada “víctima” de una supuesta vulneración del derecho de acceso a un tribunal en un procedimiento penal por c",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/sociedad/2026-10-09/la-orden-san-juan-de-dios-aparta-a-uno-de-sus-hermanos-acusado-de-abusos-y-le-abre-proceso-canonico.html",
+   "source": "el_pais",
+   "title": "La orden San Juan de Dios aparta a uno de sus hermanos acusado de abusos y le abre proceso canónico",
+   "summary": "Tras la publicación en EL PAÍS de la denuncia de la víctima, el docente, quien fue consejero delegado y provincial de la orden, ha sido cesado de todos sus carg",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/sociedad/2026-10-09/un-youtuber-espanol-residente-en-andorra-multado-con-750000-euros-por-la-rifa-de-un-coche-de-lujo.html",
+   "source": "el_pais",
+   "title": "Multa récord de 750.000 euros por la rifa que realizó TheGrefg de su coche de lujo sin tener los permisos necesarios",
+   "summary": "El Ministerio de Consumo no señalaba al ‘youtuber’, pero los datos coinciden con un sorteo de su Tesla que impulsó en 2024. Se vendieron casi 380.000 participac",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://elpais.com/television/2026-10-09/shakira-protagoniza-la-entrevista-mas-breve-incomoda-y-extrana-de-la-revuelta.html",
+   "source": "el_pais",
+   "title": "Shakira protagoniza la entrevista más breve, incómoda y extraña de ‘La revuelta’",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/actualidad/muy-science-fest-malaga-reune-ciencia-pensamiento-y-grandes-preguntas-en-una-noche-de-divulgacion.html",
+   "source": "muy_interesante",
+   "title": "Muy Science Fest Málaga: neandertales, inteligencia artificial y galaxias para entender el mundo",
+   "summary": "El Auditorio Edgar Neville acogió una nueva edición del festival de Muy Interesante, con expertos en evolución humana, genética, historia, matemáticas, intelige",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "promotion"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/bazar/roborock-planta-cara-a-irobot-con-una-potente-rebaja-en-su-robot-aspirador-qrevo-2-prox.html",
+   "source": "muy_interesante",
+   "title": "Roborock planta cara a iRobot con una potente rebaja en su robot aspirador Qrevo 2 ProX",
+   "summary": "Con una potente succión de 25.000 Pa, sistema de navegación LiDAR, base de autovaciado de 2,5 L y autonomía de hasta 53 min por sólo 429€.",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "shopping"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/ciencia/el-mapa-de-espana-que-muestra-donde-el-radon-puede-acumularse-en-las-viviendas.html",
+   "source": "muy_interesante",
+   "title": "El mapa de España que revela dónde es más probable que el radón se acumule en las viviendas",
+   "summary": "Descubre qué es el radón, cómo puede entrar en casa y qué zonas de España presentan mayor potencial de acumulación.",
+   "hand": 1,
+   "belongsTo": [
+    "health",
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/ciencia/evoluciona-la-estupidez-en-una-era-de-sobreinformacion.html",
+   "source": "muy_interesante",
+   "title": "¿Cómo influye la sobreinformación en la evolución de la estupidez?",
+   "summary": "Descubre cómo la evolución, la psicología y la sobreinformación ayudan a entender la estupidez humana y sus efectos en nuestra vida cotidiana.",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/ciencia/por-que-personas-razonables-pueden-equivocarse-cuando-siguen-al-grupo.html",
+   "source": "muy_interesante",
+   "title": "Por qué personas razonables pueden equivocarse al seguir la opinión del grupo",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science",
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/curiosidades/el-arte-que-provoca-asco-una-estrategia-para-cuestionar-las-normas-y-sacudir-al.html",
+   "source": "muy_interesante",
+   "title": "El arte que provoca asco: una estrategia para cuestionar las normas y sacudir al espectador",
+   "summary": "Descubre cómo el arte contemporáneo utiliza el asco para cuestionar normas sociales, provocar reflexión y sacudir al espectador.",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/curiosidades/hachimaki-la-bandana-japonesa-que-simboliza-esfuerzo-constancia-y-buena-suerte.html",
+   "source": "muy_interesante",
+   "title": "Hachimaki: la bandana japonesa que simboliza esfuerzo, constancia y buena suerte",
+   "summary": "Descubre qué representa el hachimaki, cómo se utiliza y por qué esta tradicional banda japonesa simboliza esfuerzo, concentración y buena suerte.",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/historia/helmut-clissmann-el-agente-aleman-que-busco-aliados-en-irlanda.html",
+   "source": "muy_interesante",
+   "title": "Helmut Clissmann, el agente alemán que buscó aliados en Irlanda y ayudó a liberar a Frank Ryan",
+   "summary": "Descubre cómo Helmut Clissmann tejió alianzas en Irlanda y qué papel desempeñó en los planes alemanes durante la Segunda Guerra Mundial.",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/historia/jorge-ii-de-grecia-el-rey-que-reino-en-tres-periodos.html",
+   "source": "muy_interesante",
+   "title": "Jorge II de Grecia, el rey que volvió al trono en tres ocasiones",
+   "summary": "Conoce la historia de Jorge II de Grecia y sus tres reinados: una vida marcada por golpes de Estado, exilios y el regreso a la corona.",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/historia/la-ambigua-postura-de-irlanda-ante-la-alemania-nazi-durante-la-segunda-guerra.html",
+   "source": "muy_interesante",
+   "title": "La ambigua relación de Irlanda con la Alemania nazi durante la Segunda Guerra Mundial",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/historia/la-leyenda-negra-de-los-tercios-como-la-imprenta-difundio-la-propaganda-contra.html",
+   "source": "muy_interesante",
+   "title": "Cómo la imprenta difundió la propaganda contra los tercios españoles y creó su leyenda negra",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/historia/por-que-gran-bretana-temio-una-invasion-alemana-de-irlanda-durante-la-segunda.html",
+   "source": "muy_interesante",
+   "title": "Por qué Gran Bretaña temía que la Alemania nazi invadiera Irlanda durante la Segunda Guerra Mundial",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mit.edu/2026/3-questions-what-best-path-forward-ai-academia-0925",
+   "source": "mit_news",
+   "title": "3 Questions: What is the best path forward for AI in academia?",
+   "summary": "MIT Statistics and Data Science Center Director Alexander (Sasha) Rakhlin shares important considerations for departments and institutions.",
+   "hand": 1,
+   "belongsTo": [
+    "science",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mit.edu/2026/discovering-value-humanistic-inquiry-1007",
+   "source": "mit_news",
+   "title": "Discovering the value of humanistic inquiry",
+   "summary": "Students in MIT’s Concourse program delve deeply into the human condition, debate challenging questions, and learn to develop judgment about issues that can’t b",
+   "hand": 1,
+   "belongsTo": [
+    "society",
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mit.edu/2026/margaret-hamilton-computing-pioneer-dies-1007",
+   "source": "mit_news",
+   "title": "Margaret Hamilton, computing pioneer who led software development for the Apollo program, dies at 90",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mit.edu/2026/shape-sensing-sheet-digitally-tracks-movement-bends-twists-1008",
+   "source": "mit_news",
+   "title": "Shape-sensing sheet digitally tracks its movement as it bends and twists",
+   "summary": "Developed by MIT engineers, this flexible material could be used as a wearable, motion-monitoring “skin” in physical therapy, virtual reality, and gaming.",
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mit.edu/2026/supporting-systems-success-1008",
+   "source": "mit_news",
+   "title": "Supporting systems of success",
+   "summary": "In the MIT class 6.C31 (Hack Yourself) students apply computer science strategies to personal growth goals.",
+   "hand": 1,
+   "belongsTo": [
+    "society",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mongabay.com/2026/10/a-lifetime-studying-and-advocating-for-cetaceans-interview-with-paul-spong/",
+   "source": "mongabay",
+   "title": "A lifetime studying and advocating for cetaceans: Interview with Paul Spong",
+   "summary": "Paul Spong’s life has been entwined with whales for nearly six decades. In the 1960s, Spong, who hails from Aotearoa New Zealand, moved to the U.S. to study phy",
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mongabay.com/2026/10/for-indian-communities-fishmeal-factories-bring-pollution-danger-and-protests/",
+   "source": "mongabay",
+   "title": "For Indian communities, fishmeal factories bring pollution, danger and protests",
+   "summary": "This article is from Food for Feed, a series investigating the global fishmeal industry. It is produced by the Outlaw Ocean Project, a news organization based i",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mongabay.com/2026/10/how-much-nature-is-left-interview-with-nature-data-labs-karl-burkart/",
+   "source": "mongabay",
+   "title": "How much nature is left? Interview with Nature Data Lab’s Karl Burkart",
+   "summary": "Where are ecosystems still left standing? Where should conservation be focused? A new tool is attempting to answer these questions and serve as a watchdog for c",
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mongabay.com/2026/10/south-korea-strengthens-migrant-fisher-protections-advocates-are-not-impressed/",
+   "source": "mongabay",
+   "title": "South Korea strengthens migrant fisher protections. Advocates are not impressed.",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mongabay.com/short-article/2026/10/an-instafamous-giant-water-lily-is-confirmed-as-a-new-species-and-critically-endangered/",
+   "source": "mongabay",
+   "title": "An Instafamous giant water lily is confirmed as a new species — and critically endangered",
+   "summary": "A chance sighting of photos on Instagram, then a five-day expedition, including a last-minute, late-night detour in a Colombian rainforest — that’s what it took",
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.mongabay.com/short-article/2026/10/ethiopian-highlands-yield-a-new-species-of-egg-eating-snake/",
+   "source": "mongabay",
+   "title": "Ethiopian highlands yield a new species of egg-eating snake",
+   "summary": "A new-to-science species of egg-eating snake has been documented in the forested mountains of southern Ethiopia, according to a recent study. The snake, which h",
+   "hand": 1,
+   "belongsTo": [
+    "environment",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168520",
+   "source": "un_news",
+   "title": "UN upholds housing as a human right on World Habitat Day",
+   "summary": "Representatives from governments, civil society and academia meeting in Muscat, Oman on Monday called for urgent action to address a global housing crisis affec",
+   "hand": 1,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168537",
+   "source": "un_news",
+   "title": "From drought to deluge: ‘Super’ El Niño’s expanding reach",
+   "summary": "Across Papua New Guinea, water sources are drying up, crops are failing and food prices are rising months before the worst agricultural impacts are expected. Be",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168542",
+   "source": "un_news",
+   "title": "Kenya races to trace all contacts after first Ebola death, WHO official says",
+   "summary": "Kenya’s first Ebola death has triggered a race to trace everyone the victim came into contact with, as the United Nations and partners provide full support, the",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168547",
+   "source": "un_news",
+   "title": "‘No plague case’ in Siberia, Russia tells WHO as assessments continue",
+   "summary": "Health authorities in Russia say there is “no plague case” in Siberia following reports last week that a lab technician had died of pneumonia of an unknown orig",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168550",
+   "source": "un_news",
+   "title": "Myanmar: Poverty deepens as families face multiple shocks with limited resources",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168556",
+   "source": "un_news",
+   "title": "Darfur: Healthcare needs outstrip resources as Security Council extends Sudan sanctions",
+   "summary": "More than 700,000 displaced people in Tawila, in Sudan’s war-ravaged Darfur region, face severe shortages of healthcare, food, water and protection, the UN Worl",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://reasonstobecheerful.world/california-fires-seed-bomb-project/",
+   "source": "reasons_to_be_cheerful",
+   "title": "Reviving L.A.’s Burned Landscapes, One Seed Bomb at a Time",
+   "summary": "If you’ve been through a wildfire, you may never forget the torrid heat, the acrid smell of smoke and the threatening sight of flames closing in. On January 7, ",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://reasonstobecheerful.world/forget-recycling-what-if-we-could-compost-or-reuse-everything/",
+   "source": "reasons_to_be_cheerful",
+   "title": "Forget Recycling. What If We Could Compost or Reuse Everything?",
+   "summary": "Nora Griefahn’s office showcases her work better than words: The interior walls at the C2C LAB on a busy street in Berlin, Germany, are alive with lush, air-pur",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://reasonstobecheerful.world/gen-z-is-rescuing-millions-in-medical-supplies/",
+   "source": "reasons_to_be_cheerful",
+   "title": "Gen Z Is Rescuing Millions in Medical Supplies",
+   "summary": "In early August, a freight truck pulled up to an OhioHealth facility in Columbus and took roughly 30,000 pounds of N95 masks and hot-and-cold packs, all boxed, ",
+   "hand": 2,
+   "belongsTo": [
+    "health",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://reasonstobecheerful.world/home-for-denver-homeless-college-students/",
+   "source": "reasons_to_be_cheerful",
+   "title": "A Place to Sleep for Denver’s Homeless College Students",
+   "summary": "This story was originally published by Chalkbeat. Sign up for their newsletters at ckbe.at/newsletters. During her first semester at Chicago’s Malcolm X College",
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://reasonstobecheerful.world/how-nyc-students-saved-school-lunch/",
+   "source": "reasons_to_be_cheerful",
+   "title": "How NYC Students Saved School Lunch",
+   "summary": "There were three clear reasons why Leslie Gomez Rivera avoided the cafeteria at her high school in Brooklyn: She didn’t like the food, the room felt hectic and ",
+   "hand": 2,
+   "belongsTo": [
+    "society",
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://reasonstobecheerful.world/the-spark-the-community-lighthouses/",
+   "source": "reasons_to_be_cheerful",
+   "title": "The Spark: The ‘Community Lighthouses’ Where Neighbors Help Neighbors",
+   "summary": "Welcome back to The Spark, our monthly celebration of how people just like you are creating positive change, one meaningful step at a time. The Spark is generou",
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://reasonstobecheerful.world/what-were-reading-california-balcony-solar/",
+   "source": "reasons_to_be_cheerful",
+   "title": "What We’re Reading: California Joins the Balcony Solar Revolution",
+   "summary": "Welcome back to our weekly behind-the-scenes glimpse at what’s getting our team talking. Tell us what you’ve been reading at info@reasonstobecheerful.world and ",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "roundup"
+  },
+  {
+   "url": "https://reasonstobecheerful.world/what-were-reading-rat-rangers-dc/",
+   "source": "reasons_to_be_cheerful",
+   "title": "What We’re Reading: Rat Rangers to the Rescue",
+   "summary": "Welcome back to our weekly behind-the-scenes glimpse at what’s getting our team talking. Tell us what you’ve been reading at info@reasonstobecheerful.world and ",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "roundup"
+  },
+  {
+   "url": "https://science.nasa.gov/image-article/apod-2026-october-9-stickney-crater/",
+   "source": "nasa",
+   "title": "APOD: 2026 October 9 – Stickney Crater",
+   "summary": "APOD Science APOD APOD: 2026 October 9… Today’s APOD Archive Submissions Index Search Calendar RSS Education About Discuss APOD Astronomy Picture of the Day Dis",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "gallery"
+  },
+  {
+   "url": "https://theconversation.com/bangladesh-has-lost-900-children-to-measles-a-warning-to-other-countries-where-vaccine-rates-have-slipped-292288",
+   "source": "the_conversation",
+   "title": "Bangladesh has lost 900 children to measles – a warning to other countries where vaccine rates have slipped",
+   "summary": "After a pandemic-era collapse in vaccination, Bangladesh is racing to protect children from measles, but lasting protection depends on reaching 95% coverage.",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/brazil-election-authoritarian-right-gain-an-edge-fueled-by-voter-apathy-and-discontent-293655",
+   "source": "the_conversation",
+   "title": "Brazil election: Authoritarian right gain an edge, fueled by voter apathy and discontent",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/cities-across-the-world-are-sinking-because-of-groundwater-depletion-but-the-process-can-be-reversed-292669",
+   "source": "the_conversation",
+   "title": "Cities across the world are sinking because of groundwater depletion. But the process can be reversed",
+   "summary": "When groundwater reservoirs are replenished, the ground above rises. But the uplift is patchy because earthquake faults act like underground dams, channelling w",
+   "hand": 1,
+   "belongsTo": [
+    "environment",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/french-student-protests-comparisons-with-1968-will-only-serve-the-political-extremes-293879",
+   "source": "the_conversation",
+   "title": "French student protests: comparisons with 1968 will only serve the political extremes",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/how-geopolitical-tensions-tainted-the-2026-asian-games-293279",
+   "source": "the_conversation",
+   "title": "How geopolitical tensions tainted the 2026 Asian Games",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/manchester-city-supporters-have-been-gaslit-what-happens-now-293249",
+   "source": "the_conversation",
+   "title": "Manchester City supporters have been gaslit. What happens now?",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/nobel-laureate-karl-deisseroth-on-how-light-is-changing-what-we-know-about-the-brain-293925",
+   "source": "the_conversation",
+   "title": "Nobel laureate Karl Deisseroth on how light is changing what we know about the brain",
+   "summary": "From algae to a Nobel prize: listen to The Conversation Weekly podcast to hear Karl Deisseroth explain his brain science breakthrough.",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "podcast"
+  },
+  {
+   "url": "https://theconversation.com/nobel-physics-prize-awarded-for-discovery-of-ghostly-messengers-from-the-cosmos-293293",
+   "source": "the_conversation",
+   "title": "Nobel physics prize awarded for discovery of ‘ghostly messengers’ from the cosmos",
+   "summary": "Belgium-born Francis Halzen has won for the detection of high energy neutrino particle from space.",
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/one-in-three-ukrainian-civilians-estimated-to-meet-the-criteria-for-ptsd-or-complex-ptsd-new-study-293253",
+   "source": "the_conversation",
+   "title": "One in three Ukrainian civilians estimated to meet the criteria for PTSD or complex PTSD – new study",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/ratko-mladic-the-war-criminal-who-became-a-martyr-for-bosnian-serbs-291553",
+   "source": "the_conversation",
+   "title": "Ratko Mladić: the war criminal who became a martyr for Bosnian Serbs",
+   "summary": "On The Conversation Weekly podcast, an international law expert explains why some Serbs revered convicted war criminal Ratko Mladić.",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "podcast"
+  },
+  {
+   "url": "https://theconversation.com/russian-plague-scare-an-expert-explains-what-we-know-so-far-and-why-theres-no-need-to-panic-293729",
+   "source": "the_conversation",
+   "title": "Russian plague scare: an expert explains what we know so far – and why there’s no need to panic",
+   "summary": "The availability of treatment, rapid testing and contact tracing mean the outlook of plague is very different today.",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/the-international-olympic-committee-wants-mental-health-screening-in-elite-sports-heres-why-291981",
+   "source": "the_conversation",
+   "title": "The International Olympic Committee wants mental health screening in elite sports. Here’s why",
+   "summary": "The mythology of the bullet-proof athlete often obscures the reality of elite sport’s mental toll.",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://theconversation.com/three-years-after-october-7-global-attention-on-gaza-has-receded-the-real-test-will-come-after-israels-election-292360",
+   "source": "the_conversation",
+   "title": "Three years after October 7, global attention on Gaza has receded. The real test will come after Israel’s election",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/bc/dos-alternativas-movilidad-eficiente-kia-stonic-ev3_7046665_5.html",
+   "source": "20minutos",
+   "title": "Dos alternativas para una movilidad más eficiente: así son los Kia Stonic y EV3",
+   "summary": "La marca coreana de automóviles presenta dos propuestas que permiten acercase a una conducción más sostenible desde perspectivas diferentes sin renunciar a la c",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "sponsored"
+  },
+  {
+   "url": "https://www.20minutos.es/capaces/inrobics-startup-que-pone-su-alma-sus-robots-servicio-las-personas-cubren-necesidades-que-ahora-no-estan-cubiertas_7046273_0.html",
+   "source": "20minutos",
+   "title": "Inrobics, la 'startup' que pone su 'alma' y sus robots al servicio de las personas",
+   "summary": "Gracias a programas de apoyo al emprendimiento, como Emprende inHealth de Lilly, ideas con impacto social como Inrobics pueden salir adelante.",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/comunidad-valenciana/llorca-exige-financiacion-agua-inversiones-gobierno-9-octubre-los-valencianos-esperan-soluciones-no-ruido_7047058_0.html",
+   "source": "20minutos",
+   "title": "Llorca exige financiación, agua e inversiones al Gobierno en el 9'Octubre: \"Los valencianos esperan soluciones, no ruido\"",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/comunidad-valenciana/un-legado-futuro_7046734_3.html",
+   "source": "20minutos",
+   "title": "Un legado de futuro",
+   "summary": "\"La Senyera, nuestras instituciones, nuestras tradiciones y la lengua valenciana ni tienen propietarios ni necesitan guardianes. Son patrimonio de los valencian",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "promotion"
+  },
+  {
+   "url": "https://www.20minutos.es/gastronomia/recetas/marta-sanahuja-chef-cena-saludable-facil-economica-hace-1-calabacin-3-huevos-queso-emmental-rallado_7036536_0.html",
+   "source": "20minutos",
+   "title": "Marta Sanahuja, chef: \"La cena más saludable, fácil y económica se hace así\"",
+   "summary": "La jueza de 'MasterChef' España comparte en sus redes sociales una idea de cena estupenda también para aprovechar el calabacín, uno de los alimentos de la tempo",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "recipe"
+  },
+  {
+   "url": "https://www.20minutos.es/lainformacion/economia-y-finanzas/espanoles-esperan-precio-vivienda-aumentara_7047061_0.html",
+   "source": "20minutos",
+   "title": "Seis de cada diez españoles espera que el precio de la vivienda suba durante 20 años",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/madrid/cierra-una-escuela-infantil-ciudad-lineal-por-indicios-roedores_7047128_0.html",
+   "source": "20minutos",
+   "title": "La presencia de roedores obliga a cerrar una escuela infantil en Madrid",
+   "summary": "Se trata de la escuela Veo Veo, situada en Ciudad Lineal, que ha reubicado a sus alumnos.",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/nacional/43-espanoles-piensa-que-los-decretos-vivienda-empeoran-problema-mas-los-que-los-consideran-beneficiosos_7046460_0.html",
+   "source": "20minutos",
+   "title": "El 43% de los españoles cree que los decretos de vivienda empeoran el problema y no lo mejoran",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/nacional/los-reyes-se-quedaran-dormir-ceuta-este-martes-durante-su-visita-oficial-ciudad_7047051_0.html",
+   "source": "20minutos",
+   "title": "Los reyes Felipe y Letizia dormirán en Ceuta durante su visita oficial a la ciudad el día 13",
+   "summary": "Será la primera ocasión en democracia en la que un jefe del Estado pernocta en esa ciudad autónoma.",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/nacional/mas-60-los-espanoles-dicen-que-su-voto-se-vera-influenciado-por-vivienda-inmigracion-economia-corrupcion_7046466_0.html",
+   "source": "20minutos",
+   "title": "Más del 60% de los españoles dicen que su voto se verá influenciado por la vivienda, la inmigración, la economía y la corrupción",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/nacional/ultimas-noticias-maricarmen-vivienda-acampadas-sol-campana-electoral-29-n-directo_7046881_6.html",
+   "source": "20minutos",
+   "title": "Reacciones a la muerte de Maricarmen y decretos de vivienda, en directo | Puente admite que el Gobierno no fue \"previsor\" con la crisis de la vivienda ni tiene \"herramientas\" para resolverlo",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "live"
+  },
+  {
+   "url": "https://www.20minutos.es/salud/familia/meta-fad-test-acompanamiento-redes-sociales-adolescentes_7045055_4.html",
+   "source": "20minutos",
+   "title": "¿Cómo acompañas a tus hijos en su vida digital? Descúbrelo en este test",
+   "summary": "\"Papá, quiero abrirme una cuenta en Instagram\". La frase que muchos padres temen, y que puede dar lugar a respuestas muy diferentes, es el inicio de un camino l",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "quiz"
+  },
+  {
+   "url": "https://www.20minutos.es/salud/nutricion/no-es-solo-que-comes-es-como-estas-cuando-comes_7044821_0.html",
+   "source": "20minutos",
+   "title": "No es solo lo que comes... es cómo te encuentras cuando lo comes",
+   "summary": "El estado en el que te sientas a comer determina tu digestión.",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/salud/psicologia/amistades-cactus-amistades-bonsai-aprende-reconocer-que-tipo-amigos-tienes_7028983_0.html",
+   "source": "20minutos",
+   "title": "Amistades cactus y amistades bonsái: estos son todos los tipos de amigos que tienes",
+   "summary": "Si el cactus sobrevive con poco riego, el bonsái requiere atención más frecuente.",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/salud/psicologia/trivial-tipo-pareja-sois-responde-10-preguntas-descubre-perfil_7045025_0.html",
+   "source": "20minutos",
+   "title": "¿Qué tipo de pareja sois? Responde a estas 10 preguntas y descubre cuál es vuestro perfil",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "quiz"
+  },
+  {
+   "url": "https://www.20minutos.es/salud/reducir-colesterol-controlar-glaucoma-inesperado-efecto-estatinas-estudio-observacional_7045905_0.html",
+   "source": "20minutos",
+   "title": "De reducir el colesterol a controlar el glaucoma: el inesperado efecto de las estatinas en un estudio observacional",
+   "summary": "La investigación relaciona el uso de las estatinas con un 15% menos de riesgo de desarrollar esta enfermedad que daña el nervio óptico del ojo.",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/tecnologia/actualidad/muere-margaret-hamilton-creadora-software-nasa-llegada-luna_7046483_0.html",
+   "source": "20minutos",
+   "title": "Fallece Margaret Hamilton, la mujer que creó el software que permitió al ser humano aterrizar en la Luna",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/tecnologia/aplicaciones/nueva-york-acusa-tiktok-pruebas-menores-seguridad-placebo_7047057_0.html",
+   "source": "20minutos",
+   "title": "Nueva York acusa a TikTok de incluir a menores en pruebas con herramientas de seguridad 'placebo'",
+   "summary": "Nueva York acusa a TikTok de incluir a menores en pruebas con una función para renovar recomendaciones que no funcionaba. La empresa rechaza las acusaciones.",
+   "hand": 0,
+   "belongsTo": [
+    "science",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/tecnologia/moviles-dispositivos/exjefe-playstation-cuestiona-futuro-juegos-fisicos-somos-realmente-duenos-videojuegos-digitales_7046635_0.html",
+   "source": "20minutos",
+   "title": "El exjefe de PlayStation cuestiona el futuro de los juegos físicos: ¿somos dueños de los digitales?",
+   "summary": "Explica que su gran preocupación, más allá de tener una caja con un disco, es lo que significa ser dueño de un videojuego digital.",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.20minutos.es/vivienda/tienes-dudas-sobre-alquiler-afecta-decreto-vivienda-mi-contrato-deja-tu-pregunta-consultorio-vivienda_7045537_0.html",
+   "source": "20minutos",
+   "title": "¿Tienes dudas sobre el alquiler? ¿Cómo afecta el decreto de vivienda a mi contrato? Deja tu pregunta",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/ciencia/investigador-asturiano-descubren-nueva-especie-nenufar-gigante-20261009124835-nt.html",
+   "source": "abc",
+   "title": "Investigador asturiano descubren nueva especie nenufar gigante nt",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "science",
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/ciencia/muere-margaret-hamilton-pionera-software-impulso-alunizaje-20261008091112-nt.html",
+   "source": "abc",
+   "title": "Muere margaret hamilton pionera software impulso alunizaje nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/ciencia/profecia-fin-mundo-noviembre-2026-20261008024810-nt.html",
+   "source": "abc",
+   "title": "Profecia fin mundo noviembre nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/ciencia/senal-radio-viajo-10000-millones-anos-llegar-20261008195118-nt.html",
+   "source": "abc",
+   "title": "Senal radio viajo millones anos llegar nt",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/cultura/critica-verborrea-humor-juventud-perdida-20261008191349-nt.html",
+   "source": "abc",
+   "title": "Critica verborrea humor juventud perdida nt",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/cultura/libros/cinco-poemas-conocer-anne-carson-premio-nobel-20261008133142-nt.html",
+   "source": "abc",
+   "title": "Cinco poemas conocer anne carson premio nobel nt",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/cultura/retrato-intimo-anne-carson-poeta-acuesta-catulo-20261008172834-nt.html",
+   "source": "abc",
+   "title": "Retrato intimo anne carson poeta acuesta catulo nt",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/cultura/toros/toros-hoy-domingo-octubre-ventas-madrid-feria-20261009050000-nt.html",
+   "source": "abc",
+   "title": "Toros hoy domingo octubre ventas madrid feria nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/alfonso-munoz-funcionario-seguridad-social-podras-acceder-20261008061500-nt.html",
+   "source": "abc",
+   "title": "Alfonso munoz funcionario seguridad social podras acceder nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/banco-espana-advierte-esperar-alla-2028-ver-20261009130049-nt.html",
+   "source": "abc",
+   "title": "Banco espana advierte esperar alla ver nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/espana-enfrenta-bruselas-flixbus-cabotaje-autobuses-concesiones-20261008133811-nt.html",
+   "source": "abc",
+   "title": "Espana enfrenta bruselas flixbus cabotaje autobuses concesiones nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/gobierno-improvisa-apunte-contable-encajar-10000-millones-20261008014608-nt.html",
+   "source": "abc",
+   "title": "Gobierno improvisa apunte contable encajar millones nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/gobierno-verde-sanchez-recupera-energia-nuclear-deja-20261009021129-nt.html",
+   "source": "abc",
+   "title": "Gobierno verde sanchez recupera energia nuclear deja nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/huelga-general-conservar-poder-20261007014617-nt.html",
+   "source": "abc",
+   "title": "Huelga general conservar poder nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/indra-socios-consorcio-confian-primeros-8x8-operativos-20261005021014-nt.html",
+   "source": "abc",
+   "title": "Indra y sus socios de consorcio confían en que los primeros 8x8 estén ya operativos este año",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/jose-ramon-iturriaga-elecciones-20261005013154-nt.html",
+   "source": "abc",
+   "title": "Jose ramon iturriaga elecciones nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/maria-jesus-perez-bola-negra-sanchismo-economico-20261004012629-nt.html",
+   "source": "abc",
+   "title": "Bola negra para el sanchismo económico",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.abc.es/economia/principales-asociaciones-agrarias-convocan-tractorada-octubre-madrid-20261009115415-nt.html",
+   "source": "abc",
+   "title": "Principales asociaciones agrarias convocan tractorada octubre madrid nt",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.agenciasinc.es/Noticias/Cuando-ser-diferente-pesa-los-ninos-con-trastornos-del-desarrollo-corren-mas-riesgo-de-bullying",
+   "source": "sinc",
+   "title": "Cuando ser diferente pesa los ninos con trastornos del desarrollo corren mas riesgo de bullying",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.agenciasinc.es/Noticias/El-marketing-de-las-farmaceuticas-para-el-personal-medico-se-traduce-en-prescripciones-menos-apropiadas",
+   "source": "sinc",
+   "title": "El marketing de las farmaceuticas para el personal medico se traduce en prescripciones menos apropiadas",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.agenciasinc.es/Noticias/El-primer-reloj-nuclear-autorregulado-abre-la-puerta-a-cazar-la-materia-oscura",
+   "source": "sinc",
+   "title": "El primer reloj nuclear autorregulado abre la puerta a cazar la materia oscura",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.agenciasinc.es/Noticias/Francis-Halzen-gana-el-Nobel-de-Fisica-2026-por-sus-contribuciones-al-estudio-de-los-neutrinos",
+   "source": "sinc",
+   "title": "Francis Halzen gana el Nobel de Fisica por sus contribuciones al estudio de los neutrinos",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.agenciasinc.es/Noticias/Kagan-y-Soai-ganan-el-Nobel-de-Quimica-2026-por-la-creacion-de-la-autocatalisis-asimetrica",
+   "source": "sinc",
+   "title": "Kagan y Soai ganan el Nobel de Quimica por la creacion de la autocatalisis asimetrica",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.agenciasinc.es/Noticias/La-microbiota-intestinal-influye-en-los-efectos-secundarios-de-las-vacunas",
+   "source": "sinc",
+   "title": "La microbiota intestinal influye en los efectos secundarios de las vacunas",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/c6vg98lw017po?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "France promises 3,000 extra teachers in first step to calm student protests",
+   "summary": "Education minister Edouard Geffray makes the offer after another day of sometimes violent demonstrations by high-school students.",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/ckgel9044vqeo?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "Suspect linked to Monaco bomb attack on millionaire speaks to BBC",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cm9dzl7wx2qyo?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "Emotions run high at the round table as Celebrity Traitors banish two players",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cmewe5lvl2rqo?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "Polanski vows to stay on as Green leader as criticism mounts",
+   "summary": "Jewish Greens' leader has said Polanski should resign in the wake of a Zionism row and by-election defeat.",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cmy0r96xygx6o?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "Firing squad execution of man who killed 13 soldiers to be livestreamed, Pentagon says",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cq5yn75pgyjjo?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "Alison Hammond: 'I thought I was having heart attack on air'",
+   "summary": "The host says a health scare on live TV was one of the \"scariest things I've ever been through\".",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cq8rzjv8g7ejo?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "Mark Zuckerberg has an image problem - so why is Meta's business booming?",
+   "summary": "A new film paints the Meta founder as a villain. But the tech firm seems immune to bad publicity, writes our North America tech correspondent.",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cq98zdp612pko?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "£15m spent cleaning illegal waste supersite in ancient woodland",
+   "summary": "Concerns remain over the ancient Kent woodland's future after 39,500 tonnes of rubbish were cleared.",
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/crn8wyl4n42yo?at_medium=RSS&at_campaign=rss",
+   "source": "bbc",
+   "title": "Autism, ADHD and mental health review: What you need to know",
+   "summary": "It contains big lessons for the NHS, welfare, education and employment policies. What are the key takeaways?",
+   "hand": 1,
+   "belongsTo": [
+    "health",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.carbonbrief.org/analysis-evs-are-now-nine-times-cheaper-than-petrol-or-diesel-to-drive-in-the-uk",
+   "source": "carbon_brief",
+   "title": "Analysis: EVs are now nine times cheaper than petrol or diesel to drive in the UK",
+   "summary": "The latest surge in fossil-fuel prices means it is now up to nine times cheaper in the UK to drive… The post Analysis: EVs are now nine times cheaper than petro",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.carbonbrief.org/explainer-how-sea-level-rise-poses-an-existential-threat-to-humans-heritage-and-nature",
+   "source": "carbon_brief",
+   "title": "Explainer: How sea level rise poses an ‘existential threat’ to humans, heritage and nature",
+   "summary": "For millions of people around the world, rising sea levels are already reshaping economies, livelihoods and cultures. The world’s oceans… The post Explainer: Ho",
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.carbonbrief.org/factcheck-uk-conservatives-double-the-cost-of-net-zero-after-spreadsheet-blunder",
+   "source": "carbon_brief",
+   "title": "Factcheck: UK Conservatives double the ‘cost of net-zero’ after spreadsheet blunder",
+   "summary": "A booklet published by the UK’s opposition Conservative party includes a “cost of net-zero” that appears to have been doubled… The post Factcheck: UK Conservati",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.cnn.com/2026/10/09/economy/church-land-affordable-housing",
+   "source": "cnn",
+   "title": "Some churches are turning their empty lots into affordable housing",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.cnn.com/2026/10/09/health/overcoming-odds-series-amy-narcolepsy-wellness",
+   "source": "cnn",
+   "title": "For decades, no one could explain her exhaustion and hallucinations. One question changed everything",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.cnn.com/2026/10/09/science/jonathan-tortoise-longevity-genetics",
+   "source": "cnn",
+   "title": "Jonathan the 194-year-old tortoise could help humans live longer",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.cnn.com/business/abu-dhabi-energizes-investments-in-china-with-a-jolt-of-coffee-spc",
+   "source": "cnn",
+   "title": "Abu Dhabi energizes its investments in China with a jolt of coffee",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/cantabria/legislatura-psir-gobierno-pp-impulsa-seis-proyectos-recalificacion-suelo-promotores-privados_1_13568249.html",
+   "source": "eldiario",
+   "title": "La legislatura del PSIR: el Gobierno del PP impulsa seis proyectos de recalificación de suelo para promotores privados",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/catalunya/barcelona-aprueba-subir-ibi-pisos-turisticos-150-nuevo-decreto-vivienda_1_13575081.html",
+   "source": "eldiario",
+   "title": "Barcelona aprueba subir el IBI a los pisos turísticos hasta un 150% con el nuevo decreto de vivienda",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/comunitat-valenciana/valencia/policia-blinda-acampada-vivienda-valencia-amenazas-ultras-9-d-octubre_1_13574494.html",
+   "source": "eldiario",
+   "title": "La Policía blinda la acampada de vivienda de València ante amenazas ultras del 9 d'Octubre",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/economia/banco-espana-mejora-2-6-prevision-pib-notable-resiliencia-economia_1_13574446.html",
+   "source": "eldiario",
+   "title": "El Banco de España mejora al 2,6% su previsión del PIB ante la “notable resiliencia” de la economía",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/economia/campo-anuncia-gran-tractorada-madrid-28-octubre-organizaciones-agrarias-divididas_1_13574700.html",
+   "source": "eldiario",
+   "title": "El campo anuncia una \"gran tractorada\" en Madrid el 28 de octubre con las organizaciones agrarias divididas",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/economia/recetas-responsable-economico-vox-rumbo-privatizacion-pensiones-irpf-medida-ricos_1_13572527.html",
+   "source": "eldiario",
+   "title": "Las recetas del responsable económico de Vox: rumbo a la privatización de las pensiones y un IRPF a medida de los ricos",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/edcreativo/descarbonizar-reutilizar-digitalizar-cambiando-gestion-agua_1_13532481.html",
+   "source": "eldiario",
+   "title": "Descarbonizar, reutilizar y digitalizar: así está cambiando la gestión del agua",
+   "summary": "Aqualia acelera la descarbonización de sus operaciones y apuesta por la economía circular y la digitalización para reducir emisiones, optimizar el consumo y apr",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "sponsored"
+  },
+  {
+   "url": "https://www.eldiario.es/galicia/ue-declara-estrategico-proyecto-extraccion-cobre-touro-pino-fuerte-oposicion-social_1_13575100.html",
+   "source": "eldiario",
+   "title": "La UE declara estratégico el proyecto de extracción de cobre en Touro y O Pino, que tiene una fuerte oposición social",
+   "summary": "La Comisión Europea presenta una segunda tanda de 46 proyectos de materias primas que considera críticas sin aclarar de qué forma va a contribuir a que se desar",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/illes-balears/sociedad/rock-perro-trabaja-hospital-ninos-pierdan-miedo-aguja_1_13568407.html",
+   "source": "eldiario",
+   "title": "Rock, el perro que 'trabaja' en el hospital para que los niños pierdan el miedo a la aguja",
+   "summary": "El temor a la extracción se diluye entre caricias, croquetas y sonrisas: el can, que aún no ha cumplido un año, se acerca, olisquea, agita la cola y permanece a",
+   "hand": 2,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/madrid/somos/indignacion-maricarmen-vuelve-ciudadana-relevo-casa-sol-toma_1_13571514.html",
+   "source": "eldiario",
+   "title": "La indignación ciudadana toma el relevo de Maricarmen y vuelve a su casa desde Sol: \"Si ella no pudo, iremos nosotros\"",
+   "summary": "La vecina reconvertida en símbolo de la crisis por la vivienda fallecía este miércoles a los 87 años, después de un largo desgaste que culminó con su desahucio ",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/politica/maricarmen-no-molestara-derecha_129_13572657.html",
+   "source": "eldiario",
+   "title": "Maricarmen ya no molestará más a la derecha",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/sociedad/ana-orantes-maricarmen-hay-historias-personales-despiertan-conciencia-pais_129_13572045.html",
+   "source": "eldiario",
+   "title": "Ana Orantes o Maricarmen: hay historias personales que despiertan la conciencia de un país",
+   "summary": "¿Por qué ellas y no otras? Muchas otras personas son desahuciadas o sufren violencias, pero las circunstancias convierten a algunas en nombres propios que propi",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.eldiario.es/sociedad/fotos-espana-sale-calle-maricarmen-imagenes_3_13573853.html",
+   "source": "eldiario",
+   "title": "FOTOS | España sale a la calle por Maricarmen, en imágenes",
+   "summary": "Decenas de miles de personas han salido a la calle en varios puntos de España este miércoles en homenaje a Maricarmen, la mujer de 87 años que fue desahuciada e",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "gallery"
+  },
+  {
+   "url": "https://www.elmundo.es/andalucia/2026/10/08/6ac7ec5de4d4d8b33f8b458d.html",
+   "source": "el_mundo",
+   "title": "El asesinato por encargo del cirujano de las famosas en Marbella: se negó a operar a una paciente que \"se puso como loca\"",
+   "summary": "Al doctor, que no tenía vínculos conocidos con el crimen organizado, lo asesinó por encargo un sicario sueco de 18 años Leer",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/baleares/2026/10/09/6ac8b6fbfdddffe53e8b4586.html",
+   "source": "el_mundo",
+   "title": "La nueva caída de El Pablo: un túnel en el jardín de su mansión y viviendas clandestinas por valor de 20 millones de euros",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/ciencia/2026/10/09/6ac8a809e85ece2d4a8b45a2.html",
+   "source": "el_mundo",
+   "title": "¿Qué son las esponjas moleculares? El descubrimiento digno de un Nobel que hará innecesarios el gas y el petróleo: \"El aire es oro invisible\"",
+   "summary": "Susumu Kitagawa, galardonado con el Nobel de Química en 2025: \"Podremos superar la civilización extractiva y dar paso a la de la separación. En el aire ya está ",
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/economia/2026/10/08/6ac7778fe85ece903f8b4581.html",
+   "source": "el_mundo",
+   "title": "El Gobierno anunciará la subida de las pensiones el último día de la campaña electoral",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/economia/2026/10/09/6ac7e688e85ecee15e8b45a2.html",
+   "source": "el_mundo",
+   "title": "El Banco de España prevé \"inflación elevada\" hasta 2028 y avisa de \"persistencia de restricciones\" en la construcción de viviendas",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/economia/2026/10/09/6ac7f279fdddffbd5d8b45b2.html",
+   "source": "el_mundo",
+   "title": "Estos son los 13 barrios más ricos de España: todos con una renta media superior a los 100.000 euros",
+   "summary": "La Moraleja conserva el liderazgo, Muntaner registra el mayor crecimiento desde 2020 y Ciudad Vieja y Centro de A Coruña protagoniza el mayor incremento de rent",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/economia/macroeconomia/2026/10/09/6ac8beeffc6c83466f8b45a3.html",
+   "source": "el_mundo",
+   "title": "El campo confirma sus movilizaciones contra la falta de respuesta del Gobierno a la subida del gasoil y habrá tractorada en Madrid el 28 de octubre",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/espana/2026/10/08/6ac7d2dafdddffbf348b457a.html",
+   "source": "el_mundo",
+   "title": "La operación para \"eliminar\" a la juez Biedma se desplegó en dos vías: la conexión del \"club urbano\" a los Rocho",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/espana/2026/10/09/6ac87a9fe4d4d8862e8b45b6.html",
+   "source": "el_mundo",
+   "title": "Los Reyes dormirán en Ceuta: primera vez desde Alfonso XIII que un jefe de Estado pernocta en la ciudad autónoma",
+   "summary": "Don Felipe y Doña Letizia visitarán un colegio y tendrán un acto ecuménico en el cementerio musulmán por los inmigrantes fallecidos Leer",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/espana/encuestas/2026/10/08/6ac7db79e9cf4af0188b4583.html",
+   "source": "el_mundo",
+   "title": "El PSOE está a solo 0,5 puntos de verse sobrepasado por Compromís en la Comunidad Valenciana antes de las generales",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/internacional/2026/10/09/6ac8d5c421efa04f078b45c5.html",
+   "source": "el_mundo",
+   "title": "Christa Pike desarrolla neumonía y un grave trauma psicológico tras sobrevivir a dos inyecciones letales en Tennessee",
+   "summary": "En una audiencia urgente celebrada el miércoles, los abogados describieron la gravedad de sus lesiones físicas, incluida la pérdida de movilidad en brazos y man",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/madrid/2026/10/09/6ac8a5c4e9cf4a796e8b45a9.html",
+   "source": "el_mundo",
+   "title": "La Justicia suspende la caza de la perdiz roja y otras ocho especies de aves en Madrid justo cuando acaba de comenzar la temporada",
+   "summary": "La Sociedad Española de Ornitología recurrió la orden de la Comunidad que regulaba los límites para este año y el TSJ le ha dado la razón. La Comunidad de Madri",
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.elmundo.es/salud/2026/10/09/6abff8a121efa0d9188b4572.html",
+   "source": "el_mundo",
+   "title": "Conviviendo con las obsesiones de Sergio, el niño de las dos patologías raras: \"Cuando rompió a andar fue como si hubiera ganado el premio Nobel\"",
+   "summary": "Nació en Dos Hermanas con un síndrome neurocutáneo rarísimo y un tumor en el tronco cerebral también poco frecuente. En todo el mundo podría haber 60 casos como el suyo. \"Es como si le hubiera tocado ",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.esa.int/ESA_Multimedia/Images/2026/10/Webb_captures_commotion_from_nebula_s_stellar_jets",
+   "source": "esa",
+   "title": "Webb captures commotion from nebula’s stellar jets",
+   "summary": "Image: Webb captures commotion from nebula’s stellar jets",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.esa.int/Science_Exploration/Space_Science/Mars_Express/Mars_s_oddest_cloud_may_be_even_odder_than_we_thought",
+   "source": "esa",
+   "title": "Mars’s oddest cloud may be even odder than we thought",
+   "summary": "Scientists using the European Space Agency's Mars Express , in combination with a state-of-the-art meteorological model of the Red Planet, have found that there",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.esa.int/Science_Exploration/Space_Science/Solar_Orbiter/Solar_Orbiter_tracks_origin_of_mysterious_magnetic_switchbacks",
+   "source": "esa",
+   "title": "Solar Orbiter tracks origin of mysterious magnetic switchbacks",
+   "summary": "The European Space Agency-led Solar Orbiter spacecraft has flown through an S-shaped kink known as a ‘switchback’ in the solar wind’s magnetic field. By fingerp",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/ciencia/laboratorio/noticia-csic-impulsa-cuatro-spin-off-desarrollar-soluciones-salud-alimentacion-sostenibilidad-agricultura-20261009103134.html",
+   "source": "europa_press",
+   "title": "Noticia csic impulsa cuatro spin off desarrollar soluciones salud alimentacion sostenibilidad agricultura",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "science",
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/ciencia/laboratorio/noticia-madera-era-parte-fundamental-vida-neandertales-estudio-20261008173254.html",
+   "source": "europa_press",
+   "title": "Noticia madera era parte fundamental vida neandertales estudio",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science",
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/ciencia/laboratorio/noticia-muere-90-anos-margaret-hamilton-cuyo-software-permitio-neil-armstrong-pisar-luna-20261008121819.html",
+   "source": "europa_press",
+   "title": "Noticia muere anos margaret hamilton cuyo software permitio neil armstrong pisar luna",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/ciencia/laboratorio/noticia-sencilla-formula-matematica-predice-cuando-chatbots-ia-descontrolaran-20261008170103.html",
+   "source": "europa_press",
+   "title": "Noticia sencilla formula matematica predice cuando chatbots ia descontrolaran",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/bolsa-00348/noticia-ibex-35-repunta-115-media-sesion-recupera-19100-punto-crudo-103-dolares-20261009120419.html",
+   "source": "europa_press",
+   "title": "Noticia ibex repunta media sesion recupera punto crudo dolares",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/construccion-y-vivienda-00342/",
+   "source": "europa_press",
+   "title": "Construccion y vivienda",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "index"
+  },
+  {
+   "url": "https://www.europapress.es/economia/construccion-y-vivienda-00342/noticia-banco-espana-mantiene-millon-deficit-vivienda-2028-evaluara-decretos-gobierno-20261009130200.html",
+   "source": "europa_press",
+   "title": "Noticia banco espana mantiene millon deficit vivienda evaluara decretos gobierno",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/construccion-y-vivienda-00342/noticia-barcelona-aprueba-subir-150-ibi-titulares-cuatro-mas-licencias-pisos-turisticos-20261009115221.html",
+   "source": "europa_press",
+   "title": "Barcelona aprueba subir un 150% el IBI a los titulares de cuatro o más licencias de pisos turísticos",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/energia-00341/noticia-espana-traslada-mas-rapido-alza-gas-luz-eleva-mas-inflacion-electrica-banco-espana-20261009130152.html",
+   "source": "europa_press",
+   "title": "Noticia espana traslada mas rapido alza gas luz eleva mas inflacion electrica banco espana",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/fiscal-00347/noticia-banco-espana-estima-rebajas-fiscales-energia-iran-ahorran-3675-millones-hogares-20261009130332.html",
+   "source": "europa_press",
+   "title": "Noticia banco espana estima rebajas fiscales energia iran ahorran millones hogares",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/laboral-00346/noticia-huelga-general-espana-2026-cuando-derechos-tienes-cuanto-te-descuentan-sueldo-20261007145626.html",
+   "source": "europa_press",
+   "title": "Noticia huelga general espana cuando derechos tienes cuanto te descuentan sueldo",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/macroeconomia-00338/noticia-banco-espana-eleva-crecimiento-pib-26-ano-22-2027-empeora-inflacion-20261009130051.html",
+   "source": "europa_press",
+   "title": "Noticia banco espana eleva crecimiento pib ano empeora inflacion",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/noticia-68-espanoles-compra-comida-preparada-super-reitera-sigue-yendo-comer-restaurantes-20261007164910.html",
+   "source": "europa_press",
+   "title": "Noticia espanoles compra comida preparada super reitera sigue yendo comer restaurantes",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.europapress.es/economia/noticia-decreto-vivienda-vigor-afecta-alquiler-hoy-cambia-inquilinos-propietarios-20261008121036.html",
+   "source": "europa_press",
+   "title": "Noticia decreto vivienda vigor afecta alquiler hoy cambia inquilinos propietarios",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.france24.com/en/fighting-for-our-future-france-high-school-students-vow-no-let-up",
+   "source": "france24_es",
+   "title": "Fighting for our future france high school students vow no let up",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.france24.com/en/france-education-minister-promises-3-000-extra-teachers-in-bid-to-quell-protests",
+   "source": "france24_es",
+   "title": "France education minister promises extra teachers in bid to quell protests",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.france24.com/en/france-suspends-stun-grenade-use-at-student-protests-after-pupil-loses-hand",
+   "source": "france24_es",
+   "title": "France suspends stun grenade use at student protests after pupil loses hand",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.france24.com/en/france/20261007-france-suspends-the-use-of-stun-grenades-after-student-protester-loses-hand",
+   "source": "france24_es",
+   "title": "France suspends the use of stun grenades after student protester loses hand",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.france24.com/en/france/20261008-nothing-will-stop-us-french-student-protests-show-few-signs-of-ending",
+   "source": "france24_es",
+   "title": "Nothing will stop us french student protests show few signs of ending",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.france24.com/en/france/20261009-live-141-french-high-schools-closed-as-student-protests-continue-for-fifth-day",
+   "source": "france24_es",
+   "title": "Live french high schools closed as student protests continue for fifth day",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "live"
+  },
+  {
+   "url": "https://www.france24.com/en/tv-shows/french-connections/20261008-protest-culture-why-do-french-students-repeatedly-rise-up",
+   "source": "france24_es",
+   "title": "Protest culture why do french students repeatedly rise up",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/local-opinion-and-involvement-found-as-key-determinant-in-worlds-conservation-success-stories/",
+   "source": "good_news_network",
+   "title": "Local Opinion and Involvement Found as Key Determinant in World’s Conservation Success Stories",
+   "summary": "Scientists seeking out why some endangered animals or ecosystems are thriving while others are in decline have made an encouraging determination. Across a world",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/more-than-14000-derelict-explosives-cleared-from-libyan-city-and-nearby-farmland/",
+   "source": "good_news_network",
+   "title": "More Than 14,000 Derelict Explosives Cleared from Libyan City and Nearby Farmland",
+   "summary": "Demining operations have cleared just over 14,000 pieces of derelict explosives in a coastal Libyan city this year. A partnership between the UN’s support missi",
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/neighbors-flock-to-rescue-a-wounded-owl-tangled-up-in-barbed-wire/",
+   "source": "good_news_network",
+   "title": "Neighbors Flock to Rescue a Wounded Owl Tangled Up in Barbed Wire",
+   "summary": "From the Cowboy State Daily comes the story of a rural community flocking to the side of an injured owl and rescuing it from a dreadful fate. The story begins w",
+   "hand": 2,
+   "belongsTo": [
+    "environment",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/nyc-parks-extends-late-night-soccer-at-5-fields-for-night-workers-and-their-reactions-are-awesome-watch/",
+   "source": "good_news_network",
+   "title": "NYC Parks Extends Late Night Soccer at 5 Fields for Night Workers–And Their Reactions Are Awesome (WATCH)",
+   "summary": "New York City authorities decided to leave the lights on at 5 urban soccer pitches around the city, hoping to even the playing field of recreation opportunities",
+   "hand": 2,
+   "belongsTo": [
+    "society",
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/orphaned-rescued-and-rewilded-female-gorilla-becomes-a-mother-in-historic-conservation-success/",
+   "source": "good_news_network",
+   "title": "Orphaned, Rescued, and Rewilded, Female Gorilla Becomes a Mother in Historic Conservation Success",
+   "summary": "One of the first-ever eastern lowland gorillas to be successfully returned to the wild gave birth on May 21st in her new/old home of Virunga National Park in th",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/pomegranates-walnuts-and-berries-could-unlock-heart-failure-treatment-with-urolithin-a/",
+   "source": "good_news_network",
+   "title": "Pomegranates, Walnuts and Berries Could Unlock Heart Failure Treatment By Producing Urolithin A",
+   "summary": "A compound produced in the body after eating pomegranates improves heart function by up to 80%, particularly for a type of heart failure with limited treatment ",
+   "hand": 2,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/saudi-solar-park-proves-brilliant-breeding-ground-for-threatened-sand-gazelles/",
+   "source": "good_news_network",
+   "title": "Saudi Solar Park Proves Brilliant Breeding Ground for Threatened Sand Gazelles",
+   "summary": "In clearing two hurdles with one bound, Saudi conservationists have turned a large solar farm into a breeding shelter for a vulnerable species of native gazelle",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/strangers-showed-up-to-mans-destroyed-house-to-put-up-a-tarp-having-seen-his-televised-plea/",
+   "source": "good_news_network",
+   "title": "Strangers Showed Up to Man’s Destroyed House to Put Up a Tarp Having Seen His Televised Plea",
+   "summary": "After a storm dumped a silver maple tree down through his roof, Kansas resident Gilbert Kirk told local news that he wasn’t looking for a miracle or an insuranc",
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/worlds-largest-glacial-archeology-expedition-recovers-48-stone-age-arrowheads-and-shafts/",
+   "source": "good_news_network",
+   "title": "World’s Largest ‘Glacial Archeology’ Expedition Recovers 48 Stone Age Arrowheads and Shafts",
+   "summary": "In a mountainous region of southern Norway, scientists are in their 20th year of surveying glaciers for ancient artifacts entombed therein. The most recent chap",
+   "hand": 2,
+   "belongsTo": [
+    "culture",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/america/agencias/2026/10/09/la-oms-insta-a-abandonar-la-atencion-institucionalizada-de-la-salud-mental-y-apostar-por-un-modelo-comunitario/",
+   "source": "infobae",
+   "title": "La OMS insta a abandonar la atención institucionalizada de la salud mental y apostar por un modelo comunitario",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/america/agencias/2026/10/09/tropas-rusas-llegan-a-bielorrusia-para-participar-en-ejercicios-de-alianza-postsovietica/",
+   "source": "infobae",
+   "title": "Tropas rusas llegan a Bielorrusia para participar en ejercicios de alianza postsoviética",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/educacion/2026/10/09/la-provincia-de-buenos-aires-restringio-por-ley-el-uso-de-celulares-en-las-escuelas-secundarias/",
+   "source": "infobae",
+   "title": "La Provincia de Buenos Aires restringió por ley el uso de celulares en las escuelas secundarias",
+   "summary": "El Senado bonaerense aprobó la norma tras su debate en Diputados. En la primaria rigen restricciones similares, pero aún no fueron reglamentadas por el gobierno",
+   "hand": 1,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/espana/2026/10/09/un-delfin-en-australia-sorprende-a-los-cientificos-con-su-insolita-tecnica-para-conseguir-comida/",
+   "source": "infobae",
+   "title": "Un delfín en Australia sorprende a los científicos con su insólita técnica para conseguir comida",
+   "summary": "Investigadores documentaron durante cuatro años la insólita estrategia de caza, en aguas de la Gran Barrera de Coral",
+   "hand": 1,
+   "belongsTo": [
+    "science",
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/espana/agencias/2026/10/09/el-chileno-lucas-cepeda-se-incorpora-a-los-entrenamientos-para-jugar-ante-el-celta/",
+   "source": "infobae",
+   "title": "El chileno Lucas Cepeda se incorpora a los entrenamientos para jugar ante el Celta",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/espana/agencias/2026/10/09/la-astronauta-sara-garcia-concluye-su-formacion-y-queda-elegible-para-su-primera-mision/",
+   "source": "infobae",
+   "title": "La astronauta Sara García concluye su formación y queda elegible para su primera misión",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/estados-unidos/2026/10/09/tiroteo-en-un-autobus-de-marta-deja-a-un-pasajero-hospitalizado/",
+   "source": "infobae",
+   "title": "Tiroteo en un autobús de MARTA deja a un pasajero hospitalizado",
+   "summary": "Una discusión dentro de una unidad de la ruta 115, en el condado de DeKalb, terminó con un hombre herido de bala y una persona detenida mientras la Policía de M",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/salud/2026/10/09/como-aliviar-las-varices-con-habitos-simples-y-evitar-mayores-molestias/",
+   "source": "infobae",
+   "title": "Como aliviar las varices con habitos simples y evitar mayores molestias",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/salud/2026/10/09/como-impacta-en-el-organismo-cuando-se-toman-suplementos-junto-con-el-cafe-en-el-desayuno/",
+   "source": "infobae",
+   "title": "Como impacta en el organismo cuando se toman suplementos junto con el cafe en el desayuno",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/salud/2026/10/09/el-secreto-de-la-dieta-nordica-los-alimentos-que-se-asocian-con-una-vida-mas-larga-segun-un-estudio/",
+   "source": "infobae",
+   "title": "El secreto de la dieta nordica los alimentos que se asocian con una vida mas larga segun un estudio",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.infobae.com/tendencias/2026/10/09/lo-que-haces-mal-hoy-lo-vas-a-ver-despues-de-20-o-30-anos-la-advertencia-de-francis-holway-sobre-las-dietas-extremas-los-suplementos-falsificados-y-la-perdida-de-musculo-despues-de-los-60/",
+   "source": "infobae",
+   "title": "“Lo que hacés mal hoy lo vas a ver después de 20 o 30 años”: la advertencia de Francis Holway sobre las dietas extremas, los suplementos falsificados y la pérdida de músculo después de los 60",
+   "summary": "En La Fórmula Podcast, el nutricionista cuestionó los mitos de la dieta paleolítica y restrictiva, explicó la importancia de la fuerza para un envejecimiento sa",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/ciencia/20261008/11654221/peste-siberia-preocuparnos.html",
+   "source": "la_vanguardia",
+   "title": "Peste en Siberia, ¿tenemos que preocuparnos?",
+   "summary": "La falta de transparencia de Rusia impide evaluar el riesgo, pero la probabilidad de que la peste afecte a España es mínima",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/comprar/mas-valorados/20260429/11524304/mejores-telescopios-comparativa-mkt-eo.html",
+   "source": "la_vanguardia",
+   "title": "Comparativa de telescopios 2026: cuáles son los mejores para observar estrellas, eclipses y el cielo nocturno",
+   "summary": "Tanto si quieres apreciar la belleza de un eclipse como si pretendes explorar el cosmos en tus ratos libres, te presentamos la mejor selección de telescopios pa",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "shopping"
+  },
+  {
+   "url": "https://www.lavanguardia.com/cultura/20261009/11655160/juergen-boos-entrevista-director-feria-libro-frankfurt-jubilacion-inteligencia-artificial.html",
+   "source": "la_vanguardia",
+   "title": "“Hay rayos de luz, como el milagro español, pero la falta de comprensión lectora me aterra”",
+   "summary": "El editor, que se jubilará este domingo, deja paso al empresario Joachim Kaufmann para que se ponga al frente de Frankfurt",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/economia/20261009/11654300/ue-china-alcanzan-acuerdo-sobre-vehiculos-hibridos-tierras-raras.html",
+   "source": "la_vanguardia",
+   "title": "La UE y China alcanzan un acuerdo sobre los vehículos híbridos y las tierras raras",
+   "summary": "Bruselas avisa que es solo el “primer paso” en el camino hacia reequilibrar las relaciones comerciales",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/economia/20261009/11654531/consumo-multa-ebr-750-000-euros-sortear-ilegalmente-tesla-the-grefg.html",
+   "source": "la_vanguardia",
+   "title": "Consumo multa a una empresa con 750.000 euros por sortear ilegalmente el Tesla del youtuber 'The Grefg'",
+   "summary": "El ministerio considera que no solicitó la autorización necesaria y es una infracción grave",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/economia/20261009/11654548/govern-incentiva-devolver-comercios-pie-calle-recuperar-viviendas.html",
+   "source": "la_vanguardia",
+   "title": "El Govern incentiva devolver comercios a pie de calle para recuperar viviendas",
+   "summary": "Abre una línea de ayudas para fomentar el traslado de pisos superiores a plantas bajas",
+   "hand": 1,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/economia/20261009/11654912/precios-energia-elevaran-inflacion-3-9-ano-banco-espana.html",
+   "source": "la_vanguardia",
+   "title": "Los precios de la energía elevarán la inflación hasta el 3,9% este año, según el Banco de España",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/economia/20261009/11654939/ministerio-vivienda-lanza-calculadora-alquiler.html",
+   "source": "la_vanguardia",
+   "title": "El Gobierno lanza la calculadora del alquiler: ¿cuánto subirá tu cuota mensual con el nuevo decreto?",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/economia/20261009/11654999/ue-elige-otros-dos-proyectos-espanoles-estrategia-extraer-materias-primas-criticas.html",
+   "source": "la_vanguardia",
+   "title": "La UE elige otros dos proyectos españoles en su estrategia para extraer materias primas críticas",
+   "summary": "La Comisión Europea escoge un yacimiento de wolframio en Ciudad Real y una mina de cobre en Galicia",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/internacional/20261009/11654449/lula-emprende-busqueda-desesperada-dos-tres-millones-votos.html",
+   "source": "la_vanguardia",
+   "title": "Lula emprende una búsqueda desesperada de dos (o tres) millones de votos",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/local/valencia/20261009/11653302/oficina-retorno-forzada-vox-ofrece-migrantes-atencion-victimas-discriminacion.html",
+   "source": "la_vanguardia",
+   "title": "La oficina de retorno forzada por Vox ofrece a los migrantes atención a víctimas de delitos de odio",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/local/valencia/20261009/11654358/9-d-octubre-fracturado.html",
+   "source": "la_vanguardia",
+   "title": "Un 9 d'Octubre “fracturado”",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/local/valencia/20261009/11655131/perez-llorca-pedimos-privilegios-igualdad-corrijan-injusticias.html",
+   "source": "la_vanguardia",
+   "title": "Pérez Llorca: “No pedimos privilegios, sino igualdad y que se corrijan las injusticias”",
+   "summary": "El president de la Generalitat Valenciana reclama una financiación justa para garantizar los servicios sociales, además del agua, las infraestructuras y las inv",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/series/20261009/11654563/furia-mujeres-terapia-desahogarse-estres-ansiedad.html",
+   "source": "la_vanguardia",
+   "title": "La 'Furia' de las mujeres como terapia para desahogarse del estrés y la ansiedad",
+   "summary": "Félix Sabroso se atreve a estrenar una segunda temporada en HBO tras una primera que fue redonda, fiel a la actitud de sus heroínas vengativas cargadas de razon",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.lavanguardia.com/television/20261008/11654608/shakira-sorprende-broncano-confesion-sobre-catalan-miami-hablo-mas-vivia-catalunya.html",
+   "source": "la_vanguardia",
+   "title": "Shakira sorprende con su confesión sobre el catalán en Miami: “Hablo más que en Catalunya”",
+   "summary": "La cantante colombiana ha revelado en ‘La Revuelta’ que utiliza esta lengua para hablar con sus hijos cuando quiere que sus amigos no entiendan sus conversacion",
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nasa.gov/centers-and-facilities/ames/nasas-sspicy-mission-to-demonstrate-in-space-inspection-technologies/",
+   "source": "nasa",
+   "title": "NASA’s SSPICY Mission to Demonstrate In-Space Inspection Technologies",
+   "summary": "A new NASA-supported spacecraft will get up close to satellites that are no longer in service, demonstrating technologies that could support future in-space rep",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nasa.gov/news-release/nasa-announces-bold-science-initiatives-for-americas-golden-age-summit/",
+   "source": "nasa",
+   "title": "NASA Announces Bold Science Initiatives for America’s Golden Age Summit",
+   "summary": "Editor’s note: This release was updated Oct. 8, 2026 with the formal name of the summit. NASA is launching two new science and technology initiatives to deepen ",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nasa.gov/news-release/nasa-briefing-to-highlight-contributions-to-martian-moons-mission/",
+   "source": "nasa",
+   "title": "NASA Briefing to Highlight Contributions to Martian Moons Mission",
+   "summary": "Media are invited to join NASA for a media teleconference at 4 p.m. EDT, Thursday, Oct. 15, to preview the agency’s contributions to JAXA’s (Japan Aerospace Exp",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "advisory"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/animals/article/saving-pangolins-endangered-africa",
+   "source": "national_geographic",
+   "title": "Saving pangolins endangered africa",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/animals/article/south-africa-white-rhino-rescue",
+   "source": "national_geographic",
+   "title": "South africa white rhino rescue",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/animals/graphics/six-species-survive-african-ecosystems",
+   "source": "national_geographic",
+   "title": "Six species survive african ecosystems",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/article/aerobatics-stunt-pilots-barnstormer-america",
+   "source": "national_geographic",
+   "title": "Aerobatics stunt pilots barnstormer america",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/article/american-revolution-fighting-for-independence",
+   "source": "national_geographic",
+   "title": "American revolution fighting for independence",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/article/american-revolution-washingtons-trials",
+   "source": "national_geographic",
+   "title": "American revolution washingtons trials",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/article/lightning-inscription-ancient-rome",
+   "source": "national_geographic",
+   "title": "Lightning inscription ancient rome",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/article/nathaniel-philbrick-gold-rush-san-francisco-interview",
+   "source": "national_geographic",
+   "title": "Nathaniel philbrick gold rush san francisco interview",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/article/old-shanghai-opium-wars",
+   "source": "national_geographic",
+   "title": "Old shanghai opium wars",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/article/reconnaissance-spitfire-plane-world-war-ii",
+   "source": "national_geographic",
+   "title": "Reconnaissance spitfire plane world war ii",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/article/taung-child-skull-holographic-magazine-cover",
+   "source": "national_geographic",
+   "title": "Taung child skull holographic magazine cover",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "promotion"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/history/graphics/crash-course-american-revolution-hub",
+   "source": "national_geographic",
+   "title": "Crash course american revolution hub",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "index"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/science/article/mosasaur-lunge",
+   "source": "national_geographic",
+   "title": null,
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "untitled"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/science/article/social-t-rex-tyrant-lizard-queen",
+   "source": "national_geographic",
+   "title": "Social t rex tyrant lizard queen",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nationalgeographic.com/science/graphics/analog-astronaut-space-simulation-mars-moon",
+   "source": "national_geographic",
+   "title": "Analog astronaut space simulation mars moon",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03093-0",
+   "source": "nature",
+   "title": "Chemistry Nobel awarded for solving mystery of how ‘handed’ organic molecules can emerge",
+   "summary": "Nature, Published online: 07 October 2026; doi:10.1038/d41586-026-03093-0 Prize goes to two chemists who probed why life favours one mirror-image molecule over ",
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03116-w",
+   "source": "nature",
+   "title": "Five movements from the edge of the singularity",
+   "summary": "Nature, Published online: 09 October 2026; doi:10.1038/d41586-026-03116-w Change is in the air.",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "fiction"
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03127-7",
+   "source": "nature",
+   "title": "‘When prevention disappears, infections rise’: can the world still end AIDS?",
+   "summary": "Nature, Published online: 07 October 2026; doi:10.1038/d41586-026-03127-7 The United Nations’ deadline for eliminating HIV/AIDS as a public-health threat is unl",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03128-6",
+   "source": "nature",
+   "title": "Will AI scoop your science? Some researchers see a gloomy future",
+   "summary": "Nature, Published online: 08 October 2026; doi:10.1038/d41586-026-03128-6 Scientists worry that increasingly capable large language models will beat them to dis",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03154-4",
+   "source": "nature",
+   "title": "UAE completes Arab world's first solo space probe – and sets course for an asteroid",
+   "summary": "Nature, Published online: 08 October 2026; doi:10.1038/d41586-026-03154-4 The device will be launched on a joint UAE-US-built craft. Some researchers say it cou",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03158-0",
+   "source": "nature",
+   "title": "Chimp and gorilla brains resist weight loss with age — unlike human brains",
+   "summary": "Nature, Published online: 09 October 2026; doi:10.1038/d41586-026-03158-0 The relatively short lifespans of non-human great apes might explain why their brain m",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03217-6",
+   "source": "nature",
+   "title": "The life of Darwin and the science of clouds: Books in brief",
+   "summary": "Nature, Published online: 09 October 2026; doi:10.1038/d41586-026-03217-6 Andrew Robinson reviews five of the best science picks.",
+   "hand": 0,
+   "belongsTo": [
+    "science",
+    "culture"
+   ],
+   "kind": "roundup"
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03218-5",
+   "source": "nature",
+   "title": "Women are talking about menopause — health systems must listen",
+   "summary": "Nature, Published online: 08 October 2026; doi:10.1038/d41586-026-03218-5 In the Arab world, lack of training, research and discussion about menopause is hamper",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.nature.com/articles/s41586-026-11153-8",
+   "source": "nature",
+   "title": "tRNA dosage regulates lineage dependency and resistance in prostate cancer",
+   "summary": "Nature, Published online: 07 October 2026; doi:10.1038/s41586-026-11153-8 A tRNA-specific regulatory pathway is associated with codon biology, lineage transitio",
+   "hand": 1,
+   "belongsTo": [
+    "health",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.newscientist.com/article/2590514-can-we-harness-the-brains-deep-cleaning-system-to-prevent-alzheimers/",
+   "source": "new_scientist",
+   "title": "Can we harness the brains deep cleaning system to prevent alzheimers",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "health",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.newscientist.com/article/2592051-nearly-200-people-isolated-after-lab-worker-in-russia-dies-of-plague/",
+   "source": "new_scientist",
+   "title": "Nearly people isolated after lab worker in russia dies of plague",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.newscientist.com/article/2592404-ai-or-super-intelligence-trump-isnt-the-only-one-who-is-confused/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+   "source": "new_scientist",
+   "title": "AI or ‘super intelligence’? Trump isn’t the only one who is confused",
+   "summary": "US President Donald Trump has declared that artificial intelligence should now be called “super intelligence”. Columnist Jacob Aron explains where that term cam",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.newscientist.com/article/2592782-grief-and-tech-collide-in-uneasily-brilliant-sci-fi-film-the-remotes/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+   "source": "new_scientist",
+   "title": "Grief and tech collide in uneasily brilliant sci-fi film The Remotes",
+   "summary": "Shown at the New York Film Festival, John Torres’s film The Remotes tells of a mysterious app that seems to be controlling drivers' bodies, causing them to cras",
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.newscientist.com/article/2592786-the-big-unanswered-question-about-russias-plague-death/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+   "source": "new_scientist",
+   "title": "The big unanswered question about Russia’s ‘plague’ death",
+   "summary": "Russia says it is winding down precautionary measures taken after a lab worker at a plague research institute died. But what made officials think these were nee",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.newscientist.com/article/2592824-openai-mistranslated-mathematics-into-code-for-its-navier-stokes-proof/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+   "source": "new_scientist",
+   "title": "OpenAI mistranslated mathematics into code for its Navier-Stokes proof",
+   "summary": "When OpenAI announced its surprise solution to the Navier-Stokes problem, it produced one proof for humans and one for computers – however, they don't match",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.optimistdaily.com/2026/10/coffees-memory-boosting-effect-might-have-nothing-to-do-with-caffeine-study-suggests/",
+   "source": "optimist_daily",
+   "title": "Coffee’s memory boosting effect might have nothing to do with caffeine, study suggests",
+   "summary": "BY THE OPTIMIST DAILY EDITORIAL TEAM In a small experiment, researchers found that only participants who drank decaffeinated coffee showed significant improveme",
+   "hand": 1,
+   "belongsTo": [
+    "health",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.optimistdaily.com/2026/10/deafcity-hub-and-the-fight-to-build-a-space-where-sign-language-can-live-and-thrive/",
+   "source": "optimist_daily",
+   "title": "DeafCity Hub and the fight to build a space where sign language can live and thrive",
+   "summary": "BY THE OPTIMIST DAILY EDITORIAL TEAM Sign language interpreters at rap concerts go viral for a reason. There’s something genuinely arresting about watching BSL ",
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.optimistdaily.com/2026/10/social-physiology-the-hidden-health-cost-of-eating-alone-according-to-science/",
+   "source": "optimist_daily",
+   "title": "Social physiology: the hidden health cost of eating alone, according to science",
+   "summary": "BY THE OPTIMIST DAILY EDITORIAL TEAM A study published in Science Advances found that eating the same meal with a close companion produces measurably better blo",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.positive.news/environment/food/three-surprising-reasons-to-slow-down-for-a-thoughtful-nutritious-breakfast/",
+   "source": "positive_news",
+   "title": "Three surprising reasons to slow down for a thoughtful, nutritious breakfast",
+   "summary": "From cognitive function to reinforcing family bonds, the benefits of making time for good, whole foods in the morning are plentiful The post Three surprising re",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.positive.news/environment/meet-the-14-year-old-uncovering-londons-lost-history/",
+   "source": "positive_news",
+   "title": "Meet the 14-year-old uncovering London’s lost history",
+   "summary": "Seasoned mudlark Emmylou Vaxby has spent nearly a decade searching the Thames foreshore for fragments of the city’s past The post Meet the 14-year-old uncoverin",
+   "hand": 2,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.positive.news/environment/the-women-putting-community-at-the-heart-of-elephant-conservation/",
+   "source": "positive_news",
+   "title": "The women putting community at the heart of elephant conservation",
+   "summary": "Across Africa, women are challenging old assumptions about who conservation is for – and who gets to lead it The post The women putting community at the heart o",
+   "hand": 2,
+   "belongsTo": [
+    "environment",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.positive.news/society/good-news-stories-from-week-41-of-2026/",
+   "source": "positive_news",
+   "title": "What went right this week: the good news that matters",
+   "summary": "A pivotal moment for climate justice in Australia, the Nobel prize winners, and a promising drug for Parkinson’s, plus more The post What went right this week: ",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "roundup"
+  },
+  {
+   "url": "https://www.positive.news/society/media/a-future-worth-building-what-to-expect-in-the-new-issue-of-positive-news-magazine/",
+   "source": "positive_news",
+   "title": "A future worth building. What to expect in the new issue of Positive News magazine",
+   "summary": "From future-focused projects to secret schools, the people in this issue are choosing to act for a world they may never see The post A future worth building. Wh",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "promotion"
+  },
+  {
+   "url": "https://www.positive.news/society/prince-william-launches-kit-to-help-communities-prepare-for-emergencies/",
+   "source": "positive_news",
+   "title": "Prince William launches kit to help communities prepare for emergencies",
+   "summary": "The free, how-to resource shows people how to build resilience in their communities The post Prince William launches kit to help communities prepare for emergen",
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261007/huelga-general-espana-derechos-trabajadores-claves-preaviso-nomina-servicio-minimos/17257235.shtml",
+   "source": "rtve",
+   "title": "Huelga general espana derechos trabajadores claves preaviso nomina servicio minimos",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261008/anne-carson-tres-claves-tres-libros-para-conocer-a-nobel-literatura-2026/17259189.shtml",
+   "source": "rtve",
+   "title": "Anne carson tres claves tres libros para conocer a nobel literatura",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261008/cruz-novillo-artista-disenador-espana-contemporanea/17256506.shtml",
+   "source": "rtve",
+   "title": "Cruz Novillo, el artista detrás del diseñador de la España contemporánea",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261008/premio-nobel-literatura-2026-directo-cronica/17258339.shtml",
+   "source": "rtve",
+   "title": "Premio nobel literatura directo cronica",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "live"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261009/aniversario-bizum-cambio-nuestra-forma-pagar-cumple-10-anos/17258658.shtml",
+   "source": "rtve",
+   "title": "Aniversario bizum cambio nuestra forma pagar cumple anos",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261009/elecciones-ultima-hora-espana-directo-hoy-cronica/17259683.shtml",
+   "source": "rtve",
+   "title": "Elecciones ultima hora espana directo hoy cronica",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "live"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261009/premio-nobel-paz-2026-ganador-directo-video-cronica/17259964.shtml",
+   "source": "rtve",
+   "title": "Premio nobel paz ganador directo video cronica",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "live"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261009/tiempo-espana-hoy-puente-12-octubre/17259124.shtml",
+   "source": "rtve",
+   "title": "Tiempo espana hoy puente octubre",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.rtve.es/noticias/20261009/yuval-abraham-director-naza-mayor-parte-israel-esta-ignorando-justificando-algo-inhumano/17260846.shtml",
+   "source": "rtve",
+   "title": "Yuval Abraham, director de 'NAZA: \"La mayor parte de Israel está ignorando o justificando algo inhumano\"",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.rtve.es/television/20261006/receta-huevo-relleno-pannacotta-queso-con-tartar-esparragos-masterchef-celebrity-legends/17254093.shtml",
+   "source": "rtve",
+   "title": "Receta huevo relleno pannacotta queso con tartar esparragos masterchef celebrity legends",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "recipe"
+  },
+  {
+   "url": "https://www.rtve.es/television/20261006/receta-quiche-salmon-santiago-segura-masterchef-celebrity-legends/17254090.shtml",
+   "source": "rtve",
+   "title": "Receta quiche salmon santiago segura masterchef celebrity legends",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "recipe"
+  },
+  {
+   "url": "https://www.rtve.es/television/20261006/receta-solomillo-relleno-ciruelas-masterchef-celebrity-legends/17254094.shtml",
+   "source": "rtve",
+   "title": "Receta solomillo relleno ciruelas masterchef celebrity legends",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "recipe"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/science-nature/five-discoveries-that-changed-our-understanding-of-t-rex-forever-from-warm-blood-to-lips-180989634/",
+   "source": "smithsonian",
+   "title": "Five Discoveries That Changed Our Understanding of T. Rex Forever, From Warm Blood to Lips",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/canadian-poet-anne-carson-brings-ancient-wisdom-to-modern-audiences-now-shes-a-nobel-laureate-in-literature-180989655/",
+   "source": "smithsonian",
+   "title": "Canadian Poet Anne Carson Brings Ancient Wisdom to Modern Audiences. Now, She's a Nobel Laureate in Literature",
+   "summary": "The 76-year-old poet, translator and essayist is renowned for her \"bold and inventive\" approach to blending poetry, prose and everything in between, leading to ",
+   "hand": 2,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/flu-season-started-early-in-parts-of-the-us-and-experts-say-you-should-consider-getting-the-seasonal-jab-asap-heres-what-to-know-180989639/",
+   "source": "smithsonian",
+   "title": "Flu Season Started Early in Parts of the U.S., and Experts Say You Should Consider Getting the Seasonal Jab ASAP. Here's What to Know",
+   "summary": "The season usually starts in October or November. But some western states, including California, Washington, Alaska and Hawaii, began seeing a rise in flu cases",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/hundreds-of-british-college-students-clashed-with-wooden-swords-in-a-1966-re-enactment-of-the-battle-of-hastings-watch-the-rediscovered-time-capsule-of-lost-footage-180989635/",
+   "source": "smithsonian",
+   "title": "Hundreds of British College Students Clashed With Wooden Swords in a 1966 Re-enactment of the Battle of Hastings. Watch the Rediscovered 'Time Capsule' of Lost Footage",
+   "summary": "A local videographer shot 300 reels of color film during the re-enactment, which shows \"soldiers on foot getting remarkably close to horses\" and \"a rather relax",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/jmw-turner-painted-this-breathtaking-roman-landscape-nearly-200-years-ago-if-you-look-closely-you-can-still-see-his-fingerprints-180989659/",
+   "source": "smithsonian",
+   "title": "J.M.W. Turner Painted This Breathtaking Roman Landscape Nearly 200 Years Ago. If You Look Closely, You Can Still See His Fingerprints",
+   "summary": "The Romantic painter completed \"Rome, From Mount Aventine\" in the 1830s. It became his most expensive artwork in 2014, and it's expected to sell for another rec",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/just-inches-below-the-forest-floor-archaeologists-in-germany-unearthed-a-roman-temple-likely-dedicated-to-mars-the-god-of-war-180989650/",
+   "source": "smithsonian",
+   "title": "Just Inches Below the Forest Floor, Archaeologists in Germany Unearthed a Roman Temple Likely Dedicated to Mars, the God of War",
+   "summary": "Researchers found the structure's remains, as well as fragments of statues, while excavating near the Kapersburg fort, an ancient Roman military fortification o",
+   "hand": 1,
+   "belongsTo": [
+    "culture",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/margaret-hamilton-a-pioneering-software-engineer-who-made-the-first-human-moon-landing-possible-dies-at-90-180989653/",
+   "source": "smithsonian",
+   "title": "Margaret Hamilton, a Pioneering Software Engineer Who Made the First Human Moon Landing Possible, Dies at 90",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/thieves-pulled-off-another-shocking-art-heist-in-france-this-time-they-took-a-330-pound-bronze-book-cover-designed-by-salvador-dali-180989638/",
+   "source": "smithsonian",
+   "title": "Thieves Pulled Off Another Shocking Art Heist in France. This Time, They Took a 330-Pound Bronze Book Cover Designed by Salvador Dalí",
+   "summary": "The volume, \"Livre de l’Apocalypse,\" was a \"masterpiece\" collaboration of 14 artists and writers. It is one of the heaviest and most expensive books ever made",
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/travel/a-new-generation-of-chefs-reimagines-indonesian-cuisine-in-the-netherlands-to-tell-the-stories-of-its-origins-180989221/",
+   "source": "smithsonian",
+   "title": "A new generation of chefs reimagines indonesian cuisine in the netherlands to tell the stories of its origins",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/travel/a-tiny-town-in-the-italian-riviera-has-its-own-version-of-focaccia-and-let-this-be-a-warning-its-addictive-180989514/",
+   "source": "smithsonian",
+   "title": "A tiny town in the italian riviera has its own version of focaccia and let this be a warning its addictive",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/travel/in-some-trattorias-in-italy-diners-can-enjoy-a-meal-and-take-the-plate-it-was-served-on-home-as-a-souvenir-180989386/",
+   "source": "smithsonian",
+   "title": "In some trattorias in italy diners can enjoy a meal and take the plate it was served on home as a souvenir",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.smithsonianmag.com/travel/seven-places-in-europe-that-legends-say-were-built-by-giants-devils-or-dragons-180989571/",
+   "source": "smithsonian",
+   "title": "Seven Places in Europe That Legends Say Were Built by Giants, Devils or Dragons",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/environment/2026/oct/08/how-california-is-bracing-for-a-winter-of-floods-fires-and-extreme-storms-all-at-once",
+   "source": "guardian",
+   "title": "How california is bracing for a winter of floods fires and extreme storms all at once",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/environment/2026/oct/09/cop31-host-wealthy-countries-climate-crisis-spending-defence-nato",
+   "source": "guardian",
+   "title": "Cop31 host urges wealthy countries to spend ‘much more’ on climate than defence",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/environment/2026/oct/09/isaias-strengthens-first-atlantic-hurricane-2026",
+   "source": "guardian",
+   "title": "Isaias strengthens first atlantic hurricane",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/environment/2026/oct/09/plant-selfie-jaw-dropping-giant-waterlily-discovery-colombia",
+   "source": "guardian",
+   "title": "Plant selfie jaw dropping giant waterlily discovery colombia",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "environment",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/environment/2026/oct/09/uk-water-companies-industrial-commercial-wastewater-sewage-treatment",
+   "source": "guardian",
+   "title": "Uk water companies industrial commercial wastewater sewage treatment",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/news/2026/oct/09/weatherwatch-raiju-japan-mythical-beast-ligtning-bolts",
+   "source": "guardian",
+   "title": "Weatherwatch raiju japan mythical beast ligtning bolts",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/science/2026/oct/07/margaret-hamilton-moon-computer-software",
+   "source": "guardian",
+   "title": "Margaret Hamilton, trailblazer whose software powered Apollo 11 moon landing, dies aged 90",
+   "summary": null,
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/science/2026/oct/07/nobel-prize-chemistry-awarded-work-on-mirror-image-molecules",
+   "source": "guardian",
+   "title": "Nobel prize in chemistry awarded for work on mirror-image molecules",
+   "summary": "Henri B Kagan and Kensō Soai awarded prize for discovery that has aided understanding of how medicines work in the body The Nobel prize in chemistry 2026 has be",
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/science/2026/oct/09/astronomy-fast-radio-bursts-frb-radio-waves",
+   "source": "guardian",
+   "title": "Astronomers detect mysterious burst of energy from a galaxy far, far away",
+   "summary": "Intense flash of radio waves is more than 10bn years old and has travelled through ‘approximately 80% of cosmic history’ A long time ago in a galaxy far, far aw",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/science/audio/2026/oct/07/all-the-news-and-science-from-the-2026-nobel-prizes-podcast",
+   "source": "guardian",
+   "title": "All the news and science from the 2026 Nobel prizes – podcast",
+   "summary": "This year’s Nobel prizes in chemistry, physics and physiology or medicine have celebrated work that has been used to develop countless drugs and transform moder",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "podcast"
+  },
+  {
+   "url": "https://www.theguardian.com/society/2026/oct/07/gene-therapy-can-partly-restore-sight-in-blind-people-researchers-reveal",
+   "source": "guardian",
+   "title": "Gene therapy can partly restore sight in blind people, researchers reveal",
+   "summary": "Optogenetic therapy, based on Nobel prize-winning science, involves turning nerve cells on and off using light A type of gene therapy based on Nobel prize-winni",
+   "hand": 2,
+   "belongsTo": [
+    "science",
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/society/2026/oct/07/sugar-rations-health-blood-pressure-ageing",
+   "source": "guardian",
+   "title": "The generation raised on sugar rations – and what their health reveals 70 years later",
+   "summary": "From blood pressure to ageing, research suggests the first 1,000 days of sugar exposure could leave a decades-long mark on health They were born into a Britain ",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.theguardian.com/society/2026/oct/08/teenager-first-person-testicular-tissue-transplant-uk-cancer-chemotherapy-fertility",
+   "source": "guardian",
+   "title": "Teenager becomes first person to have testicular tissue transplant in UK",
+   "summary": "Operation on 19-year-old who had no sperm after chemotherapy offers hope of preserving children’s fertility after cancer treatment Surgeons have performed the f",
+   "hand": 2,
+   "belongsTo": [
+    "health",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.who.int/news/item/08-10-2026-new-global-roadmap-launched-to-tackle-hypertension-in-pregnancy-a-leading-cause-of-maternal-and-newborn-deaths",
+   "source": "who",
+   "title": "New global roadmap launched to tackle hypertension in pregnancy, a leading cause of maternal and newborn deaths",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.who.int/news/item/09-10-2026-who-urges-shift-from-institutional-to-community-based-mental-health-care",
+   "source": "who",
+   "title": "WHO urges shift from institutional to community-based mental health care",
+   "summary": null,
+   "hand": 2,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.who.int/news/item/09-10-2026-who-youth-council-welcomes-2026-2028-members-in-berlin",
+   "source": "who",
+   "title": "WHO Youth Council welcomes 2026–2028 members in Berlin",
+   "summary": null,
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.xatakaciencia.com/antropologia/arqueologos-creian-haber-delimitado-este-monasterio-medievo-descubren-algo-mucho-sofisticado",
+   "source": "xataka_ciencia",
+   "title": "Arqueólogos creían haber delimitado este monasterio del Bajo Medievo. Descubren algo mucho más sofisticado",
+   "summary": "El yacimiento de Posaer Berg abarca desde una fortificación del siglo IX hasta un obispado y un posterior monasterio benedictino, y los últimos hallazgos docume",
+   "hand": 1,
+   "belongsTo": [
+    "culture",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.xatakaciencia.com/astronomia/nave-defensa-planetaria-ramses-se-activa-primera-vez-le-vale-estar-terminada-para-13-abril-2029",
+   "source": "xataka_ciencia",
+   "title": "La nave de defensa planetaria Ramses se activa por primera vez, y más le vale estar terminada para el 13 de abril de 2029",
+   "summary": "La misión espacial europea que vigilará el asteroide Apophis acaba de superar una fase crítica al encender sus sistemas centrales en un laboratorio de Milán. El",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "url": "https://www.xatakaciencia.com/biologia/25-anos-plantando-arboles-tiene-recompensa-mata-atlantica-apta-para-pequena-e-importante-especie-animal",
+   "source": "xataka_ciencia",
+   "title": "25 años plantando árboles tiene recompensa: la Mata Atlántica ya es apta para una pequeña e importante especie animal",
+   "summary": "Nicholas y Raquel Locke comenzaron en 2001 un proyecto colosal para recuperar la Mata Atlántica en Cachoeiras de Macacu, Brasil. Lo que empezó como un intento d",
+   "hand": 2,
+   "belongsTo": [
+    "environment",
+    "science"
+   ],
+   "kind": "article"
+  }
+ ]
+}

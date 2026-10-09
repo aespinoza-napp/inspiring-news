@@ -17,7 +17,8 @@ import {
 
 const PER_SOURCE_OPTIONS = [1, 2, 3, 5, 10];
 
-// The mission screen's reasons (backend src/services/selection/mission_screen.py OFF_MISSION).
+// The mission screen's reasons (backend src/services/selection/mission_screen.py
+// OFF_MISSION, and FORMATS for what is not an article at all).
 const OFF_MISSION: Record<string, string> = {
   politics: "politics",
   labour: "strike or protest",
@@ -29,6 +30,13 @@ const OFF_MISSION: Record<string, string> = {
   markets: "markets or personal finance",
   service: "service page",
   obituary: "death or obituary",
+  podcast: "a podcast, not an article",
+  roundup: "a roundup of several stories",
+  quiz: "a quiz",
+  gallery: "a photo gallery",
+  advisory: "a media advisory",
+  promotion: "a promotion",
+  shopping: "shopping",
 };
 
 // While the AI selection runs, the round is re-read this often. On the
@@ -79,7 +87,7 @@ function RankLine({ rank, place }: { rank: CandidateRank; place: number | undefi
     <div className="candidate-rank">
       <span
         className="rank-score"
-        title="Ranking score, 0-100: the story itself, its source's record this round and the source's reliability rating"
+        title="Ranking score, 0-100: the story itself, how well it fits the topics picked, its source's record this round and the source's reliability rating"
       >
         {place !== undefined && `#${place} · `}
         {Math.round(rank.score * 100)}
@@ -88,6 +96,14 @@ function RankLine({ rank, place }: { rank: CandidateRank; place: number | undefi
         <span title="How much nearer its title and summary come to positive impact than to anything off-mission">
           story {rank.news === null ? "not read" : Math.round(rank.news * 100)}
         </span>
+        {rank.topic !== undefined && rank.topic !== null && (
+          <>
+            {" · "}
+            <span title="How well its title and summary fit the topics picked, rather than another group's">
+              topic {Math.round(rank.topic * 100)}
+            </span>
+          </>
+        )}
         {" · "}
         <span title="The share of this source's newest articles the mission screen kept this round, smoothed">
           source {Math.round(rank.record * 100)}% on-mission
@@ -287,6 +303,21 @@ export default function DiscoverPage() {
       : 0;
 
   function toggleGroup(id: string) {
+    // Other topics are another search. With a round on screen the only way
+    // to read the feeds again was Refresh, which repeats the round's own
+    // topics: on 2026-10-09 Environment was picked over a Culture round and
+    // Refresh brought Culture three times. The round stays under Recent.
+    if (round) {
+      if (
+        chosen.size > 0 &&
+        !window.confirm(
+          `Search other topics? The ${chosen.size} you ticked will be cleared; this round stays under Recent rounds.`
+        )
+      ) {
+        return;
+      }
+      startOver();
+    }
     setGroups((current) =>
       current.includes(id)
         ? current.filter((group) => group !== id)
@@ -556,6 +587,8 @@ export default function DiscoverPage() {
             <p className="claims-note">
               Best first, by the story and its source: how near its title and summary come to
               positive impact rather than to anything off-mission ({percent(round.ranking.weights.news)}),
+              {round.ranking.weights.topic !== undefined &&
+                ` how well it fits ${round.groups.map(groupName).join(", ")} (${percent(round.ranking.weights.topic)}),`}{" "}
               how much of its source&apos;s news was on-mission this round ({percent(round.ranking.weights.record)}),
               and the source&apos;s reliability rating ({percent(round.ranking.weights.reliability)}).
             </p>
@@ -573,7 +606,8 @@ export default function DiscoverPage() {
             <details className="claims-note">
               <summary>
                 {round.screened.length} left out as off-mission (elections, strikes, crime,
-                accidents, markets, obituaries…) before choosing
+                accidents, markets, obituaries…) or as not an article (podcasts, roundups,
+                galleries…) before choosing
               </summary>
               <ul className="screened-list">
                 {round.screened.map((item) => {
@@ -607,7 +641,7 @@ export default function DiscoverPage() {
                 className="button-secondary"
                 onClick={refresh}
                 disabled={busy !== null || aiStatus === "running"}
-                title="Read the same sources again, for the same topics"
+                title={`Read the same sources again, for ${round.groups.map(groupName).join(", ")}. To search other topics, pick them above.`}
               >
                 {busy === "refreshing" && <span className="spinner" aria-hidden="true" />}
                 {busy === "refreshing" ? "Reading the feeds…" : "Refresh"}
@@ -724,6 +758,11 @@ export default function DiscoverPage() {
                           ` · the same story as ${
                             places.has(candidate.sameStoryAs) ? `#${places.get(candidate.sameStoryAs)}` : "one ranked above"
                           }`}
+                        {candidate.otherGroup && (
+                          <span title="Its nearest topic belongs to another group: listed after the candidates that fit the groups picked.">
+                            {` · fits ${candidate.otherGroup} better, ranked after the rest`}
+                          </span>
+                        )}
                       </div>
                       {candidate.summary && <p className="candidate-summary">{candidate.summary}</p>}
                       {candidate.rank && <RankLine rank={candidate.rank} place={places.get(candidate.url)} />}

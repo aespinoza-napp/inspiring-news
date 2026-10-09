@@ -20,10 +20,11 @@ it exists to spend it only on articles worth it:
    MAX_CANDIDATE_AGE when the feed dates them;
 3. articles already in the lake are skipped - compared by host and path,
    so a tracking parameter does not make an old article new;
-4. the mission screen leaves out what the publication never covers -
+4. the mission screen leaves out what is not an article (podcasts,
+   roundups, galleries...) and what the publication never covers -
    elections, crime, accidents, celebrity (src/services/selection/
    mission_screen.py) - before the per-source cap, so a source's slots go
-   to what is left;
+   to what is left, those that fit the groups asked for first;
 5. at most `per_source` new articles per source per run.
 
 Triggered by hand, never on a timer: every queued article costs a scrape,
@@ -86,6 +87,14 @@ MAX_CANDIDATE_AGE = timedelta(days=30)
 # what passes. Screening all of El País's 159 to keep two would embed the
 # whole feed for nothing.
 SCREEN_DEPTH = 5
+
+
+def _fits(reading: Reading | None, topics: list[str]) -> bool:
+    """Whether a candidate fits `topics` (ranking.GROUP_FIT); one with nothing read does."""
+
+    fit = ranking.group_fit(reading, topics)
+
+    return fit is None or fit >= ranking.GROUP_FIT
 
 
 def topics_for(groups: list[str] | None) -> list[str]:
@@ -299,7 +308,7 @@ class IngestionService:
                 seen_at=started,
             )
 
-        picked, screen = self._pick(sources, discovered, fresh_by_source, per_source)
+        picked, screen = self._pick(sources, discovered, fresh_by_source, per_source, topics if groups else None)
 
         for run, choice in zip(runs, picked):
 
@@ -403,7 +412,10 @@ class IngestionService:
                 seen_at=started,
             )
 
-        picked, screen = self._pick(sources, discovered, fresh_by_source, per_source)
+        picked, screen = self._pick(sources, discovered, fresh_by_source, per_source, topics if groups else None)
+
+        fits: dict[str, float] = {}
+        nearest: dict[str, str] = {}
 
         for source, result, already, choice in zip(sources, discovered, already_by_source, picked):
 
@@ -421,6 +433,13 @@ class IngestionService:
                 feed_title = details.get("title")
                 reading = choice.readings.get(url)
 
+                # How well it fits the groups asked for (none asked: every
+                # topic was, and nothing is judged).
+                fit = ranking.group_fit(reading, topics) if groups else None
+                if fit is not None:
+                    fits[url] = fit
+                    nearest[url] = reading.nearest_topic
+
                 candidates.append({
                     "url": url,
                     "source": source.id,
@@ -434,8 +453,11 @@ class IngestionService:
                     "method": result.method,
                     # Kept whole, so the weights can be refitted from the
                     # recorded rounds without embedding anything again.
-                    "reading": reading.to_dict() if reading else None,
-                    "rank": ranking.rank(reading, standing),
+                    "reading": (
+                        {**reading.to_dict(), "groupFit": None if fit is None else round(fit, 4)}
+                        if reading else None
+                    ),
+                    "rank": ranking.rank(reading, standing, fit),
                 })
 
             rows.append({
@@ -460,7 +482,10 @@ class IngestionService:
             if reading.vector is not None
         }
 
-        candidates = ranking.one_per_story(ranking.best_first(candidates), vectors)
+        candidates = ranking.one_per_story(
+            ranking.fitting_first(ranking.best_first(candidates), fits, nearest),
+            vectors,
+        )
 
         return {
             "startedAt": started.isoformat(timespec="seconds"),
@@ -483,6 +508,8 @@ class IngestionService:
                 "failed": sum(1 for row in rows if row["error"] and not row["discovered"]),
                 # Ranked after every distinct story: the same story again.
                 "sameStory": sum(1 for candidate in candidates if candidate.get("sameStoryAs")),
+                # Ranked after those that fit: nearer another group's topic.
+                "otherGroup": sum(1 for candidate in candidates if candidate.get("otherGroup")),
             },
         }
 
@@ -492,22 +519,26 @@ class IngestionService:
         results: list[DiscoveryResult],
         fresh_by_source: list[list[str]],
         per_source: int,
+        topics: list[str] | None = None,
     ) -> tuple[list[_Picked], dict]:
         """
         Each source's share: the mission screen over the first
         per_source x SCREEN_DEPTH of its new articles, then the first
-        per_source of those it kept. A positive outlet's first per_source
-        are read, not judged: the ranking needs every candidate's reading.
+        per_source of those it kept. A positive outlet's are held only to
+        the format rules (not an article), never to the subject: its
+        editors chose. Its record still counts 1.
         One batched pass over every source's share, not one per source.
         The screen's state comes back with it - "ok", "off" (none
         configured) or "unavailable" (inference/ could not be reached:
         nothing was left out or read, and the round says so).
         """
 
+        # A positive outlet's too: the screen leaves out its roundups and
+        # promotions (mission_screen.FORMATS), and its slots go to what
+        # follows them.
         pools = [
-            fresh[: per_source * (1 if source.positive_editorial else SCREEN_DEPTH)]
-            if self.screen is not None else []
-            for source, fresh in zip(sources, fresh_by_source)
+            fresh[: per_source * SCREEN_DEPTH] if self.screen is not None else []
+            for fresh in fresh_by_source
         ]
 
         titled = [
@@ -550,7 +581,14 @@ class IngestionService:
                 urls = fresh[:per_source]
                 out = []
             else:
-                urls = [url for url in pool if url not in verdicts][:per_source]
+                kept = [url for url in pool if url not in verdicts]
+                # A source's slots go first to what fits the groups asked
+                # for (ranking.GROUP_FIT), each part in feed order: on
+                # 2026-10-09 Positive News's breakfast advice took one of
+                # its three in Environment and in Culture.
+                if topics:
+                    kept = sorted(kept, key=lambda url: not _fits(readings.get(url), topics))
+                urls = kept[:per_source]
                 out = [url for url in pool if url in verdicts]
 
             picked.append(_Picked(

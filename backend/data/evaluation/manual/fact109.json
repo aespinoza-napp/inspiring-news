@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "reasonstobecheerful.world",
+  "claimant": "RTBC Staff",
+  "claim": "Keeping the air moving changes the perceived temperature: “Our objective is to maintain an indoor air temperature identical to the outdoor temperature while generating an airflow of one meter per second to reduce the perceived temperature for passengers,” explains Éric Bussolino, engineering and environment director at AIA Life Designers, which led the project.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.aol.co.uk/articles/wanted-prove-didn-t-air-050041000.html"
+  ],
+  "split": "test",
+  "id": "fact109",
+  "topic": "sustainability",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-25",
+  "articleUrl": "https://reasonstobecheerful.world/what-were-reading-rat-rangers-dc/",
+  "annotatorNote": "The Guardian (Rachel Savage), syndicated by AOL on 25 Sep 2026: Éric Bussolino, engineering and environment director at AIA: 'Our objective is to maintain an indoor air temperature identical to the outdoor temperature... while generating an airflow of 1 metre per second to reduce the perceived temperature for passengers.' The project is the arrivals terminal of Roland Garros airport, La Réunion.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

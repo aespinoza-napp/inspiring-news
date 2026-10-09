@@ -76,6 +76,23 @@ def test_an_llm_serving_the_configured_model_passes(monkeypatch):
     health._check_llm()
 
 
+def test_a_model_named_without_its_tag_is_the_latest_one(monkeypatch):
+    """backend/.env says llama3.1; Ollama lists llama3.1:latest and serves it."""
+
+    monkeypatch.setattr(settings, "LLM_MODEL", "llama3.1")
+    monkeypatch.setattr(
+        health, "_get",
+        lambda url, headers=None: httpx.Response(200, json={"data": [{"id": "llama3.1:latest"}]}),
+    )
+
+    health._check_llm()
+
+    monkeypatch.setattr(settings, "LLM_MODEL", "llama3.1:8b")
+
+    with pytest.raises(CheckFailed, match="llama3.1:8b"):
+        health._check_llm()
+
+
 def test_the_graph_is_not_checked_when_it_is_off(monkeypatch):
 
     monkeypatch.setattr(settings, "GRAPH_ENABLED", False)

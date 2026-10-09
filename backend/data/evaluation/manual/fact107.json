@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "“Oh, it’s unbelievable, the way the community has come together,” Kirk said.",
+  "claimDate": "2026-10-07",
+  "reviewDate": "2026-10-09T13:30:59",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.kctv5.com/2026/10/04/stranger-keeps-promise-cover-storm-damaged-wyandotte-county-home-with-tarp/"
+  ],
+  "split": "test",
+  "id": "fact107",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-03",
+  "articleUrl": "https://www.goodnewsnetwork.org/strangers-showed-up-to-mans-destroyed-house-to-put-up-a-tarp-having-seen-his-televised-plea/",
+  "annotatorNote": "KCTV5, 3 Oct 2026: Kirk said 'Oh, it's unbelievable, the way the community has come together.' A quotation checked for its words and speaker.",
+  "createdAt": "2026-10-09T13:30:59",
+  "review": null
+}

@@ -10,13 +10,22 @@ annotator picked what looked easy to check (see the Limitations of
 docs/final_document/chapters/06-experimental-design/03-custom-validation-set/). Here the choice is
 made by chance and by the system:
 
-1. **Discovery** over every enabled source, exactly as ingestion does it.
+1. **Discovery** over every enabled source, exactly as ingestion does it:
+   nothing older than ingestion's MAX_CANDIDATE_AGE.
 2. **Exclusion** of every URL the caller already has - labelled facts and
    earlier batches - compared by host and path.
 3. **A seeded random draw**: one article per source, sources shuffled,
    languages alternated. The seed is the day, so the same links give the
    same draw - not a fresh roll to cherry-pick from. Feeds change during
    the day, though, so a second batch hours later can differ.
+   **The mission screen** then reads the draw, as it reads a discovery
+   round (src/services/selection/mission_screen.py): what the publication
+   never covers, and what is not an article at all, is left out before
+   anything is extracted. Until 2026-10-09 the batch had neither the screen
+   nor the age limit, and that day's drew the Martin Fierro radio nominees,
+   a Samsung gallery app's hidden menu from August, ABC's photo gallery of
+   an awards night and NASA's media-teleconference notice: a validation set
+   for this publication should be drawn from what it would analyse.
 4. **Extraction** through the real cascade (purpose `labelling`), then
    **claims**: the enrichment pipeline's extractor and the fact-checker's
    own ClaimSelector anchors, so the set is labelled on the claims the
@@ -50,9 +59,11 @@ from src.models.core.source import NewsSource
 from src.services.concurrency import bounded_map
 from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.inference_client import InferenceUnavailable
+from src.services.ingestion_service import MAX_CANDIDATE_AGE, title_from_url
 from src.services.scraper.article_stats import comparable_url
 from src.services.scraper.discovery import DiscoveryResult, DiscoveryService
 from src.services.scraper.request_stats import Purpose
+from src.services.selection.mission_screen import Candidate
 
 logger = getLogger(__name__)
 
@@ -78,6 +89,11 @@ MIN_CLAIM_CHARS = 40
 # it small. A preference, not a filter: an old article still fills a
 # batch that has nothing newer.
 RECENT_DAYS = 60
+
+# The draw is this many times larger than what is extracted, so what the
+# mission screen leaves out does not leave the batch short. On the general
+# outlets' newest items about one in five was left out (2026-10-06).
+SCREEN_SPARE = 2
 
 # display name -> key: TopicPrediction.topic carries the display name
 # ("Climate"), the labeller and topics.py are keyed ("climate").
@@ -134,13 +150,17 @@ class LabellingBatch:
         selector,
         claim_extractor,
         discovery: DiscoveryService | None = None,
+        screen=None,
     ):
         self.sources = sources
         self.extractor = extractor
         self.enrichment = enrichment
         self.selector = selector
         self.claim_extractor = claim_extractor
-        self.discovery = discovery or DiscoveryService()
+        self.discovery = discovery or DiscoveryService(max_age=MAX_CANDIDATE_AGE)
+
+        # A MissionScreen; None screens nothing (the tests' default).
+        self.screen = screen
 
         self._lock = threading.Lock()
         self._running = False
@@ -224,7 +244,10 @@ class LabellingBatch:
 
         known = {comparable_url(url) for url in request.exclude if url}
 
-        candidates = self._draw(sources, discovered, known, rng, request.articles * OVERSAMPLE)
+        drawn = self._draw(sources, discovered, known, rng, request.articles * OVERSAMPLE * SCREEN_SPARE)
+
+        candidates, screened, screen_state = self._screen(drawn, sources, discovered)
+        candidates = candidates[: request.articles * OVERSAMPLE]
 
         processed = bounded_map(
             lambda candidate: self._prepare(candidate, request.claims_per_article),
@@ -259,12 +282,15 @@ class LabellingBatch:
                 "sources": len(sources),
                 "discovered": sum(len(result.urls) for result in discovered),
                 "candidates": len(candidates),
+                "screened": len(screened),
                 "ready": len(ready),
                 "articles": len(chosen),
                 "claims": sum(len(item["claims"]) for item in chosen),
             },
             "articles": chosen,
             "skipped": skipped,
+            "screen": screen_state,
+            "screened": screened,
         }
 
         with self._lock:
@@ -346,6 +372,60 @@ class LabellingBatch:
             round_ += 1
 
         return candidates
+
+    def _screen(
+        self,
+        drawn: list[dict],
+        sources: list[NewsSource],
+        discovered: list[DiscoveryResult],
+    ) -> tuple[list[dict], list[dict], dict]:
+        """
+        (what passes, in the draw's order, renumbered; what was left out
+        and why; the screen's state). Judged by title and summary, as a
+        round's candidates are; a positive outlet only for not being an
+        article. When inference/ cannot be reached the batch keeps
+        everything and says so - never a silent pass.
+        """
+
+        if self.screen is None or not drawn:
+            return drawn, [], {"status": "off" if self.screen is None else "ok", "error": None}
+
+        details = {}
+        for result in discovered:
+            details.update(result.details)
+
+        by_id = {source.id: source for source in sources}
+
+        try:
+            assessments = self.screen.assess(
+                [
+                    Candidate(
+                        title=(details.get(c["url"]) or {}).get("title") or title_from_url(c["url"]),
+                        summary=(details.get(c["url"]) or {}).get("summary"),
+                        language=by_id[c["source"]].language,
+                    )
+                    for c in drawn
+                ],
+                exempt=[by_id[c["source"]].positive_editorial for c in drawn],
+            )
+        except Exception as exc:
+            logger.warning("Mission screen unavailable; the batch keeps everything", exc_info=True)
+            return drawn, [], {"status": "unavailable", "error": str(exc)}
+
+        kept, screened = [], []
+
+        for candidate, assessment in zip(drawn, assessments):
+            if assessment.verdict is None:
+                kept.append({**candidate, "rank": len(kept)})
+            else:
+                screened.append({
+                    "url": candidate["url"],
+                    "source": candidate["source"],
+                    "offMission": assessment.verdict.off_mission,
+                    "margin": assessment.verdict.margin,
+                })
+
+        return kept, screened, {"status": "ok", "error": None}
 
     def _prepare(self, candidate: dict, claims_per_article: int) -> dict:
 
