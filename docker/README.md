@@ -72,7 +72,25 @@ image: 1.43GB without it, 2.91GB with it (measured 2026-09-23). To build without
 stops after BeautifulSoup and reports `unavailable` for pages that needed a browser.
 
 The first build downloads torch, transformers and sentence-transformers, so expect it to be slow and
-the image to be large. The first *request* is slow too, for a different reason: the transformer
+the image to be large.
+
+## Slow rebuilds
+
+With nothing changed, `up --build` should take seconds: every layer is cached, and startup itself is
+~25 s (inference loads its models in ~20 s from a warm `model-cache`, then the backend in ~4 s). If it
+takes minutes, the build cache has evicted the dependency layers. Measured 2026-10-09: three
+back-to-back builds with no change took 291 s, 147 s and 2 s. The build cache held 21.19 GB against
+Docker Desktop's default 20 GB cap (`builder.gc.defaultKeepStorage`). Inference's dependency layer
+alone is 2.7 GB, and the backend's dependencies plus Chromium are 1.85 GB, so rebuilding either one
+evicts the other's cached layers. Re-creating a layer also means re-exporting it, and with Docker
+Desktop's containerd image store that dominates: 84 s to compress inference's dependency layer and
+17 s to unpack it, on top of 42 s for `uv sync`.
+
+Check with `docker system df` (the `Build Cache` row). The fix is to raise the cap in Docker Desktop
+→ Settings → Docker Engine (`"defaultKeepStorage": "60GB"`), then Apply & restart. A uv cache
+mount in both Dockerfiles keeps downloaded wheels across builds. A lockfile change then
+re-downloads only what changed, but the export cost above stays whenever the dependency layer is
+rebuilt. The first *request* is slow too, for a different reason: the transformer
 models (GLiNER, the embedding model, the sentiment classifier) download on first use into the
 `model-cache` volume. Subsequent starts reuse it.
 

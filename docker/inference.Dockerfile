@@ -32,12 +32,17 @@ ENV UV_COMPILE_BYTECODE=1 \
 # installed.
 ENV PYTHONPATH=/app
 
+# Same cache mount as backend.Dockerfile, and worth more here: torch
+# and the transformers stack are most of this image's 2.7GB dependency
+# layer, and without it any lockfile change downloads all of them again.
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project --no-dev
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project --no-dev
 
 COPY . .
 
-RUN uv sync --frozen --no-dev
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
 

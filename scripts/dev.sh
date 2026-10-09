@@ -38,6 +38,10 @@ start_docker() {
   # A plain `up -d` silently keeps serving the old image forever once
   # one exists - Docker's layer cache makes a no-op rebuild fast, so
   # this costs seconds, not minutes, when nothing actually changed.
+  # Only while that cache survives, though: on 2026-10-09 a no-op
+  # rebuild took 291s, because the cache sat at Docker's 20GB cap and
+  # had evicted the dependency layers. See docker/README.md's
+  # "Slow rebuilds".
   ( cd "$ROOT" && docker compose --env-file "$ROOT/backend/.env" -f "$COMPOSE_FILE" up -d --build ) || die "docker compose up failed"
 
   step "Waiting for backend to be healthy"

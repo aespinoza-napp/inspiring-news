@@ -48,12 +48,17 @@ ENV UV_COMPILE_BYTECODE=1 \
 # working directory on sys.path.
 ENV PYTHONPATH=/app
 
-# Dependencies first, in their own layer: this installs torch,
-# transformers, sentence-transformers and friends - the slowest part of
-# the build by a wide margin - and it only re-runs when pyproject.toml
-# or uv.lock actually change, not on every source edit.
+# Dependencies first, in their own layer (~810MB since torch moved to
+# inference/): it only re-runs when pyproject.toml or uv.lock actually
+# change, not on every source edit.
+#
+# The cache mount keeps uv's download cache between builds, outside the
+# image, so a lockfile change downloads only the packages that changed
+# rather than all of them. It is why UV_LINK_MODE=copy is set above: the
+# mount is a different filesystem, and uv cannot hardlink across one.
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project --no-dev --extra browser
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project --no-dev --extra browser
 
 # The browser for the last step of the extraction cascade (see
 # docs/decisions/scraping.md), with the system libraries Chromium needs.
@@ -66,7 +71,8 @@ RUN uv run --no-sync playwright install --with-deps chromium
 
 COPY . .
 
-RUN uv sync --frozen --no-dev --extra browser
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --extra browser
 
 ENV PATH="/app/.venv/bin:$PATH"
 
