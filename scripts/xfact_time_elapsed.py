@@ -54,6 +54,7 @@ sys.path.insert(0, str(BACKEND))
 
 from src.evaluation import metrics  # noqa: E402
 from src.evaluation.report import load_run  # noqa: E402
+from src.evaluation.retrieval import claim_retrieval  # noqa: E402
 
 # X-Fact was released in June 2021 (ACL 2021); its evidence snippets were
 # collected before that.
@@ -170,6 +171,31 @@ def attribute(record: dict) -> str:
         return "reasoning"
 
     return "aggregation"
+
+
+def attribute_by_reference(record: dict) -> str | None:
+    """
+    The reference-based column: None when the row has no reference link
+    off the fact-checker's own site (every PolitiFact row).
+    """
+
+    retrieval = claim_retrieval(record)
+
+    if not retrieval["hasReferences"]:
+        return None
+
+    values = retrieval["values"]
+
+    if record.get("rawVerdict") == record["label"]:
+        return "aggregation"
+
+    if not (values["linkRecall@candidates"] or values["domainRecall@candidates"]):
+        return "retrieval"
+
+    if not (values["linkRecall@ranked"] or values["domainRecall@ranked"]):
+        return "ranking"
+
+    return "reasoning"
 
 
 def block(records: list[dict]) -> dict:
@@ -306,6 +332,9 @@ def main() -> int:
             stage: [r["id"] for r in scored if r["verdict"] != r["label"] and attribute(r) == stage]
             for stage in ("retrieval", "ranking", "reasoning", "aggregation")
         },
+        "attributionByReference": dict(Counter(
+            str(attribute_by_reference(record)) for record in scored if record["verdict"] != record["label"]
+        )),
         "explanationNamesFactChecker": [
             record["id"] for record in scored
             if re.search(r"politifact|chequeado|pants on fire|fact[- ]?check", (record.get("explanation") or "").lower())
@@ -363,6 +392,7 @@ def main() -> int:
         if name in result:
             line(name, result[name])
     print("attribution (trace only):", result["attributionTraceOnly"])
+    print("attribution (by reference; None = no reference):", result["attributionByReference"])
     print(json.dumps(result["evidenceAge"], indent=1))
 
     return 0
