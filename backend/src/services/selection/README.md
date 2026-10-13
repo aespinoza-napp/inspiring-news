@@ -7,8 +7,8 @@ chooses at most twenty, and only those become analysis jobs. Run by
 `docs/decisions/selection.md`.
 
 ```
-groups -> IngestionService.discover_candidates -> ranked best first
-                                                    |
+groups -> IngestionService.discover_candidates -> ranked best first,
+                                                    |  at the round's topic emphasis
                          round: the best 20 shown (candidates), the rest
                          kept (reserve); show_more -> up to 40 shown
                                                     |
@@ -20,7 +20,7 @@ groups -> IngestionService.discover_candidates -> ranked best first
 | Piece | File | What it does |
 |---|---|---|
 | Mission screen | `mission_screen.py` (`MissionScreen`) | Leaves out what is not an article (podcasts, roundups, quizzes, galleries, advisories, promotions, shopping: `FORMATS`, a positive outlet's too) and candidates nearer politics, crime, disasters, war, celebrity, sport or service pages than any topic, before the per-source cap; run by `IngestionService` for rounds and `POST /ingest`, and by the labelling batch. `assess` also returns each candidate's reading (its nearness to `IMPACT` included), positive outlets' too |
-| Ranking | `ranking.py` (`rank`, `best_first`, `fitting_first`, `one_per_story`) | Scores each candidate from its own reading (0.51), how well it fits the round's groups (0.15), its source's record in this round's screen (0.21) and its reliability rating (0.13); `discover_candidates` returns them best first, those nearer another group's topics after the rest (`otherGroup`), each story once before any story twice (`sameStoryAs`) |
+| Ranking | `ranking.py` (`weights`, `score`, `rank`, `ordered`: `best_first`, `fitting_first`, `one_per_story`) | Scores each candidate from its own positive-impact reading and how well it fits the round's groups - the two splitting 0.6 by the round's **topic emphasis** (0 all positive impact, 1 all topic; `DEFAULT_TOPIC_EMPHASIS` 0.6, so 0.24 and 0.36) - its source's record in this round's screen (0.25) and its reliability rating (0.15); `discover_candidates` returns them best first, those nearer another group's topics after the rest (`otherGroup`), each story once before any story twice (`sameStoryAs`), and records how (`ranking`) |
 | Rounds | `rounds.py` (`SelectionRounds`) | Every round, one JSON file each under `lake/stats/selection/` once `src/main.py` attaches the folder; the last 50 also in memory |
 | AI selection | `ai_selector.py` (`AISelector`) | Scores candidates 0-10 against `DEFINITION`, ten per LLM call, and picks the best at `DEFAULT_MIN_SCORE` or more |
 | The step | `selection_service.py` (`SelectionService`) | Creates a round (the best `LISTED` shown), shows more on request (up to `MAX_LISTED`), runs the AI selection in a background thread (one at a time), queues a selection and records who chose it |
@@ -35,6 +35,22 @@ Things that must stay true:
   and the source configuration; a round where `inference/` was
   unreachable is ranked by its sources alone (`rank.news: null`), never
   dropped or left unsorted.
+- **The topic emphasis is per call and per round.** It comes with the
+  request (`topicEmphasis`), goes down as an argument (`create_round` ->
+  `discover_candidates` -> `rank`), and never onto an instance: these
+  services are shared by every request. None means the default. It is a
+  request parameter like `groups`, not a `PipelineThresholds` field
+  (`docs/decisions/selection.md`, "Positive impact or the topic").
+- **No topic signal, no emphasis.** With no group asked for, or nothing
+  read, a round is ranked at `WITHOUT_TOPIC` (0) whatever was asked, and
+  `ranking.topicEmphasis.applied` is null - it must not look as if the
+  topic had been weighed.
+- **The weights sum to 1 at every emphasis**: the emphasis only moves
+  weight between the story's two parts. A round records the four it used
+  (`ranking.weights`) and the emphasis asked for, applied and the default.
+- **The AI selection is not told the emphasis**, by decision: it reads a
+  list the emphasis already made topic-first, and judges positive impact
+  within it.
 - **`selectedBy` and the agreement counts are computed here**, from the
   AI's recorded proposal - never taken from the client. They are what
   `src/evaluation/experiments.py selection` reports.

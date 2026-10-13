@@ -112,9 +112,10 @@ STORY_WEIGHT = 1.0 - sum(SOURCE_WEIGHTS.values())
 # at emphasis 0) and the first ten 100 of 100 (94) - the plateau: higher
 # gains no more of the group (0.7: 194 and 100) and loses positive stories
 # (worth offering of the group 150 at 0.6, 139 at 0.7; 154 before). The
-# cost below it is topical hard news: clearly positive stories of the group
-# 62 -> 53, the same at 0.5 - an outbreak in a Health round, AI policy in
-# a Science one. Picking between those is what the AI selection reads for.
+# cost of favouring the topic at all, already paid at 0.5: clearly positive
+# stories of the group 62 -> 53, their places taken by squarely on-topic
+# hard news - an outbreak in a Health round, AI policy in a Science one.
+# Telling those apart is what the AI selection reads the list for.
 DEFAULT_TOPIC_EMPHASIS = 0.6
 
 # The emphasis of a round with no topic signal - every topic asked for, or

@@ -22,7 +22,7 @@ const PER_SOURCE_OPTIONS = [1, 2, 3, 5, 10];
 const FALLBACK_TOPIC_EMPHASIS = 0.6;
 
 // The control's step: finer than this is noise on what a round shows
-// (docs/experiments.md, "Topic emphasis").
+// (docs/experiments.md, "emphasis: positive impact or the topic").
 const EMPHASIS_STEP = 0.05;
 
 // The mission screen's reasons (backend src/services/selection/mission_screen.py

@@ -55,3 +55,12 @@ deliberately environment-only, not per-request: each group must sum to
 1.0, and letting a caller set one member alone would silently produce a
 scoring function that no longer normalises.
 
+**Not every per-request number is a threshold.** A discovery round's
+`topicEmphasis` (how much fitting the topics weighs against positive
+impact in the list a person reads) comes with the request and is passed
+per call, but it is not a `PipelineThresholds` field: it judges nothing
+an analysis does, and a field here would change every analysis cache key
+and stamp every article's lineage with a knob that never touched it. Its
+weights move between two parts, so they always sum to 1.
+`docs/decisions/selection.md`, "Positive impact or the topic".
+
