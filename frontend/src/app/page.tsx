@@ -12,10 +12,9 @@ import {
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { StageTimeline } from "@/components/StageTimeline";
 import { SourcesPlot } from "@/components/SourcesPlot";
-import { SentimentGauge } from "@/components/SentimentGauge";
-import { QualityRadar } from "@/components/QualityRadar";
-import { TopicRadar } from "@/components/TopicRadar";
-import { TopicKeywords } from "@/components/TopicKeywords";
+import { SentimentBar } from "@/components/SentimentBar";
+import { ImpactProfile } from "@/components/ImpactProfile";
+import { TopicPanel } from "@/components/TopicPanel";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { FlowSteps } from "@/components/FlowSteps";
 import { buildTrace, ClaimStep } from "@/lib/liveTrace";
@@ -226,11 +225,6 @@ function JobCardView({
           {!validity.isValid && validity.reasons.length > 0 && (
             <p className="validity-reasons">Why: {validity.reasons.join(", ")}</p>
           )}
-          {!!validity.impactReasons?.length && (
-            <p className="validity-reasons">
-              Impact score {Math.round((validity.impactScore ?? 0) * 100)}/100 — {validity.impactReasons.join(", ")}
-            </p>
-          )}
           {!validity.isValid && validity.failedStage && (
             <StageTimeline reachedStage={validity.failedStage} stageNote={validity.reasons.join(", ")} />
           )}
@@ -258,18 +252,10 @@ function JobCardView({
       )}
 
       {sortedTopics.length > 0 && (
-        <div className="topics-row">
-          <div className="topics-col">
-            <div className="section-label">Top topics ({sortedTopics.length} matched)</div>
-            <TopicRadar topics={sortedTopics} />
-          </div>
-          {sortedTopics.some((topic) => (topic.keywords?.length ?? 0) > 0) && (
-            <div className="topics-col">
-              <div className="section-label">Topic keywords</div>
-              <TopicKeywords topics={sortedTopics} />
-            </div>
-          )}
-        </div>
+        <TopicPanel
+          topics={sortedTopics}
+          threshold={job.result?.thresholds?.topic_classifier_threshold}
+        />
       )}
 
       {(partial.sentiment || partial.quality) && (
@@ -277,13 +263,21 @@ function JobCardView({
           {partial.sentiment && (
             <div className="metrics-col">
               <div className="section-label">Sentiment</div>
-              <SentimentGauge sentiment={partial.sentiment} />
+              <SentimentBar
+                sentiment={partial.sentiment}
+                flagged={validity?.impactReasons?.includes("Strong negative sentiment")}
+              />
             </div>
           )}
           {partial.quality && (
             <div className="metrics-col metrics-col-wide">
-              <div className="section-label">Impact &amp; quality</div>
-              <QualityRadar quality={partial.quality} />
+              <div className="section-label">Positive impact &amp; quality</div>
+              <ImpactProfile
+                quality={partial.quality}
+                score={validity?.impactScore}
+                minimum={job.result?.thresholds?.positive_impact_min_score}
+                reasons={validity?.impactReasons}
+              />
             </div>
           )}
         </div>
