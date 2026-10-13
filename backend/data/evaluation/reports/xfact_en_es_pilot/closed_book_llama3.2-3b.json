@@ -1,0 +1,967 @@
+{
+  "dataset": {
+    "path": "data\\evaluation\\xfact_en_es_pilot.jsonl",
+    "sha256": "2618068af706ce9bf3c90f9d182cba414383b854351f4fb2af7dc4106af8fc1d",
+    "rows": 64
+  },
+  "model": "llama3.2:3b",
+  "llmBaseUrl": "http://localhost:11434/v1",
+  "ranAt": "2026-10-13T11:35:02+00:00",
+  "systemPrompt": "You are a rigorous fact-checking assistant. You are given a single claim, with no evidence and no context. Say what you know about it from your own knowledge.\n\nRespond with ONLY a JSON object with this exact shape:\n{\"verdict\": \"TRUE\" | \"PARTIALLY_TRUE\" | \"FALSE\" | \"MISLEADING\" | \"UNVERIFIED\", \"confidence\": <float 0-1>, \"recalls_fact_check\": <true if you remember a published fact-check of this specific claim, else false>, \"fact_checker\": \"<the organisation that checked it, or empty>\", \"explanation\": \"<one sentence>\"}\n\nRules:\n- PARTIALLY_TRUE means the central assertion holds but a detail (a figure, a date, an attribution) does not.\n- MISLEADING means technically-true-but-deceptive framing or missing crucial context.\n- If you do not know, answer UNVERIFIED.",
+  "unreachable": [],
+  "invalid": 0,
+  "recallsFactCheck": 0,
+  "all": {
+    "n": 64,
+    "accuracy": 0.1875,
+    "accuracyCI": {
+      "low": 0.09375,
+      "high": 0.28125,
+      "undefinedResamples": 0
+    },
+    "macroF1": 0.06315789473684211,
+    "macroF1CI": {
+      "low": 0.03428571428571429,
+      "high": 0.08780487804878048,
+      "undefinedResamples": 0
+    },
+    "coverage": 0.953125,
+    "selectiveAccuracy": 0.19672131147540983,
+    "goldClasses": [
+      "TRUE",
+      "PARTIALLY_TRUE",
+      "MISLEADING",
+      "FALSE",
+      "UNVERIFIED"
+    ],
+    "confusion": {
+      "TRUE": {
+        "TRUE": 0,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 16,
+        "UNVERIFIED": 0
+      },
+      "PARTIALLY_TRUE": {
+        "TRUE": 0,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 16,
+        "UNVERIFIED": 0
+      },
+      "MISLEADING": {
+        "TRUE": 0,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 8,
+        "UNVERIFIED": 0
+      },
+      "FALSE": {
+        "TRUE": 1,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 12,
+        "UNVERIFIED": 3
+      },
+      "UNVERIFIED": {
+        "TRUE": 0,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 8,
+        "UNVERIFIED": 0
+      }
+    }
+  },
+  "byLanguage": {
+    "en": {
+      "n": 24,
+      "accuracy": 0.25,
+      "accuracyCI": {
+        "low": 0.08333333333333333,
+        "high": 0.4166666666666667,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.13333333333333333,
+      "macroF1CI": {
+        "low": 0.05128205128205129,
+        "high": 0.19607843137254902,
+        "undefinedResamples": 0
+      },
+      "coverage": 0.9583333333333334,
+      "selectiveAccuracy": 0.2608695652173913,
+      "goldClasses": [
+        "TRUE",
+        "PARTIALLY_TRUE",
+        "FALSE"
+      ],
+      "confusion": {
+        "TRUE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 8,
+          "UNVERIFIED": 0
+        },
+        "PARTIALLY_TRUE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 8,
+          "UNVERIFIED": 0
+        },
+        "MISLEADING": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 0,
+          "UNVERIFIED": 0
+        },
+        "FALSE": {
+          "TRUE": 1,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 6,
+          "UNVERIFIED": 1
+        },
+        "UNVERIFIED": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 0,
+          "UNVERIFIED": 0
+        }
+      }
+    },
+    "es": {
+      "n": 40,
+      "accuracy": 0.15,
+      "accuracyCI": {
+        "low": 0.05,
+        "high": 0.275,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.05217391304347826,
+      "macroF1CI": {
+        "low": 0.019047619047619046,
+        "high": 0.08627450980392157,
+        "undefinedResamples": 0
+      },
+      "coverage": 0.95,
+      "selectiveAccuracy": 0.15789473684210525,
+      "goldClasses": [
+        "TRUE",
+        "PARTIALLY_TRUE",
+        "MISLEADING",
+        "FALSE",
+        "UNVERIFIED"
+      ],
+      "confusion": {
+        "TRUE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 8,
+          "UNVERIFIED": 0
+        },
+        "PARTIALLY_TRUE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 8,
+          "UNVERIFIED": 0
+        },
+        "MISLEADING": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 8,
+          "UNVERIFIED": 0
+        },
+        "FALSE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 6,
+          "UNVERIFIED": 2
+        },
+        "UNVERIFIED": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 8,
+          "UNVERIFIED": 0
+        }
+      }
+    }
+  },
+  "claims": [
+    {
+      "id": "xf-b2f25a97c329",
+      "language": "es",
+      "label": "MISLEADING",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este hecho específico",
+      "seconds": 53.832
+    },
+    {
+      "id": "xf-e83b027fd5fa",
+      "language": "es",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación específica, pero puedo decir que Argentina pasó de una provincia con un presupuesto para infraestructura relativamente bajo a otra con un presupuesto significativamente mayor, pero no tengo detalles sobre la comparación exacta mencionada.",
+      "seconds": 1.689
+    },
+    {
+      "id": "xf-35c132db5481",
+      "language": "es",
+      "label": "MISLEADING",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este tipo de afirmación específica, pero el 21% de caída en tres años y medio es un promedio común para la inflación en muchos países.",
+      "seconds": 1.366
+    },
+    {
+      "id": "xf-beb27c98ab6f",
+      "language": "es",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este específico presupuesto ni su contenido, por lo que no puedo verificar la veracidad de esta afirmación.",
+      "seconds": 1.111
+    },
+    {
+      "id": "xf-8f6c11a638b3",
+      "language": "en",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "The claim is likely referring to the 2013 American Taxpayer Relief Act, which raised taxes on high-income individuals, but the 'largest tax increase in American history' is disputed and likely an exaggeration.",
+      "seconds": 1.421
+    },
+    {
+      "id": "xf-ab44eb4e2da2",
+      "language": "en",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any reliable sources to support this claim, and it's unlikely that Georgia has more undocumented immigrants than Arizona, given Arizona's larger size and border with Mexico.",
+      "seconds": 1.259
+    },
+    {
+      "id": "xf-32a80ffc6ef6",
+      "language": "es",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación específica, pero puedo decir que la penetración de Internet de banda ancha varía según la región y el país, y no tengo conocimiento de una estadística exacta que compare la penetración en un 2% con un 20% en una región específica.",
+      "seconds": 1.791
+    },
+    {
+      "id": "xf-52033870ba38",
+      "language": "es",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación específica, pero puedo decir que las tasas municipales de interés en México han variado significativamente a lo largo de los años, por lo que no puedo confirmar o descartar esta afirmación sin más contexto o información.",
+      "seconds": 1.941
+    },
+    {
+      "id": "xf-ae276f7fabc9",
+      "language": "en",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "Chris Christie's tenure as Governor of New Jersey was marked by a significant decline in unemployment, from 9.5% in 2010 to 5.2% in 2016, during which he implemented policies to reduce the state's budget deficit and stimulate economic growth.",
+      "seconds": 2.382
+    },
+    {
+      "id": "xf-777c714dd1b5",
+      "language": "en",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any reliable sources to support the claim that the talk about socialism during the campaign increased interest in it among young people by Election Day.",
+      "seconds": 1.336
+    },
+    {
+      "id": "xf-52314da1ce07",
+      "language": "es",
+      "label": "UNVERIFIED",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.2,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre fact-checks específicas de esta afirmación, pero el kirchnerismo se refiere a la política económica implementada por Cristina Fernández de Kirchner y Néstor Kirchner, mientras que el menemismo se refiere a la política económica implementada por Carlos Menem. Sin información adicional, no puedo evaluar la precisión de esta afirmación.",
+      "seconds": 2.052
+    },
+    {
+      "id": "xf-3d71167b379a",
+      "language": "es",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este hecho específico, pero puedo decir que la economía argentina ha experimentado períodos de estancamiento, pero no tengo evidencia de un estancamiento absoluto durante 8 años.",
+      "seconds": 1.935
+    },
+    {
+      "id": "xf-d28faa9b7056",
+      "language": "en",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any reliable sources confirming this claim, and the Centers for Disease Control and Prevention (CDC) reports that approximately 36.9% of adults in Texas have obesity.",
+      "seconds": 1.53
+    },
+    {
+      "id": "xf-c870faf6e5a2",
+      "language": "es",
+      "label": "MISLEADING",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No información disponible para verificar la veracidad de esta afirmación",
+      "seconds": 0.917
+    },
+    {
+      "id": "xf-536752876f79",
+      "language": "es",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre una obra o proyecto terminado en 2015 por Cristina, y no puedo verificar la autenticidad de esta afirmación.",
+      "seconds": 1.171
+    },
+    {
+      "id": "xf-7581ef78aa6a",
+      "language": "es",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre la gestión del hablante y no puedo verificar la inflación en ese momento.",
+      "seconds": 1.025
+    },
+    {
+      "id": "xf-05f54b65f1c0",
+      "language": "es",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre una declaración de Cristina con este contenido",
+      "seconds": 0.834
+    },
+    {
+      "id": "xf-4232cbf2b6df",
+      "language": "es",
+      "label": "UNVERIFIED",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "La rentabilidad no está directamente relacionada con la inflación, que es causada principalmente por la demanda excesiva de bienes y servicios, la escasez de recursos y la política monetaria.",
+      "seconds": 1.394
+    },
+    {
+      "id": "xf-65610a4bdaa1",
+      "language": "es",
+      "label": "MISLEADING",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "La deuda pública del país no se puede determinar con la información proporcionada",
+      "seconds": 0.925
+    },
+    {
+      "id": "xf-90c4fbb5248f",
+      "language": "en",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any information on the state ethics commission's budget cuts or a comparison to other state agencies, including the governor's office.",
+      "seconds": 1.181
+    },
+    {
+      "id": "xf-b57f3f4f21a7",
+      "language": "en",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "According to OpenSecrets.org, a project of the nonpartisan Center for Responsive Politics, Hillary Clinton has received donations from the oil and gas industry, but the claim that she has raised more money from them than any other candidate is not supported by data.",
+      "seconds": 1.559
+    },
+    {
+      "id": "xf-996b4a0c6ab5",
+      "language": "en",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "The Social Security cost-of-living adjustment (COLA) is typically tied to the Consumer Price Index (CPI) and has been increased annually since its introduction in 1975.",
+      "seconds": 1.3
+    },
+    {
+      "id": "xf-e2829b280a4f",
+      "language": "es",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No información disponible para verificar la veracidad de esta afirmación sobre créditos hipotecarios otorgados durante el último mandato de CFK.",
+      "seconds": 1.136
+    },
+    {
+      "id": "xf-caac5fa9f0fc",
+      "language": "es",
+      "label": "UNVERIFIED",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.2,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "La Argentina tiene una de las tasas de desigualdad más altas de América Latina, lo que sugiere que la clase media no ha crecido significativamente.",
+      "seconds": 1.307
+    },
+    {
+      "id": "xf-d23d2111e82e",
+      "language": "en",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any reliable sources to support this claim, and it's unlikely that a fact-checking organization would verify it without further information.",
+      "seconds": 1.191
+    },
+    {
+      "id": "xf-954337aa7ed2",
+      "language": "es",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre la cantidad de frigoríficos cerrados en una década específica.",
+      "seconds": 1.029
+    },
+    {
+      "id": "xf-0df17fe58a7f",
+      "language": "es",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este edificio específico, pero en general, los proyectos de construcción pueden tomar varios años para obtener todas las aprobaciones necesarias.",
+      "seconds": 1.264
+    },
+    {
+      "id": "xf-653d580b47ae",
+      "language": "en",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any reliable sources to support this claim, and asthma rankings can vary depending on the criteria used.",
+      "seconds": 1.1
+    },
+    {
+      "id": "xf-253c58784d68",
+      "language": "en",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "There is no credible evidence to suggest that former US President Barack Obama ever suggested bombing Pakistan.",
+      "seconds": 1.079
+    },
+    {
+      "id": "xf-7cc2b9765879",
+      "language": "en",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "There is no conclusive evidence to support the claim that millennials are more pro-life than baby boomers and older Americans.",
+      "seconds": 1.182
+    },
+    {
+      "id": "xf-7d05ad57ba03",
+      "language": "en",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.9,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any credible sources or fact-checking organizations that have verified this claim about Joe Biden saying 'coal is more dangerous than terrorists.'",
+      "seconds": 1.16
+    },
+    {
+      "id": "xf-0544dfe2b9c6",
+      "language": "es",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación específica, pero según la Organización Mundial de la Salud (OMS), alrededor del 20% de los niños menores de 5 años en todo el mundo están malnutridos.",
+      "seconds": 1.661
+    },
+    {
+      "id": "xf-f0fb57690453",
+      "language": "es",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este tipo de afirmación, y una búsqueda rápida no arrojó resultados confiables.",
+      "seconds": 1.069
+    },
+    {
+      "id": "xf-c93b20095e0e",
+      "language": "en",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "TRUE",
+      "confidence": 1,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "This claim is self-attested and cannot be verified or falsified without additional information.",
+      "seconds": 0.918
+    },
+    {
+      "id": "xf-16a51393f9f8",
+      "language": "en",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "According to the United States Census Bureau, there were approximately 331 million people in the United States as of 2020, while the National Shooting Sports Foundation reported that there were around 393 million firearms in the country, including both civilian-owned and law enforcement firearms.",
+      "seconds": 1.573
+    },
+    {
+      "id": "xf-cb2e6beed024",
+      "language": "es",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este específico reclamo, pero puedo decir que la Cámara de Diputados de la Nación es una cámara legislativa nacional de Argentina, y el Gran Buenos Aires es una región que abarca la ciudad de Buenos Aires y sus alrededores. La Cámara de Diputados de la Nación es representativa de todo el país, incluyendo a la región de Gran Buenos Aires.",
+      "seconds": 2.447
+    },
+    {
+      "id": "xf-a5a400a67d0b",
+      "language": "es",
+      "label": "MISLEADING",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este reclamo específico, pero es posible que se trate de un error o una mala interpretación de la información salarial de los trabajadores.",
+      "seconds": 1.242
+    },
+    {
+      "id": "xf-b374ee0b0585",
+      "language": "en",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any reliable sources confirming a 18 percent decline in faculty salaries at UW System institutions compared to the national average.",
+      "seconds": 1.179
+    },
+    {
+      "id": "xf-cd85dee989e9",
+      "language": "es",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre el presupuesto específico en cuestión para determinar la veracidad de esta afirmación.",
+      "seconds": 1.036
+    },
+    {
+      "id": "xf-1de2fd7b53ce",
+      "language": "es",
+      "label": "UNVERIFIED",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación específica, pero puedo decir que la tasa de precarización de los trabajadores varía según el país y la industria.",
+      "seconds": 1.234
+    },
+    {
+      "id": "xf-c41e15e05b10",
+      "language": "en",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "The Geneva Convention is an international treaty that regulates the treatment of prisoners of war and provides protection for civilians during armed conflicts, but it does not prohibit targeting the families of terrorists.",
+      "seconds": 1.262
+    },
+    {
+      "id": "xf-f4007ef26c2c",
+      "language": "en",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "UNVERIFIED",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any reliable sources to verify this claim about the University of Wisconsin-Milwaukee's student-to-faculty ratio.",
+      "seconds": 1.134
+    },
+    {
+      "id": "xf-3005b1d6af1b",
+      "language": "en",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any information confirming PETA uses drones to follow hunters, and it's unclear if such a practice even exists.",
+      "seconds": 1.106
+    },
+    {
+      "id": "xf-5145769388ef",
+      "language": "es",
+      "label": "UNVERIFIED",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No información disponible para verificar esta afirmación.",
+      "seconds": 0.834
+    },
+    {
+      "id": "xf-708ac43fcff5",
+      "language": "en",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "There is no evidence to suggest that the administration has made repeated statements that Republicans have no ideas or solutions on healthcare.",
+      "seconds": 1.078
+    },
+    {
+      "id": "xf-7d093c407264",
+      "language": "en",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "There is no widely recognized or credible comparison between rooting for the Red Sox (a sports team) and rooting for the drug companies (a pharmaceutical industry).",
+      "seconds": 1.388
+    },
+    {
+      "id": "xf-87cda4138197",
+      "language": "es",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre un análisis oficial de detenciones por narcotráfico durante la gestión de Daniel Scioli como gobernador de Buenos Aires.",
+      "seconds": 1.249
+    },
+    {
+      "id": "xf-88344678948e",
+      "language": "es",
+      "label": "UNVERIFIED",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "El embarazo no está relacionado con el acceso a recursos económicos como premio.",
+      "seconds": 1.021
+    },
+    {
+      "id": "xf-e9de336ed5db",
+      "language": "es",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "UNVERIFIED",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información disponible sobre esta afirmación específica.",
+      "seconds": 0.902
+    },
+    {
+      "id": "xf-10e54fbc988d",
+      "language": "es",
+      "label": "MISLEADING",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este hecho específico, pero puedo decir que en muchos países, el presupuesto destinado a salud es mucho mayor que el 20% del total.",
+      "seconds": 1.279
+    },
+    {
+      "id": "xf-9e1a9409aa38",
+      "language": "en",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "The national debt under the Obama administration actually increased, but not nearly to the extent that it nearly doubled.",
+      "seconds": 1.034
+    },
+    {
+      "id": "xf-be54e83dc79f",
+      "language": "es",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información actualizada sobre la cantidad de beneficiarios de la Asignación Universal por Hijo en este momento.",
+      "seconds": 1.042
+    },
+    {
+      "id": "xf-b693457e76b4",
+      "language": "es",
+      "label": "MISLEADING",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación específica, pero puedo decir que la importación de bienes en México en 2016 fue de 1.044.000 millones de dólares, lo que representa un aumento del 4.3% respecto a 2015, según datos del Instituto Nacional de Estadística y Geografía (INEGI)",
+      "seconds": 2.249
+    },
+    {
+      "id": "xf-9bf6c9a73d13",
+      "language": "en",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any reliable sources confirming this claim, and it's unlikely that the California Capitol building would be ranked second among visitor sites in the state, given Disneyland's popularity.",
+      "seconds": 1.26
+    },
+    {
+      "id": "xf-3b4b9db1a053",
+      "language": "es",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación específica, pero en general, los resultados electorales se anuncian generalmente por la noche o al día siguiente, no al mediodía del día siguiente.",
+      "seconds": 1.544
+    },
+    {
+      "id": "xf-f966546dfb9b",
+      "language": "es",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "UNVERIFIED",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este específico claim, no puedo verificar su veracidad",
+      "seconds": 0.915
+    },
+    {
+      "id": "xf-7207db5a528e",
+      "language": "es",
+      "label": "PARTIALLY_TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este hecho específico, pero puedo decir que Santa Fe es una ciudad en el estado de New Mexico, EE. UU., y no tengo conocimiento de que haya crecido por debajo de la media nacional en algún sentido.",
+      "seconds": 1.63
+    },
+    {
+      "id": "xf-965f21f0ae76",
+      "language": "es",
+      "label": "FALSE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.2,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "El presidente Alberto Fernández no dijo esto en una entrevista con el canal de noticias Infobae el 30 de junio de 2022.",
+      "seconds": 1.215
+    },
+    {
+      "id": "xf-1ea0f2aaeb65",
+      "language": "es",
+      "label": "UNVERIFIED",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre este claim específico",
+      "seconds": 0.785
+    },
+    {
+      "id": "xf-6de0b294b07b",
+      "language": "es",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación específica, pero puedo decir que la pobreza en México es un problema significativo, según datos del Instituto Nacional de Estadística y Geografía (INEGI) y la Organización de las Naciones Unidas para la Alimentación y la Agricultura (FAO)",
+      "seconds": 1.8
+    },
+    {
+      "id": "xf-9f577fcbe085",
+      "language": "es",
+      "label": "UNVERIFIED",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre la AUH ni sobre su relación con el plan de destinar parte del PBI a los sectores más vulnerables de la sociedad",
+      "seconds": 1.187
+    },
+    {
+      "id": "xf-f06609441917",
+      "language": "es",
+      "label": "MISLEADING",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.2,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre una declaración específica que compare el blanqueo con impuestos más altos de la historia argentina, por lo que no puedo verificar su veracidad.",
+      "seconds": 1.341
+    },
+    {
+      "id": "xf-7839295e2bf1",
+      "language": "es",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "No tengo información sobre esta afirmación y no puedo verificar su veracidad.",
+      "seconds": 0.897
+    },
+    {
+      "id": "xf-7c19682d2758",
+      "language": "en",
+      "label": "TRUE",
+      "status": "ok",
+      "verdict": "FALSE",
+      "confidence": 0.8,
+      "recallsFactCheck": false,
+      "factChecker": "",
+      "explanation": "I couldn't find any information on a proposed transportation tax plan that includes this specific provision.",
+      "seconds": 0.985
+    }
+  ]
+}

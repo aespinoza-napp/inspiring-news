@@ -1,0 +1,261 @@
+{
+  "key": "e6fe23310930",
+  "harnessVersion": 1,
+  "dataset": {
+    "path": "data/evaluation/xfact_en_es_pilot.jsonl",
+    "stem": "xfact_en_es_pilot",
+    "sha256": "2618068af706ce9bf3c90f9d182cba414383b854351f4fb2af7dc4106af8fc1d",
+    "rows": 64,
+    "kinds": [
+      "xfact"
+    ]
+  },
+  "model": "llama3.2:3b",
+  "provider": "host.docker.internal:11434",
+  "thresholds": {
+    "topic_classifier_threshold": 0.35,
+    "entity_threshold": 0.5,
+    "claim_min_confidence": 0.5,
+    "opinion_max_score": 0.5,
+    "min_body_length": 500,
+    "topic_min_confidence": 0.35,
+    "positive_impact_min_score": 0.1,
+    "positive_impact_hard_fail_enabled": false,
+    "duplicate_threshold": 0.96,
+    "relatedness_threshold": 0.8,
+    "anchor_claims_min": 2,
+    "anchor_claims_max": 4,
+    "min_independent_domains": 2,
+    "claim_dedup_threshold": 0.92,
+    "evidence_fetch_candidates": 8,
+    "max_evidence_per_claim": 5,
+    "min_evidence_for_verdict": 1,
+    "evidence_min_pertinence": 0.25
+  },
+  "thresholdsHash": "4fa9fa08c9d3",
+  "thresholdsOverridden": {},
+  "weights": {
+    "RANKING_SEMANTIC_WEIGHT": 0.45,
+    "RANKING_LEXICAL_WEIGHT": 0.2,
+    "RANKING_RECENCY_WEIGHT": 0.2,
+    "RANKING_RELIABILITY_WEIGHT": 0.15,
+    "PERTINENCE_SEMANTIC_WEIGHT": 0.5,
+    "PERTINENCE_LEXICAL_WEIGHT": 0.5,
+    "CONFIDENCE_LLM_WEIGHT": 0.7,
+    "CONFIDENCE_EVIDENCE_WEIGHT": 0.3,
+    "RANKING_DEFAULT_RELIABILITY": 0.5,
+    "EVIDENCE_RECENCY_HALF_LIFE_DAYS": 365.0
+  },
+  "corpus": {
+    "mode": "snapshot",
+    "points": 5
+  },
+  "mode": "full",
+  "label": null,
+  "gitCommit": "bed7a57e82a865d7d6a38b1d3302d2e0b8d41026",
+  "startedAt": "2026-10-13T07:28:25+00:00",
+  "settings": {
+    "LLM_BASE_URL": "http://host.docker.internal:11434/v1",
+    "LLM_TIMEOUT": 180.0,
+    "SEARXNG_URL": "http://searxng:8080",
+    "INFERENCE_URL": "http://inference:8001",
+    "DUCKDUCKGO_FALLBACK_ENABLED": true,
+    "CLAIM_MAX_CONCURRENCY": 4,
+    "LLM_MAX_CONCURRENCY": 1,
+    "QUERY_MAX_CONCURRENCY": 2,
+    "SEARXNG_MAX_CONCURRENCY": 2,
+    "SCRAPE_MAX_CONCURRENCY": 8,
+    "INFERENCE_MAX_CONCURRENCY": 4
+  },
+  "verifierPromptSha256": "7b5b5390c5b43cb605e6d9f19b3ef2c226ad4f5289ce44b61aed61cbc8772ccb",
+  "sessions": [
+    {
+      "startedAt": "2026-10-13T07:28:25+00:00",
+      "gitCommit": "bed7a57e82a865d7d6a38b1d3302d2e0b8d41026",
+      "provider": "host.docker.internal:11434",
+      "limit": 3,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 3,
+      "finishedAt": "2026-10-13T07:29:14+00:00",
+      "ran": 3,
+      "ok": 3,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 3,
+        "llmCalls": 3,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 7089,
+        "completionTokens": 392,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2363.0,
+        "completionTokensPerUnit": 130.7,
+        "llmSeconds": 13.31,
+        "callLatency": {
+          "median": 4.281,
+          "p90": 4.696,
+          "max": 4.799
+        },
+        "unitLatency": {
+          "median": 44.699,
+          "p90": 48.082,
+          "total": 133.81
+        },
+        "completionTokensPerSecond": 29.5
+      }
+    },
+    {
+      "startedAt": "2026-10-13T07:29:38+00:00",
+      "gitCommit": "bed7a57e82a865d7d6a38b1d3302d2e0b8d41026",
+      "provider": "host.docker.internal:11434",
+      "limit": null,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 61,
+      "finishedAt": "2026-10-13T07:34:10+00:00",
+      "ran": 20,
+      "ok": 15,
+      "errors": 5,
+      "stopped": true,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 20,
+        "llmCalls": 15,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 5,
+        "promptTokens": 30735,
+        "completionTokens": 2656,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2049.0,
+        "completionTokensPerUnit": 177.1,
+        "llmSeconds": 101.76,
+        "callLatency": {
+          "median": 6.45,
+          "p90": 8.883,
+          "max": 14.526
+        },
+        "unitLatency": {
+          "median": 46.787,
+          "p90": 66.868,
+          "total": 995.75
+        },
+        "completionTokensPerSecond": 26.1
+      }
+    },
+    {
+      "startedAt": "2026-10-13T07:35:40+00:00",
+      "gitCommit": "d26ba0a04760fcabeb919950fca148b1e1663b65",
+      "provider": "host.docker.internal:11434",
+      "limit": null,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 46,
+      "settings": {
+        "LLM_BASE_URL": "http://host.docker.internal:11434/v1",
+        "LLM_TIMEOUT": 180.0,
+        "SEARXNG_URL": "http://searxng:8080",
+        "INFERENCE_URL": "http://inference:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 2,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 4
+      },
+      "finishedAt": "2026-10-13T07:48:14+00:00",
+      "ran": 46,
+      "ok": 46,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 46,
+        "llmCalls": 40,
+        "failedCalls": 2,
+        "unitsWithoutCalls": 7,
+        "promptTokens": 81752,
+        "completionTokens": 6715,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2151.4,
+        "completionTokensPerUnit": 176.7,
+        "llmSeconds": 242.31,
+        "callLatency": {
+          "median": 5.611,
+          "p90": 9.117,
+          "max": 13.02
+        },
+        "unitLatency": {
+          "median": 30.109,
+          "p90": 53.994,
+          "total": 1462.66
+        },
+        "completionTokensPerSecond": 28.9
+      }
+    },
+    {
+      "startedAt": "2026-10-13T07:49:25+00:00",
+      "gitCommit": "fd3d547a3acbf48949155b1dab9497f53f669f03",
+      "provider": "host.docker.internal:11434",
+      "limit": null,
+      "retryUnavailable": true,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 8,
+      "settings": {
+        "LLM_BASE_URL": "http://host.docker.internal:11434/v1",
+        "LLM_TIMEOUT": 180.0,
+        "SEARXNG_URL": "http://searxng:8080",
+        "INFERENCE_URL": "http://inference:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 2,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 4
+      },
+      "finishedAt": "2026-10-13T07:51:45+00:00",
+      "ran": 8,
+      "ok": 8,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 8,
+        "llmCalls": 7,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 1,
+        "promptTokens": 15314,
+        "completionTokens": 1515,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2187.7,
+        "completionTokensPerUnit": 216.4,
+        "llmSeconds": 51.32,
+        "callLatency": {
+          "median": 5.904,
+          "p90": 11.588,
+          "max": 13.352
+        },
+        "unitLatency": {
+          "median": 33.203,
+          "p90": 46.264,
+          "total": 261.12
+        },
+        "completionTokensPerSecond": 29.5
+      }
+    }
+  ]
+}

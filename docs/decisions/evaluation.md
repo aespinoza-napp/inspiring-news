@@ -4,8 +4,13 @@
 > the evaluation harness, its metrics, or anything the paper reports a
 > number from.
 
+**Status, 2026-10-13: the harness (G2), metrics (G3) and retrieval
+evaluation (G4) are built, and the pilot (G7) has run them against live
+services (§Pilot).** Stage attribution (G5) and journalist effort (G6)
+are not built: there is no `attribution.py` or `effort.py` yet.
+
 **Status, 2026-10-01: designed, not built.** None of the code below
-exists yet. This file fixes the decisions the harness goals share (the
+existed yet. This file fixes the decisions the harness goals share (the
 record format, the run layout, what is reported apart, how a wrong
 verdict is attributed to a stage) so that seven separately-run goals
 agree on them. The goals themselves are in `docs/goals.md`. When a goal
@@ -119,7 +124,7 @@ key exists.
 | `events` | The `on_phase` trace: `[{phase, t, data}]`, `t` in seconds since the claim started, starting at `extracting_entities`. |
 | `latency` | `total`, `entities` (building the claim) and per stage, from the events: `retrieval` (`retrieving_evidence` → `evidence_retrieved`), `ranking` (→ `evidence_ranked`), `llm` (`verifying_claim` → `claim_checked`; `null` when the model was not asked). |
 | `usage` | The LLM calls this claim made (`usage.py`): `calls`, `failedCalls`, `promptTokens`, `completionTokens`, `usageMissing`, `latency` and `perCall`. See §Cost, latency and tokens. |
-| `model`, `provider`, `thresholdsHash`, `harnessVersion`, `gitCommit`, `startedAt`, `finishedAt` | Provenance. `gitCommit` ends in `-dirty` when the tree had uncommitted changes, and is `unknown` in the container, which has no `.git`. |
+| `model`, `provider`, `thresholdsHash`, `harnessVersion`, `gitCommit`, `startedAt`, `finishedAt` | Provenance. `gitCommit` ends in `-dirty` when the tree had uncommitted changes, and in `-unchecked` when HEAD was read but the dirty check did not answer in time (since the pilot: `git status` over compose's bind mount takes ~5 s, and the old 5 s timeout lost a session's commit). `unknown` when there is no repository: the image alone has no `.git`, which `docker-compose.eval.yml` mounts. |
 
 Changed from the design:
 
@@ -299,10 +304,13 @@ claims and on scored claims without the flagged ones:
 Also counted, per model, and scored as the `UNVERIFIED` it became:
 **`invalidOutput`**, the model answering without usable JSON.
 
-**Not decided: whether to exclude the fact-checkers' domains at
-retrieval time.** Measure first: the pilot says how often it happens.
-Excluding would be a pipeline change, a per-run `evidence_exclude_domains`
-in `PipelineThresholds`, with its own goal and its own cache bump.
+**Whether to exclude the fact-checkers' domains at retrieval time** was
+left to the pilot to measure. It did (§Pilot): the row's own
+fact-checker was ranked for 9 of 64 claims, all English, and never for a
+Chequeado row. The recommendation, not implemented, is in
+`xfact-comparison.md`: a per-run `evidence_exclude_domains` in
+`PipelineThresholds` for benchmark runs on fact-checker datasets only,
+with its own goal and its own cache bump.
 
 ## Metrics
 
@@ -677,5 +685,134 @@ reaches a live service; the pilot is the live run.
 
 ## Pilot
 
-Not run yet. The pilot goal records here what it measured, and every
-harness bug it found.
+**Run on 2026-10-13 (G7)**, in compose (§Where it runs), with
+`llama3.2:3b` on the dev laptop's host Ollama (RTX 3050 Laptop, 4 GB:
+about 80% of the model in VRAM) and production's LLM limits. Before the
+run, `/healthz` answered for all four dependencies (inference 49 ms,
+SearXNG 36 ms, LLM 42 ms, Neo4j 1,060 ms) and the source probe's search
+check returned 89 results per language, from Bing, Yep, Wikipedia
+(English) and four academic indexes, with Google ("access denied") and
+Brave ("too many requests") refusing SearXNG. `/metrics` had no runs
+yet. A `--limit 3` smoke run got 15-17 web results per claim.
+
+The comparison with the X-Fact paper, the reasons it is not like for
+like, and what the years between claim and search do are in
+**`xfact-comparison.md`**. What follows is what the pilot says about the
+pipeline and the harness.
+
+**Results.** 64 of 64 claims `ok` and scored after four sessions (none
+set apart at report time). Report:
+`backend/data/evaluation/reports/xfact_en_es_pilot/llama3.2-3b/e6fe23310930/`.
+
+| | n | Accuracy [95% CI] | Macro-F1 [95% CI] |
+|---|---|---|---|
+| All | 64 | 29.7% [18.8, 40.6] | 0.168 [0.104, 0.234] |
+| English (PolitiFact, 3 classes) | 24 | 41.7% [20.8, 62.5] | 0.358 [0.157, 0.554] |
+| Spanish (Chequeado, 5 classes) | 40 | 22.5% [10.0, 35.0] | 0.130 [0.061, 0.196] |
+| Without either leak flag | 43 | 23.3% [11.6, 37.2] | 0.153 [0.071, 0.238] |
+
+Kappa against gold 0.070 [-0.028, 0.177]; coverage 95.3%. The pipeline
+answered `FALSE` to 43 claims (gold: 16) and never `MISLEADING`; the
+same model with no evidence answers `FALSE` to 60 of 64
+(`scripts/closed_book_probe.py`), and the pipeline beats it by +10.9
+accuracy points [+3.1, +20.3], paired. On the Spanish `test` split (165
+claims, all scored) the pipeline does no better than chance: accuracy
+19.4% [13.3, 25.5], macro-F1 0.111 [0.079, 0.142], kappa -0.002
+[-0.060, 0.055], and +3.0 points [-3.0, +9.1] over the closed-book model.
+Report: `backend/data/evaluation/reports/xfact_es_test/llama3.2-3b/a6f2e3c8a401/`;
+details in `xfact-comparison.md`.
+
+**The partitions.** `searchUnavailable`: 7 claims in the second session,
+all within 5 seconds (07:36:17-22 UTC) when every SearXNG engine timed
+out at once and SearXNG suspended them; DuckDuckGo's fallback was
+challenged as a bot. `llmUnreachable`: 1 claim, which was not an outage:
+Ollama answered HTTP 500 "prediction aborted, token repeat limit
+reached" twice, the model looping, and `LLMClient` files any API error as
+unreachable. All 8 were re-run with `--retry-unavailable` and scored.
+`verdictLeak`: 9 claims, **all English**: PolitiFact's own page, 4 of
+them from `staging.politifact.com`. **No Chequeado row leaked**: no
+Chequeado URL was even a candidate, though all 40 rows link Chequeado's
+verdict page and all of those pages still answer. `temporalLeak`: 16
+flagged, 4 clear, 44 undetermined (no Spanish row has a date).
+
+**Retrieval** (38 Spanish claims with references; English rows have only
+`<LINK NOT AVAILABLE>`): reference link recall 0% at every depth;
+reference domain 10.5% among candidates, 5.3% ranked, 2.6% cited. 98.4%
+of claims had ranked evidence; 17.9 candidates and 4.7 ranked sources a
+claim, 6.6% cut at ranking, 8.9% of ranked sources from rated domains,
+none from the internal corpus (5 points). Of the 69 off-Chequeado,
+non-social reference links, 51 still answer (9 at a new address), 14 are
+gone and 4 refused the check (`reference_links.json`).
+
+**Stage attribution**, computed by `scripts/xfact_time_elapsed.py` with
+the table above until G5 builds `attribution.py`, over the 45 wrong
+verdicts: trace-only, 44 reasoning and 1 ranking (`xf-954337aa7ed2`,
+nothing ranked); by reference, 27 retrieval, 1 ranking, 1 reasoning, and
+16 English claims with no reference to judge by. The two columns
+disagree on 28 of the 29 claims both can judge (they agree on
+`xf-4232cbf2b6df`, reasoning): the trace says the model misread what it
+was shown, the references say it was never shown the annotator's
+sources. Both are true; the reference rule is the stricter.
+
+**Latency and cost** (the final record of each claim): median 36.5 s a
+claim (p90 59.9), of which retrieval 14.8 s and ranking 8.6 s; the LLM
+call 5.6 s median (p90 9.5, max 14.5), 2,141 prompt and 179 completion
+tokens a claim, 28.3 tokens/s; $0 per token, local. At two claims at
+once the second session ran 46 claims in 12.6 minutes, so the 64 take
+about 18 minutes on this machine, not the hour §Where it runs estimated
+for a CPU.
+
+**Harness and stack problems found**, in the order they appeared:
+
+1. **Every record from compose would have said `gitCommit: unknown`.**
+   The image has git but no `.git`. Fixed in configuration, not code:
+   `docker/docker-compose.eval.yml` mounts the checkout read-only and
+   points `GIT_DIR` at it.
+2. **Inference timed out under four concurrent claims.** 5 of the first
+   session's 20 claims died with `InferenceUnavailable` (the ranker's
+   batched embeddings past the 30 s `INFERENCE_TIMEOUT`, bge-m3 on CPU at
+   3,200% CPU), all within 40 seconds; inference answered each one, late.
+   The run was stopped and resumed with `INFERENCE_TIMEOUT=120` and two
+   claims at once; no error recurred. The production defaults are the
+   same 30 s and four claims, so a four-claim article on CPU inference
+   can fail the same way: a pipeline finding, not fixed here.
+3. **A resumed session's settings were not recorded** (harness bug).
+   None of the timeouts and ceilings is keyed, and the manifest kept only
+   the first session's, so the run would have claimed the first
+   session's values throughout. Fixed: each session in `run.json` carries
+   its own `settings`, with `INFERENCE_TIMEOUT` (missing before) and the
+   claim concurrency actually used.
+   `test_each_session_records_the_environment_it_ran_in`.
+4. **A looping model is filed as an unreachable one** (above): an
+   `InternalServerError` from a provider that answered. The record's
+   `usage.perCall` keeps the error type, so a report could tell the two
+   apart; not changed here.
+5. **`uv run python` in the container would install the dev group
+   first**; the documented command was changed to `python`.
+6. **Docker Desktop stopped at 07:56:53 UTC**, 5 minutes into the
+   Spanish test run (every container got SIGTERM, then exit 137; not an
+   OOM kill). The harness wrote 147 `InferenceUnavailable` error records
+   in 14 seconds and exited 1; the same command resumed it after a
+   restart, re-running exactly those 147, as designed.
+7. **`git status` over the bind mount takes 5.0-5.3 s, against a 5 s
+   timeout** (harness bug). The Spanish run's second session lost the
+   race and recorded `gitCommit: unknown` for 49 claims (HEAD was
+   `e31cdf6`, per `git log`). Fixed: HEAD is kept, `-unchecked` when the
+   dirty check does not answer, and the check gets 60 s
+   (`test_a_slow_dirty_check_keeps_the_commit`).
+8. **The harness process segfaulted twice** in the Spanish run
+   (`munmap_chunk(): invalid pointer`, exit 139), after 49 and 41
+   claims, both times while pages were being scraped and parsed on the
+   scrape threads: heap corruption in a native library. Not located: the
+   next two sessions ran with `PYTHONFAULTHANDLER=1` to catch a stack and
+   did not crash. Each crash lost only the claims in flight; the same
+   command resumed. The pilot never crashed.
+
+The Spanish `test` run took five sessions: 18 ok before Docker stopped,
+49 and 41 before each segfault, 57, and 5 `--retry-unavailable` (4
+`searchUnavailable` from another all-engines timeout burst, 11:38 UTC,
+and 1 more looping model). All 165 scored.
+
+**Recommendation on fact-checker domains**: in `xfact-comparison.md`;
+in short, exclude them per run for benchmark runs on fact-checker
+datasets, never in production or on the custom set.

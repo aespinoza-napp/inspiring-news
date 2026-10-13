@@ -7,6 +7,87 @@
 
 \subsection{Results}
 \label{subsec:pilot-results}
-\pending{the pilot's and the Spanish test split's accuracy and
-macro-$F_1$ with intervals, by language; what was set apart; retrieval;
-latency.}
+
+Every claim of both sets was scored: claims whose search or model was
+never reached were re-run until none was left set apart.
+Table~\ref{tab:pilot-results} gives accuracy and macro-averaged $F_1$
+with percentile 95\% bootstrap intervals over claims (10,000 resamples,
+seed 2026); macro-$F_1$ averages over the five verdicts the gold labels
+contain, three for English, whose PolitiFact scale has neither
+\texttt{MISLEADING} nor \texttt{UNVERIFIED}.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrcc@{}}
+\toprule
+\textbf{Set} & \textbf{n} & \textbf{Accuracy (\%)} & \textbf{Macro-$F_1$ ($\times$100)} \\
+\midrule
+Pilot, all & 64 & 29.7 [18.8, 40.6] & 16.8 [10.4, 23.4] \\
+\quad English (PolitiFact) & 24 & 41.7 [20.8, 62.5] & 35.8 [15.7, 55.4] \\
+\quad Spanish (Chequeado) & 40 & 22.5 [10.0, 35.0] & 13.0 [6.1, 19.6] \\
+\quad without leak flags & 43 & 23.3 [11.6, 37.2] & 15.3 [7.1, 23.8] \\
+Spanish test split ($\alpha_1$) & 165 & 19.4 [13.3, 25.5] & 11.1 [7.9, 14.2] \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{The same model with the claim alone, no evidence}} \\
+Pilot & 64 & 18.8 [9.4, 28.1] & 6.3 [3.4, 8.8] \\
+Spanish test split & 164 & 16.5 [11.0, 22.6] & 8.4 [4.9, 12.7] \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Baselines from the label counts}} \\
+Pilot, majority class & 64 & 25.0 & 8.0 \\
+Pilot, uniform random & 64 & 20.0 & $\approx$19.5 \\
+Spanish test, majority (\texttt{TRUE}) & 165 & 30.3 & 9.3 \\
+Spanish test, uniform random & 165 & 20.0 & $\approx$19.2 \\
+\bottomrule
+\end{tabular}
+\caption{The pipeline (\texttt{llama3.2:3b}) on the X-Fact pilot and on
+the Spanish rows of X-Fact's in-domain test set, with 95\% bootstrap
+intervals. ``Without leak flags'' leaves out claims for which a cited
+source is newer than the claim or a ranked source is the fact-checker's
+own page (Section~\ref{subsec:pilot-time}).}
+\label{tab:pilot-results}
+\end{table}
+
+On the pilot the system is barely distinguishable from chance: Cohen's
+$\kappa$ against the gold labels is 0.07, with an interval
+($-0.03$ to $0.18$) that includes zero, and its macro-$F_1$ is below
+what a uniform random guess is expected to score on a set balanced by
+construction. The reason is visible in the confusion matrix: the
+system answered \texttt{FALSE} to 43 of the 64 claims, of which 16 are
+false, and never answered \texttt{MISLEADING}. Asked without evidence,
+the same model answers \texttt{FALSE} to 60 of 64, so this lean is the
+model's prior showing through the evidence rather than a property of
+the evidence. The evidence nevertheless helps: paired over the same
+claims, the pipeline beats the closed-book model by 10.9 accuracy
+points (interval 3.1 to 20.3) and 10.4 macro-$F_1$ points (4.5 to
+16.8). On the Spanish test split the picture is worse: an accuracy of 19.4\%, below the 30.3\% of always answering the majority class, a $\kappa$ of $-0.002$ ($-0.06$ to $0.06$), \texttt{FALSE} for 107 of the 165 claims (24 are false) and \texttt{MISLEADING} never, for the second-largest class; and there the evidence buys nothing measurable over the closed-book model, which answers \texttt{FALSE} to 155 of 164 claims (3.0 accuracy points, interval $-3.0$ to $9.1$).
+
+\paragraph{Retrieval.} For the 38 Spanish claims with reference links
+(the English rows carry none), the system retrieved none of the
+annotator's links at any depth, and a reference \emph{domain} among its
+candidates for 10.5\% of claims. It found evidence for 98.4\% of the
+claims, about 18 candidates and 4.7 ranked sources each. Under the
+trace-only rule of Section~\ref{sec:harness}, 44 of the 45 wrong
+verdicts are reasoning errors; under the reference rule, 27 of the 29
+it can judge are retrieval errors. The two rules disagree on 28 of
+those 29: the model misread what it was shown, and what it was shown
+was not what the fact-checker had used.
+
+\paragraph{Cost.} A claim took 36.5~s at the median (90th percentile
+59.9~s): 14.8~s of retrieval, 8.6~s of ranking and a 5.6~s model call
+of about 2,100 prompt and 180 completion tokens. At two claims at once,
+the 64 claims take about 18 minutes on the development laptop.
+
+\paragraph{What the pilot found in the tooling.} The harness was run
+against live services here for the first time. It recorded each
+resumed session's timeouts and concurrency only once, for the first
+session, which was fixed and is now tested; inference timed out under
+four concurrent claims on the CPU, and the run was resumed with a
+longer timeout and two claims at once; a model caught in a repetition
+loop was recorded as unreachable rather than as a model failure; the
+check of the working tree that stamps each record with its commit
+outlasted its timeout over the container's mount and lost one
+session's commit, which was fixed; and the harness process crashed
+twice in native code while parsing scraped pages. An interruption of
+the container runtime and both crashes were absorbed by the resume
+rule, which re-ran exactly the claims each had lost.

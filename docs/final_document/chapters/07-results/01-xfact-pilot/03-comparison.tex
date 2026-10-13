@@ -50,4 +50,86 @@ languages; $\alpha_3$: 3,381 claims in twelve unseen languages.}
 \label{tab:xfact-paper}
 \end{table}
 
-\pending{our accuracy and macro-$F_1$ beside these.}
+Table~\ref{tab:xfact-beside} sets the system's macro-$F_1$ beside the
+paper's closest rows. The Spanish test split is the only row of ours
+drawn the way $\alpha_1$ is, and it covers one of $\alpha_1$'s twelve
+languages; the pilot's English half has no counterpart in the paper at
+all, since English is not among X-Fact's evaluation languages.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}Xrr@{}}
+\toprule
+\textbf{System and set} & \textbf{Labels} & \textbf{Macro-$F_1$ ($\times$100)} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{X-Fact paper, supervised mBERT, mean of 4 runs}} \\
+Majority, $\alpha_1$ & 7 & 6.9 \\
+Claim-Only, $\alpha_1$ / $\alpha_3$ & 7 & 38.2 / 14.7 \\
+Attn-EA (claim + snippets), $\alpha_1$ / $\alpha_3$ & 7 & 38.9 / 16.5 \\
+Attn-EA + Meta (best), $\alpha_1$ / $\alpha_3$ & 7 & 41.9 / 16.0 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{This work, zero-shot \texttt{llama3.2:3b}, one run, 95\% interval}} \\
+Spanish test split ($\alpha_1$, Spanish only) & 5 & 11.1 [7.9, 14.2] \\
+Pilot, Spanish & 5 & 13.0 [6.1, 19.6] \\
+Pilot, English (not in X-Fact's evaluation) & 3 & 35.8 [15.7, 55.4] \\
+Closed-book (no evidence), Spanish test split & 5 & 8.4 [4.9, 12.7] \\
+Majority, Spanish test split & 5 & 9.3 \\
+\bottomrule
+\end{tabularx}
+\caption{The system beside the X-Fact baselines. The two halves differ
+in label set, training, evidence, sample and year of search; the list
+that follows says how, and none of the differences is small.}
+\label{tab:xfact-beside}
+\end{table}
+
+On the one row drawn as $\alpha_1$ is, the system's macro-$F_1$ of 11.1
+is 27 points below the paper's claim-only model and 31 below its best,
+above its majority baseline, and below what a uniform random guess is
+expected to score on the same claims (about 19). Read through the
+differences listed below, this says that the zero-shot pipeline does
+not approach a supervised model on X-Fact's own distribution; it does
+not say by how much the two would differ on equal terms.
+
+The two halves of Table~\ref{tab:xfact-beside} are not directly
+comparable, for reasons that each move the figure by more than its
+interval:
+
+\begin{itemize}
+    \item \textbf{Labels.} X-Fact scores seven labels; this work scores
+    five, with \emph{mostly false} merged into \texttt{FALSE},
+    \emph{mostly true} mapped to \texttt{PARTIALLY\_TRUE} and
+    \emph{other} dropped. A merged class is easier to hit, and
+    macro-$F_1$ averages over fewer classes.
+    \item \textbf{English.} English rows exist only in X-Fact's
+    training data, keep PolitiFact's own six-point scale (no
+    \emph{partly true/misleading}, no \emph{complicated}) and map
+    PolitiFact's \emph{half true} to \texttt{PARTIALLY\_TRUE}, whereas
+    X-Fact's master mapping sends \emph{half true} to \emph{partly
+    true/misleading}, which this work maps to \texttt{MISLEADING}.
+    \item \textbf{Sample.} The pilot is stratified, eight claims per
+    language and label, so its labels are balanced by construction;
+    X-Fact's test sets are not. Only the Spanish test split is drawn
+    as $\alpha_1$ is.
+    \item \textbf{Size.} The paper's figures are means over four runs
+    on thousands of claims, and their standard deviations (0.1 to 4.5
+    points) measure seeds, not sampling; this work's are single runs
+    over 64 or 165 claims, with intervals 13 to 40 points wide.
+    \item \textbf{Supervision.} mBERT was fine-tuned on 19,079 X-Fact
+    claims and learned their label distribution and the claim-only
+    cues the paper itself documents (its claim-only model beats the
+    majority by 31 points on $\alpha_1$). The model here never saw an
+    X-Fact label, which makes $\alpha_3$, where the supervised models
+    also face unseen data, the fairer reference despite not containing
+    Spanish.
+    \item \textbf{Evidence and its date.} The paper's evidence is the
+    snippets of the top five Google results, collected when the dataset
+    was built; this work's is the open web of 13 October 2026, through
+    the engines that answered SearXNG that day (Google and Brave did
+    not), fetched in full and filtered by the pertinence gate.
+    Section~\ref{subsec:pilot-time} is about what that changes.
+    \item \textbf{Metadata and context.} The best paper model reads the
+    claimant, the site and both dates; the pipeline reads the claim
+    text alone, and Chequeado's claims are quotes stripped of speaker,
+    place and moment.
+\end{itemize}

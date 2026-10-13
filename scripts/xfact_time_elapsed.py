@@ -374,6 +374,22 @@ def main() -> int:
             1 for record in scored if record["id"] in book and book[record["id"]].get("verdict") == record["verdict"]
         )
 
+        # The pipeline (B) against the same model without evidence (A),
+        # paired over the claims both answered: what the evidence bought.
+        both = [
+            record for record in scored
+            if record["id"] in book and book[record["id"]].get("status") != "unreachable"
+        ]
+        closed = [(record["label"], book[record["id"]]["verdict"]) for record in both]
+        piped = [(record["label"], record["verdict"]) for record in both]
+        paired = metrics.paired_bootstrap(closed, piped)
+        result["pipelineMinusClosedBook"] = {
+            "n": len(both),
+            "accuracy": paired.get("accuracy"),
+            "macroF1": paired.get("macroF1"),
+            **metrics.discordant(closed, piped),
+        }
+
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
