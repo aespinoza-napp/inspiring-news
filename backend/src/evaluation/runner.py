@@ -173,24 +173,40 @@ def _digest(value) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+# How long git may take to say whether the tree is clean. In compose the
+# checkout is a read-only Windows bind mount: git cannot refresh the
+# index there, so every `git status` re-reads every tracked file across
+# it. Measured 2026-10-13: 5.0-5.3 s, against a timeout of 5. One of the
+# pilot's sessions lost the race and recorded `unknown` for 49 claims
+# whose HEAD was known.
+GIT_STATUS_TIMEOUT = 60
+
+
 def git_commit() -> str:
     """
     HEAD, with `-dirty` when the tree has changes: a result from
-    uncommitted code should say so. `unknown` inside the container, which
-    has no .git.
+    uncommitted code should say so. `-unchecked` when HEAD is known but
+    whether the tree was clean could not be found out in time: the
+    commit is still worth recording, and the suffix says it was not
+    verified. `unknown` when there is no repository at all (the image
+    without the compose layer's mount).
     """
 
     try:
         head = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            capture_output=True, text=True, timeout=5, check=True,
-        ).stdout.strip()
-        dirty = subprocess.run(
-            ["git", "status", "--porcelain", "--untracked-files=no"],
-            capture_output=True, text=True, timeout=5, check=True,
+            capture_output=True, text=True, timeout=10, check=True,
         ).stdout.strip()
     except (OSError, subprocess.SubprocessError):
         return "unknown"
+
+    try:
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            capture_output=True, text=True, timeout=GIT_STATUS_TIMEOUT, check=True,
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return f"{head}-unchecked"
 
     return f"{head}-dirty" if dirty else head
 
