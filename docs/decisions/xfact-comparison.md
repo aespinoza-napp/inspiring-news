@@ -193,7 +193,8 @@ on dates X-Fact did not record; the dataset was published in 2021; the
 web was searched on 2026-10-13; the model's pretraining data stops in
 December 2023 (Meta's Llama 3.2 model card). Six effects follow. Numbers
 are the pilot's (`time_elapsed.json` beside its report) unless marked;
-the Spanish `test` run's are in its own `time_elapsed.json` and quoted where they add something.
+the Spanish `test` run's are in its own `time_elapsed.json` and quoted
+where they add something.
 
 ### (a) Verdict leakage: the fact-check itself is now on the web
 
@@ -218,10 +219,14 @@ the Spanish `test` run's are in its own `time_elapsed.json` and quoted where the
   PolitiFact page "confirms" the figure the claim quotes;
   `xf-b374ee0b0585` (rated *true*) came back `FALSE`. A stronger model
   would read the ruling, and the leak would then decide the verdict.
-- Other fact-checkers' pages were ranked for 3 more claims (snopes.com,
-  factcheck.org, maldita.es) and a congressional committee's "fact
-  check" page for one: 12 claims in all with some fact-check among their
-  evidence, 41.7% accurate against 26.9%.
+- Other fact-check pages were ranked for 3 more claims (factcheck.org,
+  maldita.es, and a congressional committee's "fact check" page), plus
+  an unrelated Snopes check beside PolitiFact's for `xf-3005b1d6af1b`:
+  12 claims in all with some fact-check among their evidence, 41.7%
+  accurate against 26.9%. In the Spanish `test` run no claim's own
+  verdict was found; the script's fact-check heuristic flagged 6 claims
+  there, for factchequeado, RTVE and El País pages checking other claims
+  and one Mexican vehicle-inspection ("verificación") page.
 
 ### (b) Temporal leakage: evidence from after the claim
 
