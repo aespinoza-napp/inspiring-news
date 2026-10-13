@@ -368,6 +368,12 @@ class HarnessRunner:
             "setAside": str(set_aside) if set_aside else None,
             "tornLinesDropped": self.results.torn,
             "pending": len(todo),
+            # Per session, not only in the manifest: none of these is keyed,
+            # so a resume may run with a longer timeout or fewer claims at
+            # once. The pilot did (2026-10-13), after inference timed out
+            # under four concurrent claims, and the manifest alone would
+            # have said the whole run used the first session's values.
+            "settings": self._settings(),
         }
 
         self._write_manifest(session)
@@ -504,6 +510,31 @@ class HarnessRunner:
 
         write_json(path, manifest)
 
+    def _settings(self) -> dict:
+        """
+        The environment a session ran in: endpoints, timeouts and the
+        concurrency ceilings. Not keyed (they change how fast and how
+        reliably claims are answered, not what the pipeline decides), so
+        recorded instead.
+        """
+
+        return {
+            "LLM_BASE_URL": without_credentials(settings.LLM_BASE_URL),
+            "LLM_TIMEOUT": settings.LLM_TIMEOUT,
+            "SEARXNG_URL": settings.SEARXNG_URL,
+            "INFERENCE_URL": settings.INFERENCE_URL,
+            "INFERENCE_TIMEOUT": settings.INFERENCE_TIMEOUT,
+            "DUCKDUCKGO_FALLBACK_ENABLED": settings.DUCKDUCKGO_FALLBACK_ENABLED,
+            # What this runner was built with, which is the setting unless
+            # a caller passed its own.
+            "CLAIM_MAX_CONCURRENCY": self.max_workers,
+            "LLM_MAX_CONCURRENCY": settings.LLM_MAX_CONCURRENCY,
+            "QUERY_MAX_CONCURRENCY": settings.QUERY_MAX_CONCURRENCY,
+            "SEARXNG_MAX_CONCURRENCY": settings.SEARXNG_MAX_CONCURRENCY,
+            "SCRAPE_MAX_CONCURRENCY": settings.SCRAPE_MAX_CONCURRENCY,
+            "INFERENCE_MAX_CONCURRENCY": settings.INFERENCE_MAX_CONCURRENCY,
+        }
+
     def _new_manifest(self) -> dict:
 
         config = self.config
@@ -530,19 +561,7 @@ class HarnessRunner:
             "label": config.label,
             "gitCommit": self.commit,
             "startedAt": now(),
-            "settings": {
-                "LLM_BASE_URL": without_credentials(settings.LLM_BASE_URL),
-                "LLM_TIMEOUT": settings.LLM_TIMEOUT,
-                "SEARXNG_URL": settings.SEARXNG_URL,
-                "INFERENCE_URL": settings.INFERENCE_URL,
-                "DUCKDUCKGO_FALLBACK_ENABLED": settings.DUCKDUCKGO_FALLBACK_ENABLED,
-                "CLAIM_MAX_CONCURRENCY": settings.CLAIM_MAX_CONCURRENCY,
-                "LLM_MAX_CONCURRENCY": settings.LLM_MAX_CONCURRENCY,
-                "QUERY_MAX_CONCURRENCY": settings.QUERY_MAX_CONCURRENCY,
-                "SEARXNG_MAX_CONCURRENCY": settings.SEARXNG_MAX_CONCURRENCY,
-                "SCRAPE_MAX_CONCURRENCY": settings.SCRAPE_MAX_CONCURRENCY,
-                "INFERENCE_MAX_CONCURRENCY": settings.INFERENCE_MAX_CONCURRENCY,
-            },
+            "settings": self._settings(),
             **self.manifest_extra,
         }
 

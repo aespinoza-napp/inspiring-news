@@ -477,6 +477,42 @@ def test_check_claim_answers_are_recorded_as_values_not_enums(repository, tmp_pa
     assert '"reachedStage": "aggregation"' in raw
 
 
+def test_each_session_records_the_environment_it_ran_in(repository, tmp_path, monkeypatch):
+    """
+    Found by the pilot (2026-10-13): inference timed out under four
+    concurrent claims, and the run was resumed with a longer timeout and
+    fewer claims at once. Neither is keyed, and only the manifest held
+    them, written once by the first session: the record would have said
+    the whole run used the first session's values.
+    """
+
+    from src.config.settings import settings
+
+    dataset = five_rows(tmp_path)
+
+    checker, _ = recording_checker(repository)
+    first = runner_for(dataset, checker, tmp_path, max_workers=4)
+    first.on_record = lambda record: first.stop() if len(lines(first)) == 2 else None
+    first.run()
+
+    monkeypatch.setattr(settings, "INFERENCE_TIMEOUT", 120.0)
+
+    checker, _ = recording_checker(repository)
+    runner_for(dataset, checker, tmp_path, max_workers=2).run()
+
+    manifest = json.loads((first.directory / "run.json").read_text(encoding="utf-8"))
+
+    sessions = [session["settings"] for session in manifest["sessions"]]
+
+    assert [s["CLAIM_MAX_CONCURRENCY"] for s in sessions] == [4, 2]
+    assert sessions[1]["INFERENCE_TIMEOUT"] == 120.0
+    assert sessions[0]["INFERENCE_TIMEOUT"] != 120.0
+
+    # The manifest's own copy stays the first session's: it is the run's
+    # provenance, the sessions say how it was resumed.
+    assert manifest["settings"] == sessions[0]
+
+
 def test_each_session_records_what_it_cost(repository, tmp_path):
     """Summed per session in run.json, so each resume says what it paid."""
 

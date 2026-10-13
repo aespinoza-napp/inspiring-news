@@ -24,6 +24,15 @@ services:
       # timed-out call is a lost verdict.
       - LLM_TIMEOUT=180
       - LLM_MAX_CONCURRENCY=1
+      # Inference on CPU, measured in the pilot's first session
+      # (2026-10-13): at four claims at once, the ranker's embedding
+      # requests (whole scraped pages, bge-m3, no truncation) passed the
+      # 30 s INFERENCE_TIMEOUT and 5 of 20 claims died with
+      # InferenceUnavailable inside 40 seconds. Inference answered every
+      # one of them, late. Two claims at once and 120 s: neither changes
+      # what the pipeline decides, only whether it gets to decide.
+      - INFERENCE_TIMEOUT=120
+      - CLAIM_MAX_CONCURRENCY=2
       # Provenance. The image has git but no .git (.dockerignore), so every
       # record said `gitCommit: unknown`. The checkout is mounted read-only
       # and git pointed at it; core.fileMode is off because a Windows bind
