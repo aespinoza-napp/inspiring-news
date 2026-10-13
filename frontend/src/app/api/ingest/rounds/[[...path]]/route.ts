@@ -65,6 +65,10 @@ export async function GET(
   });
 }
 
+// The body is relayed as sent and validated by the backend (a bad
+// `topicEmphasis` or `listed` comes back as its 422), so a new round field
+// needs no change here - only the path is checked.
+//
 // POST /api/ingest/rounds                    -> discover candidates
 // POST /api/ingest/rounds/<id>/ai-selection  -> start the AI selection
 // POST /api/ingest/rounds/<id>/queue         -> send the chosen ones to analysis

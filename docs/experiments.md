@@ -22,6 +22,7 @@ outranks a random negative, 0.5 being a coin.
 | `blind-ai` | the LLM | The same, without the editor having seen the AI's picks first |
 | `admission` | the stack (`inference/`) | What do the admission thresholds admit, and how well does the positive-impact score agree with the editor? |
 | `topics` | the stack (`inference/`) | How often is the topic classifier right on the labelled facts' articles? |
+| `emphasis` | recorded rounds and their labels (nothing running) | How much does weighing the topic over positive impact change what a round shows first? |
 
 ## discovery
 
@@ -279,6 +280,66 @@ worth offering. AUC for a story of the round's group against another's:
 0.625 at 0, 0.724 at 0.15; for worth offering against not, 0.749 and
 0.730. Live afterwards, an Environment round's first twenty were all
 Environment stories but a tortoise's longevity study.
+
+Superseded on 2026-10-13 by the person's own emphasis (next section).
+That table left places unlabelled as the weight grew - 5 of its 200 at
+0.15, 20 at 0.35: reserve candidates nobody had read, counted as nothing.
+The next run labels them.
+
+## emphasis: positive impact or the topic (2026-10-13)
+
+```bash
+uv run python -m src.evaluation.experiments emphasis [--emphasis 0,0.3,0.6,1]
+```
+
+The question from the person running discovery: asked for a topic, how
+much should it weigh against positive impact? A round's order now takes a
+topic emphasis, 0 to 1, which splits the story's 0.6 of the score between
+its positive-impact reading and its fit with the groups asked for (the
+source's record and reliability keep 0.25 and 0.15;
+`docs/decisions/selection.md`, "Positive impact or the topic").
+
+The command re-scores every candidate of the 2026-10-09 alignment rounds
+- the runs that recorded a group fit, shown and in reserve - with
+`ranking.py`'s own `score` and `ordered`, from the readings the rounds
+recorded: nothing is embedded, fetched or asked of a model, so it runs
+anywhere in under a minute. Stories keep the grouping each round
+recorded (`sameStoryAs`; one vector per story stands in for the
+embeddings rounds do not keep). Labels: the 324 of
+`alignment/20261009T120000Z/labelled.json` and 60 more in
+`emphasis/reserve-labels.json` - every reserve candidate those had left
+out, labelled from title and link in a shuffled order, blind to any
+score (Claude; not yet checked by a person). Reported per setting, and
+for the weights before (0.51 / 0.15 / 0.21 / 0.13): the first twenty and
+first ten of the group asked for, worth offering, clearly positive, not
+worth offering, not an article; AUCs with bootstrap intervals; the topic
+part saturating earlier; round by round and story by story, what the
+chosen default changes. Run 2026-10-13:
+`backend/data/evaluation/experiments/emphasis/20261013T075149Z/`.
+
+Ten rounds (iter4 and the recheck, the set of the 2026-10-09 table
+above), first twenty of each:
+
+| Emphasis | Of the group | Worth offering or clearly positive | Worth offering, of the group | Clearly positive, of the group | Not worth offering | First ten: of the group |
+|---|---|---|---|---|---|---|
+| before | 184 | 164 | 154 | 62 | 36 | 94 |
+| 0 | 174 | 167 | 150 | 61 | 33 | 89 |
+| 0.3 | 187 | 162 | 154 | 61 | 38 | 94 |
+| 0.5 | 192 | 155 | 150 | 53 | 45 | 98 |
+| **0.6** | **194** | **152** | **150** | **53** | **48** | **100** |
+| 0.7 | 194 | 140 | 139 | 46 | 60 | 100 |
+| 1 | 195 | 137 | 136 | 52 | 63 | 97 |
+
+All 25 rounds at 0.6: 478 of 500 of the group (454 before), first ten
+248 of 250 (232), worth offering of the group 360 (367). The default is
+0.6: the first ten all of the group asked for and the first twenty at
+their plateau; higher loses stories worth offering with nothing gained.
+The cost, from about 0.45, is the group's clearly positive stories (62 →
+53), replaced by squarely on-topic hard news - an Ebola outbreak in
+Health, AI policy in Science. Full topic marks at a fit of 0.03 instead of
+0.10 gave some of those back and cost as much elsewhere; not adopted.
+Re-run after changing `IMPACT`, `TOPIC_RANGE`, `GROUP_FIT` or the weights:
+the numbers are for those exact values.
 
 ## Thresholds of the fact-check itself
 

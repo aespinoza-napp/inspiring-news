@@ -1,0 +1,3055 @@
+{
+ "date": "2026-10-13",
+ "labels": {
+  "data/evaluation/experiments/alignment/20261009T120000Z/labelled.json": 324,
+  "data/evaluation/experiments/emphasis/reserve-labels.json": 60
+ },
+ "rounds": {
+  "last": 10,
+  "all": 25
+ },
+ "runs": {
+  "last": [
+   "iter4",
+   "recheck"
+  ],
+  "all": [
+   "iter1",
+   "iter2",
+   "iter3",
+   "iter4",
+   "recheck"
+  ]
+ },
+ "chosen": 0.6,
+ "before": {
+  "news": 0.51,
+  "topic": 0.15,
+  "record": 0.21,
+  "reliability": 0.13
+ },
+ "seed": 20261005,
+ "resamples": 2000,
+ "settings": {
+  "last": [
+   {
+    "setting": "before",
+    "emphasis": null,
+    "weights": {
+     "news": 0.51,
+     "topic": 0.15,
+     "record": 0.21,
+     "reliability": 0.13
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 184,
+     "anotherGroup": 16,
+     "notArticle": 0,
+     "worthOffering": 164,
+     "clearlyPositive": 64,
+     "worthOfferingOfGroup": 154,
+     "clearlyPositiveOfGroup": 62,
+     "notWorthOffering": 36
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 94,
+     "anotherGroup": 6,
+     "notArticle": 0,
+     "worthOffering": 88,
+     "clearlyPositive": 35,
+     "worthOfferingOfGroup": 84,
+     "clearlyPositiveOfGroup": 35,
+     "notWorthOffering": 12
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.706,
+      "low": 0.608,
+      "high": 0.797,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.754,
+      "low": 0.69,
+      "high": 0.815,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.757,
+      "low": 0.685,
+      "high": 0.825,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.0,
+    "weights": {
+     "news": 0.6,
+     "topic": 0.0,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 174,
+     "anotherGroup": 26,
+     "notArticle": 0,
+     "worthOffering": 167,
+     "clearlyPositive": 67,
+     "worthOfferingOfGroup": 150,
+     "clearlyPositiveOfGroup": 61,
+     "notWorthOffering": 33
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 89,
+     "anotherGroup": 11,
+     "notArticle": 0,
+     "worthOffering": 89,
+     "clearlyPositive": 32,
+     "worthOfferingOfGroup": 81,
+     "clearlyPositiveOfGroup": 32,
+     "notWorthOffering": 11
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.613,
+      "low": 0.512,
+      "high": 0.709,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.781,
+      "low": 0.721,
+      "high": 0.841,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.784,
+      "low": 0.715,
+      "high": 0.848,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.1,
+    "weights": {
+     "news": 0.54,
+     "topic": 0.06,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 178,
+     "anotherGroup": 22,
+     "notArticle": 0,
+     "worthOffering": 165,
+     "clearlyPositive": 68,
+     "worthOfferingOfGroup": 151,
+     "clearlyPositiveOfGroup": 63,
+     "notWorthOffering": 35
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 93,
+     "anotherGroup": 7,
+     "notArticle": 0,
+     "worthOffering": 87,
+     "clearlyPositive": 37,
+     "worthOfferingOfGroup": 82,
+     "clearlyPositiveOfGroup": 37,
+     "notWorthOffering": 13
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.654,
+      "low": 0.55,
+      "high": 0.747,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.773,
+      "low": 0.712,
+      "high": 0.834,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.774,
+      "low": 0.705,
+      "high": 0.838,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.2,
+    "weights": {
+     "news": 0.48,
+     "topic": 0.12,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 185,
+     "anotherGroup": 15,
+     "notArticle": 0,
+     "worthOffering": 165,
+     "clearlyPositive": 63,
+     "worthOfferingOfGroup": 155,
+     "clearlyPositiveOfGroup": 61,
+     "notWorthOffering": 35
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 93,
+     "anotherGroup": 7,
+     "notArticle": 0,
+     "worthOffering": 89,
+     "clearlyPositive": 36,
+     "worthOfferingOfGroup": 84,
+     "clearlyPositiveOfGroup": 36,
+     "notWorthOffering": 11
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.694,
+      "low": 0.594,
+      "high": 0.787,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.761,
+      "low": 0.7,
+      "high": 0.822,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.762,
+      "low": 0.69,
+      "high": 0.83,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.3,
+    "weights": {
+     "news": 0.42,
+     "topic": 0.18,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 187,
+     "anotherGroup": 13,
+     "notArticle": 0,
+     "worthOffering": 162,
+     "clearlyPositive": 61,
+     "worthOfferingOfGroup": 154,
+     "clearlyPositiveOfGroup": 61,
+     "notWorthOffering": 38
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 94,
+     "anotherGroup": 6,
+     "notArticle": 0,
+     "worthOffering": 89,
+     "clearlyPositive": 36,
+     "worthOfferingOfGroup": 85,
+     "clearlyPositiveOfGroup": 36,
+     "notWorthOffering": 11
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.739,
+      "low": 0.646,
+      "high": 0.825,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.742,
+      "low": 0.677,
+      "high": 0.805,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.741,
+      "low": 0.666,
+      "high": 0.809,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.4,
+    "weights": {
+     "news": 0.36,
+     "topic": 0.24,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 191,
+     "anotherGroup": 9,
+     "notArticle": 0,
+     "worthOffering": 161,
+     "clearlyPositive": 58,
+     "worthOfferingOfGroup": 155,
+     "clearlyPositiveOfGroup": 58,
+     "notWorthOffering": 39
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 98,
+     "anotherGroup": 2,
+     "notArticle": 0,
+     "worthOffering": 83,
+     "clearlyPositive": 38,
+     "worthOfferingOfGroup": 83,
+     "clearlyPositiveOfGroup": 38,
+     "notWorthOffering": 17
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.776,
+      "low": 0.688,
+      "high": 0.853,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.716,
+      "low": 0.647,
+      "high": 0.781,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.71,
+      "low": 0.629,
+      "high": 0.781,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.5,
+    "weights": {
+     "news": 0.3,
+     "topic": 0.3,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 192,
+     "anotherGroup": 8,
+     "notArticle": 0,
+     "worthOffering": 155,
+     "clearlyPositive": 53,
+     "worthOfferingOfGroup": 150,
+     "clearlyPositiveOfGroup": 53,
+     "notWorthOffering": 45
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 98,
+     "anotherGroup": 2,
+     "notArticle": 0,
+     "worthOffering": 83,
+     "clearlyPositive": 34,
+     "worthOfferingOfGroup": 83,
+     "clearlyPositiveOfGroup": 34,
+     "notWorthOffering": 17
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.809,
+      "low": 0.73,
+      "high": 0.878,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.681,
+      "low": 0.609,
+      "high": 0.749,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.669,
+      "low": 0.585,
+      "high": 0.746,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.55,
+    "weights": {
+     "news": 0.27,
+     "topic": 0.33,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 193,
+     "anotherGroup": 7,
+     "notArticle": 0,
+     "worthOffering": 155,
+     "clearlyPositive": 53,
+     "worthOfferingOfGroup": 151,
+     "clearlyPositiveOfGroup": 53,
+     "notWorthOffering": 45
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 99,
+     "anotherGroup": 1,
+     "notArticle": 0,
+     "worthOffering": 79,
+     "clearlyPositive": 32,
+     "worthOfferingOfGroup": 79,
+     "clearlyPositiveOfGroup": 32,
+     "notWorthOffering": 21
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.821,
+      "low": 0.745,
+      "high": 0.886,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.662,
+      "low": 0.586,
+      "high": 0.732,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.645,
+      "low": 0.559,
+      "high": 0.724,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "chosen",
+    "emphasis": 0.6,
+    "weights": {
+     "news": 0.24,
+     "topic": 0.36,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 194,
+     "anotherGroup": 5,
+     "notArticle": 1,
+     "worthOffering": 152,
+     "clearlyPositive": 53,
+     "worthOfferingOfGroup": 150,
+     "clearlyPositiveOfGroup": 53,
+     "notWorthOffering": 48
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 79,
+     "clearlyPositive": 31,
+     "worthOfferingOfGroup": 79,
+     "clearlyPositiveOfGroup": 31,
+     "notWorthOffering": 21
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.825,
+      "low": 0.751,
+      "high": 0.891,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.638,
+      "low": 0.562,
+      "high": 0.71,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.619,
+      "low": 0.532,
+      "high": 0.701,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.65,
+    "weights": {
+     "news": 0.21,
+     "topic": 0.39,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 194,
+     "anotherGroup": 4,
+     "notArticle": 2,
+     "worthOffering": 148,
+     "clearlyPositive": 49,
+     "worthOfferingOfGroup": 147,
+     "clearlyPositiveOfGroup": 49,
+     "notWorthOffering": 52
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 77,
+     "clearlyPositive": 30,
+     "worthOfferingOfGroup": 77,
+     "clearlyPositiveOfGroup": 30,
+     "notWorthOffering": 23
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.831,
+      "low": 0.759,
+      "high": 0.896,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.62,
+      "low": 0.541,
+      "high": 0.692,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.596,
+      "low": 0.507,
+      "high": 0.68,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.7,
+    "weights": {
+     "news": 0.18,
+     "topic": 0.42,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 194,
+     "anotherGroup": 4,
+     "notArticle": 3,
+     "worthOffering": 140,
+     "clearlyPositive": 46,
+     "worthOfferingOfGroup": 139,
+     "clearlyPositiveOfGroup": 46,
+     "notWorthOffering": 60
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 76,
+     "clearlyPositive": 26,
+     "worthOfferingOfGroup": 76,
+     "clearlyPositiveOfGroup": 26,
+     "notWorthOffering": 24
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.833,
+      "low": 0.762,
+      "high": 0.898,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.601,
+      "low": 0.521,
+      "high": 0.674,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.572,
+      "low": 0.482,
+      "high": 0.655,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.8,
+    "weights": {
+     "news": 0.12,
+     "topic": 0.48,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 193,
+     "anotherGroup": 5,
+     "notArticle": 3,
+     "worthOffering": 137,
+     "clearlyPositive": 46,
+     "worthOfferingOfGroup": 136,
+     "clearlyPositiveOfGroup": 46,
+     "notWorthOffering": 63
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 71,
+     "clearlyPositive": 24,
+     "worthOfferingOfGroup": 71,
+     "clearlyPositiveOfGroup": 24,
+     "notWorthOffering": 29
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.833,
+      "low": 0.761,
+      "high": 0.899,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.566,
+      "low": 0.485,
+      "high": 0.639,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.531,
+      "low": 0.439,
+      "high": 0.617,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.9,
+    "weights": {
+     "news": 0.06,
+     "topic": 0.54,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 193,
+     "anotherGroup": 5,
+     "notArticle": 3,
+     "worthOffering": 136,
+     "clearlyPositive": 49,
+     "worthOfferingOfGroup": 135,
+     "clearlyPositiveOfGroup": 49,
+     "notWorthOffering": 64
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 98,
+     "anotherGroup": 0,
+     "notArticle": 2,
+     "worthOffering": 68,
+     "clearlyPositive": 23,
+     "worthOfferingOfGroup": 68,
+     "clearlyPositiveOfGroup": 23,
+     "notWorthOffering": 32
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.831,
+      "low": 0.755,
+      "high": 0.896,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.54,
+      "low": 0.46,
+      "high": 0.615,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.501,
+      "low": 0.408,
+      "high": 0.589,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 1.0,
+    "weights": {
+     "news": 0.0,
+     "topic": 0.6,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 195,
+     "anotherGroup": 3,
+     "notArticle": 3,
+     "worthOffering": 137,
+     "clearlyPositive": 52,
+     "worthOfferingOfGroup": 136,
+     "clearlyPositiveOfGroup": 52,
+     "notWorthOffering": 63
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 97,
+     "anotherGroup": 1,
+     "notArticle": 2,
+     "worthOffering": 68,
+     "clearlyPositive": 22,
+     "worthOfferingOfGroup": 68,
+     "clearlyPositiveOfGroup": 22,
+     "notWorthOffering": 32
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.824,
+      "low": 0.749,
+      "high": 0.891,
+      "n": 220,
+      "positives": 179
+     },
+     "worthOffering": {
+      "auc": 0.517,
+      "low": 0.435,
+      "high": 0.592,
+      "n": 220,
+      "positives": 137
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.475,
+      "low": 0.382,
+      "high": 0.562,
+      "n": 179,
+      "positives": 120
+     }
+    }
+   }
+  ],
+  "all": [
+   {
+    "setting": "before",
+    "emphasis": null,
+    "weights": {
+     "news": 0.51,
+     "topic": 0.15,
+     "record": 0.21,
+     "reliability": 0.13
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 454,
+     "anotherGroup": 43,
+     "notArticle": 3,
+     "worthOffering": 392,
+     "clearlyPositive": 152,
+     "worthOfferingOfGroup": 367,
+     "clearlyPositiveOfGroup": 147,
+     "notWorthOffering": 108
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 232,
+     "anotherGroup": 16,
+     "notArticle": 2,
+     "worthOffering": 218,
+     "clearlyPositive": 88,
+     "worthOfferingOfGroup": 208,
+     "clearlyPositiveOfGroup": 88,
+     "notWorthOffering": 32
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.672,
+      "low": 0.582,
+      "high": 0.757,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.763,
+      "low": 0.703,
+      "high": 0.821,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.773,
+      "low": 0.704,
+      "high": 0.836,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.0,
+    "weights": {
+     "news": 0.6,
+     "topic": 0.0,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 434,
+     "anotherGroup": 63,
+     "notArticle": 3,
+     "worthOffering": 407,
+     "clearlyPositive": 164,
+     "worthOfferingOfGroup": 368,
+     "clearlyPositiveOfGroup": 149,
+     "notWorthOffering": 93
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 221,
+     "anotherGroup": 27,
+     "notArticle": 2,
+     "worthOffering": 220,
+     "clearlyPositive": 81,
+     "worthOfferingOfGroup": 202,
+     "clearlyPositiveOfGroup": 81,
+     "notWorthOffering": 30
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.584,
+      "low": 0.488,
+      "high": 0.675,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.786,
+      "low": 0.726,
+      "high": 0.841,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.797,
+      "low": 0.734,
+      "high": 0.856,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.1,
+    "weights": {
+     "news": 0.54,
+     "topic": 0.06,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 440,
+     "anotherGroup": 57,
+     "notArticle": 3,
+     "worthOffering": 403,
+     "clearlyPositive": 163,
+     "worthOfferingOfGroup": 369,
+     "clearlyPositiveOfGroup": 150,
+     "notWorthOffering": 97
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 230,
+     "anotherGroup": 18,
+     "notArticle": 2,
+     "worthOffering": 216,
+     "clearlyPositive": 93,
+     "worthOfferingOfGroup": 205,
+     "clearlyPositiveOfGroup": 93,
+     "notWorthOffering": 34
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.622,
+      "low": 0.526,
+      "high": 0.71,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.779,
+      "low": 0.72,
+      "high": 0.835,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.788,
+      "low": 0.721,
+      "high": 0.848,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.2,
+    "weights": {
+     "news": 0.48,
+     "topic": 0.12,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 454,
+     "anotherGroup": 43,
+     "notArticle": 3,
+     "worthOffering": 394,
+     "clearlyPositive": 151,
+     "worthOfferingOfGroup": 368,
+     "clearlyPositiveOfGroup": 145,
+     "notWorthOffering": 106
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 230,
+     "anotherGroup": 18,
+     "notArticle": 2,
+     "worthOffering": 218,
+     "clearlyPositive": 89,
+     "worthOfferingOfGroup": 207,
+     "clearlyPositiveOfGroup": 89,
+     "notWorthOffering": 32
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.66,
+      "low": 0.569,
+      "high": 0.746,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.769,
+      "low": 0.709,
+      "high": 0.826,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.778,
+      "low": 0.709,
+      "high": 0.84,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.3,
+    "weights": {
+     "news": 0.42,
+     "topic": 0.18,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 465,
+     "anotherGroup": 32,
+     "notArticle": 3,
+     "worthOffering": 390,
+     "clearlyPositive": 145,
+     "worthOfferingOfGroup": 370,
+     "clearlyPositiveOfGroup": 145,
+     "notWorthOffering": 110
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 233,
+     "anotherGroup": 16,
+     "notArticle": 1,
+     "worthOffering": 218,
+     "clearlyPositive": 86,
+     "worthOfferingOfGroup": 208,
+     "clearlyPositiveOfGroup": 86,
+     "notWorthOffering": 32
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.703,
+      "low": 0.614,
+      "high": 0.783,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.752,
+      "low": 0.689,
+      "high": 0.811,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.756,
+      "low": 0.684,
+      "high": 0.821,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.4,
+    "weights": {
+     "news": 0.36,
+     "topic": 0.24,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 475,
+     "anotherGroup": 22,
+     "notArticle": 3,
+     "worthOffering": 387,
+     "clearlyPositive": 139,
+     "worthOfferingOfGroup": 372,
+     "clearlyPositiveOfGroup": 139,
+     "notWorthOffering": 113
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 242,
+     "anotherGroup": 7,
+     "notArticle": 1,
+     "worthOffering": 205,
+     "clearlyPositive": 91,
+     "worthOfferingOfGroup": 203,
+     "clearlyPositiveOfGroup": 91,
+     "notWorthOffering": 45
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.742,
+      "low": 0.66,
+      "high": 0.815,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.728,
+      "low": 0.663,
+      "high": 0.79,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.728,
+      "low": 0.654,
+      "high": 0.794,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.5,
+    "weights": {
+     "news": 0.3,
+     "topic": 0.3,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 478,
+     "anotherGroup": 20,
+     "notArticle": 2,
+     "worthOffering": 380,
+     "clearlyPositive": 132,
+     "worthOfferingOfGroup": 366,
+     "clearlyPositiveOfGroup": 132,
+     "notWorthOffering": 120
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 243,
+     "anotherGroup": 6,
+     "notArticle": 1,
+     "worthOffering": 203,
+     "clearlyPositive": 81,
+     "worthOfferingOfGroup": 202,
+     "clearlyPositiveOfGroup": 81,
+     "notWorthOffering": 47
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.776,
+      "low": 0.701,
+      "high": 0.842,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.696,
+      "low": 0.629,
+      "high": 0.761,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.688,
+      "low": 0.612,
+      "high": 0.758,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.55,
+    "weights": {
+     "news": 0.27,
+     "topic": 0.33,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 480,
+     "anotherGroup": 18,
+     "notArticle": 2,
+     "worthOffering": 379,
+     "clearlyPositive": 131,
+     "worthOfferingOfGroup": 367,
+     "clearlyPositiveOfGroup": 131,
+     "notWorthOffering": 121
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 245,
+     "anotherGroup": 4,
+     "notArticle": 1,
+     "worthOffering": 194,
+     "clearlyPositive": 75,
+     "worthOfferingOfGroup": 194,
+     "clearlyPositiveOfGroup": 75,
+     "notWorthOffering": 56
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.79,
+      "low": 0.717,
+      "high": 0.854,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.678,
+      "low": 0.61,
+      "high": 0.744,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.668,
+      "low": 0.59,
+      "high": 0.739,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "chosen",
+    "emphasis": 0.6,
+    "weights": {
+     "news": 0.24,
+     "topic": 0.36,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 478,
+     "anotherGroup": 16,
+     "notArticle": 6,
+     "worthOffering": 370,
+     "clearlyPositive": 130,
+     "worthOfferingOfGroup": 360,
+     "clearlyPositiveOfGroup": 130,
+     "notWorthOffering": 130
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 248,
+     "anotherGroup": 1,
+     "notArticle": 1,
+     "worthOffering": 193,
+     "clearlyPositive": 74,
+     "worthOfferingOfGroup": 193,
+     "clearlyPositiveOfGroup": 74,
+     "notWorthOffering": 57
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.798,
+      "low": 0.726,
+      "high": 0.86,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.655,
+      "low": 0.585,
+      "high": 0.722,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.642,
+      "low": 0.564,
+      "high": 0.715,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.65,
+    "weights": {
+     "news": 0.21,
+     "topic": 0.39,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 483,
+     "anotherGroup": 10,
+     "notArticle": 7,
+     "worthOffering": 356,
+     "clearlyPositive": 125,
+     "worthOfferingOfGroup": 352,
+     "clearlyPositiveOfGroup": 125,
+     "notWorthOffering": 144
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 248,
+     "anotherGroup": 1,
+     "notArticle": 1,
+     "worthOffering": 185,
+     "clearlyPositive": 69,
+     "worthOfferingOfGroup": 185,
+     "clearlyPositiveOfGroup": 69,
+     "notWorthOffering": 65
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.805,
+      "low": 0.732,
+      "high": 0.866,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.637,
+      "low": 0.565,
+      "high": 0.706,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.621,
+      "low": 0.542,
+      "high": 0.696,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.7,
+    "weights": {
+     "news": 0.18,
+     "topic": 0.42,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 484,
+     "anotherGroup": 9,
+     "notArticle": 9,
+     "worthOffering": 342,
+     "clearlyPositive": 119,
+     "worthOfferingOfGroup": 339,
+     "clearlyPositiveOfGroup": 119,
+     "notWorthOffering": 158
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 248,
+     "anotherGroup": 1,
+     "notArticle": 1,
+     "worthOffering": 183,
+     "clearlyPositive": 64,
+     "worthOfferingOfGroup": 183,
+     "clearlyPositiveOfGroup": 64,
+     "notWorthOffering": 67
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.81,
+      "low": 0.739,
+      "high": 0.87,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.618,
+      "low": 0.546,
+      "high": 0.687,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.597,
+      "low": 0.516,
+      "high": 0.673,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.8,
+    "weights": {
+     "news": 0.12,
+     "topic": 0.48,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 483,
+     "anotherGroup": 10,
+     "notArticle": 9,
+     "worthOffering": 335,
+     "clearlyPositive": 116,
+     "worthOfferingOfGroup": 332,
+     "clearlyPositiveOfGroup": 116,
+     "notWorthOffering": 165
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 248,
+     "anotherGroup": 1,
+     "notArticle": 1,
+     "worthOffering": 174,
+     "clearlyPositive": 59,
+     "worthOfferingOfGroup": 174,
+     "clearlyPositiveOfGroup": 59,
+     "notWorthOffering": 76
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.814,
+      "low": 0.742,
+      "high": 0.875,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.583,
+      "low": 0.51,
+      "high": 0.655,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.558,
+      "low": 0.475,
+      "high": 0.634,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 0.9,
+    "weights": {
+     "news": 0.06,
+     "topic": 0.54,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 483,
+     "anotherGroup": 10,
+     "notArticle": 9,
+     "worthOffering": 332,
+     "clearlyPositive": 118,
+     "worthOfferingOfGroup": 329,
+     "clearlyPositiveOfGroup": 118,
+     "notWorthOffering": 168
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 244,
+     "anotherGroup": 0,
+     "notArticle": 6,
+     "worthOffering": 164,
+     "clearlyPositive": 53,
+     "worthOfferingOfGroup": 164,
+     "clearlyPositiveOfGroup": 53,
+     "notWorthOffering": 86
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.815,
+      "low": 0.743,
+      "high": 0.877,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.557,
+      "low": 0.484,
+      "high": 0.63,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.527,
+      "low": 0.446,
+      "high": 0.605,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   },
+   {
+    "setting": "emphasis",
+    "emphasis": 1.0,
+    "weights": {
+     "news": 0.0,
+     "topic": 0.6,
+     "record": 0.25,
+     "reliability": 0.15
+    },
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 484,
+     "anotherGroup": 9,
+     "notArticle": 9,
+     "worthOffering": 331,
+     "clearlyPositive": 121,
+     "worthOfferingOfGroup": 328,
+     "clearlyPositiveOfGroup": 121,
+     "notWorthOffering": 169
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 243,
+     "anotherGroup": 1,
+     "notArticle": 6,
+     "worthOffering": 161,
+     "clearlyPositive": 52,
+     "worthOfferingOfGroup": 161,
+     "clearlyPositiveOfGroup": 52,
+     "notWorthOffering": 89
+    },
+    "auc": {
+     "ofGroup": {
+      "auc": 0.813,
+      "low": 0.74,
+      "high": 0.876,
+      "n": 245,
+      "positives": 199
+     },
+     "worthOffering": {
+      "auc": 0.533,
+      "low": 0.458,
+      "high": 0.606,
+      "n": 245,
+      "positives": 145
+     },
+     "worthOfferingInGroup": {
+      "auc": 0.5,
+      "low": 0.419,
+      "high": 0.577,
+      "n": 199,
+      "positives": 127
+     }
+    }
+   }
+  ]
+ },
+ "topicRangeTried": [
+  {
+   "topicRange": [
+    -0.05,
+    0.1
+   ],
+   "emphasis": 0.5,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 192,
+     "anotherGroup": 8,
+     "notArticle": 0,
+     "worthOffering": 155,
+     "clearlyPositive": 53,
+     "worthOfferingOfGroup": 150,
+     "clearlyPositiveOfGroup": 53,
+     "notWorthOffering": 45
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 98,
+     "anotherGroup": 2,
+     "notArticle": 0,
+     "worthOffering": 83,
+     "clearlyPositive": 34,
+     "worthOfferingOfGroup": 83,
+     "clearlyPositiveOfGroup": 34,
+     "notWorthOffering": 17
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 478,
+     "anotherGroup": 20,
+     "notArticle": 2,
+     "worthOffering": 380,
+     "clearlyPositive": 132,
+     "worthOfferingOfGroup": 366,
+     "clearlyPositiveOfGroup": 132,
+     "notWorthOffering": 120
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 243,
+     "anotherGroup": 6,
+     "notArticle": 1,
+     "worthOffering": 203,
+     "clearlyPositive": 81,
+     "worthOfferingOfGroup": 202,
+     "clearlyPositiveOfGroup": 81,
+     "notWorthOffering": 47
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.1
+   ],
+   "emphasis": 0.6,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 194,
+     "anotherGroup": 5,
+     "notArticle": 1,
+     "worthOffering": 152,
+     "clearlyPositive": 53,
+     "worthOfferingOfGroup": 150,
+     "clearlyPositiveOfGroup": 53,
+     "notWorthOffering": 48
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 79,
+     "clearlyPositive": 31,
+     "worthOfferingOfGroup": 79,
+     "clearlyPositiveOfGroup": 31,
+     "notWorthOffering": 21
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 478,
+     "anotherGroup": 16,
+     "notArticle": 6,
+     "worthOffering": 370,
+     "clearlyPositive": 130,
+     "worthOfferingOfGroup": 360,
+     "clearlyPositiveOfGroup": 130,
+     "notWorthOffering": 130
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 248,
+     "anotherGroup": 1,
+     "notArticle": 1,
+     "worthOffering": 193,
+     "clearlyPositive": 74,
+     "worthOfferingOfGroup": 193,
+     "clearlyPositiveOfGroup": 74,
+     "notWorthOffering": 57
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.1
+   ],
+   "emphasis": 0.7,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 194,
+     "anotherGroup": 4,
+     "notArticle": 3,
+     "worthOffering": 140,
+     "clearlyPositive": 46,
+     "worthOfferingOfGroup": 139,
+     "clearlyPositiveOfGroup": 46,
+     "notWorthOffering": 60
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 76,
+     "clearlyPositive": 26,
+     "worthOfferingOfGroup": 76,
+     "clearlyPositiveOfGroup": 26,
+     "notWorthOffering": 24
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 484,
+     "anotherGroup": 9,
+     "notArticle": 9,
+     "worthOffering": 342,
+     "clearlyPositive": 119,
+     "worthOfferingOfGroup": 339,
+     "clearlyPositiveOfGroup": 119,
+     "notWorthOffering": 158
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 248,
+     "anotherGroup": 1,
+     "notArticle": 1,
+     "worthOffering": 183,
+     "clearlyPositive": 64,
+     "worthOfferingOfGroup": 183,
+     "clearlyPositiveOfGroup": 64,
+     "notWorthOffering": 67
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.06
+   ],
+   "emphasis": 0.5,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 193,
+     "anotherGroup": 7,
+     "notArticle": 0,
+     "worthOffering": 155,
+     "clearlyPositive": 57,
+     "worthOfferingOfGroup": 151,
+     "clearlyPositiveOfGroup": 57,
+     "notWorthOffering": 45
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 98,
+     "anotherGroup": 2,
+     "notArticle": 0,
+     "worthOffering": 82,
+     "clearlyPositive": 33,
+     "worthOfferingOfGroup": 82,
+     "clearlyPositiveOfGroup": 33,
+     "notWorthOffering": 18
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 478,
+     "anotherGroup": 19,
+     "notArticle": 3,
+     "worthOffering": 374,
+     "clearlyPositive": 137,
+     "worthOfferingOfGroup": 362,
+     "clearlyPositiveOfGroup": 137,
+     "notWorthOffering": 126
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 242,
+     "anotherGroup": 7,
+     "notArticle": 1,
+     "worthOffering": 201,
+     "clearlyPositive": 83,
+     "worthOfferingOfGroup": 199,
+     "clearlyPositiveOfGroup": 83,
+     "notWorthOffering": 49
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.06
+   ],
+   "emphasis": 0.6,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 191,
+     "anotherGroup": 7,
+     "notArticle": 2,
+     "worthOffering": 150,
+     "clearlyPositive": 56,
+     "worthOfferingOfGroup": 146,
+     "clearlyPositiveOfGroup": 56,
+     "notWorthOffering": 50
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 81,
+     "clearlyPositive": 34,
+     "worthOfferingOfGroup": 81,
+     "clearlyPositiveOfGroup": 34,
+     "notWorthOffering": 19
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 475,
+     "anotherGroup": 18,
+     "notArticle": 7,
+     "worthOffering": 364,
+     "clearlyPositive": 132,
+     "worthOfferingOfGroup": 352,
+     "clearlyPositiveOfGroup": 132,
+     "notWorthOffering": 136
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 248,
+     "anotherGroup": 1,
+     "notArticle": 1,
+     "worthOffering": 197,
+     "clearlyPositive": 79,
+     "worthOfferingOfGroup": 197,
+     "clearlyPositiveOfGroup": 79,
+     "notWorthOffering": 53
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.06
+   ],
+   "emphasis": 0.7,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 194,
+     "anotherGroup": 4,
+     "notArticle": 3,
+     "worthOffering": 141,
+     "clearlyPositive": 52,
+     "worthOfferingOfGroup": 140,
+     "clearlyPositiveOfGroup": 52,
+     "notWorthOffering": 59
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 76,
+     "clearlyPositive": 30,
+     "worthOfferingOfGroup": 76,
+     "clearlyPositiveOfGroup": 30,
+     "notWorthOffering": 24
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 482,
+     "anotherGroup": 11,
+     "notArticle": 9,
+     "worthOffering": 339,
+     "clearlyPositive": 121,
+     "worthOfferingOfGroup": 335,
+     "clearlyPositiveOfGroup": 121,
+     "notWorthOffering": 161
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 248,
+     "anotherGroup": 1,
+     "notArticle": 1,
+     "worthOffering": 186,
+     "clearlyPositive": 72,
+     "worthOfferingOfGroup": 186,
+     "clearlyPositiveOfGroup": 72,
+     "notWorthOffering": 64
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.04
+   ],
+   "emphasis": 0.5,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 194,
+     "anotherGroup": 6,
+     "notArticle": 2,
+     "worthOffering": 155,
+     "clearlyPositive": 59,
+     "worthOfferingOfGroup": 151,
+     "clearlyPositiveOfGroup": 59,
+     "notWorthOffering": 45
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 94,
+     "anotherGroup": 6,
+     "notArticle": 0,
+     "worthOffering": 82,
+     "clearlyPositive": 34,
+     "worthOfferingOfGroup": 78,
+     "clearlyPositiveOfGroup": 34,
+     "notWorthOffering": 18
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 478,
+     "anotherGroup": 20,
+     "notArticle": 5,
+     "worthOffering": 373,
+     "clearlyPositive": 140,
+     "worthOfferingOfGroup": 361,
+     "clearlyPositiveOfGroup": 140,
+     "notWorthOffering": 127
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 234,
+     "anotherGroup": 15,
+     "notArticle": 1,
+     "worthOffering": 204,
+     "clearlyPositive": 89,
+     "worthOfferingOfGroup": 194,
+     "clearlyPositiveOfGroup": 89,
+     "notWorthOffering": 46
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.04
+   ],
+   "emphasis": 0.6,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 192,
+     "anotherGroup": 6,
+     "notArticle": 3,
+     "worthOffering": 150,
+     "clearlyPositive": 59,
+     "worthOfferingOfGroup": 146,
+     "clearlyPositiveOfGroup": 59,
+     "notWorthOffering": 50
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 84,
+     "clearlyPositive": 39,
+     "worthOfferingOfGroup": 84,
+     "clearlyPositiveOfGroup": 39,
+     "notWorthOffering": 16
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 476,
+     "anotherGroup": 18,
+     "notArticle": 8,
+     "worthOffering": 361,
+     "clearlyPositive": 135,
+     "worthOfferingOfGroup": 349,
+     "clearlyPositiveOfGroup": 135,
+     "notWorthOffering": 139
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 247,
+     "anotherGroup": 2,
+     "notArticle": 1,
+     "worthOffering": 204,
+     "clearlyPositive": 95,
+     "worthOfferingOfGroup": 203,
+     "clearlyPositiveOfGroup": 95,
+     "notWorthOffering": 46
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.04
+   ],
+   "emphasis": 0.7,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 192,
+     "anotherGroup": 6,
+     "notArticle": 3,
+     "worthOffering": 145,
+     "clearlyPositive": 55,
+     "worthOfferingOfGroup": 141,
+     "clearlyPositiveOfGroup": 55,
+     "notWorthOffering": 55
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 100,
+     "anotherGroup": 0,
+     "notArticle": 0,
+     "worthOffering": 82,
+     "clearlyPositive": 36,
+     "worthOfferingOfGroup": 82,
+     "clearlyPositiveOfGroup": 36,
+     "notWorthOffering": 18
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 475,
+     "anotherGroup": 18,
+     "notArticle": 9,
+     "worthOffering": 349,
+     "clearlyPositive": 127,
+     "worthOfferingOfGroup": 337,
+     "clearlyPositiveOfGroup": 127,
+     "notWorthOffering": 151
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 247,
+     "anotherGroup": 2,
+     "notArticle": 1,
+     "worthOffering": 200,
+     "clearlyPositive": 86,
+     "worthOfferingOfGroup": 198,
+     "clearlyPositiveOfGroup": 86,
+     "notWorthOffering": 50
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.03
+   ],
+   "emphasis": 0.5,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 193,
+     "anotherGroup": 7,
+     "notArticle": 2,
+     "worthOffering": 155,
+     "clearlyPositive": 59,
+     "worthOfferingOfGroup": 151,
+     "clearlyPositiveOfGroup": 59,
+     "notWorthOffering": 45
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 96,
+     "anotherGroup": 4,
+     "notArticle": 0,
+     "worthOffering": 85,
+     "clearlyPositive": 37,
+     "worthOfferingOfGroup": 81,
+     "clearlyPositiveOfGroup": 37,
+     "notWorthOffering": 15
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 475,
+     "anotherGroup": 23,
+     "notArticle": 5,
+     "worthOffering": 375,
+     "clearlyPositive": 140,
+     "worthOfferingOfGroup": 363,
+     "clearlyPositiveOfGroup": 140,
+     "notWorthOffering": 125
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 235,
+     "anotherGroup": 14,
+     "notArticle": 1,
+     "worthOffering": 208,
+     "clearlyPositive": 93,
+     "worthOfferingOfGroup": 196,
+     "clearlyPositiveOfGroup": 93,
+     "notWorthOffering": 42
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.03
+   ],
+   "emphasis": 0.6,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 193,
+     "anotherGroup": 6,
+     "notArticle": 4,
+     "worthOffering": 150,
+     "clearlyPositive": 60,
+     "worthOfferingOfGroup": 146,
+     "clearlyPositiveOfGroup": 60,
+     "notWorthOffering": 50
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 96,
+     "anotherGroup": 4,
+     "notArticle": 0,
+     "worthOffering": 84,
+     "clearlyPositive": 36,
+     "worthOfferingOfGroup": 80,
+     "clearlyPositiveOfGroup": 36,
+     "notWorthOffering": 16
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 476,
+     "anotherGroup": 20,
+     "notArticle": 9,
+     "worthOffering": 363,
+     "clearlyPositive": 140,
+     "worthOfferingOfGroup": 351,
+     "clearlyPositiveOfGroup": 140,
+     "notWorthOffering": 137
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 236,
+     "anotherGroup": 13,
+     "notArticle": 1,
+     "worthOffering": 207,
+     "clearlyPositive": 91,
+     "worthOfferingOfGroup": 195,
+     "clearlyPositiveOfGroup": 91,
+     "notWorthOffering": 43
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.03
+   ],
+   "emphasis": 0.7,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 192,
+     "anotherGroup": 6,
+     "notArticle": 5,
+     "worthOffering": 144,
+     "clearlyPositive": 56,
+     "worthOfferingOfGroup": 140,
+     "clearlyPositiveOfGroup": 56,
+     "notWorthOffering": 56
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 97,
+     "anotherGroup": 3,
+     "notArticle": 0,
+     "worthOffering": 85,
+     "clearlyPositive": 38,
+     "worthOfferingOfGroup": 82,
+     "clearlyPositiveOfGroup": 38,
+     "notWorthOffering": 15
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 475,
+     "anotherGroup": 18,
+     "notArticle": 12,
+     "worthOffering": 350,
+     "clearlyPositive": 132,
+     "worthOfferingOfGroup": 338,
+     "clearlyPositiveOfGroup": 132,
+     "notWorthOffering": 150
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 239,
+     "anotherGroup": 10,
+     "notArticle": 1,
+     "worthOffering": 209,
+     "clearlyPositive": 92,
+     "worthOfferingOfGroup": 199,
+     "clearlyPositiveOfGroup": 92,
+     "notWorthOffering": 41
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.02
+   ],
+   "emphasis": 0.5,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 192,
+     "anotherGroup": 8,
+     "notArticle": 2,
+     "worthOffering": 157,
+     "clearlyPositive": 61,
+     "worthOfferingOfGroup": 153,
+     "clearlyPositiveOfGroup": 61,
+     "notWorthOffering": 43
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 96,
+     "anotherGroup": 4,
+     "notArticle": 0,
+     "worthOffering": 87,
+     "clearlyPositive": 38,
+     "worthOfferingOfGroup": 83,
+     "clearlyPositiveOfGroup": 38,
+     "notWorthOffering": 13
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 474,
+     "anotherGroup": 25,
+     "notArticle": 4,
+     "worthOffering": 381,
+     "clearlyPositive": 145,
+     "worthOfferingOfGroup": 369,
+     "clearlyPositiveOfGroup": 145,
+     "notWorthOffering": 119
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 236,
+     "anotherGroup": 13,
+     "notArticle": 1,
+     "worthOffering": 215,
+     "clearlyPositive": 97,
+     "worthOfferingOfGroup": 203,
+     "clearlyPositiveOfGroup": 97,
+     "notWorthOffering": 35
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.02
+   ],
+   "emphasis": 0.6,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 191,
+     "anotherGroup": 9,
+     "notArticle": 3,
+     "worthOffering": 153,
+     "clearlyPositive": 60,
+     "worthOfferingOfGroup": 149,
+     "clearlyPositiveOfGroup": 60,
+     "notWorthOffering": 47
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 96,
+     "anotherGroup": 4,
+     "notArticle": 0,
+     "worthOffering": 83,
+     "clearlyPositive": 35,
+     "worthOfferingOfGroup": 79,
+     "clearlyPositiveOfGroup": 35,
+     "notWorthOffering": 17
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 472,
+     "anotherGroup": 26,
+     "notArticle": 7,
+     "worthOffering": 373,
+     "clearlyPositive": 144,
+     "worthOfferingOfGroup": 361,
+     "clearlyPositiveOfGroup": 144,
+     "notWorthOffering": 127
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 236,
+     "anotherGroup": 13,
+     "notArticle": 1,
+     "worthOffering": 207,
+     "clearlyPositive": 90,
+     "worthOfferingOfGroup": 195,
+     "clearlyPositiveOfGroup": 90,
+     "notWorthOffering": 43
+    }
+   }
+  },
+  {
+   "topicRange": [
+    -0.05,
+    0.02
+   ],
+   "emphasis": 0.7,
+   "last": {
+    "firstTwenty": {
+     "shown": 200,
+     "ofGroup": 190,
+     "anotherGroup": 8,
+     "notArticle": 5,
+     "worthOffering": 147,
+     "clearlyPositive": 59,
+     "worthOfferingOfGroup": 143,
+     "clearlyPositiveOfGroup": 59,
+     "notWorthOffering": 53
+    },
+    "firstTen": {
+     "shown": 100,
+     "ofGroup": 97,
+     "anotherGroup": 3,
+     "notArticle": 0,
+     "worthOffering": 84,
+     "clearlyPositive": 38,
+     "worthOfferingOfGroup": 81,
+     "clearlyPositiveOfGroup": 38,
+     "notWorthOffering": 16
+    }
+   },
+   "all": {
+    "firstTwenty": {
+     "shown": 500,
+     "ofGroup": 469,
+     "anotherGroup": 24,
+     "notArticle": 12,
+     "worthOffering": 353,
+     "clearlyPositive": 137,
+     "worthOfferingOfGroup": 341,
+     "clearlyPositiveOfGroup": 137,
+     "notWorthOffering": 147
+    },
+    "firstTen": {
+     "shown": 250,
+     "ofGroup": 239,
+     "anotherGroup": 10,
+     "notArticle": 1,
+     "worthOffering": 209,
+     "clearlyPositive": 95,
+     "worthOfferingOfGroup": 199,
+     "clearlyPositiveOfGroup": 95,
+     "notWorthOffering": 41
+    }
+   }
+  }
+ ],
+ "perRound": [
+  {
+   "run": "iter4",
+   "round": "949740498df54a0c",
+   "group": "society",
+   "before": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 13,
+    "worthOfferingOfGroup": 13,
+    "clearlyPositive": 7,
+    "clearlyPositiveOfGroup": 7,
+    "notWorthOffering": 7,
+    "anotherGroup": 1
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 12,
+    "worthOfferingOfGroup": 12,
+    "clearlyPositive": 7,
+    "clearlyPositiveOfGroup": 7,
+    "notWorthOffering": 8,
+    "notArticle": 1
+   }
+  },
+  {
+   "run": "iter4",
+   "round": "f0f263776c5b4ae8",
+   "group": "health",
+   "before": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 18,
+    "worthOfferingOfGroup": 17,
+    "clearlyPositive": 4,
+    "clearlyPositiveOfGroup": 4,
+    "notWorthOffering": 2,
+    "anotherGroup": 1
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 20,
+    "worthOffering": 16,
+    "worthOfferingOfGroup": 16,
+    "clearlyPositive": 4,
+    "clearlyPositiveOfGroup": 4,
+    "notWorthOffering": 4
+   }
+  },
+  {
+   "run": "iter4",
+   "round": "b30c49b44da24403",
+   "group": "science",
+   "before": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 19,
+    "clearlyPositive": 9,
+    "worthOfferingOfGroup": 18,
+    "clearlyPositiveOfGroup": 9,
+    "anotherGroup": 1,
+    "notWorthOffering": 1
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 20,
+    "worthOffering": 17,
+    "worthOfferingOfGroup": 17,
+    "clearlyPositive": 5,
+    "clearlyPositiveOfGroup": 5,
+    "notWorthOffering": 3
+   }
+  },
+  {
+   "run": "iter4",
+   "round": "bb17317b5bb04aba",
+   "group": "environment",
+   "before": {
+    "shown": 20,
+    "ofGroup": 18,
+    "worthOffering": 14,
+    "clearlyPositive": 8,
+    "worthOfferingOfGroup": 12,
+    "clearlyPositiveOfGroup": 8,
+    "anotherGroup": 2,
+    "notWorthOffering": 6
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 13,
+    "clearlyPositive": 7,
+    "worthOfferingOfGroup": 12,
+    "clearlyPositiveOfGroup": 7,
+    "notWorthOffering": 7,
+    "anotherGroup": 1
+   }
+  },
+  {
+   "run": "iter4",
+   "round": "b06792fe854647cb",
+   "group": "culture",
+   "before": {
+    "shown": 20,
+    "ofGroup": 18,
+    "worthOffering": 18,
+    "clearlyPositive": 4,
+    "worthOfferingOfGroup": 17,
+    "clearlyPositiveOfGroup": 3,
+    "anotherGroup": 2,
+    "notWorthOffering": 2
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 18,
+    "clearlyPositive": 3,
+    "worthOfferingOfGroup": 18,
+    "clearlyPositiveOfGroup": 3,
+    "notWorthOffering": 2,
+    "anotherGroup": 1
+   }
+  },
+  {
+   "run": "recheck",
+   "round": "87fa151c0e4f43b1",
+   "group": "society",
+   "before": {
+    "shown": 20,
+    "ofGroup": 18,
+    "worthOffering": 13,
+    "worthOfferingOfGroup": 13,
+    "clearlyPositive": 7,
+    "clearlyPositiveOfGroup": 7,
+    "notWorthOffering": 7,
+    "anotherGroup": 2
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 20,
+    "worthOffering": 12,
+    "worthOfferingOfGroup": 12,
+    "clearlyPositive": 7,
+    "clearlyPositiveOfGroup": 7,
+    "notWorthOffering": 8
+   }
+  },
+  {
+   "run": "recheck",
+   "round": "2823ed73a7484b27",
+   "group": "health",
+   "before": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 19,
+    "worthOfferingOfGroup": 18,
+    "clearlyPositive": 4,
+    "clearlyPositiveOfGroup": 4,
+    "notWorthOffering": 1,
+    "anotherGroup": 1
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 20,
+    "worthOffering": 16,
+    "worthOfferingOfGroup": 16,
+    "clearlyPositive": 3,
+    "clearlyPositiveOfGroup": 3,
+    "notWorthOffering": 4
+   }
+  },
+  {
+   "run": "recheck",
+   "round": "058fbc23ff7449dd",
+   "group": "science",
+   "before": {
+    "shown": 20,
+    "ofGroup": 18,
+    "worthOffering": 18,
+    "clearlyPositive": 8,
+    "worthOfferingOfGroup": 17,
+    "clearlyPositiveOfGroup": 8,
+    "anotherGroup": 2,
+    "notWorthOffering": 2
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 16,
+    "worthOfferingOfGroup": 16,
+    "clearlyPositive": 5,
+    "clearlyPositiveOfGroup": 5,
+    "notWorthOffering": 4,
+    "anotherGroup": 1
+   }
+  },
+  {
+   "run": "recheck",
+   "round": "8081421101d64f29",
+   "group": "environment",
+   "before": {
+    "shown": 20,
+    "ofGroup": 18,
+    "worthOffering": 15,
+    "clearlyPositive": 9,
+    "worthOfferingOfGroup": 13,
+    "clearlyPositiveOfGroup": 9,
+    "anotherGroup": 2,
+    "notWorthOffering": 5
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 15,
+    "clearlyPositive": 9,
+    "worthOfferingOfGroup": 14,
+    "clearlyPositiveOfGroup": 9,
+    "notWorthOffering": 5,
+    "anotherGroup": 1
+   }
+  },
+  {
+   "run": "recheck",
+   "round": "20c5c659723542d5",
+   "group": "culture",
+   "before": {
+    "shown": 20,
+    "ofGroup": 18,
+    "worthOffering": 17,
+    "worthOfferingOfGroup": 16,
+    "clearlyPositive": 4,
+    "clearlyPositiveOfGroup": 3,
+    "anotherGroup": 2,
+    "notWorthOffering": 3
+   },
+   "chosen": {
+    "shown": 20,
+    "ofGroup": 19,
+    "worthOffering": 17,
+    "clearlyPositive": 3,
+    "worthOfferingOfGroup": 17,
+    "clearlyPositiveOfGroup": 3,
+    "notWorthOffering": 3,
+    "anotherGroup": 1
+   }
+  }
+ ],
+ "moved": [
+  {
+   "group": "society",
+   "direction": "out",
+   "url": "https://www.bbc.co.uk/news/articles/crn8wyl4n42yo?at_medium=RSS&at_campaign=rss",
+   "title": "Autism, ADHD and mental health review: What you need to know",
+   "hand": 1,
+   "belongsTo": [
+    "health",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "society",
+   "direction": "out",
+   "url": "https://www.lavanguardia.com/economia/20261009/11654300/ue-china-alcanzan-acuerdo-sobre-vehiculos-hibridos-tierras-raras.html",
+   "title": "La UE y China alcanzan un acuerdo sobre los vehículos híbridos y las tierras raras",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "group": "society",
+   "direction": "out",
+   "url": "https://www.abc.es/economia/indra-socios-consorcio-confian-primeros-8x8-operativos-20261005021014-nt.html",
+   "title": "Indra y sus socios de consorcio confían en que los primeros 8x8 estén ya operativos este año",
+   "hand": 0,
+   "belongsTo": [],
+   "kind": "article"
+  },
+  {
+   "group": "society",
+   "direction": "in",
+   "url": "https://www.bbc.co.uk/news/articles/c6vg98lw017po?at_medium=RSS&at_campaign=rss",
+   "title": "France promises 3,000 extra teachers in first step to calm student protests",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "society",
+   "direction": "in",
+   "url": "https://www.20minutos.es/empleo/finlandia-ofrece-sueldos-mas-3-000-euros-por-trabajar-como-profesor-infantil-estos-son-los-plazos-requisitos_7046470_0.html",
+   "title": "Finlandia ofrece sueldos de más de 3.000 euros por trabajar como profesor de infantil: estos son los plazos",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "society",
+   "direction": "in",
+   "url": "https://www.elmundo.es/economia/vivienda/2026/10/09/6ac4d6bde4d4d82a218b45aa.html",
+   "title": "Shanghái se convierte en el gran casero para rescatar su mercado inmobiliario",
+   "hand": 0,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "health",
+   "direction": "out",
+   "url": "https://muyinteresante.okdiario.com/curiosidades/hachimaki-la-bandana-japonesa-que-simboliza-esfuerzo-constancia-y-buena-suerte.html",
+   "title": "Hachimaki: la bandana japonesa que simboliza esfuerzo, constancia y buena suerte",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "health",
+   "direction": "out",
+   "url": "https://www.cnn.com/2026/10/09/health/overcoming-odds-series-amy-narcolepsy-wellness",
+   "title": "For decades, no one could explain her exhaustion and hallucinations. One question changed everything",
+   "hand": 1,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "health",
+   "direction": "out",
+   "url": "https://www.who.int/news/item/08-10-2026-new-global-roadmap-launched-to-tackle-hypertension-in-pregnancy-a-leading-cause-of-maternal-and-newborn-deaths",
+   "title": "New global roadmap launched to tackle hypertension in pregnancy, a leading cause of maternal and newborn deaths",
+   "hand": 2,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "health",
+   "direction": "in",
+   "url": "https://www.theguardian.com/society/2026/oct/08/covid-brexit-liz-truss-mini-budget-lasting-decline-mental-health-uk-study",
+   "title": "Covid, Brexit and Liz Truss mini-budget led to lasting decline in mental health, study finds",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "health",
+   "direction": "in",
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168547",
+   "title": "‘No plague case’ in Siberia, Russia tells WHO as assessments continue",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "health",
+   "direction": "in",
+   "url": "https://news.un.org/feed/view/en/story/2026/10/1168542",
+   "title": "Kenya races to trace all contacts after first Ebola death, WHO official says",
+   "hand": 0,
+   "belongsTo": [
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "out",
+   "url": "https://news.mit.edu/2026/supporting-systems-success-1008",
+   "title": "Supporting systems of success",
+   "hand": 1,
+   "belongsTo": [
+    "society",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "out",
+   "url": "https://www.europapress.es/ciencia/laboratorio/noticia-csic-impulsa-cuatro-spin-off-desarrollar-soluciones-salud-alimentacion-sostenibilidad-agricultura-20261009103134.html",
+   "title": "CSIC impulsa cuatro 'spin-off' para desarrollar soluciones en salud, alimentación, sostenibilidad y agricultura",
+   "hand": 2,
+   "belongsTo": [
+    "science",
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "out",
+   "url": "https://www.theguardian.com/society/2026/oct/07/gene-therapy-can-partly-restore-sight-in-blind-people-researchers-reveal",
+   "title": "Gene therapy can partly restore sight in blind people, researchers reveal",
+   "hand": 2,
+   "belongsTo": [
+    "science",
+    "health"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "out",
+   "url": "https://www.20minutos.es/capaces/inrobics-startup-que-pone-su-alma-sus-robots-servicio-las-personas-cubren-necesidades-que-ahora-no-estan-cubiertas_7046273_0.html",
+   "title": "Inrobics, la 'startup' que pone su 'alma' y sus robots al servicio de las personas",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "out",
+   "url": "https://www.agenciasinc.es/Noticias/Francis-Halzen-gana-el-Nobel-de-Fisica-2026-por-sus-contribuciones-al-estudio-de-los-neutrinos",
+   "title": "Francis Halzen gana el Nobel de Física 2026 por sus contribuciones al estudio de los neutrinos",
+   "hand": 2,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "out",
+   "url": "https://elpais.com/cultura/2026-10-08/un-faro-para-la-creacion-y-las-ideas.html",
+   "title": "Un faro para la creación y las ideas",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "in",
+   "url": "https://www.esa.int/Science_Exploration/Space_Science/Mars_Express/Mars_s_oddest_cloud_may_be_even_odder_than_we_thought",
+   "title": "Mars’s oddest cloud may be even odder than we thought",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "in",
+   "url": "https://www.nasa.gov/missions/spherex/nasas-spherex-telescope-sees-menagerie-of-brown-dwarfs/",
+   "title": "NASA’s SPHEREx Telescope Sees Menagerie of Brown Dwarfs",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "in",
+   "url": "https://www.newscientist.com/article/2592404-ai-or-super-intelligence-trump-isnt-the-only-one-who-is-confused/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+   "title": "AI or ‘super intelligence’? Trump isn’t the only one who is confused",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "in",
+   "url": "https://www.nature.com/articles/d41586-026-03193-x",
+   "title": "How to build a mouse: embryo development captured in stunning detail",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "in",
+   "url": "https://www.bbc.co.uk/news/articles/c6j9k1l72wkgo?at_medium=RSS&at_campaign=rss",
+   "title": "Anthropic bans users from being 'cruel' to its AI systems",
+   "hand": 0,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "science",
+   "direction": "in",
+   "url": "https://www.europapress.es/ciencia/laboratorio/noticia-sencilla-formula-matematica-predice-cuando-chatbots-ia-descontrolaran-20261008170103.html",
+   "title": "Una sencilla fórmula matemática predice cuándo los chatbots de IA se descontrolarán",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "environment",
+   "direction": "out",
+   "url": "https://www.smithsonianmag.com/science-nature/five-discoveries-that-changed-our-understanding-of-t-rex-forever-from-warm-blood-to-lips-180989634/",
+   "title": "Five Discoveries That Changed Our Understanding of T. Rex Forever, From Warm Blood to Lips",
+   "hand": 1,
+   "belongsTo": [
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "environment",
+   "direction": "out",
+   "url": "https://www.theguardian.com/environment/2026/oct/09/isaias-strengthens-first-atlantic-hurricane-2026",
+   "title": "Isaias strengthens to become first Atlantic hurricane of 2026 season",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "environment",
+   "direction": "out",
+   "url": "https://www.goodnewsnetwork.org/neighbors-flock-to-rescue-a-wounded-owl-tangled-up-in-barbed-wire/",
+   "title": "Neighbors Flock to Rescue a Wounded Owl Tangled Up in Barbed Wire",
+   "hand": 2,
+   "belongsTo": [
+    "environment",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "environment",
+   "direction": "in",
+   "url": "https://news.mongabay.com/2026/10/fishmeal-factories-take-senegals-fish-from-the-dinner-table/",
+   "title": "Fishmeal factories take Senegal’s fish from the dinner table",
+   "hand": 0,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "environment",
+   "direction": "in",
+   "url": "https://www.eldiario.es/comunitat-valenciana/generalitat-da-carpetazo-definitivo-macrovertedero-zarra-ampliamente-rechazado-vecinos_1_13575387.html",
+   "title": "La Generalitat da carpetazo definitivo al macrovertedero de Zarra, ampliamente rechazado por los vecinos",
+   "hand": 1,
+   "belongsTo": [
+    "environment",
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "environment",
+   "direction": "in",
+   "url": "https://www.goodnewsnetwork.org/saudi-solar-park-proves-brilliant-breeding-ground-for-threatened-sand-gazelles/",
+   "title": "Saudi Solar Park Proves Brilliant Breeding Ground for Threatened Sand Gazelles",
+   "hand": 2,
+   "belongsTo": [
+    "environment"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "culture",
+   "direction": "out",
+   "url": "https://www.rtve.es/noticias/20261009/yuval-abraham-director-naza-mayor-parte-israel-esta-ignorando-justificando-algo-inhumano/17260846.shtml",
+   "title": "Yuval Abraham, director de 'NAZA: \"La mayor parte de Israel está ignorando o justificando algo inhumano\"",
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "culture",
+   "direction": "out",
+   "url": "https://muyinteresante.okdiario.com/historia/helmut-clissmann-el-agente-aleman-que-busco-aliados-en-irlanda.html",
+   "title": "Helmut Clissmann, el agente alemán que buscó aliados en Irlanda y ayudó a liberar a Frank Ryan",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "culture",
+   "direction": "out",
+   "url": "https://www.goodnewsnetwork.org/strangers-showed-up-to-mans-destroyed-house-to-put-up-a-tarp-having-seen-his-televised-plea/",
+   "title": "Strangers Showed Up to Man’s Destroyed House to Put Up a Tarp Having Seen His Televised Plea",
+   "hand": 2,
+   "belongsTo": [
+    "society"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "culture",
+   "direction": "in",
+   "url": "https://www.lavanguardia.com/cultura/20261009/11655289/cuerpos-humanos-desmembrados-e-incrustados-paredes-suelos-casas-antigua-escandinavia-desconcertan-investigadores.html",
+   "title": "Cuerpos desmembrados incrustados en casas, reflejo de la violencia en la antigua Escandinavia",
+   "hand": 1,
+   "belongsTo": [
+    "culture",
+    "science"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "culture",
+   "direction": "in",
+   "url": "https://www.smithsonianmag.com/smart-news/hundreds-of-british-college-students-clashed-with-wooden-swords-in-a-1966-re-enactment-of-the-battle-of-hastings-watch-the-rediscovered-time-capsule-of-lost-footage-180989635/",
+   "title": "Hundreds of British College Students Clashed With Wooden Swords in a 1966 Re-enactment of the Battle of Hastings. Watch the Rediscovered 'Time Capsule' of Lost Footage",
+   "hand": 1,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  },
+  {
+   "group": "culture",
+   "direction": "in",
+   "url": "https://elpais.com/television/series/2026-10-09/el-caso-de-daniel-sancho-se-convierte-en-serie-de-netflix-con-martino-rivas-transformado.html",
+   "title": "El caso de Daniel Sancho se convierte en serie de Netflix con Martiño Rivas transformado",
+   "hand": 0,
+   "belongsTo": [
+    "culture"
+   ],
+   "kind": "article"
+  }
+ ]
+}

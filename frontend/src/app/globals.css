@@ -4160,6 +4160,71 @@ button.topic-group.is-on {
   color: var(--muted);
 }
 
+/* Positive impact <-> topic relevance (discover/page.tsx EmphasisControl):
+   one range between its two named ends, under the topic buttons it
+   weighs. */
+.emphasis-control {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.emphasis-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.emphasis-slider {
+  display: grid;
+  grid-template-columns: auto minmax(8rem, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 34rem;
+}
+
+.emphasis-end {
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.emphasis-slider input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.emphasis-slider input[type="range"]:disabled {
+  opacity: 0.5;
+}
+
+button.button-link.emphasis-reset {
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+.emphasis-moved {
+  color: var(--fg);
+}
+
+@media (max-width: 480px) {
+  .emphasis-slider {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .emphasis-slider input[type="range"] {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .emphasis-end:last-child {
+    text-align: right;
+  }
+}
+
 /* Quieter buttons, for the secondary action beside a primary one. */
 button.button-secondary {
   background: transparent;

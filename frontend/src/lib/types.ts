@@ -543,7 +543,38 @@ export interface IngestSourcesResponse {
   /** Candidates a round shows, best first, and the most it shows when asked for more. */
   listed: number;
   maxListed: number;
+  /**
+   * The default topic emphasis, 0-1 (backend ranking.DEFAULT_TOPIC_EMPHASIS):
+   * where the positive-impact-or-topic control starts. Absent from a backend
+   * older than 2026-10-13.
+   */
+  topicEmphasis?: number;
   lastRun: IngestReport | null;
+}
+
+/**
+ * How much a round's order weighed fitting its groups against positive
+ * impact (backend ranking.described). 0 all positive impact, 1 all topic.
+ */
+export interface TopicEmphasis {
+  /** What the request asked for; null: the default. */
+  asked: number | null;
+  /** What the ranking used; null: the round had no topic to weigh (no group, or nothing read). */
+  applied: number | null;
+  /** The default when the round was made. */
+  default: number;
+}
+
+/** How a round was ranked, recorded with it. */
+export interface RoundRanking {
+  /** news, topic, record, reliability: the weights its scores used; they sum to 1. */
+  weights: Record<string, number>;
+  /** Absent on rounds made before 2026-10-13. */
+  topicEmphasis?: TopicEmphasis;
+  /** The similarity at which two candidates are one story. */
+  sameStory?: number;
+  /** How far a candidate's fit may fall before it is listed after those that fit. */
+  groupFit?: number;
 }
 
 /** What the embeddings said about a candidate (backend mission_screen.Reading), cosine similarities. */
@@ -564,7 +595,11 @@ export interface CandidateReading {
 
 /** A candidate's place in the ranking (backend src/services/selection/ranking.py). */
 export interface CandidateRank {
-  /** 0-1: story 51%, topic 15%, source record 21%, reliability 13% (the round's `ranking.weights`). */
+  /**
+   * 0-1, under the round's `ranking.weights`: the story's 60% split between
+   * positive impact and topic by the round's topic emphasis (by default 24%
+   * and 36%), source record 25%, reliability 15%.
+   */
   score: number;
   /** 0-1, from the story's own title and summary; null when nothing was read. */
   news: number | null;
@@ -693,8 +728,8 @@ export interface CandidateRound {
   candidates: Candidate[];
   /** Ranked below those shown; POST .../more brings the next into view. */
   reserve?: Candidate[];
-  /** Absent on rounds made before the ranking. `sameStory`: the similarity at which two candidates are one story. */
-  ranking?: { weights: Record<string, number>; sameStory?: number };
+  /** Absent on rounds made before the ranking (2026-10-06). */
+  ranking?: RoundRanking;
   /** Absent on rounds made before the screen existed. */
   screen?: MissionScreenState;
   screened?: ScreenedCandidate[];
@@ -719,6 +754,8 @@ export interface CandidateRoundSummary {
   id: string;
   startedAt: string | null;
   groups: string[] | null;
+  /** The topic emphasis the round was ranked at; null with no topic to weigh or before 2026-10-13. */
+  topicEmphasis?: number | null;
   totals: CandidateRound["totals"] | null;
   aiStatus: AISelectionState["status"] | null;
   aiPicks: number;

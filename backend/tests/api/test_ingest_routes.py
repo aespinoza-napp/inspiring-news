@@ -121,9 +121,11 @@ class FakeSelection:
 
     def __init__(self):
         self.calls = []
+        self.emphases = []
 
-    def create_round(self, groups, source_ids, per_source, listed=20):
+    def create_round(self, groups, source_ids, per_source, listed=20, topic_emphasis=None):
         self.calls.append(("create", groups, source_ids, per_source, listed))
+        self.emphases.append(topic_emphasis)
         return {"id": "0123456789abcdef", "candidates": []}
 
     def get(self, round_id):
@@ -175,6 +177,33 @@ def test_a_round_needs_groups_and_known_sources(monkeypatch):
     client.post("/ingest/rounds", json={"groups": ["science"], "listed": 40})
 
     assert selection.calls[-1] == ("create", ["science"], None, 3, 40)
+
+
+def test_a_rounds_topic_emphasis_is_optional_and_between_zero_and_one(monkeypatch):
+
+    selection, _ = use_selection(monkeypatch)
+
+    for bad in (-0.1, 1.01, "a lot"):
+        assert client.post("/ingest/rounds", json={"groups": ["science"], "topicEmphasis": bad}).status_code == 422
+
+    assert selection.calls == []
+
+    # Omitted - or null - is the default, decided by the ranking, not here.
+    assert client.post("/ingest/rounds", json={"groups": ["science"]}).status_code == 200
+    assert client.post("/ingest/rounds", json={"groups": ["science"], "topicEmphasis": None}).status_code == 200
+    for value in (0, 0.25, 1):
+        assert client.post("/ingest/rounds", json={"groups": ["science"], "topicEmphasis": value}).status_code == 200
+
+    assert selection.emphases == [None, None, 0.0, 0.25, 1.0]
+
+
+def test_the_catalogue_says_where_the_topic_emphasis_starts(monkeypatch):
+
+    from src.services.selection.ranking import DEFAULT_TOPIC_EMPHASIS
+
+    use_ingestion(monkeypatch)
+
+    assert client.get("/ingest/sources").json()["topicEmphasis"] == DEFAULT_TOPIC_EMPHASIS
 
 
 def test_more_of_a_round_is_shown_only_when_asked(monkeypatch):

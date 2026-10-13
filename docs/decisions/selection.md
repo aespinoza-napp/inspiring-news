@@ -254,10 +254,15 @@ the round already holds: no page fetched, no LLM asked.
 
 | Part | Weight | What it is |
 |---|---|---|
-| The story | 0.51 | How much nearer its title and summary come to a description of positive impact (`IMPACT` in `mission_screen.py`) than to the nearest off-mission one. The screen's embedding pass, one more label |
-| The topic | 0.15 | How well it fits the groups the round asked for: its group fit (below), scaled between -0.05 and 0.10. Added 2026-10-09 |
-| The source's record | 0.21 | The share of the source's newest items the screen kept this round (`judged`, and `judged - screened` kept), smoothed towards 0.8 with the weight of five items. A positive outlet counts 1 |
-| The source's reliability | 0.13 | Its `reliability_index`, the rating its pages get as evidence |
+| The story | 0.6 × (1 - emphasis); 0.24 by default | How much nearer its title and summary come to a description of positive impact (`IMPACT` in `mission_screen.py`) than to the nearest off-mission one. The screen's embedding pass, one more label |
+| The topic | 0.6 × emphasis; 0.36 by default | How well it fits the groups the round asked for: its group fit (below), scaled between -0.05 and 0.10. Added 2026-10-09 |
+| The source's record | 0.25 | The share of the source's newest items the screen kept this round (`judged`, and `judged - screened` kept), smoothed towards 0.8 with the weight of five items. A positive outlet counts 1 |
+| The source's reliability | 0.15 | Its `reliability_index`, the rating its pages get as evidence |
+
+The *emphasis* is the person's, per round, 0 to 1 (2026-10-13, "Positive
+impact or the topic", below). From 2026-10-09 to 2026-10-13 the weights
+were fixed at 0.51 / 0.15 / 0.21 / 0.13; at emphasis 0 they are the
+2026-10-06 three-part score.
 
 The topic part (2026-10-09): within the group-fit line a story of another
 group was ranked on its own merits alone, and an Environment round's first
@@ -337,6 +342,148 @@ round's group from one of another's with AUC 0.874 [0.81, 0.93]; at -0.05
 it moves 18 of the 34 of another group and 10 of the 115 of the round's,
 each of those a story whose first group is another. The fit is recorded
 with each candidate's reading (`groupFit`).
+
+## Positive impact or the topic: the person's call
+
+Added 2026-10-13, asked for by the person running discovery: how much a
+round's order weighs a story's positive impact against how well it fits
+the topics picked, and, when they look for a topic, the topic first. A
+Science round should list science stories first, the positive ones among
+them, not the most positive story loosely about science.
+
+**One number, `topicEmphasis`, 0 to 1**, on `POST /ingest/rounds` and as
+a control under the topic buttons on `/discover` ("Positive impact ↔
+Topic relevance"). It splits the story's 0.6 of the score between its
+positive-impact reading and its group fit; the source's record and
+reliability keep 0.25 and 0.15 (the 2026-10-06 measurement's) at every
+setting. Omitted, it is `DEFAULT_TOPIC_EMPHASIS`, **0.6**: topic 0.36,
+positive impact 0.24. A single number rather than four weights because
+it is the one trade the person asked to make, and because moving weight
+between two parts can never de-normalise the score (below). At any
+setting a story nearer another group's topics is still listed after
+those that fit (`GROUP_FIT`, above): the control orders what fits.
+
+**No topic, nothing to weigh.** A round with no topic signal - no group
+asked for (only `POST /ingest` and the discovery experiment's baseline;
+a round requires groups), or nothing read because `inference/` was down -
+is ranked at emphasis 0 whatever was asked, and records `applied: null`.
+Left at the default, 0.36 of every score would be one constant and the
+story would weigh less than its source's record. The control is disabled
+until a group is picked and says why; a round with nothing read says its
+order is the story's and the source's alone.
+
+**Recorded with the round**, so its order can be explained later without
+the code of the day: `ranking.weights` (the four the scores used),
+`ranking.topicEmphasis` (`asked`, null for the default; `applied`, null
+with no topic signal; `default` that day), `sameStory`, `groupFit`. The
+round summary carries `topicEmphasis` (applied) for Recent rounds. The
+page sends nothing when the control sits at the default, so a round says
+it took the default rather than a number that happened to equal it.
+
+### Where it lives, and the invariants
+
+- **Passed per call** (invariant 1): `rank(reading, standing, fit,
+  emphasis)`, `discover_candidates(..., topic_emphasis)`,
+  `create_round(..., topic_emphasis)`. `IngestionService` and
+  `SelectionService` are singletons shared by every request; a test runs
+  two calls with different emphases on one instance and gets two orders,
+  and a third call back at the first emphasis gets the first order again.
+- **A request parameter, not a `PipelineThresholds` field** (invariant
+  2). It is the person's question - what do I want to read first - like
+  the round's `groups` and `listed`, and it judges nothing an analysis
+  does: admission and the fact-check never see it. `PipelineThresholds`
+  is an analysis run's set; the analysis cache keys on every field and
+  `Lineage` records overrides on every article, so a field there would
+  change every cache key once and stamp onto analyses a knob that never
+  touched them. Invariant 2's failure - a value read from `settings` that
+  one run cannot override - cannot arise: nothing reads `settings` for it,
+  and every round can set it.
+- **The weights stay module constants, not `WEIGHT_GROUPS`.** The
+  declared exception (ranking and confidence weights environment-only,
+  each group summing to 1) is about the fact-checker's `RANKING_*` and
+  `CONFIDENCE_*` settings, which a caller setting one member alone would
+  de-normalise. The selection ranking's weights were never settings: they
+  are measured on labelled rounds and recorded with each round. The
+  emphasis only moves weight between the story's two parts, so the sum is
+  1 by construction; a test holds it at every emphasis. The default sits
+  beside them as a constant (`DEFAULT_TOPIC_EMPHASIS`), like `GROUP_FIT`,
+  `SAME_STORY` and `LISTED`.
+
+### Measured 2026-10-13
+
+`uv run python -m src.evaluation.experiments emphasis`
+(`docs/experiments.md`; `backend/data/evaluation/experiments/emphasis/`).
+Every candidate of the 2026-10-09 alignment rounds, shown or in reserve,
+re-scored with the ranking's own `score` and `ordered` from the readings
+the rounds recorded - nothing embedded again. The 60 reserve candidates
+the 2026-10-09 labels had not covered were labelled first (they rise into
+view as the topic weighs more), blind to any score: none of any first
+twenty is unlabelled. Over the ten one-group rounds the 2026-10-09 topic
+weight was chosen on (200 places in their first twenties):
+
+| Emphasis | Of the group asked for | Worth offering or clearly positive | Worth offering, of the group | Clearly positive, of the group | Not worth offering | First ten: of the group |
+|---|---|---|---|---|---|---|
+| before (0.51 / 0.15 / 0.21 / 0.13) | 184 | 164 | 154 | 62 | 36 | 94 of 100 |
+| 0 (positive impact only) | 174 | 167 | 150 | 61 | 33 | 89 |
+| 0.3 | 187 | 162 | 154 | 61 | 38 | 94 |
+| 0.5 | 192 | 155 | 150 | 53 | 45 | 98 |
+| **0.6 (default)** | **194** | **152** | **150** | **53** | **48** | **100** |
+| 0.7 | 194 | 140 | 139 | 46 | 60 | 100 |
+| 1 (topic only) | 195 | 137 | 136 | 52 | 63 | 97 |
+
+**Why 0.6.** It is where the group asked for stops gaining: the first ten
+all of it (100 of 100; 248 of 250 over all 25 rounds of the day), the
+first twenty at its plateau (194 of 200; 478 of 500). Higher gains no more
+of it and loses stories worth offering fast (0.7: 139 of the group's,
+against 150). Against the weights before, the group's stories worth
+offering lose 4 of 154 (7 of 367 over 25 rounds); the 12 stories worth
+offering that leave the first twenty are mostly another group's - which
+is the point. AUC for a story of the group against another's, 0.706
+[0.608, 0.797] before and 0.825 [0.751, 0.891] at 0.6.
+
+**The cost**, already there from about 0.45: clearly positive stories of
+the group, 62 → 53. A squarely on-topic story beats a positive one that
+also belongs to another group: in the Science round gene therapy restoring
+sight (science and health), a physics Nobel and CSIC's spin-offs left the
+first twenty for AI policy and a Mars cloud; in Health a roadmap against
+hypertension in pregnancy left for an Ebola outbreak and a plague scare.
+Within the group, how well the score separates the stories worth offering
+falls from 0.757 to 0.619: the ranking now finds the topic; telling good
+news from hard news among it is the AI selection's and the person's job.
+0.55 is as good within the noise (one more of another group in the first
+ten, 7 more of the group's worth offering over 25 rounds); 0.6 is the one
+that puts only the group asked for in the first ten, which is what a
+person reads first.
+
+**Tried and not adopted: full topic marks earlier.** The topic part is
+full at a fit of 0.10, which rewards squareness: a story of two groups
+fits less. Full at 0.03 gave back 7 clearly positive stories of the group
+at 0.6, but lost 4 worth offering and 4 of the first ten to other groups
+(over 25 rounds: 10 more clearly positive, 9 fewer worth offering, 12
+fewer of the group in the first ten). Inside the noise either way;
+`TOPIC_RANGE` unchanged.
+
+### The AI selection: sees the topic, not the emphasis
+
+`AISelector` already gets the round's topics ("Chosen topics: …") and its
+`DEFINITION` scores a story outside them low; that stays. It is not told
+the emphasis, by decision. With the topic first, the list it reads is
+already the group's stories, and what the emphasis lets in is on-topic
+hard news - the outbreak, the plague scare, AI policy. Separating that
+from good news is what the AI selection exists for; told to weigh the
+topic more, it would promote the same hard news the ranking just let in.
+A prompt sentence would be cheap, but its effect cannot be tested here:
+no labelled round has AI scores under two prompts, and running the shared
+model would compete with the evaluation on the dev stack. The round
+records its emphasis, so `blind-ai` can measure the AI against it later.
+
+**What it cannot tell.** The labels are an AI's (Claude's), not yet
+checked by a person - the 60 new ones by the same hand, from title and
+link. One day, five feeds read five times: the ten rounds are closer to
+five, and the 25 are not independent either. The slider's live effect was
+checked only where nothing could be read (`inference/` unreachable from
+the host): the topic-weighted order itself is covered by tests and by
+this replay, not by a live round.
 
 **What it cannot do**: order is not supply. A round of thirty with
 fourteen worth offering still shows six that are not. The labels are an

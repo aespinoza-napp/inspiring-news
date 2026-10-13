@@ -17,6 +17,14 @@ import {
 
 const PER_SOURCE_OPTIONS = [1, 2, 3, 5, 10];
 
+// Where the positive-impact-or-topic control starts when the backend does
+// not say (one older than 2026-10-13): its default then.
+const FALLBACK_TOPIC_EMPHASIS = 0.6;
+
+// The control's step: finer than this is noise on what a round shows
+// (docs/experiments.md, "emphasis: positive impact or the topic").
+const EMPHASIS_STEP = 0.05;
+
 // The mission screen's reasons (backend src/services/selection/mission_screen.py
 // OFF_MISSION, and FORMATS for what is not an article at all).
 const OFF_MISSION: Record<string, string> = {
@@ -80,8 +88,9 @@ function percent(value: number | undefined): string {
 
 // A candidate's score and what it is made of (backend
 // src/services/selection/ranking.py): the story's own title and summary,
-// how much of its source's news the screen kept this round, and the
-// source's reliability rating.
+// how well it fits the topics picked (weighed against the first by the
+// round's topic emphasis), how much of its source's news the screen kept
+// this round, and the source's reliability rating.
 function RankLine({ rank, place }: { rank: CandidateRank; place: number | undefined }) {
   return (
     <div className="candidate-rank">
@@ -117,6 +126,88 @@ function RankLine({ rank, place }: { rank: CandidateRank; place: number | undefi
   );
 }
 
+function sameEmphasis(a: number, b: number): boolean {
+  return Math.abs(a - b) < 1e-6;
+}
+
+// The emphasis a round was asked for, so reopening it puts the control
+// back where it was: what it asked, else what it applied, else the default.
+function emphasisOf(round: CandidateRound, fallback: number): number {
+  const emphasis = round.ranking?.topicEmphasis;
+  return emphasis?.asked ?? emphasis?.applied ?? emphasis?.default ?? fallback;
+}
+
+// How much fitting the topics picked weighs against positive impact in the
+// order (backend src/services/selection/ranking.py, the topic emphasis): 0
+// all positive impact, 1 all topic. It splits the story's share of each
+// score; the source's record and rating keep theirs. Without a topic there
+// is nothing to weigh, and the control says so rather than pretending.
+function EmphasisControl({
+  value,
+  defaultValue,
+  hasTopic,
+  disabled,
+  onChange,
+}: {
+  value: number;
+  defaultValue: number;
+  hasTopic: boolean;
+  disabled: boolean;
+  onChange: (value: number) => void;
+}) {
+  const topic = Math.round(value * 100);
+  const atDefault = sameEmphasis(value, defaultValue);
+
+  return (
+    <div className="emphasis-control">
+      <label className="emphasis-label" htmlFor="topic-emphasis">
+        What comes first
+      </label>
+      <div className="emphasis-slider">
+        <span className="emphasis-end">Positive impact</span>
+        <input
+          id="topic-emphasis"
+          type="range"
+          min={0}
+          max={1}
+          step={EMPHASIS_STEP}
+          value={value}
+          disabled={disabled || !hasTopic}
+          onChange={(event) => onChange(Number(event.target.value))}
+          aria-valuetext={`${topic}% topic relevance, ${100 - topic}% positive impact`}
+        />
+        <span className="emphasis-end">Topic relevance</span>
+      </div>
+      <p className="claims-note">
+        {hasTopic ? (
+          <>
+            {topic}% topic relevance, {100 - topic}% positive impact
+            {atDefault ? " (the default)" : ""}: of what each story counts for, how much is how
+            squarely it fits these topics and how much how positive it reads. Its source&apos;s record
+            and rating count the same either way, and stories nearer another topic are listed after
+            the rest at any setting.
+            {!atDefault && (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  className="button-link emphasis-reset"
+                  onClick={() => onChange(defaultValue)}
+                  disabled={disabled}
+                >
+                  Back to the default ({Math.round(defaultValue * 100)}%)
+                </button>
+              </>
+            )}
+          </>
+        ) : (
+          "Pick a topic to weigh it against positive impact: with no topic picked there is no topic relevance to order by."
+        )}
+      </p>
+    </div>
+  );
+}
+
 // The round id lives in the URL, so a reload - or coming back from Live -
 // returns to the same candidates and the same AI proposal.
 function roundFromUrl(): string | null {
@@ -137,6 +228,7 @@ export default function DiscoverPage() {
   const [groups, setGroups] = useState<string[]>([]);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
   const [perSource, setPerSource] = useState(3);
+  const [emphasis, setEmphasis] = useState(FALLBACK_TOPIC_EMPHASIS);
 
   const [round, setRound] = useState<CandidateRound | null>(null);
   const [chosen, setChosen] = useState<Set<string>>(new Set());
@@ -151,6 +243,7 @@ export default function DiscoverPage() {
   const maxSelected = catalogue?.maxSelected ?? 20;
   const listed = catalogue?.listed ?? 20;
   const maxListed = catalogue?.maxListed ?? 40;
+  const defaultEmphasis = catalogue?.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS;
 
   const loadRecent = useCallback(async () => {
     try {
@@ -173,6 +266,7 @@ export default function DiscoverPage() {
         const data = await call<IngestSourcesResponse>("/api/ingest/sources");
         if (cancelled) return;
         setCatalogue(data);
+        setEmphasis(data.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS);
 
         const id = roundFromUrl();
         if (id) {
@@ -181,6 +275,7 @@ export default function DiscoverPage() {
           setRound(saved);
           setGroups(saved.groups);
           setPerSource(saved.perSource);
+          setEmphasis(emphasisOf(saved, data.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS));
           setChosen(new Set(saved.queued?.urls ?? []));
         }
       } catch (err) {
@@ -355,6 +450,10 @@ export default function DiscoverPage() {
         sources: again?.sources ?? included.map((source) => source.id),
         perSource: again?.perSource ?? perSource,
         listed,
+        // Left at the default, none is sent: the round then records that
+        // the default was used, whatever it is that day. Refresh takes the
+        // control as it stands, so moving it and refreshing re-ranks.
+        topicEmphasis: sameEmphasis(emphasis, defaultEmphasis) ? null : emphasis,
       });
       setRound(created);
       setChosen(new Set());
@@ -448,6 +547,7 @@ export default function DiscoverPage() {
       setRound(saved);
       setGroups(saved.groups);
       setPerSource(saved.perSource);
+      setEmphasis(emphasisOf(saved, defaultEmphasis));
       setChosen(
         new Set(saved.queued?.urls ?? (saved.aiSelection?.picks ?? []).map((pick) => pick.url))
       );
@@ -459,6 +559,13 @@ export default function DiscoverPage() {
 
   const groupName = (id: string) => catalogue?.groups.find((group) => group.id === id)?.name ?? id;
 
+  // How the open round was ordered, and whether the control has moved
+  // since: then Refresh is what re-ranks.
+  const roundEmphasis = round?.ranking?.topicEmphasis ?? null;
+  // null: a round from before the control, or one with no topic to weigh.
+  const roundOrderedAt = roundEmphasis?.applied ?? null;
+  const emphasisMoved = roundOrderedAt !== null && !sameEmphasis(emphasis, roundOrderedAt);
+
   return (
     <>
       <FlowSteps current="discover" />
@@ -467,9 +574,11 @@ export default function DiscoverPage() {
       <p className="subtitle">
         Pick up to {maxGroups} topics: only the sources that cover them are
         read, and only for those topics. The articles found come best first,
-        by the story and its source - the {listed} best shown, up to{" "}
-        {maxListed} if you ask for more. Choose up to {maxSelected} of them,
-        yourself or from the AI&apos;s proposal, and send them to analysis.
+        by how squarely they fit those topics and how positive they read -
+        you say which counts more - and by their source; the {listed} best
+        shown, up to {maxListed} if you ask for more. Choose up to{" "}
+        {maxSelected} of them, yourself or from the AI&apos;s proposal, and
+        send them to analysis.
       </p>
 
       {error && (
@@ -512,6 +621,23 @@ export default function DiscoverPage() {
                 .flatMap((group) => group.topics.map((topic) => topic.name))
                 .join(", ")}
         </p>
+
+        {catalogue && (
+          <EmphasisControl
+            value={emphasis}
+            defaultValue={defaultEmphasis}
+            hasTopic={groups.length > 0}
+            disabled={locked || busy !== null}
+            onChange={setEmphasis}
+          />
+        )}
+        {emphasisMoved && roundOrderedAt !== null && !locked && (
+          <p className="claims-note emphasis-moved">
+            The list below is ordered at {Math.round(roundOrderedAt * 100)}% topic relevance.{" "}
+            <strong>Refresh</strong> reads the same sources again and orders a new round at{" "}
+            {Math.round(emphasis * 100)}%.
+          </p>
+        )}
       </section>
 
       {/* ---------------- 2 · Sources ---------------- */}
@@ -585,12 +711,18 @@ export default function DiscoverPage() {
 
           {round.ranking && round.candidates.length > 0 && (
             <p className="claims-note">
-              Best first, by the story and its source: how near its title and summary come to
-              positive impact rather than to anything off-mission ({percent(round.ranking.weights.news)}),
-              {round.ranking.weights.topic !== undefined &&
+              Best first, by the story and its source:
+              {(round.ranking.weights.topic ?? 0) > 0 &&
                 ` how well it fits ${round.groups.map(groupName).join(", ")} (${percent(round.ranking.weights.topic)}),`}{" "}
-              how much of its source&apos;s news was on-mission this round ({percent(round.ranking.weights.record)}),
-              and the source&apos;s reliability rating ({percent(round.ranking.weights.reliability)}).
+              how near its title and summary come to positive impact rather than to anything
+              off-mission ({percent(round.ranking.weights.news)}), how much of its source&apos;s news
+              was on-mission this round ({percent(round.ranking.weights.record)}), and the source&apos;s
+              reliability rating ({percent(round.ranking.weights.reliability)}).
+              {roundEmphasis &&
+                (roundEmphasis.applied !== null
+                  ? ` Ordered at ${Math.round(roundEmphasis.applied * 100)}% topic relevance` +
+                    (roundEmphasis.asked === null ? " (the default)." : ", as asked.")
+                  : " No topic to weigh this round - nothing could be read for it - so its own reading and its source decide, whatever the topic setting.")}
             </p>
           )}
 
@@ -641,7 +773,7 @@ export default function DiscoverPage() {
                 className="button-secondary"
                 onClick={refresh}
                 disabled={busy !== null || aiStatus === "running"}
-                title={`Read the same sources again, for ${round.groups.map(groupName).join(", ")}. To search other topics, pick them above.`}
+                title={`Read the same sources again, for ${round.groups.map(groupName).join(", ")}, ordered at ${Math.round(emphasis * 100)}% topic relevance. To search other topics, pick them above.`}
               >
                 {busy === "refreshing" && <span className="spinner" aria-hidden="true" />}
                 {busy === "refreshing" ? "Reading the feeds…" : "Refresh"}
@@ -859,7 +991,14 @@ export default function DiscoverPage() {
                 {recent.map((summary) => (
                   <tr key={summary.id}>
                     <td>{when(summary.startedAt)}</td>
-                    <td>{(summary.groups ?? []).map(groupName).join(", ")}</td>
+                    <td>
+                      {(summary.groups ?? []).map(groupName).join(", ")}
+                      {typeof summary.topicEmphasis === "number" && (
+                        <span className="stats-muted" title="How much topic relevance weighed against positive impact in its order">
+                          {` · ${Math.round(summary.topicEmphasis * 100)}% topic`}
+                        </span>
+                      )}
+                    </td>
                     <td className="stats-number">{summary.totals?.candidates ?? "–"}</td>
                     <td>
                       {summary.aiStatus === "done"
