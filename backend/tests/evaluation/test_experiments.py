@@ -189,3 +189,103 @@ def test_discovery_compares_each_setting_with_the_every_topic_baseline(monkeypat
     assert (baseline["sources"], baseline["links"], baseline["candidates"]) == (2, 3, 2)
     assert (environment["sources"], environment["links"], environment["candidates"]) == (1, 2, 1)
     assert environment["sourcesVsBaseline"] == 0.5 and environment["linksVsBaseline"] == pytest.approx(0.667)
+
+
+# ----------------------------------------------------------------------
+# emphasis
+# ----------------------------------------------------------------------
+
+
+def test_the_bootstrapped_auc_is_the_same_number_as_the_pairwise_one():
+
+    items = [(3, True), (2, True), (1, False), (2, False), (2, True), (0.5, False)]
+
+    positives = [score for score, positive in items if positive]
+    negatives = [score for score, positive in items if not positive]
+
+    assert experiments._rank_auc(items) == pytest.approx(auc(positives, negatives))
+    assert experiments._rank_auc([(1, True)]) is None
+
+
+def candidate(url, impact, fit, same_story=None):
+
+    found = {
+        "url": url,
+        "reading": {"nearestTopic": "research", "topic": 0.5, "nearestOff": "politics", "off": 0.45, "impact": impact, "groupFit": fit},
+        "rank": {"score": 0.0, "record": 0.9, "reliability": 0.9},
+    }
+
+    if same_story:
+        found["sameStoryAs"] = same_story
+
+    return found
+
+
+# A Science round: two science stories fully on topic, two very positive
+# ones of other groups that still fit, and a second version of the first.
+SCIENCE = [
+    candidate("sci-a", 0.47, 0.12),
+    candidate("sci-b", 0.46, 0.11),
+    candidate("dog", 0.55, -0.03),
+    candidate("owl", 0.54, -0.02),
+    candidate("sci-a-again", 0.49, 0.12, same_story="sci-a"),
+]
+
+LABELS = {
+    "sci-a": (1, ["science"]), "sci-b": (0, ["science"]), "dog": (2, ["health"]),
+    "owl": (2, ["environment"]), "sci-a-again": (1, ["science"]),
+}
+
+
+def alignment(tmp_path):
+
+    round_ = {"round": "r1", "groups": ["science"], "candidates": SCIENCE[:3], "reserve": SCIENCE[3:]}
+    runs = {"runs": [{"run": run, "rounds": [round_]} for run in ("before", "iter4", "recheck")]}
+
+    (tmp_path / "runs.json").write_text(json.dumps(runs), encoding="utf-8")
+    (tmp_path / "labelled.json").write_text(json.dumps({"candidates": [
+        {"url": url, "hand": hand, "belongsTo": groups, "kind": "article"} for url, (hand, groups) in LABELS.items()
+    ]}), encoding="utf-8")
+
+    return tmp_path
+
+
+def test_a_recorded_round_is_reordered_by_the_rankings_own_code(tmp_path):
+
+    from src.services.selection import ranking
+
+    rounds, labels, provenance = experiments.load_alignment(alignment(tmp_path), extra=())
+
+    # "before" recorded no group fit: left out.
+    assert [r["run"] for r in rounds] == ["iter4", "recheck"]
+    assert len(labels) == 5 and list(provenance.values()) == [5]
+
+    positive_first = experiments.reordered(rounds[0], ranking.weights(0.0))
+    topic_first = experiments.reordered(rounds[0], ranking.weights(0.9))
+
+    assert [c["url"] for c in positive_first] == ["dog", "owl", "sci-a-again", "sci-b", "sci-a"]
+    # The round's own story grouping holds; which version leads may change.
+    assert [c["url"] for c in topic_first] == ["sci-a-again", "sci-b", "owl", "dog", "sci-a"]
+    assert topic_first[-1]["sameStoryAs"] == "sci-a-again"
+
+
+def test_the_emphasis_experiment_reports_every_setting_against_before(tmp_path):
+
+    rounds, labels, provenance = experiments.load_alignment(alignment(tmp_path), extra=())
+
+    result = experiments.emphasis_experiment(rounds, labels, (0.0, 1.0), provenance)
+
+    last = result["settings"]["last"]
+
+    assert [row["setting"] for row in last] == ["before", "emphasis", "chosen", "emphasis"]
+    assert [row["emphasis"] for row in last] == [None, 0.0, 0.6, 1.0]
+    assert last[0]["firstTwenty"] == {
+        "shown": 10, "ofGroup": 6, "anotherGroup": 4, "notArticle": 0, "worthOffering": 8,
+        "clearlyPositive": 4, "worthOfferingOfGroup": 4, "clearlyPositiveOfGroup": 0, "notWorthOffering": 2,
+    }
+    # Topic first, the score tells the round's group from another's perfectly here.
+    assert last[3]["auc"]["ofGroup"]["auc"] == 1.0
+
+    report = experiments.emphasis_report(result)
+
+    assert "**0.60 (chosen)**" in report and "before (0.51 / 0.15 / 0.21 / 0.13)" in report

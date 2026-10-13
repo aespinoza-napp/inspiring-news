@@ -91,9 +91,17 @@ class SelectionService:
         source_ids: list[str] | None = None,
         per_source: int = 3,
         listed: int = LISTED,
+        topic_emphasis: float | None = None,
     ) -> dict:
+        """
+        `topic_emphasis`, 0-1, is how much fitting `groups` weighs against
+        positive impact in the order (ranking.py; None: the default) - the
+        person's, for this round only, and recorded with it.
+        """
 
-        discovered = self.ingestion.discover_candidates(groups, source_ids, per_source)
+        discovered = self.ingestion.discover_candidates(
+            groups, source_ids, per_source, topic_emphasis=topic_emphasis,
+        )
 
         # Best first already; `totals.candidates` keeps counting all found.
         found = discovered["candidates"]
@@ -303,10 +311,14 @@ def _summary(round_: dict) -> dict:
     ai = round_.get("aiSelection") or {}
     queued = round_.get("queued") or {}
 
+    # Rounds from before 2026-10-13 recorded no emphasis.
+    emphasis = ((round_.get("ranking") or {}).get("topicEmphasis") or {}).get("applied")
+
     return {
         "id": round_["id"],
         "startedAt": round_.get("startedAt"),
         "groups": round_.get("groups"),
+        "topicEmphasis": emphasis,
         "totals": round_.get("totals"),
         "aiStatus": ai.get("status"),
         "aiPicks": len(ai.get("picks") or []),

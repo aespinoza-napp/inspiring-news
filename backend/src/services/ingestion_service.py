@@ -352,6 +352,7 @@ class IngestionService:
         groups: list[str] | None = None,
         source_ids: list[str] | None = None,
         per_source: int = 3,
+        topic_emphasis: float | None = None,
     ) -> dict:
         """
         Discovery without queueing: up to `per_source` new articles from
@@ -361,9 +362,19 @@ class IngestionService:
         to choose from. Nothing is fetched beyond the feeds and section
         pages, and nothing is analysed - src/services/selection/ owns what
         happens next, how many of them are shown included.
+
+        `topic_emphasis` is how much the fit with `groups` weighs against
+        positive impact in that order, 0 to 1 (None: the default), for
+        this call only - this service is one instance shared by every
+        request. With no topic signal it does not apply, and the round
+        says so (`ranking.topicEmphasis.applied: None`).
         """
 
         started = datetime.now(timezone.utc)
+
+        # A value outside [0, 1] is refused before any feed is read, not
+        # after a round's worth of other people's servers.
+        ranking.weights(topic_emphasis)
 
         sources = self.sources_for(groups, source_ids)
         topics = topics_for(groups)
@@ -417,6 +428,10 @@ class IngestionService:
         fits: dict[str, float] = {}
         nearest: dict[str, str] = {}
 
+        # Scored once every candidate is read: whether the round has a
+        # topic signal at all decides the emphasis each score is under.
+        to_rank: list[tuple[dict, Reading | None, ranking.Standing, float | None]] = []
+
         for source, result, already, choice in zip(sources, discovered, already_by_source, picked):
 
             standing = ranking.Standing(
@@ -440,7 +455,7 @@ class IngestionService:
                     fits[url] = fit
                     nearest[url] = reading.nearest_topic
 
-                candidates.append({
+                candidate = {
                     "url": url,
                     "source": source.id,
                     "sourceName": source.name,
@@ -457,8 +472,10 @@ class IngestionService:
                         {**reading.to_dict(), "groupFit": None if fit is None else round(fit, 4)}
                         if reading else None
                     ),
-                    "rank": ranking.rank(reading, standing, fit),
-                })
+                }
+
+                candidates.append(candidate)
+                to_rank.append((candidate, reading, standing, fit))
 
             rows.append({
                 "source": source.id,
@@ -475,6 +492,16 @@ class IngestionService:
                 "error": result.error if not result.urls else None,
             })
 
+        # The person's emphasis applies only where there is a topic to
+        # weigh: groups asked for, and some candidate's fit read.
+        applied = ranking.applied_emphasis(topic_emphasis, signal=bool(fits))
+
+        for candidate, reading, standing, fit in to_rank:
+            candidate["rank"] = ranking.rank(
+                reading, standing, fit,
+                emphasis=ranking.WITHOUT_TOPIC if applied is None else applied,
+            )
+
         vectors = {
             url: reading.vector
             for choice in picked
@@ -482,10 +509,7 @@ class IngestionService:
             if reading.vector is not None
         }
 
-        candidates = ranking.one_per_story(
-            ranking.fitting_first(ranking.best_first(candidates), fits, nearest),
-            vectors,
-        )
+        candidates = ranking.ordered(candidates, fits, nearest, vectors)
 
         return {
             "startedAt": started.isoformat(timespec="seconds"),
@@ -494,7 +518,9 @@ class IngestionService:
             "perSource": per_source,
             "sources": rows,
             "candidates": candidates,
-            "ranking": {"weights": ranking.WEIGHTS, "sameStory": ranking.SAME_STORY},
+            # How this order came about, so it can be explained later:
+            # the weights, the emphasis asked for and the one applied.
+            "ranking": ranking.described(topic_emphasis, applied),
             "screen": screen,
             "screened": [entry for choice in picked for entry in choice.screened],
             "totals": {

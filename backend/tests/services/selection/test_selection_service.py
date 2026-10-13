@@ -29,9 +29,11 @@ class FakeIngestion:
     def __init__(self, found: int = 5):
         self.found = found
         self.calls = []
+        self.emphases = []
 
-    def discover_candidates(self, groups, source_ids=None, per_source=3):
+    def discover_candidates(self, groups, source_ids=None, per_source=3, topic_emphasis=None):
         self.calls.append((groups, source_ids, per_source))
+        self.emphases.append(topic_emphasis)
         return {
             "startedAt": "2026-10-05T10:00:00+00:00",
             "groups": groups,
@@ -39,6 +41,7 @@ class FakeIngestion:
             "perSource": per_source,
             "sources": [],
             "candidates": candidates(self.found),
+            "ranking": {"topicEmphasis": {"asked": topic_emphasis, "applied": topic_emphasis if topic_emphasis is not None else 0.6, "default": 0.6}},
             "totals": {"candidates": self.found},
         }
 
@@ -89,6 +92,21 @@ def test_a_round_lists_the_candidates_and_is_written_to_disk(tmp_path):
 
     on_disk = json.loads((tmp_path / f"{round_['id']}.json").read_text(encoding="utf-8"))
     assert on_disk["candidates"] == round_["candidates"]
+
+
+def test_the_rounds_topic_emphasis_goes_to_discovery_per_call_and_is_listed(tmp_path):
+
+    selection = service(tmp_path)
+
+    asked = selection.create_round(["science"], topic_emphasis=0.2)
+    default = selection.create_round(["science"])
+
+    assert selection.ingestion.emphases == [0.2, None]
+    assert asked["ranking"]["topicEmphasis"]["applied"] == 0.2
+
+    listed = {summary["id"]: summary["topicEmphasis"] for summary in selection.list()}
+
+    assert listed == {asked["id"]: 0.2, default["id"]: 0.6}
 
 
 def test_a_person_queues_some_of_the_candidates(tmp_path):

@@ -828,7 +828,8 @@ def test_candidates_come_best_first_with_the_parts_of_their_score():
     assert set(museum["rank"]) == {"score", "news", "topic", "record", "reliability"}
     assert museum["rank"]["reliability"] == 0.9
     assert museum["reading"]["impact"] == 0.48
-    assert round_["ranking"]["weights"] == ranking.WEIGHTS
+    # The screen read no topics here, so there was no fit to weigh.
+    assert round_["ranking"] == ranking.described(None, None)
 
 
 def test_a_source_whose_newest_items_are_mostly_off_mission_ranks_lower():
@@ -1003,3 +1004,118 @@ def test_a_sources_slots_go_first_to_what_fits_the_groups_asked_for():
 
     assert [c["url"] for c in round_["candidates"]] == ["https://www.positive.news/environment/elephant-conservation"]
     assert round_["sources"][0]["deferred"] == 1
+
+
+# ----------------------------------------------------------------------
+# Positive impact or the topic: the round's emphasis, per call
+# ----------------------------------------------------------------------
+
+# A Health round's two stories (2026-10-09 recheck): a clearly positive
+# roadmap that is also research, and an outbreak squarely on public health.
+HEALTH_PAIR = {
+    "nature": [
+        "https://nature.com/articles/hypertension-roadmap",
+        "https://nature.com/articles/ebola-contacts",
+    ],
+}
+
+HEALTH_SCREEN = dict(
+    impact={"hypertension-roadmap": 0.53, "ebola-contacts": 0.42},
+    topics={
+        "hypertension-roadmap": {"public_health": 0.60, "research": 0.57},
+        "ebola-contacts": {"public_health": 0.60, "research": 0.45},
+    },
+)
+
+
+def health_service(screen=None):
+
+    return screened_service(
+        HEALTH_PAIR, screen or FakeScreen(**HEALTH_SCREEN),
+        sources=[build_source(id="nature", name="Nature", groups=["health", "science"])],
+    )
+
+
+def slugs(round_: dict) -> list[str]:
+
+    return [c["url"].rsplit("/", 1)[-1] for c in round_["candidates"]]
+
+
+def test_two_calls_with_different_emphasis_on_one_service_order_differently():
+    """
+    The service is one long-lived instance shared by every request: the
+    emphasis must come with the call, and one call's must not leak into the
+    next.
+    """
+
+    ingestion = health_service()
+
+    positive_first = ingestion.discover_candidates(["health"], per_source=2, topic_emphasis=0.1)
+    topic_first = ingestion.discover_candidates(["health"], per_source=2, topic_emphasis=0.9)
+    again = ingestion.discover_candidates(["health"], per_source=2, topic_emphasis=0.1)
+
+    assert slugs(positive_first) == ["hypertension-roadmap", "ebola-contacts"]
+    assert slugs(topic_first) == ["ebola-contacts", "hypertension-roadmap"]
+    assert slugs(again) == slugs(positive_first)
+
+    assert positive_first["ranking"]["topicEmphasis"] == {"asked": 0.1, "applied": 0.1, "default": 0.6}
+    assert topic_first["ranking"]["weights"]["topic"] == 0.54
+
+
+def test_without_an_emphasis_the_round_is_ranked_at_the_default_and_says_so():
+
+    from src.services.selection import ranking
+
+    round_ = health_service().discover_candidates(["health"], per_source=2)
+
+    default = ranking.DEFAULT_TOPIC_EMPHASIS
+    assert round_["ranking"]["topicEmphasis"] == {"asked": None, "applied": default, "default": default}
+    assert round_["ranking"]["weights"] == {"news": 0.24, "topic": 0.36, "record": 0.25, "reliability": 0.15}
+    # The default favours the topic: the outbreak, squarely public health, first.
+    assert slugs(round_) == ["ebola-contacts", "hypertension-roadmap"]
+
+
+def test_a_round_over_every_topic_has_no_topic_to_weigh_whatever_is_asked():
+
+    ingestion = health_service()
+
+    asked_for_topic = ingestion.discover_candidates(None, per_source=2, topic_emphasis=0.9)
+    asked_for_impact = ingestion.discover_candidates(None, per_source=2, topic_emphasis=0.1)
+
+    assert asked_for_topic["ranking"]["topicEmphasis"]["applied"] is None
+    assert asked_for_topic["ranking"]["weights"]["topic"] == 0.0
+    assert slugs(asked_for_topic) == slugs(asked_for_impact) == ["hypertension-roadmap", "ebola-contacts"]
+
+
+def test_with_nothing_read_the_emphasis_does_not_apply_either():
+    """inference/ unreachable: no reading, so no fit - the round is ranked by its sources and says so."""
+
+    round_ = health_service(FakeScreen(error=RuntimeError("inference/ is down"))).discover_candidates(
+        ["health"], per_source=2, topic_emphasis=0.9,
+    )
+
+    assert round_["screen"]["status"] == "unavailable"
+    assert round_["ranking"]["topicEmphasis"]["asked"] == 0.9
+    assert round_["ranking"]["topicEmphasis"]["applied"] is None
+
+
+def test_an_emphasis_outside_zero_to_one_is_refused_before_any_feed_is_read():
+
+    import pytest
+
+    screen = FakeScreen(**HEALTH_SCREEN)
+    ingestion = health_service(screen)
+
+    read = []
+    feeds = ingestion.discovery.run
+    ingestion.discovery.run = lambda source, topics=None: read.append(source.id) or feeds(source, topics)
+
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        ingestion.discover_candidates(["health"], topic_emphasis=1.5)
+
+    assert read == [] and screen.read == []
+
+    # The same service, asked properly, reads them.
+    ingestion.discover_candidates(["health"], topic_emphasis=1.0)
+
+    assert read == ["nature"]

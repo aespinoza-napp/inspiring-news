@@ -8,7 +8,7 @@ mission screen leaves out the plainly off-mission ones; what it cannot
 separate - housing policy and social stories from the Spanish front
 pages, scored among good stories - stayed in a list read top to bottom
 in the order the sources are named. Each candidate now gets a score from
-three things already at hand when the round is made (no page is fetched,
+four things already at hand when the round is made (no page is fetched,
 no LLM is asked):
 
 1. **News** - what its own title and summary say: how much nearer they
@@ -65,6 +65,19 @@ A candidate whose nearest topic in the round's groups is further than
 GROUP_FIT behind its nearest topic elsewhere is marked `otherGroup` (the
 group of that nearest topic) and goes after every candidate that fits -
 moved, like a repeat, never dropped: a story can belong to two groups.
+
+**Positive impact or the topic: the person's call** (`weights`,
+2026-10-13). The story's share of the score, STORY_WEIGHT, is split
+between its positive-impact reading (news) and its fit with the groups
+asked for (topic) by the round's `topic_emphasis`, from 0 (all positive
+impact) to 1 (all topic); the source's two parts keep theirs. It is the
+person's question - what do I want first, the most positive stories or
+the ones most squarely about what I picked - so it comes with the
+request, per round, like the groups themselves, and is passed per call:
+the services that rank are long-lived singletons. None means
+DEFAULT_TOPIC_EMPHASIS. A round with no topic signal - every topic asked
+for, or nothing read - has nothing to weigh, and is ranked at
+WITHOUT_TOPIC whatever was asked.
 """
 
 from __future__ import annotations
@@ -76,17 +89,40 @@ import numpy as np
 from src.config.topics import GROUP_OF
 from src.services.selection.mission_screen import Reading
 
-# How much each part counts. They sum to 1, so a score is in [0, 1].
+# How much each part counts. Whatever the emphasis they sum to 1, so a
+# score is in [0, 1]: the emphasis moves weight between two parts, it
+# never sets one alone - the hazard that keeps the fact-checker's weights
+# environment-only (docs/decisions/thresholds.md) cannot arise here.
 #
-# The topic part's 0.15, the other three keeping their proportions, was
-# measured on 2026-10-09 (docs/experiments.md) over ten labelled one-group
-# rounds: among their first twenty, stories of another group went from 26
-# to 15 and stories worth offering of the round's own group stayed at 150
-# (clearly positive ones 61 -> 60). At 0.25 the other-group ones fell to 9
-# but 5 worth offering of the round's own group went with them, and at
-# 0.35 to 6 for 9. The three older parts' weights, 0.6 / 0.25 / 0.15, are
-# the 2026-10-06 measurement's.
-WEIGHTS = {"news": 0.51, "topic": 0.15, "record": 0.21, "reliability": 0.13}
+# The source's two parts keep the 2026-10-06 measurement's weights, 0.25
+# and 0.15, at every emphasis; the story has the rest, 0.6, which was all
+# positive impact then and is now split with the topic. At emphasis 0 the
+# score is exactly the 2026-10-06 one, which is also how a round with no
+# topic signal is ranked.
+SOURCE_WEIGHTS = {"record": 0.25, "reliability": 0.15}
+
+STORY_WEIGHT = 1.0 - sum(SOURCE_WEIGHTS.values())
+
+# The emphasis a round is ranked at when the person asks for none: topic
+# 0.36, positive impact 0.24. Measured 2026-10-13 (docs/experiments.md;
+# data/evaluation/experiments/emphasis/) by re-scoring every candidate of
+# the 2026-10-09 rounds, shown or in reserve and all labelled by hand: over
+# the ten one-group rounds of the last two runs, the first twenty held 194
+# of 200 stories of the group asked for (184 with the weights before, 174
+# at emphasis 0) and the first ten 100 of 100 (94) - the plateau: higher
+# gains no more of the group (0.7: 194 and 100) and loses positive stories
+# (worth offering of the group 150 at 0.6, 139 at 0.7; 154 before). The
+# cost below it is topical hard news: clearly positive stories of the group
+# 62 -> 53, the same at 0.5 - an outbreak in a Health round, AI policy in
+# a Science one. Picking between those is what the AI selection reads for.
+DEFAULT_TOPIC_EMPHASIS = 0.6
+
+# The emphasis of a round with no topic signal - every topic asked for, or
+# inference/ unreachable so nothing was read - whatever was asked: the
+# topic's share goes back to the story. Left at the default, 0.36 of every
+# score would be the same constant for all and the story would weigh less
+# than its source's record.
+WITHOUT_TOPIC = 0.0
 
 # group_fit scaled to [0, 1] between these: GROUP_FIT, where a candidate
 # starts to be listed after the rest, and the fit of a story squarely on
@@ -158,13 +194,17 @@ def news_part(reading: Reading | None) -> float | None:
     return _scaled(reading.impact - reading.off, NEWS_RANGE)
 
 
-def topic_part(fit: float | None) -> float | None:
-    """How well the candidate fits the round's groups, in [0, 1]; None when no group was asked for or nothing was read."""
+def topic_part(fit: float | None, bounds: tuple[float, float] = TOPIC_RANGE) -> float | None:
+    """
+    How well the candidate fits the round's groups, in [0, 1]; None when
+    no group was asked for or nothing was read. `bounds` other than
+    TOPIC_RANGE only for the experiment that tried them.
+    """
 
     if fit is None:
         return None
 
-    return _scaled(fit, TOPIC_RANGE)
+    return _scaled(fit, bounds)
 
 
 def record_part(standing: Standing) -> float:
@@ -176,27 +216,69 @@ def record_part(standing: Standing) -> float:
     return (standing.kept + RECORD_PRIOR * RECORD_STRENGTH) / (standing.judged + RECORD_STRENGTH)
 
 
-def rank(reading: Reading | None, standing: Standing, fit: float | None = None) -> dict:
+def weights(emphasis: float | None = None) -> dict[str, float]:
+    """
+    The four weights at a topic emphasis: STORY_WEIGHT split between
+    positive impact (`news`, 1 - emphasis of it) and the fit with the
+    round's groups (`topic`, emphasis of it), the source's parts as they
+    are. None is DEFAULT_TOPIC_EMPHASIS. Raises ValueError outside [0, 1]:
+    the API refuses such a value before it gets here.
+    """
+
+    emphasis = DEFAULT_TOPIC_EMPHASIS if emphasis is None else emphasis
+
+    if not 0.0 <= emphasis <= 1.0:
+        raise ValueError(f"The topic emphasis is between 0 and 1, not {emphasis}.")
+
+    return {
+        "news": STORY_WEIGHT * (1.0 - emphasis),
+        "topic": STORY_WEIGHT * emphasis,
+        **SOURCE_WEIGHTS,
+    }
+
+
+def score(
+    news: float | None,
+    topic: float | None,
+    record: float,
+    reliability: float,
+    weighted: dict[str, float],
+) -> float:
+    """
+    One candidate's score from its parts under `weighted` (from
+    `weights`): `reliability` is the configured rating itself, the others
+    in [0, 1]; a part not read counts as UNREAD. The one formula - the
+    rounds and the experiment that re-scores them both call it.
+    """
+
+    return (
+        weighted["news"] * (UNREAD if news is None else news)
+        + weighted["topic"] * (UNREAD if topic is None else topic)
+        + weighted["record"] * record
+        + weighted["reliability"] * _scaled(reliability, RELIABILITY_RANGE)
+    )
+
+
+def rank(
+    reading: Reading | None,
+    standing: Standing,
+    fit: float | None = None,
+    emphasis: float | None = None,
+) -> dict:
     """
     The score and its parts, as the round records them: `reliability` is
     the configured rating itself, the others in [0, 1]. `fit` is the
     candidate's group_fit for the round's groups (None in a round over
-    every topic, where the topic part is the same for all).
+    every topic, where the topic part is the same for all). `emphasis`,
+    per call: the round's topic emphasis (None, the default).
     """
 
     news = news_part(reading)
     topic = topic_part(fit)
     record = record_part(standing)
 
-    score = (
-        WEIGHTS["news"] * (UNREAD if news is None else news)
-        + WEIGHTS["topic"] * (UNREAD if topic is None else topic)
-        + WEIGHTS["record"] * record
-        + WEIGHTS["reliability"] * _scaled(standing.reliability, RELIABILITY_RANGE)
-    )
-
     return {
-        "score": round(score, 3),
+        "score": round(score(news, topic, record, standing.reliability, weights(emphasis)), 3),
         "news": None if news is None else round(news, 3),
         "topic": None if topic is None else round(topic, 3),
         "record": round(record, 3),
@@ -204,10 +286,56 @@ def rank(reading: Reading | None, standing: Standing, fit: float | None = None) 
     }
 
 
+def applied_emphasis(asked: float | None, signal: bool) -> float | None:
+    """
+    The emphasis a round is ranked at: the one asked for, else the
+    default; None when the round has no topic signal (no group asked for,
+    or no candidate read), which is then ranked at WITHOUT_TOPIC.
+    """
+
+    if not signal:
+        return None
+
+    return DEFAULT_TOPIC_EMPHASIS if asked is None else asked
+
+
+def described(asked: float | None, applied: float | None) -> dict:
+    """
+    What a round records of how it was ranked, so its order can be
+    explained later without the code of the day: the weights its scores
+    used, and the emphasis asked for (None: the default), applied (None:
+    no topic signal) and the default then.
+    """
+
+    used = weights(WITHOUT_TOPIC if applied is None else applied)
+
+    return {
+        "weights": {part: round(weight, 4) for part, weight in used.items()},
+        "topicEmphasis": {"asked": asked, "applied": applied, "default": DEFAULT_TOPIC_EMPHASIS},
+        "sameStory": SAME_STORY,
+        "groupFit": GROUP_FIT,
+    }
+
+
 def best_first(candidates: list[dict]) -> list[dict]:
     """By score; candidates scored alike keep their order."""
 
     return sorted(candidates, key=lambda candidate: candidate["rank"]["score"], reverse=True)
+
+
+def ordered(
+    candidates: list[dict],
+    fits: dict[str, float],
+    nearest: dict[str, str],
+    vectors: dict[str, np.ndarray],
+) -> list[dict]:
+    """
+    A round's order: best first, those nearer another group after the
+    rest (`fitting_first`), each story once before any twice
+    (`one_per_story`). Marks the candidates it moves.
+    """
+
+    return one_per_story(fitting_first(best_first(candidates), fits, nearest), vectors)
 
 
 def group_fit(reading: Reading | None, topics: list[str]) -> float | None:

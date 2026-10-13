@@ -206,6 +206,13 @@ class RoundRequest(BaseModel):
     # are kept as the round's reserve (selection_service LISTED,
     # MAX_LISTED).
     listed: int = Field(default=20, ge=1, le=40)
+    # How much fitting the groups weighs against positive impact in the
+    # order: 0 all positive impact, 1 all topic. Omitted (None) is the
+    # default, ranking.DEFAULT_TOPIC_EMPHASIS, which favours the topic.
+    # A request parameter like `groups`, not a PipelineThresholds field:
+    # it orders what a person reads, it judges nothing an analysis does
+    # (docs/decisions/selection.md, "Positive impact or the topic").
+    topicEmphasis: float | None = Field(default=None, ge=0.0, le=1.0)
 
     @model_validator(mode="after")
     def _groups(self):
@@ -558,6 +565,7 @@ def ingestion_sources():
 
     from src.config.topics import TOPIC_GROUP_NAMES, TOPIC_GROUPS, TOPICS
     from src.services.ingestion_service import MAX_GROUPS
+    from src.services.selection.ranking import DEFAULT_TOPIC_EMPHASIS
     from src.services.selection.selection_service import LISTED, MAX_LISTED, MAX_SELECTED
 
     service = get_ingestion_service()
@@ -588,6 +596,9 @@ def ingestion_sources():
         "maxSelected": MAX_SELECTED,
         "listed": LISTED,
         "maxListed": MAX_LISTED,
+        # Where /discover's positive-impact-or-topic control starts: one
+        # definition, the backend's.
+        "topicEmphasis": DEFAULT_TOPIC_EMPHASIS,
         "lastRun": service.last_run,
     }
 
@@ -651,7 +662,8 @@ def create_round(request: RoundRequest):
     with each one's feed title and summary, best first: the first
     `listed` are shown, the rest kept as the round's reserve. Reads feeds
     and section pages only: nothing is fetched or analysed until a
-    selection is queued.
+    selection is queued. `topicEmphasis` (0-1) weighs fitting the groups
+    against positive impact in that order; the round records it.
     """
 
     unknown = _unknown_sources(request.sources)
@@ -659,7 +671,10 @@ def create_round(request: RoundRequest):
     if unknown:
         raise HTTPException(status_code=422, detail=f"Unknown or disabled sources: {', '.join(unknown)}")
 
-    return get_selection_service().create_round(request.groups, request.sources, request.perSource, request.listed)
+    return get_selection_service().create_round(
+        request.groups, request.sources, request.perSource, request.listed,
+        topic_emphasis=request.topicEmphasis,
+    )
 
 
 @router.get("/ingest/rounds", dependencies=[Depends(require_storage_key)])
