@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Jan Rosenow",
+  "claim": "But instead of waiting for that approval, tech companies keen to build the infrastructure for A.I. are often building gas generators on site.",
+  "claimDate": "2026-09-02",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://about.bnef.com/insights/data-centers/gas-is-letting-data-centers-grow-beyond-the-grid/",
+    "https://news.bloomberglaw.com/energy/data-centers-plan-to-boost-on-site-gas-power-57-fold-bnef-says"
+  ],
+  "split": "test",
+  "id": "fact133",
+  "topic": "energy",
+  "claimType": "interpretive",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-07-29",
+  "articleUrl": "https://e360.yale.edu/digest/data-centers-battery-storage",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] 'That approval' is regulators' approval to connect to the grid (the article's previous sentence). BNEF, 'Gas is letting data centers grow beyond the grid' (29 Jul 2026): 'Faced with years-long grid connection delays', 'developers are turning to on-site gas generation to bring projects online faster'. Bloomberg Law (9 Mar 2026): about 114 GW of on-site gas planned at data centers, almost 90% of projects in the US. 'Often' is a reading of that trend.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

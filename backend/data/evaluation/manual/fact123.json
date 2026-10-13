@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": null,
+  "claim": "As Juice flew just 8640 km above the Indian Ocean, it snapped a series of images with its onboard monitoring cameras.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://universemagazine.com/en/juice-probes-view-of-earth-from-an-altitude-of-8000-km/"
+  ],
+  "split": "test",
+  "id": "fact123",
+  "topic": "space",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-29",
+  "articleUrl": "https://www.esa.int/Science_Exploration/Space_Science/Juice/Successful_Earth_flyby_improves_Juice_s_course_to_Jupiter",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Universe Magazine (29 Sep 2026): on 28 Sep Juice 'passed at an altitude of 8,640 km above the Indian Ocean' and took images with its onboard cameras, its two Juice Monitoring Cameras (JMC). Borderline on independence: an altitude can only come from ESA, and the outlet relays ESA's release.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

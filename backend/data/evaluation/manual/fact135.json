@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.mit.edu",
+  "claimant": "Zach Winn; MIT News",
+  "claim": "About 20 years ago, researchers studying ovarian cancer discovered that many cases of high-grade serous ovarian cancer, the most common type, originate in the fallopian tubes.",
+  "claimDate": "2026-09-24",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://curetoday.com/view/origins-of-ovarian-cancer",
+    "https://ocrahope.org/research/current-grantees/brooke-howitt-md/"
+  ],
+  "split": "test",
+  "id": "fact135",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2011-03-03",
+  "articleUrl": "https://news.mit.edu/2026/new-cell-collection-device-could-improve-early-cancer-detection-0924",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] CURE (3 Mar 2011): Dana-Farber researchers, starting in 2005, found early serous cancers in the fallopian tubes, which 'are likely the origin of many high-grade serous ovarian tumors'. Ovarian Cancer Research Alliance (undated grantee page, 2023 grant): 'The most common and most lethal type of ovarian cancer is high grade serous carcinoma (HGSC)'; 'the majority of \"ovarian\" HGSCs originate from the fallopian tube epithelium'. 2005 is about 20 years before. The 2006 pathology papers were not read: PubMed refused this session.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

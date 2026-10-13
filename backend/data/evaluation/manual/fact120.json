@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Christian Schwägerl",
+  "claim": "When the administration refused to send U.S. experts to IPCC meetings in 2025, the AGU formed the U.S. Academic Alliance for the IPCC and nominated nearly 300 U.S. scientists to be authors of the IPCC’s next assessment.",
+  "claimDate": "2026-09-17",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.technologyreview.com/2025/07/25/1120636/how-nonprofits-and-academia-are-stepping-up-to-salvage-us-climate-programs/",
+    "https://eos.org/research-and-developments/climate-scientists-unite-to-nominate-u-s-experts-for-ipcc-report",
+    "https://planetarysolutions.yale.edu/posts/2025-11-20-new-ipcc-call-for-report-author-and-editor-nominations"
+  ],
+  "split": "test",
+  "id": "fact120",
+  "topic": "climate",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-11-20",
+  "articleUrl": "https://e360.yale.edu/features/germany-us-climate-data",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Eos (31 Mar 2025): 'The Trump administration barred U.S. delegates from attending the February meeting' of the IPCC in Hangzhou; the U.S. Academic Alliance for the IPCC 'is hosted by AGU'. MIT Technology Review (25 Jul 2025): '10 universities came together in March to form the US Academic Alliance for the IPCC', with the AGU, and 'together nominated nearly 300 scientists'. Yale Planetary Solutions (20 Nov 2025): in April 2025 its members 'submitted 292 author nominations' to AR7. Borderline: ten universities formed it, in partnership with AGU, which hosts it; 'the AGU formed' is a loose reading of that.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

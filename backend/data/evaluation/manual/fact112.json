@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Sarah Kuta",
+  "claim": "Navanethem Pillay has been awarded the 2026 Nobel Peace Prize “for her efforts to promote peace and international law.”",
+  "claimDate": "2026-10-09",
+  "reviewDate": "2026-10-13T07:53:31",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://abc30.com/story/nobel-peace-prize-goes-navanethem-pillay-efforts-promote-international-law/19924362/",
+    "https://www.aljazeera.com/news/2026/10/9/2026-nobel-peace-prize-awarded-to-navi-pillay"
+  ],
+  "split": "test",
+  "id": "fact112",
+  "topic": "inspiration",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-09",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/raised-in-apartheid-south-africa-2026-nobel-peace-prize-winner-navi-pillay-is-one-of-the-worlds-leading-human-rights-jurists-180989667/",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] AP (via ABC30, 9 Oct 2026 14:02): the Norwegian Nobel Committee awarded the 2026 Peace Prize to Navanethem Pillay 'for her efforts to promote peace and international law'; Al Jazeera (9 Oct 2026) reports the same. Same day as the article. nobelprize.org refused the connection from this session (403), so the committee's own announcement was not read.",
+  "createdAt": "2026-10-13T07:53:31",
+  "review": null
+}

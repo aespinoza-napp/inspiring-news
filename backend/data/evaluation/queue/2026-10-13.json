@@ -1,0 +1,740 @@
+{
+  "requestId": "88c81cf6b76e4dc7b743661c3ddedf04",
+  "seed": "2026-10-13",
+  "createdAt": "2026-10-13T07:16:37+00:00",
+  "requested": {
+    "articles": 10,
+    "claimsPerArticle": 3,
+    "languages": null,
+    "preferTopics": [
+      "space",
+      "technology",
+      "research",
+      "biology",
+      "arts",
+      "entertainment",
+      "heritage",
+      "literature",
+      "inspiration",
+      "medicine",
+      "mental_health",
+      "nutrition",
+      "fitness",
+      "public_health"
+    ],
+    "excluded": 1183
+  },
+  "totals": {
+    "sources": 33,
+    "discovered": 1126,
+    "candidates": 20,
+    "screened": 8,
+    "ready": 19,
+    "articles": 10,
+    "claims": 30
+  },
+  "articles": [
+    {
+      "url": "https://www.smithsonianmag.com/smart-news/raised-in-apartheid-south-africa-2026-nobel-peace-prize-winner-navi-pillay-is-one-of-the-worlds-leading-human-rights-jurists-180989667/",
+      "source": "smithsonian",
+      "title": "Raised in Apartheid South Africa, 2026 Nobel Peace Prize Winner Navi Pillay Is One of the World’s Leading Human Rights Jurists",
+      "site": "smithsonianmag.com",
+      "sourceName": "Smithsonian Magazine",
+      "language": "en",
+      "publishedAt": "2026-10-09",
+      "author": "Sarah Kuta",
+      "topic": "inspiration",
+      "topics": [
+        "inspiration"
+      ],
+      "claims": [
+        {
+          "text": "Under apartheid, Pillay and other non-white South Africans were “treated like dirt,” she told the Agence France-Presse (AFP) in 2023.",
+          "selectedBy": "anchor",
+          "score": 0.79,
+          "figures": [
+            "2023"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact111"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Navanethem Pillay has been awarded the 2026 Nobel Peace Prize “for her efforts to promote peace and international law.”",
+          "selectedBy": "anchor",
+          "score": 0.731,
+          "figures": [
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact112"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "The Nobel committee lauded the 85-year-old South African jurist and former United Nations human rights chief for her “commitment to universal legal principles” and her “firm moral compass” throughout her long career.",
+          "selectedBy": "anchor",
+          "score": 0.714,
+          "figures": [
+            "85"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact113"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.agenciasinc.es/Noticias/Los-espanoles-tendran-mas-vinculos-sociales-para-2050-pero-la-tecnologia-podria-acentuar-la-soledad",
+      "source": "sinc",
+      "title": "Los españoles tendrán más vínculos sociales para 2050, pero la tecnología podría acentuar la soledad",
+      "site": "agenciasinc.es",
+      "sourceName": "SINC",
+      "language": "es",
+      "publishedAt": "2026-09-28",
+      "author": "Marcos D Oliveros",
+      "topic": "mental_health",
+      "topics": [
+        "mental_health",
+        "cities",
+        "employment",
+        "education",
+        "biology",
+        "nutrition",
+        "sustainability",
+        "food",
+        "climate",
+        "public_health",
+        "technology",
+        "fitness",
+        "medicine",
+        "community",
+        "nature",
+        "research",
+        "energy",
+        "entertainment",
+        "inspiration",
+        "space",
+        "heritage"
+      ],
+      "claims": [
+        {
+          "text": "El Presidente del Gobierno, Pedro Sánchez, ha presentado hoy en Barcelona un ejercicio de prospectiva social, impulsado y coordinado por la Oficina Nacional de Prospectiva y Estrategia (ONPE), que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años.",
+          "selectedBy": "anchor",
+          "score": 0.668,
+          "figures": [
+            "24"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact114"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Un informe de la Oficina Nacional de Prospectiva y Estrategia analiza cómo ha cambiado la forma de vivir de los españoles en los últimos 30 años para explorar el día a día de las familias y otros miembros de su entorno a mediados de este siglo.",
+          "selectedBy": "anchor",
+          "score": 0.632,
+          "figures": [
+            "30"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "duplicate"
+        },
+        {
+          "text": "La vida de los españoles ha cambiado mucho desde 1980 y algunas de estas transformaciones llevan años redefiniendo la manera en la que se formarán las familias del futuro.",
+          "selectedBy": "anchor",
+          "score": 0.536,
+          "figures": [
+            "1980"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        }
+      ]
+    },
+    {
+      "url": "https://www.eldiario.es/cultura/musica/judeline-ciudades-son-adquisitivo-no_128_13569652.html",
+      "source": "eldiario",
+      "title": "Judeline: “Las ciudades son de quienes tienen poder adquisitivo y no de quienes se las trabajan”",
+      "site": "eldiario.es",
+      "sourceName": "elDiario.es",
+      "language": "es",
+      "publishedAt": "2026-10-11",
+      "author": "Francisco Gámiz",
+      "topic": "entertainment",
+      "topics": [
+        "entertainment",
+        "cities"
+      ],
+      "claims": [
+        {
+          "text": "Lara Fernández (Jerez de la Frontera, 2003), conocida artísticamente como Judeline, ha logrado la fama de manera pausada, haciéndose un hueco en la industria musical a prueba de canción y canción, de escalón en escalón.",
+          "selectedBy": "anchor",
+          "score": 0.815,
+          "figures": [
+            "2003"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact115"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Un tipo de exposición que, si bien ya había experimentado en el pasado —la artista logró uno de los discos más aclamados de 2024 con Bodhiria y llenó por primera vez el Palacio de Deportes de Madrid a inicios de este año—, no se asemeja en absoluto al nivel de popularidad que ha cosechado tras este impulso.",
+          "selectedBy": "anchor",
+          "score": 0.56,
+          "figures": [
+            "2024"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact116",
+            "fact117"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Me llena de orgullo ver que estamos haciendo cosas artísticas tan especiales como La bola negra, la de cantantes increíbles que están saliendo, que hayamos ganado la Copa [del Mundial de fútbol], que seamos los primeros del mundo en donar órganos.",
+          "selectedBy": "anchor",
+          "score": 0.299,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact118"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://e360.yale.edu/features/germany-us-climate-data",
+      "source": "yale_e360",
+      "title": "Why Germany Is Building an Ark for U.S. Climate Data",
+      "site": "e360.yale.edu",
+      "sourceName": "Yale Environment 360",
+      "language": "en",
+      "publishedAt": "2026-09-17",
+      "author": "Christian Schwägerl • September",
+      "topic": "research",
+      "topics": [
+        "research",
+        "climate",
+        "technology",
+        "sustainability",
+        "nature",
+        "food",
+        "cities",
+        "biology",
+        "education",
+        "energy",
+        "public_health",
+        "mental_health",
+        "space",
+        "community",
+        "nutrition",
+        "heritage",
+        "medicine",
+        "entertainment",
+        "employment"
+      ],
+      "claims": [
+        {
+          "text": "To support them, the German Research Foundation in late 2025 set up a program, with a budget of $35 million, to provide a safe haven for permanently storing copies of U.S. data from public and open sources.",
+          "selectedBy": "anchor",
+          "score": 0.742,
+          "figures": [
+            "2025",
+            "35"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact119"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "When the administration refused to send U.S. experts to IPCC meetings in 2025, the AGU formed the U.S. Academic Alliance for the IPCC and nominated nearly 300 U.S. scientists to be authors of the IPCC’s next assessment.",
+          "selectedBy": "anchor",
+          "score": 0.627,
+          "figures": [
+            "2025",
+            "300"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact120"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "The DKRZ project is called “CMIP7-ark” — a lifeboat for the U.S. contribution to the seventh IPCC assessment.",
+          "selectedBy": "anchor",
+          "score": 0.616,
+          "figures": [
+            "7"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact121"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.esa.int/Science_Exploration/Space_Science/Juice/Successful_Earth_flyby_improves_Juice_s_course_to_Jupiter",
+      "source": "esa",
+      "title": "Successful Earth flyby improves Juice’s course to Jupiter",
+      "site": "esa.int",
+      "sourceName": "European Space Agency",
+      "language": "en",
+      "publishedAt": "2026-10-01",
+      "author": null,
+      "topic": "space",
+      "topics": [
+        "space",
+        "climate",
+        "research",
+        "sustainability",
+        "nutrition",
+        "biology",
+        "technology",
+        "energy",
+        "medicine"
+      ],
+      "claims": [
+        {
+          "text": "While the main goal was to alter Juice’s trajectory, the flyby also provided a third opportunity to test out Juice’s science instruments on a real surface in space – with the first being during the spacecraft’s 2024 lunar-Earth gravity assist, and the second during the 2025 observations of Comet 3I/ATLAS.",
+          "selectedBy": "anchor",
+          "score": 0.787,
+          "figures": [
+            "2024",
+            "2025",
+            "3"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact122"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "In January 2029, Juice will meet Earth one last time, coming back for a third flyby of our home planet to put it onto the final track to meet Jupiter in 2031.",
+          "selectedBy": "anchor",
+          "score": 0.772,
+          "figures": [
+            "2029",
+            "2031"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "prediction"
+        },
+        {
+          "text": "As Juice flew just 8640 km above the Indian Ocean, it snapped a series of images with its onboard monitoring cameras.",
+          "selectedBy": "anchor",
+          "score": 0.745,
+          "figures": [
+            "8640"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact123"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.lavanguardia.com/launi/20260925/11643637/nuevas-evidencias-sobre-como-hormonas-alteran-animo-mujeres.html",
+      "source": "la_vanguardia",
+      "title": "Nuevas evidencias sobre cómo las hormonas alteran el estado de ánimo de las mujeres",
+      "site": "lavanguardia.com",
+      "sourceName": "La Vanguardia",
+      "language": "es",
+      "publishedAt": "2026-09-25",
+      "author": "Sergi Garcia Arenas",
+      "topic": "mental_health",
+      "topics": [
+        "mental_health",
+        "nutrition",
+        "public_health",
+        "biology",
+        "research",
+        "education"
+      ],
+      "claims": [
+        {
+          "text": "Esto también conlleva un estado de ánimo más bajo que afecta al bienestar emocional de las mujeres, según un estudio publicado en la revista Psychological Medicine, de Cambridge University Press, y dirigido por el profesor Macià Buades, de la Facultad de Psicología y el Instituto de Neurociencias de la Universidad de Barcelona.",
+          "selectedBy": "anchor",
+          "score": 0.651,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact124"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“Aunque no podemos establecer una relación de causa y efecto a partir de una única medición, es emocionante descubrir información sobre la progesterona que antes desconocíamos”, indica el experto.",
+          "selectedBy": "anchor",
+          "score": 0.378,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "En el estudio participaron 116 mujeres con ciclos menstruales naturales (que no utilizaban anticonceptivos hormonales).",
+          "selectedBy": "anchor",
+          "score": 0.335,
+          "figures": [
+            "116"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact125"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.europapress.es/portaltic/gadgets/noticia-asi-pixel-watch-repite-diseno-integra-gemini-intelligence-reloj-mas-pulido-google-20261012150141.html",
+      "source": "europa_press",
+      "title": "Así es el Pixel Watch 5: repite diseño, pero integra Gemini Intelligence en el reloj más pulido de Google",
+      "site": "europapress.es",
+      "sourceName": "Europa Press",
+      "language": "es",
+      "publishedAt": "2026-10-12",
+      "author": "Europa Press",
+      "topic": "mental_health",
+      "topics": [
+        "mental_health",
+        "fitness",
+        "nutrition",
+        "cities",
+        "sustainability",
+        "technology",
+        "research",
+        "energy",
+        "public_health",
+        "education",
+        "medicine"
+      ],
+      "claims": [
+        {
+          "text": "Sobre los relojes citados, además de caracterizarse por una autonomía que pasa de los 15 días, adolecen de un aspecto que llama poderosamente la atención en el Pixel Watch 5: lo bien que se \"siente\" la interfaz del reloj en cualquier circunstancia.",
+          "selectedBy": "anchor",
+          "score": 0.784,
+          "figures": [
+            "15",
+            "5"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "En el análisis que hemos hecho del Pixel Watch 5, y partiendo de que, en mi caso, es el primer 'smartwatch' de Google que he tenido ocasión de probar, la reseña se planteará desde algunas perspectivas que provienen del uso de otros relojes inteligentes.",
+          "selectedBy": "anchor",
+          "score": 0.751,
+          "figures": [
+            "5"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "Queda claro que si se busca algo distinto y único, el Pixel Watch 5 lo da.",
+          "selectedBy": "anchor",
+          "score": 0.718,
+          "figures": [
+            "5"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        }
+      ]
+    },
+    {
+      "url": "https://theconversation.com/chatbots-as-oracles-how-ai-is-giving-new-life-to-the-ancient-practice-of-seeking-answers-from-inscrutable-sources-289279",
+      "source": "the_conversation",
+      "title": "Chatbots as oracles: How AI is giving new life to the ancient practice of seeking answers from inscrutable sources",
+      "site": "theconversation.com",
+      "sourceName": "The Conversation",
+      "language": "en",
+      "publishedAt": "2026-09-29",
+      "author": "Ambuj Tewari; Webb Keane",
+      "topic": "technology",
+      "topics": [
+        "technology",
+        "mental_health",
+        "community",
+        "food",
+        "heritage",
+        "medicine",
+        "inspiration",
+        "education",
+        "entertainment",
+        "sustainability",
+        "research",
+        "space",
+        "climate",
+        "nutrition",
+        "cities",
+        "arts",
+        "employment",
+        "energy",
+        "public_health",
+        "biology",
+        "nature",
+        "literature",
+        "fitness"
+      ],
+      "claims": [
+        {
+          "text": "A 2026 Pew report found that 10% of Americans are using chatbots for emotional support or companionship.",
+          "selectedBy": "anchor",
+          "score": 0.645,
+          "figures": [
+            "10%",
+            "2026"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact126"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "The system’s designers – researchers at the Allen Institute for AI and the University of Washington – said they did not intend it to be a moral authority but worried that users might see it that way.",
+          "selectedBy": "anchor",
+          "score": 0.507,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact127"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "In 2021, Ask Delphi, an AI-based website to which people could pose ethical or moral questions, received 3 million queries in a few weeks.",
+          "selectedBy": "anchor",
+          "score": 0.443,
+          "figures": [
+            "2021",
+            "3"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact128"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.nationalgeographic.com/health/article/arfid-avoidant-restrictive-eating-disorder",
+      "source": "national_geographic",
+      "title": "When Picky Eating is Actually a Psychiatric Disorder",
+      "site": "nationalgeographic.com",
+      "sourceName": "National Geographic",
+      "language": "en",
+      "publishedAt": "2026-09-29",
+      "author": "Stacey Colino",
+      "topic": "nutrition",
+      "topics": [
+        "nutrition",
+        "mental_health",
+        "medicine",
+        "public_health",
+        "fitness",
+        "education",
+        "food",
+        "biology",
+        "entertainment",
+        "space",
+        "sustainability",
+        "cities",
+        "arts",
+        "technology",
+        "climate",
+        "nature"
+      ],
+      "claims": [
+        {
+          "text": "“I struggled with eating any types of food,” says Dionisos, now 23, who works as a phlebotomist.",
+          "selectedBy": "anchor",
+          "score": 0.755,
+          "figures": [
+            "23"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "By the time Dionisos left the Emily Program in May, she had gained a sense of control over her food choices and increased her calorie intake to at least 2,000 calories a day.",
+          "selectedBy": "anchor",
+          "score": 0.699,
+          "figures": [
+            "2,000"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        },
+        {
+          "text": "Cases of ARFID are also on the rise, increasing by 305 percent from 2018 to 2022, according to a 2023 FAIR Health white paper.",
+          "selectedBy": "anchor",
+          "score": 0.678,
+          "figures": [
+            "305",
+            "2018",
+            "2022",
+            "2023"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact129"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.20minutos.es/andalucia/sevilla/andalucia-reduce-cerca-seis-puntos-abandono-escolar-temprano-con-proyectos-voluntariado-como-las-hadas-madrinas_7047054_0.html",
+      "source": "20minutos",
+      "title": "Andalucía reduce cerca de seis puntos el abandono escolar temprano con proyectos de voluntariado como las ‘hadas madrinas’",
+      "site": "20minutos.es",
+      "sourceName": "20minutos",
+      "language": "es",
+      "publishedAt": "2026-10-13",
+      "author": "Rocío M Trujillo",
+      "topic": "inspiration",
+      "topics": [
+        "inspiration",
+        "education",
+        "community",
+        "cities",
+        "mental_health"
+      ],
+      "claims": [
+        {
+          "text": "No en vano, la Junta ha conseguido que el abandono escolar temprano, principal consecuencia del absentismo escolar, sobre todo en las zonas más vulnerables, haya caído cerca de seis puntos en los últimos años, al pasar del 21,63% de 2019 a un 15,69% en el primer trimestre de este año, según los datos del Instituto Nacional de Estadística (INE).",
+          "selectedBy": "anchor",
+          "score": 0.671,
+          "figures": [
+            "21,63%",
+            "15,69%",
+            "2019"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact130"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "\"Es un amor, lo conozco de la biblioteca y los recreos\", dice emocionada a este medio en la puerta de la clase mientras se cuela un murmullo constante de niños charlando, entrando y saliendo del aula.",
+          "selectedBy": "anchor",
+          "score": 0.557,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "En Nuestra Señora de la Paz, que cuenta con 170 alumnos de 3 a 11 años, en su mayoría de etnia gitana y otras nacionalidades, sobre todo de Latinoamérica, el absentismo llegó el curso pasado al 27%, según detalla a 20minutos su director, Rafael Maqueda.",
+          "selectedBy": "anchor",
+          "score": 0.52,
+          "figures": [
+            "27%",
+            "170",
+            "3",
+            "11",
+            "20"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "trivial"
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "url": "https://elpais.com/clima-y-medio-ambiente/2026-10-10/de-ucrania-a-ormuz-la-segunda-crisis-energetica-en-un-lustro-desarma-la-resistencia-a-la-transicion-verde.html",
+      "source": "el_pais",
+      "reason": "no article text could be extracted"
+    }
+  ],
+  "screen": {
+    "status": "ok",
+    "error": null
+  },
+  "screened": [
+    {
+      "url": "https://www.optimistdaily.com/2026/10/fatima-ezzahra-el-mansouri-becomes-moroccos-first-woman-prime-minister/",
+      "source": "optimist_daily",
+      "offMission": "politics",
+      "margin": 0.0072
+    },
+    {
+      "url": "https://www.abc.es/economia/cuentas-corrientes/subida-salarial-pactada-desploma-momento-mayor-inflacion-20261012014623-nt.html",
+      "source": "abc",
+      "offMission": "labour",
+      "margin": 0.0816
+    },
+    {
+      "url": "https://www.elmundo.es/internacional/2026/10/13/6accf1f0e4d4d861058b4586.html",
+      "source": "el_mundo",
+      "offMission": "politics",
+      "margin": 0.0305
+    },
+    {
+      "url": "https://www.bbc.co.uk/news/articles/crpdgzxz38nlo?at_medium=RSS&at_campaign=rss",
+      "source": "bbc",
+      "offMission": "celebrity",
+      "margin": 0.036
+    },
+    {
+      "url": "https://muyinteresante.okdiario.com/historia/la-ambigua-postura-de-irlanda-ante-la-alemania-nazi-durante-la-segunda-guerra.html",
+      "source": "muy_interesante",
+      "offMission": "conflict",
+      "margin": 0.0499
+    },
+    {
+      "url": "https://www.cnn.com/2026/10/12/business/greenland-energy-dr-phil",
+      "source": "cnn",
+      "offMission": "markets",
+      "margin": 0.0218
+    },
+    {
+      "url": "https://www.infobae.com/colombia/2026/10/13/pico-y-placa-bogota-evita-multas-este-martes/",
+      "source": "infobae",
+      "offMission": "service",
+      "margin": 0.038
+    },
+    {
+      "url": "https://www.optimistdaily.com/2026/10/berlin-mapped-900000-street-trees-now-12000-people-water-them/",
+      "source": "optimist_daily",
+      "offMission": "service",
+      "margin": 0.0369
+    }
+  ],
+  "file": "2026-10-13.json",
+  "date": "2026-10-13"
+}

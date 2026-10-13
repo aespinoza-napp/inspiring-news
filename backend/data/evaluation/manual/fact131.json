@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Margherita Bassi",
+  "claim": "A popular nesting beach in southern Mexico hosts an estimated 450,000 nesting females, while two beaches on Costa Rica’s Pacific coast host around 600,000.",
+  "claimDate": "2026-09-25",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.fisheries.noaa.gov/species/olive-ridley-turtle"
+  ],
+  "split": "test",
+  "id": "fact131",
+  "topic": "nature",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-25",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/in-a-first-sea-turtles-were-spotted-nesting-on-the-us-west-coast-scientists-say-the-super-el-nino-could-have-brought-them-there-180989574/",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] NOAA Fisheries, olive ridley species page: 'an arribada nesting beach in La Escobilla, Mexico hosts an estimated 450,000 nesting female turtles', and 'the Pacific coast of Costa Rica supports an estimated 600,000 nesting olive ridleys' between 'its two major arribada beaches, Nancite and Ostional'. The page says it was last updated 25 Sep 2026, the article's own date; no older dated copy was read.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

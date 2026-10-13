@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Victoria Bekiempis",
+  "claim": "Over the same period, there were 38 locally contracted dengue cases reported in Florida.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.floridahealth.gov/wp-content/uploads/2026/09/fl-arbovirus-report-w37-2026.pdf"
+  ],
+  "split": "test",
+  "id": "fact138",
+  "topic": "public_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-19",
+  "articleUrl": "https://www.theguardian.com/us-news/2026/sep/28/dengue-fever-cases-florida-counties",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Florida Arbovirus Surveillance, week 37 (13-19 Sep 2026): 'Thirty-eight cases of locally acquired dengue were reported this week. In 2026, 190 cases of locally acquired dengue...', and 26 travel-associated cases that week. Need a look: 38 is the week's count. The Guardian's previous sentence, which sets 'the same period', could not be read (theguardian.com refused this session); if it meant 2026 to date, the figure would be 190 and the claim FALSE.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

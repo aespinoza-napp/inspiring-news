@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Christian Schwägerl",
+  "claim": "The DKRZ project is called “CMIP7-ark” — a lifeboat for the U.S. contribution to the seventh IPCC assessment.",
+  "claimDate": "2026-09-17",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.dfg.de/en/research-funding/funding-initiative/lis-data-resilience"
+  ],
+  "split": "test",
+  "id": "fact121",
+  "topic": "research",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-05",
+  "articleUrl": "https://e360.yale.edu/features/germany-us-climate-data",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] DFG, 'Funding Initiative to Secure Endangered Data Repositories and Promote Data Resilience 2025 to 2027' (page last updated 5 Aug 2026), projects funded in 2026: 'CMIP7-ark', at the German Climate Computing Centre (DKRZ), will mirror United States climate data as soon as it is released and curate it for cloud use. CMIP7 is the model comparison feeding the seventh IPCC assessment; 'lifeboat' is the article's image. The DFG is the funder, not DKRZ itself. Next.ink (29 Sep 2026) repeats the name, after the article (rule 3).",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

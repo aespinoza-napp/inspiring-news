@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "news.un.org",
+  "claimant": "UN News",
+  "claim": "Marking 35 years since the DPRK joined the United Nations, he concluded by pledging that his country would continue working through the Organization to promote what it regards as international justice, peace and security, while defending its sovereignty, security interests and right to development.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "not enough evidence",
+  "label": "UNVERIFIED",
+  "referenceEvidenceLinks": [
+    "https://press.un.org/en/2026/ga12791.doc.htm",
+    "https://www.pbs.org/newshour/world/in-a-relatively-mild-speech-north-korea-uses-un-platform-to-lament-mutual-distrust-and-tension",
+    "https://www.un.org/en/about-us/member-states"
+  ],
+  "split": "test",
+  "id": "fact137",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://news.un.org/feed/view/en/story/2026/09/1168476",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Only UN News, the article itself, reports the pledge. The UN's meetings coverage of the same session (GA/12791, 28 Sep 2026) and AP (via PBS NewsHour, 28 Sep) summarise Kim Son Gyong's speech without the anniversary or the pledge; AP has him praising multilateralism and relying 'entirely on our own efforts'. No transcript of the 2026 statement was found (the DPRK mission's site has 2025's; gadebate.un.org refused the fetch). The count holds: the DPRK was admitted on 17 Sep 1991 (UN member states list).",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "eldiario.es",
+  "claimant": "Francisco Gámiz",
+  "claim": "España es el primer país del mundo en donación de órganos.",
+  "claimDate": "2026-10-11",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/sanidad14/paginas/2026/160126-balance-trasplantes-2025.aspx",
+    "https://www.sanidad.gob.es/va/gabinete/notasPrensa.do?id=6828"
+  ],
+  "split": "test",
+  "id": "fact118",
+  "topic": "public_health",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-01-16",
+  "articleUrl": "https://www.eldiario.es/cultura/musica/judeline-ciudades-son-adquisitivo-no_128_13569652.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Split from a quoted sentence of pride (Judeline: 'Me llena de orgullo ver...'): its checkable part. Ministerio de Sanidad / ONT, 2025 balance (16 Jan 2026): 51,9 deceased donors p.m.p., 'muy superior a la del resto de países del mundo' (2024: United States 49,7, Italy 30,6, France 28,6), a lead held 'a lo largo de más de tres décadas'. A UNOS release, read only as a search excerpt (its site did not answer), gives 16,550 US deceased donors in 2025, about 48 p.m.p. The quote's other checkable part, that Spain won the [football] World Cup (1-0 against Argentina, 19 Jul 2026), holds but is trivial and not labelled.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

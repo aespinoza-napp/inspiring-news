@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "theconversation.com",
+  "claimant": "Ambuj Tewari; Webb Keane",
+  "claim": "The system’s designers – researchers at the Allen Institute for AI and the University of Washington – said they did not intend it to be a moral authority but worried that users might see it that way.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://arxiv.org/abs/2110.07574",
+    "https://ar5iv.labs.arxiv.org/html/2110.07574"
+  ],
+  "split": "test",
+  "id": "fact127",
+  "topic": "technology",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2022-07-12",
+  "articleUrl": "https://theconversation.com/chatbots-as-oracles-how-ai-is-giving-new-life-to-the-ancient-practice-of-seeking-answers-from-inscrutable-sources-289279",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Jiang et al., 'Can Machines Learn Morality? The Delphi Experiment' (arXiv 2110.07574, v2 12 Jul 2022; Allen Institute for AI and the University of Washington's Allen School): 'Delphi is not intended to be and should not be used as an independent moral authority', and 'there is a risk that systems like Delphi be turned into a moral authority'. Read in the ar5iv rendering.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

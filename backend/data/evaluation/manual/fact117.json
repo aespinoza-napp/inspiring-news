@@ -1,0 +1,26 @@
+{
+  "language": "es",
+  "site": "eldiario.es",
+  "claimant": "Francisco Gámiz",
+  "claim": "Judeline llenó por primera vez el Palacio de Deportes de Madrid a inicios de 2026.",
+  "claimDate": "2026-10-11",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://jenesaispop.com/2026/02/23/517478/judeline-arena-cronica/",
+    "https://elgeneracionalpost.com/cultura/musica/2026/0223/264989/judeline-conquista-su-primer-movistar-arena.html",
+    "https://es.wikipedia.org/wiki/Palacio_de_Deportes_de_la_Comunidad_de_Madrid"
+  ],
+  "split": "test",
+  "id": "fact117",
+  "topic": "entertainment",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-02-23",
+  "articleUrl": "https://www.eldiario.es/cultura/musica/judeline-ciudades-son-adquisitivo-no_128_13569652.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Split from the same sentence ('a inicios de este año' in an article of Oct 2026). The Palacio de Deportes de la Comunidad de Madrid is branded Movistar Arena since 1 Jan 2025 (Wikipedia). JENESAISPOP (23 Feb 2026): her 'primer Movistar Arena' on 22 Feb, 'llenando un estadio de esas dimensiones'; El Generacional (23 Feb 2026): 'ha conseguido hacer sold out en su debut en el Arena'.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

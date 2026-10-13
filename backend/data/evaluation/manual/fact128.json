@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "theconversation.com",
+  "claimant": "Ambuj Tewari; Webb Keane",
+  "claim": "In 2021, Ask Delphi, an AI-based website to which people could pose ethical or moral questions, received 3 million queries in a few weeks.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.jordannews.jo/Section-129/Technology/Can-a-machine-learn-morality-10554",
+    "https://www.geekwire.com/2021/teaching-artificial-intelligence-right-from-wrong-new-tool-from-ai2-aims-to-model-ethical-judgments/"
+  ],
+  "split": "test",
+  "id": "fact128",
+  "topic": "technology",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2021-12-05",
+  "articleUrl": "https://theconversation.com/chatbots-as-oracles-how-ai-is-giving-new-life-to-the-ancient-practice-of-seeking-answers-from-inscrutable-sources-289279",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] The New York Times (republished by Jordan News, updated 5 Dec 2021): 'Delphi, which has received more than 3 million visits over the past few weeks'; built by the Allen Institute for AI. GeekWire (2021): '3 million unique queries in a few weeks' - read only as a search excerpt, its site refused this session. Borderline: visits (NYT) or queries (GeekWire); the Delphi paper later counts 'over four million queries to date'.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

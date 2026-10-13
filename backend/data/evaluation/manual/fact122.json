@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": null,
+  "claim": "While the main goal was to alter Juice’s trajectory, the flyby also provided a third opportunity to test out Juice’s science instruments on a real surface in space – with the first being during the spacecraft’s 2024 lunar-Earth gravity assist, and the second during the 2025 observations of Comet 3I/ATLAS.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://universemagazine.com/en/juice-probes-view-of-earth-from-an-altitude-of-8000-km/",
+    "https://www.dlr.de/en/latest/news/2024/juice-space-probe-flies-by-the-moon-and-earth",
+    "https://www.skyatnightmagazine.com/news/comet-3i-atlas-juice-janus"
+  ],
+  "split": "test",
+  "id": "fact122",
+  "topic": "space",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-29",
+  "articleUrl": "https://www.esa.int/Science_Exploration/Space_Science/Juice/Successful_Earth_flyby_improves_Juice_s_course_to_Jupiter",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] DLR (Aug 2024), on the 19-20 Aug 2024 lunar-Earth flyby: the science experiments would be 'switched on in order to be tested and calibrated'. BBC Sky at Night Magazine (4 Mar 2026): 'During November 2025, scientists say Juice used five of its science instruments to observe 3I/ATLAS'. Universe Magazine (29 Sep 2026): the 28 Sep Earth flyby was the third chance to test the instruments 'after the Moon-Earth gravity assist in 2024 and observations of comet 3I/ATLAS in 2025'. All of it traces back to ESA and its partners' releases.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

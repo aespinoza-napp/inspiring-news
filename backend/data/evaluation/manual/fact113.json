@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Sarah Kuta",
+  "claim": "The Nobel committee lauded the 85-year-old South African jurist and former United Nations human rights chief for her “commitment to universal legal principles” and her “firm moral compass” throughout her long career.",
+  "claimDate": "2026-10-09",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://abc30.com/story/nobel-peace-prize-goes-navanethem-pillay-efforts-promote-international-law/19924362/",
+    "https://www.aljazeera.com/news/2026/10/9/2026-nobel-peace-prize-awarded-to-navi-pillay"
+  ],
+  "split": "test",
+  "id": "fact113",
+  "topic": "inspiration",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-09",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/raised-in-apartheid-south-africa-2026-nobel-peace-prize-winner-navi-pillay-is-one-of-the-worlds-leading-human-rights-jurists-180989667/",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] AP (via ABC30, 9 Oct 2026): the committee said Pillay's 'commitment to universal legal principles and her firm moral compass are constants in a long career'; AP gives 1941 as her birth year. Al Jazeera (9 Oct 2026): 'the 85-year-old', South African, 'former United Nations high commissioner for human rights'. nobelprize.org refused the connection (403).",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "nationalgeographic.com",
+  "claimant": "Stacey Colino",
+  "claim": "Cases of ARFID are also on the rise, increasing by 305 percent from 2018 to 2022, according to a 2023 FAIR Health white paper.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.fairhealth.org/article/from-2018-to-2022-eating-disorder-claim-lines-increased-65-percent-nationally-as-a-percentage-of-all-medical-claim-lines",
+    "https://www.ajmc.com/view/eating-disorder-claim-lines-rose-65-across-nation-from-2018-to-2022"
+  ],
+  "split": "test",
+  "id": "fact129",
+  "topic": "mental_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2023-11-16",
+  "articleUrl": "https://www.nationalgeographic.com/health/article/arfid-avoidant-restrictive-eating-disorder",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] FAIR Health, 'Spotlight on Eating Disorders: An Analysis of Private Healthcare Claims' (release 16 Nov 2023; AJMC 15 Nov 2023): from 2018 to 2022 eating-disorder claim lines rose as a percentage of all medical claim lines, 'avoidant/restrictive food intake disorder (ARFID) by 305 percent'. Figure, years and source hold; what rose is ARFID's share of insurance claim lines, not cases, and FAIR Health notes ARFID's diagnosis code only dates from 2017, so it rose from a low base. PARTIALLY_TRUE for calling claim lines 'cases'; TRUE if read loosely.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

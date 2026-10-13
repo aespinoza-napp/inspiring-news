@@ -1,0 +1,26 @@
+{
+  "language": "es",
+  "site": "eldiario.es",
+  "claimant": "Francisco Gámiz",
+  "claim": "Lara Fernández, conocida artísticamente como Judeline, nació en Jerez de la Frontera en 2003.",
+  "claimDate": "2026-10-11",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://en.wikipedia.org/wiki/Judeline",
+    "https://www.lahiguera.net/musicalia/artistas/judeline/biografia.php",
+    "https://remezcla.com/features/music/meet-judeline-the-andalusian-pop-siren-conjuring-spiritual-realms"
+  ],
+  "split": "test",
+  "id": "fact115",
+  "topic": "entertainment",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2024-11-11",
+  "articleUrl": "https://www.eldiario.es/cultura/musica/judeline-ciudades-son-adquisitivo-no_128_13569652.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Split from a compound sentence: its checkable part; 'ha logrado la fama de manera pausada' is interpretation, not labelled. Wikipedia and La Higuera's biography: Lara Fernández Castrelo, born 18 Jan 2003, 'Nació en Jerez de la Frontera', raised in Los Caños de Meca (Barbate). Remezcla (11 Nov 2024): 'Lara Fernández, aka Judeline'. Borderline on sourcing: birthplace and year come from undated reference pages (Wikipedia, a biography site); Remezcla only calls her a 'Cadiz native' with a mother from Jerez.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

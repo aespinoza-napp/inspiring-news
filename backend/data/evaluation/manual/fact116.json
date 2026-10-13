@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "eldiario.es",
+  "claimant": "Francisco Gámiz",
+  "claim": "Judeline logró uno de los discos más aclamados de 2024 con Bodhiria.",
+  "claimDate": "2026-10-11",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.mondosonoro.com/blog-musica/mejores-discos-2024-nacionales/",
+    "https://www.rockdelux.com/en/listas/2024--discos-nacionales"
+  ],
+  "split": "test",
+  "id": "fact116",
+  "topic": "entertainment",
+  "claimType": "interpretive",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2024-12-23",
+  "articleUrl": "https://www.eldiario.es/cultura/musica/judeline-ciudades-son-adquisitivo-no_128_13569652.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Split from a compound sentence; its other part is the next fact. Bodhiria (Interscope, 25 Oct 2024) is no. 7 on Mondo Sonoro's 'Los mejores discos nacionales de 2024' (23 Dec 2024) and no. 09 on Rockdelux's '2024/ Discos nacionales' (TOP 2024, undated). 'Most acclaimed' is a reading of critics' lists, hence interpretive.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

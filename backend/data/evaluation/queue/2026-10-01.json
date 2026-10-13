@@ -122,8 +122,10 @@
           "selectedBy": "anchor",
           "score": 0.662,
           "figures": [],
-          "status": "pending",
-          "factIds": [],
+          "status": "labelled",
+          "factIds": [
+            "fact136"
+          ],
           "skipReason": null
         },
         {
@@ -495,8 +497,10 @@
           "figures": [
             "35"
           ],
-          "status": "pending",
-          "factIds": [],
+          "status": "labelled",
+          "factIds": [
+            "fact137"
+          ],
           "skipReason": null
         }
       ]
@@ -596,8 +600,10 @@
           "figures": [
             "38"
           ],
-          "status": "pending",
-          "factIds": [],
+          "status": "labelled",
+          "factIds": [
+            "fact138"
+          ],
           "skipReason": null
         },
         {

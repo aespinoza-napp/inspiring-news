@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Sergi Garcia Arenas",
+  "claim": "En el estudio participaron 116 mujeres con ciclos menstruales naturales (que no utilizaban anticonceptivos hormonales).",
+  "claimDate": "2026-09-25",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1017/S0033291726105315"
+  ],
+  "split": "test",
+  "id": "fact125",
+  "topic": "mental_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-03",
+  "articleUrl": "https://www.lavanguardia.com/launi/20260925/11643637/nuevas-evidencias-sobre-como-hormonas-alteran-animo-mujeres.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] The paper (Psychological Medicine, online 3 Sep 2026), abstract: 'A total of 116 naturally cycling women performed an approach-avoidance task with emotional facial expressions during functional magnetic resonance imaging'; its Methods exclude current hormonal treatments, oral contraceptives included.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

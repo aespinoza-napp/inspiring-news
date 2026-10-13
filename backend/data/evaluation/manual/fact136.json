@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "bbc.co.uk",
+  "claimant": "Steven McIntosh",
+  "claim": "Committee chair Dame Caroline Dinenage said the report comes at \"a pivotal moment for the BBC\", which is grappling with changing media habits, declining income and negotiations with the government over how it is paid for.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.advanced-television.com/2026/10/01/mps-set-out-bbc-charter-review-proposals/"
+  ],
+  "split": "test",
+  "id": "fact136",
+  "topic": "entertainment",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-01",
+  "articleUrl": "https://www.bbc.co.uk/news/articles/cr89j4g7v05wo?at_medium=RSS&at_campaign=rss",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Advanced Television (1 Oct 2026): Dame Caroline Dinenage MP, 'This is a pivotal moment for the BBC'; the same report has 'changing viewing habits and a fall in numbers paying the licence fee' and the government finalising its proposals for the next Charter. A quotation checked for its words and speaker. The scraped sentence's ', external' (a link label) is dropped from the claim.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "news.mit.edu",
+  "claimant": "Zach Winn; MIT News",
+  "claim": "“Break Through Cancer brought together people working on not only ovarian cancer but also on pancreatic cancer, brain cancer, leukemia, and other cancers,” Varanasi says.",
+  "claimDate": "2026-09-24",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://ajmc.com/view/5-leading-research-institutions-to-target-toughest-cancers-with-new-public-foundation"
+  ],
+  "split": "test",
+  "id": "fact134",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2021-02-25",
+  "articleUrl": "https://news.mit.edu/2026/new-cell-collection-device-could-improve-early-cancer-detection-0924",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] AJMC (25 Feb 2021), on Break Through Cancer's launch: teams from Dana-Farber, Johns Hopkins' Sidney Kimmel center, MD Anderson, Memorial Sloan Kettering and MIT's Koch Institute, 'aiming at pancreatic cancer, ovarian cancer, glioblastoma, and acute myelogenous leukemia' - the brain cancer and leukemia of the quote. Checked for what the quotation says; that Varanasi said it rests on the article.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

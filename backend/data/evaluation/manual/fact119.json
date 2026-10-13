@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Christian Schwägerl",
+  "claim": "To support them, the German Research Foundation in late 2025 set up a program, with a budget of $35 million, to provide a safe haven for permanently storing copies of U.S. data from public and open sources.",
+  "claimDate": "2026-09-17",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://winfuture.de/news,154662.html",
+    "https://www.bundestag.de/presse/hib/kurzmeldungen-1137692",
+    "https://heise.de/-11150370"
+  ],
+  "split": "test",
+  "id": "fact119",
+  "topic": "research",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-01-22",
+  "articleUrl": "https://e360.yale.edu/features/germany-us-climate-data",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] The DFG called its 'Förderinitiative ... Datenresilienz 2025 bis 2027' at the end of October 2025 (the call date read only as a search excerpt; WinFuture, 2 Nov 2025: funding 'für den Zeitraum von 2025 bis voraussichtlich 2027' to bring data back from foreign repositories and clouds). The money: 'Die Bundesregierung stellt rund 30 Millionen Euro für die Sicherung wichtiger Forschungsdatenbestände zur Verfügung', awarded through the DFG (Bundestag hib 49/2026, 21 Jan 2026; heise, 22 Jan 2026). EUR 30M is within rule 2 of $35M at any rate from 1.06 to 1.29 $/EUR. Borderline: the call names repositories abroad in general, not only U.S. data (its funded projects are mostly U.S.), and the budget is the federal government's, stated in January 2026.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

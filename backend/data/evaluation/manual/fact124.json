@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Sergi Garcia Arenas",
+  "claim": "Esto también conlleva un estado de ánimo más bajo que afecta al bienestar emocional de las mujeres, según un estudio publicado en la revista Psychological Medicine, de Cambridge University Press, y dirigido por el profesor Macià Buades, de la Facultad de Psicología y el Instituto de Neurociencias de la Universidad de Barcelona.",
+  "claimDate": "2026-09-25",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1017/S0033291726105315",
+    "https://www.news-medical.net/news/20260902/Progesterone-levels-linked-to-brain-patterns-underlying-mood-changes.aspx"
+  ],
+  "split": "test",
+  "id": "fact124",
+  "topic": "mental_health",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-03",
+  "articleUrl": "https://www.lavanguardia.com/launi/20260925/11643637/nuevas-evidencias-sobre-como-hormonas-alteran-animo-mujeres.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Buades-Rotger et al., 'Endogenous progesterone blurs frontostriatal representations of emotion control in healthy young women', Psychological Medicine 56, e263 (Cambridge University Press), online 3 Sep 2026. Corresponding author Macià Buades-Rotger: Faculty of Psychology and Institute of Neurosciences (UBneuro), University of Barcelona. 'Lower FPl decodability was linked to poorer mood during the preceding week', and it mediated the link between progesterone and worse mood ('Esto' in the article is that progesterone-related blurring). News-Medical (2 Sep 2026) relays CUP's release.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

@@ -70,9 +70,9 @@
           "selectedBy": "anchor",
           "score": 0.654,
           "figures": [],
-          "status": "pending",
+          "status": "skipped",
           "factIds": [],
-          "skipReason": null
+          "skipReason": "fragment"
         },
         {
           "text": "A popular nesting beach in southern Mexico hosts an estimated 450,000 nesting females, while two beaches on Costa Rica’s Pacific coast host around 600,000.",
@@ -82,8 +82,10 @@
             "450,000",
             "600,000"
           ],
-          "status": "pending",
-          "factIds": [],
+          "status": "labelled",
+          "factIds": [
+            "fact131"
+          ],
           "skipReason": null
         }
       ]
@@ -118,8 +120,10 @@
             "100",
             "100"
           ],
-          "status": "pending",
-          "factIds": [],
+          "status": "labelled",
+          "factIds": [
+            "fact132"
+          ],
           "skipReason": null
         },
         {
@@ -127,8 +131,10 @@
           "selectedBy": "anchor",
           "score": 0.629,
           "figures": [],
-          "status": "pending",
-          "factIds": [],
+          "status": "labelled",
+          "factIds": [
+            "fact133"
+          ],
           "skipReason": null
         },
         {
@@ -136,9 +142,9 @@
           "selectedBy": "anchor",
           "score": 0.583,
           "figures": [],
-          "status": "pending",
+          "status": "skipped",
           "factIds": [],
-          "skipReason": null
+          "skipReason": "prediction"
         }
       ]
     },
@@ -173,8 +179,10 @@
           "selectedBy": "anchor",
           "score": 0.639,
           "figures": [],
-          "status": "pending",
-          "factIds": [],
+          "status": "labelled",
+          "factIds": [
+            "fact134"
+          ],
           "skipReason": null
         },
         {
@@ -182,9 +190,9 @@
           "selectedBy": "anchor",
           "score": 0.618,
           "figures": [],
-          "status": "pending",
+          "status": "skipped",
           "factIds": [],
-          "skipReason": null
+          "skipReason": "opinion"
         },
         {
           "text": "About 20 years ago, researchers studying ovarian cancer discovered that many cases of high-grade serous ovarian cancer, the most common type, originate in the fallopian tubes.",
@@ -193,8 +201,10 @@
           "figures": [
             "20"
           ],
-          "status": "pending",
-          "factIds": [],
+          "status": "labelled",
+          "factIds": [
+            "fact135"
+          ],
           "skipReason": null
         }
       ]

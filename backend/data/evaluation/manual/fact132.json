@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Jan Rosenow",
+  "claim": "By one estimate, more than 100 gigawatts of onsite gas power, the rough equivalent of 100 large gas power plants, is planned for data centers across the U.S.",
+  "claimDate": "2026-09-02",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://news.bloomberglaw.com/energy/data-centers-plan-to-boost-on-site-gas-power-57-fold-bnef-says",
+    "https://humanprogress.org/us-data-centers-are-driving-a-surge-in-gas-fired-power-projects/"
+  ],
+  "split": "test",
+  "id": "fact132",
+  "topic": "energy",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-26",
+  "articleUrl": "https://e360.yale.edu/digest/data-centers-battery-storage",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] The article's 'estimate' links to Bloomberg Law (9 Mar 2026): BNEF counts 'about 114 gigawatts are planned for the coming years across 115 projects' of on-site gas at data centers, 'Almost 90% of those projects are located in the US'. Global Energy Monitor, via Axios ('US data centers are driving a surge in gas-fired power projects', 26 Aug 2026, republished by Human Progress): 'A whopping 189 gigawatts is planned for on-site data centers through the first half of 2026'. More than 100 GW either way; 100 large plants is the article's own equivalence.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

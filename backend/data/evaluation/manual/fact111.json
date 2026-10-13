@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Sarah Kuta",
+  "claim": "Under apartheid, Pillay and other non-white South Africans were “treated like dirt,” she told the Agence France-Presse (AFP) in 2023.",
+  "claimDate": "2026-10-09",
+  "reviewDate": "2026-10-13T07:53:31",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.france24.com/en/live-news/20230215-at-81-south-africa-s-fearless-rights-defender-navi-pillay-fights-on"
+  ],
+  "split": "test",
+  "id": "fact111",
+  "topic": "inspiration",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2023-02-15",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/raised-in-apartheid-south-africa-2026-nobel-peace-prize-winner-navi-pillay-is-one-of-the-worlds-leading-human-rights-jurists-180989667/",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] AFP via France 24, 15 Feb 2023 ('At 81, South Africa's fearless rights defender Navi Pillay fights on'): 'We put up with the worst,' she said of the apartheid era, when people like her were 'abused and treated like dirt'. A quotation checked for its words, speaker, agency and year.",
+  "createdAt": "2026-10-13T07:53:31",
+  "review": null
+}

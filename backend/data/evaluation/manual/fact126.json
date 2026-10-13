@@ -1,0 +1,24 @@
+{
+  "language": "en",
+  "site": "theconversation.com",
+  "claimant": "Ambuj Tewari; Webb Keane",
+  "claim": "A 2026 Pew report found that 10% of Americans are using chatbots for emotional support or companionship.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.pewresearch.org/internet/2026/06/17/americans-and-ai-2026-chatbots-smart-devices-and-views-on-impact/"
+  ],
+  "split": "test",
+  "id": "fact126",
+  "topic": "technology",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-06-17",
+  "articleUrl": "https://theconversation.com/chatbots-as-oracles-how-ai-is-giving-new-life-to-the-ancient-practice-of-seeking-answers-from-inscrutable-sources-289279",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Pew Research Center, 'Americans and AI 2026' (17 Jun 2026; 5,119 U.S. adults surveyed 17-23 Feb 2026): of all U.S. adults, 10% say they ever use AI chatbots 'for emotional support or advice' and 4% 'for companionship'; 'one-in-ten report using chatbots for emotional support'. The claim joins the two; the share using either is at least 10%.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}

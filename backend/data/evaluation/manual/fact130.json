@@ -1,0 +1,27 @@
+{
+  "language": "es",
+  "site": "20minutos.es",
+  "claimant": "Rocío M Trujillo",
+  "claim": "No en vano, la Junta ha conseguido que el abandono escolar temprano, principal consecuencia del absentismo escolar, sobre todo en las zonas más vulnerables, haya caído cerca de seis puntos en los últimos años, al pasar del 21,63% de 2019 a un 15,69% en el primer trimestre de este año, según los datos del Instituto Nacional de Estadística (INE).",
+  "claimDate": "2026-10-13",
+  "reviewDate": "2026-10-13T07:53:32",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.elconfidencialdigital.com/articulo/estado-autonomico/brecha-territorial-abandono-escolar-agranda-espana-186-rioja-61-navarra/202604300750521291302.html",
+    "https://www.andaluciainformacion.es/articulo/andalucia/abandono-escolar-temprano-andalucia-sube-1569/202604300954043251994.html",
+    "https://www.magisnet.com/2026/02/el-abandono-escolar-temprano-se-situa-en-andalucia-en-un-1449-el-mejor-de-la-historia/",
+    "https://educandoenigualdad.com/?p=7260"
+  ],
+  "split": "test",
+  "id": "fact130",
+  "topic": "education",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-04-30",
+  "articleUrl": "https://www.20minutos.es/andalucia/sevilla/andalucia-reduce-cerca-seis-puntos-abandono-escolar-temprano-con-proyectos-voluntariado-como-las-hadas-madrinas_7047054_0.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-13 - not yet checked by the human annotator] Q1 2026: El Confidencial Digital and Andalucía Información (30 Apr 2026), from the INE's EPA: 'Andalucía del 15,69%'. 2019: Magisnet (12 Feb 2026), from the Junta's report on the Ministry's data, 'desde 2019, cuando la tasa de abandono se situaba en el 21,63%'; El Diario de la Educación (Jul 2020, via Educando en Igualdad) had 21,6% as the latest official figure. A drop of 5.94 points, 'cerca de seis puntos'. It sets an annual rate against one quarter, and Q1 2026 was a rise ('sube al 15,69%') from 2025's annual 14,49%. That the Junta 'ha conseguido' it is interpretation, not labelled.",
+  "createdAt": "2026-10-13T07:53:32",
+  "review": null
+}
