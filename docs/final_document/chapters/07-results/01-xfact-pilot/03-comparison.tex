@@ -1,0 +1,53 @@
+% ============================================================
+% Chapter 7: Results
+%   Section: Pilot on X-Fact
+%     Subsection: Beside the X-Fact Baselines
+% Included from chapters/07-results/01-xfact-pilot/xfact-pilot.tex
+% ============================================================
+
+\subsection{Beside the X-Fact Baselines}
+\label{subsec:pilot-comparison}
+
+Table~\ref{tab:xfact-paper} reproduces the baselines of the X-Fact
+paper \cite{gupta2021xfact} from its Tables~3 and~4, read from the
+published version. Every figure is a macro-averaged $F_1$ in percent,
+the mean of four fine-tuning runs (standard deviation in
+parentheses), over X-Fact's seven labels. The paper reports neither
+accuracy nor any per-language figure. Its models are multilingual
+BERT fine-tuned on 19,079 training claims; ``Meta'' adds the
+language, site, claimant and both dates as text, and the evidence
+models (Attn-EA) read the snippets of the top five Google results for
+each claim, collected when the dataset was built. There is no uniform
+random baseline in the paper: ``Attn-EA (Random)'' is the evidence
+model given random snippets, and the majority baseline always answers
+\emph{false}.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Model (X-Fact paper)} & $\boldsymbol{\alpha_1}$ \textbf{in-domain} & $\boldsymbol{\alpha_2}$ \textbf{out-of-domain} & $\boldsymbol{\alpha_3}$ \textbf{zero-shot} \\
+\midrule
+Majority & 6.9 & 10.6 & 7.6 \\
+Claim-Only & 38.2 (0.9) & 16.2 (0.9) & 14.7 (0.6) \\
+Claim-Only + Meta & 39.4 (0.9) & 15.4 (0.8) & 16.7 (1.1) \\
+Attn-EA (Random) & 37.5 (0.8) & 16.3 (0.5) & 14.9 (1.2) \\
+Attn-EA & 38.9 (0.2) & 15.7 (0.1) & 16.5 (0.7) \\
+Attn-EA + Meta & \textbf{41.9} (1.2) & 15.4 (1.5) & 16.0 (0.3) \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Training augmented with 12,311 English PolitiFact claims (Table~4)}} \\
+Claim-Only + Meta & 37.1 (2.7) & 14.5 (0.5) & 14.4 (0.3) \\
+Attn-EA + Meta & 38.0 (4.5) & 14.7 (2.6) & 14.3 (1.9) \\
+\bottomrule
+\end{tabular}
+\caption{The X-Fact baselines as published (Gupta and Srikumar,
+Tables~3 and~4): macro-$F_1$ in percent over seven labels, mean
+(standard deviation) of four runs. $\alpha_1$: 3,826 claims in the
+training languages and sources, Spanish (Chequeado) among them;
+$\alpha_2$: 2,368 claims from unseen sources of four training
+languages; $\alpha_3$: 3,381 claims in twelve unseen languages.}
+\label{tab:xfact-paper}
+\end{table}
+
+\pending{our accuracy and macro-$F_1$ beside these.}

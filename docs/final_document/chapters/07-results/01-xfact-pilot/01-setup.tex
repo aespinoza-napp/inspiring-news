@@ -1,0 +1,54 @@
+% ============================================================
+% Chapter 7: Results
+%   Section: Pilot on X-Fact
+%     Subsection: What Was Run
+% Included from chapters/07-results/01-xfact-pilot/xfact-pilot.tex
+% ============================================================
+
+\subsection{What Was Run}
+\label{subsec:pilot-setup}
+
+Nothing was trained. The verification model is a zero-shot language
+model reading evidence that the pipeline retrieves from the open web
+at the moment of checking, so there are no weights to fit and no
+X-Fact claim was used to tune any threshold. What the pilot measures
+is the pipeline's own claim-checking stage (the one behind the
+single-claim endpoint), run through the evaluation harness of
+Section~\ref{sec:harness} over X-Fact rows and scored against their
+labels.
+
+Two sets were run on 13 October 2026:
+
+\begin{itemize}
+    \item \textbf{The pilot}: 64 claims sampled from the English and
+    Spanish rows of X-Fact, eight per language and label (fewer where
+    a label is missing), preferring development and test rows. Its 24
+    English claims come from PolitiFact and are all training rows,
+    because English has no evaluation split in X-Fact; its 40 Spanish
+    claims come from Chequeado (31 training, 2 development, 7 test).
+    The label distribution is flat by construction.
+    \item \textbf{The Spanish test split}: all 165 Spanish rows of
+    X-Fact's in-domain test set ($\alpha_1$), extracted in file order
+    by a deterministic script. It is the only part of the benchmark
+    the paper reports on that this work can reproduce, and it covers
+    one of $\alpha_1$'s twelve languages.
+\end{itemize}
+
+\paragraph{Configuration.} \texttt{llama3.2:3b} (Q4\_K\_M) served by
+Ollama on the development laptop (Intel i7-12700H, 16~GB RAM, an
+NVIDIA RTX~3050 Laptop GPU with 4~GB, of which about 80\% of the model
+fitted, the rest running on the CPU); the inference service (entities
+and embeddings) on the CPU in its container; SearXNG with the engine
+set of the deployment. Thresholds and scoring weights were the
+defaults, and the internal corpus was a snapshot of the live store
+(5 points, none of them about the claims). Each claim was checked
+without its claimant, dates or fact-checker: the claim text alone, as
+the single-claim endpoint receives it.
+
+\paragraph{Health before the run.} The health endpoint answered for
+all four dependencies (inference 49~ms, SearXNG 36~ms, the language
+model 42~ms, Neo4j 1,060~ms). The source probe's search check returned
+89 results in each language, from Bing, Yep, Wikipedia (English only)
+and four academic indexes; Google and Brave were refusing SearXNG
+(``access denied'', ``too many requests''). A three-claim smoke run
+returned 15 to 17 web results per claim before the full run started.

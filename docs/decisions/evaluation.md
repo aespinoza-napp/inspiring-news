@@ -164,8 +164,10 @@ backend/data/evaluation/runs/<dataset-stem>/<model-slug>/<key>/
   the DuckDuckGo fallback switch, the concurrency settings and the start
   time. Each start appends a **session** (`startedAt`, `finishedAt`,
   commit, provider, flags, pending, ran, ok, errors, `stopped`,
-  `tornLinesDropped`, `unattributedLlmCalls`), so a resumed run keeps the
-  first session's provenance and says how it was resumed.
+  `tornLinesDropped`, `unattributedLlmCalls`, and since the pilot its own
+  `settings`: endpoints, `LLM_TIMEOUT`, `INFERENCE_TIMEOUT` and the
+  concurrency ceilings, none of which is keyed), so a resumed run keeps
+  the first session's provenance and says how it was resumed.
 - **Resume.** On start, the runner reads `results.jsonl`; the last record
   per id wins. Ids with `status: ok` are done and are not re-run. Errors
   are retried. A torn last line, from a crash mid-write, is cut from the
@@ -609,14 +611,37 @@ The harness needs `inference/`, SearXNG and the LLM, like any analysis.
 - **On the host**: `inference/` must be reachable at `INFERENCE_URL`, and
   compose does not publish port 8001. Run `cd inference && uv run
   uvicorn src.main:app --port 8001` first.
-- **In compose**: `docker compose run --rm backend uv run python -m
-  src.evaluation.cli ...`, which reaches the services on the compose
-  network. `data/` is dockerignored and `data/evaluation/` is not in the
-  `backend-data` volume, so the pilot goal mounts `backend/data/evaluation`
-  into the service.
+- **In compose** (how the pilot ran, 2026-10-13): layer
+  `docker/docker-compose.eval.yml` and use `run`, never `up`:
+
+  ```bash
+  cd docker
+  docker compose -f docker-compose.yml -f docker-compose.eval.yml \
+    --env-file ../backend/.env run --rm --no-deps -T backend \
+    python -m src.evaluation.cli run --dataset data/evaluation/xfact_en_es_pilot.jsonl \
+      --model llama3.2:3b
+  ```
+
+  The layer mounts `backend/data/evaluation` (dockerignored, and not in
+  the `backend-data` volume), the checkout's `backend/src` (a harness fix
+  applies on resume without a rebuild) and the checkout itself read-only
+  with `GIT_DIR` pointed at it, because the image has git but no `.git`
+  and every record would otherwise say `gitCommit: unknown`. `python`,
+  not `uv run python`: the image is synced without the dev group, which
+  `uv run` would install first. From Git Bash on Windows, set
+  `MSYS_NO_PATHCONV=1` or the container paths get rewritten. The run's
+  corpus snapshot is then the live store in `backend-data`, and the
+  headless browser the image installs is there, which the host usually
+  lacks. Ctrl-C reaches the harness as `docker kill --signal=SIGINT
+  <the run container>`.
 - **On a CPU**, use the production LLM limits (`LLM_TIMEOUT`,
   `LLM_MAX_CONCURRENCY` in `docker-compose.prod.yml`). The dev limits
   turned 3 of 4 verdicts into `llmUnreachable` (CLAUDE.md, "Known dead").
+  The eval layer sets them, and also `INFERENCE_TIMEOUT=120` and
+  `CLAIM_MAX_CONCURRENCY=2`: at four claims at once on CPU inference, the
+  ranker's embedding calls passed the 30 s default and killed 5 of the
+  pilot's first 20 claims (§Pilot). None of these is keyed; each session
+  records the values it ran with.
 - **Cost**: the LLM took ~45 s per claim on CPU in the production run, so
   64 claims is roughly an hour at one claim at a time, plus search.
 - **Check search first.** Read `/healthz` and the Source health panel on
