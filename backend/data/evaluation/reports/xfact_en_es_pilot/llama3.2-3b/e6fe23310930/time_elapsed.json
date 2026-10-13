@@ -1,0 +1,1551 @@
+{
+  "run": {
+    "key": "e6fe23310930",
+    "model": "llama3.2:3b",
+    "dataset": "xfact_en_es_pilot"
+  },
+  "outcomes": {
+    "scored": 64
+  },
+  "scored": {
+    "n": 64,
+    "correct": 19,
+    "accuracy": 0.296875,
+    "accuracyCI": {
+      "low": 0.1875,
+      "high": 0.40625,
+      "undefinedResamples": 0
+    },
+    "macroF1": 0.16758078904204193,
+    "coverage": 0.953125,
+    "ids": [
+      "xf-0544dfe2b9c6",
+      "xf-05f54b65f1c0",
+      "xf-0df17fe58a7f",
+      "xf-10e54fbc988d",
+      "xf-16a51393f9f8",
+      "xf-1de2fd7b53ce",
+      "xf-1ea0f2aaeb65",
+      "xf-253c58784d68",
+      "xf-3005b1d6af1b",
+      "xf-32a80ffc6ef6",
+      "xf-35c132db5481",
+      "xf-3b4b9db1a053",
+      "xf-3d71167b379a",
+      "xf-4232cbf2b6df",
+      "xf-5145769388ef",
+      "xf-52033870ba38",
+      "xf-52314da1ce07",
+      "xf-536752876f79",
+      "xf-653d580b47ae",
+      "xf-65610a4bdaa1",
+      "xf-6de0b294b07b",
+      "xf-708ac43fcff5",
+      "xf-7207db5a528e",
+      "xf-7581ef78aa6a",
+      "xf-777c714dd1b5",
+      "xf-7839295e2bf1",
+      "xf-7c19682d2758",
+      "xf-7cc2b9765879",
+      "xf-7d05ad57ba03",
+      "xf-7d093c407264",
+      "xf-87cda4138197",
+      "xf-88344678948e",
+      "xf-8f6c11a638b3",
+      "xf-90c4fbb5248f",
+      "xf-954337aa7ed2",
+      "xf-965f21f0ae76",
+      "xf-996b4a0c6ab5",
+      "xf-9bf6c9a73d13",
+      "xf-9e1a9409aa38",
+      "xf-9f577fcbe085",
+      "xf-a5a400a67d0b",
+      "xf-ab44eb4e2da2",
+      "xf-ae276f7fabc9",
+      "xf-b2f25a97c329",
+      "xf-b374ee0b0585",
+      "xf-b57f3f4f21a7",
+      "xf-b693457e76b4",
+      "xf-be54e83dc79f",
+      "xf-beb27c98ab6f",
+      "xf-c41e15e05b10",
+      "xf-c870faf6e5a2",
+      "xf-c93b20095e0e",
+      "xf-caac5fa9f0fc",
+      "xf-cb2e6beed024",
+      "xf-cd85dee989e9",
+      "xf-d23d2111e82e",
+      "xf-d28faa9b7056",
+      "xf-e2829b280a4f",
+      "xf-e83b027fd5fa",
+      "xf-e9de336ed5db",
+      "xf-f06609441917",
+      "xf-f0fb57690453",
+      "xf-f4007ef26c2c",
+      "xf-f966546dfb9b"
+    ]
+  },
+  "byLanguage": {
+    "en": {
+      "n": 24,
+      "correct": 10,
+      "accuracy": 0.4166666666666667,
+      "accuracyCI": {
+        "low": 0.20833333333333334,
+        "high": 0.625,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.35802469135802467,
+      "coverage": 1.0,
+      "ids": [
+        "xf-16a51393f9f8",
+        "xf-253c58784d68",
+        "xf-3005b1d6af1b",
+        "xf-653d580b47ae",
+        "xf-708ac43fcff5",
+        "xf-777c714dd1b5",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-8f6c11a638b3",
+        "xf-90c4fbb5248f",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-9e1a9409aa38",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b374ee0b0585",
+        "xf-b57f3f4f21a7",
+        "xf-c41e15e05b10",
+        "xf-c93b20095e0e",
+        "xf-d23d2111e82e",
+        "xf-d28faa9b7056",
+        "xf-f4007ef26c2c"
+      ]
+    },
+    "es": {
+      "n": 40,
+      "correct": 9,
+      "accuracy": 0.225,
+      "accuracyCI": {
+        "low": 0.1,
+        "high": 0.35,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.12960526315789472,
+      "coverage": 0.925,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-05f54b65f1c0",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-7839295e2bf1",
+        "xf-87cda4138197",
+        "xf-88344678948e",
+        "xf-954337aa7ed2",
+        "xf-965f21f0ae76",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-b2f25a97c329",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c870faf6e5a2",
+        "xf-caac5fa9f0fc",
+        "xf-cb2e6beed024",
+        "xf-cd85dee989e9",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f966546dfb9b"
+      ]
+    }
+  },
+  "verdictLeak": {
+    "yes": {
+      "n": 9,
+      "correct": 4,
+      "accuracy": 0.4444444444444444,
+      "accuracyCI": {
+        "low": 0.1111111111111111,
+        "high": 0.7777777777777778,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.3111111111111111,
+      "coverage": 1.0,
+      "ids": [
+        "xf-3005b1d6af1b",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-b374ee0b0585",
+        "xf-c41e15e05b10",
+        "xf-d28faa9b7056",
+        "xf-f4007ef26c2c"
+      ]
+    },
+    "no": {
+      "n": 55,
+      "correct": 15,
+      "accuracy": 0.2727272727272727,
+      "accuracyCI": {
+        "low": 0.16363636363636364,
+        "high": 0.4,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.1613253301320528,
+      "coverage": 0.9454545454545454,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-05f54b65f1c0",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-16a51393f9f8",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-253c58784d68",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-708ac43fcff5",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-777c714dd1b5",
+        "xf-7839295e2bf1",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-87cda4138197",
+        "xf-88344678948e",
+        "xf-8f6c11a638b3",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-965f21f0ae76",
+        "xf-9e1a9409aa38",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b57f3f4f21a7",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c870faf6e5a2",
+        "xf-c93b20095e0e",
+        "xf-caac5fa9f0fc",
+        "xf-cb2e6beed024",
+        "xf-cd85dee989e9",
+        "xf-d23d2111e82e",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "verdictLeakCited": {
+    "yes": {
+      "n": 8,
+      "correct": 4,
+      "accuracy": 0.5,
+      "accuracyCI": {
+        "low": 0.125,
+        "high": 0.875,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.35555555555555557,
+      "coverage": 1.0,
+      "ids": [
+        "xf-3005b1d6af1b",
+        "xf-7d05ad57ba03",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-b374ee0b0585",
+        "xf-c41e15e05b10",
+        "xf-d28faa9b7056",
+        "xf-f4007ef26c2c"
+      ]
+    },
+    "no": {
+      "n": 56,
+      "correct": 15,
+      "accuracy": 0.26785714285714285,
+      "accuracyCI": {
+        "low": 0.16071428571428573,
+        "high": 0.39285714285714285,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.15768325791855203,
+      "coverage": 0.9464285714285714,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-05f54b65f1c0",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-16a51393f9f8",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-253c58784d68",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-708ac43fcff5",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-777c714dd1b5",
+        "xf-7839295e2bf1",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-7d093c407264",
+        "xf-87cda4138197",
+        "xf-88344678948e",
+        "xf-8f6c11a638b3",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-965f21f0ae76",
+        "xf-9e1a9409aa38",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b57f3f4f21a7",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c870faf6e5a2",
+        "xf-c93b20095e0e",
+        "xf-caac5fa9f0fc",
+        "xf-cb2e6beed024",
+        "xf-cd85dee989e9",
+        "xf-d23d2111e82e",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "anyFactCheckerRanked": {
+    "yes": {
+      "n": 12,
+      "correct": 5,
+      "accuracy": 0.4166666666666667,
+      "accuracyCI": {
+        "low": 0.16666666666666666,
+        "high": 0.6666666666666666,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.3952380952380952,
+      "coverage": 1.0,
+      "ids": [
+        "xf-05f54b65f1c0",
+        "xf-3005b1d6af1b",
+        "xf-708ac43fcff5",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-9e1a9409aa38",
+        "xf-b374ee0b0585",
+        "xf-c41e15e05b10",
+        "xf-d28faa9b7056",
+        "xf-f4007ef26c2c"
+      ]
+    },
+    "no": {
+      "n": 52,
+      "correct": 14,
+      "accuracy": 0.2692307692307692,
+      "accuracyCI": {
+        "low": 0.15384615384615385,
+        "high": 0.40384615384615385,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.14361702127659576,
+      "coverage": 0.9423076923076923,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-16a51393f9f8",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-253c58784d68",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-777c714dd1b5",
+        "xf-7839295e2bf1",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-87cda4138197",
+        "xf-88344678948e",
+        "xf-8f6c11a638b3",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-965f21f0ae76",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b57f3f4f21a7",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c870faf6e5a2",
+        "xf-c93b20095e0e",
+        "xf-caac5fa9f0fc",
+        "xf-cb2e6beed024",
+        "xf-cd85dee989e9",
+        "xf-d23d2111e82e",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "anyFactCheckerCandidate": {
+    "yes": {
+      "n": 32,
+      "correct": 13,
+      "accuracy": 0.40625,
+      "accuracyCI": {
+        "low": 0.25,
+        "high": 0.59375,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.27974996141379843,
+      "coverage": 1.0,
+      "ids": [
+        "xf-05f54b65f1c0",
+        "xf-0df17fe58a7f",
+        "xf-16a51393f9f8",
+        "xf-253c58784d68",
+        "xf-3005b1d6af1b",
+        "xf-3d71167b379a",
+        "xf-536752876f79",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-708ac43fcff5",
+        "xf-7207db5a528e",
+        "xf-777c714dd1b5",
+        "xf-7c19682d2758",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-8f6c11a638b3",
+        "xf-965f21f0ae76",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-9e1a9409aa38",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b374ee0b0585",
+        "xf-b57f3f4f21a7",
+        "xf-c41e15e05b10",
+        "xf-cb2e6beed024",
+        "xf-d23d2111e82e",
+        "xf-d28faa9b7056",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f4007ef26c2c"
+      ]
+    },
+    "no": {
+      "n": 32,
+      "correct": 6,
+      "accuracy": 0.1875,
+      "accuracyCI": {
+        "low": 0.0625,
+        "high": 0.34375,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.08571428571428572,
+      "coverage": 0.90625,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-10e54fbc988d",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-6de0b294b07b",
+        "xf-7581ef78aa6a",
+        "xf-7839295e2bf1",
+        "xf-7cc2b9765879",
+        "xf-87cda4138197",
+        "xf-88344678948e",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c870faf6e5a2",
+        "xf-c93b20095e0e",
+        "xf-caac5fa9f0fc",
+        "xf-cd85dee989e9",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "factCheckerDomainsRanked": {
+    "maldita.es": 1,
+    "staging.politifact.com": 4,
+    "snopes.com": 1,
+    "waysandmeans.house.gov": 1,
+    "politifact.com": 5,
+    "factcheck.org": 1
+  },
+  "temporalLeak": {
+    "yes": {
+      "n": 16,
+      "correct": 8,
+      "accuracy": 0.5,
+      "accuracyCI": {
+        "low": 0.25,
+        "high": 0.75,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.3666666666666667,
+      "coverage": 1.0,
+      "ids": [
+        "xf-16a51393f9f8",
+        "xf-253c58784d68",
+        "xf-653d580b47ae",
+        "xf-708ac43fcff5",
+        "xf-777c714dd1b5",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-7d05ad57ba03",
+        "xf-8f6c11a638b3",
+        "xf-90c4fbb5248f",
+        "xf-9bf6c9a73d13",
+        "xf-ae276f7fabc9",
+        "xf-b57f3f4f21a7",
+        "xf-c41e15e05b10",
+        "xf-c93b20095e0e",
+        "xf-f4007ef26c2c"
+      ]
+    },
+    "no": {
+      "n": 4,
+      "correct": 1,
+      "accuracy": 0.25,
+      "accuracyCI": {
+        "low": 0.0,
+        "high": 0.75,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.16666666666666666,
+      "coverage": 1.0,
+      "ids": [
+        "xf-3005b1d6af1b",
+        "xf-996b4a0c6ab5",
+        "xf-b374ee0b0585",
+        "xf-d28faa9b7056"
+      ]
+    },
+    "unknown": {
+      "n": 44,
+      "correct": 10,
+      "accuracy": 0.22727272727272727,
+      "accuracyCI": {
+        "low": 0.11363636363636363,
+        "high": 0.36363636363636365,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.14886446886446886,
+      "coverage": 0.9318181818181818,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-05f54b65f1c0",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-7839295e2bf1",
+        "xf-7d093c407264",
+        "xf-87cda4138197",
+        "xf-88344678948e",
+        "xf-954337aa7ed2",
+        "xf-965f21f0ae76",
+        "xf-9e1a9409aa38",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-b2f25a97c329",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c870faf6e5a2",
+        "xf-caac5fa9f0fc",
+        "xf-cb2e6beed024",
+        "xf-cd85dee989e9",
+        "xf-d23d2111e82e",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f966546dfb9b"
+      ]
+    }
+  },
+  "newerUncitedRanked": 38,
+  "driftProne": {
+    "yes": {
+      "n": 20,
+      "correct": 7,
+      "accuracy": 0.35,
+      "accuracyCI": {
+        "low": 0.15,
+        "high": 0.55,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.18383838383838386,
+      "coverage": 0.95,
+      "ids": [
+        "xf-05f54b65f1c0",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-52033870ba38",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-87cda4138197",
+        "xf-8f6c11a638b3",
+        "xf-965f21f0ae76",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-b374ee0b0585",
+        "xf-be54e83dc79f",
+        "xf-c870faf6e5a2",
+        "xf-caac5fa9f0fc",
+        "xf-cd85dee989e9",
+        "xf-e2829b280a4f",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f4007ef26c2c"
+      ]
+    },
+    "no": {
+      "n": 44,
+      "correct": 12,
+      "accuracy": 0.2727272727272727,
+      "accuracyCI": {
+        "low": 0.13636363636363635,
+        "high": 0.4090909090909091,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.15857410881801126,
+      "coverage": 0.9545454545454546,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-16a51393f9f8",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-253c58784d68",
+        "xf-3005b1d6af1b",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-6de0b294b07b",
+        "xf-708ac43fcff5",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-777c714dd1b5",
+        "xf-7839295e2bf1",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-88344678948e",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-9e1a9409aa38",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b57f3f4f21a7",
+        "xf-b693457e76b4",
+        "xf-beb27c98ab6f",
+        "xf-c41e15e05b10",
+        "xf-c93b20095e0e",
+        "xf-cb2e6beed024",
+        "xf-d23d2111e82e",
+        "xf-d28faa9b7056",
+        "xf-e83b027fd5fa",
+        "xf-f0fb57690453",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "driftRelativeTime": {
+    "yes": {
+      "n": 12,
+      "correct": 4,
+      "accuracy": 0.3333333333333333,
+      "accuracyCI": {
+        "low": 0.08333333333333333,
+        "high": 0.5833333333333334,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.20833333333333331,
+      "coverage": 0.9166666666666666,
+      "ids": [
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-52033870ba38",
+        "xf-87cda4138197",
+        "xf-8f6c11a638b3",
+        "xf-965f21f0ae76",
+        "xf-b374ee0b0585",
+        "xf-be54e83dc79f",
+        "xf-c870faf6e5a2",
+        "xf-cd85dee989e9",
+        "xf-e2829b280a4f",
+        "xf-e9de336ed5db"
+      ]
+    },
+    "no": {
+      "n": 52,
+      "correct": 15,
+      "accuracy": 0.28846153846153844,
+      "accuracyCI": {
+        "low": 0.17307692307692307,
+        "high": 0.4230769230769231,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.1682836879432624,
+      "coverage": 0.9615384615384616,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-05f54b65f1c0",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-16a51393f9f8",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-253c58784d68",
+        "xf-3005b1d6af1b",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-708ac43fcff5",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-777c714dd1b5",
+        "xf-7839295e2bf1",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-88344678948e",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-9e1a9409aa38",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b57f3f4f21a7",
+        "xf-b693457e76b4",
+        "xf-beb27c98ab6f",
+        "xf-c41e15e05b10",
+        "xf-c93b20095e0e",
+        "xf-caac5fa9f0fc",
+        "xf-cb2e6beed024",
+        "xf-d23d2111e82e",
+        "xf-d28faa9b7056",
+        "xf-e83b027fd5fa",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f4007ef26c2c",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "driftRecordOrRanking": {
+    "yes": {
+      "n": 9,
+      "correct": 3,
+      "accuracy": 0.3333333333333333,
+      "accuracyCI": {
+        "low": 0.1111111111111111,
+        "high": 0.6666666666666666,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.19428571428571428,
+      "coverage": 1.0,
+      "ids": [
+        "xf-05f54b65f1c0",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-8f6c11a638b3",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-caac5fa9f0fc",
+        "xf-f06609441917",
+        "xf-f4007ef26c2c"
+      ]
+    },
+    "no": {
+      "n": 55,
+      "correct": 16,
+      "accuracy": 0.2909090909090909,
+      "accuracyCI": {
+        "low": 0.18181818181818182,
+        "high": 0.41818181818181815,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.16346153846153846,
+      "coverage": 0.9454545454545454,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-16a51393f9f8",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-253c58784d68",
+        "xf-3005b1d6af1b",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-6de0b294b07b",
+        "xf-708ac43fcff5",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-777c714dd1b5",
+        "xf-7839295e2bf1",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-87cda4138197",
+        "xf-88344678948e",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-965f21f0ae76",
+        "xf-9e1a9409aa38",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b374ee0b0585",
+        "xf-b57f3f4f21a7",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c41e15e05b10",
+        "xf-c870faf6e5a2",
+        "xf-c93b20095e0e",
+        "xf-cb2e6beed024",
+        "xf-cd85dee989e9",
+        "xf-d23d2111e82e",
+        "xf-d28faa9b7056",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f0fb57690453",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "driftMarkers": {
+    "xf-05f54b65f1c0": {
+      "recordOrRanking": [
+        "piso"
+      ]
+    },
+    "xf-3b4b9db1a053": {
+      "relativeTime": [
+        "últimas?"
+      ]
+    },
+    "xf-3d71167b379a": {
+      "relativeTime": [
+        "lleva"
+      ]
+    },
+    "xf-52033870ba38": {
+      "relativeTime": [
+        "hasta acá"
+      ]
+    },
+    "xf-653d580b47ae": {
+      "recordOrRanking": [
+        "worst",
+        "top \\w+"
+      ]
+    },
+    "xf-65610a4bdaa1": {
+      "recordOrRanking": [
+        "más bajas?",
+        "de las más"
+      ]
+    },
+    "xf-87cda4138197": {
+      "relativeTime": [
+        "últimos?"
+      ]
+    },
+    "xf-8f6c11a638b3": {
+      "relativeTime": [
+        "is set to"
+      ],
+      "recordOrRanking": [
+        "largest"
+      ]
+    },
+    "xf-965f21f0ae76": {
+      "relativeTime": [
+        "pasaron"
+      ]
+    },
+    "xf-996b4a0c6ab5": {
+      "recordOrRanking": [
+        "in history",
+        "first time"
+      ]
+    },
+    "xf-9bf6c9a73d13": {
+      "recordOrRanking": [
+        "second only"
+      ]
+    },
+    "xf-b374ee0b0585": {
+      "relativeTime": [
+        "now"
+      ]
+    },
+    "xf-be54e83dc79f": {
+      "relativeTime": [
+        "hoy"
+      ]
+    },
+    "xf-c870faf6e5a2": {
+      "relativeTime": [
+        "mes a mes"
+      ]
+    },
+    "xf-caac5fa9f0fc": {
+      "recordOrRanking": [
+        "donde más"
+      ]
+    },
+    "xf-cd85dee989e9": {
+      "relativeTime": [
+        "este año"
+      ]
+    },
+    "xf-e2829b280a4f": {
+      "relativeTime": [
+        "últimos?"
+      ]
+    },
+    "xf-e9de336ed5db": {
+      "relativeTime": [
+        "tendrá"
+      ]
+    },
+    "xf-f06609441917": {
+      "recordOrRanking": [
+        "de la historia",
+        "más altos?"
+      ]
+    },
+    "xf-f4007ef26c2c": {
+      "recordOrRanking": [
+        "lowest",
+        "second-lowest"
+      ]
+    }
+  },
+  "evidenceAge": {
+    "ranked": {
+      "items": 299,
+      "dated": 235,
+      "afterDatasetBuilt": 124,
+      "afterModelCutoff": 95,
+      "medianYear": 2022,
+      "byYear": {
+        "1998": 1,
+        "2000": 1,
+        "2001": 3,
+        "2002": 2,
+        "2003": 3,
+        "2004": 3,
+        "2005": 4,
+        "2006": 2,
+        "2007": 3,
+        "2008": 1,
+        "2009": 4,
+        "2010": 1,
+        "2011": 2,
+        "2012": 9,
+        "2013": 3,
+        "2014": 5,
+        "2015": 11,
+        "2016": 17,
+        "2017": 5,
+        "2018": 5,
+        "2019": 10,
+        "2020": 14,
+        "2021": 5,
+        "2022": 10,
+        "2023": 16,
+        "2024": 15,
+        "2025": 26,
+        "2026": 54
+      }
+    },
+    "cited": {
+      "items": 144,
+      "dated": 114,
+      "afterDatasetBuilt": 52,
+      "afterModelCutoff": 45,
+      "medianYear": 2020.0,
+      "byYear": {
+        "2001": 1,
+        "2003": 2,
+        "2004": 1,
+        "2005": 1,
+        "2006": 1,
+        "2007": 1,
+        "2008": 1,
+        "2009": 3,
+        "2010": 1,
+        "2011": 1,
+        "2012": 7,
+        "2013": 2,
+        "2014": 2,
+        "2015": 9,
+        "2016": 11,
+        "2017": 3,
+        "2018": 1,
+        "2019": 5,
+        "2020": 8,
+        "2021": 4,
+        "2022": 3,
+        "2023": 1,
+        "2024": 8,
+        "2025": 11,
+        "2026": 26
+      }
+    },
+    "datedClaims": {
+      "rankedSources": 117,
+      "byEra": {
+        "undated": 31,
+        "more than a year after": 59,
+        "before claim": 15,
+        "within a year after": 12
+      },
+      "medianYearsAfterClaim": 6.8
+    }
+  },
+  "attributionTraceOnly": {
+    "reasoning": 44,
+    "ranking": 1
+  },
+  "attributionTraceOnlyIds": {
+    "retrieval": [],
+    "ranking": [
+      "xf-954337aa7ed2"
+    ],
+    "reasoning": [
+      "xf-0544dfe2b9c6",
+      "xf-05f54b65f1c0",
+      "xf-10e54fbc988d",
+      "xf-16a51393f9f8",
+      "xf-1de2fd7b53ce",
+      "xf-1ea0f2aaeb65",
+      "xf-3005b1d6af1b",
+      "xf-35c132db5481",
+      "xf-3b4b9db1a053",
+      "xf-4232cbf2b6df",
+      "xf-5145769388ef",
+      "xf-52033870ba38",
+      "xf-52314da1ce07",
+      "xf-65610a4bdaa1",
+      "xf-6de0b294b07b",
+      "xf-708ac43fcff5",
+      "xf-7207db5a528e",
+      "xf-7581ef78aa6a",
+      "xf-7839295e2bf1",
+      "xf-7c19682d2758",
+      "xf-7d093c407264",
+      "xf-88344678948e",
+      "xf-8f6c11a638b3",
+      "xf-90c4fbb5248f",
+      "xf-9f577fcbe085",
+      "xf-a5a400a67d0b",
+      "xf-ab44eb4e2da2",
+      "xf-ae276f7fabc9",
+      "xf-b2f25a97c329",
+      "xf-b374ee0b0585",
+      "xf-b57f3f4f21a7",
+      "xf-b693457e76b4",
+      "xf-be54e83dc79f",
+      "xf-beb27c98ab6f",
+      "xf-c870faf6e5a2",
+      "xf-caac5fa9f0fc",
+      "xf-cb2e6beed024",
+      "xf-cd85dee989e9",
+      "xf-d23d2111e82e",
+      "xf-d28faa9b7056",
+      "xf-e2829b280a4f",
+      "xf-e83b027fd5fa",
+      "xf-f06609441917",
+      "xf-f4007ef26c2c"
+    ],
+    "aggregation": []
+  },
+  "attributionByReference": {
+    "retrieval": 27,
+    "None": 16,
+    "reasoning": 1,
+    "ranking": 1
+  },
+  "explanationNamesFactChecker": [
+    "xf-c41e15e05b10",
+    "xf-f4007ef26c2c"
+  ],
+  "referencesAllLost": {
+    "yes": {
+      "n": 4,
+      "correct": 1,
+      "accuracy": 0.25,
+      "accuracyCI": {
+        "low": 0.0,
+        "high": 0.75,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.2222222222222222,
+      "coverage": 1.0,
+      "ids": [
+        "xf-0df17fe58a7f",
+        "xf-1ea0f2aaeb65",
+        "xf-c870faf6e5a2",
+        "xf-caac5fa9f0fc"
+      ]
+    },
+    "no": {
+      "n": 29,
+      "correct": 7,
+      "accuracy": 0.2413793103448276,
+      "accuracyCI": {
+        "low": 0.10344827586206896,
+        "high": 0.41379310344827586,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.15244755244755245,
+      "coverage": 0.896551724137931,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-05f54b65f1c0",
+        "xf-10e54fbc988d",
+        "xf-1de2fd7b53ce",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-7839295e2bf1",
+        "xf-88344678948e",
+        "xf-954337aa7ed2",
+        "xf-965f21f0ae76",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-b2f25a97c329",
+        "xf-b693457e76b4",
+        "xf-cd85dee989e9",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 31,
+      "correct": 11,
+      "accuracy": 0.3548387096774194,
+      "accuracyCI": {
+        "low": 0.1935483870967742,
+        "high": 0.5161290322580645,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.29760348583877994,
+      "coverage": 1.0,
+      "ids": [
+        "xf-16a51393f9f8",
+        "xf-253c58784d68",
+        "xf-3005b1d6af1b",
+        "xf-52033870ba38",
+        "xf-653d580b47ae",
+        "xf-708ac43fcff5",
+        "xf-777c714dd1b5",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-87cda4138197",
+        "xf-8f6c11a638b3",
+        "xf-90c4fbb5248f",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-9e1a9409aa38",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b374ee0b0585",
+        "xf-b57f3f4f21a7",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c41e15e05b10",
+        "xf-c93b20095e0e",
+        "xf-cb2e6beed024",
+        "xf-d23d2111e82e",
+        "xf-d28faa9b7056",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-f4007ef26c2c"
+      ]
+    }
+  },
+  "closedBookRight": {
+    "yes": {
+      "n": 12,
+      "correct": 11,
+      "accuracy": 0.9166666666666666,
+      "accuracyCI": {
+        "low": 0.75,
+        "high": 1.0,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.9565217391304348,
+      "coverage": 1.0,
+      "ids": [
+        "xf-0df17fe58a7f",
+        "xf-253c58784d68",
+        "xf-32a80ffc6ef6",
+        "xf-536752876f79",
+        "xf-777c714dd1b5",
+        "xf-7cc2b9765879",
+        "xf-7d05ad57ba03",
+        "xf-87cda4138197",
+        "xf-965f21f0ae76",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-beb27c98ab6f"
+      ]
+    },
+    "no": {
+      "n": 52,
+      "correct": 8,
+      "accuracy": 0.15384615384615385,
+      "accuracyCI": {
+        "low": 0.057692307692307696,
+        "high": 0.25,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.10771929824561403,
+      "coverage": 0.9423076923076923,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-05f54b65f1c0",
+        "xf-10e54fbc988d",
+        "xf-16a51393f9f8",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-3005b1d6af1b",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-708ac43fcff5",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-7839295e2bf1",
+        "xf-7c19682d2758",
+        "xf-7d093c407264",
+        "xf-88344678948e",
+        "xf-8f6c11a638b3",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-9e1a9409aa38",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b374ee0b0585",
+        "xf-b57f3f4f21a7",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-c41e15e05b10",
+        "xf-c870faf6e5a2",
+        "xf-c93b20095e0e",
+        "xf-caac5fa9f0fc",
+        "xf-cb2e6beed024",
+        "xf-cd85dee989e9",
+        "xf-d23d2111e82e",
+        "xf-d28faa9b7056",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f4007ef26c2c",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "closedBookRecallsFactCheck": {
+    "yes": {
+      "n": 0
+    },
+    "no": {
+      "n": 64,
+      "correct": 19,
+      "accuracy": 0.296875,
+      "accuracyCI": {
+        "low": 0.1875,
+        "high": 0.40625,
+        "undefinedResamples": 0
+      },
+      "macroF1": 0.16758078904204193,
+      "coverage": 0.953125,
+      "ids": [
+        "xf-0544dfe2b9c6",
+        "xf-05f54b65f1c0",
+        "xf-0df17fe58a7f",
+        "xf-10e54fbc988d",
+        "xf-16a51393f9f8",
+        "xf-1de2fd7b53ce",
+        "xf-1ea0f2aaeb65",
+        "xf-253c58784d68",
+        "xf-3005b1d6af1b",
+        "xf-32a80ffc6ef6",
+        "xf-35c132db5481",
+        "xf-3b4b9db1a053",
+        "xf-3d71167b379a",
+        "xf-4232cbf2b6df",
+        "xf-5145769388ef",
+        "xf-52033870ba38",
+        "xf-52314da1ce07",
+        "xf-536752876f79",
+        "xf-653d580b47ae",
+        "xf-65610a4bdaa1",
+        "xf-6de0b294b07b",
+        "xf-708ac43fcff5",
+        "xf-7207db5a528e",
+        "xf-7581ef78aa6a",
+        "xf-777c714dd1b5",
+        "xf-7839295e2bf1",
+        "xf-7c19682d2758",
+        "xf-7cc2b9765879",
+        "xf-7d05ad57ba03",
+        "xf-7d093c407264",
+        "xf-87cda4138197",
+        "xf-88344678948e",
+        "xf-8f6c11a638b3",
+        "xf-90c4fbb5248f",
+        "xf-954337aa7ed2",
+        "xf-965f21f0ae76",
+        "xf-996b4a0c6ab5",
+        "xf-9bf6c9a73d13",
+        "xf-9e1a9409aa38",
+        "xf-9f577fcbe085",
+        "xf-a5a400a67d0b",
+        "xf-ab44eb4e2da2",
+        "xf-ae276f7fabc9",
+        "xf-b2f25a97c329",
+        "xf-b374ee0b0585",
+        "xf-b57f3f4f21a7",
+        "xf-b693457e76b4",
+        "xf-be54e83dc79f",
+        "xf-beb27c98ab6f",
+        "xf-c41e15e05b10",
+        "xf-c870faf6e5a2",
+        "xf-c93b20095e0e",
+        "xf-caac5fa9f0fc",
+        "xf-cb2e6beed024",
+        "xf-cd85dee989e9",
+        "xf-d23d2111e82e",
+        "xf-d28faa9b7056",
+        "xf-e2829b280a4f",
+        "xf-e83b027fd5fa",
+        "xf-e9de336ed5db",
+        "xf-f06609441917",
+        "xf-f0fb57690453",
+        "xf-f4007ef26c2c",
+        "xf-f966546dfb9b"
+      ]
+    },
+    "unknown": {
+      "n": 0
+    }
+  },
+  "closedBookAgreesWithPipeline": 40,
+  "pipelineMinusClosedBook": {
+    "n": 64,
+    "accuracy": {
+      "a": 0.1875,
+      "b": 0.296875,
+      "difference": 0.109375,
+      "low": 0.03125,
+      "high": 0.203125,
+      "undefinedResamples": 0
+    },
+    "macroF1": {
+      "a": 0.06315789473684211,
+      "b": 0.16758078904204193,
+      "difference": 0.10442289430519983,
+      "low": 0.04468149751521164,
+      "high": 0.16821687554753592,
+      "undefinedResamples": 0
+    },
+    "onlyA": 1,
+    "onlyB": 8
+  }
+}

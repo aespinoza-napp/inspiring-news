@@ -1,0 +1,80 @@
+% ============================================================
+% Chapter 7: Results
+%   Section: Pilot on X-Fact
+%     Subsection: What the Years Between Claim and Search Do
+% Included from chapters/07-results/01-xfact-pilot/xfact-pilot.tex
+% ============================================================
+
+\subsection{What the Years Between Claim and Search Do}
+\label{subsec:pilot-time}
+
+The English claims were made between 2008 and 2018, and X-Fact recorded
+no date for the Spanish ones; the dataset was published in 2021; the web
+was searched in October 2026; and the model's pretraining data ends in
+December 2023, according to its model card. A label that was right
+when a fact-checker wrote it is being compared with what the web says
+years later. Six effects follow. Each is counted on the pilot, with the
+accuracy of the claims it touches against the rest; at this size those
+differences are indications, not findings.
+
+\paragraph{Verdict leakage.} The fact-check itself is now on the web.
+PolitiFact's own verdict page was ranked for 9 of the 24 English claims
+and cited for 8, four of them from PolitiFact's staging server, which
+search engines index. Chequeado's page was never retrieved for any of
+the 40 Spanish claims, although every row links it and all 42 of those
+pages still answer: with Google refusing the metasearch engine, the
+engines that answered did not surface Chequeado. The leak inflated less
+than feared, because the small model read the verdict page as evidence
+rather than as a ruling: 4 of the 9 leaked claims were right (44\%,
+against 27\% for the rest). A stronger model would read the ruling.
+
+\paragraph{Temporal leakage.} Of the 20 claims for which it can be
+decided, 16 cited a source published after the claim. The custom set's
+annotation guide forbids exactly this (Rule~3), but the pipeline
+searches without a date limit, and on X-Fact newer evidence is the norm:
+leaving out the claims with either leak lowers the pilot's accuracy
+from 29.7\% to 23.3\%.
+
+\paragraph{Drift.} Twenty of the 64 claims tie themselves to their own
+present, twelve with relative time (``hoy'', ``now'', ``este año'') and
+nine with records or rankings (``de la historia'', ``the first time in
+history''). Without a claim date, ``hoy'' means the day of the search: a
+claim that the Asignación Universal por Hijo ``today'' reaches four
+million beneficiaries, true when Chequeado checked it, was judged false
+on articles from 2026; a 2012 claim about the worst cities for asthma
+was judged true on the 2024 and 2026 rankings. No accuracy penalty
+shows at this size, and none can be measured properly without a
+re-dated, re-labelled copy of each claim.
+
+\paragraph{Link rot.} Of the pilot's 305 reference links, the 120
+English ones were never available (X-Fact ships PolitiFact's rows
+without them). Of the 69 Spanish links that are neither Chequeado's
+nor social-media posts, 14 no longer exist (404, a domain that no
+longer resolves, or a redirect to a home page) and 4 refused the check;
+5 of the 14 survive in the Wayback Machine. The system retrieved none
+of the annotator's links, so recall measured in 2026 is bounded by what
+has survived, and by search engines that no longer reach the web of
+2017.
+
+\paragraph{Recency of search.} Of the 235 ranked sources with a
+publication date, 53\% appeared after X-Fact was built and 23\% in 2026,
+the year of the search, the most frequent year of all. For the dated
+English claims the median ranked source is 6.8 years newer than the
+claim. The evidence a fact-checker read at the time is a minority of
+what search returns now.
+
+\paragraph{The model's memory.} Every claim and every fact-check of it
+predates the model's training cutoff, so the verdicts could be in its
+weights. Asked about each claim with no evidence, the model reported
+remembering a fact-check for none of the 64, and answered
+\texttt{FALSE} to 60 of them, scoring below the majority baseline.
+There is no sign that this 3-billion-parameter model recalls X-Fact's
+verdicts; a larger or more recent model should be probed the same way
+before its X-Fact score is read.
+
+\paragraph{Consequence.} For benchmark runs on fact-checker datasets,
+the fact-checkers' own domains should be excluded at retrieval time,
+through a per-run threshold that is off by default; in production, and
+on the custom set, a published fact-check is legitimate evidence and
+must stay available. This is recorded as a recommendation and has not
+been implemented.

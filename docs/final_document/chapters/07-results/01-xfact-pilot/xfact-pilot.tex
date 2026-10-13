@@ -1,0 +1,30 @@
+% ============================================================
+% Chapter 7: Results
+%   Section: Pilot on X-Fact
+% Included from chapters/07-results/results.tex
+% ============================================================
+
+% Written from docs/decisions/xfact-comparison.md and
+% docs/decisions/evaluation.md (Pilot), whose numbers come from the
+% committed reports in backend/data/evaluation/reports/.
+
+\section{Pilot on X-Fact}
+\label{sec:results-pilot}
+
+The first run of the full pipeline against labelled data: X-Fact
+\cite{gupta2021xfact}, the open-retrieval benchmark chosen in
+Section~\ref{subsec:xfact}. It served two purposes. It shook out the
+evaluation harness against live services before the custom set is
+settled, and it places the system beside the numbers Gupta and
+Srikumar publish for their benchmark. The second purpose turned out to
+be the harder one: thirteen years separate some of the claims from the
+web the system searched, and that distance changes what an X-Fact
+score means.
+
+\input{chapters/07-results/01-xfact-pilot/01-setup}
+
+\input{chapters/07-results/01-xfact-pilot/02-results}
+
+\input{chapters/07-results/01-xfact-pilot/03-comparison}
+
+\input{chapters/07-results/01-xfact-pilot/04-time-elapsed}

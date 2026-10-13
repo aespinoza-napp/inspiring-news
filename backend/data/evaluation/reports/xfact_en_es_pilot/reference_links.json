@@ -1,0 +1,3260 @@
+{
+  "dataset": {
+    "path": "data\\evaluation\\xfact_en_es_pilot.jsonl",
+    "sha256": "2618068af706ce9bf3c90f9d182cba414383b854351f4fb2af7dc4106af8fc1d",
+    "rows": 64
+  },
+  "checkedAt": "2026-10-13T07:39:48+00:00",
+  "userAgent": "Mozilla/5.0 (compatible; inspiring-news reference-link check; academic research, one request per page)",
+  "politeness": {
+    "hostsAtOnce": 3,
+    "perHostPauseSeconds": 1.0,
+    "timeoutSeconds": 15.0,
+    "getBytes": 65536
+  },
+  "placeholders": {
+    "en": 120
+  },
+  "summary": {
+    "all": {
+      "social": 43,
+      "unreachable": 6,
+      "dead": 20,
+      "blocked": 4,
+      "server_error": 0,
+      "redirected_home": 2,
+      "moved": 12,
+      "alive": 98,
+      "distinct": 185
+    },
+    "ownSite": {
+      "social": 0,
+      "unreachable": 0,
+      "dead": 14,
+      "blocked": 0,
+      "server_error": 0,
+      "redirected_home": 0,
+      "moved": 3,
+      "alive": 56,
+      "distinct": 73
+    },
+    "otherSites": {
+      "social": 43,
+      "unreachable": 6,
+      "dead": 6,
+      "blocked": 4,
+      "server_error": 0,
+      "redirected_home": 2,
+      "moved": 9,
+      "alive": 42,
+      "distinct": 112
+    }
+  },
+  "requested": 142,
+  "lost": 28,
+  "lostArchived": 10,
+  "claimsWithALiveNonOwnSiteReference": 29,
+  "links": [
+    {
+      "url": "http://archivo.laarena.com.ar/la_ciudad-verna_anunciaria_en_quemu_quemu_el_resultado_de_la_reunion_con_frigerio-154048-115.html",
+      "host": "archivo.laarena.com.ar",
+      "claimIds": [
+        "xf-e9de336ed5db"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.laarena.com.ar/la-ciudad/2016-1-20-7-19-0-verna-anunciaria-en-quemu-quemu-el-resultado-de-la-reunion-con-frigerio",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "http://www.ateargentina.org.ar/idep/documentos/134Analisis_sobre_la_precarizacion_laboral_en_el_sector_publico_nacional.pdf",
+      "host": "www.ateargentina.org.ar",
+      "claimIds": [
+        "xf-1de2fd7b53ce"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "http://www.ateargentina.org.ar/idep/documentos/134Analisis_sobre_la_precarizacion_laboral_en_el_sector_publico_nacional.pdf",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": true,
+      "archiveTimestamp": "20200716075144"
+    },
+    {
+      "url": "http://www.ipsuss.cl/ipsuss/actualidad/presupuesto-en-salud-2019-llegara-al-20-2-del-total-con-enfasis-en/2018-09-28/155519.html",
+      "host": "www.ipsuss.cl",
+      "claimIds": [
+        "xf-10e54fbc988d"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.ipsuss.cl/actualidad/presupuesto-en-salud-2019-llegara-al-20-2-del-total-con-enfasis-en",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "http://www.laprensa.com.ar/378319-Santa-Fe-ha-crecido-pero-por-debajo-de-la-media-nacional.note.aspx",
+      "host": "www.laprensa.com.ar",
+      "claimIds": [
+        "xf-7207db5a528e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.laprensa.com.ar/378319-Santa-Fe-ha-crecido-pero-por-debajo-de-la-media-nacional.note.aspx",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "http://www.memoria.fahce.unlp.edu.ar/trab_eventos/ev.4360/ev.4360.pdf",
+      "host": "www.memoria.fahce.unlp.edu.ar",
+      "claimIds": [
+        "xf-f966546dfb9b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://memoria.fahce.unlp.edu.ar/trab_eventos/ev.4360/ev.4360.pdf",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "http://www.panchodicri.com/2016/05/de-chequeadocom.html?m=1",
+      "host": "www.panchodicri.com",
+      "claimIds": [
+        "xf-7839295e2bf1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "http://www.panchodicri.com/2016/05/de-chequeadocom.html?m=1",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "http://www.panchodicri.com/2016/06/las-noticias-de-chequeado.html",
+      "host": "www.panchodicri.com",
+      "claimIds": [
+        "xf-f06609441917"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "http://www.panchodicri.com/2016/06/las-noticias-de-chequeado.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "http://www.panchodicri.com/2016_06_05_archive.html",
+      "host": "www.panchodicri.com",
+      "claimIds": [
+        "xf-f06609441917"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "http://www.panchodicri.com/2016_06_05_archive.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://acij.org.ar/acij-en-los-medios/page/48/",
+      "host": "acij.org.ar",
+      "claimIds": [
+        "xf-0df17fe58a7f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://acij.org.ar/acij-en-los-medios/page/48/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": true,
+      "archiveTimestamp": "20200704145051"
+    },
+    {
+      "url": "https://aldiaargentina.microjuris.com/2011/12/05/resumen-de-noticias-juridicas-del-5-de-diciembre/",
+      "host": "aldiaargentina.microjuris.com",
+      "claimIds": [
+        "xf-05f54b65f1c0"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://aldiaargentina.microjuris.com/2011/12/05/resumen-de-noticias-juridicas-del-5-de-diciembre/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://ar-ar.facebook.com/Chequeado/posts/pichetto-el-65-del-total-del-presupuesto-est%C3%A1-comprendido-ah%C3%AD-en-planes-piqueter/2934046476609575/",
+      "host": "ar-ar.facebook.com",
+      "claimIds": [
+        "xf-beb27c98ab6f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://azarrangers.com/reference/ypf-trabajo-playero-la-plata.htm",
+      "host": "azarrangers.com",
+      "claimIds": [
+        "xf-c870faf6e5a2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://azarrangers.com/reference/ypf-trabajo-playero-la-plata.htm",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://buscar.lanacion.com.ar/Argentina%20-Techint%20-'Alberto%20Fern%C3%A1ndez'%20-'N%C3%A9stor%20Kirchner'/page-273",
+      "host": "buscar.lanacion.com.ar",
+      "claimIds": [
+        "xf-caac5fa9f0fc"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": null,
+      "finalUrl": null,
+      "method": "GET",
+      "error": "ConnectTimeout: timed out",
+      "outcome": "unreachable",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://buscar.lanacion.com.ar/Fiat%20Idea/sort-old/page-81",
+      "host": "buscar.lanacion.com.ar",
+      "claimIds": [
+        "xf-a5a400a67d0b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": null,
+      "finalUrl": null,
+      "method": "GET",
+      "error": "ConnectTimeout: timed out",
+      "outcome": "unreachable",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/calificaciones/exagerado/page/3/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-a5a400a67d0b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/calificaciones/exagerado/page/3/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/calificaciones/falso/page/16/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-0df17fe58a7f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/calificaciones/falso/page/16/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/calificaciones/verdadero-pero/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-7581ef78aa6a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/el-explicador/elecciones-2025-en-la-provincia-de-buenos-aires-cuantas-bancas-arriesga-cada-fuerza-politica-en-la-legislatura/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://chequeado.com/category/economia/page/12/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-965f21f0ae76"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/category/economia/page/12/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/category/economia/page/45/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-7207db5a528e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/category/economia/page/45/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/category/economia/page/49/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-4232cbf2b6df"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/category/economia/page/49/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/category/s5-articulos/c43-medio-medio/page/2/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-05f54b65f1c0"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/category/s5-articulos/c43-medio-medio/page/2/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/category/salud/page/34/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-0544dfe2b9c6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/category/salud/page/34/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/experto/claudio-bloch/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-b2f25a97c329"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/experto/claudio-bloch/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/experto/florencia-guimaraes-garcia/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-f0fb57690453"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/experto/florencia-guimaraes-garcia/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/experto/sebastian-galiani/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-f06609441917"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/experto/sebastian-galiani/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/fuentes/angus-maddison-project/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-52314da1ce07"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/fuentes/angus-maddison-project/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/fuentes/centro-de-investigacion-pew/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-caac5fa9f0fc"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/fuentes/centro-de-investigacion-pew/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/fuentes/direccion-nacional-electoral/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-3b4b9db1a053"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/fuentes/direccion-nacional-electoral/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/fuentes/federico-munoz-y-asociados/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-b693457e76b4"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/fuentes/federico-munoz-y-asociados/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/fuentes/ministerio-de-economia-bonaerense/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-e83b027fd5fa"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/fuentes/ministerio-de-economia-bonaerense/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/fuentes/ministerio-de-justicia-de-la-nacion/page/2/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-87cda4138197"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/fuentes/ministerio-de-justicia-de-la-nacion/page/2/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/fuentes/secretaria-de-vivienda/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-e2829b280a4f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/fuentes/secretaria-de-vivienda/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://chequeado.com/personajes/cristina-fernandez-de-kirchner/page/25/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-9f577fcbe085"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/personajes/cristina-fernandez-de-kirchner/page/25/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": true,
+      "archiveTimestamp": "20210511231333"
+    },
+    {
+      "url": "https://chequeado.com/personajes/julian-dindart/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-88344678948e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/personajes/julian-dindart/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": true,
+      "archiveTimestamp": "20180924200504"
+    },
+    {
+      "url": "https://chequeado.com/personajes/mario-pergolini/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-5145769388ef"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/personajes/mario-pergolini/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": true,
+      "archiveTimestamp": "20170630083819"
+    },
+    {
+      "url": "https://chequeado.com/personajes/roberto-lavagna/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-3d71167b379a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/roberto-lavagna-el-hambre-abarca-a-mas-del-50-de-los-chicos-y-jovenes-menores-de-17-anos/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://chequeado.com/personajes/ypf/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-c870faf6e5a2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/galuccio-en-los-ultimos-tres-anos-ypf-crecio-un-35-en-produccion-de-gas-y-un-10-en-produccion-de-petroleo/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://chequeado.com/tag/agro/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-954337aa7ed2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/tag/agro/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/tag/camara-de-diputados/page/2/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-cb2e6beed024"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/tag/camara-de-diputados/page/2/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/tag/drogas/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-1ea0f2aaeb65"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/tag/drogas/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/tag/provincia-de-buenos-aires/page/6/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-7839295e2bf1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/tag/provincia-de-buenos-aires/page/6/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/tag/salario-real/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-35c132db5481"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/tag/salario-real/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/tag/sistema-tributario/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-52033870ba38"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/tag/sistema-tributario/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/aguad-hay-una-penetracion-de-internet-de-banda-ancha-del-2-cuando-el-promedio-de-la-region-es-el-20/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-32a80ffc6ef6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/aguad-hay-una-penetracion-de-internet-de-banda-ancha-del-2-cuando-el-promedio-de-la-region-es-el-20/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/alberto-fernandez-1-de-cada-2-ninas-y-ninos-es-pobre-en-nuestro-pais/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-6de0b294b07b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/alberto-fernandez-1-de-cada-2-ninas-y-ninos-es-pobre-en-nuestro-pais/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/alberto-fernandez-sobre-el-salario-real-cayo-21-en-tres-anos-y-medio/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-35c132db5481"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/alberto-fernandez-sobre-el-salario-real-cayo-21-en-tres-anos-y-medio/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/alberto-fernandez-sobre-la-gestion-de-cambiemos-la-cantidad-de-droga-secuestrada-bajo/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-1ea0f2aaeb65"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/alberto-fernandez-sobre-la-gestion-de-cambiemos-la-cantidad-de-droga-secuestrada-bajo/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/alberto-fernandez-sobre-la-planta-de-las-talitas-en-tucuman-el-merito-es-de-cristina-que-la-termino-en-2015/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-536752876f79"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/alberto-fernandez-sobre-la-planta-de-las-talitas-en-tucuman-el-merito-es-de-cristina-que-la-termino-en-2015/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/bielsa-sobre-el-procrear-durante-el-ultimo-mandato-de-cfk-se-otorgaron-110-mil-creditos-hipotecarios-para-construir-entre-2016-y-2019-solamente-11-mil/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-e2829b280a4f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/bielsa-sobre-el-procrear-durante-el-ultimo-mandato-de-cfk-se-otorgaron-110-mil-creditos-hipotecarios-para-construir-entre-2016-y-2019-solamente-11-mil/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/c-fernandez-la-asignacion-universal-por-hijo-es-el-plan-mas-importante-a-nivel-mundial-de-destinar-parte-del-producto-bruto-a-los-sectores-mas-vulnerables-de-la-sociedad/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-9f577fcbe085"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/c-fernandez-la-asignacion-universal-por-hijo-es-el-plan-mas-importante-a-nivel-mundial-de-destinar-parte-del-producto-bruto-a-los-sectores-mas-vulnerables-de-la-sociedad/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/c-fernandez-santa-fe-ha-crecido-por-debajo-de-la-media-nacional/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-7207db5a528e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/c-fernandez-santa-fe-ha-crecido-por-debajo-de-la-media-nacional/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/cabrera-las-importaciones-en-2016-cayeron-7-respecto-del-2015/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-b693457e76b4"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/cabrera-las-importaciones-en-2016-cayeron-7-respecto-del-2015/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/cfk-cuando-termine-mi-gestion-el-10-de-diciembre-de-2015-la-inflacion-medida-por-el-gobierno-de-la-ciudad-de-buenos-aires-no-superaba-el-25-anual/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-7581ef78aa6a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/cfk-cuando-termine-mi-gestion-el-10-de-diciembre-de-2015-la-inflacion-medida-por-el-gobierno-de-la-ciudad-de-buenos-aires-no-superaba-el-25-anual/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/cfk-sobre-la-inversion-en-embarazo-no-intencional-si-uno-mira-el-presupuesto-de-este-ano-ha-sido-solamente-ejecutado-en-un-12-por-ciento/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-cd85dee989e9"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/cfk-sobre-la-inversion-en-embarazo-no-intencional-si-uno-mira-el-presupuesto-de-este-ano-ha-sido-solamente-ejecutado-en-un-12-por-ciento/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/clarin-cinco-trans-por-dia-tramitan-un-documento-acorde-con-su-aspecto-fisico/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-f0fb57690453"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/clarin-cinco-trans-por-dia-tramitan-un-documento-acorde-con-su-aspecto-fisico/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/clarin-con-cristina-se-toco-el-piso-de-leyes-votadas-por-ano-desde-1983/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-05f54b65f1c0"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/clarin-con-cristina-se-toco-el-piso-de-leyes-votadas-por-ano-desde-1983/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/cristina-la-excesiva-rentabilidad-producto-de-la-concentracion-puede-provocar-inlfacion/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-4232cbf2b6df"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/cristina-la-excesiva-rentabilidad-producto-de-la-concentracion-puede-provocar-inlfacion/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/dindart-algunas-se-embarazan-porque-tienen-un-recurso-economico-como-premio/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-88344678948e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/dindart-algunas-se-embarazan-porque-tienen-un-recurso-economico-como-premio/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/el-cronista-el-40-de-los-trabajadores-que-entran-al-estado-estan-precarizados/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-1de2fd7b53ce"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/el-cronista-el-40-de-los-trabajadores-que-entran-al-estado-estan-precarizados/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/etchevehere-en-la-decada-se-cerraron-125-frigorificos/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-954337aa7ed2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/etchevehere-en-la-decada-se-cerraron-125-frigorificos/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/fernandez-pasaron-siete-semestres-presidente-no-entro-un-centavo-a-la-argentina-de-inversiones-de-esas-potencias/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-965f21f0ae76"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/fernandez-pasaron-siete-semestres-presidente-no-entro-un-centavo-a-la-argentina-de-inversiones-de-esas-potencias/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/frigerio-es-mentira-lo-que-dice-cristina-los-resultados-con-su-gobierno-en-la-ultima-eleccion-los-teniamos-al-mediodia-del-dia-siguiente/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-3b4b9db1a053"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/frigerio-es-mentira-lo-que-dice-cristina-los-resultados-con-su-gobierno-en-la-ultima-eleccion-los-teniamos-al-mediodia-del-dia-siguiente/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/infobae-el-kirchnerismo-dejara-peores-indicadores-economicos-que-los-del-menemismo/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-52314da1ce07"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/infobae-el-kirchnerismo-dejara-peores-indicadores-economicos-que-los-del-menemismo/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/kicillof-sobre-el-traspaso-de-la-policia-federal-la-caba-tendra-9-727millones-de-libre-disponibilidad/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-e9de336ed5db"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/kicillof-sobre-el-traspaso-de-la-policia-federal-la-caba-tendra-9-727millones-de-libre-disponibilidad/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/kicillof-tenemos-una-deuda-del-40-del-pbi-es-de-las-mas-bajas-del-mundo/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-65610a4bdaa1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/kicillof-tenemos-una-deuda-del-40-del-pbi-es-de-las-mas-bajas-del-mundo/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/la-nacion-bajo-impacto-de-la-auh-en-la-escuela/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-f966546dfb9b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/la-nacion-bajo-impacto-de-la-auh-en-la-escuela/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/lavagna-la-argentina-lleva-8-anos-de-estancamiento-absoluto/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-3d71167b379a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/lavagna-la-argentina-lleva-8-anos-de-estancamiento-absoluto/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/macri-casi-cuatro-de-cada-diez-chicos-estan-malnutridos/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-0544dfe2b9c6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/macri-casi-cuatro-de-cada-diez-chicos-estan-malnutridos/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/macri-la-asignacion-universal-por-hijo-hoy-tiene-4-millones-de-beneficiarios/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-be54e83dc79f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/macri-la-asignacion-universal-por-hijo-hoy-tiene-4-millones-de-beneficiarios/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/macri-qnos-llevo-un-ano-en-tribunales-en-distintas-instancias-conseguir-todas-las-aprobaciones-para-llevar-a-cabo-este-edificioq/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-0df17fe58a7f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/macri-qnos-llevo-un-ano-en-tribunales-en-distintas-instancias-conseguir-todas-las-aprobaciones-para-llevar-a-cabo-este-edificioq/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/massa-desde-2003-hasta-aca-las-tasas-municipales-son-las-que-menos-han-acompanado-la-inflacion/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-52033870ba38"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/massa-desde-2003-hasta-aca-las-tasas-municipales-son-las-que-menos-han-acompanado-la-inflacion/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/massot-es-el-blanqueo-con-los-impuestos-mas-altos-de-la-historia-argentina/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-f06609441917"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/massot-es-el-blanqueo-con-los-impuestos-mas-altos-de-la-historia-argentina/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/page/30/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-cd85dee989e9"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/page/30/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": true,
+      "archiveTimestamp": "20201224104403"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/page/8/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-6de0b294b07b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/page/8/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": true,
+      "archiveTimestamp": "20210506165006"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/pagina-12-hay-una-subrepresentacion-del-gran-buenos-aires-en-la-camara-de-diputados-de-la-nacion/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-cb2e6beed024"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/pagina-12-hay-una-subrepresentacion-del-gran-buenos-aires-en-la-camara-de-diputados-de-la-nacion/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/pagni-la-produccion-de-ypf-va-cayendo-mes-a-mes/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-c870faf6e5a2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/pagni-la-produccion-de-ypf-va-cayendo-mes-a-mes/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/pergolini-el-paco-esta-asesinando-de-a-200-o-300-chicos-por-mes/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-5145769388ef"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/pergolini-el-paco-esta-asesinando-de-a-200-o-300-chicos-por-mes/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/pichetto-el-65-del-total-del-presupuesto-esta-comprendido-ahi-en-planes-piqueteros-cooperativas-de-la-pobreza-cartoneros-multinacionales-del-carton/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-beb27c98ab6f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/pichetto-el-65-del-total-del-presupuesto-esta-comprendido-ahi-en-planes-piqueteros-cooperativas-de-la-pobreza-cartoneros-multinacionales-del-carton/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/rattazzi-al-obrero-le-queda-44-de-lo-que-le-cuesta-a-la-empresa/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-a5a400a67d0b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/rattazzi-al-obrero-le-queda-44-de-lo-que-le-cuesta-a-la-empresa/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/scioli-la-argentina-es-el-pais-de-la-region-donde-mas-crecio-la-clase-media/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-caac5fa9f0fc"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/scioli-la-argentina-es-el-pais-de-la-region-donde-mas-crecio-la-clase-media/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/spots-lousteau-en-el-2016-murieron-36-bebes-mas/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-b2f25a97c329"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/spots-lousteau-en-el-2016-murieron-36-bebes-mas/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/vidal-el-presupuesto-que-se-destina-a-salud-es-el-20-del-total/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-10e54fbc988d"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/vidal-el-presupuesto-que-se-destina-a-salud-es-el-20-del-total/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/vidal-la-provincia-recibe-del-gobierno-nacional-5-000-por-cada-vecino-el-promedio-del-resto-de-las-provincias-es-20-000/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-7839295e2bf1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/vidal-la-provincia-recibe-del-gobierno-nacional-5-000-por-cada-vecino-el-promedio-del-resto-de-las-provincias-es-20-000/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/vidal-pasamos-de-una-provincia-que-invertia-muy-poco-en-infraestructura-a-una-que-invierte-mas-del-doble/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-e83b027fd5fa"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/vidal-pasamos-de-una-provincia-que-invertia-muy-poco-en-infraestructura-a-una-que-invierte-mas-del-doble/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://chequeado.com/ultimas-noticias/vidal-tenemos-mas-detenidos-por-narcotrafico-en-los-ultimos-dos-anos-que-en-toda-la-gestion-del-gobierno-de-scioli/",
+      "host": "chequeado.com",
+      "claimIds": [
+        "xf-87cda4138197"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://chequeado.com/ultimas-noticias/vidal-tenemos-mas-detenidos-por-narcotrafico-en-los-ultimos-dos-anos-que-en-toda-la-gestion-del-gobierno-de-scioli/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://codigof.mx/presupuesto-publico-para-salud-2020/",
+      "host": "codigof.mx",
+      "claimIds": [
+        "xf-10e54fbc988d"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://codigof.mx/presupuesto-publico-para-salud-2020/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://datosmacro.expansion.com/estado/gasto/salud/espana",
+      "host": "datosmacro.expansion.com",
+      "claimIds": [
+        "xf-10e54fbc988d"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://datosmacro.expansion.com/estado/gasto/salud/espana",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://diariodelanus.blogspot.com/2012/03/dindart-algunas-se-embarazan-porque.html",
+      "host": "diariodelanus.blogspot.com",
+      "claimIds": [
+        "xf-88344678948e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://diariodelanus.blogspot.com/2012/03/dindart-algunas-se-embarazan-porque.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://eleconomista.com.ar/2020-03-perotti-recibira-apoyo-de-nacion-en-seguridad/",
+      "host": "eleconomista.com.ar",
+      "claimIds": [
+        "xf-1ea0f2aaeb65"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://eleconomista.com.ar/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "redirected_home",
+      "archived": true,
+      "archiveTimestamp": "20210119023509"
+    },
+    {
+      "url": "https://es-es.facebook.com/Chequeado/posts/alberto-fern%C3%A1ndez-sobre-la-planta-de-las-talitas-en-tucum%C3%A1n-el-m%C3%A9rito-es-de-cris/3569642923049924/",
+      "host": "es-es.facebook.com",
+      "claimIds": [
+        "xf-536752876f79"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://es-la.facebook.com/Chequeado/photos/macri-dijo-hoy-la-asignaci%C3%B3n-universal-por-hijo-hoy-tiene-4-millones-de-benefici/2577688435578716/",
+      "host": "es-la.facebook.com",
+      "claimIds": [
+        "xf-be54e83dc79f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://es-la.facebook.com/Chequeado/posts/3328905903790295",
+      "host": "es-la.facebook.com",
+      "claimIds": [
+        "xf-e2829b280a4f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://es-la.facebook.com/Chequeado/posts/massot-es-el-blanqueo-con-los-impuestos-m%C3%A1s-altos-de-la-historia-argentina-es-en/1351434611537444/",
+      "host": "es-la.facebook.com",
+      "claimIds": [
+        "xf-f06609441917"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://es-la.facebook.com/vikidonda/posts/los-dichos-del-diputado-dindart-no-son-nuevos-ya-en-el-2012-siendo-ministro-de-s/10154262668788476/",
+      "host": "es-la.facebook.com",
+      "claimIds": [
+        "xf-88344678948e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://es.wikipedia.org/wiki/Inflaci%C3%B3n",
+      "host": "es.wikipedia.org",
+      "claimIds": [
+        "xf-4232cbf2b6df"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 403,
+      "finalUrl": "https://es.wikipedia.org/wiki/Inflaci%C3%B3n",
+      "method": "GET",
+      "error": null,
+      "outcome": "blocked"
+    },
+    {
+      "url": "https://es.wikipedia.org/wiki/Relaci%C3%B3n_entre_deuda_y_PIB",
+      "host": "es.wikipedia.org",
+      "claimIds": [
+        "xf-65610a4bdaa1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 403,
+      "finalUrl": "https://es.wikipedia.org/wiki/Relaci%C3%B3n_entre_deuda_y_PIB",
+      "method": "GET",
+      "error": null,
+      "outcome": "blocked"
+    },
+    {
+      "url": "https://hy-am.facebook.com/Chequeado/",
+      "host": "hy-am.facebook.com",
+      "claimIds": [
+        "xf-cd85dee989e9"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://lucidez.pe/solo-el-20-del-presupuesto-de-salud-es-destinado-a-inversion-publica/",
+      "host": "lucidez.pe",
+      "claimIds": [
+        "xf-10e54fbc988d"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": null,
+      "finalUrl": null,
+      "method": "GET",
+      "error": "ConnectError: [Errno 11002] getaddrinfo failed",
+      "outcome": "unreachable",
+      "archived": true,
+      "archiveTimestamp": "20200919025013"
+    },
+    {
+      "url": "https://m.facebook.com/Chequeado/posts/3147543375259883",
+      "host": "m.facebook.com",
+      "claimIds": [
+        "xf-6de0b294b07b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://m.facebook.com/javierproferomero/posts/1408102589396203",
+      "host": "m.facebook.com",
+      "claimIds": [
+        "xf-7839295e2bf1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://m.facebook.com/story.php?story_fbid=742404819299320&id=372586019614537",
+      "host": "m.facebook.com",
+      "claimIds": [
+        "xf-7839295e2bf1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://ne-np.facebook.com/NoticiasDeMacia/posts/3181103672018044",
+      "host": "ne-np.facebook.com",
+      "claimIds": [
+        "xf-7581ef78aa6a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://prezi.com/rwb_3vnjhfwm/paco/",
+      "host": "prezi.com",
+      "claimIds": [
+        "xf-5145769388ef"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://prezi.com/rwb_3vnjhfwm/paco/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://repositorio.cepal.org/bitstream/handle/11362/40528/6/S1601049_es.pdf",
+      "host": "repositorio.cepal.org",
+      "claimIds": [
+        "xf-32a80ffc6ef6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://repositorio.cepal.org/server/api/core/bitstreams/865b0184-f0a3-4831-bc3d-91009cdc7770/content",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://scielo.conicyt.cl/scielo.php?script=sci_arttext&pid=S0250-71612012000200010",
+      "host": "scielo.conicyt.cl",
+      "claimIds": [
+        "xf-4232cbf2b6df"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://scielo.conicyt.cl/scielo.php?script=sci_arttext&pid=S0250-71612012000200010",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://test.chequeado.com/ultimas-noticias/kicillof-sobre-el-traspaso-de-la-policia-federal-la-caba-tendra-9-727millones-de-libre-disponibilidad/",
+      "host": "test.chequeado.com",
+      "claimIds": [
+        "xf-e9de336ed5db"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://test.chequeado.com/ultimas-noticias/kicillof-sobre-el-traspaso-de-la-policia-federal-la-caba-tendra-9-727millones-de-libre-disponibilidad/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://test.chequeado.com/ultimas-noticias/kicillof-tenemos-una-deuda-del-40-del-pbi-es-de-las-mas-bajas-del-mundo/",
+      "host": "test.chequeado.com",
+      "claimIds": [
+        "xf-65610a4bdaa1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": true,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://test.chequeado.com/ultimas-noticias/kicillof-tenemos-una-deuda-del-40-del-pbi-es-de-las-mas-bajas-del-mundo/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://twitter.com/Ari2255/status/1304201517239545856",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-e9de336ed5db"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/Chequeado/status/1052574917676453888",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-87cda4138197"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/Chequeado/status/1120766796489994246",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-e83b027fd5fa"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/Chequeado/status/1266839305944813569",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-536752876f79"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/LaRepublica68/status/1183757282175307776",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-965f21f0ae76"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/___juanjo___/status/1183572545561337856",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-3d71167b379a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/c5n/status/1183543800817278983",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-965f21f0ae76"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/1030955007741452288?lang=en",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-87cda4138197"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/1111281891053838339?lang=ar",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-e83b027fd5fa"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/1146518982448635907?lang=en",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-35c132db5481"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/1230192836542373888",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-e2829b280a4f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/1233560023999098881",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-e2829b280a4f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/1266091252224835584?lang=en",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-536752876f79"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/633747243296686080",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-52314da1ce07"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/778625032763412480",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-f0fb57690453"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/chequeado/status/778702136305602560",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-f0fb57690453"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/hashtag/apresurado",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-c870faf6e5a2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/hernan8371/status/240523368712007680",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-c870faf6e5a2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/nachomdeo/status/1234289613969252353",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-1ea0f2aaeb65"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://twitter.com/yamilsantoro/status/1027671919271837696",
+      "host": "twitter.com",
+      "claimIds": [
+        "xf-954337aa7ed2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://viapais.com.ar/argentina/579326-mauricio-macri-sus-frases-mas-resonantes-durante-1000-dias-de-mandato/",
+      "host": "viapais.com.ar",
+      "claimIds": [
+        "xf-0544dfe2b9c6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 403,
+      "finalUrl": "https://viapais.com.ar/argentina/579326-mauricio-macri-sus-frases-mas-resonantes-durante-1000-dias-de-mandato/",
+      "method": "GET",
+      "error": null,
+      "outcome": "blocked"
+    },
+    {
+      "url": "https://www.aacademica.org/000-099/600.pdf",
+      "host": "www.aacademica.org",
+      "claimIds": [
+        "xf-f966546dfb9b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.aacademica.org/000-099/600.pdf",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.bbc.com/mundo/noticias-50604735",
+      "host": "www.bbc.com",
+      "claimIds": [
+        "xf-32a80ffc6ef6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.bbc.com/mundo/noticias-50604735",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.bbc.com/mundo/noticias-51099714",
+      "host": "www.bbc.com",
+      "claimIds": [
+        "xf-65610a4bdaa1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.bbc.com/mundo/noticias-51099714",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.cepal.org/es/comunicados/cepal-aumenta-fuertemente-uso-acceso-internet-america-latina-caribe",
+      "host": "www.cepal.org",
+      "claimIds": [
+        "xf-32a80ffc6ef6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.cepal.org/es/comunicados/cepal-aumenta-fuertemente-uso-acceso-internet-america-latina-caribe",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.clarin.com/politica/cristina-toco-piso-leyes-votadas_0_BkUlN1cnwXg.html",
+      "host": "www.clarin.com",
+      "claimIds": [
+        "xf-05f54b65f1c0"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.clarin.com/politica/cristina-toco-piso-leyes-votadas_0_BkUlN1cnwXg.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.clarin.com/politica/martin-lousteau-nombre-competir-elisa-carrio-pro-evolucion-ciudadana_0_Hyb6zxkmW.html",
+      "host": "www.clarin.com",
+      "claimIds": [
+        "xf-b2f25a97c329"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.clarin.com/politica/martin-lousteau-nombre-competir-elisa-carrio-pro-evolucion-ciudadana_0_Hyb6zxkmW.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.clarin.com/sociedad/trans-cambiaron-DNI-trabajos-formales_0_Bynug2wq.html",
+      "host": "www.clarin.com",
+      "claimIds": [
+        "xf-f0fb57690453"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.clarin.com/sociedad/trans-cambiaron-DNI-trabajos-formales_0_Bynug2wq.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.cronista.com/economiapolitica/El-40-de-los-trabajadores-que-entran-al-Estado-estan-precarizados-20110607-0091.html",
+      "host": "www.cronista.com",
+      "claimIds": [
+        "xf-1de2fd7b53ce"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.cronista.com/espana/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://www.elcohetealaluna.com/las-contorsiones-de-la-desesperacion/",
+      "host": "www.elcohetealaluna.com",
+      "claimIds": [
+        "xf-0544dfe2b9c6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.elcohetealaluna.com/las-contorsiones-de-la-desesperacion/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.eldiario.es/economia/importaciones-petroleo-cayeron-maximo_1_3590263.html",
+      "host": "www.eldiario.es",
+      "claimIds": [
+        "xf-b693457e76b4"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.eldiario.es/economia/importaciones-petroleo-cayeron-maximo_1_3590263.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.ellitoral.com/index.php/diarios/2019/10/14/politica/POLI-05.html",
+      "host": "www.ellitoral.com",
+      "claimIds": [
+        "xf-3d71167b379a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": null,
+      "finalUrl": null,
+      "method": "GET",
+      "error": "ReadTimeout: The read operation timed out",
+      "outcome": "unreachable",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://www.elsol.com.ar/cristina-critica-crecimiento-de-santa-fe.html",
+      "host": "www.elsol.com.ar",
+      "claimIds": [
+        "xf-7207db5a528e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.elsol.com.ar/el-pais/cristina-critica-crecimiento-de-santa-fe/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://www.eltribuno.com/salta/nota/2020-10-27-19-46-0-la-carta-de-cristina-enganos-y-verdades-a-medias",
+      "host": "www.eltribuno.com",
+      "claimIds": [
+        "xf-7581ef78aa6a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.eltribuno.com/nota/2020-10-27-19-46-0-la-carta-de-cristina-enganos-y-verdades-a-medias",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://www.facebook.com/964212343652411/posts/las-frases-del-pibe-loco-de-cambiemos-100-frases-de-mauricio-macri-presidente-de/2942301289176830/",
+      "host": "www.facebook.com",
+      "claimIds": [
+        "xf-0544dfe2b9c6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.facebook.com/Chequeado/photos/a.505948792752701/2597312770282949/?type=3",
+      "host": "www.facebook.com",
+      "claimIds": [
+        "xf-e83b027fd5fa"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.facebook.com/Chequeado/photos/vidal-tenemos-m%C3%A1s-detenidos-por-narcotr%C3%A1fico-en-los-%C3%BAltimos-dos-a%C3%B1os-que-en-toda/2277455535602009/",
+      "host": "www.facebook.com",
+      "claimIds": [
+        "xf-87cda4138197"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.facebook.com/Chequeado/posts/2811407735540117:0",
+      "host": "www.facebook.com",
+      "claimIds": [
+        "xf-35c132db5481"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.facebook.com/Chequeado/posts/nuevo-pichetto-el-65-del-total-del-presupuesto-est%C3%A1-comprendido-ah%C3%AD-en-planes-pi/2929861263694763/",
+      "host": "www.facebook.com",
+      "claimIds": [
+        "xf-beb27c98ab6f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.facebook.com/NoALaInflacion/posts_to_page/",
+      "host": "www.facebook.com",
+      "claimIds": [
+        "xf-5145769388ef"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.facebook.com/lanacion/posts/10157155168949220?comment_id=10157155221489220&reply_comment_id=10157156411139220&comment_tracking=%7B%22tn%22%3A%22R%22%7D",
+      "host": "www.facebook.com",
+      "claimIds": [
+        "xf-954337aa7ed2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.facebook.com/vikidonda/posts/los-dichos-del-diputado-dindart-no-son-nuevos-ya-en-el-2012-siendo-ministro-de-s/10154262668788476/",
+      "host": "www.facebook.com",
+      "claimIds": [
+        "xf-88344678948e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.infoarenales.com/2018/08/frases-verdaderas-y-falsas-de-los-discursos-de-senadores/",
+      "host": "www.infoarenales.com",
+      "claimIds": [
+        "xf-cd85dee989e9"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://infoarenales.com",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "redirected_home",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://www.infobae.com/2015/08/01/1744899-informe-el-kirchnerismo-dejara-peores-indicadores-economicos-que-los-del-menemismo/",
+      "host": "www.infobae.com",
+      "claimIds": [
+        "xf-52314da1ce07"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.infobae.com/2015/08/01/1744899-informe-el-kirchnerismo-dejara-peores-indicadores-economicos-que-los-del-menemismo/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.lanacion.com.ar/1827687-inseguridad-y-clase-media-segun-los-presidenciables/",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-caac5fa9f0fc"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://www.lanacion.com.ar/1827687-inseguridad-y-clase-media-segun-los-presidenciables/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://www.lanacion.com.ar/politica/alberto-fernandez-tucuman-hacer-cuarentena-no-es-nid2368205",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-536752876f79"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.lanacion.com.ar/politica/alberto-fernandez-tucuman-hacer-cuarentena-no-es-nid2368205/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.lanacion.com.ar/politica/detras-del-discurso-nid1866969",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-e9de336ed5db"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.lanacion.com.ar/politica/detras-del-discurso-nid1866969/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.lanacion.com.ar/politica/frases-verdaderas-y-falsas-de-los-discursos-de-senadores-nid2160715",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-cd85dee989e9"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.lanacion.com.ar/politica/frases-verdaderas-y-falsas-de-los-discursos-de-senadores-nid2160715/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.lanacion.com.ar/politica/guerra-de-spots-antes-de-la-veda-afirmaciones-falsas-verdaderas-y-enganosas-de-los-precandidatos-nid2051745/",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-b2f25a97c329"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.lanacion.com.ar/politica/guerra-de-spots-antes-de-la-veda-afirmaciones-falsas-verdaderas-y-enganosas-de-los-precandidatos-nid2051745/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.lanacion.com.ar/politica/mas-del-40-de-los-trabajadores-del-estado-estan-precarizados-nid1791586/",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-1de2fd7b53ce"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.lanacion.com.ar/politica/mas-del-40-de-los-trabajadores-del-estado-estan-precarizados-nid1791586/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.lanacion.com.ar/politica/nos-encanta-nos-digan-tenemos-razon-pero-nid2298868",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-3d71167b379a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.lanacion.com.ar/politica/nos-encanta-nos-digan-tenemos-razon-pero-nid2298868/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.lanacion.com.ar/politica/spots-de-campana-verdaderos-falsos-o-enganosos-nid2050880/",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-b2f25a97c329"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.lanacion.com.ar/politica/spots-de-campana-verdaderos-falsos-o-enganosos-nid2050880/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.lanacion.com.ar/sociedad/bajo-impacto-de-la-auh-en-la-escuela-nid1458620/",
+      "host": "www.lanacion.com.ar",
+      "claimIds": [
+        "xf-f966546dfb9b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.lanacion.com.ar/sociedad/bajo-impacto-de-la-auh-en-la-escuela-nid1458620/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.mdzol.com/politica/2019/10/14/verdadero-falso-nueve-frases-de-los-candidatos-bajo-la-lupa-48181.html",
+      "host": "www.mdzol.com",
+      "claimIds": [
+        "xf-965f21f0ae76"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.mdzol.com/politica/2019/10/14/verdadero-falso-nueve-frases-de-los-candidatos-bajo-la-lupa-1418733.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://www.mundomaritimo.cl/noticias/intercambio-comercial-de-chile-durante-2015-cayo-un-147-respecto-a-2014",
+      "host": "www.mundomaritimo.cl",
+      "claimIds": [
+        "xf-b693457e76b4"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.mundomaritimo.cl/noticias/intercambio-comercial-de-chile-durante-2015-cayo-un-147-respecto-a-2014",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.nera.com/content/dam/nera/publications/2020/2020.05.22%20NERA%20report%20for%20Facebook%20-%20final%20espa%C3%B1ol%20(1).pdf",
+      "host": "www.nera.com",
+      "claimIds": [
+        "xf-32a80ffc6ef6"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.nera.com/content/dam/nera/publications/2020/2020.05.22%20NERA%20report%20for%20Facebook%20-%20final%20espa%C3%B1ol%20(1).pdf",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.pagina12.com.ar/diario/elpais/1-172723-2011-07-21.html",
+      "host": "www.pagina12.com.ar",
+      "claimIds": [
+        "xf-7207db5a528e"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.pagina12.com.ar/diario/elpais/1-172723-2011-07-21.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.pagina12.com.ar/diario/elpais/1-190566-2012-03-28.html",
+      "host": "www.pagina12.com.ar",
+      "claimIds": [
+        "xf-f966546dfb9b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.pagina12.com.ar/diario/elpais/1-190566-2012-03-28.html",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.pressreader.com/argentina/clarin/20111205/textview",
+      "host": "www.pressreader.com",
+      "claimIds": [
+        "xf-05f54b65f1c0"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://www.pressreader.com/argentina/clarin/20111205/textview",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://www.pressreader.com/argentina/la-nacion/20150914/281767038008200",
+      "host": "www.pressreader.com",
+      "claimIds": [
+        "xf-caac5fa9f0fc"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 404,
+      "finalUrl": "https://www.pressreader.com/argentina/la-nacion/20150914/281767038008200",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "dead",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://www.reddit.com/r/Republica_Argentina/comments/d3t1x2/pichetto_el_65_del_total_del_presupuesto_est%C3%A1/",
+      "host": "www.reddit.com",
+      "claimIds": [
+        "xf-beb27c98ab6f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.reddit.com/r/Republica_Argentina/duplicates/d3t1x2/pichetto_el_65_del_total_del_presupuesto_est%C3%A1/",
+      "host": "www.reddit.com",
+      "claimIds": [
+        "xf-beb27c98ab6f"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.reddit.com/r/argentina/comments/3ffo5g/menem_did_nothing_wrong_el_kirchnerismo_dejar%C3%A1/",
+      "host": "www.reddit.com",
+      "claimIds": [
+        "xf-52314da1ce07"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    },
+    {
+      "url": "https://www.researchgate.net/publication/227385744_La_inflacion_aproximacion_a_un_problema_Aspectos_metodologicos_teoricos_y_empiricos/fulltext/024ea3e80cf257003d2bafc0/La-inflacion-aproximacion-a-un-problema-Aspectos-metodologicos-teoricos-y-empiricos.pdf",
+      "host": "www.researchgate.net",
+      "claimIds": [
+        "xf-4232cbf2b6df"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 403,
+      "finalUrl": "https://www.researchgate.net/publication/227385744_La_inflacion_aproximacion_a_un_problema_Aspectos_metodologicos_teoricos_y_empiricos/fulltext/024ea3e80cf257003d2bafc0/La-inflacion-aproximacion-a-un-problema-Aspectos-metodologicos-teoricos-y-empiricos.pdf",
+      "method": "GET",
+      "error": null,
+      "outcome": "blocked"
+    },
+    {
+      "url": "https://www.rionegro.com.ar/cuantos-verdadero-el-chequeo-del-discurso-de-alberto-fernandez-1197343/",
+      "host": "www.rionegro.com.ar",
+      "claimIds": [
+        "xf-6de0b294b07b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.rionegro.com.ar/cuantos-verdadero-el-chequeo-del-discurso-de-alberto-fernandez-1197343/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.rionegro.com.ar/lavagna-en-2012-se-usaron-mas-de-100-mil-millones-en-subsidios-y-la-auh-fue-9-veces-menos-que-esa-suma-ARRN_1161162/",
+      "host": "www.rionegro.com.ar",
+      "claimIds": [
+        "xf-9f577fcbe085"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.rionegro.com.ar/lavagna-en-2012-se-usaron-mas-de-100-mil-millones-en-subsidios-y-la-auh-fue-9-veces-menos-que-esa-suma-ARRN_1161162/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.roadshow.com.ar/para-cristina-fernandez-el-dolar-es-el-problema-mas-grave-que-tiene-el-pais/",
+      "host": "www.roadshow.com.ar",
+      "claimIds": [
+        "xf-7581ef78aa6a"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.roadshow.com.ar/para-cristina-fernandez-el-dolar-es-el-problema-mas-grave-que-tiene-el-pais/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.scielo.br/scielo.php?pid=S0104-83332002000100008&script=sci_arttext&tlng=es",
+      "host": "www.scielo.br",
+      "claimIds": [
+        "xf-a5a400a67d0b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.scielo.br/j/cpa/a/V5Wmqny7c8kkF7Bx7bbFMLk/?lang=es",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://www.segurosdetuatu.es/posts/en-que-consiste-la-prejubilacion-y-como-se-paga-al-trabajador-2",
+      "host": "www.segurosdetuatu.es",
+      "claimIds": [
+        "xf-a5a400a67d0b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": null,
+      "finalUrl": null,
+      "method": "GET",
+      "error": "ConnectError: [Errno 11001] getaddrinfo failed",
+      "outcome": "unreachable",
+      "archived": true,
+      "archiveTimestamp": "20201127223014"
+    },
+    {
+      "url": "https://www.sol915.com.ar/chequearon-la-veracidad-del-discurso-fernandez-congreso/",
+      "host": "www.sol915.com.ar",
+      "claimIds": [
+        "xf-6de0b294b07b"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.sol915.com.ar/chequearon-la-veracidad-del-discurso-fernandez-congreso/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.taringa.net/+info/los-trapitos-sucios-se-lavan-en-taringa_1406w5",
+      "host": "www.taringa.net",
+      "claimIds": [
+        "xf-954337aa7ed2"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.taringa.net/+info/los-trapitos-sucios-se-lavan-en-taringa_1406w5",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.telam.com.ar/notas/202003/436581-la-lucha-contra-el-narcotrafico-y-el-crimen-organizado-no-es-un-show-mediatico.html",
+      "host": "www.telam.com.ar",
+      "claimIds": [
+        "xf-1ea0f2aaeb65"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": null,
+      "finalUrl": null,
+      "method": "GET",
+      "error": "ConnectError: [Errno 11001] getaddrinfo failed",
+      "outcome": "unreachable",
+      "archived": false,
+      "archiveTimestamp": null
+    },
+    {
+      "url": "https://www.telemundo47.com/noticias/local/nino-de-dos-anos-cae-por-una-ventana-en-manhattan/2077666/",
+      "host": "www.telemundo47.com",
+      "claimIds": [
+        "xf-35c132db5481"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.telemundo47.com/video/noticias/local/nino-de-dos-anos-cae-por-una-ventana-en-manhattan/2077666/",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "moved"
+    },
+    {
+      "url": "https://www.unse.edu.ar/trabajoysociedad/31%20CADEMARTORI%20Fiorella%20Precarizaci%C3%B3n%20laboral%20en%20el%20Estado.pdf",
+      "host": "www.unse.edu.ar",
+      "claimIds": [
+        "xf-1de2fd7b53ce"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.unse.edu.ar/trabajoysociedad/31%20CADEMARTORI%20Fiorella%20Precarizaci%C3%B3n%20laboral%20en%20el%20Estado.pdf",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.utdt.edu/nota_prensa.php?id_nota_prensa=14012&id_item_menu=441",
+      "host": "www.utdt.edu",
+      "claimIds": [
+        "xf-3b4b9db1a053"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.utdt.edu/nota_prensa.php?id_nota_prensa=14012&id_item_menu=441",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.utdt.edu/prensa.php?id_item_menu=&pagina=485&id_item_menu=",
+      "host": "www.utdt.edu",
+      "claimIds": [
+        "xf-3b4b9db1a053"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.utdt.edu/prensa.php?id_item_menu=&pagina=485&id_item_menu=",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.wto.org/spanish/res_s/statis_s/wts2016_s/WTO_Chapter_03_s.pdf",
+      "host": "www.wto.org",
+      "claimIds": [
+        "xf-b693457e76b4"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "status": 200,
+      "finalUrl": "https://www.wto.org/spanish/res_s/statis_s/wts2016_s/WTO_Chapter_03_s.pdf",
+      "method": "HEAD",
+      "error": null,
+      "outcome": "alive"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=jvmZhBD8b9I",
+      "host": "www.youtube.com",
+      "claimIds": [
+        "xf-65610a4bdaa1"
+      ],
+      "languages": [
+        "es"
+      ],
+      "ownSite": false,
+      "claimYear": null,
+      "outcome": "social",
+      "status": null,
+      "finalUrl": null,
+      "method": null,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+# The evaluation harness, run inside compose's backend service, layered on
+# docker-compose.yml. Only ever with `run`, never `up`: it is a one-off
+# container beside the live backend, on the same network and the same
+# backend-data volume.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.eval.yml \
+#     --env-file ../backend/.env run --rm --no-deps -T backend \
+#     python -m src.evaluation.cli run \
+#       --dataset data/evaluation/xfact_en_es_pilot.jsonl --model llama3.2:3b
+#
+# `python`, not `uv run python`: the image is synced without the dev group,
+# and `uv run` would install it into the throwaway container first.
+#
+# Why each line is here (docs/decisions/evaluation.md, "Where it runs"):
+
+services:
+  backend:
+    environment:
+      # Production's LLM limits (docker-compose.prod.yml). The dev ones (2
+      # at once, 30 s) turned 3 of 4 verdicts into "LLM provider was
+      # unreachable" on a CPU. On the dev laptop's 4 GB GPU only ~80% of
+      # llama3.2:3b fits in VRAM (2026-10-13, /api/ps), so the same limits
+      # apply: a generous timeout costs nothing on a fast call, and a
+      # timed-out call is a lost verdict.
+      - LLM_TIMEOUT=180
+      - LLM_MAX_CONCURRENCY=1
+      # Inference on CPU, measured in the pilot's first session
+      # (2026-10-13): at four claims at once, the ranker's batched
+      # embedding requests (each source's first 2,000 characters, bge-m3
+      # on CPU) passed the 30 s INFERENCE_TIMEOUT and 5 of 20 claims died with
+      # InferenceUnavailable inside 40 seconds. Inference answered every
+      # one of them, late. Two claims at once and 120 s: neither changes
+      # what the pipeline decides, only whether it gets to decide.
+      - INFERENCE_TIMEOUT=120
+      - CLAIM_MAX_CONCURRENCY=2
+      # Provenance. The image has git but no .git (.dockerignore), so every
+      # record said `gitCommit: unknown`. The checkout is mounted read-only
+      # and git pointed at it; core.fileMode is off because a Windows bind
+      # mount reports every file as executable, which git would call dirty.
+      - GIT_DIR=/repo/.git
+      - GIT_WORK_TREE=/repo
+      - GIT_CONFIG_COUNT=2
+      - GIT_CONFIG_KEY_0=safe.directory
+      - GIT_CONFIG_VALUE_0=*
+      - GIT_CONFIG_KEY_1=core.fileMode
+      - GIT_CONFIG_VALUE_1=false
+    volumes:
+      # data/ is dockerignored and data/evaluation/ is not in the
+      # backend-data volume: without this the dataset is missing and the
+      # results die with the container.
+      - ../backend/data/evaluation:/app/data/evaluation
+      # The checkout's code, not the image's: a harness fix made during a
+      # run applies on resume without a rebuild, and the commit recorded
+      # above is the code that actually ran.
+      - ../backend/src:/app/src:ro
+      - ..:/repo:ro
+    # Production's cap. The dev 512m was measured for the API idle; a run
+    # holds up to CLAIM_MAX_CONCURRENCY claims' scraped pages and a
+    # headless browser at once.
+    mem_limit: 1g
