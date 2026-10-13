@@ -135,7 +135,15 @@ class Settings(BaseSettings):
     # SearxngClient answering repeated queries once, is fewer suspensions.
     SEARXNG_MAX_CONCURRENCY: int = 2
     SCRAPE_MAX_CONCURRENCY: int = 8
-    INFERENCE_MAX_CONCURRENCY: int = 4
+
+    # Inference was 4. On a CPU the embedding model gains almost nothing
+    # from running batches side by side, and each one waits for the
+    # others: measured 2026-10-13 from the backend container, one batch
+    # of 16 evidence pages took 11.9 s alone and 43 s with four at once
+    # (43 s wall, against 48 s one after another), past INFERENCE_TIMEOUT's
+    # 30 s. An analysis failed on exactly that. The wait for a permit
+    # happens here, before the request is sent, so it is not timed.
+    INFERENCE_MAX_CONCURRENCY: int = 1
     LLM_MAX_CONCURRENCY: int = 2
 
     # Headless browsers rendering at once - the last step of the
