@@ -84,6 +84,25 @@ LABEL_HELP = {
 
 CLAIM_TYPES = ("factual", "numerical", "interpretive")
 
+# Refuted claims made from supported ones, as FEVER (Thorne et al. 2018)
+# and SciFact (Wadden et al. 2020) made theirs: one element of a TRUE
+# fact's claim substituted, so that the source's own evidence refutes
+# it. Positive-news outlets rarely publish a refutable claim - 0 FALSE in
+# the first 148 facts - so without these the set cannot test the one
+# thing a fact-checker exists for. Substitutions only: negation is left
+# out on purpose, since FEVER's "not" and "only" let a model that never
+# saw the evidence guess REFUTES from the claim alone (Schuster et al.
+# 2019). The substitution must hit what the claim asserts, not a detail
+# of it - a wrong detail is PARTIALLY_TRUE under rule 2, not FALSE.
+MUTATIONS = ("number", "date", "entity", "relation")
+
+# What a mutation copies from its source: the same article, date and
+# evidence, so only the claim differs.
+MUTATION_COPIES = (
+    "language", "site", "claimant", "claimDate", "topic", "claimType",
+    "sourceTier", "evidenceDate", "articleUrl", "referenceEvidenceLinks",
+)
+
 # Strongest source used, in the guide's hierarchy (rule 4).
 SOURCE_TIERS = ("primary", "reference_media", "press_release", "social_media")
 
@@ -199,6 +218,8 @@ def validate(data: dict, topics: dict[str, str]) -> tuple[dict, list[str]]:
         "evidenceDate": day("evidenceDate"),
         "articleUrl": text("articleUrl", 2000),
         "annotatorNote": text("annotatorNote", 2000),
+        "mutatedFrom": text("mutatedFrom", 20),
+        "mutation": data.get("mutation") or None,
     }
 
     for key, allowed in (
@@ -246,6 +267,14 @@ def validate(data: dict, topics: dict[str, str]) -> tuple[dict, list[str]]:
     if clean["evidenceDate"] and clean["claimDate"] and clean["evidenceDate"] > clean["claimDate"]:
         errors.append("The evidence is newer than the article. Use only evidence available on the publication date.")
 
+    if clean["mutatedFrom"] or clean["mutation"]:
+        if not (clean["mutatedFrom"] and FACT_ID.match(clean["mutatedFrom"])):
+            errors.append("mutatedFrom must name the TRUE fact this claim was made from (factNNN).")
+        if clean["mutation"] not in MUTATIONS:
+            errors.append(f"mutation must be one of {', '.join(MUTATIONS)}.")
+        if clean["label"] != "FALSE":
+            errors.append("A mutated claim is refuted by its source's evidence: label it FALSE.")
+
     return clean, errors
 
 
@@ -273,6 +302,9 @@ def build_record(fact_id: str, clean: dict, now: str, previous: dict | None = No
         "evidenceDate": clean["evidenceDate"].isoformat() if clean["evidenceDate"] else None,
         "articleUrl": clean["articleUrl"],
         "annotatorNote": clean["annotatorNote"],
+        # A synthetic FALSE (MUTATIONS): the fact it was made from, and how.
+        "mutatedFrom": clean["mutatedFrom"],
+        "mutation": clean["mutation"],
         "createdAt": (previous or {}).get("createdAt", now),
         # A correction made after a review keeps the review: its
         # firstLabel is what self-agreement is measured on.
@@ -318,11 +350,18 @@ class Store:
     def create(self, data: dict) -> tuple[dict | None, list[str]]:
 
         clean, errors = validate(data, self.topics)
+        errors += self._source_errors(clean)
         if errors:
             return None, errors
 
         self.folder.mkdir(parents=True, exist_ok=True)
-        numbers = [_number(p) for p in self.folder.glob("fact*.json")]
+        # Facts left out of the set (excluded/, beside manual/) keep their
+        # numbers: a new fact never reuses one, or two facts would share it.
+        numbers = [
+            _number(p)
+            for folder in (self.folder, self.folder.parent / "excluded")
+            for p in folder.glob("fact*.json")
+        ]
         fact_id = f"fact{(max(numbers) + 1 if numbers else 1):03d}"
         record = build_record(fact_id, clean, _now())
 
@@ -338,7 +377,12 @@ class Store:
         if previous is None:
             return None, ["Fact not found."]
 
+        # The form does not send a mutation's provenance; an edit there
+        # must not turn a synthetic FALSE into a natural one.
+        data = {**{k: previous.get(k) for k in ("mutatedFrom", "mutation")}, **data}
+
         clean, errors = validate(data, self.topics)
+        errors += self._source_errors(clean)
         if errors:
             return None, errors
 
@@ -346,6 +390,38 @@ class Store:
         self._write(record)
 
         return record, []
+
+    def mutate(self, source_id: str, claim: str, kind: str, note: str | None = None) -> tuple[dict | None, list[str]]:
+        """A FALSE fact made from a TRUE one (MUTATIONS): same article, date and evidence."""
+
+        source = self.get(source_id)
+        if source is None:
+            return None, [f"{source_id} is not in the set."]
+
+        data = {key: source.get(key) for key in MUTATION_COPIES}
+        data.update(
+            claim=claim, label="FALSE", onlyOwnSource=False,
+            mutatedFrom=source_id, mutation=kind,
+            annotatorNote=note or f"Mutation ({kind}) of {source_id}: its evidence refutes this claim.",
+        )
+        return self.create(data)
+
+    def _source_errors(self, clean: dict) -> list[str]:
+        """A mutation's source must be a natural TRUE fact, and the claim must differ from it."""
+
+        source_id = clean.get("mutatedFrom")
+        if not source_id or not FACT_ID.match(source_id):
+            return []
+
+        source = self.get(source_id)
+        if source is None:
+            return [f"{source_id} is not in the set."]
+        if source.get("label") != "TRUE" or source.get("mutatedFrom"):
+            return [f"{source_id} is not a natural TRUE fact: only those are mutated."]
+        if (source.get("claim") or "").strip() == clean["claim"]:
+            return ["The mutated claim is its source's claim, unchanged."]
+
+        return []
 
     def review(self, fact_id: str, label: str, note: str | None) -> tuple[dict | None, list[str]]:
 
@@ -420,8 +496,28 @@ def summarise(facts: list[dict]) -> dict:
         "byTopic": count(lambda f: f.get("topic"), GROUP_OF),
         "byLanguage": count(lambda f: f.get("language"), ("en", "es")),
         "byClaimType": count(lambda f: f.get("claimType"), CLAIM_TYPES),
+        # Synthetic FALSE facts, inside the counts above: the matrix's
+        # FALSE row is these minus none found in the wild.
+        "mutated": sum(1 for f in facts if f.get("mutatedFrom")),
+        "staleMutations": stale_mutations(facts),
         "matrix": matrix,
     }
+
+
+def stale_mutations(facts: list[dict]) -> list[str]:
+    """
+    Mutations whose source is no longer a natural TRUE fact - relabelled
+    on review, say. Their FALSE was only true by construction from that
+    source's evidence, so each needs a fresh look.
+    """
+
+    by_id = {f.get("id"): f for f in facts}
+    return [
+        f["id"]
+        for f in facts
+        if f.get("mutatedFrom")
+        and (by_id.get(f["mutatedFrom"]) or {}).get("label") != "TRUE"
+    ]
 
 
 def review_sample(facts: list[dict]) -> list[dict]:
@@ -915,12 +1011,27 @@ def _now() -> str:
 def main(argv=None) -> int:
 
     parser = argparse.ArgumentParser(description="Hand-label the custom validation set.")
-    parser.add_argument("command", nargs="?", default="serve", choices=("serve", "join"))
+    parser.add_argument("command", nargs="?", default="serve", choices=("serve", "join", "mutate"))
+    parser.add_argument("source", nargs="?", help="mutate: the TRUE fact to make a FALSE one from")
+    parser.add_argument("--kind", choices=MUTATIONS, help="mutate: what was substituted")
+    parser.add_argument("--claim", help="mutate: the mutated claim")
+    parser.add_argument("--note", help="mutate: what changed, and what the evidence says instead")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--no-browser", action="store_true")
     args = parser.parse_args(argv)
 
     store = Store()
+
+    if args.command == "mutate":
+        if not (args.source and args.kind and args.claim):
+            print("mutate needs a source fact, --kind and --claim.", file=sys.stderr)
+            return 1
+        record, errors = store.mutate(args.source, args.claim, args.kind, args.note)
+        if errors:
+            print("\n".join(errors), file=sys.stderr)
+            return 1
+        print(f"{record['id']}: FALSE, {args.kind} mutation of {args.source}")
+        return 0
 
     if args.command == "join":
         try:

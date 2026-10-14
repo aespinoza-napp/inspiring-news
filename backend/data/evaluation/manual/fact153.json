@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "news.mit.edu",
+  "claimant": "Stefanie Koperniak; Institute; Systems; Society",
+  "claim": "Much attention is now directed toward this, including an MIT report on AI and education published this spring.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://bpb-us-e1.wpmucdn.com/sites.mit.edu/dist/d/2418/files/2026/08/AI-Committee-Final-Report-Aug-13.pdf",
+    "https://govtech.com/education/higher-ed/mit-outlines-responsible-use-policy-recommendations-for-ai"
+  ],
+  "split": "test",
+  "id": "fact153",
+  "topic": "education",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-25",
+  "articleUrl": "https://news.mit.edu/2026/3-questions-best-path-forward-for-ai-academia-1008",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: date substitution in fact141's claim ('published this summer' -> 'published this spring'). The source's evidence refutes it: the report is dated 13 Aug 2026 and was shared on 25 Aug. Same article, date and evidence links as fact141.",
+  "mutatedFrom": "fact141",
+  "mutation": "date",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

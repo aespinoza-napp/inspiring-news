@@ -1,0 +1,28 @@
+{
+  "language": "es",
+  "site": "eldiario.es",
+  "claimant": "Francisco Gámiz",
+  "claim": "Lara Fernández, conocida artísticamente como Judeline, nació en Granada en 2003.",
+  "claimDate": "2026-10-11",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://en.wikipedia.org/wiki/Judeline",
+    "https://www.lahiguera.net/musicalia/artistas/judeline/biografia.php",
+    "https://remezcla.com/features/music/meet-judeline-the-andalusian-pop-siren-conjuring-spiritual-realms"
+  ],
+  "split": "test",
+  "id": "fact171",
+  "topic": "entertainment",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2024-11-11",
+  "articleUrl": "https://www.eldiario.es/cultura/musica/judeline-ciudades-son-adquisitivo-no_128_13569652.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: entity substitution in fact115's claim ('nació en Jerez de la Frontera' -> 'nació en Granada'). The source's evidence refutes it: born in Jerez de la Frontera. Same article, date and evidence links as fact115.",
+  "mutatedFrom": "fact115",
+  "mutation": "entity",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "news.mit.edu",
+  "claimant": "MIT News",
+  "claim": "Curated and produced by the MIT Museum, the inaugural MIT Future Fest will take place across MIT’s campus from October 14–18, 2026.",
+  "claimDate": "2026-09-04",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://mitmuseum.mit.edu/announcements/mit-museum-announces-line-up-for-inaugural-mit-future-fest",
+    "https://www.theplan.it/eng/whats_on/mit-future-fest-2026-september-30october-4-2026-cambridge"
+  ],
+  "split": "test",
+  "id": "fact150",
+  "topic": "education",
+  "claimType": "factual",
+  "sourceTier": "press_release",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-28",
+  "articleUrl": "https://news.mit.edu/2026/governor-healey-mit-president-kornbluth-kick-festivities-mit-future-fest",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: date substitution in fact030's claim ('from September 30–October 4, 2026' -> 'from October 14–18, 2026'). The source's evidence refutes it: the festival ran 30 Sep - 4 Oct 2026. Same article, date and evidence links as fact030.",
+  "mutatedFrom": "fact030",
+  "mutation": "date",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

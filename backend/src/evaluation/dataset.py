@@ -91,6 +91,12 @@ class DatasetRow:
 
     source_tier: str | None = None
 
+    # "mutated" for a synthetic FALSE made from a TRUE fact (labeller's
+    # MUTATIONS, after FEVER and SciFact), "natural" for every other
+    # custom fact; None on x-fact. Reported apart: a model can do well on
+    # substituted claims and badly on the ones the world produces.
+    origin: str | None = None
+
     @property
     def topic_group(self) -> str | None:
 
@@ -250,6 +256,7 @@ def parse_row(raw: dict, where: str = "row") -> DatasetRow:
         topic=raw.get("topic") or None,
         claim_type=raw.get("claimType") or None,
         source_tier=raw.get("sourceTier") or None,
+        origin=("mutated" if raw.get("mutatedFrom") else "natural") if is_custom else None,
     )
 
 

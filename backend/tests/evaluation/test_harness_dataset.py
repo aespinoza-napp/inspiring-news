@@ -58,6 +58,22 @@ def test_the_custom_set_loads_from_its_directory_before_it_is_joined():
     assert first.claim_date == "2026-09-23"
 
 
+def test_a_mutated_fact_is_told_from_a_natural_one_and_xfact_is_neither(tmp_path):
+
+    directory = tmp_path / "manual"
+    directory.mkdir()
+    write_jsonl(directory / "fact001.json", [custom_row("fact001", "Uno.")])
+    write_jsonl(directory / "fact002.json", [
+        custom_row("fact002", "Dos.", label="FALSE", mutatedFrom="fact001", mutation="number"),
+    ])
+
+    origins = {row.id: row.origin for row in load_dataset(directory).rows}
+    xfact = load_dataset(write_jsonl(tmp_path / "x.jsonl", [xfact_row("A claim.")])).rows[0]
+
+    assert origins == {"fact001": "natural", "fact002": "mutated"}
+    assert xfact.origin is None
+
+
 def test_xfact_ids_are_stable_and_depend_on_language_site_and_claim():
 
     one = xfact_id("es", "chequeado.com", "Una afirmación")

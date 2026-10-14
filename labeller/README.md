@@ -7,6 +7,8 @@ does not need the backend, Docker or the frontend running.
 ```bash
 python labeller/app.py          # opens http://127.0.0.1:8765
 python labeller/app.py join     # when the set is finished
+python labeller/app.py mutate fact030 --kind date \
+    --claim "...from October 14-18, 2026." --note "..."   # a synthetic FALSE
 ```
 
 Any Python 3.9 or newer, from the repository root or anywhere else.
@@ -32,9 +34,25 @@ Each file has **x-fact's keys, in x-fact's order** (`language`, `site`,
 `claimant`, `claim`, `claimDate`, `reviewDate`, `labelRaw`, `label`,
 `referenceEvidenceLinks`, `split`), then the custom set's own: `id`,
 `topic`, `claimType`, `sourceTier`, `onlyOwnSource`, `evidenceDate`,
-`articleUrl`, `annotatorNote`, `createdAt` and `review`. A test holds the
-x-fact part to `backend/data/evaluation/xfact_en_es_pilot.jsonl`, so the
-code that scores x-fact scores this set unchanged.
+`articleUrl`, `annotatorNote`, `mutatedFrom`, `mutation`, `createdAt` and
+`review`. A test holds the x-fact part to
+`backend/data/evaluation/xfact_en_es_pilot.jsonl`, so the code that scores
+x-fact scores this set unchanged.
+
+## Synthetic FALSE facts
+
+Constructive outlets rarely publish a refutable claim (0 FALSE in the
+first 148 facts), so the FALSE class is built as FEVER and SciFact built
+theirs: `mutate` copies a **natural TRUE** fact's article, date, topic,
+tier and evidence, takes a claim with one element substituted - a
+`number`, `date`, `entity` or `relation`, never a negation (Schuster et
+al. 2019: "not" lets a model guess REFUTES from the claim alone) - and
+saves it FALSE with `mutatedFrom` and `mutation`. Substitute what the
+claim asserts, not a detail: a wrong detail is PARTIALLY_TRUE under
+rule 2. The form keeps a mutation's provenance when you edit it there;
+the summary's `staleMutations` lists any whose source has since been
+relabelled. The harness reports natural and mutated claims apart
+(`origin`). Thesis §6.3, "Synthetic Refuted Claims".
 
 ## Join
 

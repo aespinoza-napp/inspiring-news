@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "Two days later, last Friday, a county emergency official arrived at Kirk’s debris-laden front lawn in Wyandotte County, and said he’d be back in 30 minutes with a tarp, some lumber, and a crew to cover up the maple-shaped gash in Kirk’s house.",
+  "claimDate": "2026-10-07",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.kctv5.com/2026/10/04/stranger-keeps-promise-cover-storm-damaged-wyandotte-county-home-with-tarp/"
+  ],
+  "split": "test",
+  "id": "fact154",
+  "topic": "community",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-03",
+  "articleUrl": "https://www.goodnewsnetwork.org/strangers-showed-up-to-mans-destroyed-house-to-put-up-a-tarp-having-seen-his-televised-plea/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: entity substitution in fact106's claim ('a stranger arrived' -> 'a county emergency official arrived'). The source's evidence refutes it: KCTV5: a stranger walked into his yard. Same article, date and evidence links as fact106.",
+  "mutatedFrom": "fact106",
+  "mutation": "entity",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

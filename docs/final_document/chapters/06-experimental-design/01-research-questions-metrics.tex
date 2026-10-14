@@ -4,7 +4,108 @@
 % Included from chapters/06-experimental-design/experimental-design.tex
 % ============================================================
 
+% Sources: docs/decisions/evaluation.md (the harness, its metrics and
+% the stage attribution), docs/experiments.md (discovery, selection,
+% admission), docs/roadmap.md "Thesis priorities". Every metric named
+% here is computed by a command of the repository; results are in
+% Chapter~\ref{ch:results}, not here.
+
 \section{Research Questions and Metrics}
 \label{sec:rq-metrics}
-\pending{each research question of Section~\ref{sec:research-questions}
-with the metric that answers it. Source: docs/decisions/evaluation.md.}
+
+Each research question of Section~\ref{sec:research-questions} is
+answered by a fixed set of measurements, chosen before the results
+were known. Table~\ref{tab:rq-metrics} summarises them; the rest of
+this section explains the choices that are not standard.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lXXX@{}}
+\toprule
+& \textbf{What is measured} & \textbf{Metric} & \textbf{Data} \\
+\midrule
+RQ1 & The work discovery saves, and how well it orders what it
+finds & Sources and links read against the every-topic baseline;
+precision of the first $k$ candidates shown; AUC of the ranking
+score; share of the first $k$ on the topics asked for & Live
+candidate rounds, each candidate labelled worth offering or not \\
+\addlinespace
+RQ2 & Verdict quality, and what retrieval contributes to it &
+Accuracy, macro-$F_1$, per-class precision and recall, Cohen's
+$\kappa$ against gold, with bootstrap intervals; the same with no
+evidence and with the annotator's own evidence; evidence recall and
+MRR; the stage each error comes from & The custom set
+(Section~\ref{sec:custom-dataset}), natural and synthetic claims
+apart; X-Fact as an external benchmark \\
+\addlinespace
+RQ3 & Agreement between a person and a model making the same
+decision & Cohen's $\kappa$ and the confusion matrix; for selection,
+precision, recall and Jaccard of the model's picks against the
+editor's & Annotator against the AI labelling pass; editor against
+the AI selection (blind rounds); annotator against the pipeline \\
+\addlinespace
+RQ4 & The share of the journalist's work done at a stated quality &
+Claim-selector precision; coverage and selective accuracy of the
+verdicts; time per article, system against person & All of the
+above, joined per article \\
+\bottomrule
+\end{tabularx}
+\caption{Research questions and the measurements that answer them.}
+\label{tab:rq-metrics}
+\end{table}
+
+\paragraph{RQ1 --- a retriever of news, evaluated as a ranked list.}
+The candidates of a discovery round are a ranked list shown to an
+editor, so they are evaluated as information retrieval evaluates
+one: by the precision of its first $k$ positions and by how well its
+score orders relevant above non-relevant items
+\cite{jarvelin2002cumulated}, with ``relevant'' meaning \emph{worth
+offering}: constructive, on one of the topics asked for, and an
+article rather than a page of another kind. The work saved is
+counted directly, as the sources and links a scoped round reads
+against a round that asks for every topic.
+
+\paragraph{RQ2 --- three conditions, so that retrieval has a number.}
+The verifier is run three times over the same claims: with no
+evidence at all (the model's own knowledge), with the evidence the
+pipeline retrieves, and with the annotator's reference evidence
+given directly. The first gap measures what the open-web retrieval
+contributes; the second, what better retrieval could still add. This
+is the decomposition FEVER and AVeriTeC use when they report
+verification with gold and with retrieved evidence
+\cite{thorne2018fever,schlichtkrull2023averitec}. Retrieval itself
+is measured against the annotator's evidence --- whether its links,
+or their domains, are among the candidates, the ranked sources and
+the cited ones --- and each wrong verdict is attributed to the stage
+of the four-stage architecture \cite{guo2022survey} in which the
+trace shows it went wrong. Natural and synthetic claims
+(Subsection~\ref{subsec:custom-mutations}) are reported apart, and
+evidence published after a claim is flagged rather than counted
+\cite{glockner2022missing}.
+
+\paragraph{RQ3 --- agreement, with the annotator as the ceiling.}
+Where a person and a model take the same decision on the same input,
+their agreement is measured with Cohen's $\kappa$
+\cite{cohen1960coefficient}, read with the usual caution about fixed
+thresholds \cite{artstein2008intercoder,landis1977measurement}. Three
+such decisions exist in the system: which candidates to publish
+(editor against the AI selection, with blind rounds so that the
+editor cannot be anchored by the model's picks), which label a claim
+deserves (the annotator against the AI labelling pass), and the
+verdict (the annotator against the pipeline). The annotator's
+agreement with their own blind re-label is the ceiling against which
+the model's agreement is read; recent work reporting that language
+models can match or exceed crowd annotators on some labelling tasks
+\cite{gilardi2023chatgpt} is the hypothesis being tested, not an
+assumption.
+
+\paragraph{RQ4 --- extent, not replacement.}
+The system's answer to RQ4 is a profile, not a verdict: for each step
+of the journalist's work, the share the system performs without a
+person and the quality at which it does so. The verifier's coverage
+(the share of claims it answers with a definitive verdict) is
+reported with its selective accuracy (the accuracy on those claims),
+because a system that abstains often and is right when it answers
+takes over a different share of the work than one that always
+answers.

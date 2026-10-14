@@ -1,0 +1,27 @@
+{
+  "language": "es",
+  "site": "xatakaciencia.com",
+  "claimant": "Redacción Xataka Ciencia",
+  "claim": "González Alemán lleva años mirando hacia aquí y en 2019 firmó como primer autor un estudio en Geophysical Research Letters que simulaba los medicanes con un modelo climático acoplado de 250 kilómetros de resolución.",
+  "claimDate": "2026-10-14",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1029/2018GL081253",
+    "https://repository.library.noaa.gov/view/noaa/20498"
+  ],
+  "split": "test",
+  "id": "fact166",
+  "topic": "climate",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2019-02-16",
+  "articleUrl": "https://www.xatakaciencia.com/clima/gonzalez-aleman-hemos-tenido-proceso-formacion-ciclon-tropical-algo-que-meteorolgo-nunca-se-habia-visto-mediterraneo",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: number substitution in fact147's claim ('de 25 kilómetros de resolución' -> 'de 250 kilómetros de resolución'). The source's evidence refutes it: the 2019 GRL paper used a 25-km coupled model - its point, since coarse resolution is what it says limits earlier studies. Same article, date and evidence links as fact147.",
+  "mutatedFrom": "fact147",
+  "mutation": "number",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

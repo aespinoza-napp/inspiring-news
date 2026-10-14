@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": "European Space Agency",
+  "claim": "30 March 2026 marks the start of a new year on Mars.",
+  "claimDate": "2026-09-30",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.planetary.org/articles/2949",
+    "https://earthsky.org/astronomy-essentials/mars-calendar-years-began-in-earth-year-1955"
+  ],
+  "split": "test",
+  "id": "fact155",
+  "topic": "space",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2011-03-09",
+  "articleUrl": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Happy_New_Year_on_Mars",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: date substitution in fact046's claim ('30 September 2026 marks' -> '30 March 2026 marks'). The source's evidence refutes it: Mars Year 39 starts at Ls 0 on 30 Sep 2026; 30 Mar 2026 falls inside Mars Year 38. Same article, date and evidence links as fact046.",
+  "mutatedFrom": "fact046",
+  "mutation": "date",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

@@ -107,11 +107,13 @@ def test_a_report_renders_from_a_fixture_run(tmp_path):
     assert json.loads((target / "run.json").read_text(encoding="utf-8"))["key"] == "k" * 12
 
 
-def test_custom_set_breakdowns_are_by_topic_group_claim_type_and_tier(tmp_path):
+def test_custom_set_breakdowns_are_by_topic_group_claim_type_tier_and_origin(tmp_path):
 
     records = [
         make_record(custom_row("fact001", "Uno.", topic="energy", claimType="numerical"), "TRUE"),
-        make_record(custom_row("fact002", "Dos.", topic="medicine", claimType="factual", label="FALSE"), "FALSE"),
+        # A synthetic FALSE (labeller's MUTATIONS), the model fooled by it.
+        make_record(custom_row("fact002", "Dos.", topic="medicine", claimType="factual", label="FALSE",
+                               mutatedFrom="fact001", mutation="number"), "TRUE"),
         make_record(custom_row("fact003", "Tres.", topic="arts", claimType="interpretive",
                                sourceTier="reference_media"), "UNVERIFIED"),
     ]
@@ -125,9 +127,11 @@ def test_custom_set_breakdowns_are_by_topic_group_claim_type_and_tier(tmp_path):
 
     breakdowns = result["breakdowns"]
 
-    assert set(breakdowns) == {"language", "topicGroup", "claimType", "sourceTier"}
+    assert set(breakdowns) == {"language", "topicGroup", "claimType", "sourceTier", "origin"}
     assert set(breakdowns["topicGroup"]) == {"environment", "health", "culture"}
     assert breakdowns["claimType"]["numerical"]["accuracy"] == 1.0
+    assert breakdowns["origin"]["natural"]["n"] == 2
+    assert breakdowns["origin"]["mutated"]["accuracy"] == 0.0
     assert result["flags"]["verdictLeak"]["notApplicable"] == 3
 
 

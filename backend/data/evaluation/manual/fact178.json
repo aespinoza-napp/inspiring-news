@@ -1,0 +1,26 @@
+{
+  "language": "es",
+  "site": "lavanguardia.com",
+  "claimant": "Sergi Garcia Arenas",
+  "claim": "En el estudio participaron 316 mujeres con ciclos menstruales naturales (que no utilizaban anticonceptivos hormonales).",
+  "claimDate": "2026-09-25",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1017/S0033291726105315"
+  ],
+  "split": "test",
+  "id": "fact178",
+  "topic": "mental_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-03",
+  "articleUrl": "https://www.lavanguardia.com/launi/20260925/11643637/nuevas-evidencias-sobre-como-hormonas-alteran-animo-mujeres.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: number substitution in fact125's claim ('participaron 116 mujeres' -> 'participaron 316 mujeres'). The source's evidence refutes it: the paper's abstract: 116 naturally cycling women. Same article, date and evidence links as fact125.",
+  "mutatedFrom": "fact125",
+  "mutation": "number",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

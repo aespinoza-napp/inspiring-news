@@ -1,0 +1,27 @@
+{
+  "language": "es",
+  "site": "agenciasinc.es",
+  "claimant": "Marcos D Oliveros",
+  "claim": "La vicepresidenta segunda del Gobierno, Yolanda Díaz, ha presentado hoy en Barcelona un ejercicio de prospectiva social, impulsado y coordinado por la Oficina Nacional de Prospectiva y Estrategia (ONPE), que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.publico.es/sociedad/sera-espana-25-anos-acceso-vivienda-desigualdad-marcaran-sociedad-familias-pequenas.html",
+    "https://www.atlas-news.com/politica/l019-barcelona-acto-pedro-sanchez_4_02205970.html"
+  ],
+  "split": "test",
+  "id": "fact151",
+  "topic": "cities",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-28",
+  "articleUrl": "https://www.agenciasinc.es/Noticias/Los-espanoles-tendran-mas-vinculos-sociales-para-2050-pero-la-tecnologia-podria-acentuar-la-soledad",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: entity substitution in fact114's claim ('El Presidente del Gobierno, Pedro Sánchez,' -> 'La vicepresidenta segunda del Gobierno, Yolanda Díaz,'). The source's evidence refutes it: Pedro Sánchez presented the ONPE report (Público, 28 Sep 2026). Same article, date and evidence links as fact114.",
+  "mutatedFrom": "fact114",
+  "mutation": "entity",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

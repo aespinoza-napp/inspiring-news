@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Sarah Kuta",
+  "claim": "Navanethem Pillay has been awarded the 2025 Nobel Peace Prize “for her efforts to promote peace and international law.”",
+  "claimDate": "2026-10-09",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://abc30.com/story/nobel-peace-prize-goes-navanethem-pillay-efforts-promote-international-law/19924362/",
+    "https://www.aljazeera.com/news/2026/10/9/2026-nobel-peace-prize-awarded-to-navi-pillay"
+  ],
+  "split": "test",
+  "id": "fact170",
+  "topic": "inspiration",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-09",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/raised-in-apartheid-south-africa-2026-nobel-peace-prize-winner-navi-pillay-is-one-of-the-worlds-leading-human-rights-jurists-180989667/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: date substitution in fact112's claim ('the 2026 Nobel Peace Prize' -> 'the 2025 Nobel Peace Prize'). The source's evidence refutes it: Pillay won the 2026 prize (AP, 9 Oct 2026); the 2025 prize went to someone else. Same article, date and evidence links as fact112.",
+  "mutatedFrom": "fact112",
+  "mutation": "date",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

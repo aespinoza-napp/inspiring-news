@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Victoria Bekiempis",
+  "claim": "There have been a total of 512 known travel-related cases in Florida reported so far in 2026.",
+  "claimDate": "2026-09-28",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.floridahealth.gov/wp-content/uploads/2026/09/fl-arbovirus-report-w37-2026.pdf"
+  ],
+  "split": "test",
+  "id": "fact174",
+  "topic": "public_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-19",
+  "articleUrl": "https://www.theguardian.com/us-news/2026/sep/28/dengue-fever-cases-florida-counties",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: number substitution in fact037's claim ('a total of 212 known travel-related cases' -> 'a total of 512 known travel-related cases'). The source's evidence refutes it: Florida arbovirus report, week 37: 212. Same article, date and evidence links as fact037.",
+  "mutatedFrom": "fact037",
+  "mutation": "number",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "newscientist.com",
+  "claimant": "Matthew Sparkes",
+  "claim": "Software developer Chris Dzoba decided to try using AI to find the next largest diagram – one with 15 sets.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://arxiv.org/abs/2609.26546v1",
+    "https://github.com/dzoba/venn17"
+  ],
+  "split": "test",
+  "id": "fact156",
+  "topic": "research",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-22",
+  "articleUrl": "https://www.newscientist.com/article/2591415-ai-finds-bafflingly-complex-but-beautiful-symmetrical-venn-diagram/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: number substitution in fact082's claim ('one with 17 sets' -> 'one with 15 sets'). The source's evidence refutes it: the next size after 13 is 17 (rotational symmetry needs a prime number of curves). Same article, date and evidence links as fact082.",
+  "mutatedFrom": "fact082",
+  "mutation": "number",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

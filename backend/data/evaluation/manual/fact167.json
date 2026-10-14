@@ -1,0 +1,28 @@
+{
+  "language": "en",
+  "site": "positive.news",
+  "claimant": "Positive News",
+  "claim": "Taking first place overall as Bird Photographer of the Year was 16-year-old photographer Parham Pourahmad, from the US, with the shot Moonlit Night.",
+  "claimDate": "2026-09-22",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.birdpoty.com/2026-winners",
+    "https://newatlas.com/photography/2026-bird-photographer-year/",
+    "https://www.popsci.com/environment/bird-photographer-of-the-year-2026-winners/"
+  ],
+  "split": "test",
+  "id": "fact167",
+  "topic": "arts",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-21",
+  "articleUrl": "https://www.positive.news/environment/winners-of-bird-photographer-of-the-year-announced/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: relation substitution in fact057's claim ('Taking first place for Young Bird Photographer of the Year' -> 'Taking first place overall as Bird Photographer of the Year'). The source's evidence refutes it: the competition's winners page: Pourahmad won the Young category, not the overall title. Same article, date and evidence links as fact057.",
+  "mutatedFrom": "fact057",
+  "mutation": "relation",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

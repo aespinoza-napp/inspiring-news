@@ -66,3 +66,19 @@ complete, the files are validated again and merged, in order, into a
 single JSON Lines file in the X-Fact format, which is what the
 evaluation harness reads. The per-record files remain the source, and
 the merged file is derived from them.
+
+\paragraph{AI-assisted labelling, disclosed.} To keep pace with the
+daily batches, a share of the claims was first labelled by a large
+language model (Claude, by Anthropic) working through the same form,
+under the same guide and rules, with the evidence it relied on cited
+in the note. Every such record says so at the start of its note
+(``AI label \ldots{} not yet checked by the human annotator''), so it
+can be told from the annotator's own at any time. None of these labels
+counts as gold until the annotator has reviewed it and kept or changed
+it; the agreement between the AI pass and the annotator's review is
+not discarded but reported, since it measures exactly what RQ3 asks
+(Section~\ref{sec:rq-metrics}). The language model used for this pass
+is not the one the system uses to produce verdicts, so the gold set is
+not labelled by the model it evaluates; it is, nonetheless, labelled
+in part by a model, which is why the review is a condition of the set
+and not an option.

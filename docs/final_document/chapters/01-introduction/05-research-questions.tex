@@ -4,16 +4,50 @@
 % Included from chapters/01-introduction/introduction.tex
 % ============================================================
 
+% Fixed by the author on 2026-10-14, replacing the roadmap's proposal.
+% The author's own wording, kept so the formal versions below can be
+% checked against it:
+%   1. Can I create a retriever that uses the internet and simplifies
+%      a journalist's finding tasks according to certain topics?
+%   2. Can I verify the information with my own logic, and also verify
+%      the news I retrieve with the structure we are creating - and how
+%      can we quantify it?
+%   3. How close can a person and an LLM get after getting the ...
+%      (the sentence was cut off; RQ3 below completes it as "the same
+%      news and evidence" - to be confirmed by the author)
+%   4. All of this joined, a system which would in some way replace
+%      the journalist's job?
+% Each is answered by the metrics of Section~\ref{sec:rq-metrics};
+% whatever answers none of them is cut or moved to future work.
+
 \section{Research Questions}
 \label{sec:research-questions}
-% docs/roadmap.md, Phase 4, "Fix 2-3 research questions": whatever
-% answers none of them is cut or moved to future work.
-\pending{fix the final wording. The roadmap's proposal:}
+
+The work is organised around four research questions. The first three
+follow the journalist's own sequence --- finding the news, checking
+it, and deciding --- and the fourth asks what the three amount to
+when they are joined into one system.
+
 \begin{description}[leftmargin=1.2cm,labelwidth=1cm]
-    \item[RQ1] How well does an open-web, low-cost pipeline verify
-    claims from constructive news in Spanish and English, against a
-    temporally sound gold set?
-    \item[RQ2] Where does it fail: retrieval, ranking or reasoning?
-    \item[RQ3] How much of the verification work does it take off a
-    journalist?
+    \item[RQ1] \textbf{Finding.} Can a retriever that reads the open
+    web, scoped to a chosen set of topics, simplify a journalist's
+    task of finding constructive news on those topics?
+    \item[RQ2] \textbf{Verifying.} Can the claims of the news it
+    retrieves be verified automatically by the pipeline proposed in
+    this work --- claim selection, evidence retrieval on the open web
+    and a verdict from a language model --- and how can the quality
+    of that verification be quantified?
+    \item[RQ3] \textbf{Person and model.} Given the same news and the
+    same evidence, how close does a large language model come to a
+    person's judgement, both when choosing which news is worth
+    publishing and when deciding whether a claim is supported?
+    \item[RQ4] \textbf{The system.} Joined into one system, to what
+    extent can these components take over the work of a journalist
+    --- finding, selecting and verifying constructive news --- and
+    at which points is a person still needed?
 \end{description}
+
+RQ4 is deliberately asked as a question of extent rather than as a
+yes-or-no question: whether a system ``replaces'' a journalist is not
+measurable, whereas the share of the work it performs at a stated
+quality, and the points at which it does not, are.

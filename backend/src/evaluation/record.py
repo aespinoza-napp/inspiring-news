@@ -53,6 +53,9 @@ RECORD_FIELDS = (
     "id", "dataset", "language", "site", "claim", "claimDate", "label",
     "labelRaw", "referenceEvidenceLinks",
     "articleUrl", "topic", "topicGroup", "claimType", "sourceTier",
+    # Added after the x-fact pilot without a HARNESS_VERSION bump: it
+    # changes no outcome, and a report skips a dimension a record lacks.
+    "origin",
     # The outcome.
     "status", "error",
     "verdict", "rawVerdict", "confidence", "rawConfidence", "explanation",
@@ -212,6 +215,7 @@ def _row_fields(row: DatasetRow) -> dict:
         "topicGroup": row.topic_group,
         "claimType": row.claim_type,
         "sourceTier": row.source_tier,
+        "origin": row.origin,
     }
 
 

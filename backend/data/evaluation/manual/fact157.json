@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": null,
+  "claim": "After launch, Roman is on a steady course to the first Sun-Earth Lagrange point (L1), nearly 1.5 million km away from Earth.",
+  "claimDate": "2026-08-31",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://science.nasa.gov/blogs/roman/2026/08/30/nasas-roman-space-telescope-launch-updates/",
+    "https://www.space.com/space-exploration/launches-spacecraft/nasa-roman-space-telescope-launch-success-on-a-spacex-falcon-heavy-rocket-spectacular-launch-video"
+  ],
+  "split": "test",
+  "id": "fact157",
+  "topic": "space",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-30",
+  "articleUrl": "https://www.esa.int/ESA_Multimedia/Images/2026/08/Roman_lifts_off_on_a_mission_to_survey_the_infrared_sky",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: entity substitution in fact084's claim ('the second Sun-Earth Lagrange point (L2)' -> 'the first Sun-Earth Lagrange point (L1)'). The source's evidence refutes it: NASA: Roman orbits L2; L1 is also ~1.5 million km away, so the distance gives nothing away. Same article, date and evidence links as fact084.",
+  "mutatedFrom": "fact084",
+  "mutation": "entity",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

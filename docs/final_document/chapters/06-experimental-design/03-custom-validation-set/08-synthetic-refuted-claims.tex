@@ -1,0 +1,94 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: Synthetic Refuted Claims
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% ============================================================
+
+% Source: labeller/app.py (MUTATIONS, Store.mutate, stale_mutations),
+% backend/src/evaluation/dataset.py (origin), and the 30 records
+% fact149-fact178 in backend/data/evaluation/manual/.
+
+\subsection{Synthetic Refuted Claims}
+\label{subsec:custom-mutations}
+
+The natural claims contain no refuted one
+(Table~\ref{tab:custom-matrix}). Constructive outlets rarely publish a
+claim the evidence contradicts, and the claims they do get wrong are
+more often wrong in a detail (\texttt{PARTIALLY\_TRUE}) than in their
+substance. A verification benchmark without a refuted class cannot
+measure whether a system detects false information, so the
+\texttt{FALSE} class is built, as the benchmarks this work follows
+built theirs.
+
+\paragraph{The precedent.} FEVER obtained most of its refuted claims
+by \emph{mutating} claims extracted from Wikipedia: annotators
+paraphrased, negated, generalised or specified them, or substituted an
+entity or a relation with a similar or a dissimilar one, and the
+mutated claims were then labelled against the evidence
+\cite{thorne2018fever}. SciFact had expert annotators write the
+negation of claims supported by a scientific abstract, so that the same
+abstract refutes them \cite{wadden2020scifact}. Both methods share
+the property that matters here: the evidence that supports the
+original claim is the evidence that refutes the mutated one, so the
+refuted label rests on a source already checked, not on a new search.
+
+\paragraph{What was learned from the precedent.} Mutation leaves
+traces in the wording. In FEVER, negation words such as ``not'' and
+``only'' were frequent enough in refuted claims that a model reading
+the claim alone, without any evidence, reached an accuracy close to
+that of evidence-based systems \cite{schuster2019debiasing}. A
+benchmark with that artefact measures a model's sensitivity to
+wording, not its verification. The procedure below avoids it by
+design.
+
+\paragraph{The procedure.}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Source.} Only a natural claim labelled
+    \texttt{TRUE}, whose note states the value the evidence gives, is
+    mutated; each source is mutated once.
+    \item \textbf{Substitution only, of what the claim asserts.} One
+    element is replaced: a number, a date, an entity or a relation
+    (\emph{raised} for \emph{lowered}, the overall prize for the young
+    photographer's category). Negation is not used. The replaced
+    element must be what the claim asserts, not a detail of it: under
+    the guide's numeric rule (Subsection~\ref{subsec:custom-rules}), a
+    wrong detail of an otherwise correct claim is
+    \texttt{PARTIALLY\_TRUE}, not \texttt{FALSE}. Where the claim
+    states figures that must agree with each other, they are changed
+    together, so that the claim does not refute itself.
+    \item \textbf{Plausible values.} The substitute is chosen to be
+    plausible without the evidence --- two million new cases of breast
+    cancer a year is roughly the world's figure, not Latin America's;
+    the first Lagrange point lies as far from Earth as the second ---
+    so that knowledge of the world, or the evidence, and not the form
+    of the claim, is what refutes it.
+    \item \textbf{Everything else unchanged.} The mutated record keeps
+    its source's article, date, topic, claim type, source tier and
+    evidence links, and names its source and the kind of substitution
+    (\texttt{mutatedFrom}, \texttt{mutation}). The labelling form
+    refuses a mutation whose source is not a natural \texttt{TRUE}
+    claim, or whose text is unchanged, and lists any mutation whose
+    source is later relabelled, since its label was only valid by
+    construction from that source.
+    \item \textbf{Stratified, and reported apart.} Thirty refuted
+    claims were made, six per topic group, nine of them in Spanish;
+    twelve substitute a number, eight a date, six an entity and four a
+    relation. The evaluation reports every metric for natural and
+    synthetic claims separately (the \texttt{origin} breakdown), as
+    well as together, because a system can handle substituted claims
+    well and the claims the world produces badly.
+\end{enumerate}
+
+\paragraph{What the synthetic class can and cannot show.} It shows
+whether the system notices when a claim contradicts evidence it can
+find, which is the core of verification. It does not show how often
+real constructive news is false, nor the kinds of error real articles
+make; the natural claims answer those questions, and the X-Fact
+benchmark supplies refuted claims the world actually produced
+\cite{gupta2021xfact}. Like the AI-assisted labels of
+Subsection~\ref{subsec:custom-procedure}, the thirty mutations were
+proposed by a language model and are reviewed by the annotator; the
+blind re-label (Subsection~\ref{subsec:custom-review}) draws from
+them as from any other claim, which also tests whether a person reading
+the evidence reaches \texttt{FALSE} where the construction says so.

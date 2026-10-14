@@ -44,3 +44,51 @@ rather than padded with claims from outside the domain, and the
 evaluation reports macro-averaged $F_1$ alongside accuracy for that
 reason: under class imbalance, accuracy rewards a system that
 predicts the majority verdict.
+
+\paragraph{Scope.} The set is meant to hold the claims the system
+would check, so its articles must be ones the system would admit.
+Before the discovery stage screened candidates by mission, the daily
+labelling batch also drew party politics, armed conflict, crime,
+sport, a product review, a puzzle and a news roundup. On 14 October
+2026 the facts of those articles --- 39 facts from 17 articles --- were
+moved out of the set by the same criteria the system applies to keep
+such stories out: the off-mission subjects and non-article formats of
+its mission screen. They are kept, with the category that excluded
+each, and can be restored; they are not evaluated.
+
+\paragraph{The distribution, as it stands.} Table~\ref{tab:custom-matrix}
+gives the set on 14 October 2026. The prediction above held, more
+strongly than expected: not one of the 109 natural claims is
+\texttt{FALSE}. With that column empty, a system that always answered
+\texttt{TRUE} would score 83\% accuracy, and the set could not test
+the one thing a fact-checker exists for. The \texttt{FALSE} column is
+therefore filled with synthetic refuted claims, built as FEVER and
+SciFact built theirs and reported apart from the natural ones
+(Subsection~\ref{subsec:custom-mutations}). The
+\texttt{MISLEADING} and \texttt{UNVERIFIED} cells stay short and are
+reported with their real counts.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+& \textbf{Society} & \textbf{Science} & \textbf{Environment} &
+\textbf{Culture} & \textbf{Health} & \textbf{Total} \\
+\midrule
+\texttt{TRUE}            & 10 & 23 & 21 & 14 & 23 & 91 \\
+\texttt{PARTIALLY\_TRUE} &  0 &  2 &  2 &  1 &  2 &  7 \\
+\texttt{MISLEADING}      &  1 &  0 &  0 &  0 &  0 &  1 \\
+\texttt{UNVERIFIED}      &  3 &  2 &  5 &  0 &  0 & 10 \\
+\texttt{FALSE} (synthetic) & 6 &  6 &  6 &  6 &  6 & 30 \\
+\midrule
+Total                    & 20 & 33 & 34 & 21 & 31 & 139 \\
+\bottomrule
+\end{tabular}
+\caption{The custom set on 14 October 2026, by label and topic group:
+109 natural claims (74 in English, 35 in Spanish) and 30 synthetic
+refuted ones (21 and 9). Of the natural claims, 31 were labelled by
+the annotator and 78 by an AI labelling pass awaiting the annotator's
+review (Subsection~\ref{subsec:custom-procedure}).}
+\label{tab:custom-matrix}
+\end{table}

@@ -45,6 +45,8 @@ BREAKDOWNS = {
     "topicGroup": "custom",
     "claimType": "custom",
     "sourceTier": "custom",
+    # Natural claims and synthetic FALSE ones (labeller's MUTATIONS), apart.
+    "origin": "custom",
     "site": "xfact",
 }
 

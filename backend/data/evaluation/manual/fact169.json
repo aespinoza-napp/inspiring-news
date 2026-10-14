@@ -1,0 +1,28 @@
+{
+  "language": "en",
+  "site": "positive.news",
+  "claimant": "Fleur Britten",
+  "claim": "“It’s like in the Great Stink,” she adds, referring to the hot, dry summer of 1958, when the Thames – and all the raw sewage and rubbish dumped into it, rotting flesh and all – became a foul-smelling health hazard.",
+  "claimDate": "2026-10-05",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.history.co.uk/articles/the-great-stink-londons-unbearable-summer-of-1858",
+    "https://historic-uk.com/HistoryUK/HistoryofBritain/Londons-Great-Stink",
+    "https://www.mprnews.org/story/2017/07/20/npr-books-one-hot-summer"
+  ],
+  "split": "test",
+  "id": "fact169",
+  "topic": "heritage",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2017-07-20",
+  "articleUrl": "https://www.positive.news/environment/meet-the-14-year-old-uncovering-londons-lost-history/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: date substitution in fact090's claim ('summer of 1858' -> 'summer of 1958'). The source's evidence refutes it: the Great Stink was the summer of 1858. Same article, date and evidence links as fact090.",
+  "mutatedFrom": "fact090",
+  "mutation": "date",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

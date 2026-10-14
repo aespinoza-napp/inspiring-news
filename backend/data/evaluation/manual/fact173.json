@@ -1,0 +1,27 @@
+{
+  "language": "es",
+  "site": "france24.com",
+  "claimant": "Eumar Esaá",
+  "claim": "Cada año, más de 2 millones de nuevos casos de cáncer de mama son detectados en América Latina.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.paho.org/es/noticias/2-10-2025-todas-cada-juntas-prevencion-cancer-mama",
+    "https://www.paho.org/en/topics/breast-cancer"
+  ],
+  "split": "test",
+  "id": "fact173",
+  "topic": "public_health",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-10-02",
+  "articleUrl": "https://www.france24.com/es/salud/20261001-octubre-rosa-equidad-y-detecci%C3%B3n-temprana-los-grandes-desaf%C3%ADos-ante-el-c%C3%A1ncer-de-mama-en-latinoam%C3%A9rica",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: number substitution in fact029's claim ('más de 200.000 nuevos casos' -> 'más de 2 millones de nuevos casos'). The source's evidence refutes it: OPS: >220,000 a year in Latin America and the Caribbean (2 million is roughly the world's figure). Same article, date and evidence links as fact029.",
+  "mutatedFrom": "fact029",
+  "mutation": "number",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

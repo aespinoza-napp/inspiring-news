@@ -4,7 +4,7 @@ The plan, and what is true of it **today**. Every checkbox below was checked
 against the code, not against the plan. `[x]` means done *and* working as
 described; anything less is `[ ]` with a note saying exactly how far it got.
 
-- **As of:** 2026-10-06 — week 2 of Sprint 4 (development) and of the validation set (evaluation), run side by side. Oct 5 added discovery by topic, the selection step, the newsroom flow, and an 18h block of experiments on the stages before the verdict (Phase 4, not yet funded). Oct 6 kept discovery to the mission (an age limit, a mission screen), disabled EFE and Reuters, and ranked a round's candidates (twenty shown, forty on request).
+- **As of:** 2026-10-14 — **feature freeze; the thesis priorities below replace the calendar where they disagree.** Oct 14: the custom set cut to its domain (39 off-mission facts to `excluded/`, 109 left), the labelling batch leaves out articles with no topic of ours. Before that, 2026-10-06 — week 2 of Sprint 4 (development) and of the validation set (evaluation), run side by side. Oct 5 added discovery by topic, the selection step, the newsroom flow, and an 18h block of experiments on the stages before the verdict (Phase 4, not yet funded). Oct 6 kept discovery to the mission (an age limit, a mission screen), disabled EFE and Reuters, and ranked a round's candidates (twenty shown, forty on request).
 - **Hours** are the planned budget. There is no time log in the repo, so
   nothing here claims hours actually spent.
 - **Rebalanced on Sep 28**, still 900h: the custom validation set turned
@@ -127,6 +127,187 @@ described; anything less is `[ ]` with a note saying exactly how far it got.
 
 Legend: `[x]` done · `[ ]` not done · 🟡 partly done (what is left is stated) ·
 ⚠️ the original plan had this ticked and it is not fully true.
+
+---
+
+## Thesis priorities (Oct 14 – Dec 31)
+
+Set on Oct 14, when the thesis was still without a result on the question
+it asks: 109 facts, 78 of them labelled by the AI pass and none checked,
+no FALSE claim, the research questions unfixed, and about a third of the
+document written - most of it on scraping. **Feature freeze from today:**
+nothing new is built unless an item below needs it. The phases further
+down keep their history; where their dates disagree with this list, this
+list wins. Deadline: a full draft to the director by ~Dec 10 (check
+FIB's deposit date and the director's reading time), the last weeks for
+corrections.
+
+**The thesis, in one sentence:** an end-to-end pipeline that reads news,
+treats and transforms it (acquisition, extraction cascade, three-layer
+lake, enrichment), finds and ranks what is worth publishing on the
+topics asked for, and verifies its claims on the open web - evaluated
+stage by stage, against a person wherever a person takes the same
+decision. The pipeline is the artefact; the evaluation is the
+contribution.
+
+**Research questions - fixed by the author on Oct 14** (thesis §1.5,
+metrics in §6.1; they replace the proposal this section first carried):
+
+- **RQ1 - finding.** Can a retriever that reads the open web, scoped to
+  a chosen set of topics, simplify a journalist's task of finding
+  constructive news on those topics? *(discovery and the ranked round:
+  sources and links read against the every-topic baseline, precision of
+  the first k, AUC of the score)*
+- **RQ2 - verifying.** Can the claims of the news it retrieves be
+  verified by the pipeline built here, and how can that be quantified?
+  *(accuracy, macro-F1, kappa against the gold set, natural and
+  synthetic apart; closed-book / retrieved / oracle evidence; evidence
+  recall; stage attribution)*
+- **RQ3 - person and model.** Given the same news and evidence, how close
+  does an LLM come to a person, choosing what to publish and deciding
+  whether a claim is supported? *(kappa: editor vs AI selection, blind
+  rounds; annotator vs the AI labelling pass; annotator vs the pipeline;
+  the annotator's own re-label as the ceiling)*. The author's sentence
+  was cut off after "after getting the"; "the same news and evidence"
+  completes it and is to be confirmed.
+- **RQ4 - the system.** Joined, to what extent can it take over a
+  journalist's work - finding, selecting, verifying - and where is a
+  person still needed? *(asked as extent, since "replace" is not
+  measurable: claim-selector precision, 0.64 over 214 proposals;
+  coverage and selective accuracy; time per article)*
+
+Writing news from sources (P1.3 below) answers none of the four: it
+moves to P2, and the conclusions name it as future work if it is not
+built.
+
+### P0 - without these there is no thesis
+
+1. [x] ❓ **Fix the RQs and their metrics** in §1.5 and §6.1 · 3h · Oct 14 -
+   the author's four questions, written up with a metric table; the
+   AI-assisted labelling disclosed in §6.3's annotation procedure.
+2. [ ] 🏷️ **Human-adjudicate the gold set** · 10h · by Oct 31 - check every
+   AI label in `manual/` (78), keep or change it, and **report agreement
+   between the AI pass and the annotator** (Cohen's kappa): a gold set an
+   LLM labelled, used to judge an LLM, is the first thing a committee
+   attacks; measured, it is a finding. From now on the annotator labels
+   a batch first and the AI second, so each new fact adds to that number.
+   Then the blind 20% re-label (Oct 26-28 rule: a week later) - that is
+   *intra*-annotator agreement and is named so; a second person on ~30
+   facts would give inter-annotator agreement.
+3. [x] ❌ **A FALSE class** · 6h · Oct 14 - 30 synthetic FALSE facts
+   (fact149-178), six per group, 9 in Spanish, each a substitution of
+   what a TRUE fact's claim asserts (12 number, 8 date, 6 entity, 4
+   relation), with its source's article, date and evidence: FEVER's
+   mutation (Thorne et al. 2018) and SciFact's refuted claims (Wadden et
+   al. 2020), without negation, which let a claim-only model guess
+   FEVER's labels (Schuster et al. 2019). The labeller records
+   `mutatedFrom` / `mutation`, refuses a source that is not a natural
+   TRUE, keeps the provenance through form edits, and lists mutations
+   whose source is relabelled (`staleMutations`); `python labeller/app.py
+   mutate factNNN --kind ... --claim ...` makes one. Every harness record
+   carries `origin` (natural / mutated) and every report breaks down by
+   it. Thesis §6.3 "Synthetic Refuted Claims". **Proposed by the AI
+   pass: part of P0.2's review.** Set: 139 - 91 TRUE, 30 FALSE, 10
+   UNVERIFIED, 7 PARTIALLY_TRUE, 1 MISLEADING.
+4. [ ] ✂️ **Freeze a tuning/test split before any run** · 1h - stratified by
+   label and language, ~1/3 tuning, ~2/3 test. Every threshold is tuned
+   on the tuning part only; tuning and reporting on the same facts
+   inflates the result.
+5. [ ] 🧪 **The RQ1 runs on the test split** · 10h · Nov 1-15 - three
+   conditions, one model: no evidence (closed-book), the pipeline's own
+   retrieval, and **oracle evidence** (the annotator's reference links
+   given to the verifier directly, no search). The first gap is what
+   retrieval adds; the second, what better retrieval could still add -
+   the standard way to put a number on a retriever (FEVER's and
+   AVeriTeC's gold-evidence conditions). The oracle mode is new (~3h of
+   the 10): `check_claim` with a fixed evidence list - and the same mode
+   is what P1.3 evaluates writing with.
+6. [ ] 🧭 **Stage attribution (RQ2)** · 5h · Nov 1-15 - already planned in
+   Phase 4; every wrong verdict to retrieval / ranking / reasoning /
+   aggregation, from the trace.
+7. [ ] ✍️ **Write, starting this week, beside everything else** · ~140h -
+   state of the art 25h (8 references today; 40+ needed - automated
+   fact-checking, retrieval evaluation, LLM verifiers, grounded
+   generation, constructive journalism); proposed method 20h (on Guo et
+   al. 2022's four-stage architecture: claim detection, evidence
+   retrieval, verdict prediction, justification); development 20h
+   (scraping cut from 6.7k words to ~2k, the rest to an appendix);
+   experimental design 10h; results 20h; discussion and threats to
+   validity 10h; introduction, conclusions, abstract 10h; sustainability
+   and ethics 8h (required by FIB); revision 15h.
+
+### P1 - what makes it a good thesis
+
+1. [ ] 🔎 **Retrieval as an ablation, not as a version history** · 12h ·
+   by Nov 22 - the versions in git cannot be re-run on today's web, and
+   a changelog is not a measurement; switching each component off on the
+   same frozen claims, in one window, is. Needs one switch that does not
+   exist yet (which query kinds `plan_queries` sends: anchor only, +
+   proposition, + refutation; the pertinence gate is already per run).
+   Run `--retrieval-only` per variant; report recall of the annotator's
+   links and domains at candidates / ranked / cited and MRR (built, G4),
+   and **pooled relevance judgements** (TREC's method: pool every
+   variant's top 5, judge each document once, score every variant on the
+   same judgements - reusable for any later variant). Searches are not
+   reproducible: interleave the variants on the same days and report
+   `searchUnavailable` apart.
+2. [ ] 🕰️ **How new is too new: evidence against the age of the claim** ·
+   6h, spread - start this week, it needs calendar time. Re-run
+   retrieval-only on the same recent claims at day 0, 7 and 30 and plot
+   the evidence rate against age; add, from the set itself, the gap
+   between each claim and its earliest evidence (`claimDate` -
+   `evidenceDate`). Puts a number on "news that is new" (FreshQA, Vu et
+   al. 2024; RealTime QA, Kasai et al. 2023), and on Rule 1's cases: a
+   new study often has only its own press release on day 0.
+3. [ ] ✍️ **Writing from verified sources, closed-world** · 35h - **moved
+   to P2 on Oct 14**: none of the author's four RQs asks it. Kept here
+   for its design; build it only if every P0 and P1 item is done. The same story from 2-3 outlets (the ranking already
+   groups them) → a short constructive piece citing its sources → its
+   claims by the pipeline's own `ClaimExtractor` → each verified against
+   the given sources only, with P0.5's oracle mode (no web: no search
+   noise). Supported-claim rate (FActScore, Min et al. 2023), citation
+   precision and recall (ALCE, Gao et al. 2023), and a hand check of 20.
+   The pipeline's verifier becomes the evaluator of its own writer -
+   validated by that hand check, not assumed.
+4. [ ] 🤖 **Two more verifier models** on the test split · 15h · Nov 22 - Dec
+   5 - a local 8B and one hosted; `cli table`. Replaces Sprint 7's
+   broader plan.
+5. [ ] 🗳️ **Person against model in selection (RQ3)** · 5h · Oct 20 - Nov 15
+   - ten blind rounds (choose and send, then `blind-ai --round <id>`) and
+   ten assisted ones; precision, recall, Jaccard, the AI score's AUC.
+   Was in P2; RQ3 needs it.
+6. [ ] 🔎 **The discovery numbers (RQ1)** · 5h · by Nov 15 - `discovery`
+   per group on five days against the every-topic baseline, and the
+   ranking's precision of the first 20 and AUC on hand-labelled rounds
+   (the Oct 9 rounds' labels were the AI's: the person labels at least
+   two rounds). Was in P2's pre-verdict experiments; RQ1 needs it.
+
+### P2 - only if time is left
+
+- Tune `RANKING_*`, `CONFIDENCE_*`, `EVIDENCE_MIN_PERTINENCE` on the
+  tuning split.
+- The other pre-verdict experiments (weekly source health, admission
+  thresholds); discovery and the blind selection rounds moved to P1.
+- The writing-model benchmark on the corrector's metrics (Sprint 6), and
+  writing from verified sources (P1.3).
+
+### Cut, or future work
+
+The real Google Cloud deploy (it stays "designed and applied to an
+emulator"); any further reader-view work (done); Neo4j at scale;
+`JobStore` eviction, cache expiry and URL normalisation unless one blocks
+a run; new discovery or selection features; frontend E2E tests; the
+topic classifier. Each is listed in the conclusions as future work, not
+left as an open checkbox.
+
+| Weeks | P0 | P1 | Writing |
+|---|---|---|---|
+| Oct 14-19 | RQs, split | freshness day 0 | state of the art |
+| Oct 20-31 | adjudication, FALSE set | freshness day 7 | state of the art, method |
+| Nov 1-15 | RQ1 runs, stage attribution | ablation switch, freshness day 30 | experimental design, development |
+| Nov 16-30 | - | ablation runs, models; blind rounds and discovery numbers finished | results |
+| Dec 1-10 | - | - | discussion, threats, intro, conclusions, ethics: **draft to director** |
+| Dec 11-31 | fixes the review asks for | - | revision, figures, slides |
 
 ---
 
@@ -332,7 +513,7 @@ Sprint 7's 6 items.
 - [x] 🐛 **Found by the first batch: the claim splitter ignored line breaks and cut at abbreviations** — a headline, a section label and the first sentence came back as one claim, and "for A.I." ended a sentence. Fixed in `ClaimExtractor._split_sentences`, which the fact-checker uses too.
 - [ ] 🏷️ Label facts 1–50 · 11h (Sep 29 – Oct 5) — in progress: 6 labelled by Sep 29, 4 of which break a guide rule (wrong tier, compound claim, label outside the guide's definition) and should be revisited.
 - [ ] 🏷️ Label facts 51–100 · 11h (Oct 6–12) — 100 is the floor the paper can report on. **Oct 13: 138 facts on file**, fact052-138 labelled by the AI pass (Claude), not yet checked by hand - marked so in each note except fact093-110, whose notes lack the `[AI label:` prefix the /evaluation page sorts on; 116 TRUE, 8 PARTIALLY_TRUE, 1 MISLEADING, 13 UNVERIFIED, **no FALSE** - positive-news outlets rarely publish a refutable claim, so the FALSE column will need claims from elsewhere (x-fact) or be reported empty. The claim selector's precision over all batches, 0.65 (126 labelled, 68 skipped; fragments the largest reason, 21), no claim left pending.
-- [ ] 🏷️ Label facts 101–150 · 12h (Oct 13–19) — cells still short after 150 are reported short, not padded.
+- [ ] 🏷️ Label facts 101–150 · 12h (Oct 13–19) — cells still short after 150 are reported short, not padded. **Oct 14:** fact139-148 from the day's batch (AI labels, prefixed; 9 TRUE, 1 PARTIALLY_TRUE, 10 claims skipped: precision over all batches 0.64, 136 labelled / 78 skipped). Then **39 facts of 17 off-mission articles moved to `data/evaluation/excluded/`** by the mission screen's own categories (party politics, war, crime, sport, a monitor review, a puzzle, a roundup, an awards list, a protest march; 6 human, 33 AI; the rule and every decision in its README): **109 in the set** - 91 TRUE, 10 UNVERIFIED, 7 PARTIALLY_TRUE, 1 MISLEADING, 0 FALSE; 74 en / 35 es; **31 labelled by hand, 78 by the AI pass, none checked yet**. The batch now also leaves out an article the classifier places under none of our topics (the day drew a procés court ruling with no topic, past the screen); an Aemet forecast filed under `climate` still got through - weather is the screen's `service` kind, and no change was made to it under the freeze.
 - [ ] 🔁 Blind re-label of the hash-chosen 20% · 4h (Oct 26–28) — at least a week after the first pass, per the guide.
 - [ ] 📐 Settle disagreements, report agreement and Cohen's kappa in `custom_dataset.tex`, `join` into `custom_en_es.jsonl` · 2h (by Oct 30)
 

@@ -1,0 +1,28 @@
+{
+  "language": "es",
+  "site": "elpais.com",
+  "claimant": "Nuño Domínguez",
+  "claim": "Un cohete Falcon 9 ha despegado este jueves desde California con el primer satélite del proyecto Suncatcher, una iniciativa a largo plazo de la tecnológica Microsoft para explorar cómo enviar al espacio centros de datos con una capacidad similar a los terrestres.",
+  "claimDate": "2026-10-01",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.space.com/space-exploration/satellites/spacex-google-project-suncatcher-ai-satellite-transporter-18-mission",
+    "https://starlust.org/watch-space-xs-transporter-18-sends-googles-ai-test-satellite-to-orbit-with-129-other-payloads/",
+    "https://spaceflightnow.com/2026/10/01/live-coverage-ai-datacenter-prototypes-energy-redirection-demonstrators-and-more-launching-on-spacexs-transporter-18/"
+  ],
+  "split": "test",
+  "id": "fact160",
+  "topic": "space",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-01",
+  "articleUrl": "https://elpais.com/tecnologia/2026-10-01/google-lanza-su-primer-satelite-para-llevarse-los-centros-de-datos-al-espacio.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: entity substitution in fact050's claim ('de la tecnológica Google' -> 'de la tecnológica Microsoft'). The source's evidence refutes it: Project Suncatcher is Google's. Same article, date and evidence links as fact050.",
+  "mutatedFrom": "fact050",
+  "mutation": "entity",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

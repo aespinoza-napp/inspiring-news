@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "smithsonianmag.com",
+  "claimant": "Margherita Bassi",
+  "claim": "On September 16, an olive ridley turtle dug a nest and laid her eggs near Santa Monica in Los Angeles County.",
+  "claimDate": "2026-09-25",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.sfgate.com/bayarea/article/sea-turtle-california-eggs-22444518.php",
+    "https://www.vvng.com/olive-ridley-sea-turtles-lay-eggs-in-orange-county-in-historic-first-for-u-s-west-coast/"
+  ],
+  "split": "test",
+  "id": "fact161",
+  "topic": "nature",
+  "claimType": "numerical",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-22",
+  "articleUrl": "https://www.smithsonianmag.com/smart-news/in-a-first-sea-turtles-were-spotted-nesting-on-the-us-west-coast-scientists-say-the-super-el-nino-could-have-brought-them-there-180989574/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: entity substitution in fact007's claim ('near Seal Beach in Orange County' -> 'near Santa Monica in Los Angeles County'). The source's evidence refutes it: the nest was at Seal Beach, Orange County. Same article, date and evidence links as fact007.",
+  "mutatedFrom": "fact007",
+  "mutation": "entity",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

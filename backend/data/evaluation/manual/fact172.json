@@ -1,0 +1,28 @@
+{
+  "language": "es",
+  "site": "eldiario.es",
+  "claimant": "Francisco Gámiz",
+  "claim": "Judeline llenó por primera vez el Palacio de Deportes de Madrid a finales de 2023.",
+  "claimDate": "2026-10-11",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://jenesaispop.com/2026/02/23/517478/judeline-arena-cronica/",
+    "https://elgeneracionalpost.com/cultura/musica/2026/0223/264989/judeline-conquista-su-primer-movistar-arena.html",
+    "https://es.wikipedia.org/wiki/Palacio_de_Deportes_de_la_Comunidad_de_Madrid"
+  ],
+  "split": "test",
+  "id": "fact172",
+  "topic": "entertainment",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-02-23",
+  "articleUrl": "https://www.eldiario.es/cultura/musica/judeline-ciudades-son-adquisitivo-no_128_13569652.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: date substitution in fact117's claim ('a inicios de 2026' -> 'a finales de 2023'). The source's evidence refutes it: her first Movistar Arena (the Palacio de Deportes) was 22 Feb 2026. Same article, date and evidence links as fact117.",
+  "mutatedFrom": "fact117",
+  "mutation": "date",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

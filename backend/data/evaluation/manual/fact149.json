@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "As it would happen, in April 2025, the Bank’s South Korea–Africa Economic Cooperation (KOAFEC) Trust Fund had launched a program to train 300 public sector experts from the meteorology, road mapping, water management, and disaster response agencies in the use of drones in emergency response.",
+  "claimDate": "2026-09-21",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://afdb.africa-newsroom.com/press/african-development-bank-and-mozambique-launch-dronebased-initiative-to-strengthen-countrys-disaster-preparedness?lang=en"
+  ],
+  "split": "test",
+  "id": "fact149",
+  "topic": "community",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-04-04",
+  "articleUrl": "https://www.goodnewsnetwork.org/korean-drone-rescue-program-helps-mozambique-achieve-zero-fatalities-during-worst-flood-in-decades/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: number substitution in fact018's claim ('train 30 public sector experts' -> 'train 300 public sector experts'). The source's evidence refutes it: the KOAFEC programme trained 30 experts. Same article, date and evidence links as fact018.",
+  "mutatedFrom": "fact018",
+  "mutation": "number",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

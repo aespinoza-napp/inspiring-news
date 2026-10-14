@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "theguardian.com",
+  "claimant": "Andrew Gregory",
+  "claim": "The UK's first testicular tissue transplant, on a 19-year-old, took place in March.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://htworld.co.uk/news/life-sciences/teen-receives-uks-first-testicular-tissue-transplant-in-fertility-breakthrough-mipo26/"
+  ],
+  "split": "test",
+  "id": "fact177",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-08",
+  "articleUrl": "https://www.theguardian.com/society/2026/oct/08/teenager-first-person-testicular-tissue-transplant-uk-cancer-chemotherapy-fertility",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: date substitution in fact095's claim ('took place in August' -> 'took place in March'). The source's evidence refutes it: the operation was carried out in August. Same article, date and evidence links as fact095.",
+  "mutatedFrom": "fact095",
+  "mutation": "date",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

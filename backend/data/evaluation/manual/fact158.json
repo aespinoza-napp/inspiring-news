@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "theconversation.com",
+  "claimant": "Ambuj Tewari; Webb Keane",
+  "claim": "A 2026 Pew report found that 40% of Americans are using chatbots for emotional support or companionship.",
+  "claimDate": "2026-09-29",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://www.pewresearch.org/internet/2026/06/17/americans-and-ai-2026-chatbots-smart-devices-and-views-on-impact/"
+  ],
+  "split": "test",
+  "id": "fact158",
+  "topic": "technology",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-06-17",
+  "articleUrl": "https://theconversation.com/chatbots-as-oracles-how-ai-is-giving-new-life-to-the-ancient-practice-of-seeking-answers-from-inscrutable-sources-289279",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: number substitution in fact126's claim ('10% of Americans' -> '40% of Americans'). The source's evidence refutes it: Pew 2026: 10% for emotional support or advice, 4% for companionship. Same article, date and evidence links as fact126.",
+  "mutatedFrom": "fact126",
+  "mutation": "number",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

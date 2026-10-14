@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "e360.yale.edu",
+  "claimant": "Jan Rosenow",
+  "claim": "In eight of 11 industrial sectors — including textiles, food, pharmaceuticals, and machinery — fossil fuel use is still growing, the analysis found.",
+  "claimDate": "2026-09-09",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://ember-energy.org/app/uploads/2026/09/China-Energy-Transition-Review-2026.pdf",
+    "https://www.climatechangenews.com/2026/09/08/chinas-industrial-engine-starts-to-break-its-fossil-fuel-habit/"
+  ],
+  "split": "test",
+  "id": "fact165",
+  "topic": "energy",
+  "claimType": "numerical",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-09-08",
+  "articleUrl": "https://e360.yale.edu/digest/china-industry-peak-fossil-fuels",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: relation substitution in fact064's claim ('fossil fuel use has already peaked' -> 'fossil fuel use is still growing'). The source's evidence refutes it: Ember: fossil-fuel use fell 26-71% from its peak in eight of 11 sectors. Same article, date and evidence links as fact064.",
+  "mutatedFrom": "fact064",
+  "mutation": "relation",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

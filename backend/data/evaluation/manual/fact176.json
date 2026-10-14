@@ -1,0 +1,27 @@
+{
+  "language": "en",
+  "site": "nationalgeographic.com",
+  "claimant": "Lindsay Kalter",
+  "claim": "Blau and her colleague, Nidhi Bhutani, an associate professor of orthopedic surgery, discovered that in older mice, blocking 15‑PGDH accelerated the cartilage loss that normally accompanies aging in the knee.",
+  "claimDate": "2026-10-03",
+  "reviewDate": "2026-10-14T17:59:12",
+  "labelRaw": "refuted",
+  "label": "FALSE",
+  "referenceEvidenceLinks": [
+    "https://med.stanford.edu/news/all-news/2025/11/joint-cartilage-aging.html",
+    "https://www.sciencedaily.com/releases/2026/01/260120000333.htm"
+  ],
+  "split": "test",
+  "id": "fact176",
+  "topic": "medicine",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-01-20",
+  "articleUrl": "https://www.nationalgeographic.com/health/article/can-cartilage-regrow-osteoarthritis-treatment",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Synthetic FALSE: relation substitution in fact088's claim ('reversed the cartilage loss' -> 'accelerated the cartilage loss'). The source's evidence refutes it: the inhibitor thickened age-thinned cartilage (Stanford Medicine, Science). Same article, date and evidence links as fact088.",
+  "mutatedFrom": "fact088",
+  "mutation": "relation",
+  "createdAt": "2026-10-14T17:59:12",
+  "review": null
+}

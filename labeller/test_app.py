@@ -68,6 +68,75 @@ class LabellerTest(unittest.TestCase):
 
         self.assertEqual(sorted(p.name for p in self.folder.iterdir()), ["fact001.json", "fact002.json"])
 
+    def test_a_fact_left_out_of_the_set_keeps_its_number(self):
+
+        self.create()
+        self.create(claim="Off-mission claim.")
+        excluded = self.folder.parent / "excluded"
+        excluded.mkdir()
+        (self.folder / "fact002.json").rename(excluded / "fact002.json")
+
+        self.assertEqual(self.create(claim="Next claim.")["id"], "fact003")
+        self.assertEqual([f["id"] for f in self.store.load()[0]], ["fact001", "fact003"])
+
+    # ------------------------------------------------------------------
+    # Synthetic FALSE facts: one element of a TRUE claim substituted
+    # ------------------------------------------------------------------
+
+    def test_a_mutation_is_false_carries_its_sources_evidence_and_names_it(self):
+
+        source = self.create()
+        record, errors = self.store.mutate(
+            source["id"], "The reserve's otter population halved between 2015 and 2024.", "relation",
+        )
+
+        self.assertEqual(errors, [])
+        self.assertEqual((record["label"], record["labelRaw"]), ("FALSE", "refuted"))
+        self.assertEqual((record["mutatedFrom"], record["mutation"]), ("fact001", "relation"))
+        for key in app.MUTATION_COPIES:
+            self.assertEqual(record[key], source[key], key)
+
+    def test_only_a_natural_true_fact_is_mutated_and_the_claim_must_change(self):
+
+        unverified = self.create(label="UNVERIFIED", referenceEvidenceLinks=[])
+        true = self.create(claim="Another claim.")
+        mutation, _ = self.store.mutate(true["id"], "A changed claim.", "entity")
+
+        self.assertIn("not a natural TRUE fact", " ".join(self.store.mutate(unverified["id"], "Changed.", "number")[1]))
+        self.assertIn("not a natural TRUE fact", " ".join(self.store.mutate(mutation["id"], "Changed again.", "number")[1]))
+        self.assertIn("unchanged", " ".join(self.store.mutate(true["id"], "Another claim.", "number")[1]))
+        self.assertIn("not in the set", " ".join(self.store.mutate("fact099", "Changed.", "number")[1]))
+
+    def test_a_mutation_is_labelled_false_and_never_a_negation(self):
+
+        self.assertIn("label it FALSE", self.errors(mutatedFrom="fact001", mutation="number"))
+        # "not" is how a model learns to guess REFUTES without evidence.
+        self.assertIn("mutation must be one of", self.errors(label="FALSE", mutatedFrom="fact001", mutation="negation"))
+        self.assertIn("mutatedFrom must name", self.errors(label="FALSE", mutation="number"))
+
+    def test_editing_a_mutation_in_the_form_keeps_it_a_mutation(self):
+
+        source = self.create()
+        mutation, _ = self.store.mutate(source["id"], "The otter population halved.", "relation")
+        form = {k: v for k, v in mutation.items() if k not in ("mutatedFrom", "mutation")}
+
+        record, errors = self.store.update(mutation["id"], {**form, "annotatorNote": "Checked by hand."})
+
+        self.assertEqual(errors, [])
+        self.assertEqual((record["mutatedFrom"], record["mutation"]), ("fact001", "relation"))
+
+    def test_a_mutation_whose_source_is_relabelled_is_flagged(self):
+
+        source = self.create()
+        mutation, _ = self.store.mutate(source["id"], "The otter population halved.", "relation")
+        self.assertEqual(app.summarise(self.store.load()[0])["staleMutations"], [])
+
+        self.store.update(source["id"], fact(label="PARTIALLY_TRUE"))
+        summary = app.summarise(self.store.load()[0])
+
+        self.assertEqual(summary["staleMutations"], [mutation["id"]])
+        self.assertEqual(summary["mutated"], 1)
+
     def test_a_fact_file_starts_with_xfacts_keys_in_xfacts_order(self):
 
         self.create()
