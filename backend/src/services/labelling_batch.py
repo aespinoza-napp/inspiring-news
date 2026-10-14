@@ -448,6 +448,15 @@ class LabellingBatch:
             logger.warning("Claim selection failed for %s", url, exc_info=True)
             return {**item, "skipReason": f"claim selection failed: {exc}"}
 
+        # [] is the classifier's answer - none of our topics reached its
+        # floor - and None that it never ran (inference/ down), which keeps
+        # the article, as the screen does. The Oct 14 batch proposed an
+        # elDiario piece on the procés accounts ruling with no topic at
+        # all, past a screen that answered: off-mission for the set, whose
+        # claims are meant to be the ones this pipeline would check.
+        if topics == []:
+            return {**item, "skipReason": "no topic of ours: the classifier placed it under none"}
+
         if not claims:
             return {**item, "skipReason": "no checkable claim found"}
 
@@ -460,7 +469,7 @@ class LabellingBatch:
             "publishedAt": _day(news.published_at),
             "author": news.author,
             "topic": topics[0] if topics else None,
-            "topics": topics,
+            "topics": topics or [],
             "claims": [
                 {
                     "text": claim.text,
@@ -474,7 +483,8 @@ class LabellingBatch:
 
     def _claims(self, news: News, limit: int):
         """
-        (claims, how they were chosen, topic keys best first).
+        (claims, how they were chosen, topic keys best first - None when
+        the article could not be classified at all).
 
         The same extractor and selector the fact-checker uses, so the set
         is labelled on the claims the system would actually check.
@@ -526,7 +536,7 @@ class LabellingBatch:
             if len(c.text) >= MIN_CLAIM_CHARS
         ]
 
-        return sorted(claims, key=lambda c: c.confidence, reverse=True)[:limit], "confidence", []
+        return sorted(claims, key=lambda c: c.confidence, reverse=True)[:limit], "confidence", None
 
     @staticmethod
     def _choose(ready: list[dict], wanted: int, prefer: set[str], today: date) -> list[dict]:

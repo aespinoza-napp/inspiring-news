@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "xatakaciencia.com",
+  "claimant": "Redacción Xataka Ciencia",
+  "claim": "González Alemán lleva años mirando hacia aquí y en 2019 firmó como primer autor un estudio en Geophysical Research Letters que simulaba los medicanes con un modelo climático acoplado de 25 kilómetros de resolución.",
+  "claimDate": "2026-10-14",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1029/2018GL081253",
+    "https://repository.library.noaa.gov/view/noaa/20498"
+  ],
+  "split": "test",
+  "id": "fact147",
+  "topic": "climate",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2019-02-16",
+  "articleUrl": "https://www.xatakaciencia.com/clima/gonzalez-aleman-hemos-tenido-proceso-formacion-ciclon-tropical-algo-que-meteorolgo-nunca-se-habia-visto-mediterraneo",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Gonzalez-Aleman, Pascale, Gutierrez-Fernandez, Murakami, Gaertner & Vecchi (2019), 'Potential Increase in Hazard From Mediterranean Hurricane Activity With Global Warming', GRL 46(3), 1754-1764 (issue of Feb 2019): first author, and 'a recently developed 25-km global coupled climate model' (GFDL HiFLOR) simulating Medicanes.",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

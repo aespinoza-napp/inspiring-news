@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "news.mit.edu",
+  "claimant": "Stefanie Koperniak; Institute; Systems; Society",
+  "claim": "Much attention is now directed toward this, including an MIT report on AI and education published this summer.",
+  "claimDate": "2026-10-08",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://bpb-us-e1.wpmucdn.com/sites.mit.edu/dist/d/2418/files/2026/08/AI-Committee-Final-Report-Aug-13.pdf",
+    "https://govtech.com/education/higher-ed/mit-outlines-responsible-use-policy-recommendations-for-ai"
+  ],
+  "split": "test",
+  "id": "fact141",
+  "topic": "education",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-08-25",
+  "articleUrl": "https://news.mit.edu/2026/3-questions-best-path-forward-for-ai-academia-1008",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] The final report of MIT's Ad Hoc Committee on AI Use in Teaching, Learning, and Research Training is dated 13 Aug 2026 and was shared with the community on 25 Aug (President Kornbluth's letter): summer. Covered independently (GovTech, Design News).",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

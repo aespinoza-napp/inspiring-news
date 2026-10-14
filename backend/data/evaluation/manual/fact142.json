@@ -1,0 +1,25 @@
+{
+  "language": "es",
+  "site": "muyinteresante.okdiario.com",
+  "claimant": "Muy Interesante; Manuel Ruiz Rico; Periodista",
+  "claim": "Wright ha ampliado la búsqueda a las «tecnofirmas»: rastros físicos u observables de tecnología alienígena en el cosmos.",
+  "claimDate": "2026-10-10",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://arxiv.org/abs/1812.08681",
+    "https://arxiv.org/abs/1907.07829"
+  ],
+  "split": "test",
+  "id": "fact142",
+  "topic": "research",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2019-07-17",
+  "articleUrl": "https://muyinteresante.okdiario.com/ciencia/jason-wright-y-la-busqueda-de-tecnofirmas-rastros-de-tecnologia-extraterrestre.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Split from a compound sentence (part 2 of 2; part 1, that traditional SETI listened for intentional radio signals, is common knowledge and not labelled). Wright (Penn State) co-edited NASA's 2018 Technosignatures Workshop report (arXiv 1812.08681) and is principal author of the Astro2020 white paper 'Technosignatures in the Thermal Infrared' (arXiv 1907.07829), after leading the WISE searches for Dyson-sphere waste heat. Crediting him alone simplifies a field-wide shift (Tarter coined the term) - not an error in the claim as stated.",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

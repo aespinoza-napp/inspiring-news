@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": null,
+  "claim": "Mars Express first revealed the AMEC in 2018, and has viewed the recurrent cloud repeatedly since.",
+  "claimDate": "2026-10-07",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://arxiv.org/abs/2103.03919",
+    "https://doi.org/10.1029/2020JE006517"
+  ],
+  "split": "test",
+  "id": "fact144",
+  "topic": "space",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2021-03-05",
+  "articleUrl": "https://www.esa.int/Science_Exploration/Space_Science/Mars_Express/Mars_s_oddest_cloud_may_be_even_odder_than_we_thought",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Hernandez-Bernal et al. 2021 (JGR Planets; arXiv 5 Mar 2021) report the AMEC as a 'previously unnoticed annually repeating phenomenon', first seen in Mars Express VMC images in 2018 and followed every year since. Viking 2 images show it in hindsight, but nobody had noticed it: 'first revealed' holds.",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

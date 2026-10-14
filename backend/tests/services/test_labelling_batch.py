@@ -48,7 +48,7 @@ class FakeExtractor:
 
 
 class FakeEnrichment:
-    """Topics per URL; claims named after the URL so they can be traced."""
+    """Topics per URL (None: the classifier placed it under none); claims named after the URL."""
 
     def __init__(self, topics: dict[str, str] | None = None, down: bool = False):
         self.topics = topics or {}
@@ -65,7 +65,7 @@ class FakeEnrichment:
                 create_claim(text=f"{news.url} claim {i}{LONG}", confidence=0.5 + i / 10)
                 for i in range(5)
             ] + [create_claim(text="Too short.", confidence=0.99)],
-            topics=[TopicPrediction(topic=topic, confidence=0.7, probability=0.1)],
+            topics=[TopicPrediction(topic=topic, confidence=0.7, probability=0.1)] if topic else [],
         )
 
 
@@ -221,6 +221,20 @@ def test_with_inference_down_the_extractor_alone_still_proposes_claims():
     article = result["articles"][0]
     assert article["topic"] is None
     assert article["claims"][0]["text"].startswith("fallback high")
+
+
+def test_an_article_the_classifier_places_under_none_of_our_topics_is_left_out():
+
+    sources = [source("a"), source("b")]
+    urls = urls_for("a", "b", n=1)
+    # The Oct 14 batch: a court ruling on the procés, topic None, proposed.
+    enrichment = FakeEnrichment({"https://a.example/a0": None})
+
+    result = batch(sources, urls, enrichment=enrichment).run(BatchRequest(articles=5))
+
+    assert [a["source"] for a in result["articles"]] == ["b"]
+    assert result["skipped"][0]["url"] == "https://a.example/a0"
+    assert result["skipped"][0]["reason"].startswith("no topic of ours")
 
 
 def test_articles_are_read_with_their_own_purpose_and_carry_what_the_form_needs():

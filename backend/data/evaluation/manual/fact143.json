@@ -1,0 +1,24 @@
+{
+  "language": "es",
+  "site": "muyinteresante.okdiario.com",
+  "claimant": "Muy Interesante; Manuel Ruiz Rico; Periodista",
+  "claim": "En sus proyectos más recientes, el equipo de Wright ha estudiado cómo la Red del Espacio Profundo de la NASA emite señales accidentales hacia el cosmos.",
+  "claimDate": "2026-10-10",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://arxiv.org/abs/2508.15425"
+  ],
+  "split": "test",
+  "id": "fact143",
+  "topic": "space",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2025-08-21",
+  "articleUrl": "https://muyinteresante.okdiario.com/ciencia/jason-wright-y-la-busqueda-de-tecnofirmas-rastros-de-tecnologia-extraterrestre.html",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Fan, Wright & Lazio, 'Detecting Extraterrestrial Civilizations That Employ an Earth-level Deep Space Network', ApJL 990, L1 (2025), arXiv 21 Aug 2025: about 20 years of DSN uplink logs, the spill-over a distant observer could intercept.",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "Inside, inscriptions make reference to Mars, while fragments of a statue of Victoria, the Roman goddess of victory with her wings and laurel wreath, were found on the site.",
+  "claimDate": "2026-10-14",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.finestresullarte.info/en/archaeology/germany-a-roman-temple-dedicated-to-mars-has-been-unearthed-beneath-the-taunus-forest",
+    "https://livescience.com/archaeology/romans/1-800-year-old-temple-to-mars-and-statue-of-victory-unearthed-at-roman-military-fort-in-germany",
+    "https://greekreporter.com/2026/10/02/roman-temple-mars-germany/"
+  ],
+  "split": "test",
+  "id": "fact140",
+  "topic": "heritage",
+  "claimType": "factual",
+  "sourceTier": "press_release",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-02",
+  "articleUrl": "https://www.goodnewsnetwork.org/inches-below-the-forest-floor-archeologists-in-germany-unearthed-a-roman-temple-to-the-war-god/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Announced by the Landesamt fuer Denkmalpflege Hessen (hessenARCHAEOLOGIE, with Goethe University Frankfurt), late Sep 2026: fragments of a dedicatory inscription naming Mars inside the temple, and a broken statuette of Victoria with wings, palm branch and laurel wreath (Finestre sull'Arte 29 Sep, Live Science, Greek Reporter 2 Oct). Rule 1 call: the only first-hand source is the excavators' announcement, relayed by the media; TRUE follows fact030's precedent. Read strictly, Rule 1 makes it UNVERIFIED - decide once.",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

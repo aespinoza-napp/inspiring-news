@@ -1,0 +1,622 @@
+{
+  "requestId": "83e05afeb8c248c1b6b79fd9b84e78ec",
+  "seed": "2026-10-14",
+  "createdAt": "2026-10-14T15:19:48+00:00",
+  "requested": {
+    "articles": 10,
+    "claimsPerArticle": 2,
+    "languages": null,
+    "preferTopics": [
+      "space",
+      "technology",
+      "research",
+      "biology",
+      "arts",
+      "entertainment",
+      "heritage",
+      "literature",
+      "inspiration",
+      "medicine",
+      "mental_health",
+      "nutrition",
+      "fitness",
+      "public_health"
+    ],
+    "excluded": 1280
+  },
+  "totals": {
+    "sources": 33,
+    "discovered": 1216,
+    "candidates": 20,
+    "screened": 17,
+    "ready": 19,
+    "articles": 10,
+    "claims": 20
+  },
+  "articles": [
+    {
+      "url": "https://www.goodnewsnetwork.org/inches-below-the-forest-floor-archeologists-in-germany-unearthed-a-roman-temple-to-the-war-god/",
+      "source": "good_news_network",
+      "title": "Inches Below the Forest Floor, Archeologists in Germany Unearthed a Roman Temple to the War God",
+      "site": "goodnewsnetwork.org",
+      "sourceName": "Good News Network",
+      "language": "en",
+      "publishedAt": "2026-10-14",
+      "author": "Andy Corbley",
+      "topic": "heritage",
+      "topics": [
+        "heritage",
+        "research"
+      ],
+      "claims": [
+        {
+          "text": "Designated a UNESCO World Heritage Site in 2005, the limes have produced dozens of important archeological discoveries.",
+          "selectedBy": "anchor",
+          "score": 0.65,
+          "figures": [
+            "2005"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact139"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Inside, inscriptions make reference to Mars, while fragments of a statue of Victoria, the Roman goddess of victory with her wings and laurel wreath, were found on the site.",
+          "selectedBy": "anchor",
+          "score": 0.57,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact140"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.elmundo.es/yodona/vida-saludable/2026/10/14/6acdff7efdddff19288b45ab.html",
+      "source": "el_mundo",
+      "title": "Dra. Sandra G. Martín, odontóloga: \"Nunca es tarde para cuidarse los dientes, mi paciente mayor tiene 88 años y está feliz\"",
+      "site": "elmundo.es",
+      "sourceName": "El Mundo",
+      "language": "es",
+      "publishedAt": "2026-10-14",
+      "author": "Cristina Galafate",
+      "topic": "nutrition",
+      "topics": [
+        "nutrition",
+        "biology",
+        "mental_health",
+        "public_health",
+        "sustainability",
+        "medicine",
+        "education",
+        "fitness",
+        "energy",
+        "technology",
+        "cities",
+        "climate",
+        "entertainment",
+        "food",
+        "nature",
+        "space",
+        "research",
+        "employment",
+        "arts",
+        "heritage"
+      ],
+      "claims": [
+        {
+          "text": "Es la tesis que expone la doctora Sandra G. Martín (Tenerife, 29 de enero de 1984), pionera en odontología que está revolucionando la ciencia de la longevidad.",
+          "selectedBy": "anchor",
+          "score": 0.764,
+          "figures": [
+            "29",
+            "1984"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "Acabo de ver a una paciente de 23 años con todo un lado tres veces más gastado que el otro, porque tenía un diente que tocaba muchísimo más que los demás.",
+          "selectedBy": "anchor",
+          "score": 0.651,
+          "figures": [
+            "23"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "other"
+        }
+      ]
+    },
+    {
+      "url": "https://news.mit.edu/2026/3-questions-best-path-forward-for-ai-academia-1008",
+      "source": "mit_news",
+      "title": "3 Questions: What is the best path forward for AI in academia?",
+      "site": "news.mit.edu",
+      "sourceName": "MIT News",
+      "language": "en",
+      "publishedAt": "2026-10-08",
+      "author": "Stefanie Koperniak; Institute; Systems; Society",
+      "topic": "technology",
+      "topics": [
+        "technology",
+        "education",
+        "research",
+        "medicine",
+        "mental_health",
+        "employment",
+        "cities",
+        "arts",
+        "biology",
+        "sustainability",
+        "climate",
+        "inspiration",
+        "fitness",
+        "energy",
+        "nutrition",
+        "food",
+        "community",
+        "heritage",
+        "space",
+        "entertainment",
+        "literature",
+        "public_health",
+        "nature"
+      ],
+      "claims": [
+        {
+          "text": "With artificial intelligence capabilities continuing to expand, universities now face complex, urgent questions about how to navigate increasing challenges, as well as new opportunities.",
+          "selectedBy": "anchor",
+          "score": 0.685,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "Much attention is now directed toward this, including an MIT report on AI and education published this summer.",
+          "selectedBy": "anchor",
+          "score": 0.648,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact141"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://muyinteresante.okdiario.com/ciencia/jason-wright-y-la-busqueda-de-tecnofirmas-rastros-de-tecnologia-extraterrestre.html",
+      "source": "muy_interesante",
+      "title": "Jason Wright y la búsqueda de tecnofirmas para detectar tecnología extraterrestre en el cosmos",
+      "site": "muyinteresante.okdiario.com",
+      "sourceName": "Muy Interesante",
+      "language": "es",
+      "publishedAt": "2026-10-10",
+      "author": "Muy Interesante; Manuel Ruiz Rico; Periodista",
+      "topic": "research",
+      "topics": [
+        "research",
+        "space",
+        "technology",
+        "climate",
+        "entertainment",
+        "community",
+        "education",
+        "energy",
+        "heritage",
+        "employment"
+      ],
+      "claims": [
+        {
+          "text": "Mientras que el enfoque tradicional de SETI se ha centrado sobre todo en escuchar señales de radio intencionadas, Wright ha ampliado la búsqueda a las «tecnofirmas»: rastros físicos u observables de tecnología alienígena en el cosmos.",
+          "selectedBy": "anchor",
+          "score": 0.736,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact142"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "En sus proyectos más recientes, el equipo de Wright ha estudiado cómo la Red del Espacio Profundo de la NASA emite señales accidentales hacia el cosmos.",
+          "selectedBy": "anchor",
+          "score": 0.499,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact143"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.esa.int/Science_Exploration/Space_Science/Mars_Express/Mars_s_oddest_cloud_may_be_even_odder_than_we_thought",
+      "source": "esa",
+      "title": "Mars’s oddest cloud may be even odder than we thought",
+      "site": "esa.int",
+      "sourceName": "European Space Agency",
+      "language": "en",
+      "publishedAt": "2026-10-07",
+      "author": null,
+      "topic": "space",
+      "topics": [
+        "space",
+        "research",
+        "energy",
+        "climate",
+        "sustainability",
+        "biology"
+      ],
+      "claims": [
+        {
+          "text": "Mars Express first revealed the AMEC in 2018, and has viewed the recurrent cloud repeatedly since.",
+          "selectedBy": "anchor",
+          "score": 0.738,
+          "figures": [
+            "2018"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact144"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "Scientists using the European Space Agency's Mars Express, in combination with a state-of-the-art meteorological model of the Red Planet, have found that there may be some very exotic physics behind Mars’s most curious cloud.",
+          "selectedBy": "anchor",
+          "score": 0.721,
+          "figures": [],
+          "status": "labelled",
+          "factIds": [
+            "fact145"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.who.int/news/item/12-10-2026-who-pandemic-hub-sets-ambitious-goal-to-detect-new-outbreaks-within-24-hours",
+      "source": "who",
+      "title": "WHO Pandemic Hub sets ambitious goal to detect new outbreaks within 24 hours",
+      "site": "who.int",
+      "sourceName": "World Health Organization",
+      "language": "en",
+      "publishedAt": "2026-10-12",
+      "author": "WHO Media Team World Health Organization Email mediainquiries int",
+      "topic": "public_health",
+      "topics": [
+        "public_health",
+        "medicine",
+        "mental_health",
+        "research",
+        "cities",
+        "nutrition",
+        "education",
+        "technology",
+        "community",
+        "biology",
+        "employment",
+        "sustainability",
+        "nature",
+        "inspiration",
+        "food",
+        "heritage",
+        "energy",
+        "climate",
+        "fitness",
+        "space"
+      ],
+      "claims": [
+        {
+          "text": "The World Health Organization (WHO) launched a new five-year strategy for its Hub for Pandemic and Epidemic Intelligence, charting a path towards a world where every country can detect and understand emerging health threats within 24 hours of their appearance by 2030.",
+          "selectedBy": "anchor",
+          "score": 0.836,
+          "figures": [
+            "24",
+            "2030"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact146"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "\"Its new strategy charts a clear path towards 2030, uniting governments and partners around a shared goal: a world in which every country can rapidly respond to health threats before they turn into major crises.\"",
+          "selectedBy": "anchor",
+          "score": 0.654,
+          "figures": [
+            "2030"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        }
+      ]
+    },
+    {
+      "url": "https://www.eldiario.es/catalunya/tribunal-cuentas-amnistia-puigdemont-junqueras-30-excargos-govern-gastos-proces_1_13499322.html",
+      "source": "eldiario",
+      "title": "El Tribunal de Cuentas amnistía a Puigdemont, Junqueras y otros 30 excargos del Govern por los gastos del procés",
+      "site": "eldiario.es",
+      "sourceName": "elDiario.es",
+      "language": "es",
+      "publishedAt": "2026-10-14",
+      "author": "Oriol Solé Altimira",
+      "topic": null,
+      "topics": [],
+      "claims": [
+        {
+          "text": "Más de dos años después de la aprobación de la ley de amnistía, el Tribunal de Cuentas ha aplicado la norma a los 35 excargos de la Generalitat encausados por los gastos vinculados al referéndum del 1-O y a la acción exterior del procés.",
+          "selectedBy": "anchor",
+          "score": 0.826,
+          "figures": [
+            "35",
+            "1"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "other"
+        },
+        {
+          "text": "Aunque la sentencia admite que en ningún momento del procedimiento abierto en 2021 se planteó que los gastos del procés provenieran de fondos europeos, Hernáez alega que como parte de la financiación de la Generalitat proviene de transferencias de la Unión Europea era “razonable” preguntárselo cuando se aprobó la ley de amnistía, que excluía a los encausados por afectar a los intereses financieros de la UE.",
+          "selectedBy": "anchor",
+          "score": 0.799,
+          "figures": [
+            "2021"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "other"
+        }
+      ]
+    },
+    {
+      "url": "https://www.20minutos.es/nacional/aemet-avisa-un-cambio-brusco-tiempo-que-acabara-con-calor-anomalo-octubre_7048720_0.html",
+      "source": "20minutos",
+      "title": "La Aemet avisa de un \"cambio brusco de tiempo\": alerta de la llegada de una dana y de un desplome del mercurio el fin de semana",
+      "site": "20minutos.es",
+      "sourceName": "20minutos",
+      "language": "es",
+      "publishedAt": "2026-10-14",
+      "author": "AGENCIAS",
+      "topic": "climate",
+      "topics": [
+        "climate",
+        "space",
+        "energy"
+      ],
+      "claims": [
+        {
+          "text": "Desde Aemet han señalado que con la información disponible, el escenario más probable es que el episodio de precipitaciones intensas comience el sábado, cuando un sistema frontal afectará al Cantábrico dejando chubascos y tormentas en distintos puntos del interior peninsular.",
+          "selectedBy": "anchor",
+          "score": 0.644,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "prediction"
+        },
+        {
+          "text": "La Agencia Estatal de Meteorología (Aemet) ha explicado que la extensión hacia la península de una vaguada y el aislamiento de una DANA al norte de la misma, favorecerá un aumento de la inestabilidad con precipitaciones, más destacable en el área mediterránea, pero también en puntos del interior peninsular y en el cantábrico.",
+          "selectedBy": "anchor",
+          "score": 0.563,
+          "figures": [],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "prediction"
+        }
+      ]
+    },
+    {
+      "url": "https://www.xatakaciencia.com/clima/gonzalez-aleman-hemos-tenido-proceso-formacion-ciclon-tropical-algo-que-meteorolgo-nunca-se-habia-visto-mediterraneo",
+      "source": "xataka_ciencia",
+      "title": "González Alemán: \"Hemos tenido un proceso de formación de un ciclón tropical\", algo que según el meteorólgo nunca se había visto en el Mediterráneo",
+      "site": "xatakaciencia.com",
+      "sourceName": "Xataka Ciencia",
+      "language": "es",
+      "publishedAt": "2026-10-14",
+      "author": "Redacción Xataka Ciencia",
+      "topic": "climate",
+      "topics": [
+        "climate",
+        "sustainability"
+      ],
+      "claims": [
+        {
+          "text": "Lo que se organizó frente a la costa de Barcelona entre el 3 y el 4 de octubre de 2026 no era el medicane que anunciaban los modelos.",
+          "selectedBy": "anchor",
+          "score": 0.755,
+          "figures": [
+            "3",
+            "4",
+            "2026"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "opinion"
+        },
+        {
+          "text": "González Alemán lleva años mirando hacia aquí y en 2019 firmó como primer autor un estudio en Geophysical Research Letters que simulaba los medicanes con un modelo climático acoplado de 25 kilómetros de resolución.",
+          "selectedBy": "anchor",
+          "score": 0.595,
+          "figures": [
+            "2019",
+            "25"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact147"
+          ],
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "url": "https://www.newscientist.com/article/2593437-dinosaur-named-new-species-102-years-after-fossil-found-on-isle-of-wight/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+      "source": "new_scientist",
+      "title": "Dinosaur named new species a century after fossil found on Isle of Wight | New Scientist",
+      "site": "newscientist.com",
+      "sourceName": "New Scientist",
+      "language": "en",
+      "publishedAt": "2026-10-13",
+      "author": "Chris Simms",
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "heritage"
+      ],
+      "claims": [
+        {
+          "text": "The fossil used to identify it – a partial braincase – has been lying in the archives of the Natural History Museum in London since it was acquired from a Reverend Reginald Hooley in 1924.",
+          "selectedBy": "anchor",
+          "score": 0.73,
+          "figures": [
+            "1924"
+          ],
+          "status": "labelled",
+          "factIds": [
+            "fact148"
+          ],
+          "skipReason": null
+        },
+        {
+          "text": "“It was sitting unstudied in the museum for about 100 years, which is very surreal,” says Cassius Morrison, now at the University of Leeds, UK.",
+          "selectedBy": "anchor",
+          "score": 0.682,
+          "figures": [
+            "100"
+          ],
+          "status": "skipped",
+          "factIds": [],
+          "skipReason": "duplicate"
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "url": "https://news.mongabay.com/short-article/2026/10/painted-turbines-can-save-millions-of-birds/",
+      "source": "mongabay",
+      "reason": "no checkable claim found"
+    }
+  ],
+  "screen": {
+    "status": "ok",
+    "error": null
+  },
+  "screened": [
+    {
+      "url": "https://www.cnn.com/2026/10/13/politics/trump-fort-hood-shooter-livestream-execution",
+      "source": "cnn",
+      "offMission": "disaster",
+      "margin": 0.0601
+    },
+    {
+      "url": "https://www.lavanguardia.com/politica/20261014/11658595/alianca-le-disputa-segundo-puesto-erc-perjuicio-junts-ceo.html",
+      "source": "la_vanguardia",
+      "offMission": "politics",
+      "margin": 0.0265
+    },
+    {
+      "url": "https://reasonstobecheerful.world/what-were-reading-california-balcony-solar/",
+      "source": "reasons_to_be_cheerful",
+      "offMission": "roundup",
+      "margin": null
+    },
+    {
+      "url": "https://www.optimistdaily.com/2026/10/berlin-mapped-900000-street-trees-now-12000-people-water-them/",
+      "source": "optimist_daily",
+      "offMission": "service",
+      "margin": 0.0369
+    },
+    {
+      "url": "https://www.smithsonianmag.com/smart-news/two-recently-stolen-renoir-paintings-were-found-hidden-behind-a-cinderblock-wall-french-police-used-dna-evidence-and-vehicle-tracking-to-crack-the-case-180989678/",
+      "source": "smithsonian",
+      "offMission": "crime",
+      "margin": 0.0517
+    },
+    {
+      "url": "https://www.france24.com/es/cultura/20261014-qui%C3%A9n-era-rj-mitte-el-actor-de-breaking-bad-que-se-propuso-visibilizar-la-discapacidad",
+      "source": "france24_es",
+      "offMission": "celebrity",
+      "margin": 0.0277
+    },
+    {
+      "url": "https://www.rtve.es/noticias/20261014/visita-reyes-melilla-directo-felipe-letizia-hoy-agenda/17265493.shtml",
+      "source": "rtve",
+      "offMission": "service",
+      "margin": 0.0678
+    },
+    {
+      "url": "https://science.nasa.gov/earth/earth-observatory/hurricane-simon-lurks-off-the-mexican-coast/",
+      "source": "nasa",
+      "offMission": "disaster",
+      "margin": 0.0691
+    },
+    {
+      "url": "https://elpais.com/ideas/2026-10-11/el-nuevo-consenso-de-washington-simpatia-por-el-diablo.html",
+      "source": "el_pais",
+      "offMission": "politics",
+      "margin": 0.0216
+    },
+    {
+      "url": "https://www.theguardian.com/science/2026/oct/07/margaret-hamilton-moon-computer-software",
+      "source": "guardian",
+      "offMission": "obituary",
+      "margin": null
+    },
+    {
+      "url": "https://www.nature.com/articles/d41586-026-03217-6",
+      "source": "nature",
+      "offMission": "roundup",
+      "margin": null
+    },
+    {
+      "url": "https://theconversation.com/nobel-laureate-karl-deisseroth-on-how-light-is-changing-what-we-know-about-the-brain-293925",
+      "source": "the_conversation",
+      "offMission": "podcast",
+      "margin": null
+    },
+    {
+      "url": "https://www.bbc.co.uk/news/articles/cqx298e5rr3po?at_medium=RSS&at_campaign=rss",
+      "source": "bbc",
+      "offMission": "sport",
+      "margin": 0.0531
+    },
+    {
+      "url": "https://www.cnn.com/2026/10/12/business/greenland-energy-dr-phil",
+      "source": "cnn",
+      "offMission": "markets",
+      "margin": 0.0218
+    },
+    {
+      "url": "https://www.lavanguardia.com/politica/20261014/11658507/colau-ofrece-negociar-lineas-rojas-propia-candidatura-marca-electoral.html",
+      "source": "la_vanguardia",
+      "offMission": "politics",
+      "margin": 0.0142
+    },
+    {
+      "url": "https://www.eldiario.es/consumoclaro/revisar-situacion-actual-experto-organizar-cuentas-recuperar-ahorro-xp_1_13583835.html",
+      "source": "eldiario",
+      "offMission": "markets",
+      "margin": 0.0591
+    },
+    {
+      "url": "https://www.elmundo.es/espana/2026/10/14/6acf37b0e85ecefb528b4589.html",
+      "source": "el_mundo",
+      "offMission": "disaster",
+      "margin": 0.044
+    }
+  ],
+  "file": "2026-10-14.json",
+  "date": "2026-10-14"
+}

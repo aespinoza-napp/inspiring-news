@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "esa.int",
+  "claimant": null,
+  "claim": "Scientists using the European Space Agency's Mars Express, in combination with a state-of-the-art meteorological model of the Red Planet, have found that there may be some very exotic physics behind Mars’s most curious cloud.",
+  "claimDate": "2026-10-07",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://doi.org/10.1038/s41561-026-02089-9",
+    "https://www.esa.int/ESA_Multimedia/Images/2026/10/New_modelling_of_Mars_s_most_striking_cloud"
+  ],
+  "split": "test",
+  "id": "fact145",
+  "topic": "space",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-07",
+  "articleUrl": "https://www.esa.int/Science_Exploration/Space_Science/Mars_Express/Mars_s_oddest_cloud_may_be_even_odder_than_we_thought",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Compound, both parts hold. Hernandez-Bernal et al., 'Homogeneous ice nucleation from water vapour suggested by elongated clouds on Mars', Nature Geoscience, 7 Oct 2026 (same day as the article: Rule 3 allows it): Mars Express data with a regional atmospheric model; 'may be' matches the paper's 'suggested'. Reference taken from ESA's page; the paper itself was not opened.",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

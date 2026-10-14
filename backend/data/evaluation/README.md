@@ -24,6 +24,10 @@ independently of this file.
 - **`manual/factNNN.json`** - the hand-labelled custom set, one file per
   fact (target 150, minimum 100), written by `labeller/`. Empty until the
   first fact is saved. See below.
+- **`excluded/factNNN.json`** - facts of off-mission articles (politics,
+  war, crime, sport, shopping, roundups...), moved out of the set on
+  2026-10-14 by the mission screen's own categories; labelled, kept, and
+  read by nothing. The rule and every decision: `excluded/README.md`.
 - **`custom_en_es.jsonl`** - those files joined, once the set is
   finished (`python labeller/app.py join`). Derived: the per-fact files
   are the source.

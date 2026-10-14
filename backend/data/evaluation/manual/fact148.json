@@ -1,0 +1,26 @@
+{
+  "language": "en",
+  "site": "newscientist.com",
+  "claimant": "Chris Simms",
+  "claim": "The fossil used to identify it – a partial braincase – has been lying in the archives of the Natural History Museum in London since it was acquired from a Reverend Reginald Hooley in 1924.",
+  "claimDate": "2026-10-13",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "partially supported",
+  "label": "PARTIALLY_TRUE",
+  "referenceEvidenceLinks": [
+    "https://phys.org/news/2026-10-isle-wight-fossil-europe-clawed.html",
+    "https://en.wikipedia.org/wiki/Reginald_Hooley",
+    "https://hantsfieldclub.org.uk/ihr100/profiles-g-h/hooley.html"
+  ],
+  "split": "test",
+  "id": "fact148",
+  "topic": "nature",
+  "claimType": "factual",
+  "sourceTier": "reference_media",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-13",
+  "articleUrl": "https://www.newscientist.com/article/2593437-dinosaur-named-new-species-102-years-after-fossil-found-on-isle-of-wight/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] Need a look. The central claim holds: the specimen (back of the skull, Invictibellatrix amberina, Royal Society Open Science) was acquired by the Natural History Museum in 1924 and lay unstudied (Phys.org, 13 Oct 2026). A detail does not: Reginald Walter Hooley was a wine merchant and amateur palaeontologist, not a clergyman, and he died on 5 May 1923 - the museum acquired his collection in 1924, after his death, not from him. Possibly confused with the Rev. William Fox, the Victorian Isle of Wight collector (a guess).",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

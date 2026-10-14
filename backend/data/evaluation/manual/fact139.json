@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "goodnewsnetwork.org",
+  "claimant": "Andy Corbley",
+  "claim": "Designated a UNESCO World Heritage Site in 2005, the limes have produced dozens of important archeological discoveries.",
+  "claimDate": "2026-10-14",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.deutsche-limeskommission.de/en/world-heritage-site-fre/fre-upper-german-raetian-limes/",
+    "https://whc.unesco.org/en/list/430"
+  ],
+  "split": "test",
+  "id": "fact139",
+  "topic": "heritage",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2005-07-15",
+  "articleUrl": "https://www.goodnewsnetwork.org/inches-below-the-forest-floor-archeologists-in-germany-unearthed-a-roman-temple-to-the-war-god/",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] The World Heritage Committee (29th session, Durban) inscribed the Upper German-Raetian Limes on 15 July 2005, as part of the serial site Frontiers of the Roman Empire (Deutsche Limeskommission; UNESCO list 430). 'Dozens of important archeological discoveries' is too vague to check; the date carries the claim.",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}

@@ -1,0 +1,25 @@
+{
+  "language": "en",
+  "site": "who.int",
+  "claimant": "WHO Media Team World Health Organization Email mediainquiries int",
+  "claim": "The World Health Organization (WHO) launched a new five-year strategy for its Hub for Pandemic and Epidemic Intelligence, charting a path towards a world where every country can detect and understand emerging health threats within 24 hours of their appearance by 2030.",
+  "claimDate": "2026-10-12",
+  "reviewDate": "2026-10-14T16:12:24",
+  "labelRaw": "supported",
+  "label": "TRUE",
+  "referenceEvidenceLinks": [
+    "https://www.who.int/publications/i/item/B09930",
+    "https://www.wam.ae/en/article/17h02at-who-pandemic-hub-sets-ambitious-goal-detect-new"
+  ],
+  "split": "test",
+  "id": "fact146",
+  "topic": "public_health",
+  "claimType": "factual",
+  "sourceTier": "primary",
+  "onlyOwnSource": false,
+  "evidenceDate": "2026-10-12",
+  "articleUrl": "https://www.who.int/news/item/12-10-2026-who-pandemic-hub-sets-ambitious-goal-to-detect-new-outbreaks-within-24-hours",
+  "annotatorNote": "[AI label: Claude, 2026-10-14 - not yet checked by the human annotator] WHO publication B09930, 'Public health intelligence for a safer world: WHO Hub for Pandemic and Epidemic Intelligence strategy 2026-2030': five years, every country able to detect and understand new threats within 24 hours by 2030; launched in Berlin. Rule 1 does not bite: the claim is that a strategy was launched, and the published document is the evidence of that, not a self-reported achievement.",
+  "createdAt": "2026-10-14T16:12:24",
+  "review": null
+}
