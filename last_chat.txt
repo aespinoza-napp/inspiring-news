@@ -1,71 +1,49 @@
-Session of 9 October 2026. Five goals: faster Docker rebuilds, today's labelling batch, discovery aligned with the mission and the topic groups (run as a loop), the artifact, and this summary. Four are done; the artifact could not be reached. ./scripts/check.sh passes (1,440 backend tests, inference, frontend typecheck, labeller). Nothing is committed.
+Session of 14 October 2026. Final prompt, then the summary of what it produced.
 
-1. Docker rebuilds.
+FINAL PROMPT (verbatim)
 
-Cause: Docker Desktop keeps at most 20 GB of build cache, and it held 21 GB. Rebuilding one image evicted the other's 2.7 GB dependency layer, so a rebuild with no changes took 291 s.
-Fix: the limit is raised to 60 GB in Docker Desktop's settings file (C:\Users\Adria Espinoza G\.docker\daemon.json). It takes effect when Docker Desktop restarts. uv's download cache is now kept between builds, so a dependency change downloads only what changed.
-Result: a rebuild after a code change takes about 30 s, and one with no changes about 2 s.
+/goal fix the artefact according to the new distribution. it should be a good aproach replicating what it has been used in other papers in mine??
 
-2. Discovery aligned with the mission and the groups.
+/goal My research questions are:
+- Can i create a retriever that uses internet that simplifies journalist finding tasks according to certain topics??
+- Can i verify the information by my llogic and also verify the news i retrieve by the structure we are creating and how can we quanitfy it??
+- How close a person vs a LLM can go after getting the
+- All of this joined creating a system which would in some way replace the journalists job??
 
-Method: five one-group rounds were run live, then re-run after each change, and 318 candidates were labelled by Claude from title, summary and link (not yet checked by a person).
-Result, first twenty of all five rounds (100 candidates), before and after:
-- not an article: 13 -> 0
-- belongs to another group: 21 -> 13
-- not worth offering: 29 -> 17
-- clearly positive: 34 -> 34
+that are my real questions save them into the final_document and commit and push the changes
 
-Health improved most: not worth offering 10 -> 3, clearly positive 3 -> 4.
+SUMMARY
 
-An hour later, on the 16:35 feeds, the result held: 0 not articles, 13 from another group, 16 not worth offering, 33 clearly positive. Only 6 of the 100 were new, so it is a weak test. The real one is the next days' rounds, labelled before the rules see them.
+Your four research questions are in the thesis, the gold set now has a FALSE class built the way FEVER and SciFact built theirs, and two commits are pushed to origin/dev (3ad4ccd, 8aae6be). The full check passes: 1,478 backend tests, 9 inference, 32 labeller, frontend typecheck. There's no LaTeX compiler on this machine, so the thesis PDF hasn't been built. I only checked statically that braces, environments, citations and references are consistent.
 
-What changed:
-- Pages that are not articles are left out: podcasts, roundups, quizzes, galleries, media advisories, promotions, shopping, branded content, recipes and more live pages. 28 of the 35 such pages were caught, and no article.
-- Candidates nearer another group's topics are listed after those that fit, never dropped, and a source's three slots go first to what fits. This told the groups apart with AUC 0.87.
-- Markets, service pages, strikes and protests, disasters and celebrity are now left out at margin 0.02 instead of 0.04: in that band, 15 of 16 were not worth offering. Crime and war stay at 0.04.
-- English topic keywords now match whole words. "ai" had matched "said", and "who" matched every "who": 85 of 419 matches were false.
-- Section-page links now take their headline from the page instead of a title made from the slug.
-- WHO is read from its news API and CNN from its news sitemap: both feeds were frozen, and WHO now gives 30 items of the week to Health.
-- A source can name its own sections. Smithsonian's Environment candidates had come from a guessed /food/ page.
-- The Optimist Daily is added, and Good News Network and Reasons to be Cheerful now cover Health.
+1. Your research questions.
 
-Rules you may want to change:
-- the 0.05 group-fit line
-- the 0.02 margin for the five categories
-- the phrase lists for non-articles
-- The Optimist Daily's reliability rating of 0.7, and not marking it positive_editorial, because it also publishes lifestyle tips
+- Where they are: docs/final_document/chapters/01-introduction/05-research-questions.tex, in academic English, with your original wording kept as a comment.
+- Metrics: section 6.1 (docs/final_document/chapters/06-experimental-design/01-research-questions-metrics.tex) gives each question what is measured, the metric, the data and the papers it follows.
+- Two wording decisions to check:
+  - Your third question was cut off after "after getting the". I completed it as "the same news and evidence" and marked it for you to confirm.
+  - I asked RQ4 as a question of extent ("to what extent can it take over the journalist's work, and where is a person still needed?") instead of "replace". "Replace" can't be measured; the share of the work done at a stated quality can.
 
-Bugs found on the way:
-- Since 4 Oct the trafilatura discovery step had never run: it re-read the dead feed. Run for real, it did worse than section pages, so it is now the last step.
-- The labelling batch had neither the mission screen nor the 30-day age limit. That is how today's batch got radio-award nominees, an August phone tip and a NASA media notice. It now has both.
-- Claims were cut at abbreviations ("Oct.", "p.m.") and taken from headings. A claim must now be a sentence that ends: claims without end punctuation were labelled 1 time in 6, against 79 in 116 for whole sentences.
-- /healthz said the LLM was down for "llama3.1" while Ollama served "llama3.1:latest".
+2. Fixing the distribution.
 
-Topic in the rating (added later the same day). Picking Environment over a Culture round and pressing Refresh brought Culture again: Refresh repeats the shown round's topics. Picking other topics now starts a new search for them. The ranking also has a fourth part, "topic" (15%): how well a story fits the topics picked. Over ten labelled rounds, stories of another group in the first twenties went 26 -> 15 with no loss of good stories of the chosen group; 25% would give 9 but lose 5 good ones. Live, an Environment round's first twenty were all Environment but one. The cost: topical hard news (pollution, climate politics) rises a little.
+Of the 109 real claims, none was FALSE. A system that always says TRUE would have scored 83%. I added 30 synthetic FALSE claims (fact149 to fact178), the method FEVER and SciFact used:
+- Each takes one verified TRUE claim and changes the thing it asserts: a number, a date, a name or a relation. It keeps the source's article and evidence, so that evidence is what refutes it.
+- There are 6 per topic group, 9 of them in Spanish.
+- No negations. Adding "not" let a model guess FEVER's refuted claims without reading any evidence (Schuster et al. 2019).
+- Only what the claim asserts, never a detail. Under your Rule 2, a wrong detail makes a claim PARTIALLY_TRUE, not FALSE.
+- Reported apart. Every evaluation report now shows real and synthetic claims separately, as the papers do.
+- Labeller support. It records which fact each mutation came from, refuses bad sources, keeps that link when you edit a mutation in the form, and lists mutations whose source you later relabel. "python labeller/app.py mutate" creates new ones.
 
-Left: Spanish front-page politics and economy just under the margins, and lifestyle advice in Health. Those stay for the person and the AI selection. Rejected after testing: a "lifestyle advice" description for the screen (one new catch), and The Conversation's Spanish edition (only one source is allowed per domain).
+The set is now 139 facts: 91 TRUE, 30 FALSE, 10 UNVERIFIED, 7 PARTIALLY_TRUE, 1 MISLEADING.
 
-Everything, with every reading, is in backend/data/evaluation/experiments/alignment/20261009T120000Z/. It is also written up in docs/experiments.md, docs/decisions/selection.md, docs/decisions/scraping.md and the roadmap.
+3. In the thesis chapter on the dataset.
 
-3. Today's labelling batch.
+- The real distribution table and the rule used to remove off-topic articles.
+- A new subsection on the synthetic claims, with four references I checked against their publishers.
+- A disclosure that part of the set was labelled by an AI. The chapter didn't say so before, and a committee would have read that as hiding it.
 
-Of the 28 claims, 17 were labelled as 18 facts (fact093-fact110), because one compound sentence was split in two. 11 were skipped: 7 fragments, 2 trivial, 1 prediction and 1 duplicate.
-Verdicts: 14 TRUE and 4 UNVERIFIED. The four UNVERIFIED (three Carbon Brief figures and the UN's "highest since 2009") rest only on the claimant's own analysis or records, so Rule 1 applies.
-Every fact cites evidence dated no later than its article, and each note says "AI label, not yet checked".
+4. What still depends on you.
 
-Needs a look:
-- fact094: both sources read like the same press release.
-- fact105: the "more than three kilometres" is unchecked.
-- fact098: the count of children is OCHA's alone.
-
-The set now has 110 facts, past the 100 floor: 90 TRUE, 7 PARTIALLY_TRUE, 1 MISLEADING, 12 UNVERIFIED and no FALSE. Claim-selection precision across all batches is 0.65. The paper's annotation-procedure section now describes the screened draw.
-
-4. The artifact.
-
-https://claude.ai/artifact/9CP4FAmRWxLL8w5LkoEcLP could not be read: "not found, or not shared with you". It is not among this account's artifacts. If it belongs to your BSC account, share it with this one, or tell me to publish a new page with the roadmap's numbers.
-
-5. This file.
-
-Questions for you:
-- Commit all this? It would make two commits: Docker, then discovery and labelling.
-- Restart Docker Desktop so the 60 GB cache limit applies.
+- Review my labels. 108 labels are mine: 78 real claims and the 30 mutations. None counts as gold until you check it.
+- Your agreement with my labels is a result. That number is exactly what your RQ3 measures.
+- The roadmap now follows your questions. Generating news moved down to "only if time", because none of your four asks for it. The blind selection rounds and the discovery numbers moved up, because RQ3 and RQ1 need them.
