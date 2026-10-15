@@ -51,6 +51,12 @@ class Settings(BaseSettings):
     # AnalysisService pure (no side effects) for tests/dry runs.
     LAKE_ENABLED: bool = True
 
+    # The newsroom's articles in progress, one JSON file each
+    # (src/services/writer/draft_store.py). Beside the lake, not in it:
+    # the lake records what was found and checked; a draft is edited in
+    # place. Created on the first save, not here.
+    DRAFTS_PATH: Path = STORAGE_PATH / "drafts"
+
     NEO4J_URI: str = "bolt://localhost:7687"
     NEO4J_USER: str = "neo4j"
     NEO4J_PASSWORD: SecretStr
@@ -257,9 +263,52 @@ class Settings(BaseSettings):
     # same reason LLM_TIMEOUT has one: a request the model cannot finish
     # in time is retried once and then the whole selection fails, loudly.
     AI_SELECTION_TIMEOUT: float = 240.0
+    # The writer (docs/decisions/writing.md): its own model, because the
+    # one that verifies claims was chosen for speed per claim, and writing
+    # in Catalan, Spanish and English from long source prompts asks for
+    # something else. None means LLM_MODEL. Same base URL and key: one
+    # self-hosted Ollama serves both.
+    WRITER_LLM_MODEL: str | None = None
+    # A whole article is many times a verdict's output; LLM_TIMEOUT's 30s
+    # would fail every one. Its own limit, as AI_SELECTION_TIMEOUT is.
+    WRITER_LLM_TIMEOUT: float = 300.0
+    # The model that reviews a draft. None means LLM_MODEL. Kept apart
+    # from the writer's so a draft need not be judged by the model that
+    # wrote it.
+    CORRECTOR_LLM_MODEL: str | None = None
     # Base delay before complete_json's retry after a connection/timeout
     # failure, doubled each attempt and capped at 5s.
     LLM_RETRY_BACKOFF_SECONDS: float = 0.5
+
+    # The writer's per-draft defaults. Read only through WriterThresholds
+    # (src/config/thresholds.py), so one draft can be asked for with other
+    # values; docs/decisions/writing.md, "Writing".
+    #
+    # How many articles from other outlets on the same story the writer is
+    # given, at most, and how far before the analysed article one may be
+    # dated and still count as the same story.
+    WRITER_RELATED_MAX_SOURCES: int = 5
+    WRITER_RELATED_MAX_AGE_DAYS: int = 30
+    # How much of each source the writer sees, in characters. The writer
+    # sees excerpts, never whole pages: the excerpt is also what a review
+    # can hold the draft to. The analysed article gets more - it is the
+    # story the draft is about.
+    WRITER_RELATED_EXCERPT_CHARS: int = 1500
+    WRITER_ANALYSED_EXCERPT_CHARS: int = 6000
+    # The evidence behind the analysed article's verdicts: cited sources
+    # only, a few lines each around the passage the verdict was judged on.
+    WRITER_EVIDENCE_MAX_SOURCES: int = 6
+    WRITER_EVIDENCE_EXCERPT_CHARS: int = 600
+    # The writer's answer, in tokens: an article of 600-900 words plus its
+    # metadata is ~1,500-2,500 in Catalan or Spanish. A ceiling, so a small
+    # model stuck repeating itself stops instead of running to the timeout.
+    WRITER_MAX_OUTPUT_TOKENS: int = 4096
+    # The whole prompt, in characters (~3.5-5 per token in Catalan,
+    # Spanish and English). Excerpts are shortened to fit. Sized for a
+    # model served with a 16k-token context, which must be configured:
+    # Ollama with none set evaluated 30,000 characters as 2,050 tokens and
+    # said nothing (measured 2026-10-15; docs/decisions/writing.md).
+    WRITER_PROMPT_MAX_CHARS: int = 30000
 
     # Claim selection
     CLAIM_DEDUP_THRESHOLD: float = 0.92

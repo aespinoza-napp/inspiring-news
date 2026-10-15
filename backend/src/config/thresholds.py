@@ -30,7 +30,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 
 from src.config.settings import settings
 
@@ -258,3 +259,216 @@ class ThresholdOverrides(BaseModel):
     max_evidence_per_claim: Optional[int] = Field(None, ge=1)
     min_evidence_for_verdict: Optional[int] = Field(None, ge=0)
     evidence_min_pertinence: Optional[float] = Field(None, ge=0.0, le=1.0)
+
+
+class WriterThresholds(BaseModel):
+    """
+    The effective settings for writing one draft (src/services/writer/,
+    docs/decisions/writing.md). Defaults come from `settings`, like
+    PipelineThresholds; `resolve` merges a request's overrides the same way.
+
+    A model of its own rather than more PipelineThresholds fields, for the
+    reason a discovery round's `topicEmphasis` is not one either (see
+    docs/decisions/thresholds.md): nothing here judges anything an
+    analysis does. As PipelineThresholds fields they would change every
+    analysis cache key and every evaluation run's config id, and /analyze
+    would accept knobs that do nothing there.
+    """
+
+    model_config = {"frozen": True}
+
+    # How many articles from other outlets on the same story, at most.
+    related_max_sources: int = Field(
+        default_factory=lambda: settings.WRITER_RELATED_MAX_SOURCES,
+        ge=0,
+        le=12,
+    )
+
+    # How similar a corpus article must be to the analysed one to count as
+    # the same story. By default the corpus's own definition of
+    # "related" - the bar an internal source clears as evidence.
+    related_min_similarity: float = Field(
+        default_factory=lambda: settings.RELATEDNESS_THRESHOLD,
+        ge=0.0,
+        le=1.0,
+    )
+
+    # A related article dated more than this many days before the analysed
+    # one is background, not the same story. Later ones are follow-ups and
+    # are kept.
+    related_max_age_days: int = Field(
+        default_factory=lambda: settings.WRITER_RELATED_MAX_AGE_DAYS,
+        ge=1,
+        le=3650,
+    )
+
+    related_excerpt_chars: int = Field(
+        default_factory=lambda: settings.WRITER_RELATED_EXCERPT_CHARS,
+        ge=200,
+        le=8000,
+    )
+
+    analysed_excerpt_chars: int = Field(
+        default_factory=lambda: settings.WRITER_ANALYSED_EXCERPT_CHARS,
+        ge=500,
+        le=20000,
+    )
+
+    evidence_max_sources: int = Field(
+        default_factory=lambda: settings.WRITER_EVIDENCE_MAX_SOURCES,
+        ge=0,
+        le=20,
+    )
+
+    evidence_excerpt_chars: int = Field(
+        default_factory=lambda: settings.WRITER_EVIDENCE_EXCERPT_CHARS,
+        ge=100,
+        le=4000,
+    )
+
+    max_output_tokens: int = Field(
+        default_factory=lambda: settings.WRITER_MAX_OUTPUT_TOKENS,
+        ge=256,
+        le=16384,
+    )
+
+    prompt_max_chars: int = Field(
+        default_factory=lambda: settings.WRITER_PROMPT_MAX_CHARS,
+        ge=4000,
+        le=400000,
+    )
+
+    @classmethod
+    def resolve(
+        cls,
+        overrides: Optional["WriterThresholdOverrides"] = None,
+    ) -> "WriterThresholds":
+
+        if overrides is None:
+            return cls()
+
+        return cls(**overrides.model_dump(exclude_none=True))
+
+
+class WriterThresholdOverrides(BaseModel):
+    """
+    A draft request's overrides: every field optional, names and bounds
+    mirroring WriterThresholds (test_invariants.py holds the two together).
+    """
+
+    model_config = {"extra": "forbid"}
+
+    related_max_sources: Optional[int] = Field(None, ge=0, le=12)
+    related_min_similarity: Optional[float] = Field(None, ge=0.0, le=1.0)
+    related_max_age_days: Optional[int] = Field(None, ge=1, le=3650)
+    related_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
+    analysed_excerpt_chars: Optional[int] = Field(None, ge=500, le=20000)
+    evidence_max_sources: Optional[int] = Field(None, ge=0, le=20)
+    evidence_excerpt_chars: Optional[int] = Field(None, ge=100, le=4000)
+    max_output_tokens: Optional[int] = Field(None, ge=256, le=16384)
+    prompt_max_chars: Optional[int] = Field(None, ge=4000, le=400000)
+
+
+class RewriteTargets(BaseModel):
+    """
+    "The metrics expected" of a draft: the lowest score, 0-100, each of
+    the review's nine metrics may have before the rewrite stage counts it
+    as below target (src/services/writer/rewriter.py,
+    docs/decisions/writing.md, "Rewriting"). Higher is better on every
+    metric, hallucinationIndex included, so every target is a floor.
+
+    A pair of its own, apart from both PipelineThresholds and
+    WriterThresholds, for the reason the writer's pair is apart from the
+    pipeline's: these judge a review, which neither an analysis nor the
+    writing of a draft does. As PipelineThresholds fields they would
+    change every analysis cache key and evaluation config id; as
+    WriterThresholds fields, `POST /drafts` would accept nine knobs that
+    do nothing when a draft is created.
+
+    Over the API the names are the review's own metric keys
+    (`factConsistency`, not `fact_consistency`), so a target and the
+    metric it is for are looked up with one key.
+
+    Defaults are reasoned, not fitted - no review has been scored by a
+    person to fit them against. Not from `settings`: the metrics have no
+    environment of their own, and a request overrides any of them.
+
+    - The two that are about truth are the strictest: one fault fails
+      them. A citation to no source costs factConsistency 20 of its
+      ceiling (draft_reviewer.DANGLING_CITATION_PENALTY), so one leaves
+      it at 80, under 85. hallucinationIndex is capped at the share of
+      factual sentences that cite a source, so 85 lets one uncited
+      sentence pass among seven or more, and fails it among six or fewer.
+    - grammar 80: errors are what a reader sees first, and the most
+      common failure measured in Catalan drafts (writing.md, "The model").
+    - title, subtitle, style 70: the review panel's own "good" tier, the
+      colour /corrector and the draft review already draw at 70. A
+      missing subtitle is capped at 20, so it always fails.
+    - seo 60: the least strict of the model's metrics. It costs a
+      reader nothing; an untrue sentence does.
+    - readability 50: reading ease on Flesch's scale (Fernández-Huerta's
+      for Spanish, and its stand-in for Catalan, map onto the same
+      bands). 50-60 is "fairly difficult", under 50 "difficult" - prose
+      for specialists, not a general reader.
+    - coverageVerification 30: the positive-impact score, x100, at the
+      bar the running newsroom admits articles at (0.3 in the author's
+      .env, docs/experiments.md "admission"), not the code's 0.1, which
+      admits almost anything. A draft should fit the mission at least as
+      well as an article must to be checked at all.
+    """
+
+    model_config = ConfigDict(frozen=True, alias_generator=to_camel, populate_by_name=True)
+
+    title: float = Field(default=70.0, ge=0.0, le=100.0)
+
+    subtitle: float = Field(default=70.0, ge=0.0, le=100.0)
+
+    grammar: float = Field(default=80.0, ge=0.0, le=100.0)
+
+    fact_consistency: float = Field(default=85.0, ge=0.0, le=100.0)
+
+    coverage_verification: float = Field(default=30.0, ge=0.0, le=100.0)
+
+    seo: float = Field(default=60.0, ge=0.0, le=100.0)
+
+    readability: float = Field(default=50.0, ge=0.0, le=100.0)
+
+    hallucination_index: float = Field(default=85.0, ge=0.0, le=100.0)
+
+    style: float = Field(default=70.0, ge=0.0, le=100.0)
+
+    @classmethod
+    def resolve(
+        cls,
+        overrides: Optional["RewriteTargetOverrides"] = None,
+    ) -> "RewriteTargets":
+
+        if overrides is None:
+            return cls()
+
+        return cls(**overrides.model_dump(exclude_none=True))
+
+    def by_metric(self) -> dict[str, float]:
+        """Each target under its review metric's key: {"factConsistency": 85.0, ...}."""
+
+        return self.model_dump(by_alias=True)
+
+
+class RewriteTargetOverrides(BaseModel):
+    """
+    A rewrite request's targets: every field optional, names and bounds
+    mirroring RewriteTargets (test_invariants.py holds the two together),
+    sent under the review's metric keys.
+    """
+
+    model_config = ConfigDict(extra="forbid", alias_generator=to_camel, populate_by_name=True)
+
+    title: Optional[float] = Field(None, ge=0.0, le=100.0)
+    subtitle: Optional[float] = Field(None, ge=0.0, le=100.0)
+    grammar: Optional[float] = Field(None, ge=0.0, le=100.0)
+    fact_consistency: Optional[float] = Field(None, ge=0.0, le=100.0)
+    coverage_verification: Optional[float] = Field(None, ge=0.0, le=100.0)
+    seo: Optional[float] = Field(None, ge=0.0, le=100.0)
+    readability: Optional[float] = Field(None, ge=0.0, le=100.0)
+    hallucination_index: Optional[float] = Field(None, ge=0.0, le=100.0)
+    style: Optional[float] = Field(None, ge=0.0, le=100.0)

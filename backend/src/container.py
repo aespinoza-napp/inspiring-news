@@ -93,6 +93,12 @@ _reader_index = None
 
 _selection_service = None
 
+_draft_store = None
+
+_related_news_finder = None
+_article_writer = None
+_draft_writer = None
+
 
 def get_vector_repository() -> VectorRepository:
 
@@ -475,3 +481,192 @@ def get_reader_index():
                 )
 
     return _reader_index
+
+
+def get_draft_store():
+    """
+    Backs /drafts/*: the newsroom's articles in progress
+    (src/services/writer/draft_store.py). A singleton because its lock is
+    what keeps a background review and a person's edit from overwriting
+    each other; two stores over one directory would each hold their own.
+    Tests replace it with one over tmp_path (tests/conftest.py,
+    `draft_store`).
+    """
+
+    global _draft_store
+
+    if _draft_store is None:
+        with _lock:
+            if _draft_store is None:
+                from src.services.writer.draft_store import DraftStore
+
+                _draft_store = DraftStore(settings.DRAFTS_PATH)
+
+    return _draft_store
+
+
+_publishers = None
+
+
+def get_publishers():
+    """
+    Backs publishing and the public stories (src/api/publish_routes.py):
+    the web publisher over `DRAFTS_PATH / "published"`, then TikTok and
+    Instagram, which refuse with their reason
+    (src/services/publishing/). A singleton like the draft store it sits
+    beside. Tests replace it with one over tmp_path.
+    """
+
+    global _publishers
+
+    if _publishers is None:
+        with _lock:
+            if _publishers is None:
+                from src.services.publishing.registry import Publishers
+                from src.services.publishing.social import InstagramPublisher, TikTokPublisher
+                from src.services.publishing.web import WebPublisher
+
+                _publishers = Publishers(
+                    WebPublisher(settings.DRAFTS_PATH / "published"),
+                    [TikTokPublisher(), InstagramPublisher()],
+                )
+
+    return _publishers
+
+
+_draft_reviewer = None
+
+
+def get_draft_reviewer():
+    """
+    Backs POST /drafts/{id}/review (src/services/corrector/draft_reviewer.py).
+
+    Its own LLMClient: the corrector's model (CORRECTOR_LLM_MODEL, else
+    LLM_MODEL) - kept apart from the writer's so a draft need not be
+    judged by the model that wrote it - and the writer's timeout, because
+    reading a whole article with its sources, or proposing one back,
+    overruns LLM_TIMEOUT's 30 s, which is sized for one verdict.
+
+    Shares the text corrector's sentiment and quality analysers: one
+    inference/ client, and /correct and the draft review scoring
+    coverage with the same objects.
+    """
+
+    global _draft_reviewer
+
+    if _draft_reviewer is None:
+        with _lock:
+            if _draft_reviewer is None:
+                from src.services.corrector.draft_reviewer import DraftReviewer
+                from src.services.llms import LLMClient
+
+                corrector = get_text_corrector()
+
+                _draft_reviewer = DraftReviewer(
+                    llm=LLMClient(
+                        model=settings.CORRECTOR_LLM_MODEL or settings.LLM_MODEL,
+                        timeout=settings.WRITER_LLM_TIMEOUT,
+                    ),
+                    sentiment_analyzer=corrector.sentiment_analyzer,
+                    quality_analyzer=corrector.quality_analyzer,
+                    impact_scorer=corrector.impact_scorer,
+                )
+
+    return _draft_reviewer
+
+
+def get_related_news_finder():
+    """
+    News on the same story as an analysed article, for the writer
+    (src/services/writer/related_news.py). Takes the Qdrant repository as
+    its getter, not the repository: the corpus is opened only when a
+    draft searches it, and a store another process holds is a note on
+    the draft rather than a failure here.
+    """
+
+    global _related_news_finder
+
+    if _related_news_finder is None:
+        with _lock:
+            if _related_news_finder is None:
+                from src.services.writer.related_news import RelatedNewsFinder
+
+                _related_news_finder = RelatedNewsFinder(repository=get_vector_repository)
+
+    return _related_news_finder
+
+
+def get_article_writer():
+    """
+    The writer's model: WRITER_LLM_MODEL, or LLM_MODEL when unset, with
+    its own timeout - an article is many times a verdict's output.
+    """
+
+    global _article_writer
+
+    if _article_writer is None:
+        with _lock:
+            if _article_writer is None:
+                from src.services.llms import LLMClient
+                from src.services.writer.article_writer import ArticleWriter
+
+                _article_writer = ArticleWriter(
+                    LLMClient(
+                        model=settings.WRITER_LLM_MODEL or settings.LLM_MODEL,
+                        timeout=settings.WRITER_LLM_TIMEOUT,
+                    )
+                )
+
+    return _article_writer
+
+
+def get_draft_writer():
+    """
+    Backs POST /drafts: the analysed article (through the reader's index
+    and the lake), the related news and the writer. The draft store is
+    passed per call, not held, so a test's store over tmp_path is the one
+    written to.
+    """
+
+    global _draft_writer
+
+    if _draft_writer is None:
+        with _lock:
+            if _draft_writer is None:
+                from src.services.writer.analysed_article import AnalysedArticles
+                from src.services.writer.draft_writer import DraftWriter
+
+                _draft_writer = DraftWriter(
+                    articles=AnalysedArticles(get_reader_index(), get_datalake_repository()),
+                    related=get_related_news_finder(),
+                    writer=get_article_writer(),
+                )
+
+    return _draft_writer
+
+
+_draft_rewriter = None
+
+
+def get_draft_rewriter():
+    """
+    Backs POST /drafts/{id}/rewrite (src/services/writer/rewriter.py).
+    Rewrites with the writer's model and holds each rewrite to the
+    writer's rules, so it is built on the writer itself; reviews the new
+    text with the draft reviewer, so a rewrite is scored by the same
+    instrument as the text it replaced.
+    """
+
+    global _draft_rewriter
+
+    if _draft_rewriter is None:
+        with _lock:
+            if _draft_rewriter is None:
+                from src.services.writer.rewriter import DraftRewriter
+
+                _draft_rewriter = DraftRewriter(
+                    writer=get_article_writer(),
+                    reviewer=get_draft_reviewer(),
+                )
+
+    return _draft_rewriter

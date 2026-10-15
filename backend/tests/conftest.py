@@ -163,3 +163,21 @@ def pin_settings(monkeypatch):
 
         for attribute, name in attributes.items():
             monkeypatch.setattr(owner, attribute, fields[name].default)
+
+
+@pytest.fixture
+def draft_store(tmp_path, monkeypatch):
+    """
+    A DraftStore over tmp_path, installed as the container's singleton, so
+    the /drafts routes and any service that asks the container read and
+    write here - never settings.DRAFTS_PATH.
+    """
+
+    import src.container as container
+    from src.services.writer.draft_store import DraftStore
+
+    store = DraftStore(tmp_path / "drafts")
+
+    monkeypatch.setattr(container, "_draft_store", store)
+
+    return store

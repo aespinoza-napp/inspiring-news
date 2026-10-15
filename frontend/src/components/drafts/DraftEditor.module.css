@@ -1,0 +1,146 @@
+/* DraftEditor: the article, its sources, fact-checks, metadata and
+   history. Kept beside the component, not in globals.css; the shared
+   tokens (--border, --accent...) come from there. */
+
+.title {
+  margin-bottom: 0.4rem;
+}
+
+.subtitle {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+/* ArticleBody's own class, shared with the public page: styled here only
+   inside the draft, so the public page keeps whatever it is given. */
+.article :global(.article-body) {
+  max-width: 68ch;
+  line-height: 1.65;
+}
+
+.article :global(.article-body) h2,
+.article :global(.article-body) h3 {
+  margin: 1.5rem 0 0.5rem;
+}
+
+.article :global(.article-body) sup a {
+  font-size: 0.75em;
+  text-decoration: none;
+}
+
+.bodyInput {
+  min-height: 28rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.source {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.6rem 0.4rem;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: 1.5rem;
+}
+
+.source:first-child {
+  border-top: none;
+}
+
+/* A citation jumped to: say which source it was. */
+.source:target {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.number {
+  flex: none;
+  min-width: 2.2rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sourceText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Where a source came from. Outlined, not filled: the filled badges are
+   the verdicts' colours, and an origin is not a judgement. */
+.origin {
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.origin-analysed {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.excerpt summary {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.excerpt p {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+.metadata {
+  display: grid;
+  grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+  gap: 0.45rem 1rem;
+  margin: 0;
+}
+
+.metadata dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.metadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.aside {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.history {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 640px) {
+  .metadata {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

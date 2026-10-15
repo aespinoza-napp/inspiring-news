@@ -1,0 +1,38 @@
+/* NewDraftForm: which article, the language, the editor's indications.
+   Kept beside the component, not in globals.css; the shared tokens
+   (--border, --surface...) come from there. */
+
+.note {
+  margin-bottom: 1.25rem;
+}
+
+/* No global rule styles a <select>; this one matches input[type="text"]. */
+.select {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.chosen {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.languages {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.25rem;
+}
+
+.hint {
+  margin: 1rem 0 0;
+  font-size: 0.82rem;
+}

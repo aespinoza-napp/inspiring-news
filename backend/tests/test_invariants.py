@@ -157,6 +157,9 @@ NON_THRESHOLD_SETTINGS = {
     # infrastructure, like LLM_TIMEOUT - how long to wait on the model,
     # not how a run judges anything.
     "AI_SELECTION_TIMEOUT",
+    # The writing flow's storage and models (docs/decisions/writing.md):
+    # infrastructure, like LLM_MODEL and LAKE_PATH.
+    "DRAFTS_PATH", "WRITER_LLM_MODEL", "WRITER_LLM_TIMEOUT", "CORRECTOR_LLM_MODEL",
     "INFERENCE_URL", "INFERENCE_TIMEOUT",
     "SEARXNG_URL", "SEARXNG_TIMEOUT", "SEARXNG_MAX_RESULTS",
     "DUCKDUCKGO_FALLBACK_ENABLED", "DUCKDUCKGO_URL", "DUCKDUCKGO_TIMEOUT",
@@ -268,11 +271,38 @@ def test_the_two_threshold_models_expose_the_same_fields():
     un-overridable.
     """
 
-    from src.config.thresholds import PipelineThresholds, ThresholdOverrides
+    from src.config.thresholds import (
+        PipelineThresholds,
+        RewriteTargetOverrides,
+        RewriteTargets,
+        ThresholdOverrides,
+        WriterThresholdOverrides,
+        WriterThresholds,
+    )
 
     assert set(ThresholdOverrides.model_fields) == set(
         PipelineThresholds.model_fields
     )
+
+    # The writer's pair, apart from the pipeline's on purpose
+    # (WriterThresholds' docstring), held together the same way.
+    assert set(WriterThresholdOverrides.model_fields) == set(
+        WriterThresholds.model_fields
+    )
+
+    # The rewrite stage's targets (RewriteTargets' docstring), apart from
+    # both for the same reason, and held together the same way - bounds
+    # and aliases too, since a request sends them under the review's
+    # metric keys and a target out of 0-100 would be met or failed by
+    # every score.
+    assert set(RewriteTargetOverrides.model_fields) == set(
+        RewriteTargets.model_fields
+    )
+
+    for name, field in RewriteTargets.model_fields.items():
+        override = RewriteTargetOverrides.model_fields[name]
+        assert override.alias == field.alias, name
+        assert override.metadata == field.metadata, name
 
 
 # ----------------------------------------------------------------------
@@ -656,7 +686,9 @@ def test_no_test_asserts_against_a_threshold_read_from_settings():
 # ----------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("language", ["en", "es"])
+# "ca" is a writing language only (drafts), so it is in WRITING_LEXICONS
+# and not in LEXICONS, which the language detector reads.
+@pytest.mark.parametrize("language", ["en", "es", "ca"])
 def test_both_languages_have_a_complete_lexicon(language):
     """
     The pipeline scored every article with English word lists while 7 of
@@ -664,9 +696,9 @@ def test_both_languages_have_a_complete_lexicon(language):
     silently reintroduces that.
     """
 
-    from src.config.lexicons import LEXICONS
+    from src.config.lexicons import WRITING_LEXICONS
 
-    lexicon = LEXICONS[language]
+    lexicon = WRITING_LEXICONS[language]
 
     empty = [
         field

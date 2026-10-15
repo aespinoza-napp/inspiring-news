@@ -17,7 +17,7 @@
 		reverse_proxy backend:8000
 	}
 
-	# The reader view, open to anyone: the pages, their two proxies, and
+	# The reader view, open to anyone: the pages, their proxies, and
 	# the compiled JS/CSS every page loads. Safe without the password
 	# because each of these reaches only the backend's /reader routes,
 	# which are open by design (test_api_key.py::OPEN_ENDPOINTS):

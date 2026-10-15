@@ -157,9 +157,18 @@ class FakeLLMClient:
             self._responses = None
             self._single = responses
         self.calls: list[tuple[str, str]] = []
+        # What each call asked as its answer cap (the writer sets one).
+        self.max_tokens: list[int | None] = []
 
-    def complete_json(self, system_prompt: str, user_prompt: str, max_retries: int = 1):
+    def complete_json(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        max_retries: int = 1,
+        max_tokens: int | None = None,
+    ):
         self.calls.append((system_prompt, user_prompt))
+        self.max_tokens.append(max_tokens)
         result = (
             (self._responses.pop(0) if self._responses else None)
             if self._responses is not None

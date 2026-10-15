@@ -76,6 +76,7 @@ src.main:app --port 8001`.
 | Running the stack | `docker/README.md` |
 | Production, Google Cloud, sizing, `/healthz` and `/metrics` | `docs/decisions/deployment.md` |
 | The evaluation harness: research questions, record format, metrics, stage attribution | `docs/decisions/evaluation.md` |
+| Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
 
 ## Invariants

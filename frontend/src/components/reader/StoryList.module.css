@@ -1,0 +1,39 @@
+/* The newsroom's own articles, set apart from the checked-news feed
+   below them by a rule and their own heading. The cards are the feed's
+   (.card .reader-card, globals.css), so one click target per card. */
+
+.section {
+  margin: 0 0 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+}
+
+.intro {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: 0 1rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Pinned to the card's foot, so cards in one row line up. */
+.disclosure {
+  margin: auto 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}

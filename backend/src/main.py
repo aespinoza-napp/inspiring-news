@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from src.api import draft_routes, publish_routes, review_routes, rewrite_routes
 from src.api.routes import router
 from src.config.settings import settings
 from src.container import job_store
@@ -46,6 +47,12 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(router)
+
+# The writing flow (docs/decisions/writing.md), one module per stage.
+app.include_router(draft_routes.router)
+app.include_router(review_routes.router)
+app.include_router(rewrite_routes.router)
+app.include_router(publish_routes.router)
 
 logger = logging.getLogger(__name__)
 

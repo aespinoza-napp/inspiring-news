@@ -1,0 +1,183 @@
+/* The draft's review panel (DraftReviewPanel.tsx). The metric cards reuse
+   globals.css's .metric-grid / .metric-card*, as /corrector does; only
+   what the draft review adds lives here. */
+
+.panel {
+  margin-top: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* globals.css gives every button a 1rem top margin, for forms; here the
+   button sits beside the heading. */
+.action {
+  margin-top: 0;
+}
+
+.meta {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 70ch;
+}
+
+.stale {
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--misleading) 12%, transparent);
+  color: var(--fg);
+  font-size: 0.85rem;
+}
+
+.hint {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* A metric the model did not score: no tier colour, no bar. */
+.unavailable {
+  border-left-style: dashed;
+}
+
+.notScored {
+  margin: 0.35rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* ---------- the proposal ---------- */
+
+.proposalHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.views {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.toggle {
+  margin: 0;
+  padding: 0.35rem 0.8rem;
+  border-radius: 0;
+  background: transparent;
+  color: var(--fg);
+  font-size: 0.85rem;
+}
+
+.toggle + .toggle {
+  border-left: 1px solid var(--border);
+}
+
+.toggleActive {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.changes {
+  margin-top: 0.5rem;
+}
+
+.field {
+  margin-top: 1rem;
+}
+
+.fieldLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+/* pre-wrap keeps the body's paragraphs and lists as written: the diff
+   compares the Markdown, line breaks included. */
+.diff {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.diffTitle {
+  font-weight: 600;
+}
+
+.added {
+  background: color-mix(in srgb, var(--true) 20%, transparent);
+  color: inherit;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+.removed {
+  background: color-mix(in srgb, var(--false) 16%, transparent);
+  color: inherit;
+  text-decoration: line-through;
+  text-decoration-color: var(--false);
+  border-radius: 2px;
+}
+
+.sideBySide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 760px) {
+  .sideBySide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.version {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  overflow-wrap: anywhere;
+}
+
+.versionTitle {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+}
+
+.versionSubtitle {
+  margin: 0 0 0.6rem;
+  color: var(--muted);
+}
+
+.acceptRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
+.acceptRow .meta {
+  margin: 0;
+}

@@ -16,6 +16,7 @@ const GROUPS = [
       { href: "/", label: "Analyze" },
       { href: "/live", label: "Live" },
       { href: "/reader", label: "Reader" },
+      { href: "/drafts", label: "Drafts" },
     ],
   },
   {
