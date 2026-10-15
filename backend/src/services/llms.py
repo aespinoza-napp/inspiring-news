@@ -60,6 +60,42 @@ def _parse_json(content: str) -> dict | None:
     return parsed if isinstance(parsed, dict) else None
 
 
+# English, Spanish and Catalan run 0.2-0.3 tokens per character; a prompt
+# the server evaluated at under this many was cut. Measured 2026-10-15 on
+# Ollama 0.40.4 with llama3.2:3b and no context configured: 4,000 and
+# 12,000 characters arrived as 892 and 2,417 tokens, 30,000 as 2,050 -
+# the end of it gone, and nothing in the response but `usage` says so.
+_MIN_TOKENS_PER_CHAR = 0.12
+
+# Below this a prompt fits any context; the ratio of a short one is noise.
+_MIN_CHARS_TO_JUDGE = 8000
+
+
+def _warn_if_cut(model: str, chars: int, response) -> None:
+    """
+    Log when the server evaluated far fewer tokens than the prompt holds.
+    Only logged: the answer may still be usable, and the caller cannot
+    tell which part was lost. The writer's prompt is the one this
+    happens to (docs/decisions/writing.md, "Writing").
+    """
+
+    usage = getattr(response, "usage", None)
+    tokens = getattr(usage, "prompt_tokens", None)
+
+    if not isinstance(tokens, int) or chars < _MIN_CHARS_TO_JUDGE:
+        return
+
+    if tokens < chars * _MIN_TOKENS_PER_CHAR:
+        logger.warning(
+            "%s evaluated %d tokens of a %d-character prompt: the server probably cut it to "
+            "fit the model's context. Ollama serves a small context unless told otherwise "
+            "(num_ctx in a Modelfile, or OLLAMA_CONTEXT_LENGTH).",
+            model,
+            tokens,
+            chars,
+        )
+
+
 class LLMClient:
     """
     Thin OpenAI-compatible chat-completions client.
@@ -150,6 +186,10 @@ class LLMClient:
                 continue
 
             unreachable = False
+
+            if attempt == 0:
+                _warn_if_cut(self.model, len(system_prompt) + len(user_prompt), response)
+
             content = response.choices[0].message.content or ""
 
             parsed = _parse_json(content)
