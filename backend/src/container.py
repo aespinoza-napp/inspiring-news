@@ -643,3 +643,30 @@ def get_draft_writer():
                 )
 
     return _draft_writer
+
+
+_draft_rewriter = None
+
+
+def get_draft_rewriter():
+    """
+    Backs POST /drafts/{id}/rewrite (src/services/writer/rewriter.py).
+    Rewrites with the writer's model and holds each rewrite to the
+    writer's rules, so it is built on the writer itself; reviews the new
+    text with the draft reviewer, so a rewrite is scored by the same
+    instrument as the text it replaced.
+    """
+
+    global _draft_rewriter
+
+    if _draft_rewriter is None:
+        with _lock:
+            if _draft_rewriter is None:
+                from src.services.writer.rewriter import DraftRewriter
+
+                _draft_rewriter = DraftRewriter(
+                    writer=get_article_writer(),
+                    reviewer=get_draft_reviewer(),
+                )
+
+    return _draft_rewriter
