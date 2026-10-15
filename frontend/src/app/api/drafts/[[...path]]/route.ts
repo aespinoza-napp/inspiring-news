@@ -12,7 +12,7 @@ const UNREACHABLE = `Could not reach the backend at ${BACKEND_URL}. Is it runnin
 const DRAFT_ID = /^[0-9a-f]{16}$/;
 
 // One per stage, declared up front so no stage edits another's line.
-const POST_ACTIONS = new Set(["review", "accept-correction", "rewrite", "approve", "publish", "unpublish"]);
+const POST_ACTIONS = new Set(["review", "accept-correction", "rewrite", "restore", "approve", "publish", "unpublish"]);
 const PUT_ACTIONS = new Set(["content"]);
 
 // Every /drafts endpoint takes the API key once STORAGE_API_KEY is set

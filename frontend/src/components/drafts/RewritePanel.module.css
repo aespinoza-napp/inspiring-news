@@ -1,0 +1,346 @@
+/* The rewrite stage of /drafts/[id] (RewritePanel.tsx). Buttons, cards,
+   labels and textareas are the global ones; this is the stage's own
+   layout. Kept beside the component, not in globals.css. */
+
+.panel {
+  margin-top: 2rem;
+}
+
+.panel h2 {
+  margin-bottom: 0.25rem;
+}
+
+.meta {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 72ch;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.note {
+  margin: 0.85rem 0 0;
+  padding: 0.6rem 0.85rem;
+  border-left: 3px solid var(--misleading);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--misleading) 10%, transparent);
+  font-size: 0.85rem;
+}
+
+/* ---------- each metric against its target ---------- */
+
+.targetsHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* globals.css gives every button a 1rem top margin, for forms. */
+.targetsHeader :global(.button-link) {
+  margin-top: 0;
+  padding: 0;
+}
+
+.metrics {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metric {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(4rem, 1fr) auto minmax(0, 7.5rem);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 0.9rem;
+}
+
+.met {
+  border-left-color: var(--true);
+}
+
+.below {
+  border-left-color: var(--false);
+}
+
+/* Not scored: no colour of its own, and no bar - its 0 is not a score. */
+.unscored {
+  border-left-style: dashed;
+  border-left-color: var(--muted);
+}
+
+.metricLabel {
+  font-weight: 500;
+}
+
+.track {
+  position: relative;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fg) 9%, transparent);
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.met .fill {
+  background: var(--true);
+}
+
+.below .fill {
+  background: var(--false);
+}
+
+/* Where the target is. */
+.tick {
+  position: absolute;
+  top: -0.25rem;
+  bottom: -0.25rem;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--fg);
+}
+
+.numbers {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.targetInput {
+  width: 4.2rem;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.standing {
+  justify-self: start;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.standing-met {
+  border-color: color-mix(in srgb, var(--true) 50%, transparent);
+  background: color-mix(in srgb, var(--true) 12%, transparent);
+  color: var(--fg);
+}
+
+.standing-below {
+  border-color: color-mix(in srgb, var(--false) 50%, transparent);
+  background: color-mix(in srgb, var(--false) 12%, transparent);
+  color: var(--fg);
+}
+
+.standing-unscored {
+  border-style: dashed;
+}
+
+@media (max-width: 640px) {
+  .metric {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0.4rem;
+  }
+
+  .track {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .standing {
+    grid-column: 1 / -1;
+    order: 4;
+  }
+}
+
+/* ---------- what will be addressed ---------- */
+
+.addressed {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.88rem;
+}
+
+.addressed > li + li {
+  margin-top: 0.5rem;
+}
+
+.addressed ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+
+.summary {
+  color: var(--muted);
+}
+
+/* ---------- the request ---------- */
+
+.instructions {
+  min-height: 5rem;
+}
+
+.rounds {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.rounds label {
+  font-weight: 500;
+}
+
+.rounds select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+}
+
+.rounds .meta {
+  margin: 0;
+  flex: 1 1 18rem;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+}
+
+.actionRow button {
+  margin-top: 0;
+}
+
+.actionRow .meta {
+  margin: 0;
+  flex: 1 1 18rem;
+}
+
+/* Below target: the step the page is waiting for. */
+.emphasised:not(:disabled) {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* ---------- the history ---------- */
+
+.history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.revision {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.4rem;
+  border-top: 1px solid var(--border);
+}
+
+.revision:first-child {
+  border-top: none;
+}
+
+.currentRevision {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.revisionText {
+  min-width: 0;
+}
+
+.revisionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.revisionNumber {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.reason {
+  font-weight: 600;
+}
+
+.currentTag {
+  padding: 0 0.45rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.revisionTitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.revisionScores {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.chip {
+  padding: 0 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.restore {
+  flex: none;
+  margin-top: 0;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+}

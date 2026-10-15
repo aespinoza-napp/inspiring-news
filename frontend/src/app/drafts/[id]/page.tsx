@@ -5,12 +5,13 @@ import { useCallback, useEffect, useState } from "react";
 import { DraftEditor } from "@/components/drafts/DraftEditor";
 import { DraftReviewPanel } from "@/components/drafts/DraftReviewPanel";
 import { PublishPanel } from "@/components/drafts/PublishPanel";
+import { RewritePanel } from "@/components/drafts/RewritePanel";
 import { ArticleDraft, BUSY_LABEL, LANGUAGES, draftsApi } from "@/lib/drafts";
 
 const POLL_MS = 2000;
 
 /**
- * One draft's workspace: the article, its review, publishing. Each stage
+ * One draft's workspace: the article, its review, rewriting, publishing. Each stage
  * is its own component and gets the same two props - the draft, and
  * `onChange` to hand back the draft its own API call returned. A step
  * that starts background work returns the draft `busy`; the page polls
@@ -100,6 +101,8 @@ export default function DraftPage({ params }: { params: { id: string } }) {
       <DraftEditor draft={draft} onChange={setDraft} />
 
       <DraftReviewPanel draft={draft} onChange={setDraft} />
+
+      <RewritePanel draft={draft} onChange={setDraft} />
 
       <PublishPanel draft={draft} onChange={setDraft} />
     </>

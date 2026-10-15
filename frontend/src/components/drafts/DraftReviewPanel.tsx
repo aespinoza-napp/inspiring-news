@@ -41,6 +41,7 @@ const CHANGED_BY: Record<RevisionReason, string> = {
   edited: "the text was edited",
   corrected: "a correction was accepted",
   rewritten: "the text was rewritten",
+  restored: "an earlier text was restored",
 };
 
 type View = "changes" | "side-by-side";

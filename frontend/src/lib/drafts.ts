@@ -10,7 +10,9 @@ export type DraftStatus = "draft" | "approved" | "published";
 
 export type DraftBusy = "generating" | "reviewing" | "rewriting" | "publishing";
 
-export type RevisionReason = "generated" | "edited" | "corrected" | "rewritten";
+// `restored` is a person putting an earlier revision's text back
+// (POST /drafts/{id}/restore); its `model` is the one that wrote that text.
+export type RevisionReason = "generated" | "edited" | "corrected" | "rewritten" | "restored";
 
 export type SourceOrigin = "analysed" | "related" | "evidence";
 
@@ -146,4 +148,59 @@ export async function draftsApi<T>(path: string, init?: { method?: string; body?
 export interface DraftStageProps {
   draft: ArticleDraft;
   onChange: (draft: ArticleDraft) => void;
+}
+
+// ----------------------------------------------------------------------
+// The rewrite stage (docs/decisions/writing.md, "Rewriting"; backend
+// src/api/rewrite_routes.py)
+// ----------------------------------------------------------------------
+
+/** The review's nine metrics, in the order a person reads them, with their labels. */
+export const REVIEW_METRICS: { key: string; label: string }[] = [
+  { key: "title", label: "Title" },
+  { key: "subtitle", label: "Subtitle" },
+  { key: "grammar", label: "Grammar" },
+  { key: "factConsistency", label: "Fact consistency" },
+  { key: "coverageVerification", label: "Coverage verification" },
+  { key: "seo", label: "SEO" },
+  { key: "readability", label: "Readability" },
+  { key: "hallucinationIndex", label: "Hallucination index" },
+  { key: "style", label: "Writing style" },
+];
+
+/** GET /api/writing/targets: "the metrics expected", and what a rewrite may ask for. */
+export interface RewriteTargetsInfo {
+  /** The default minimum score (0-100) of each metric, under the metric's key. */
+  targets: Record<string, number>;
+  rounds: { default: number; max: number };
+  maxInstructionsChars: number;
+  /** The summary the review gives a metric it could not score. */
+  unscoredSummary: string;
+}
+
+/** The body of POST /api/drafts/<id>/rewrite. Every field optional. */
+export interface RewriteRequest {
+  /** Overrides, under the metric keys: { factConsistency: 90 }. */
+  targets?: Record<string, number>;
+  /** Extra guidance for this rewrite, beside the draft's own instructions. */
+  instructions?: string;
+  maxRounds?: number;
+}
+
+/** A metric against its target. `unscored` counts neither for nor against. */
+export type MetricStanding = "met" | "below" | "unscored";
+
+// The backend's UNAVAILABLE_SUMMARY begins with this
+// (src/services/corrector/text_corrector.py); used until the targets
+// endpoint has given the exact text.
+const UNSCORED_PREFIX = "Evaluation unavailable";
+
+export function isUnscored(metric: CorrectionMetric, unscoredSummary?: string): boolean {
+  return unscoredSummary ? metric.summary === unscoredSummary : metric.summary.startsWith(UNSCORED_PREFIX);
+}
+
+/** The backend's rule (rewriter.standings): a score at or above its target meets it. */
+export function metricStanding(metric: CorrectionMetric, target: number, unscoredSummary?: string): MetricStanding {
+  if (isUnscored(metric, unscoredSummary)) return "unscored";
+  return metric.score >= target ? "met" : "below";
 }
