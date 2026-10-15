@@ -288,6 +288,168 @@ LEXICONS: dict[str, Lexicon] = {
 SUPPORTED_LANGUAGES = frozenset(LEXICONS)
 
 
+# ----------------------------------------------------------------------
+# Catalan: a writing language, not a source language
+# ----------------------------------------------------------------------
+#
+# The newsroom writes drafts in Catalan (docs/decisions/writing.md); no
+# source publishes in it. So CATALAN is deliberately *not* in LEXICONS:
+# that dict is what LanguageDetector tells apart and what every ingested
+# article is scored against, and putting Catalan there would change how
+# the whole pipeline detects and scores Spanish news for the sake of a
+# corrector metric. It lives in WRITING_LEXICONS, which only the draft
+# review reads (`writing_lexicon_for`).
+#
+# Complete, and held to the same rule as the other two
+# (tests/test_invariants.py): a half-filled lexicon scores its language
+# as though the missing signals never occur.
+#
+# Two things about Catalan text the word sets cannot carry are handled
+# where Catalan is scored (src/services/corrector/draft_language.py): the
+# punt volat ("col·laboració" - `·` is not a word character, so the
+# tokeniser cuts the word in two) and elision ("d'investigació" is one
+# token, so `investiga*` never sees it). Entries here are written for
+# text with `l·l` folded to `ll` and elided articles split off.
+#
+# lexicon_for("ca") still answers English, as for any language the
+# pipeline does not know. Nothing in the pipeline asks for Catalan; the
+# corrector asks writing_lexicon_for, which never falls back.
+
+CATALAN = Lexicon(
+    language="ca",
+    speculative=_s(
+        "pot", "poden", "podria*", "potser", "possible*", "possiblement",
+        "probable*", "probablement", "aparentment", "presumpt*",
+        "suposad*", "sembla*", "pareix*",
+    ),
+    emotional=_s(
+        "increïble*", "increible*", "sorprenent*", "impactant*",
+        "terrible*", "catastròfic*", "catastrofic*", "escandalós",
+        "escandalos*", "brutal*", "tremend*", "devastador*", "horror*",
+        "esgarrifós", "esgarrifos*",
+    ),
+    first_person=_s(
+        "jo", "nosaltres", "nostre", "nostra", "nostres", "meu", "meva",
+        "meus", "meves", "ens",
+    ),
+    constructive=_s(
+        "desenvolup*", "crea*", "creix*", "millor*", "innova*",
+        "iniciativ*", "projecte*", "solucio*", "solució", "investiga*",
+        "descobr*", "restaura*", "redu*", "augment*", "collabora*",
+        "tecnolog*", "tractament*", "vacuna*", "avenç", "avenços",
+        "avanç*", "finança*", "financia*", "suport*", "impuls*",
+    ),
+    negative=_s(
+        "guerra*", "atac*", "atemptat*", "conflicte*", "crisi", "crisis",
+        "collapse*", "desastre*", "problema*", "violèn*", "violen*",
+        "mort", "morts", "mortal*", "víctima*", "victima*", "assassin*",
+    ),
+    hope=_s(
+        "recupera*", "millor*", "creixement", "restaura*", "salva*",
+        "proteg*", "protecci*", "conserva*", "avenç", "avenços", "avanç*",
+        "èxit*", "exit*", "cura*", "tractament*", "vacuna*",
+        "esperança*", "esperanc*", "prometedor*", "esperançador*",
+    ),
+    human=_s(
+        "estudiant*", "alumne*", "alumna*", "professor*", "mestre*",
+        "mestra*", "metge*", "metgessa*", "infermer*", "científic*",
+        "cientific*", "investigador*", "voluntari*", "comunitat*",
+        "família*", "familia*", "famílies", "veí", "veïn*", "vein*",
+        "pacient*",
+    ),
+    societal=_s(
+        "món", "mundial*", "global*", "internacional*", "milions",
+        "milers", "onu", "oms", "ue", "nasa", "europa", "nacional*",
+        "societat",
+    ),
+    reporting_verbs=_s(
+        "anuncia*", "diu", "diuen", "dir", "digué", "declara*",
+        "informa*", "confirma*", "descobr*", "troba*", "revela*",
+        "publica*", "llança*", "llanc*", "aprova*", "guanya*",
+        "identifica*", "detecta*", "augment*", "redu*", "millor*",
+        "mostra*", "demostra*", "indica*", "estima*", "assenyala*",
+        "afirma*", "assegura*", "explica*", "presenta*",
+    ),
+    month_names=_s(
+        "gener", "febrer", "març", "abril", "maig", "juny", "juliol",
+        "agost", "setembre", "octubre", "novembre", "desembre",
+    ),
+    relative_dates=_s("avui", "ahir", "demà", "dema", "anit"),
+    opinion=_s(
+        "hauria*", "haurien", "cal", "caldria", "mereix*", "creu*",
+        "crec", "penso", "pensa", "pensen", "opina*", "espera*",
+        "tant de bo", "lamentablement", "afortunadament", "tristament",
+        "clarament", "evidentment", "òbviament", "obviament",
+        "sens dubte", "important*", "essencial*", "crucial*",
+        "fonamental*", "notable*", "impressionant*", "decebedor*",
+        "preocupant*", "millor*", "pitjor*", "bo", "bona", "bons",
+        "bones", "dolent*", "gran", "grans", "bonic*", "meravell*",
+        "inspirador*", "encoratjador*", "esperançador*",
+    ),
+    death_report=_s(
+        "mor", "ha mort", "ha traspassat", "traspassa", "obituari",
+    ),
+    measurement_words=_s(
+        "cent", "per cent", "km", "m", "cm", "kg", "g", "tona", "tones",
+        "milió", "milio", "milions", "mil", "milers", "euro", "euros",
+        "dòlar", "dolar", "dòlars", "dolars", "persona", "persones",
+        "habitants",
+    ),
+    # Only words Spanish does not use, so that a Catalan text and its
+    # Spanish translation tell apart: "de", "la", "que", "en" and "el" are
+    # as common in one as in the other and would say nothing.
+    stopwords=_s(
+        "i", "amb", "els", "dels", "als", "pels", "pel", "per", "és",
+        "són", "més", "però", "també", "aquest", "aquesta", "aquests",
+        "aquestes", "seu", "seva", "seus", "seves", "hi", "ho", "molt",
+        "com", "quan", "perquè", "fins", "ja", "on",
+    ),
+    query_noise=_s(
+        "diu", "dit", "segons", "després", "despres", "abans", "durant",
+        "mentre", "quan", "on", "qual", "quals", "llavors", "aleshores",
+        "entre", "cap", "des", "fins", "altres", "altre", "altra",
+        "aquests", "aquestes", "molt", "molts", "molta", "moltes", "poc",
+        "pocs", "només", "nomes", "encara", "ja", "any", "anys", "temps",
+        "vegada", "vegades", "dia", "dies", "setmana", "mes", "mesos",
+        "notícia", "notícies", "noticia", "informe", "article", "cas",
+        "part", "forma", "manera", "cosa", "coses", "gent", "món",
+        "avui", "ahir", "però", "perquè", "malgrat", "tanmateix",
+    ),
+)
+
+
+# Every language a draft can be written in (src/models/writer/draft.py,
+# `Language`): the two source languages and Catalan.
+WRITING_LEXICONS: dict[str, Lexicon] = {
+    **LEXICONS,
+    CATALAN.language: CATALAN,
+}
+
+
+class UnsupportedWritingLanguage(ValueError):
+    pass
+
+
+def writing_lexicon_for(language: str) -> Lexicon:
+    """
+    The lexicon a draft in `language` is scored with. Unlike
+    `lexicon_for`, never falls back to English: a draft's language is
+    declared by the person who asked for it, not guessed, so an unknown
+    one is a bug to surface rather than an article to score
+    conservatively.
+    """
+
+    lexicon = WRITING_LEXICONS.get((language or "").lower())
+
+    if lexicon is None:
+        raise UnsupportedWritingLanguage(
+            f"No lexicon for {language!r}: a draft in it would be scored with "
+            "another language's rules. Add one to src/config/lexicons.py."
+        )
+
+    return lexicon
+
+
 def lexicon_for(language: str | None) -> Lexicon:
     """
     The lexicon for `language`, falling back to English for anything

@@ -137,42 +137,54 @@ class TextCorrector:
 
     def _normalize(self, result: dict | None, key: str) -> CorrectionMetric:
 
-        item = result.get(key) if isinstance(result, dict) else None
+        return normalize_metric(result, key)
 
-        if not isinstance(item, dict):
-            return CorrectionMetric(
-                score=0.0,
-                summary=UNAVAILABLE_SUMMARY,
-            )
 
-        # A missing or non-numeric score is a format failure, not a 0: the
-        # writing benchmark averages scores per model, and a 0 standing in
-        # for "high" or null would read as the harshest judgement.
-        try:
-            score = float(item["score"])
-        except (KeyError, TypeError, ValueError):
-            score = math.nan
+def normalize_metric(result: dict | None, key: str) -> CorrectionMetric:
+    """
+    One metric out of a model's JSON answer, or UNAVAILABLE_SUMMARY when
+    the entry is missing or unusable. Module-level so the draft review
+    (draft_reviewer.py) reads its own answer with the same rules as
+    /correct and the writing benchmark - one judgement of what counts as
+    a usable score.
+    """
 
-        if not math.isfinite(score):
-            return CorrectionMetric(
-                score=0.0,
-                summary=UNAVAILABLE_SUMMARY,
-            )
+    item = result.get(key) if isinstance(result, dict) else None
 
-        score = max(0.0, min(score, 100.0))
-
-        # `or []`: a model that sends "issues": null otherwise raised
-        # TypeError here and lost all five metrics, not just this list.
-        raw_issues = item.get("issues") or []
-
-        issues = [
-            str(issue)
-            for issue in (raw_issues if isinstance(raw_issues, list) else [raw_issues])
-            if isinstance(issue, (str, int, float))
-        ]
-
+    if not isinstance(item, dict):
         return CorrectionMetric(
-            score=score,
-            summary=str(item.get("summary") or "No summary provided.").strip(),
-            issues=issues,
+            score=0.0,
+            summary=UNAVAILABLE_SUMMARY,
         )
+
+    # A missing or non-numeric score is a format failure, not a 0: the
+    # writing benchmark averages scores per model, and a 0 standing in
+    # for "high" or null would read as the harshest judgement.
+    try:
+        score = float(item["score"])
+    except (KeyError, TypeError, ValueError):
+        score = math.nan
+
+    if not math.isfinite(score):
+        return CorrectionMetric(
+            score=0.0,
+            summary=UNAVAILABLE_SUMMARY,
+        )
+
+    score = max(0.0, min(score, 100.0))
+
+    # `or []`: a model that sends "issues": null otherwise raised
+    # TypeError here and lost all five metrics, not just this list.
+    raw_issues = item.get("issues") or []
+
+    issues = [
+        str(issue)
+        for issue in (raw_issues if isinstance(raw_issues, list) else [raw_issues])
+        if isinstance(issue, (str, int, float))
+    ]
+
+    return CorrectionMetric(
+        score=score,
+        summary=str(item.get("summary") or "No summary provided.").strip(),
+        issues=issues,
+    )
