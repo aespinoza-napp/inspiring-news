@@ -271,10 +271,21 @@ def test_the_two_threshold_models_expose_the_same_fields():
     un-overridable.
     """
 
-    from src.config.thresholds import PipelineThresholds, ThresholdOverrides
+    from src.config.thresholds import (
+        PipelineThresholds,
+        ThresholdOverrides,
+        WriterThresholdOverrides,
+        WriterThresholds,
+    )
 
     assert set(ThresholdOverrides.model_fields) == set(
         PipelineThresholds.model_fields
+    )
+
+    # The writer's pair, apart from the pipeline's on purpose
+    # (WriterThresholds' docstring), held together the same way.
+    assert set(WriterThresholdOverrides.model_fields) == set(
+        WriterThresholds.model_fields
     )
 
 

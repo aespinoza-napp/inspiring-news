@@ -280,6 +280,35 @@ class Settings(BaseSettings):
     # failure, doubled each attempt and capped at 5s.
     LLM_RETRY_BACKOFF_SECONDS: float = 0.5
 
+    # The writer's per-draft defaults. Read only through WriterThresholds
+    # (src/config/thresholds.py), so one draft can be asked for with other
+    # values; docs/decisions/writing.md, "Writing".
+    #
+    # How many articles from other outlets on the same story the writer is
+    # given, at most, and how far before the analysed article one may be
+    # dated and still count as the same story.
+    WRITER_RELATED_MAX_SOURCES: int = 5
+    WRITER_RELATED_MAX_AGE_DAYS: int = 30
+    # How much of each source the writer sees, in characters. The writer
+    # sees excerpts, never whole pages: the excerpt is also what a review
+    # can hold the draft to. The analysed article gets more - it is the
+    # story the draft is about.
+    WRITER_RELATED_EXCERPT_CHARS: int = 1500
+    WRITER_ANALYSED_EXCERPT_CHARS: int = 6000
+    # The evidence behind the analysed article's verdicts: cited sources
+    # only, a few lines each around the passage the verdict was judged on.
+    WRITER_EVIDENCE_MAX_SOURCES: int = 6
+    WRITER_EVIDENCE_EXCERPT_CHARS: int = 600
+    # The writer's answer, in tokens: an article of 600-900 words plus its
+    # metadata is ~1,500-2,500 in Catalan or Spanish. A ceiling, so a small
+    # model stuck repeating itself stops instead of running to the timeout.
+    WRITER_MAX_OUTPUT_TOKENS: int = 4096
+    # The whole prompt, in characters (~3.5 per token in Catalan and
+    # Spanish). Excerpts are shortened to fit. Sized for a model served
+    # with a 16k-token context: Ollama serves 4k unless told otherwise,
+    # and cuts a longer prompt without saying so (docs/decisions/writing.md).
+    WRITER_PROMPT_MAX_CHARS: int = 30000
+
     # Claim selection
     CLAIM_DEDUP_THRESHOLD: float = 0.92
 

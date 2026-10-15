@@ -96,6 +96,7 @@ class LLMClient:
         system_prompt: str,
         user_prompt: str,
         max_retries: int = 1,
+        max_tokens: int | None = None,
     ) -> dict[str, Any] | None:
         """
         Returns None if the provider answered but the response can't be
@@ -104,12 +105,20 @@ class LLMClient:
         LLMUnavailableError instead if the *last* attempt never reached
         the provider at all - see that class's docstring for why the two
         are kept apart.
+
+        `max_tokens` caps the answer; None sends no cap, as every caller
+        did before the writer (src/services/writer/) needed one. An answer
+        cut at the cap is usually unfinished JSON, so it comes back None.
         """
 
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
+
+        # Only sent when asked for, so every existing call is the request
+        # it always was.
+        limits = {"max_tokens": max_tokens} if max_tokens is not None else {}
 
         unreachable = False
 
@@ -127,6 +136,7 @@ class LLMClient:
                         messages=messages,
                         response_format={"type": "json_object"},
                         temperature=0.0,
+                        **limits,
                     )
             except (APIConnectionError, APITimeoutError, APIError) as exc:
                 logger.warning(

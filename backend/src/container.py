@@ -95,6 +95,10 @@ _selection_service = None
 
 _draft_store = None
 
+_related_news_finder = None
+_article_writer = None
+_draft_writer = None
+
 
 def get_vector_repository() -> VectorRepository:
 
@@ -499,3 +503,73 @@ def get_draft_store():
                 _draft_store = DraftStore(settings.DRAFTS_PATH)
 
     return _draft_store
+
+
+def get_related_news_finder():
+    """
+    News on the same story as an analysed article, for the writer
+    (src/services/writer/related_news.py). Takes the Qdrant repository as
+    its getter, not the repository: the corpus is opened only when a
+    draft searches it, and a store another process holds is a note on
+    the draft rather than a failure here.
+    """
+
+    global _related_news_finder
+
+    if _related_news_finder is None:
+        with _lock:
+            if _related_news_finder is None:
+                from src.services.writer.related_news import RelatedNewsFinder
+
+                _related_news_finder = RelatedNewsFinder(repository=get_vector_repository)
+
+    return _related_news_finder
+
+
+def get_article_writer():
+    """
+    The writer's model: WRITER_LLM_MODEL, or LLM_MODEL when unset, with
+    its own timeout - an article is many times a verdict's output.
+    """
+
+    global _article_writer
+
+    if _article_writer is None:
+        with _lock:
+            if _article_writer is None:
+                from src.services.llms import LLMClient
+                from src.services.writer.article_writer import ArticleWriter
+
+                _article_writer = ArticleWriter(
+                    LLMClient(
+                        model=settings.WRITER_LLM_MODEL or settings.LLM_MODEL,
+                        timeout=settings.WRITER_LLM_TIMEOUT,
+                    )
+                )
+
+    return _article_writer
+
+
+def get_draft_writer():
+    """
+    Backs POST /drafts: the analysed article (through the reader's index
+    and the lake), the related news and the writer. The draft store is
+    passed per call, not held, so a test's store over tmp_path is the one
+    written to.
+    """
+
+    global _draft_writer
+
+    if _draft_writer is None:
+        with _lock:
+            if _draft_writer is None:
+                from src.services.writer.analysed_article import AnalysedArticles
+                from src.services.writer.draft_writer import DraftWriter
+
+                _draft_writer = DraftWriter(
+                    articles=AnalysedArticles(get_reader_index(), get_datalake_repository()),
+                    related=get_related_news_finder(),
+                    writer=get_article_writer(),
+                )
+
+    return _draft_writer
