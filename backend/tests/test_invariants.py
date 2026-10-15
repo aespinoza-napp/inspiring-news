@@ -273,6 +273,8 @@ def test_the_two_threshold_models_expose_the_same_fields():
 
     from src.config.thresholds import (
         PipelineThresholds,
+        RewriteTargetOverrides,
+        RewriteTargets,
         ThresholdOverrides,
         WriterThresholdOverrides,
         WriterThresholds,
@@ -287,6 +289,20 @@ def test_the_two_threshold_models_expose_the_same_fields():
     assert set(WriterThresholdOverrides.model_fields) == set(
         WriterThresholds.model_fields
     )
+
+    # The rewrite stage's targets (RewriteTargets' docstring), apart from
+    # both for the same reason, and held together the same way - bounds
+    # and aliases too, since a request sends them under the review's
+    # metric keys and a target out of 0-100 would be met or failed by
+    # every score.
+    assert set(RewriteTargetOverrides.model_fields) == set(
+        RewriteTargets.model_fields
+    )
+
+    for name, field in RewriteTargets.model_fields.items():
+        override = RewriteTargetOverrides.model_fields[name]
+        assert override.alias == field.alias, name
+        assert override.metadata == field.metadata, name
 
 
 # ----------------------------------------------------------------------

@@ -246,14 +246,35 @@ def figures(text: str) -> set[str]:
 # nothing with where it was.
 MIN_ATTACHED_SHARE = 0.25
 
+# When the source's own text is given (a rewrite, which reads it), a
+# citation the draft did not have on that statement stands if at least
+# this much of the sentence's content is in the source's excerpt. Higher
+# than MIN_ATTACHED_SHARE because an excerpt is long - [1] is up to 6,000
+# characters - and a quarter of any sentence about the story is in it.
+# Reasoned, not fitted. Same-language only, like every term comparison
+# here: a Catalan sentence shares almost no stems with an English source,
+# so a rewrite of a Catalan draft can keep its citations but not add one.
+MIN_SOURCE_SHARE = 0.5
 
-def repointed(original: str, proposed: str, language: str) -> list[tuple[str, int]]:
+
+def repointed(
+    original: str,
+    proposed: str,
+    language: str,
+    sources: dict[int, str] | None = None,
+) -> list[tuple[str, int]]:
     """
     (sentence, n) for every sentence of `proposed` that cites [n] but
     says nothing the draft's [n]-citing sentences said: the citation now
     vouches for a statement its source was never cited for. Measured live
     on 2026-10-15: llama3.2:3b moved a [1] onto "the bay is no longer free
     of plastics", which source 1 never mentions.
+
+    `sources` maps n to the text of source n the writer saw. When given,
+    a sentence that shares MIN_SOURCE_SHARE of its content with that text
+    is not reported: it says what its source says, wherever the draft
+    cited it before. The review's proposal never sees the sources and
+    passes none.
     """
 
     before: dict[int, list[set[str]]] = {}
@@ -262,6 +283,8 @@ def repointed(original: str, proposed: str, language: str) -> list[tuple[str, in
         terms = _terms(sentence, language)
         for number in set(citations(sentence)):
             before.setdefault(number, []).append(terms)
+
+    in_source = {number: _terms(text, language) for number, text in (sources or {}).items()}
 
     moved = []
 
@@ -276,8 +299,13 @@ def repointed(original: str, proposed: str, language: str) -> list[tuple[str, in
 
             best = max((len(terms & earlier) / len(terms) for earlier in before.get(number, [])), default=0.0)
 
-            if best < MIN_ATTACHED_SHARE:
-                moved.append((sentence, number))
+            if best >= MIN_ATTACHED_SHARE:
+                continue
+
+            if number in in_source and len(terms & in_source[number]) / len(terms) >= MIN_SOURCE_SHARE:
+                continue
+
+            moved.append((sentence, number))
 
     return moved
 

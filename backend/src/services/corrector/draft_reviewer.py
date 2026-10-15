@@ -574,6 +574,38 @@ def read_proposal(answer, original: DraftContent, lexicon: Lexicon) -> tuple[Dra
 
     A missing or non-string subtitle keeps the draft's; a missing title
     or body is no proposal.
+
+    Each rule is its own function below, in the order applied here, so
+    the rewrite stage (src/services/writer/rewriter.py) holds a rewrite
+    to the same rules - with the sources it has and a proposal does not.
+    """
+
+    proposal, reason = proposal_content(answer, original)
+
+    if proposal is None:
+        return None, reason
+
+    reason = (
+        citation_set_problem(original.body, proposal.body)
+        or length_problem(original.body, proposal.body)
+        or language_problem(original.body, proposal.body, lexicon)
+        # Compared only once the proposal is known to be in the same
+        # language: across languages no figure or word lines up.
+        or figure_problem(original, proposal)
+        or moved_citation_problem(original.body, proposal.body, lexicon.language)
+    )
+
+    if reason:
+        return None, reason
+
+    return proposal, None
+
+
+def proposal_content(answer, original: DraftContent) -> tuple[DraftContent | None, str | None]:
+    """
+    A model's answer as content: a title and a body that are non-empty
+    strings, or None and why. A missing or non-string subtitle keeps the
+    draft's. Nothing is judged here but the shape.
     """
 
     if not isinstance(answer, dict):
@@ -594,44 +626,86 @@ def read_proposal(answer, original: DraftContent, lexicon: Lexicon) -> tuple[Dra
 
     body = body.replace("\r\n", "\n").strip()
 
-    before = set(grounding.citations(original.body))
-    after = set(grounding.citations(body))
+    return DraftContent(title=title.strip(), subtitle=subtitle.strip(), body=body), None
 
-    if after - before:
-        return None, f"it cites {sorted(after - before)}, which the draft does not"
+
+def citation_set_problem(original: str, proposed: str, *, allow_new: bool = False) -> str | None:
+    """
+    A source the draft cited that the new body no longer cites - or, unless
+    `allow_new`, one it cites that the draft never did. A rewrite allows
+    new ones (it reads the sources; `moved_citation_problem` holds each to
+    its source's text); a proposal, which never saw them, does not.
+    """
+
+    before = set(grounding.citations(original))
+    after = set(grounding.citations(proposed))
+
+    if after - before and not allow_new:
+        return f"it cites {sorted(after - before)}, which the draft does not"
 
     if before - after:
-        return None, f"it no longer cites {sorted(before - after)}"
+        return f"it no longer cites {sorted(before - after)}"
 
-    if len(original.body) >= LENGTH_CHECK_MIN_CHARS:
+    return None
 
-        ratio = len(body) / len(original.body)
 
-        if ratio < MIN_LENGTH_RATIO:
-            return None, f"it is {ratio:.0%} of the draft's length: cut off or summarised"
+def length_problem(original: str, proposed: str) -> str | None:
 
-        if ratio > MAX_LENGTH_RATIO:
-            return None, f"it is {ratio:.0%} of the draft's length: something was added"
+    if len(original) < LENGTH_CHECK_MIN_CHARS:
+        return None
 
-    share_before = draft_language.stopword_share(original.body, lexicon)
-    share_after = draft_language.stopword_share(body, lexicon)
+    ratio = len(proposed) / len(original)
+
+    if ratio < MIN_LENGTH_RATIO:
+        return f"it is {ratio:.0%} of the draft's length: cut off or summarised"
+
+    if ratio > MAX_LENGTH_RATIO:
+        return f"it is {ratio:.0%} of the draft's length: something was added"
+
+    return None
+
+
+def language_problem(original: str, proposed: str, lexicon: Lexicon) -> str | None:
+
+    share_before = draft_language.stopword_share(original, lexicon)
+    share_after = draft_language.stopword_share(proposed, lexicon)
 
     if share_before >= MIN_STOPWORD_SHARE and share_after < MIN_STOPWORD_RATIO * share_before:
-        return None, f"it is not in {draft_language.language_name(lexicon.language)}"
+        return f"it is not in {draft_language.language_name(lexicon.language)}"
 
-    # Compared only once the proposal is known to be in the same language:
-    # across languages no figure or word lines up.
-    added = grounding.figures(" ".join((title, subtitle, body))) - grounding.figures(
-        " ".join((original.title, original.subtitle, original.body))
-    )
+    return None
 
-    if added:
-        return None, f"it has figures the draft does not: {', '.join(sorted(added, key=int))}"
 
-    moved = grounding.repointed(original.body, body, lexicon.language)
+def figure_problem(original: DraftContent, proposed: DraftContent, sources: list[str] | None = None) -> str | None:
+    """
+    A figure (a run of digits) in the new text that the draft does not
+    have - nor, when `sources` are given (the rewrite's case), any of
+    them. A rewrite may put right a figure the draft got wrong, from the
+    source; it may not bring one from anywhere else.
+    """
 
-    if moved:
-        sentence, number = moved[0]
-        return None, f"it moved [{number}] onto a statement that source was not cited for: {grounding.quote(sentence)}"
+    known = " ".join((original.title, original.subtitle, original.body, *(sources or [])))
 
-    return DraftContent(title=title.strip(), subtitle=subtitle.strip(), body=body), None
+    added = grounding.figures(" ".join((proposed.title, proposed.subtitle, proposed.body))) - grounding.figures(known)
+
+    if not added:
+        return None
+
+    figures = ", ".join(sorted(added, key=int))
+
+    if sources is None:
+        return f"it has figures the draft does not: {figures}"
+
+    return f"it has figures neither the draft nor its sources have: {figures}"
+
+
+def moved_citation_problem(original: str, proposed: str, language: str, sources: dict[int, str] | None = None) -> str | None:
+
+    moved = grounding.repointed(original, proposed, language, sources)
+
+    if not moved:
+        return None
+
+    sentence, number = moved[0]
+
+    return f"it moved [{number}] onto a statement that source was not cited for: {grounding.quote(sentence)}"
