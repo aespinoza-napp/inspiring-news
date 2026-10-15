@@ -93,6 +93,8 @@ _reader_index = None
 
 _selection_service = None
 
+_draft_store = None
+
 
 def get_vector_repository() -> VectorRepository:
 
@@ -475,3 +477,25 @@ def get_reader_index():
                 )
 
     return _reader_index
+
+
+def get_draft_store():
+    """
+    Backs /drafts/*: the newsroom's articles in progress
+    (src/services/writer/draft_store.py). A singleton because its lock is
+    what keeps a background review and a person's edit from overwriting
+    each other; two stores over one directory would each hold their own.
+    Tests replace it with one over tmp_path (tests/conftest.py,
+    `draft_store`).
+    """
+
+    global _draft_store
+
+    if _draft_store is None:
+        with _lock:
+            if _draft_store is None:
+                from src.services.writer.draft_store import DraftStore
+
+                _draft_store = DraftStore(settings.DRAFTS_PATH)
+
+    return _draft_store

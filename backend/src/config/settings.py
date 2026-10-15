@@ -51,6 +51,12 @@ class Settings(BaseSettings):
     # AnalysisService pure (no side effects) for tests/dry runs.
     LAKE_ENABLED: bool = True
 
+    # The newsroom's articles in progress, one JSON file each
+    # (src/services/writer/draft_store.py). Beside the lake, not in it:
+    # the lake records what was found and checked; a draft is edited in
+    # place. Created on the first save, not here.
+    DRAFTS_PATH: Path = STORAGE_PATH / "drafts"
+
     NEO4J_URI: str = "bolt://localhost:7687"
     NEO4J_USER: str = "neo4j"
     NEO4J_PASSWORD: SecretStr
@@ -257,6 +263,19 @@ class Settings(BaseSettings):
     # same reason LLM_TIMEOUT has one: a request the model cannot finish
     # in time is retried once and then the whole selection fails, loudly.
     AI_SELECTION_TIMEOUT: float = 240.0
+    # The writer (docs/decisions/writing.md): its own model, because the
+    # one that verifies claims was chosen for speed per claim, and writing
+    # in Catalan, Spanish and English from long source prompts asks for
+    # something else. None means LLM_MODEL. Same base URL and key: one
+    # self-hosted Ollama serves both.
+    WRITER_LLM_MODEL: str | None = None
+    # A whole article is many times a verdict's output; LLM_TIMEOUT's 30s
+    # would fail every one. Its own limit, as AI_SELECTION_TIMEOUT is.
+    WRITER_LLM_TIMEOUT: float = 300.0
+    # The model that reviews a draft. None means LLM_MODEL. Kept apart
+    # from the writer's so a draft need not be judged by the model that
+    # wrote it.
+    CORRECTOR_LLM_MODEL: str | None = None
     # Base delay before complete_json's retry after a connection/timeout
     # failure, doubled each attempt and capped at 5s.
     LLM_RETRY_BACKOFF_SECONDS: float = 0.5

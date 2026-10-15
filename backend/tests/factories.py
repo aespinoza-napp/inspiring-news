@@ -79,4 +79,65 @@ def create_evidence(**kwargs) -> Evidence:
 
     evidence = evidence.model_copy(update=kwargs)
 
-    return evidence
+    return evidence
+
+def create_draft(**kwargs):
+    """
+    A draft as the writer leaves it: one generated revision, two sources
+    the body cites as [1] and [2], one fact-check. Override any field.
+    """
+
+    from src.models.writer.draft import (
+        ArticleDraft,
+        DraftContent,
+        DraftFactCheck,
+        DraftRevision,
+        DraftSource,
+    )
+    from src.services.writer.draft_store import new_draft_id, now
+
+    content = kwargs.pop("content", None) or DraftContent(
+        title="Seagrass meadows return to the bay",
+        subtitle="Ten years of replanting doubled the meadow's area",
+        body="The meadow has doubled since 2015 [1], and fish counts rose with it [2].",
+    )
+
+    stamp = now()
+
+    draft = ArticleDraft(
+        id=new_draft_id(),
+        source_article_id="0123456789abcdef",
+        language="en",
+        instructions="Short, constructive, for a general audience.",
+        content=content,
+        sources=[
+            DraftSource(
+                url="https://example.org/seagrass",
+                title="Seagrass restoration report",
+                domain="example.org",
+                origin="analysed",
+                excerpt="The restored meadow covered twice its 2015 area.",
+            ),
+            DraftSource(
+                url="https://example.com/fish",
+                title="Fish return to restored meadows",
+                domain="example.com",
+                origin="related",
+                excerpt="Surveys found more juvenile fish in the restored area.",
+            ),
+        ],
+        fact_checks=[
+            DraftFactCheck(
+                claim="The meadow has doubled in area since 2015.",
+                verdict="TRUE",
+                confidence=0.82,
+                source_urls=["https://example.org/seagrass"],
+            ),
+        ],
+        revisions=[DraftRevision(content=content, reason="generated", model="test-model", at=stamp)],
+        model="test-model",
+        created_at=stamp,
+        updated_at=stamp,
+    )
+
+    return draft.model_copy(update=kwargs)

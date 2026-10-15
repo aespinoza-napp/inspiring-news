@@ -157,6 +157,9 @@ NON_THRESHOLD_SETTINGS = {
     # infrastructure, like LLM_TIMEOUT - how long to wait on the model,
     # not how a run judges anything.
     "AI_SELECTION_TIMEOUT",
+    # The writing flow's storage and models (docs/decisions/writing.md):
+    # infrastructure, like LLM_MODEL and LAKE_PATH.
+    "DRAFTS_PATH", "WRITER_LLM_MODEL", "WRITER_LLM_TIMEOUT", "CORRECTOR_LLM_MODEL",
     "INFERENCE_URL", "INFERENCE_TIMEOUT",
     "SEARXNG_URL", "SEARXNG_TIMEOUT", "SEARXNG_MAX_RESULTS",
     "DUCKDUCKGO_FALLBACK_ENABLED", "DUCKDUCKGO_URL", "DUCKDUCKGO_TIMEOUT",
