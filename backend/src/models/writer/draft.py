@@ -32,8 +32,12 @@ DraftStatus = Literal["draft", "approved", "published"]
 
 Busy = Literal["generating", "reviewing", "rewriting", "publishing"]
 
-# Why a revision exists. `edited` is a person; the rest are a model.
-RevisionReason = Literal["generated", "edited", "corrected", "rewritten"]
+# Why a revision exists. `edited` is a person; `restored` is a person
+# putting an earlier revision's text back (POST /drafts/{id}/restore),
+# under the model that wrote that text - not `edited`, which the
+# published page discloses as "edited by a person" (story.py) about text
+# the person did not write. The rest are a model.
+RevisionReason = Literal["generated", "edited", "corrected", "rewritten", "restored"]
 
 # Where a source came from: the article the draft starts from, news the
 # writer found about the same story, or the evidence a claim of the
