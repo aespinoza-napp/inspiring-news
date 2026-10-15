@@ -269,7 +269,7 @@ def test_the_ui_is_served_only_over_https_and_behind_a_password():
 def test_only_the_reader_view_is_served_without_the_password():
     """
     /reader is public. What a public visitor may reach is exactly its
-    pages, their two proxies (onto backend routes that are open anyway)
+    pages, their proxies (onto backend routes that are open anyway)
     and the static bundles; anything added here skips the password, so
     the list is held. The frontend link list never prefetches past it.
     """
@@ -296,7 +296,10 @@ def test_only_the_reader_view_is_served_without_the_password():
         path.parent.relative_to(FRONTEND / "src" / "app").as_posix()
         for path in (FRONTEND / "src" / "app" / "api" / "reader").rglob("route.ts")
     )
-    assert proxies == ["api/reader/articles", "api/reader/articles/[id]"]
+    # stories: the newsroom's published articles (src/api/publish_routes.py),
+    # open on the backend like articles. Their page, /reader/stories/<id>,
+    # reads the backend from the server and has no proxy of its own.
+    assert proxies == ["api/reader/articles", "api/reader/articles/[id]", "api/reader/stories"]
 
     nav = (FRONTEND / "src" / "components" / "NavLinks.tsx").read_text(encoding="utf-8")
     assert "prefetch={onPublicPage" in nav

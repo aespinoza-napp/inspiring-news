@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ReaderCard } from "@/components/reader/ReaderCard";
+import { StoryList } from "@/components/reader/StoryList";
 import { ReaderFeed, languageName, plural } from "@/lib/reader";
 
 const PAGE_SIZE = 20;
@@ -115,6 +116,11 @@ export default function ReaderPage() {
         not judged false or misleading. Each says how its claims came out and what the verdict
         rests on.
       </p>
+
+      {/* The articles the newsroom wrote from these (docs/decisions/
+          writing.md, "Publishing"). Shown only once one is published, and
+          outside the filters below, which are the checked articles'. */}
+      <StoryList />
 
       {error && <div className="error-banner">{error}</div>}
 

@@ -1,0 +1,122 @@
+/* The publish stage of /drafts/[id]. Buttons, cards and labels are the
+   global ones; this is the stage's own layout. */
+
+.panel h2 {
+  margin-bottom: 0.75rem;
+}
+
+/* Draft -> Approved -> Published, the current one marked. */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+}
+
+.steps li {
+  padding: 0.15rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.steps li + li::before {
+  content: "→ ";
+  color: var(--muted);
+}
+
+.steps .current {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.warning {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.85rem;
+  border-left: 3px solid var(--misleading);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--misleading) 10%, transparent);
+  font-size: 0.85rem;
+}
+
+.step {
+  margin-bottom: 1rem;
+}
+
+.help {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.channels {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: none;
+}
+
+.channels legend {
+  padding: 0;
+}
+
+.channel + .channel {
+  margin-top: 0.5rem;
+}
+
+.channelLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.channelLabel:has(input:disabled) {
+  cursor: not-allowed;
+  color: var(--muted);
+}
+
+.unavailable {
+  padding: 0 0.45rem;
+  border: 1px dashed var(--muted);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* Why a channel is not available: it names what it would take. */
+.reason {
+  margin: 0.2rem 0 0 1.6rem;
+  max-width: 62ch;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.records ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.88rem;
+}
+
+.record time {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.recordChannel {
+  font-weight: 600;
+}
