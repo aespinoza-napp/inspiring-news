@@ -48,6 +48,14 @@ OPEN_ENDPOINTS = {
     # nothing (src/api/routes.py, "Reader").
     ("GET", "/reader/articles"),
     ("GET", "/reader/articles/{article_id}"),
+    # The newsroom's own published articles on the same public reader:
+    # the snapshot taken when a person published one - the text, the
+    # sources it cites, the checks it rests on and what wrote it - never
+    # the draft behind it, its instructions, revisions or review
+    # (src/services/publishing/story.py). Published means meant for
+    # anyone (src/api/publish_routes.py, "Public").
+    ("GET", "/reader/stories"),
+    ("GET", "/reader/stories/{story_id}"),
 }
 
 # What was open until 2026-10-02, with a body each would accept: the
