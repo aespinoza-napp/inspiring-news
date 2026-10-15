@@ -1,0 +1,15 @@
+/* One column per step. globals.css lays .flow-steps out in four columns,
+   from when there were four steps; the step count is FlowSteps' own
+   business, so it is set here rather than there. `ol.steps` outranks the
+   global `.flow-steps` whatever order the two stylesheets load in, which
+   is why the narrow-screen rule is restated as well. */
+
+ol.steps {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  ol.steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

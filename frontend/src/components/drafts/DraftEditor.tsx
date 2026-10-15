@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { ArticleBody } from "@/components/drafts/ArticleBody";
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { ArticleDraft, DraftContent, DraftStageProps, SourceOrigin, draftsApi } from "@/lib/drafts";
 import { safeHref } from "@/lib/links";
 import { percent, readableDate } from "@/lib/reader";
 import { Verdict } from "@/lib/types";
+import styles from "./DraftEditor.module.css";
 
 const ORIGIN_LABEL: Record<SourceOrigin, string> = {
   analysed: "Analysed article",
@@ -15,6 +16,8 @@ const ORIGIN_LABEL: Record<SourceOrigin, string> = {
   evidence: "Fact-check evidence",
 };
 
+// NOT_CHECKED (our search or model failed) is none of these: VerdictBadge
+// draws it as "Not checked", as the reader does.
 const VERDICTS = new Set<string>(["TRUE", "PARTIALLY_TRUE", "FALSE", "MISLEADING", "UNVERIFIED"]);
 
 const REASON_LABEL: Record<string, string> = {
@@ -33,6 +36,9 @@ const REASON_LABEL: Record<string, string> = {
  * `generating` they show here already, and the body fills in when the
  * model answers. Each source's list item is `#source-n`, where the
  * body's `[n]` links (ArticleBody).
+ *
+ * Nothing is editable while a step runs on the draft (`busy`): its result
+ * would land on top of the edit, and the backend refuses the save anyway.
  */
 export function DraftEditor({ draft, onChange }: DraftStageProps) {
   const [editing, setEditing] = useState<DraftContent | null>(null);
@@ -42,6 +48,15 @@ export function DraftEditor({ draft, onChange }: DraftStageProps) {
   const written = draft.revisions.length > 0;
   const generating = draft.busy === "generating";
   const canEdit = written && draft.busy === null && draft.status !== "published";
+
+  // An edit left open when another panel starts a step (a review, a
+  // rewrite) is closed: kept, it would come back over the step's result,
+  // and saving it would silently undo that result.
+  useEffect(() => {
+    if (draft.busy) setEditing(null);
+  }, [draft.busy]);
+
+  const showForm = editing !== null && canEdit;
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -64,8 +79,8 @@ export function DraftEditor({ draft, onChange }: DraftStageProps) {
 
   return (
     <>
-      {editing ? (
-        <form className="card draft-edit" onSubmit={save}>
+      {showForm && editing ? (
+        <form className="card" onSubmit={save}>
           <label className="field-label" htmlFor="draft-title">
             Title
           </label>
@@ -93,7 +108,7 @@ export function DraftEditor({ draft, onChange }: DraftStageProps) {
           </label>
           <textarea
             id="draft-body"
-            className="draft-body-input"
+            className={styles.bodyInput}
             value={editing.body}
             onChange={(event) => setEditing({ ...editing, body: event.target.value })}
             disabled={saving}
@@ -121,9 +136,9 @@ export function DraftEditor({ draft, onChange }: DraftStageProps) {
           )}
         </form>
       ) : (
-        <article className="card draft-article">
-          <h1 className="draft-title">{draft.content.title}</h1>
-          {draft.content.subtitle && <p className="draft-subtitle">{draft.content.subtitle}</p>}
+        <article className={`card ${styles.article}`}>
+          <h1 className={styles.title}>{draft.content.title}</h1>
+          {draft.content.subtitle && <p className={styles.subtitle}>{draft.content.subtitle}</p>}
 
           {written ? (
             <ArticleBody body={draft.content.body} />
@@ -134,10 +149,10 @@ export function DraftEditor({ draft, onChange }: DraftStageProps) {
                 : "Finding news on the same story…"}{" "}
               The title above is the analysed article&apos;s, until the article arrives.
             </p>
-          ) : (
+          ) : draft.busy ? null : (
             <p className="subtitle">
               No article was written.{" "}
-              <Link href={`/drafts?article=${draft.sourceArticleId}`}>Start again from the same article</Link>.
+              <Link href={`/drafts?from=${draft.sourceArticleId}`}>Start again from the same article</Link>.
             </p>
           )}
 
@@ -186,21 +201,25 @@ function DraftSources({ draft }: { draft: ArticleDraft }) {
         </span>
       </div>
 
+      {/* The draft has no field saying why (search down, or nothing found):
+          the backend logs it. What the sources show is said here. */}
       {!draft.sources.some((source) => source.origin === "related") && (
         <p className="claims-note">
-          No related news was found: the article rests on the analysed article and the evidence behind its fact-checks.
+          No related news was found: the article rests on the analysed article and the evidence behind its
+          fact-checks. Web search often comes back empty - the Source health panel on{" "}
+          <Link href="/scraper">Scraper</Link> says whether it is down.
         </p>
       )}
 
-      <ol className="draft-sources">
+      <ol className={styles.sources}>
         {draft.sources.map((source, index) => {
           const href = safeHref(source.url);
           const date = readableDate(source.publishedAt);
 
           return (
-            <li key={source.url} id={`source-${index + 1}`} className="draft-source">
-              <span className="draft-source-number">[{index + 1}]</span>
-              <div className="draft-source-text">
+            <li key={source.url} id={`source-${index + 1}`} className={styles.source}>
+              <span className={styles.number}>[{index + 1}]</span>
+              <div className={styles.sourceText}>
                 <div>
                   {href ? (
                     <a href={href} target="_blank" rel="noopener noreferrer">
@@ -210,14 +229,17 @@ function DraftSources({ draft }: { draft: ArticleDraft }) {
                     source.title || source.url
                   )}
                 </div>
-                <div className="draft-source-meta">
-                  <span className={`draft-origin draft-origin-${source.origin}`}>{ORIGIN_LABEL[source.origin]}</span>
+                <div className={styles.meta}>
+                  <span className={`${styles.origin} ${styles[`origin-${source.origin}`] ?? ""}`}>
+                    {ORIGIN_LABEL[source.origin] ?? source.origin}
+                  </span>
                   {source.domain && <span>{source.domain}</span>}
                   {date && <span>{date}</span>}
-                  <span>{source.reliabilityKnown ? "rated outlet" : "unrated outlet"}</span>
+                  {/* The default for a domain we hold no rating for, not a rating. */}
+                  <span>{source.reliabilityKnown ? "rated outlet" : "unrated"}</span>
                 </div>
                 {source.excerpt && (
-                  <details className="draft-source-excerpt">
+                  <details className={styles.excerpt}>
                     <summary>What the writer saw ({source.excerpt.length.toLocaleString()} characters)</summary>
                     <p>{source.excerpt}</p>
                   </details>
@@ -277,7 +299,7 @@ function DraftMetadataPanel({ draft }: { draft: ArticleDraft }) {
   return (
     <section className="card">
       <div className="section-label">Metadata</div>
-      <dl className="draft-metadata">
+      <dl className={styles.metadata}>
         <dt>Slug</dt>
         <dd>
           <code>{metadata.slug || "–"}</code>
@@ -285,9 +307,7 @@ function DraftMetadataPanel({ draft }: { draft: ArticleDraft }) {
         <dt>SEO description</dt>
         <dd>
           {metadata.seoDescription || "–"}
-          {metadata.seoDescription && (
-            <span className="draft-metadata-note"> ({metadata.seoDescription.length} characters)</span>
-          )}
+          {metadata.seoDescription && <span className={styles.aside}> ({metadata.seoDescription.length} characters)</span>}
         </dd>
         <dt>Topic</dt>
         <dd>{metadata.topic ?? "–"}</dd>
@@ -328,12 +348,12 @@ function DraftHistory({ draft }: { draft: ArticleDraft }) {
   return (
     <section className="card">
       <div className="section-label">History ({draft.revisions.length})</div>
-      <ol className="draft-history">
+      <ol className={styles.history}>
         {draft.revisions.map((revision, index) => (
           <li key={`${revision.at}-${index}`}>
             {REASON_LABEL[revision.reason] ?? revision.reason}
             {revision.model ? ` by ${revision.model}` : ""} · {new Date(revision.at).toLocaleString()}
-            {index === draft.revisions.length - 1 && <span className="draft-metadata-note"> (current)</span>}
+            {index === draft.revisions.length - 1 && <span className={styles.aside}> (current)</span>}
           </li>
         ))}
       </ol>

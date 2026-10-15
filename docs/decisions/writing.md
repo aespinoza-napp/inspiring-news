@@ -80,8 +80,8 @@ reader's pages.
 **Built 2026-10-15.** `POST /drafts` (`draft_routes.py::create_draft`)
 and `backend/src/services/writer/`: `analysed_article.py`,
 `related_news.py`, `article_writer.py`, `draft_checks.py`,
-`draft_writer.py`. Frontend: `NewDraftForm`, `DraftEditor`, a link from
-Analyze, and Write in `FlowSteps`.
+`draft_writer.py`. Frontend: `NewDraftForm`, `DraftEditor`,
+`WriteArticleLink` on Analyze and Live, and Write in `FlowSteps`.
 
 ### What happens
 
@@ -258,13 +258,24 @@ Spanish, before and after the closing reminder. Four drafts with
   school given to a "Universidad del Pacífico" - names the closed-world
   rule exists to stop.
 
+A fifth run the same afternoon, in Catalan with the closing reminder in
+place, repeated it: no citation in ten sentences, "llixi" again, and a
+"Universitat de Cleveland" the sample does not name.
+
 So: **not `llama3.2:3b`.** It was chosen to verify claims fast on a CPU,
-and that is all it is fit for. `WRITER_LLM_MODEL` exists for this.
+and that is all it is fit for. `WRITER_LLM_MODEL` exists for this. (Its
+weights are under the Llama 3.2 Community License, which is not an
+open-source licence either.)
 
 **Measured the same day: Ollama cuts a long prompt silently.** With no
 context configured, 4,000 and 12,000 characters were evaluated as 892
 and 2,417 tokens, and 30,000 as **2,050** - the rest gone, nothing in
-the answer but `usage` to say so. `complete_json` now logs a warning
+the answer but `usage` to say so. Ollama serves a 4k context by default
+on anything under 24 GiB of VRAM - the laptop and the CPU-only VM both
+([Ollama: context length](https://docs.ollama.com/context-length)) - and
+its OpenAI-compatible endpoint, the one `LLMClient` speaks, ignores an
+`options.num_ctx` in the request (tried: `ollama ps` still showed 4096).
+`complete_json` now logs a warning
 when a prompt of 8,000+ characters comes back under 0.12 tokens a
 character. The writer's default budget (30,000 characters, plus up to
 4,096 tokens of answer) needs a **16k-token context**, set for the
@@ -280,19 +291,67 @@ PARAMETER num_ctx 16384
 verifier's memory with it.) Where a context cannot be raised, lower
 `WRITER_PROMPT_MAX_CHARS` instead: about 10,000 for an 8k context.
 
-**Recommendation - not measured; the measurement is one command
-away.** A 7-8B instruct model at Q4_K_M, in this order:
+**Recommendation - from the model cards, not measured; the measurement
+is one command away.** What the writer needs: weights under an
+open-source licence, Catalan as well as Spanish and English, a context
+past 16k, instruction following and JSON, little invention - and to run
+on Ollama on a 4 GB laptop GPU and on the 16 GB, 4-vCPU VM beside the
+rest of the stack (~9.6 GB resident on the first production run). That
+last condition rules out more than any benchmark does: 7-8B at Q4_K_M.
 
-1. **`qwen2.5:7b-instruct`** first: the strongest instruction following
-   and JSON of the sizes the VM can hold, a 32k native context, good
-   Spanish and English. Its Catalan is the open question.
-2. **Salamandra 7B Instruct** (BSC) if Catalan falls short: trained for
-   Catalan and Spanish first. Weaker instruction following is the risk,
-   and its published context is shorter (8k tokens - check the version
-   pulled), so `WRITER_PROMPT_MAX_CHARS` about 10,000 with it.
-3. **`gemma3:12b`** where memory allows (the laptop with a GPU, a 32 GB
-   server): broadly multilingual, but ~8 GB loaded is too much beside
-   the rest of the stack on the 16 GB VM.
+| Model | Licence | Ollama, Q4_K_M | Context | Catalan | Verdict |
+|---|---|---|---|---|---|
+| Qwen2.5 7B Instruct | Apache 2.0 | `qwen2.5:7b-instruct`, 4.7 GB | 32k (128k with YaRN) | not among its listed languages | **first** |
+| Qwen3 8B | Apache 2.0 | `qwen3:8b`, 5.2 GB | 40k in the tag | listed (119 languages) | second; thinks first unless told not to |
+| Salamandra 7B Instruct (BSC) | Apache 2.0 | community GGUFs only, ~4.9 GB | 8k; 160k in the `-2606` release | trained for it | best Catalan on paper; BSC discourages Ollama |
+| Mistral NeMo 12B Instruct | Apache 2.0 | `mistral-nemo`, 7.1 GB | 128k | not listed | where memory allows |
+| Mistral Small 3.2 24B | Apache 2.0 | ~15 GB | 128k | not listed | too big for either machine |
+| Llama 3.x, Gemma 3 | **not open source** (Llama Community License, Gemma Terms of Use) | | | | excluded by the requirement |
+
+1. **`qwen2.5:7b-instruct`** first. Apache 2.0 at this size (Qwen's 3B
+   and 72B are not); its card claims "significant improvements" in
+   instruction following and in structured output, "especially JSON",
+   which is what `complete_json` asks for; 32k context in Ollama's tag,
+   so the 16k Modelfile above is within it; good Spanish and English.
+   Its Catalan is the open question - the card lists 29+ languages, not
+   Catalan - and is the first thing to read in a trial.
+2. **`qwen3:8b`** if Qwen2.5's Catalan falls short: Apache 2.0, and
+   Catalan is on its list. But it is a hybrid reasoning model with
+   thinking on by default: through Ollama's OpenAI endpoint it would
+   think before every draft - minutes more on a CPU - unless switched
+   off, and the writer sends no switch (Qwen's soft switch is `/no_think`
+   in the prompt). Measure it with the switch before adopting it.
+3. **Salamandra 7B Instruct** (BSC) is trained for Catalan and Spanish
+   first and is Apache 2.0, but fits this stack worst: the original
+   release has an 8k context (`WRITER_PROMPT_MAX_CHARS` about 10,000),
+   and the newer `salamandra-7b-instruct-2606` (160k context, DPO) says
+   on its card "We strongly discourage using ollama as we have
+   encountered compatibility issues that may seriously degrade the
+   model's performance", recommending llama.cpp. Serving it from a
+   llama.cpp server would need the writer to have its own base URL,
+   which it does not (it shares `LLM_BASE_URL`).
+4. **`mistral-nemo`** (12B) on a machine with room - a 24-32 GB server
+   or a GPU with 8 GB+: Apache 2.0, 128k context, multilingual; Mistral
+   asks for a low temperature (0.3), and `complete_json` uses 0.
+   **Mistral Small 3.2** (24B) follows instructions best of all of these
+   (Arena Hard v2 from 19.6% to 43.1% over 3.1, half the infinite
+   generations) but needs ~15 GB at Q4.
+
+Sources: [Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct),
+[Ollama qwen2.5 tags](https://ollama.com/library/qwen2.5/tags),
+[Qwen3 announcement](https://qwenlm.github.io/blog/qwen3/),
+[Ollama qwen3 tags](https://ollama.com/library/qwen3/tags),
+[salamandra-7b-instruct](https://huggingface.co/BSC-LT/salamandra-7b-instruct),
+[salamandra-7b-instruct-2606](https://huggingface.co/BSC-LT/salamandra-7b-instruct-2606),
+[Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407),
+[Ollama mistral-nemo](https://ollama.com/library/mistral-nemo),
+[Mistral-Small-3.2-24B-Instruct-2506](https://huggingface.co/mistralai/Mistral-Small-3.2-24B-Instruct-2506).
+None of these was pulled: each is gigabytes, and the decision is the
+author's.
+
+On the laptop's 4 GB GPU a 7-8B model at Q4 does not fit whole: Ollama
+splits it between GPU and CPU, slower than the 3B, still faster than
+the VM.
 
 To decide among them, run the check above on each - it is
 `scripts/try_writer_model.py` (from `backend/`: `uv run python
@@ -322,17 +381,24 @@ and the writer takes the same permit. None of this is in
 newest published articles, or takes a URL; the language (Catalan by
 default); the editor's indications (4,000 characters at most - they go
 into the prompt whole). The backend answers at once; the draft's page
-polls while `busy`. **Analyze** offers "Write an article from it" on a
-finished article whose run was publishable (`/drafts?url=...`); nothing
-on the reader's pages starts a draft. **DraftEditor** shows the article
-with `[n]` linked to `#source-n`; the sources as soon as they are saved
-(so while the model writes), with what the writer saw of each; the
-fact-checks with the sources they rest on; metadata; history; and a
-person's edit (`PUT content`), refused while busy or published. A draft
-whose writing failed keeps its sources and its error, and links back to
-start again from the same article - there is no "regenerate" endpoint.
-**FlowSteps** has Write between Follow and Read: what the newsroom
-writes is published on the reader too.
+polls while `busy`. **Analyze** (a finished card) and **Live** (a
+finished article's details) offer "Write an article from it"
+(`components/drafts/WriteArticleLink.tsx`) when the run was publishable,
+as `/drafts?url=...` - the analysis result has the URL, not the reader
+id; nothing on the reader's pages starts a draft. **DraftEditor** shows
+the article with `[n]` linked to `#source-n`; the sources as soon as
+they are saved (so while the model writes), each with its origin and
+what the writer saw of it; the fact-checks with the sources they rest
+on; metadata; history; and a person's edit (`PUT content`), hidden while
+the draft is busy or published, and an edit left open is closed when
+another stage starts a step. A draft whose writing failed keeps its
+sources and its error, and links to `/drafts?from=<reader id>` to start
+again from the same article - there is no "regenerate" endpoint (the
+proxy allowlists none). **FlowSteps** has Write between Follow and
+Read: what the newsroom writes is published on the reader too. Styles
+are CSS modules beside each component; `globals.css` is untouched (its
+`.flow-steps` grid is widened to five columns from
+`FlowSteps.module.css`).
 
 ### Not done, not verified
 

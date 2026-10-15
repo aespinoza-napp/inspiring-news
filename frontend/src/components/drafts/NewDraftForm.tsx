@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { ArticleDraft, DraftLanguage, LANGUAGES, draftsApi } from "@/lib/drafts";
 import { ReaderCard, ReaderFeed, readableDate } from "@/lib/reader";
+import styles from "./NewDraftForm.module.css";
 
 // The longest indications the backend accepts (draft_routes.py,
 // MAX_INSTRUCTIONS_CHARS). A page of them is plenty.
@@ -22,8 +23,9 @@ const BY_URL = "__url__";
  * Only an article the reader publishes can be written from, so the
  * choices are the reader's own feed - newest first - with a URL field
  * for anything older. `initialUrl` / `initialArticleId` come from the
- * page's query string: the Analyze page links here with `?url=` once an
- * article has passed.
+ * page's query string: `?url=` from Analyze and Live once an article has
+ * passed (they hold its URL, not its reader id), and `?from=<reader id>`
+ * from a draft whose writing failed.
  *
  * The backend answers at once with the draft still being written; the
  * draft's own page shows it fill in.
@@ -47,6 +49,9 @@ export function NewDraftForm({
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // The headline of a `?from=` article older than the feed's first page.
+  const [fromHeadline, setFromHeadline] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,6 +79,25 @@ export function NewDraftForm({
       cancelled = true;
     };
   }, []);
+
+  const fromListed = !!initialArticleId && !!articles?.some((article) => article.id === initialArticleId);
+
+  useEffect(() => {
+    if (!initialArticleId || !articles || fromListed) return;
+
+    let cancelled = false;
+
+    fetch(`/api/reader/articles/${initialArticleId}`, { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((article: ReaderCard | null) => {
+        if (!cancelled && article?.headline) setFromHeadline(article.headline);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialArticleId, articles, fromListed]);
 
   const byUrl = choice === BY_URL;
   const chosen = articles?.find((article) => article.id === choice) ?? null;
@@ -105,9 +129,9 @@ export function NewDraftForm({
   }
 
   return (
-    <form className="card new-draft" onSubmit={submit}>
+    <form className="card" onSubmit={submit}>
       <h2>Write a new article</h2>
-      <p className="subtitle new-draft-note">
+      <p className={`subtitle ${styles.note}`}>
         From an article the newsroom analysed and published: news on the same story from other outlets is found, and the
         article is written from those sources and the fact-checks, citing each. On a CPU this takes minutes.
       </p>
@@ -117,14 +141,14 @@ export function NewDraftForm({
       </label>
       <select
         id="draft-article"
-        className="new-draft-select"
+        className={styles.select}
         value={choice}
         onChange={(event) => setChoice(event.target.value)}
         disabled={submitting}
       >
         {!articles && !feedError && <option value="">Loading the published articles…</option>}
-        {initialArticleId && !articles?.some((article) => article.id === initialArticleId) && (
-          <option value={initialArticleId}>The article you came from ({initialArticleId})</option>
+        {initialArticleId && !fromListed && (
+          <option value={initialArticleId}>{fromHeadline ?? `The article you came from (${initialArticleId})`}</option>
         )}
         {articles?.map((article) => (
           <option key={article.id} value={article.id}>
@@ -146,12 +170,10 @@ export function NewDraftForm({
       )}
 
       {chosen && (
-        <p className="new-draft-chosen">
-          <span className="subtitle">
-            {[chosen.topic, chosen.language?.toUpperCase(), `${chosen.verdict.claimsChecked} claims checked`]
-              .filter(Boolean)
-              .join(" · ")}
-          </span>
+        <p className={styles.chosen}>
+          {[chosen.topic, chosen.language?.toUpperCase(), `${chosen.verdict.claimsChecked} claims checked`]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
       )}
 
@@ -169,7 +191,7 @@ export function NewDraftForm({
       <span className="field-label" id="draft-language">
         Language
       </span>
-      <div className="new-draft-languages" role="radiogroup" aria-labelledby="draft-language">
+      <div className={styles.languages} role="radiogroup" aria-labelledby="draft-language">
         {LANGUAGES.map((entry) => (
           <label key={entry.code} className="checkbox-label">
             <input
@@ -185,7 +207,7 @@ export function NewDraftForm({
         ))}
       </div>
 
-      <label className="field-label new-draft-instructions-label" htmlFor="draft-instructions">
+      <label className="field-label" htmlFor="draft-instructions">
         Indications for the writer
       </label>
       <textarea
@@ -205,7 +227,7 @@ export function NewDraftForm({
           {submitting && <span className="spinner" aria-hidden="true" />}
           {submitting ? "Starting…" : "Write the article"}
         </button>
-        <span className="subtitle new-draft-hint">
+        <span className={`subtitle ${styles.hint}`}>
           Only the sources and the fact-checks are used; claims not verified are not stated as fact.
         </span>
       </div>

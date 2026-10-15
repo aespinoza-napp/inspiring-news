@@ -1,4 +1,5 @@
 import Link from "next/link";
+import styles from "./FlowSteps.module.css";
 
 export type FlowStep = "discover" | "analyze" | "live" | "write" | "reader";
 
@@ -22,7 +23,8 @@ const STEPS: { key: FlowStep; href: string; label: string; hint: string }[] = [
  */
 export function FlowSteps({ current }: { current: FlowStep }) {
   return (
-    <ol className="flow-steps" aria-label="Newsroom steps">
+    // styles.steps: one column per step (FlowSteps.module.css).
+    <ol className={`flow-steps ${styles.steps}`} aria-label="Newsroom steps">
       {STEPS.map((step, index) => {
         const active = step.key === current;
         return (

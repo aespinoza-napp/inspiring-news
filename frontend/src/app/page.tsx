@@ -17,6 +17,7 @@ import { ImpactProfile } from "@/components/ImpactProfile";
 import { TopicPanel } from "@/components/TopicPanel";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { FlowSteps } from "@/components/FlowSteps";
+import { WriteArticleLink } from "@/components/drafts/WriteArticleLink";
 import { buildTrace, ClaimStep } from "@/lib/liveTrace";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
 import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
@@ -234,11 +235,8 @@ function JobCardView({
       {job.status === "done" && job.result?.storage?.publishable && (
         // The writing flow starts from an article the reader publishes
         // (docs/decisions/writing.md), so the link is offered only for
-        // one that passed. By URL: the reader matches it by host and path.
-        <p className="analyze-next">
-          Passed: it is on the <Link href="/reader">reader</Link>.{" "}
-          <Link href={`/drafts?url=${encodeURIComponent(job.result.url || url)}`}>Write an article from it →</Link>
-        </p>
+        // one that passed.
+        <WriteArticleLink url={job.result.url || url} />
       )}
 
       {partial.entityCount > 0 && (

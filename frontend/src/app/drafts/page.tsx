@@ -13,11 +13,12 @@ const READER_ID = /^[0-9a-f]{16}$/;
  * (docs/decisions/writing.md). Behind the site password, unlike /reader:
  * a draft is unpublished work.
  *
- * `?url=` or `?article=` names the analysed article to start from: the
- * Analyze page links here with the URL once an article has passed, and a
- * draft's page with the reader id, to start again from the same article.
+ * `?url=` or `?from=<reader id>` names the analysed article to start
+ * from: Analyze and Live link here with the URL once an article has
+ * passed, and a draft whose writing failed with the reader id, to start
+ * again from the same article.
  */
-export default function DraftsPage({ searchParams }: { searchParams: { url?: string; article?: string } }) {
+export default function DraftsPage({ searchParams }: { searchParams: { url?: string; from?: string } }) {
   const [drafts, setDrafts] = useState<DraftSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +40,7 @@ export default function DraftsPage({ searchParams }: { searchParams: { url?: str
 
   const initialUrl = typeof searchParams.url === "string" ? searchParams.url : null;
   const initialArticleId =
-    typeof searchParams.article === "string" && READER_ID.test(searchParams.article) ? searchParams.article : null;
+    typeof searchParams.from === "string" && READER_ID.test(searchParams.from) ? searchParams.from : null;
 
   return (
     <>
