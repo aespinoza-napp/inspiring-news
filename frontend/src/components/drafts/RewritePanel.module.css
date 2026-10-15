@@ -206,8 +206,24 @@
 
 /* ---------- the request ---------- */
 
+/* Two classes, so it wins over globals.css's .field-label margin. */
+.panel .instructionsLabel {
+  margin-top: 1.5rem;
+}
+
 .instructions {
   min-height: 5rem;
+}
+
+/* A rewrite that was not kept, said where it was asked for. */
+.rejected {
+  margin: 0.85rem 0 0;
+  padding: 0.6rem 0.85rem;
+  border-left: 3px solid var(--false);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--false) 8%, transparent);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
 }
 
 .rounds {

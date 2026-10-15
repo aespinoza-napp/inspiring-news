@@ -54,6 +54,8 @@ const HEADLINE: { key: string; label: string }[] = [
 // Issues listed per metric under "What will be addressed" before "+N more".
 const ISSUES_SHOWN = 3;
 
+const REWRITE_FAILED = "rewriting failed: ";
+
 type Pending = "rewrite" | number | null;
 
 function sameText(a: DraftContent, b: DraftContent): boolean {
@@ -68,6 +70,9 @@ export function RewritePanel({ draft, onChange }: DraftStageProps) {
   const [info, setInfo] = useState<RewriteTargetsInfo | null>(null);
   const [infoError, setInfoError] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<Record<string, number>>({});
+  // What is typed in a target's box while it has focus, so it can be
+  // emptied and retyped; a valid number becomes an override at once.
+  const [typing, setTyping] = useState<Record<string, string>>({});
   const [instructions, setInstructions] = useState("");
   const [rounds, setRounds] = useState<number | null>(null);
   const [pending, setPending] = useState<Pending>(null);
@@ -123,6 +128,7 @@ export function RewritePanel({ draft, onChange }: DraftStageProps) {
 
   function setTarget(key: string, raw: string) {
     if (!info) return;
+    setTyping((current) => ({ ...current, [key]: raw }));
     const value = Number(raw);
     if (raw.trim() === "" || !Number.isFinite(value)) return;
     const clamped = Math.max(0, Math.min(100, value));
@@ -172,7 +178,11 @@ export function RewritePanel({ draft, onChange }: DraftStageProps) {
     }
   }
 
-  const buttonLabel = rewriting ? "Rewriting…" : !review ? "Review first" : unmet ? `Rewrite (${below.length} below target)` : "Rewrite";
+  // run_in_background prefixes a failure with the busy state's name
+  // (backend draft_store.py): "rewriting failed: <why>".
+  const lastRewriteError = draft.error?.startsWith(REWRITE_FAILED) ? draft.error.slice(REWRITE_FAILED.length) : null;
+
+  const buttonLabel =rewriting ? "Rewriting…" : !review ? "Review first" : unmet ? `Rewrite (${below.length} below target)` : "Rewrite";
 
   return (
     <section className={`card ${styles.panel}`} aria-labelledby="rewrite-heading">
@@ -195,7 +205,15 @@ export function RewritePanel({ draft, onChange }: DraftStageProps) {
       <div className={styles.targetsHeader}>
         <h3 className="section-label">Targets</h3>
         {Object.keys(overrides).length > 0 && (
-          <button type="button" className="button-link" onClick={() => setOverrides({})} disabled={blocked}>
+          <button
+            type="button"
+            className="button-link"
+            onClick={() => {
+              setOverrides({});
+              setTyping({});
+            }}
+            disabled={blocked}
+          >
             Reset to the defaults
           </button>
         )}
@@ -230,11 +248,18 @@ export function RewritePanel({ draft, onChange }: DraftStageProps) {
                   className={styles.targetInput}
                   min={0}
                   max={100}
-                  step={5}
-                  value={target ?? ""}
+                  step={1}
+                  value={typing[key] ?? target ?? ""}
                   disabled={blocked}
                   aria-label={`Target for ${label}`}
                   onChange={(event) => setTarget(key, event.target.value)}
+                  onBlur={() =>
+                    setTyping((current) => {
+                      const next = { ...current };
+                      delete next[key];
+                      return next;
+                    })
+                  }
                 />
               ) : (
                 "–"
@@ -301,7 +326,7 @@ export function RewritePanel({ draft, onChange }: DraftStageProps) {
 
       {/* ---------------- the request ---------------- */}
 
-      <label className="field-label" htmlFor="rewrite-instructions">
+      <label className={`field-label ${styles.instructionsLabel}`} htmlFor="rewrite-instructions">
         Instructions for this rewrite (optional)
       </label>
       <textarea
@@ -366,6 +391,14 @@ export function RewritePanel({ draft, onChange }: DraftStageProps) {
                   : "Every scored metric meets its target; rewrite only if you want another version."}
         </p>
       </div>
+
+      {/* The page shows the draft's error at the top; a rewrite that was not
+          kept is said here too, where the person asked for it. */}
+      {lastRewriteError && !rewriting && (
+        <p className={styles.rejected} role="status">
+          <strong>The last rewrite:</strong> {lastRewriteError}
+        </p>
+      )}
 
       {error && (
         <div className="error-banner" role="alert">

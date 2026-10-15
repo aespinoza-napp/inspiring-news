@@ -813,7 +813,8 @@ target", "Below target" or "Not scored"; **What will be addressed** (the
 failing metrics' summaries and first issues); optional instructions; the
 rounds; **Rewrite** - disabled with "Review first" when the current text
 has no review, emphasised and counting the failing metrics when a target
-is unmet. Then the **history**, newest first: each revision's reason,
+is unmet; a rewrite that was not kept is said under it, as well as in the
+page's error banner at the top. Then the **history**, newest first: each revision's reason,
 model ("text by" for a restored one, and which revision it came from),
 title, how many scored targets its review met and its facts, grounding and
 grammar scores, and **Restore** for every earlier text (asks first when
@@ -821,7 +822,12 @@ the draft is approved). Everything is disabled while the draft is busy or
 published. The defaults come from `/api/writing/targets`, its own proxy
 (`headers()` pattern) - `/drafts/targets` would be `GET /drafts/{draft_id}`
 answering first with a 422, as `/publishing/channels` found; `restore`
-joined the drafts proxy's `POST_ACTIONS`.
+joined the drafts proxy's `POST_ACTIONS`. Looked at in Chrome over a
+seeded draft (a backend and `next dev` on spare ports): the panel, a
+restore (revision #4 "Restored from #1, text by ...", #1's Restore then
+disabled), and one rewrite through the route on `llama3.2:3b`, not kept
+(it moved `[1]` onto "a significant increase in area and fish
+populations"), the reason under the button.
 
 ### Live
 
