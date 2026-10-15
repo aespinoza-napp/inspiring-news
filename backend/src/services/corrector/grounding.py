@@ -233,6 +233,55 @@ def _terms(text: str, language: str) -> set[str]:
     return terms
 
 
+def figures(text: str) -> set[str]:
+    """Every run of digits outside the citation markers."""
+
+    return set(re.findall(r"\d+", CITATION.sub(" ", text)))
+
+
+# A sentence of a proposal that cites [n] must share at least this much of
+# its content with some sentence of the draft that cited [n]. Low, so a
+# copy-edit's rephrasing passes ("has doubled since 2015" -> "since 2015,
+# has doubled in size"); a citation moved onto another statement shares
+# nothing with where it was.
+MIN_ATTACHED_SHARE = 0.25
+
+
+def repointed(original: str, proposed: str, language: str) -> list[tuple[str, int]]:
+    """
+    (sentence, n) for every sentence of `proposed` that cites [n] but
+    says nothing the draft's [n]-citing sentences said: the citation now
+    vouches for a statement its source was never cited for. Measured live
+    on 2026-10-15: llama3.2:3b moved a [1] onto "the bay is no longer free
+    of plastics", which source 1 never mentions.
+    """
+
+    before: dict[int, list[set[str]]] = {}
+
+    for sentence in body_sentences(original):
+        terms = _terms(sentence, language)
+        for number in set(citations(sentence)):
+            before.setdefault(number, []).append(terms)
+
+    moved = []
+
+    for sentence in body_sentences(proposed):
+
+        terms = _terms(sentence, language)
+
+        if len(terms) < 2:
+            continue
+
+        for number in sorted(set(citations(sentence))):
+
+            best = max((len(terms & earlier) / len(terms) for earlier in before.get(number, [])), default=0.0)
+
+            if best < MIN_ATTACHED_SHARE:
+                moved.append((sentence, number))
+
+    return moved
+
+
 def check(
     body: str,
     source_count: int,

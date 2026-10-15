@@ -355,8 +355,10 @@ class DraftReviewer:
             )
         except LLMUnavailableError as exc:
             # The metrics are already in hand; a review without a proposal
-            # is still a review.
-            logger.warning("Draft %s: no correction proposed, the model was unreachable: %s", draft.id, exc)
+            # is still a review. Not always a dead socket: Ollama answers
+            # 500 "token repeat limit reached" when a small model loops on
+            # a long answer, and the client reports that as unreachable too.
+            logger.warning("Draft %s: no correction proposed, the model call failed: %s", draft.id, exc)
             return None
 
         proposal, reason = read_proposal(answer, draft.content, lexicon)
@@ -556,9 +558,19 @@ def apply_headline_checks(metrics: dict[str, CorrectionMetric], content: DraftCo
 def read_proposal(answer, original: DraftContent, lexicon: Lexicon) -> tuple[DraftContent | None, str | None]:
     """
     The proposed content, or None and why. Checked before a person is
-    offered it, because accepting replaces the article: a proposal that
-    cites a source the draft never cited, lost every citation, came back
-    cut short or padded, or came back translated is not offered.
+    offered it, because accepting replaces the article. Not offered: a
+    proposal that cites a source the draft never cited or no longer cites
+    one it did, moved a citation onto a statement its source was never
+    cited for, carries a figure the draft does not have, came back cut
+    short or padded, or came back translated.
+
+    The figure, dropped-source and moved-citation rules come from the
+    first live run (2026-10-15, llama3.2:3b, a Catalan draft): its
+    proposal turned "deu anys" into "6 anys", dropped [2] and moved [1]
+    onto "the bay is no longer free of plastics" - and passed every
+    other check. A number written out in words ("ten" for "10") is not
+    caught; a figure merely reformatted ("1,200" for "1200") is refused,
+    which is the safe side.
 
     A missing or non-string subtitle keeps the draft's; a missing title
     or body is no proposal.
@@ -588,8 +600,8 @@ def read_proposal(answer, original: DraftContent, lexicon: Lexicon) -> tuple[Dra
     if after - before:
         return None, f"it cites {sorted(after - before)}, which the draft does not"
 
-    if before and not after:
-        return None, "it dropped every citation"
+    if before - after:
+        return None, f"it no longer cites {sorted(before - after)}"
 
     if len(original.body) >= LENGTH_CHECK_MIN_CHARS:
 
@@ -606,5 +618,20 @@ def read_proposal(answer, original: DraftContent, lexicon: Lexicon) -> tuple[Dra
 
     if share_before >= MIN_STOPWORD_SHARE and share_after < MIN_STOPWORD_RATIO * share_before:
         return None, f"it is not in {draft_language.language_name(lexicon.language)}"
+
+    # Compared only once the proposal is known to be in the same language:
+    # across languages no figure or word lines up.
+    added = grounding.figures(" ".join((title, subtitle, body))) - grounding.figures(
+        " ".join((original.title, original.subtitle, original.body))
+    )
+
+    if added:
+        return None, f"it has figures the draft does not: {', '.join(sorted(added, key=int))}"
+
+    moved = grounding.repointed(original.body, body, lexicon.language)
+
+    if moved:
+        sentence, number = moved[0]
+        return None, f"it moved [{number}] onto a statement that source was not cited for: {grounding.quote(sentence)}"
 
     return DraftContent(title=title.strip(), subtitle=subtitle.strip(), body=body), None

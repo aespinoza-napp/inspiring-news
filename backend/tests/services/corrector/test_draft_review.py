@@ -340,7 +340,137 @@ def test_a_proposal_that_lost_every_citation_is_not_offered():
     proposal, reason = read_proposal({"title": "T", "body": "Doubled since 2015."}, original, writing_lexicon_for("en"))
 
     assert proposal is None
-    assert "citation" in reason
+    assert "no longer cites [1]" in reason
+
+
+ENGLISH_BODY = (
+    "The meadow has doubled since 2015 [1]. Fish counts rose with it [2]. "
+    "The water of the bay looks clearer and calmer than before."
+)
+
+
+def test_a_proposal_that_stopped_citing_a_source_is_not_offered():
+
+    original = DraftContent(title="T", subtitle="S", body=ENGLISH_BODY)
+
+    proposal, reason = read_proposal(
+        {
+            "title": "T",
+            "body": "The meadow has doubled since 2015 [1]. Fish counts rose with it. The water looks clearer.",
+        },
+        original,
+        writing_lexicon_for("en"),
+    )
+
+    assert proposal is None
+    assert "no longer cites [2]" in reason
+
+
+def test_a_proposal_with_a_figure_the_draft_does_not_have_is_not_offered():
+
+    original = DraftContent(title="Seagrass returns", subtitle="Ten years of work", body=ENGLISH_BODY)
+
+    proposal, reason = read_proposal(
+        {
+            "title": "Seagrass returns after 6 years",
+            "body": "The meadow has doubled since 2015 [1]. Fish counts rose with it [2]. The water looks clearer.",
+        },
+        original,
+        writing_lexicon_for("en"),
+    )
+
+    assert proposal is None
+    assert "figures the draft does not: 6" in reason
+
+
+def test_a_proposal_that_moved_a_citation_onto_another_statement_is_not_offered():
+
+    original = DraftContent(title="T", subtitle="S", body=ENGLISH_BODY)
+
+    proposal, reason = read_proposal(
+        {
+            "title": "T",
+            "body": (
+                "The meadow has doubled since 2015 [1]. Fish counts rose with it. "
+                "The water of the bay looks clearer and calmer than before [2]."
+            ),
+        },
+        original,
+        writing_lexicon_for("en"),
+    )
+
+    assert proposal is None
+    assert "moved [2]" in reason
+
+
+def test_a_rephrased_sentence_keeps_its_citation():
+
+    original = DraftContent(title="T", subtitle="S", body=ENGLISH_BODY)
+
+    proposal, reason = read_proposal(
+        {
+            "title": "T",
+            "body": "Since 2015, the meadow has doubled in size [1]. Fish counts rose along with it [2]. The water looks clearer.",
+        },
+        original,
+        writing_lexicon_for("en"),
+    )
+
+    assert reason is None
+    assert proposal.body.startswith("Since 2015")
+
+
+def test_the_first_live_catalan_proposal_is_not_offered():
+    """
+    llama3.2:3b's correction of a Catalan draft on 2026-10-15, as it came
+    back: "deu anys" became "6 anys", [2] was dropped and [1] moved onto
+    the plastics sentence. It passed every check that existed then.
+    """
+
+    original = DraftContent(
+        title="La posidònia torna a la Barceloneta",
+        subtitle="Deu anys de replantació han duplicat la praderia",
+        body=(
+            "Davant la platja de la Barceloneta, deu anys de replantació han fet tornar la posidònia. La "
+            "praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\n"
+            "Els bussejadors van comptar un 30% més de peixos joves el 2025 que el 2020 [2]. La badia ja esta "
+            "completament lliure de contaminació per plàstics.\n\n"
+            "## Qui ho ha fet possible\n\n"
+            "L'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris van fer la "
+            "major part de la plantació."
+        ),
+    )
+
+    live = {
+        "title": "La posidònia torna a la Barceloneta",
+        "subtitle": "Els bussejadors han duplicat la praderia després de 6 anys de replantació",
+        "body": (
+            "Davant la platja de la Barceloneta, la posidònia ha tornat a la zona després de 6 anys de "
+            "replantació. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015. Els bussejadors "
+            "han comptat un 30% més de peixos joves el 2025 que el 2020. Això és així: la badia ja no està "
+            "completament lliure de contaminació per plàstics, com s'havia dit [1]. La majoria dels peixos "
+            "joves es troben en la praderia restaurada. L'Ajuntament va finançar el projecte amb 1,2 milions "
+            "d'euros [1], i els voluntaris van fer la major part de la plantació."
+        ),
+    }
+
+    proposal, reason = read_proposal(live, original, CATALAN)
+
+    assert proposal is None
+    assert "[2]" in reason
+
+    # Each rule on its own would have caught it too.
+    restored = dict(live, body=live["body"].replace("el 2020.", "el 2020 [2]."))
+
+    _, reason = read_proposal(restored, original, CATALAN)
+
+    assert "figures the draft does not: 6" in reason
+
+    no_figures = {key: value.replace("6 anys", "deu anys") for key, value in restored.items()}
+
+    _, reason = read_proposal(no_figures, original, CATALAN)
+
+    assert "moved [1]" in reason and "plàstics" in reason
 
 
 def test_a_proposal_cut_short_is_not_offered():
