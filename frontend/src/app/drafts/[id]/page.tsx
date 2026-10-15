@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { FlowSteps } from "@/components/FlowSteps";
 import { DraftEditor } from "@/components/drafts/DraftEditor";
 import { DraftReviewPanel } from "@/components/drafts/DraftReviewPanel";
 import { PublishPanel } from "@/components/drafts/PublishPanel";
@@ -76,6 +77,8 @@ export default function DraftPage({ params }: { params: { id: string } }) {
 
   return (
     <>
+      <FlowSteps current="write" />
+
       <p className="reader-back">
         <Link href="/drafts">← Drafts</Link>
       </p>

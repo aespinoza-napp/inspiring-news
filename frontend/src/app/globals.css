@@ -4225,7 +4225,7 @@ button.graph-article.is-active {
 
 .flow-steps {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.5rem;
   margin: 0 0 1.75rem;
   padding: 0;
@@ -4294,6 +4294,180 @@ button.graph-article.is-active {
 @media (max-width: 640px) {
   .flow-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Writing a draft (components/drafts/NewDraftForm.tsx, DraftEditor.tsx)
+   --------------------------------------------------------------------- */
+
+.new-draft .new-draft-note {
+  margin-bottom: 1.25rem;
+}
+
+.new-draft-select,
+.new-draft select {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.new-draft-chosen .subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+}
+
+.new-draft-languages {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin: -0.75rem 0 1.25rem;
+}
+
+.new-draft-hint {
+  margin: 1rem 0 0;
+  font-size: 0.82rem;
+}
+
+.draft-title {
+  margin-bottom: 0.4rem;
+}
+
+.draft-subtitle {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.draft-article .article-body {
+  max-width: 68ch;
+  line-height: 1.65;
+}
+
+.draft-article .article-body h2,
+.draft-article .article-body h3 {
+  margin: 1.5rem 0 0.5rem;
+}
+
+.draft-article .article-body sup a {
+  font-size: 0.75em;
+  text-decoration: none;
+}
+
+textarea.draft-body-input {
+  min-height: 28rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.draft-sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.draft-source {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: 1.5rem;
+}
+
+.draft-source:first-child {
+  border-top: none;
+}
+
+/* A citation jumped to: say which source it was. */
+.draft-source:target {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.draft-source-number {
+  flex: none;
+  min-width: 2.2rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.draft-source-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.draft-source-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.draft-origin {
+  font-weight: 600;
+}
+
+.draft-origin-analysed {
+  color: var(--accent);
+}
+
+.draft-source-excerpt summary {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.draft-source-excerpt p {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+.draft-metadata {
+  display: grid;
+  grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+  gap: 0.45rem 1rem;
+  margin: 0;
+}
+
+.draft-metadata dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.draft-metadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.draft-metadata-note {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.draft-history {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.88rem;
+}
+
+.analyze-next {
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .draft-metadata {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

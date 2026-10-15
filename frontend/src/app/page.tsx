@@ -231,6 +231,16 @@ function JobCardView({
         </div>
       )}
 
+      {job.status === "done" && job.result?.storage?.publishable && (
+        // The writing flow starts from an article the reader publishes
+        // (docs/decisions/writing.md), so the link is offered only for
+        // one that passed. By URL: the reader matches it by host and path.
+        <p className="analyze-next">
+          Passed: it is on the <Link href="/reader">reader</Link>.{" "}
+          <Link href={`/drafts?url=${encodeURIComponent(job.result.url || url)}`}>Write an article from it →</Link>
+        </p>
+      )}
+
       {partial.entityCount > 0 && (
         <>
           <div className="section-label">Entities ({partial.entityCount})</div>
