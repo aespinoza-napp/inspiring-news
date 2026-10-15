@@ -7,6 +7,7 @@ import { buildTrace } from "@/lib/liveTrace";
 import { LiveTrace } from "@/components/LiveTrace";
 import { CURRENT_PHASE_LABELS } from "@/components/PhaseStepper";
 import { FlowSteps } from "@/components/FlowSteps";
+import { WriteArticleLink } from "@/components/drafts/WriteArticleLink";
 
 export default function LivePage() {
   const { jobs, loading, error } = useLiveJobs();
@@ -97,6 +98,11 @@ function LiveJobCard({ job }: { job: AnalysisJob }) {
   const lastPhase = events[events.length - 1]?.phase;
   const isClaim = job.kind === "claim";
 
+  // The list drops a finished job's result; the full record (fetched on
+  // "Show details") has it, and says whether the run was published.
+  const result = full?.result ?? job.result;
+  const writable = job.status === "done" && !isClaim && !!result?.storage?.publishable;
+
   const statusText =
     job.status === "failed"
       ? job.error ?? "Failed"
@@ -142,6 +148,7 @@ function LiveJobCard({ job }: { job: AnalysisJob }) {
       {open && (
         <>
           {loadError && <div className="error-banner">{loadError}</div>}
+          {writable && <WriteArticleLink url={result?.url || job.url} />}
           <LiveTrace trace={trace} />
         </>
       )}

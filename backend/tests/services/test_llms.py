@@ -129,3 +129,62 @@ def test_the_sdk_is_not_allowed_to_retry_on_its_own():
     """
 
     assert LLMClient()._client.max_retries == 0
+
+
+def test_an_answer_cap_is_sent_only_when_asked_for():
+    """Every caller before the writer sent none; their requests stay as they were."""
+
+    client = make_client(['{"a": 1}', '{"a": 2}'])
+
+    client.complete_json("system", "user")
+    client.complete_json("system", "user", max_tokens=4096)
+
+    calls = client._client.chat.completions.calls
+
+    assert "max_tokens" not in calls[0]
+    assert calls[1]["max_tokens"] == 4096
+
+
+class Usage:
+    def __init__(self, prompt_tokens):
+        self.prompt_tokens = prompt_tokens
+
+
+def with_usage(prompt_tokens):
+    """A client whose one answer reports how many prompt tokens were evaluated."""
+
+    client = make_client(['{"ok": true}'])
+
+    completions = client._client.chat.completions
+    create = completions.create
+
+    def create_with_usage(**kwargs):
+        completion = create(**kwargs)
+        completion.usage = Usage(prompt_tokens)
+        return completion
+
+    completions.create = create_with_usage
+
+    return client
+
+
+def test_a_prompt_the_server_cut_is_logged(caplog):
+    """
+    Measured on Ollama 0.40.4 with no context configured: 30,000
+    characters were evaluated as 2,050 tokens, and the answer said
+    nothing of it.
+    """
+
+    with caplog.at_level("WARNING", logger="src.services.llms"):
+        assert with_usage(2050).complete_json("s", "x" * 30000) == {"ok": True}
+
+    assert "probably cut" in caplog.text
+
+
+@pytest.mark.parametrize("prompt_tokens, chars", [(7500, 30000), (300, 2000), (None, 30000)])
+def test_a_prompt_evaluated_whole_or_too_short_to_judge_is_not(caplog, prompt_tokens, chars):
+
+    with caplog.at_level("WARNING", logger="src.services.llms"):
+        with_usage(prompt_tokens).complete_json("s", "x" * chars)
+
+    assert "probably cut" not in caplog.text

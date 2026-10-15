@@ -258,3 +258,111 @@ class ThresholdOverrides(BaseModel):
     max_evidence_per_claim: Optional[int] = Field(None, ge=1)
     min_evidence_for_verdict: Optional[int] = Field(None, ge=0)
     evidence_min_pertinence: Optional[float] = Field(None, ge=0.0, le=1.0)
+
+
+class WriterThresholds(BaseModel):
+    """
+    The effective settings for writing one draft (src/services/writer/,
+    docs/decisions/writing.md). Defaults come from `settings`, like
+    PipelineThresholds; `resolve` merges a request's overrides the same way.
+
+    A model of its own rather than more PipelineThresholds fields, for the
+    reason a discovery round's `topicEmphasis` is not one either (see
+    docs/decisions/thresholds.md): nothing here judges anything an
+    analysis does. As PipelineThresholds fields they would change every
+    analysis cache key and every evaluation run's config id, and /analyze
+    would accept knobs that do nothing there.
+    """
+
+    model_config = {"frozen": True}
+
+    # How many articles from other outlets on the same story, at most.
+    related_max_sources: int = Field(
+        default_factory=lambda: settings.WRITER_RELATED_MAX_SOURCES,
+        ge=0,
+        le=12,
+    )
+
+    # How similar a corpus article must be to the analysed one to count as
+    # the same story. By default the corpus's own definition of
+    # "related" - the bar an internal source clears as evidence.
+    related_min_similarity: float = Field(
+        default_factory=lambda: settings.RELATEDNESS_THRESHOLD,
+        ge=0.0,
+        le=1.0,
+    )
+
+    # A related article dated more than this many days before the analysed
+    # one is background, not the same story. Later ones are follow-ups and
+    # are kept.
+    related_max_age_days: int = Field(
+        default_factory=lambda: settings.WRITER_RELATED_MAX_AGE_DAYS,
+        ge=1,
+        le=3650,
+    )
+
+    related_excerpt_chars: int = Field(
+        default_factory=lambda: settings.WRITER_RELATED_EXCERPT_CHARS,
+        ge=200,
+        le=8000,
+    )
+
+    analysed_excerpt_chars: int = Field(
+        default_factory=lambda: settings.WRITER_ANALYSED_EXCERPT_CHARS,
+        ge=500,
+        le=20000,
+    )
+
+    evidence_max_sources: int = Field(
+        default_factory=lambda: settings.WRITER_EVIDENCE_MAX_SOURCES,
+        ge=0,
+        le=20,
+    )
+
+    evidence_excerpt_chars: int = Field(
+        default_factory=lambda: settings.WRITER_EVIDENCE_EXCERPT_CHARS,
+        ge=100,
+        le=4000,
+    )
+
+    max_output_tokens: int = Field(
+        default_factory=lambda: settings.WRITER_MAX_OUTPUT_TOKENS,
+        ge=256,
+        le=16384,
+    )
+
+    prompt_max_chars: int = Field(
+        default_factory=lambda: settings.WRITER_PROMPT_MAX_CHARS,
+        ge=4000,
+        le=400000,
+    )
+
+    @classmethod
+    def resolve(
+        cls,
+        overrides: Optional["WriterThresholdOverrides"] = None,
+    ) -> "WriterThresholds":
+
+        if overrides is None:
+            return cls()
+
+        return cls(**overrides.model_dump(exclude_none=True))
+
+
+class WriterThresholdOverrides(BaseModel):
+    """
+    A draft request's overrides: every field optional, names and bounds
+    mirroring WriterThresholds (test_invariants.py holds the two together).
+    """
+
+    model_config = {"extra": "forbid"}
+
+    related_max_sources: Optional[int] = Field(None, ge=0, le=12)
+    related_min_similarity: Optional[float] = Field(None, ge=0.0, le=1.0)
+    related_max_age_days: Optional[int] = Field(None, ge=1, le=3650)
+    related_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
+    analysed_excerpt_chars: Optional[int] = Field(None, ge=500, le=20000)
+    evidence_max_sources: Optional[int] = Field(None, ge=0, le=20)
+    evidence_excerpt_chars: Optional[int] = Field(None, ge=100, le=4000)
+    max_output_tokens: Optional[int] = Field(None, ge=256, le=16384)
+    prompt_max_chars: Optional[int] = Field(None, ge=4000, le=400000)

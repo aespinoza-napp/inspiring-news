@@ -2,15 +2,23 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { FlowSteps } from "@/components/FlowSteps";
 import { NewDraftForm } from "@/components/drafts/NewDraftForm";
 import { DraftSummary, LANGUAGES, draftsApi } from "@/lib/drafts";
+
+const READER_ID = /^[0-9a-f]{16}$/;
 
 /**
  * The newsroom's articles in progress, and where a new one starts
  * (docs/decisions/writing.md). Behind the site password, unlike /reader:
  * a draft is unpublished work.
+ *
+ * `?url=` or `?from=<reader id>` names the analysed article to start
+ * from: Analyze and Live link here with the URL once an article has
+ * passed, and a draft whose writing failed with the reader id, to start
+ * again from the same article.
  */
-export default function DraftsPage() {
+export default function DraftsPage({ searchParams }: { searchParams: { url?: string; from?: string } }) {
   const [drafts, setDrafts] = useState<DraftSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,15 +38,21 @@ export default function DraftsPage() {
     };
   }, []);
 
+  const initialUrl = typeof searchParams.url === "string" ? searchParams.url : null;
+  const initialArticleId =
+    typeof searchParams.from === "string" && READER_ID.test(searchParams.from) ? searchParams.from : null;
+
   return (
     <>
+      <FlowSteps current="write" />
+
       <h1>Drafts</h1>
       <p className="subtitle">
         Articles written from an analysed article and the news related to it, then reviewed, rewritten if they fall
         short, and published.
       </p>
 
-      <NewDraftForm />
+      <NewDraftForm initialUrl={initialUrl} initialArticleId={initialArticleId} />
 
       {error && (
         <div className="error-banner" role="alert">
