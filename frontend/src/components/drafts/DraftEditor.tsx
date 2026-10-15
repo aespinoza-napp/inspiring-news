@@ -25,6 +25,7 @@ const REASON_LABEL: Record<string, string> = {
   edited: "Edited by a person",
   corrected: "Corrections accepted",
   rewritten: "Rewritten",
+  restored: "Restored",
 };
 
 /**
@@ -352,7 +353,10 @@ function DraftHistory({ draft }: { draft: ArticleDraft }) {
         {draft.revisions.map((revision, index) => (
           <li key={`${revision.at}-${index}`}>
             {REASON_LABEL[revision.reason] ?? revision.reason}
-            {revision.model ? ` by ${revision.model}` : ""} · {new Date(revision.at).toLocaleString()}
+            {/* A restore is a person putting back a text a model wrote: the
+                model is the text's author, not the restore's. */}
+            {revision.model ? (revision.reason === "restored" ? ` · text by ${revision.model}` : ` by ${revision.model}`) : ""}{" "}
+            · {new Date(revision.at).toLocaleString()}
             {index === draft.revisions.length - 1 && <span className={styles.aside}> (current)</span>}
           </li>
         ))}

@@ -115,6 +115,56 @@ def test_the_disclosure_names_every_model_once_and_a_persons_edit():
     assert PublishedStory.of(draft, PUBLISHED_AT).disclosure.human_edited is True
 
 
+def test_a_model_text_restored_after_an_edit_is_not_called_edited():
+
+    # Written, edited by a person, then the model's text put back: what is
+    # published is the model's text alone.
+    draft = create_draft()
+    written = draft.content
+    edited = DraftContent(title="A person's title", body="A person's body [1].")
+
+    draft.revisions += [
+        DraftRevision(content=edited, reason="edited", at=PUBLISHED_AT),
+        DraftRevision(content=written, reason="restored", model="test-model", at=PUBLISHED_AT),
+    ]
+    draft.content = written
+
+    assert PublishedStory.of(draft, PUBLISHED_AT).disclosure.human_edited is False
+
+
+def test_a_rewrite_of_a_persons_edit_is_still_edited_and_names_its_model():
+
+    draft = create_draft()
+    edited = DraftContent(title="A person's title", body="A person's body [1].")
+    rewritten = DraftContent(title="Rewritten", body="Rewritten body [1].")
+
+    draft.revisions += [
+        DraftRevision(content=edited, reason="edited", at=PUBLISHED_AT),
+        DraftRevision(content=rewritten, reason="rewritten", model="rewrite-model", at=PUBLISHED_AT),
+    ]
+    draft.content = rewritten
+
+    disclosure = PublishedStory.of(draft, PUBLISHED_AT).disclosure
+
+    assert disclosure.human_edited is True
+    assert "rewrite-model" in disclosure.models
+
+
+def test_a_rewrite_undone_by_a_restore_is_not_named():
+
+    draft = create_draft(model="test-model")
+    written = draft.content
+    rewritten = DraftContent(title="Rewritten", body="Rewritten body [1].")
+
+    draft.revisions += [
+        DraftRevision(content=rewritten, reason="rewritten", model="rewrite-model", at=PUBLISHED_AT),
+        DraftRevision(content=written, reason="restored", model="test-model", at=PUBLISHED_AT),
+    ]
+    draft.content = written
+
+    assert PublishedStory.of(draft, PUBLISHED_AT).disclosure.models == ["test-model"]
+
+
 def test_a_card_has_no_body_and_no_sources():
 
     card = PublishedStory.of(create_draft(), PUBLISHED_AT).card().model_dump(mode="json", by_alias=True)

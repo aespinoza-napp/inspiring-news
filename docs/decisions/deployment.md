@@ -190,11 +190,13 @@ On the evidence it costs more than it gives:
 ### The front door
 
 **The reader view is public** (2026-10-04): `/reader`, `/reader/<id>`, their
-two proxies under `/api/reader/`, the static bundles under `/_next/static/`
+proxies under `/api/reader/`, the static bundles under `/_next/static/`
 and the favicon are served to anyone, on plain HTTP too when there is no
 domain. Safe because each proxy reaches only the backend's `/reader` routes,
 which are open by design (`OPEN_ENDPOINTS`): publishable articles, their lead
-and the checks behind them; and the bundles hold no key, which is read on the
+and the checks behind them, and since 2026-10-15 the newsroom's published
+originals (`/reader/stories`, whose article page reads the backend from the
+server rather than through a proxy; `docs/decisions/writing.md`); and the bundles hold no key, which is read on the
 server. Every other page still asks for the password. On a reader page the
 nav links to operator pages do not prefetch, or each visit would send nine
 requests that answer 401. `test_only_the_reader_view_is_served_without_the_password`

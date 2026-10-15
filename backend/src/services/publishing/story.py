@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from src.models.writer.draft import ArticleDraft, CamelModel, Language, SourceOrigin
+from src.models.writer.draft import ArticleDraft, CamelModel, DraftRevision, Language, SourceOrigin
 
 
 class StoryContent(CamelModel):
@@ -149,9 +149,11 @@ class PublishedStory(CamelModel):
     @classmethod
     def of(cls, draft: ArticleDraft, published_at: str) -> "PublishedStory":
 
+        chain = lineage(draft)
+
         models: list[str] = []
 
-        for model in [draft.model, *(revision.model for revision in draft.revisions)]:
+        for model in [draft.model, *(revision.model for revision in chain)]:
             if model and model not in models:
                 models.append(model)
 
@@ -194,7 +196,7 @@ class PublishedStory(CamelModel):
             ),
             disclosure=StoryDisclosure(
                 models=models,
-                human_edited=any(revision.reason == "edited" for revision in draft.revisions),
+                human_edited=any(revision.reason == "edited" for revision in chain),
             ),
             published_at=published_at,
         )
@@ -212,3 +214,56 @@ class PublishedStory(CamelModel):
             source_article_id=self.source_article_id,
             disclosure=self.disclosure,
         )
+
+
+def lineage(draft: ArticleDraft) -> list[DraftRevision]:
+    """
+    The revisions that made the current text, oldest first - not every
+    revision the draft ever had. A restore puts an earlier text back, so
+    what came between (a person's edit, another model's rewrite) is not in
+    the published text, and the disclosure must not say it is: "edited by
+    a person" on a model's text restored after an edit was false.
+
+    Walks back from the current revision: a correction, a rewrite or an
+    edit changed the text before it, so the walk continues; a restore
+    copied an earlier text, so the walk jumps to the first revision that
+    wrote it; the generated revision is where every text starts.
+    """
+
+    revisions = draft.revisions
+
+    chain: list[DraftRevision] = []
+
+    index = len(revisions) - 1
+
+    while index >= 0:
+
+        revision = revisions[index]
+
+        if revision.reason == "restored":
+
+            origin = next(
+                (
+                    earlier for earlier in range(index)
+                    if revisions[earlier].reason != "restored" and revisions[earlier].content == revision.content
+                ),
+                None,
+            )
+
+            if origin is not None:
+                index = origin
+                continue
+
+            # The text it copied is not in the history (an older draft,
+            # a hand-edited file): count everything before it, as the
+            # disclosure did before restores existed.
+
+        chain.append(revision)
+
+        if revision.reason == "generated":
+            break
+
+        index -= 1
+
+    return list(reversed(chain))
+

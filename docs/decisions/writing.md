@@ -66,8 +66,10 @@ own fields and leaves the others alone.
   id every source list gives its n-th source.
 - **Settings:** `DRAFTS_PATH`, `WRITER_LLM_MODEL` and
   `CORRECTOR_LLM_MODEL` (None = `LLM_MODEL`), `WRITER_LLM_TIMEOUT`
-  (300 s). Infrastructure, in `NON_THRESHOLD_SETTINGS`. Targets a run
-  can tune go in `PipelineThresholds`.
+  (300 s). Infrastructure, in `NON_THRESHOLD_SETTINGS`. What a run can
+  tune goes in `thresholds.py`, in pairs of the flow's own
+  (`WriterThresholds`, `RewriteTargets`) - never `PipelineThresholds`,
+  whose fields key every analysis cache entry and evaluation run.
 - **Tests:** `create_draft()` in `tests/factories.py`; the `draft_store`
   fixture puts a store over `tmp_path` in the container.
 
@@ -607,8 +609,8 @@ the article without a person accepting it.
   marker, as on `/correct`, and the panel matches its first words. A
   rewrite loop reading the metrics needs to skip those, not read them
   as 0.
-- No per-run targets for the metrics yet: "below target" belongs to the
-  rewrite stage, in `PipelineThresholds`.
+- Per-run targets for the metrics belong to the rewrite stage
+  (`RewriteTargets`, "Rewriting" below).
 - No endpoint creates a draft yet (the writer's), so the live run wrote
   its drafts into a scratch `DraftStore` directly.
 
@@ -893,17 +895,12 @@ pulled.
   title the model scores 70+ is never below target and never sent to a
   rewrite (live). A ceiling there is the review stage's call.
 - **The metadata is the writer's** after any rewrite (above).
-- **`DraftEditor`'s history** renders a restored revision as "restored by
-  <model>": its labels are a `Record<string, string>` with a fallback,
-  and the line says "by" whatever the reason. This panel's history says
-  "text by". `DraftEditor` is the writer stage's file.
-- **The contract above** still says per-run targets go in
-  `PipelineThresholds`, and the Review section's gaps that "below target"
-  belongs there; this stage chose otherwise (above). Left for the
-  coordinator, whose sections they are.
-- **The disclosure's `humanEdited` is history-wide** (`story.py`): restore
-  a model's text after a person's edit and the page still says "edited by
-  a person". Publishing's to decide.
+- *Closed at the merge:* `DraftEditor`'s history now says "Restored ·
+  text by <model>"; the contract and the Review section say where
+  targets live; and the disclosure (`story.py`, `lineage`) reads only the
+  revisions that made the current text, so a model's text restored after
+  a person's edit no longer says "edited by a person", and a rewrite a
+  restore undid is not named among the models.
 
 ## Publishing
 
