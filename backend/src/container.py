@@ -528,3 +528,44 @@ def get_publishers():
                 )
 
     return _publishers
+
+
+_draft_reviewer = None
+
+
+def get_draft_reviewer():
+    """
+    Backs POST /drafts/{id}/review (src/services/corrector/draft_reviewer.py).
+
+    Its own LLMClient: the corrector's model (CORRECTOR_LLM_MODEL, else
+    LLM_MODEL) - kept apart from the writer's so a draft need not be
+    judged by the model that wrote it - and the writer's timeout, because
+    reading a whole article with its sources, or proposing one back,
+    overruns LLM_TIMEOUT's 30 s, which is sized for one verdict.
+
+    Shares the text corrector's sentiment and quality analysers: one
+    inference/ client, and /correct and the draft review scoring
+    coverage with the same objects.
+    """
+
+    global _draft_reviewer
+
+    if _draft_reviewer is None:
+        with _lock:
+            if _draft_reviewer is None:
+                from src.services.corrector.draft_reviewer import DraftReviewer
+                from src.services.llms import LLMClient
+
+                corrector = get_text_corrector()
+
+                _draft_reviewer = DraftReviewer(
+                    llm=LLMClient(
+                        model=settings.CORRECTOR_LLM_MODEL or settings.LLM_MODEL,
+                        timeout=settings.WRITER_LLM_TIMEOUT,
+                    ),
+                    sentiment_analyzer=corrector.sentiment_analyzer,
+                    quality_analyzer=corrector.quality_analyzer,
+                    impact_scorer=corrector.impact_scorer,
+                )
+
+    return _draft_reviewer

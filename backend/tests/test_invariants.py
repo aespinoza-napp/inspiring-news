@@ -659,7 +659,9 @@ def test_no_test_asserts_against_a_threshold_read_from_settings():
 # ----------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("language", ["en", "es"])
+# "ca" is a writing language only (drafts), so it is in WRITING_LEXICONS
+# and not in LEXICONS, which the language detector reads.
+@pytest.mark.parametrize("language", ["en", "es", "ca"])
 def test_both_languages_have_a_complete_lexicon(language):
     """
     The pipeline scored every article with English word lists while 7 of
@@ -667,9 +669,9 @@ def test_both_languages_have_a_complete_lexicon(language):
     silently reintroduces that.
     """
 
-    from src.config.lexicons import LEXICONS
+    from src.config.lexicons import WRITING_LEXICONS
 
-    lexicon = LEXICONS[language]
+    lexicon = WRITING_LEXICONS[language]
 
     empty = [
         field
