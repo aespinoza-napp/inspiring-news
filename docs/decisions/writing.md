@@ -614,7 +614,290 @@ the article without a person accepting it.
 
 ## Rewriting
 
-*To be filled by the rewrite stage.*
+**Built 2026-10-15.** "In case I do not get the metrics expected, I want
+to have the option to rewrite the article." `POST /drafts/{id}/rewrite`,
+`POST /drafts/{id}/restore` and `GET /writing/targets`
+(`src/api/rewrite_routes.py`); `DraftRewriter`
+(`src/services/writer/rewriter.py`); the targets, `RewriteTargets`
+(`src/config/thresholds.py`). On the page, `components/drafts/RewritePanel.tsx`,
+between the review and publishing.
+
+### What happens
+
+```
+POST /drafts/{id}/rewrite {targets?, instructions?, maxRounds?}
+  │  404 unknown · 409 busy, published, or no review of the current text
+  │  202, busy "rewriting"
+  v  (background, DraftStore.run_in_background)
+round n ─ the metrics below target guide the prompt (summaries, issues)
+          one call to the writer's model: closed world, the draft's own sources
+          the writer's repairs, then the review's proposal checks
+            └─ not kept: nothing saved, `error` says why, stop
+          revise(draft, content, "rewritten", model); approved -> draft
+          the reviewer reviews the new text; its review goes on it
+          a scored target still unmet and n < maxRounds? round n + 1
+```
+
+A rewrite is guided by a review, so there is none without one: the 409
+says "Review the draft first". The first round always runs - the person
+asked, perhaps for their instructions alone, with every target met; a
+further round only while a scored metric is below its target.
+
+### The targets: "the metrics expected"
+
+A minimum per review metric, 0-100 like the scores (higher is better on
+all nine, hallucinationIndex included, so every target is a floor). Per
+request: `targets` in the body, under the review's own metric keys
+(`{"factConsistency": 90}`), anything left out at its default.
+`GET /writing/targets` gives the defaults, for the page to judge a review
+before anyone asks for a rewrite.
+
+**A pair of its own, `RewriteTargets` / `RewriteTargetOverrides`,** held
+together by the parity test in `tests/test_invariants.py` (names, bounds,
+aliases). Not `PipelineThresholds`, which the contract above named: its
+fields key every analysis cache entry and evaluation config id, and
+`/analyze` would accept nine knobs that judge nothing an analysis does.
+Not `WriterThresholds` either, for the same reason one step on: `POST
+/drafts` would accept them and do nothing with them. Not from `settings`:
+the metrics have no environment of their own, and a request overrides any
+of them; a new default is a change to `thresholds.py`.
+
+| Metric | Default | Why |
+|---|---|---|
+| factConsistency | 85 | One fault fails it: a citation to no source costs 20 of the ceiling (`DANGLING_CITATION_PENALTY`), leaving 80 |
+| hallucinationIndex | 85 | Capped at the share of factual sentences that cite a source: one uncited passes among seven or more, fails among six or fewer |
+| grammar | 80 | What a reader sees first, and the most common failure measured in Catalan drafts |
+| title, subtitle, style | 70 | The panels' own "good" tier, the colour /corrector and the review already draw at 70. No subtitle is capped at 20, so it always fails |
+| seo | 60 | The least strict of the model's: it costs a reader nothing; an untrue sentence does |
+| readability | 50 | Flesch's bands (Fernández-Huerta's, and the Catalan stand-in, map onto them): under 50 is "difficult", prose for specialists |
+| coverageVerification | 30 | The positive-impact score at the bar the running newsroom admits articles at (0.3 in the author's `.env`, `docs/experiments.md`), not the code's 0.1, which admits almost anything |
+
+Reasoned, not fitted: no review has been scored by a person to fit them
+against. The two about truth are the strictest, SEO the least.
+
+**A metric the reviewer could not score is neither met nor unmet.** Its
+summary is `UNAVAILABLE_SUMMARY` and its 0 is not a judgement
+(`normalize_metric`): read as a score it would fail every target and send
+every draft round again, and a target of 0 would "pass" it.
+`rewriter.standings` returns `unscored` for it, the loop ignores it, and
+the panel draws it dashed, without a bar, as "Not scored", with a line
+saying it counts neither way. Its issues still guide a rewrite: they came
+from the checks that need no model, which are certain.
+
+### The prompt
+
+**The writer's rules, not a copy.** `article_writer.py`'s system prompt is
+now `NEWSROOM` + `CLOSED_WORLD_RULES` + the writer's own task and answer
+shape (byte-identical to before; checked). The rewrite's is `NEWSROOM` +
+`CLOSED_WORLD_RULES` + four more:
+
+10. the sources are the article's, numbered as it cites them: keep every
+    `[n]` on its statement, never renumber, merge or move one, keep citing
+    every source cited now;
+11. a sentence with no citation gets one only if a source says it;
+    otherwise cut it or reduce it to what a source says;
+12. fix every problem under WHAT THE REVIEW FOUND; a sentence found
+    unsupported or contradicted by the fact-checks is corrected from the
+    sources or removed;
+13. no new figures.
+
+The user prompt: the language; the draft's instructions and this
+rewrite's (2,000 characters at most; the draft's own `instructions` field
+is the writer's record and is not changed); **what the review found** -
+each metric below target with its score, target, summary and issues, or,
+with every target met, the remaining notes; the unscored metrics' issues;
+then the fact-checks with their rules, the sources and the reminders, all
+through the writer's own functions (`fact_check_lines`, `source_lines`,
+`reminders`); the article; "Now rewrite the article in ..., as JSON". 40
+issues at most, as the review's correction.
+
+The excerpts are fitted to `WRITER_PROMPT_MAX_CHARS` by the writer's
+`fit_excerpts`, **without dropping a source** (`drop=False`): the writer
+drops the last ones before the numbering exists; here the article cites
+every one.
+
+**The model is the writer's:** `ArticleWriter.complete`, the call the
+writer itself now makes - `WRITER_LLM_MODEL` or `LLM_MODEL`,
+`WRITER_LLM_TIMEOUT`, no retry, `max_output_tokens`.
+`container.get_draft_rewriter` builds the rewriter on the writer and the
+draft reviewer, so a rewrite is scored by the instrument that scored the
+text it replaced. Temperature is 0, so a rejected round is not tried
+again: the same prompt would get the same answer.
+
+Only title, subtitle and body are rewritten. The metadata (slug, SEO
+description, keywords) stays the writer's: a revision does not carry
+metadata, so a rewritten one could not be restored with its text.
+
+### What is kept
+
+First **the writer's repairs** (`draft_checks.check`), as on its own
+answer: the Markdown the page renders, a citation past the sources
+removed, a title stripped of citations; the findings (uncited sentences,
+passages copied from `[1]`, numbers no source has) logged as the writer
+logs them. Then **the review's proposal checks**, `read_proposal` taken
+apart into named functions in `draft_reviewer.py` so both stages apply
+the same code, with what a rewrite has that a proposal does not - the
+sources:
+
+| A rewrite that ... | |
+|---|---|
+| no longer cites a source the draft cited | not kept |
+| cites `[n]` on a statement no `[n]`-citing sentence of the draft made and source n's excerpt does not make | not kept (moved) |
+| cites `[n]` where the sentence shares half its content stems with source n's excerpt (`grounding.MIN_SOURCE_SHARE`) | kept: the fix for a sentence citing nothing |
+| has a figure neither the draft nor any source, source title or claim has | not kept |
+| puts a figure right from its source | kept (a proposal, which never saw the sources, may not) |
+| came back in another language (stopword share) | not kept |
+| came back identical | not kept: nothing to keep |
+| is much shorter or longer | kept: the review's length rule is not applied - the editor may ask for another length, a cut-off answer is invalid JSON, and what was cut or added is what the citation and figure rules and the new review catch |
+| scores worse than the text it replaced | **kept, with its review**: the older text is in the history, one Restore away |
+
+Compared with the draft's body as the same repairs leave it, so a
+citation the draft had to a source that does not exist is not counted as
+one the rewrite dropped. A rewrite not kept saves nothing: the draft keeps
+its text, its review and its status, and `error` says why ("rewriting
+failed: The rewrite was not kept: it moved [2] onto ... The draft keeps
+its current text and review."). In round 2 or 3 it says the earlier
+rounds' rewrite is what the draft keeps.
+
+### Rounds
+
+`maxRounds` 1 by default, 3 at most (a 422 past it, and the service caps
+it too). A round is three calls on the process's one LLM permit - the
+rewrite, then the review and its proposed correction - which on the
+production VM's CPU is estimated at tens of minutes for a 7B model ("The
+model" above), with fact-checking paused behind it; and a person should
+see what one rewrite did to the scores before paying for another. Past
+three, a model that has not met the targets is not converging, and the
+person's own edit is the better step. Every intermediate review proposes
+a correction too: it is wasted time when another round follows, and kept
+because a restored revision's review then has its proposal.
+
+### Going back: restore
+
+`POST /drafts/{id}/restore {revision: n}`, 0-based into `revisions`. The
+earlier text and **the review of that text** come back as a new revision,
+so nothing is lost: the text it replaces keeps its own review in the
+history, through `revise`. Synchronous, like accepting a correction. 409
+while busy, once published, and for a text that is already the current
+one; 422 for a revision the draft does not have.
+
+**Its reason is `"restored"`**, added to `RevisionReason` in `draft.py`
+and `lib/drafts.ts`, with the model that wrote that text (none for a
+person's edit). Not `"edited"`: the published page discloses `edited` as
+"edited and approved by a person" (`story.py`, `lib/stories.ts`), and a
+person who restored a model's text did not write it. `DraftReviewPanel`'s
+`CHANGED_BY` is a `Record` over the reason, so it gained one line.
+
+### Approval, and text that changed meanwhile
+
+- **Any change of text sends an approved draft back to `draft`** - a kept
+  rewrite and a restore both; publishing trusts `status`, so text nobody
+  approved never goes out. Publishing's first gap above holds for this
+  stage. A rewrite not kept changes nothing, status included.
+- **A rewrite never lands on text it did not read.** The content is
+  snapshot before the model is asked and the revision is made only if it
+  is still the draft's; the new review is attached only if the content is
+  still the rewritten text. Edits are refused while a draft is busy, so
+  this guards whatever else changes it meanwhile, as the review's stale
+  check does (tested by editing from inside the model call).
+- **A kept rewrite whose review fails** (the reviewer's model or
+  `inference/` down) stays, without a review, and `error` says so and asks
+  for a review.
+
+### On the page
+
+`RewritePanel`, between Review and Publish on `/drafts/[id]`: each metric
+with its score, a bar with its target marked, the target (a number input:
+changed ones are sent with the next rewrite and not saved) and "Meets
+target", "Below target" or "Not scored"; **What will be addressed** (the
+failing metrics' summaries and first issues); optional instructions; the
+rounds; **Rewrite** - disabled with "Review first" when the current text
+has no review, emphasised and counting the failing metrics when a target
+is unmet. Then the **history**, newest first: each revision's reason,
+model ("text by" for a restored one, and which revision it came from),
+title, how many scored targets its review met and its facts, grounding and
+grammar scores, and **Restore** for every earlier text (asks first when
+the draft is approved). Everything is disabled while the draft is busy or
+published. The defaults come from `/api/writing/targets`, its own proxy
+(`headers()` pattern) - `/drafts/targets` would be `GET /drafts/{draft_id}`
+answering first with a 422, as `/publishing/channels` found; `restore`
+joined the drafts proxy's `POST_ACTIONS`.
+
+### Live
+
+2026-10-15, `llama3.2:3b` on the local Ollama (RTX 3050), the only model
+pulled; outside the stack - a scratch `DraftStore`, the real reviewer and
+rewriter, sentiment a fixed stand-in (`inference/` was down). The review
+stage's seeded drafts: "it's" for "its", 3 million euros where `[1]` says
+1.2, the claim judged FALSE ("the bay is now completely free of plastic
+pollution") stated uncited, an 8-character title, no subtitle. Each
+rewrite call took 6-8 s; each review 17-25 s, most of it the correction
+call, which Ollama aborted every time ("token repeat limit reached").
+
+- **English, seeded, run twice:** the review put subtitle,
+  factConsistency and hallucinationIndex below target. First run: the
+  FALSE claim turned into its negation, "The bay is not completely free of
+  plastic pollution", citing `[1][2]` - **not kept** (moved `[1]`: `[1]`
+  does say plastic "remains a problem", but shares one content stem of
+  four with the sentence, and `[2]` says nothing of plastic). Second run:
+  the cost put right from the source (1.2 million, cited) and a subtitle
+  added - and the FALSE claim kept, now citing `[2]`, with a "Note:"
+  that it is false citing `[1]`. **Not kept** (moved `[2]`).
+- **Catalan, seeded:** it removed the FALSE claim, fixed "esta" and the
+  cost - and wrote "Després de 10 anys" in the subtitle where the draft
+  and source say ten in words. **Not kept** (a figure neither has; the
+  safe side the review documents), and its `[2]` on the plastics sentence
+  would have been refused next.
+- **English, grounded, weak headline, two rounds:** round 1 **kept**:
+  subtitle 20 -> 90, coverage 34 -> 47, every citation where its source
+  says it. But it **dropped the story's main fact** (the meadow doubled to
+  12 hectares), copied a sentence of `[1]` word for word (logged), left
+  the 8-character title (the model scored it 80; the length check reports
+  but does not cap). Its review said the text stated the FALSE claim,
+  which it does not. hallucinationIndex stayed at 70, so round 2 ran: it
+  added "Note: The bay is not completely free of plastic pollution,
+  according to our analysis of the available data. [1][2]" - **not
+  kept** (moved `[1]`); the draft kept round 1.
+
+Read: the checks did what they are for - four of five rewrites were
+stopped, three of them for pinning a source onto the FALSE claim or a
+sentence about it. They cannot see a fact a rewrite leaves out, and the 3B
+reviewer judging the result invents problems. As for the writer and the
+corrector: **not `llama3.2:3b`.** The same run with a larger
+`WRITER_LLM_MODEL` and `CORRECTOR_LLM_MODEL` has not been made: none was
+pulled.
+
+### Gaps
+
+- **A rewrite can drop a grounded fact** (live, above): no check compares
+  what the draft said with what the rewrite says, only which sources it
+  cites. The new review and the person are what catch it; Restore is the
+  remedy.
+- **What a rewrite was asked is not recorded:** neither the extra
+  instructions nor the targets have a field on the draft or the revision,
+  so the history shows each text's review but not the targets it was
+  judged against. Logged only.
+- **A Catalan draft can keep its citations but not add one**: the
+  source-text rule compares stems, and the sources are English or
+  Spanish.
+- **A number written in words that comes back in digits is refused**
+  ("deu anys" -> "10 anys", live), and one written out the other way is
+  not caught - as for the proposal.
+- **The title's length is reported, never capped,** so an 8-character
+  title the model scores 70+ is never below target and never sent to a
+  rewrite (live). A ceiling there is the review stage's call.
+- **The metadata is the writer's** after any rewrite (above).
+- **`DraftEditor`'s history** renders a restored revision as "restored by
+  <model>": its labels are a `Record<string, string>` with a fallback,
+  and the line says "by" whatever the reason. This panel's history says
+  "text by". `DraftEditor` is the writer stage's file.
+- **The contract above** still says per-run targets go in
+  `PipelineThresholds`, and the Review section's gaps that "below target"
+  belongs there; this stage chose otherwise (above). Left for the
+  coordinator, whose sections they are.
+- **The disclosure's `humanEdited` is history-wide** (`story.py`): restore
+  a model's text after a person's edit and the page still says "edited by
+  a person". Publishing's to decide.
 
 ## Publishing
 
