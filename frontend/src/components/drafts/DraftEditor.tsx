@@ -1,5 +1,6 @@
 "use client";
 
+import { ArticleBody } from "@/components/drafts/ArticleBody";
 import { DraftStageProps } from "@/lib/drafts";
 
 /**
@@ -12,7 +13,7 @@ export function DraftEditor({ draft }: DraftStageProps) {
     <article>
       <h1>{draft.content.title}</h1>
       {draft.content.subtitle && <p className="subtitle">{draft.content.subtitle}</p>}
-      <div style={{ whiteSpace: "pre-wrap" }}>{draft.content.body}</div>
+      <ArticleBody body={draft.content.body} />
     </article>
   );
 }

@@ -60,6 +60,10 @@ own fields and leaves the others alone.
   `content`). `/drafts` lists and starts drafts; `/drafts/[id]` polls
   while `busy` and renders one component per stage, each taking
   `DraftStageProps` (`components/drafts/`).
+- **One body renderer:** `components/drafts/ArticleBody.tsx`, for the
+  draft and the public page alike. React elements, never HTML (the text
+  is a model's and the public sees it); `[n]` links to `#source-n`, the
+  id every source list gives its n-th source.
 - **Settings:** `DRAFTS_PATH`, `WRITER_LLM_MODEL` and
   `CORRECTOR_LLM_MODEL` (None = `LLM_MODEL`), `WRITER_LLM_TIMEOUT`
   (300 s). Infrastructure, in `NON_THRESHOLD_SETTINGS`. Targets a run
