@@ -499,3 +499,32 @@ def get_draft_store():
                 _draft_store = DraftStore(settings.DRAFTS_PATH)
 
     return _draft_store
+
+
+_publishers = None
+
+
+def get_publishers():
+    """
+    Backs publishing and the public stories (src/api/publish_routes.py):
+    the web publisher over `DRAFTS_PATH / "published"`, then TikTok and
+    Instagram, which refuse with their reason
+    (src/services/publishing/). A singleton like the draft store it sits
+    beside. Tests replace it with one over tmp_path.
+    """
+
+    global _publishers
+
+    if _publishers is None:
+        with _lock:
+            if _publishers is None:
+                from src.services.publishing.registry import Publishers
+                from src.services.publishing.social import InstagramPublisher, TikTokPublisher
+                from src.services.publishing.web import WebPublisher
+
+                _publishers = Publishers(
+                    WebPublisher(settings.DRAFTS_PATH / "published"),
+                    [TikTokPublisher(), InstagramPublisher()],
+                )
+
+    return _publishers
