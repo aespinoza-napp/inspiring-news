@@ -303,10 +303,11 @@ class Settings(BaseSettings):
     # metadata is ~1,500-2,500 in Catalan or Spanish. A ceiling, so a small
     # model stuck repeating itself stops instead of running to the timeout.
     WRITER_MAX_OUTPUT_TOKENS: int = 4096
-    # The whole prompt, in characters (~3.5 per token in Catalan and
-    # Spanish). Excerpts are shortened to fit. Sized for a model served
-    # with a 16k-token context: Ollama serves 4k unless told otherwise,
-    # and cuts a longer prompt without saying so (docs/decisions/writing.md).
+    # The whole prompt, in characters (~3.5-5 per token in Catalan,
+    # Spanish and English). Excerpts are shortened to fit. Sized for a
+    # model served with a 16k-token context, which must be configured:
+    # Ollama with none set evaluated 30,000 characters as 2,050 tokens and
+    # said nothing (measured 2026-10-15; docs/decisions/writing.md).
     WRITER_PROMPT_MAX_CHARS: int = 30000
 
     # Claim selection

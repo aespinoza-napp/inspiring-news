@@ -36,8 +36,9 @@ Eleven pages, one per nav link (the reader has an article page too),
 in two nav groups (`components/NavLinks.tsx`): the **newsroom** - Discover,
 Analyze, Live, Reader, the path an article takes - and the **lab**, the
 tools for looking inside one stage at a time. The newsroom pages but the
-public reader carry `components/FlowSteps.tsx`, the same four steps on
-each, so they read as one flow. Every one talks to the backend **only** through the server-side route
+public reader carry `components/FlowSteps.tsx`, the same five steps on
+each (Write, `/drafts`, between Follow and Read -
+`docs/decisions/writing.md`), so they read as one flow. Every one talks to the backend **only** through the server-side route
 handlers in `src/app/api/`, which keeps `BACKEND_URL`
 off the client. See `.env.local.example` — it is `http://127.0.0.1:8000`,
 not `localhost`, because Node can resolve `localhost` to the IPv6
