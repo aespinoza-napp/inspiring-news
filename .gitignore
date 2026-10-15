@@ -219,11 +219,13 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Runtime data - local Qdrant storage, the /analyze results cache, and
-# the three-layer storage lake the pipeline writes on every run
+# Runtime data - local Qdrant storage, the /analyze results cache, the
+# three-layer storage lake the pipeline writes on every run, and the
+# newsroom's drafts (settings.DRAFTS_PATH, docs/decisions/writing.md)
 backend/data/vector_db/
 backend/data/cache/
 backend/data/lake/
+backend/data/drafts/
 
 # Evaluation runs: raw per-claim results, third-party titles and quotes,
 # and a copy of the corpus each. The reports made from them
