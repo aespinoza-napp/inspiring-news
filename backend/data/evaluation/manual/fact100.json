@@ -18,7 +18,7 @@
   "onlyOwnSource": true,
   "evidenceDate": "2026-09-29",
   "articleUrl": "https://www.carbonbrief.org/analysis-wind-and-solar-save-uk-from-gas-imports-worth-5-9bn-during-hormuz-crisis",
-  "annotatorNote": "Rule 1: 'according to Carbon Brief's analysis', of 'the UK's electricity needs' (demand, imports included) for 2026 to date. Official statistics on the article's date (DESNZ, 29 Sep 2026) stop at July and measure generation, not needs (May-July, major power producers: renewables 48.5%, gas 35.9%) - not comparable either way.",
+  "annotatorNote": "[AI label: Claude, 2026-10-09 - not yet checked by the human annotator] Rule 1: 'according to Carbon Brief's analysis', of 'the UK's electricity needs' (demand, imports included) for 2026 to date. Official statistics on the article's date (DESNZ, 29 Sep 2026) stop at July and measure generation, not needs (May-July, major power producers: renewables 48.5%, gas 35.9%) - not comparable either way.",
   "createdAt": "2026-10-09T13:30:59",
   "review": null
 }

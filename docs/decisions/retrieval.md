@@ -307,4 +307,5 @@ Items 1 and 3 above still stand.
   design.
 - **Accuracy is still unmeasured.** There is no labelled set, so the
   threshold defaults are reasoned, not fitted.
-- **Only the 36 configured domains have a real reliability rating.**
+- **Only the 37 configured domains have a real reliability rating**
+  (36 until The Optimist Daily was added on 2026-10-09).

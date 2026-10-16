@@ -104,6 +104,15 @@ services:
       # request is sent (docs/decisions/concurrency.md).
       - LLM_MAX_CONCURRENCY=1
       - LLM_TIMEOUT=180
+      # Inference is on the CPU here too. In the X-Fact pilot's first
+      # session (2026-10-13) four claims at once pushed the ranker's
+      # batched bge-m3 requests past the 30 s default and 5 of 20 claims
+      # died with InferenceUnavailable, every one answered late; two
+      # claims at once and 120 s ran the rest of the pilot without one
+      # (docker-compose.eval.yml, docs/decisions/evaluation.md). Neither
+      # changes what the pipeline decides, only whether it gets to decide.
+      - INFERENCE_TIMEOUT=120
+      - CLAIM_MAX_CONCURRENCY=2
       # Required here, optional in dev: unset, /storage/* and the graph
       # console are open to whoever can reach the port (src/main.py
       # warns; here it refuses to start instead).

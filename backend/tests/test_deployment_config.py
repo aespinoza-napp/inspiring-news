@@ -170,6 +170,24 @@ def test_every_production_service_has_a_memory_ceiling(base, prod):
         assert limit, name
 
 
+def test_production_uses_the_cpu_limits_the_pilot_measured(prod):
+    """
+    The dev defaults assume a GPU. On a CPU the LLM timed out at 30 s
+    (2026-10-01) and inference at 30 s under four claims at once (the
+    X-Fact pilot, 2026-10-13), each time turning a claim into an outage
+    rather than a verdict.
+    """
+
+    environment = dict(
+        e.split("=", 1) for e in prod["services"]["backend"]["environment"]
+    )
+
+    assert int(environment["LLM_MAX_CONCURRENCY"]) == 1
+    assert float(environment["LLM_TIMEOUT"]) >= 180
+    assert float(environment["INFERENCE_TIMEOUT"]) >= 120
+    assert int(environment["CLAIM_MAX_CONCURRENCY"]) <= 2
+
+
 def test_the_backend_waits_for_the_llm_model_to_be_pulled(prod):
 
     depends = prod["services"]["backend"]["depends_on"]

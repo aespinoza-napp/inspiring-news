@@ -222,7 +222,7 @@ Phase 1.
 - **`JobStore` never evicts**, and the analysis cache never expires (and caches
   rejections).
 - **URLs are compared as plain strings** for duplicate detection.
-- **Only the 36 configured domains have a real reliability rating**; every
+- **Only the 37 configured domains have a real reliability rating**; every
   other domain gets the default and is flagged `reliability_known: false`.
 - **The LLM's accuracy has never been measured** against labelled data — and
   the pertinence gate's default threshold is reasoned, not fitted, for the

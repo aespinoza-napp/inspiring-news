@@ -19,10 +19,20 @@ built and what it measured, like every other file in this folder.
 
 ## Research questions
 
-Proposed on Sep 29; the first goal settles them (by Oct 13), writes them
-into `docs/final_document/chapters/06-experimental-design/01-research-questions-metrics.tex`, and keeps
-this table in step with it. Whatever answers none of them is cut or
-moved to future work.
+**Fixed by the author on 2026-10-14** (thesis §1.5, metrics §6.1 in
+`docs/final_document/chapters/06-experimental-design/01-research-questions-metrics.tex`;
+`docs/roadmap.md`, "Thesis priorities"). They replace the Sep 29
+proposal kept below. The sections of this file named "(RQ2)" still
+serve RQ2; "Journalist effort", RQ3 in the old numbering, serves RQ4.
+
+| RQ | Question | Answered by | Data |
+|---|---|---|---|
+| RQ1 | Finding: can a retriever of the open web, scoped to chosen topics, simplify a journalist's task of finding constructive news on them? | Sources and links read against the every-topic baseline; precision of the first k; AUC of the ranking score | Live candidate rounds, labelled |
+| RQ2 | Verifying: can the claims be verified by this pipeline, and how can that be quantified? | Accuracy, macro-F1, kappa against gold with intervals; closed-book / retrieved / oracle evidence; evidence recall and MRR; stage attribution | Custom set (natural and synthetic apart), x-fact |
+| RQ3 | Person and model: given the same news and evidence, how close does an LLM come to a person? | Kappa: annotator vs the AI labelling pass; editor vs the AI selection (blind rounds); annotator vs the pipeline; the annotator's self-agreement as the ceiling | Custom set, selection rounds |
+| RQ4 | The system: to what extent can it take over a journalist's work, and where is a person still needed? | Claim selector's precision; coverage and selective accuracy; time per article | All of the above |
+
+The Sep 29 proposal, superseded:
 
 | RQ | Question | Answered by | Data |
 |---|---|---|---|
@@ -481,7 +491,7 @@ retrieval: the decisive source was never found. Claims set apart above
 Everything here is read from fields the record already holds. No new
 pipeline output is needed.
 
-## Journalist effort (RQ3)
+## Journalist effort (RQ4; RQ3 in the Sep 29 numbering)
 
 - **Claim selector's precision**: labelled / (labelled + skipped) over
   every batch in `backend/data/evaluation/queue/`, by skip reason and by
@@ -776,6 +786,11 @@ for a CPU.
    claims at once; no error recurred. The production defaults are the
    same 30 s and four claims, so a four-claim article on CPU inference
    can fail the same way: a pipeline finding, not fixed here.
+   **Fixed for production on 2026-10-16:** `docker-compose.prod.yml`
+   sets the eval layer's `INFERENCE_TIMEOUT=120` and
+   `CLAIM_MAX_CONCURRENCY=2`, held by
+   `test_production_uses_the_cpu_limits_the_pilot_measured`. The dev
+   defaults are unchanged.
 3. **A resumed session's settings were not recorded** (harness bug).
    None of the timeouts and ceilings is keyed, and the manifest kept only
    the first session's, so the run would have claimed the first

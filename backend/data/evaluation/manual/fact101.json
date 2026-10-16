@@ -18,7 +18,7 @@
   "onlyOwnSource": false,
   "evidenceDate": "2026-09-01",
   "articleUrl": "https://www.carbonbrief.org/analysis-wind-and-solar-save-uk-from-gas-imports-worth-5-9bn-during-hormuz-crisis",
-  "annotatorNote": "No September average was found in sources of the article's date. Trading Economics, 1 Sep 2026: 'UK Gas increased to 179.26 GBp/thm', 'the highest since March 2026' - so daily prices were higher in March, which a monthly average of 189p might still exceed; 'highest since 2022' cannot be checked without the monthly series.",
+  "annotatorNote": "[AI label: Claude, 2026-10-09 - not yet checked by the human annotator] No September average was found in sources of the article's date. Trading Economics, 1 Sep 2026: 'UK Gas increased to 179.26 GBp/thm', 'the highest since March 2026' - so daily prices were higher in March, which a monthly average of 189p might still exceed; 'highest since 2022' cannot be checked without the monthly series.",
   "createdAt": "2026-10-09T13:30:59",
   "review": null
 }
