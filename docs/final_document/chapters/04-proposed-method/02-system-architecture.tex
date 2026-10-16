@@ -2,11 +2,96 @@
 % Chapter 4: Proposed Method: Specification and Design
 %   Section: System Architecture
 % Included from chapters/04-proposed-method/proposed-method.tex
+% Sources: docs/arquitectura-tecnica.md section 2.1 (topology
+% diagram), docs/decisions/inference.md, docker/docker-compose.yml.
 % ============================================================
 
 \section{System Architecture}
 \label{sec:architecture}
-\pending{the services and how they talk: backend, inference
-service, frontend, SearXNG, Qdrant, Neo4j, Ollama. Source:
-docs/arquitectura-tecnica.md section 2.1 (topology diagram) and
-docs/decisions/inference.md.}
+
+The system is a set of services run together by Docker Compose
+(Figure~\ref{fig:architecture}).
+
+\begin{itemize}
+    \item \textbf{Backend} (Python, FastAPI): the API and all the
+    business logic --- discovery, selection, extraction, enrichment,
+    admission, fact-checking, storage and the evaluation harness. It
+    holds the vector store (Qdrant, embedded in the process) and the
+    analysis cache, and journals every job event to disk.
+    \item \textbf{Inference service} (Python, FastAPI): a model server
+    for the three transformer models --- GLiNER for entities, an
+    XLM-RoBERTa sentiment classifier and the BGE-M3 embedding model.
+    It knows nothing about topics, thresholds or scoring; the backend
+    reaches it over HTTP.
+    \item \textbf{SearXNG}: a self-hosted metasearch engine that sends
+    each query to a closed list of web and academic search engines and
+    merges their answers.
+    \item \textbf{Ollama}: the language model, behind an
+    OpenAI-compatible endpoint, so a hosted provider can replace it by
+    configuration alone.
+    \item \textbf{Neo4j}: the graph database every analysis is written
+    to.
+    \item \textbf{Frontend} (Next.js, TypeScript): the newsroom and lab
+    pages and the public reader view. It calls the backend from the
+    server side only, so the API key never reaches a browser.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    node distance=9mm and 12mm,
+    svc/.style={draw, rounded corners=2pt, align=center, font=\footnotesize,
+                minimum height=9mm, text width=3.1cm, fill=ganttplan!15},
+    ext/.style={svc, fill=black!6},
+    db/.style={svc, fill=ganttdone!25},
+    arr/.style={-{Stealth[length=2mm]}, thick},
+    lbl/.style={font=\scriptsize\itshape, fill=white, inner sep=1pt},
+]
+\node[svc] (fe) {Frontend\\Next.js};
+\node[svc, right=of fe, text width=3.6cm, minimum height=16mm] (be)
+    {Backend (FastAPI)\\discovery, selection, extraction,
+     enrichment, admission, fact-checking, storage};
+\node[svc, right=of be] (inf) {Inference service\\GLiNER, XLM-R, BGE-M3};
+\node[ext, below=of be, xshift=-2.6cm] (sx) {SearXNG\\web + academic engines};
+\node[ext, below=of be, xshift=1.1cm] (llm) {Ollama\\\texttt{llama3.2:3b}};
+\node[db, below=of inf] (neo) {Neo4j\\graph};
+\node[db, above=of be, xshift=-2.2cm] (lake) {Data lake\\raw / processed / exploitation};
+\node[db, above=of be, xshift=2.2cm] (qd) {Qdrant\\(embedded)};
+\node[ext, left=of sx] (web) {Open web and\\configured sources};
+
+\draw[arr] (fe) -- node[lbl, above]{HTTP} (be);
+\draw[arr] (be) -- node[lbl, above]{HTTP} (inf);
+\draw[arr] (be) -- (sx);
+\draw[arr] (be) -- (llm);
+\draw[arr] (be) -- node[lbl, sloped, above]{fail-soft} (neo);
+\draw[arr] (be) -- (lake);
+\draw[arr] (be) -- (qd);
+\draw[arr] (sx) -- (web);
+\draw[arr] (be.west) to[bend right=20] node[lbl, near end, left]{fetch, guarded} (web.north);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{The services and how they talk. Every arrow from the backend
+to an external service passes through that service's concurrency
+ceiling (Section~\ref{sec:design-concurrency}).}
+\label{fig:architecture}
+\end{figure}
+
+\paragraph{Why the models live in their own service.} The three
+transformer models used to load inside the backend, beside the API. The
+split was made for three measured reasons: the machine-learning wheels
+dominated and broke the backend's image build; models loaded lazily on
+the first request, so the first analysis after a restart silently paid
+a 10--15~s load; and the models measure 3.58~GiB resident, while the
+backend container was capped at 1~GiB, which made an out-of-memory kill
+on the first real analysis likely. After the split the backend runs in
+about 230~MiB and the inference service in 3.58~GiB; the inference
+service reports itself healthy only once all three models are loaded,
+and the backend waits for it. A test of the repository fails if the
+backend ever imports a model library again.
+
+\paragraph{The language model is a service too.} The verifier, the
+selection step and the text corrector all reach the model through one
+client that speaks the OpenAI wire format. Switching from the local
+model to a hosted provider is a change of two settings, which is what
+makes the model benchmarks of Phase~5 one command per model.

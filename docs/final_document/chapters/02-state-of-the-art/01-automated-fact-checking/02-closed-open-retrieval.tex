@@ -6,8 +6,39 @@
 % ============================================================
 
 \subsection{Closed- and Open-Retrieval Verification}
-\pending{FEVER's closed corpus \cite{thorne2018fever} against
-real-world, open-web evidence \cite{schlichtkrull2023averitec}; the
-leaked-evidence problem \cite{glockner2022missing}. The detailed
-argument is in Section~\ref{subsec:discard-justification}; keep only
-the overview here.}
+
+Verification systems differ first in where their evidence comes from.
+
+In the \textbf{closed} setting, the evidence is a fixed corpus known in
+advance. FEVER, the most influential dataset of the field, built its
+claims by altering sentences of Wikipedia and defines the correct
+evidence as sentences of the same Wikipedia dump
+\cite{thorne2018fever}. Systems index that corpus and are evaluated on
+whether they find the annotated sentences and reach the annotated
+label. The setting makes evaluation exact and reproducible, and it is
+unlike a real fact-check, where nobody knows in advance which document
+holds the answer.
+
+In the \textbf{open} setting, evidence is sought on the web. MultiFC
+and X-Fact attach to each claim the snippets a search engine returned
+for it when the dataset was built
+\cite{augenstein2019multifc,gupta2021xfact}; AVeriTeC goes further and
+has annotators answer questions about each real-world claim from web
+documents, restricted to those published before the claim, so that the
+evidence is what a fact-checker could have found at the time
+\cite{schlichtkrull2023averitec}.
+
+Open retrieval brings a problem the closed setting does not have:
+\emph{leaked evidence}. Glockner, Hou and Gurevych showed that much of
+the evidence in such datasets was published after the claim, often by
+the fact-checkers themselves, so a system can ``verify'' a claim by
+reading its verdict; with only the evidence available before the claim,
+performance drops sharply \cite{glockner2022missing}. This matters for
+any system that searches today's web for yesterday's claims, as this
+one does, and the evaluation flags such cases rather than counting them
+(Sections~\ref{sec:rq-metrics} and~\ref{subsec:pilot-time}).
+
+The system built here works in the open setting by necessity: the
+claims of constructive news are recent and specific, and no corpus
+holds their evidence. Why that rules out FEVER as its benchmark is
+argued in Section~\ref{subsec:discard-justification}.

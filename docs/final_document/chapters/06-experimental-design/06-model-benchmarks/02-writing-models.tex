@@ -3,7 +3,64 @@
 %   Section: Model Benchmarks
 %     Subsection: Writing Models
 % Included from chapters/06-experimental-design/06-model-benchmarks/model-benchmarks.tex
+% Source: docs/decisions/evaluation.md, "Writing-model benchmark";
+% backend/src/evaluation/writing.py; data/evaluation/writing/.
+% Moved to P2 ("only if time is left") on 14 October: it answers none
+% of the four research questions.
 % ============================================================
 
 \subsection{Writing Models}
-\pending{the six texts with planted defects and the rubric.}
+\label{subsec:benchmark-writing}
+
+The text corrector (Section~\ref{sec:design-interface}) judges a text on
+seven metrics; two of them, readability and coverage of verification,
+are computed deterministically, and five --- grammar, factual
+consistency, search-engine optimisation, hallucination and style --- come
+from one call to the language model. The benchmark measures a model as
+the \emph{editor} it is in that role, by running the corrector's own
+call, prompt included, and refusing to compare runs made with different
+prompts. It answers none of the four research questions and was moved
+to ``only if time is left'' on 14~October; it is described here because
+it is built and tested.
+
+\paragraph{Planted defects, not opinions.} A human score for how good a
+text's search optimisation is would be an opinion per text; a planted
+defect is a fact. Six short news texts were written for the set, three
+in English and three in Spanish, each in a clean version and five
+versions with exactly one defect aimed at one metric: agreement,
+spelling and tense errors (grammar); a figure contradicting an earlier
+one (factual consistency); an invented authority and sweeping claims
+(hallucination); a vague headline with the subject gone from the lead
+(search optimisation); and a casual, repetitive, exclamatory register
+(style). Each defect version against its clean text is a pair whose
+right answer is known --- the targeted score should go down --- which
+makes 30 pairs, 15 per language.
+
+\paragraph{The rubric}, in the order a model is judged:
+\begin{enumerate}
+    \item \textbf{Format compliance} as a gate: the share of texts for
+    which all five metrics came back usable. A model below 95\% is out,
+    whatever it scores when it complies; a missing or non-numeric
+    score is never averaged as zero.
+    \item \textbf{Detection}: per pair, 1 when the defect version scored
+    lower on the targeted metric, 0.5 on a tie, 0 when higher, so a
+    model that gives every text the same score sits at chance (0.5);
+    with a bootstrap interval over pairs, per metric and per language.
+    \item \textbf{Defect named}: whether the targeted metric's summary
+    names the defect.
+    \item \textbf{Off-target drift}: the mean change on the four metrics
+    a defect was not aimed at; lower is better.
+    \item \textbf{Consistency}: the spread of a text's score across
+    repeats.
+    \item \textbf{Calibration}, read rather than ranked: the mean score
+    of the clean texts.
+    \item \textbf{Cost and latency}, to choose between models the
+    rubric cannot separate.
+\end{enumerate}
+
+The local baseline is compared with one hosted provider, each paired
+against the baseline over the pairs both scored. With 30 pairs an
+interval of about $\pm15$ points is expected, so only large
+differences will show. Two defects of the corrector were found while
+building the benchmark and fixed: a null list of issues lost all five
+metrics, and a missing score counted as a judgement of zero.

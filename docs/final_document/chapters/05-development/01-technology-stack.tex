@@ -2,10 +2,68 @@
 % Chapter 5: Development
 %   Section: Technology Stack
 % Included from chapters/05-development/development.tex
+% Sources: docs/arquitectura-tecnica.md 2.1; docs/decisions/inference.md;
+% docs/roadmap.md (the llama3.1 -> llama3.2:3b swap, Sep 2026).
 % ============================================================
 
 \section{Technology Stack}
 \label{sec:stack}
-\pending{Python and FastAPI, Next.js and TypeScript, Docker Compose;
-the models (GLiNER, the sentiment classifier, bge-m3, the LLM via
-Ollama) and why each was chosen.}
+
+\begin{table}[ht]
+\centering
+\small
+\caption{The technology stack and why each piece was chosen.}
+\label{tab:stack}
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Why} \\
+\midrule
+Backend & Python 3.12, FastAPI, \texttt{uv} & The NLP and scraping
+libraries are Python; FastAPI gives typed request models and
+background jobs; \texttt{uv} locks dependencies reproducibly \\
+Frontend & Next.js 14 (App Router), TypeScript & Server-side API
+proxies keep the API key out of the browser; a hand-written CSS design
+system, no UI library \\
+Services & Docker Compose & The same stack in development, evaluation
+and production \\
+Search & SearXNG (self-hosted) & Free, no key, and a closed list of
+engines chosen and measured one by one \\
+Extraction & trafilatura \cite{barbaresi2021trafilatura},
+BeautifulSoup, Playwright (optional) & A cascade from cheapest to most
+expensive (Subsection~\ref{subsec:scraping-cascade}) \\
+Entities & GLiNER (\texttt{gliner\_small})
+\cite{zaratiana2024gliner} & Entity types given at run time, no
+training; the smallest of the three models \\
+Sentiment & \texttt{twitter-xlm-roberta-}\allowbreak\texttt{base-sentiment}
+\cite{barbieri2022xlmt} & Multilingual, covers English and Spanish
+with one model \\
+Embeddings & BGE-M3 \cite{chen2024bgem3} & Multilingual, 1,024
+dimensions; one space for every similarity in the system \\
+Keywords & YAKE \cite{campos2020yake} & Unsupervised, per-language
+stopwords \\
+Language model & \texttt{llama3.2:3b} through Ollama & About 2~GB,
+fits the development GPU; OpenAI-compatible, so replaceable by
+configuration \\
+Vector store & Qdrant (embedded) & No server to run; one collection of
+article embeddings \\
+Graph & Neo4j Community & A property graph with a query language;
+read-only console for exploration \\
+Infrastructure & Terraform, Google Cloud, Caddy & One virtual machine
+running the same compose stack; HTTPS and a site password in front \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{The language model.} The default model was
+\texttt{llama3.1} (8 billion parameters, about 4.9~GB) until September,
+when it was replaced by \texttt{llama3.2:3b} (about 2~GB). The change
+was made for resources --- the smaller model fits the development GPU
+and a CPU-only virtual machine --- not because it was measured to be
+better. Measuring verifier models is the purpose of the model
+benchmarks (Section~\ref{sec:benchmarks}); until then the choice is a
+resource decision and is reported as such.
+
+\paragraph{No linter.} The repository has no linter or formatter
+configured; the decision was recorded rather than left implicit. The
+rules that are costly to break are enforced as tests instead
+(Section~\ref{sec:dev-testing}).

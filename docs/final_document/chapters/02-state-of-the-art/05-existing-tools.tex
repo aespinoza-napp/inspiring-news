@@ -6,5 +6,37 @@
 
 \section{Existing Tools and Services}
 \label{sec:sota-tools}
-\pending{fact-checking organisations (Newtral and Maldita, rated as
-evidence sources and not ingested) and automated tools.}
+
+\paragraph{Fact-checking organisations.} Professional fact-checkers
+publish verdicts on claims, mostly political, under their own rating
+scales \cite{graves2016rise}. PolitiFact in the United States and
+Chequeado in Argentina are the sources of the English and Spanish
+claims of the X-Fact pilot (Section~\ref{sec:results-pilot}); in Spain,
+Newtral and Maldita play the same role. Their articles are evidence of
+the highest value for a claim they have checked, and this system rates
+both Spanish organisations as evidence sources. It does not ingest
+them as news: a fact-check quotes the claim it debunks, and claim
+extraction would take that quotation for the article's own assertion
+(Section~\ref{subsec:scraping-sources}).
+
+\paragraph{Automated tools.} The research tools closest to practice
+assist a step of the fact-checker's work: ClaimBuster scores sentences
+for check-worthiness \cite{hassan2017claimbuster}, and the systems
+surveyed by Nakov and colleagues find claims already checked, retrieve
+evidence or flag claims for review \cite{nakov2021assisting}. General
+assistants built on large language models answer questions with web
+search and citations, but they are not designed to abstain, to refuse
+a source they consider off-topic, or to report a failed search as a
+failure; their verdicts and their confidence cannot be audited in the
+way this work requires.
+
+\paragraph{Constructive news services.} Outlets such as Good News
+Network, Positive News and Reasons to be Cheerful, all in this system's
+source catalogue, curate constructive stories editorially. Their
+selection is human and their verification is the ordinary editorial
+process of each outlet; neither is automated or exposed to the reader
+claim by claim.
+
+No existing tool combines the three steps this work joins: finding
+constructive news on chosen topics, choosing what to analyse, and
+verifying its claims with a verdict that shows its evidence.

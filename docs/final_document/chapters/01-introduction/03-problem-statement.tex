@@ -6,7 +6,46 @@
 
 \section{Problem Statement}
 \label{sec:problem}
-\pending{the claims of positive-news articles in English and Spanish
-mix checkable facts with interpretations of them; no fixed corpus
-holds their evidence, so it has to be found on the live web at
-verification time.}
+
+Given a set of topics chosen by an editor, the system has to do what a
+journalist of a constructive publication does: find the recent
+articles on those topics that are worth offering, decide which of them
+to analyse, and verify the claims each one makes before it is
+published. Four properties of the domain make this harder than the
+problem automated fact-checking usually studies.
+
+\begin{enumerate}
+    \item \textbf{Claims mix facts with interpretations.} A
+    constructive article reports a study, a project, a figure or an
+    event, and interprets it (``a hopeful step for the sector''). The
+    first kind can be checked; the second cannot, and a system that
+    tries to check it either wastes effort or produces verdicts with no
+    meaning. The checkable claims have to be told apart from the rest
+    before any evidence is sought.
+    \item \textbf{Evidence is on the live web, often in one place.} The
+    claims are recent and specific, so no fixed corpus holds their
+    evidence: it has to be found on the open web at the time of
+    checking. Frequently the only source is the press release of the
+    organisation the story is about, which is not independent
+    confirmation.
+    \item \textbf{Two languages.} The sources publish in English and in
+    Spanish, so extraction, claim selection, search and verification
+    must work in both, and be measured in both.
+    \item \textbf{False claims are rare.} Constructive outlets seldom
+    publish a claim that the evidence refutes; errors are more often in
+    a detail than in the substance. A system can look accurate by
+    answering ``true'' to everything, and a benchmark from this domain
+    has almost no refuted class to test it against.
+\end{enumerate}
+
+Formally, for each claim $c$ selected from an article published at time
+$t_c$, the system retrieves a set of evidence documents $E$ from the
+open web at time $t_v \geq t_c$ and predicts a verdict
+$y \in \{\textsc{true}, \textsc{partially true}, \textsc{misleading},
+\textsc{false}, \textsc{unverified}\}$ together with the subset of $E$
+it rests on. \textsc{unverified} is a legitimate answer whenever the
+evidence does not decide the claim, and it is preferred to a guess.
+The gap between $t_c$ and $t_v$ matters: evidence published after the
+claim was made, including a fact-check of the claim itself, can make a
+claim look easier to verify than it was when it was published
+\cite{glockner2022missing}.

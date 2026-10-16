@@ -39,8 +39,80 @@ Phase & Content & Dates (2026) & Hours \\
 \end{tabularx}
 \end{table}
 
-\pending{one paragraph per phase with its tasks, taken from the
-sprint lists of docs/roadmap.md. The 18 hours of experiments on the
-stages before the verdict (added on 5 October) are on top of the 900
-and are not yet funded: say where they came from, or report the
-overrun.}
+\paragraph{Phase 0 --- Foundations.} Four sprints built the pipeline
+end to end: the repository, the API skeleton and the declarative source
+catalogue with RSS discovery and trafilatura extraction (Sprint~0.1);
+the enrichment stack --- keywords, entities, claims, topics, sentiment,
+quality and embeddings (0.2); the first fact-checking pipeline, with
+admission, claim selection, SearXNG and vector retrieval, ranking, the
+language-model verifier and the confidence scorer (0.3); and the job
+API with polling, the text corrector and the first frontend (0.4).
+
+\paragraph{Phase 1 --- Pipeline completion.} Sprint~1 stabilised the
+core: pipeline edge cases, progress events for every stage, the
+correctness of the analysis cache and the shared test fakes. Sprint~2
+was testing and bug-fixing: a full regression pass, concurrency tests,
+a load test of the synchronous endpoint and hardened handling of
+language-model failures. An audit on 21~September found and fixed a
+re-analysed URL being rejected as a duplicate of itself, a committed
+database password and the loss of job history on restart, and made the
+claims run concurrently.
+
+\paragraph{Phase 2 --- Development.} Sprint~3 built the scraping
+strategies: an ingestion path, the BeautifulSoup and headless-browser
+steps of the extraction cascade, topic-page discovery, a source probe,
+and the catalogue's growth from 12 to 36 sources. Sprint~4 improved
+fact-checking --- the search fix with a ``search unavailable'' state
+and a keyless second route, alternative retrieval strategies, and
+regression tests for ranking and confidence --- and added, outside the
+original plan, discovery by topic group, the choice of up to twenty
+candidates by a person or the AI, the newsroom flow in the frontend,
+the mission screen, the candidate ranking and the topic emphasis
+(Section~\ref{sec:deviations}).
+
+\paragraph{Phase 3 --- Neo4j and infrastructure.} The graph schema, its
+write path from every analysis, a backfill from the lake and the
+labelled facts, a read use-case and its live tests (done on
+29~September); then the hosting decision, a production compose file,
+SearXNG for production, logging and monitoring, and the Google Cloud
+infrastructure as Terraform, checked against a local emulator (done on
+1--2~October, except the first real deployment).
+
+\paragraph{Phase 4 --- Evaluation.} The custom validation set (daily
+labelling batches, 150 facts as the target, a blind 20\% re-label and
+its agreement), the evaluation harness (record format, resumable runs,
+metrics with bootstrap intervals, retrieval evaluation, stage
+attribution and journalist-effort metrics), a pilot on X-Fact, and the
+tuning of thresholds against the labels.
+
+\paragraph{Phase 5 --- AI model testing.} Sprint~6 benchmarks a local
+and a hosted model as the editor behind the text corrector; Sprint~7
+benchmarks language models as verifiers on the labelled sets, compares
+their verdicts with the human labels, re-tunes the confidence weights
+and selects the default model.
+
+\paragraph{Phase 6 --- Interface.} A read-only feed of the published
+articles by topic, an article view with each claim's verdict, evidence
+and the reason each source was trusted, built on the existing design
+system, and public access to that view only.
+
+\paragraph{Testing and quality assurance.} Transversal: unit,
+concurrency and graph tests, continuous integration, a full-pipeline
+integration test, tests of the evaluation harness itself, a stress test
+of the guardrails against a model that bluffs, infrastructure smoke
+tests, load tests, and a final regression and bug-fix week.
+
+\paragraph{Phase 7 --- Report.} Writing this document on a system that
+no longer changes.
+
+\paragraph{The unfunded 18 hours.} On 5~October an 18-hour block of
+experiments on the stages before the verdict --- discovery, selection,
+admission, the topic classifier and time per stage --- was added to
+Phase~4 without hours to pay for it. It is reported as such: the plan
+stands at 918 hours, an overrun of 2\%, unless the writing-model
+benchmark of Sprint~6 (20 hours) is not run. The thesis priorities of
+14~October (Section~\ref{sec:deviations}) moved that benchmark to
+``only if time is left'' and moved ten of the eighteen hours --- the
+discovery numbers and the blind selection rounds --- into the work
+needed for RQ1 and RQ3, which is how the overrun is expected to be
+absorbed.

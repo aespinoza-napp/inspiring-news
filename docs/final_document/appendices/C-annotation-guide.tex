@@ -1,8 +1,119 @@
 % ============================================================
 % Appendix C: Annotation Guide
 % Included from main.tex
+% Sources: labeller/README.md; labeller/app.py (the rules enforced on
+% save, MUTATIONS); Section~\ref{sec:custom-dataset}.
 % ============================================================
 
 \chapter{Annotation Guide}
 \label{app:annotation-guide}
-\pending{the full guide behind Section~\ref{sec:custom-dataset}.}
+
+This is the full guide behind the custom validation set
+(Section~\ref{sec:custom-dataset}), as the annotator and the AI
+labelling pass apply it.
+
+\section*{C.1\quad What is labelled}
+
+One record holds one atomic, checkable claim, in the article's own
+wording. A proposed sentence that asserts two things is split into two
+records. A claim proposed by the daily batch is either labelled or
+skipped with one of these reasons:
+
+\begin{description}[leftmargin=2.6cm,labelwidth=2.4cm]
+    \item[opinion] an opinion or interpretation, which no evidence can
+    settle;
+    \item[prediction] a statement about the future;
+    \item[trivial] checkable but not worth checking;
+    \item[fragment] not a whole sentence (a heading, a caption, a
+    sentence cut short);
+    \item[duplicate] the same claim as one already labelled;
+    \item[other] none of the above, with a note.
+\end{description}
+
+\section*{C.2\quad Labels}
+
+\begin{description}[leftmargin=2.6cm,labelwidth=2.4cm]
+    \item[supported] (\texttt{TRUE}) the evidence supports the claim as
+    stated.
+    \item[partially supported] (\texttt{PARTIALLY\_TRUE}) the central
+    claim holds and a detail does not.
+    \item[conflicting] (\texttt{MISLEADING}) sources of equal standing
+    conflict, or the claim is true but selected to mislead.
+    \item[refuted] (\texttt{FALSE}) the evidence refutes the claim.
+    \item[not enough evidence] (\texttt{UNVERIFIED}) there is not
+    enough independent evidence to decide either way.
+\end{description}
+
+\section*{C.3\quad The four tie-break rules}
+
+Fixed before labelling began; the note of a record names the rule that
+decided a close call.
+
+\begin{enumerate}[label=\textbf{Rule \arabic*.}, leftmargin=*]
+    \item \textbf{The organisation's own source.} A claim whose only
+    evidence is the communication of the organisation the story is about
+    (a press release, report, website or post) is \emph{not enough
+    evidence}, and the source is named in the note. \emph{Enforced on
+    save.}
+    \item \textbf{Numeric tolerance.} A figure within $\pm10\%$ of the
+    source's, or a reasonable rounding of it, is supported. Beyond that,
+    the claim is \emph{partially supported} if the figure is a detail of
+    an otherwise correct claim, and \emph{refuted} if the figure is the
+    claim.
+    \item \textbf{Date of the evidence.} Only evidence available on the
+    article's publication date is admissible. A claim confirmed only
+    later stays \emph{not enough evidence}. \emph{Enforced on save}: an
+    evidence date after the article's is refused.
+    \item \textbf{Hierarchy of sources.} Primary source (report,
+    official statistic, peer-reviewed study) $>$ reference media outlet
+    $>$ press release $>$ social media. The higher tier prevails; sources
+    of the same tier that conflict with none decisive make the claim
+    \emph{conflicting}. The strongest tier used is recorded.
+\end{enumerate}
+
+Also enforced on save: any label other than \emph{not enough evidence}
+needs at least one evidence link.
+
+\section*{C.4\quad Procedure}
+
+\begin{enumerate}
+    \item Take the claim as proposed, or split it; keep the article's
+    wording.
+    \item Search for evidence independently of the system; the system's
+    verdict is never shown.
+    \item Record the evidence links, the date of the newest evidence used
+    and the tier of the strongest.
+    \item Apply the rules and choose the label; record the claimant, the
+    claim type (factual, numerical or interpretive) and the topic.
+    \item Explain any close call in the note, naming the rule.
+\end{enumerate}
+
+\section*{C.5\quad Synthetic refuted claims}
+
+Only a natural claim labelled \emph{supported}, whose note states the
+value the evidence gives, is mutated, and each source only once. One
+element of what the claim asserts is substituted --- a number, a date,
+an entity or a relation --- never a detail, and never by negation.
+Figures that must agree are changed together. The substitute is
+plausible without the evidence. Everything else is kept: the article,
+date, topic, claim type, tier and evidence links, with the source's
+identifier and the kind of substitution recorded. A mutation whose
+source is later relabelled is listed for review.
+
+\section*{C.6\quad AI-assisted labels}
+
+A label proposed by the AI labelling pass starts its note with
+``[AI label: Claude, \textit{date} --- not yet checked by the human
+annotator]''. It follows this guide and cites the evidence it relied on.
+It does not count as gold until the annotator has reviewed it and kept
+or changed it; the agreement between the two is reported.
+
+\section*{C.7\quad The blind review}
+
+20\% of the records, the first in the order of the SHA-256 hash of
+their identifiers, are labelled again at least a week after the first
+pass, without the first label, the own-source flag or the note.
+Agreement and Cohen's $\kappa$ are computed on the first label;
+$\kappa \geq 0.6$ is the threshold for the guide to be considered
+consistently applicable, and below it the rules behind the
+disagreements are revised.

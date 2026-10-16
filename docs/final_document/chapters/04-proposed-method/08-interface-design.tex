@@ -2,9 +2,53 @@
 % Chapter 4: Proposed Method: Specification and Design
 %   Section: Interface Design
 % Included from chapters/04-proposed-method/proposed-method.tex
+% Source: frontend/CLAUDE.md.
 % ============================================================
 
 \section{Interface Design}
 \label{sec:design-interface}
-\pending{the newsroom flow (Discover, Analyze, Live, Reader), the
-lab tools and the public reader view. Source: frontend/CLAUDE.md.}
+
+The interface serves three audiences, and its pages are grouped by them.
+
+\paragraph{The newsroom.} Four pages follow the editor's work in order,
+with a step bar on each:
+
+\begin{enumerate}
+    \item \textbf{Discover}: pick one to three topic groups, set the
+    balance between positive impact and topic relevance, and read the
+    ranked candidates of a round, each with its place, score and the
+    parts of its score. The AI selection can be asked for; its picks
+    arrive ticked with a score and a reason, and stay editable. At most
+    twenty are sent to analysis. The round is in the page's address, so
+    a reload resumes it.
+    \item \textbf{Analyze}: paste article URLs and follow each analysis
+    as it happens; claims appear as rows the moment they are selected
+    and fill in with their own verdicts as they finish.
+    \item \textbf{Live}: a second screen that follows any run from any
+    client --- the queries sent, every source found and the engines
+    behind it, the rating each received, and the verdict.
+    \item \textbf{Reader}: what a reader would see.
+\end{enumerate}
+
+\paragraph{The lab.} One page per stage, for inspecting and debugging
+it in isolation: a single claim to a verdict with the model's answer
+before recalibration; the enrichment of a URL or a text; the text
+corrector; the scraper's request statistics, source health and time to
+reception; a health check of every source; the graph, with its schema,
+a read-only query console and related articles; and the evaluation's
+state --- the labelled set against its targets, the claim selector's
+precision and the harness's runs with their intervals.
+
+\paragraph{The reader.} The public reader view lists the articles the
+pipeline marked publishable, filtered by topic and language. An article
+shows each claim's verdict and confidence, the model's reasoning, and
+its sources with their stance, the quoted passage, the site's
+reliability (or ``unrated'') and why each was found. A claim whose
+search or model failed reads ``not checked'' and is counted apart from
+the verdicts. Only the article's lead and a link are shown, never its
+body or a scraped page (Section~\ref{subsec:third-party-content}).
+
+The design follows two rules. Uncertainty is shown, not hidden: every
+score carries its parts, every rating says whether it is real or a
+default, every outage says so. And the interface is a client of the
+same API the evaluation uses, so what a person sees is what is measured.

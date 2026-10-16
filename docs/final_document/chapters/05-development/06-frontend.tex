@@ -2,8 +2,43 @@
 % Chapter 5: Development
 %   Section: Frontend
 % Included from chapters/05-development/development.tex
+% Source: frontend/CLAUDE.md; docs/decisions/incidents.md.
 % ============================================================
 
 \section{Frontend}
 \label{sec:dev-frontend}
-\pending{pages, the polling hook and the API proxies.}
+
+The frontend is a Next.js 14 application in TypeScript with the App
+Router. Its pages are those of Section~\ref{sec:design-interface}; this
+section describes the three mechanisms they share.
+
+\paragraph{API proxies.} The browser never calls the backend. Each page
+calls a route of the frontend's own server, which adds the API key and
+forwards the request. A proxy forwards only the paths it knows: a
+catch-all that forwarded anything would be an open proxy with the key
+attached. The job and statistics routes must not be cached. Next.js
+caches server-side requests by default, and before that was turned off
+every one-second poll after the first was answered with the same stale
+response: the interface stayed on the first phase of a finished job,
+and after a backend restart kept answering for a job the backend no
+longer knew.
+
+\paragraph{The polling hook.} An analysis runs as a background job; the
+page polls its state every second. The interval is created only after
+the first poll returns, and only if the page has not been left in the
+meantime, otherwise an interval would leak and poll a finished job
+forever. Both rules are held by comments, not tests: the frontend has
+no test runner, and its typecheck is the only automated gate.
+
+\paragraph{One fold for the trace.} The analyzer page and the Live
+screen show the same per-claim trace --- queries, sources, ratings,
+verdict --- by folding the job's events with one shared function. Since
+claims run concurrently their events interleave, so the fold reads each
+event's claim index first, and falls back to the claim's text for runs
+journalled before the index existed. The phase stepper works from the
+\emph{set} of phases seen rather than their order, which is why the
+concurrent pipeline did not break it.
+
+The reader view was measured at phone width (375~px) in light and dark
+themes with no horizontal overflow, and its animations are off for
+readers who ask for reduced motion.

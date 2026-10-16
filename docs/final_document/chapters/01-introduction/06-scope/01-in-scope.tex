@@ -6,5 +6,29 @@
 % ============================================================
 
 \subsection{In Scope}
-\pending{discovery and selection, extraction, enrichment,
-fact-checking, the graph, the evaluation and the reader view.}
+
+\begin{itemize}
+    \item \textbf{Discovery and selection} of articles from 33 enabled
+    news sources (20 in English, 13 in Spanish) grouped into five topic
+    groups --- society, science, environment, culture and health ---
+    with a screen for the publication's mission, a ranking of the
+    candidates and a choice by a person or a language model.
+    \item \textbf{Extraction} of article text and metadata through a
+    cascade of strategies, for the articles analysed and for every web
+    page read as evidence.
+    \item \textbf{Enrichment} with local models: entities, keywords,
+    topics, sentiment, editorial quality, candidate claims and
+    embeddings.
+    \item \textbf{Fact-checking}: admission, claim selection, open-web
+    evidence retrieval, ranking with a pertinence gate, verification by
+    a local language model, confidence recalibration and article-level
+    aggregation.
+    \item \textbf{Storage}: a three-layer data lake with lineage, a
+    vector store and a graph database written by every analysis.
+    \item \textbf{Evaluation}: a pilot on X-Fact, a hand-labelled
+    validation set from the system's domain, an evaluation harness, and
+    experiments on the stages before the verdict.
+    \item \textbf{A reader view} of the published articles, and a
+    deployment to Google Cloud designed and checked against a local
+    emulator.
+\end{itemize}

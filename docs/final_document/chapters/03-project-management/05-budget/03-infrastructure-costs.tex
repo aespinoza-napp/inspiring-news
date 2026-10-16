@@ -3,9 +3,32 @@
 %   Section: Budget
 %     Subsection: Infrastructure Costs
 % Included from chapters/03-project-management/05-budget/budget.tex
+% Sources: docs/decisions/deployment.md; backend/data/evaluation/prices.json.
 % ============================================================
 
 \subsection{Infrastructure Costs}
-\pending{one e2-standard-4 Compute Engine VM in Madrid, about 115~USD
-a month on demand (docs/decisions/deployment.md); hosted LLM
-providers priced per run in backend/data/evaluation/prices.json.}
+
+\paragraph{Cloud.} The production deployment is sized for one Google
+Cloud Compute Engine virtual machine, an \texttt{e2-standard-4} (4 vCPU,
+16~GB) in Madrid (\texttt{europe-southwest1}), at about 115~USD a month
+on demand or about 73~USD with a one-year commitment, plus a 60~GB
+balanced disk and daily snapshots kept seven days
+(Section~\ref{sec:dev-deployment}). The size comes from measurements:
+about 9.6~GiB were resident across the production stack, and the
+language model needs about 45~s per claim on a CPU. The infrastructure
+was checked against a local emulator and never applied to a billed
+project, so its cost to date is zero; running it for one month of
+demonstration would cost about 115~USD.
+
+\paragraph{Language-model providers.} The local model has no per-token
+cost: its cost is the machine's time, which the evaluation reports
+beside every run (36.5~s per claim at the median in the X-Fact pilot).
+Hosted providers are priced per run from a table in the repository
+(\path{backend/data/evaluation/prices.json}), filled in from the
+provider's pricing page on the day of the run, never from memory. No
+hosted model has been run, so this cost is also zero to date.
+
+\paragraph{Search.} The self-hosted metasearch engine has no cost. An
+API-keyed search engine, the most effective remedy for refused searches,
+is future work precisely because it would add a recurring cost and a
+credential (Section~\ref{sec:future-work}).

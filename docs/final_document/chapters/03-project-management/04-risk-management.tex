@@ -2,17 +2,87 @@
 % Chapter 3: Project Management
 %   Section: Risk Management
 % Included from chapters/03-project-management/project-management.tex
+% Sources: docs/roadmap.md; CLAUDE.md "Known slow / known
+% unverified" and "Known dead / known broken"; docs/decisions/.
 % ============================================================
 
 \section{Risk Management}
 \label{sec:risks}
-\pending{one row per risk with its probability, impact and
-mitigation, each one observed during the project
-(docs/roadmap.md, CLAUDE.md ``Known slow / known unverified''):
-search engines refusing automated queries (68 of 69 empty on
-25 September; \texttt{searchUnavailable} and the fallback route);
-the LLM timing out on a CPU (3 of 4 verdicts on 1 October; separate
-production limits); sources blocking the scraper (EFE and Reuters
-disabled on 6 October); the labelling taking longer than planned
-(rebalance of 28 September); the cloud deployment never applied to a
-real project.}
+
+Every risk in Table~\ref{tab:risks} was observed during the project
+rather than anticipated, which is why each has a date and a measured
+symptom. Probability and impact are rated low, medium or high as they
+stood when the risk appeared; the last column says what was done and
+what remains.
+
+{\small
+\begin{longtable}{@{}p{3.4cm}ccp{8.2cm}@{}}
+\caption{Risks observed during the project, with their mitigation.}
+\label{tab:risks} \\
+\toprule
+\textbf{Risk} & \textbf{Prob.} & \textbf{Impact} & \textbf{Mitigation and status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Risk} & \textbf{Prob.} & \textbf{Impact} & \textbf{Mitigation and status} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Search engines refuse automated queries & High & High & On
+25~September, 68 of 69 SearXNG queries came back empty (engines
+rate-limited, behind a CAPTCHA or timing out), and every affected claim
+looked like an honest \texttt{UNVERIFIED}. Mitigated by a closed engine
+list measured one by one, fewer concurrent searches, repeated queries
+sent once, a \texttt{searchUnavailable} state reported apart from the
+verdicts, and a keyless second route; the health check that sent a
+real search to every engine every five seconds was replaced. Remains: a
+search from a data-centre address is untested, and an API-keyed engine
+is future work (Section~\ref{sec:future-work}). \\
+\addlinespace
+The language model times out on a CPU & High & High & On 1~October
+the first analysis on the production stack, CPU only, turned 3 of 4
+verdicts into ``provider unreachable'' under timeouts sized for a GPU.
+Mitigated by separate production limits (one call at a time, 180~s)
+and by reporting \texttt{llmUnreachable} apart from verdicts. Remains:
+the development defaults are still sized for a GPU. \\
+\addlinespace
+Sources block the scraper & Medium & Medium & EFE (HTTP 403) and
+Reuters (401) refused every request from 23~September to 6~October and
+were disabled on 6~October; they remain rated as evidence. Feeds that
+died (National Geographic, SINC, CNN, WHO) are read through section
+pages, a news sitemap or an API instead. The scraper names itself and
+does not try to pass for a browser. \\
+\addlinespace
+Labelling takes longer than planned & High & High & Found on
+28~September (the set is a 40-hour task, rebalanced). By 14~October an
+AI labelling pass had labelled 78 of 109 natural facts to keep pace,
+which created a second risk: a gold set labelled by a model, used to
+judge a model. Mitigated by disclosing every AI label in its record and
+in this document, by making the annotator's review a condition of the
+set, and by measuring the agreement between the two as a result (RQ3).
+Remains: the review itself. \\
+\addlinespace
+No refuted claims in the domain & High & High & None of 109 natural
+claims was \texttt{FALSE}, so an always-\texttt{TRUE} system would
+score 83\%. Mitigated by 30 synthetic refuted claims built by
+substitution, as FEVER and SciFact built theirs, and reported apart
+(Subsection~\ref{subsec:custom-mutations}). \\
+\addlinespace
+The cloud deployment is never applied & Medium & Low & The
+infrastructure is written and checked against a local emulator, which
+runs no guest, so the virtual machine's boot is unverified. The thesis
+does not depend on it: every result is produced on the development
+stack. Left as future work, with a step-by-step runbook. \\
+\addlinespace
+Scope grows faster than results & Medium & High & Features added
+outside the plan in early October (Section~\ref{sec:deviations}) were
+each useful and measured, while the research questions had no answer.
+Mitigated by the feature freeze and the priorities of 14~October. \\
+\addlinespace
+Native crash in the evaluation harness & Low & Low & The harness
+process crashed twice in native code while parsing scraped pages
+during the Spanish X-Fact run. Absorbed by the resume rule, which
+re-runs exactly the claims a crash lost; the cause is not located. \\
+\end{longtable}
+}

@@ -70,7 +70,11 @@
 \usepackage{float}
 \usepackage[font=small,labelfont=bf]{caption}
 \usepackage{subcaption}
-\usepackage[dvipsnames,table]{xcolor}
+% No `table` option: nothing here colours a table cell, and the option
+% loads colortbl, whose 2026 release needs the 2024 array.sty. Against
+% MiKTeX 24.1's array (2023, v2.5g) every tabularx failed with
+% "Undefined control sequence \insert@pcolumn" (first build, 2026-10-16).
+\usepackage[dvipsnames]{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta,calc}
 \usepackage{pgfgantt}

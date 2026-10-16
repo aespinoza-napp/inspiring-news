@@ -6,5 +6,32 @@
 % ============================================================
 
 \subsection{Actions Taken to Reduce Them}
-\pending{stratification, the blind re-label and kappa, the
-pre-registered tie-break rules, partitions reported apart.}
+
+\begin{itemize}
+    \item \textbf{Stratification.} The custom set targets six facts in
+    each of 25 verdict-by-group cells, the daily batch prefers the
+    groups that are short, and cells that stay short are reported with
+    their real counts rather than padded.
+    \item \textbf{Rules fixed before labelling.} The four tie-break rules
+    were written before the first label, and those that can be checked
+    are enforced by the labelling tool on save.
+    \item \textbf{The blind re-label and $\kappa$.} 20\% of the facts,
+    chosen by hash, are labelled again blind and at least a week later;
+    agreement is measured on the first label.
+    \item \textbf{AI labels disclosed and reviewed.} Every label the AI
+    pass proposed says so in its record, none counts as gold until the
+    annotator reviews it, and their agreement is a reported result.
+    \item \textbf{Partitions reported apart.} Natural and synthetic
+    claims, English and Spanish, each topic group, and the claims whose
+    search or model failed are reported separately, so that a strength
+    in one cannot hide a weakness in another.
+    \item \textbf{Every rating says what it is.} An unrated domain is
+    shown as unrated; a screened candidate is listed with the reason and
+    the margin that left it out, so an editor can see what the screen
+    removed.
+    \item \textbf{Two languages from the start.} Every lexicon exists in
+    both languages, and a source in a third language fails the test
+    suite rather than being scored with English word lists --- a fix for
+    a measured bias, when the same story scored 0.875 for
+    constructiveness in English and 0.0 in Spanish.
+\end{itemize}

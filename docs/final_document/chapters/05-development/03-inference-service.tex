@@ -2,9 +2,57 @@
 % Chapter 5: Development
 %   Section: The Inference Service
 % Included from chapters/05-development/development.tex
+% Source: docs/decisions/inference.md.
 % ============================================================
 
 \section{The Inference Service}
 \label{sec:dev-inference}
-\pending{why the models live in their own service. Source:
-docs/decisions/inference.md.}
+
+Why the three transformer models were moved out of the backend is
+explained in Section~\ref{sec:architecture}. This section describes how
+the move was made.
+
+\paragraph{Adapters, not a rewrite.} The entity extractor, the
+sentiment analyser and the embedding service kept their exact public
+signatures and now delegate to an HTTP client. Every call site was
+checked before the change: nothing downstream --- the enrichment
+pipeline, the claim extractor, the topic classifier, the corrector, the
+retrieval and ranking chain --- ever touched a model object, only the
+methods that return results. Nothing downstream changed.
+
+\paragraph{A model server that knows nothing of the domain.} The
+service loads the models and returns entities, sentiment scores and
+vectors. Topics, thresholds and scoring stay in the backend: the topic
+classifier still owns the topic vocabulary and the cosine arithmetic,
+and only fetches its vectors over HTTP. Tuning therefore stays inside
+the backend's configuration and lineage instead of being split across
+two deployable units. The three models share one service because they
+share a dependency stack, a warm-up and a resource pool.
+
+\paragraph{Failure differs by component, on purpose.} If entity
+extraction fails it returns nothing, and the claim scorer, which treats
+entities as one weak signal among several, carries on. If sentiment or
+embeddings fail they raise, and the article fails: sentiment is a core
+input of the admission decision and embeddings feed duplicate
+detection, ranking and topic classification, so a silent default would
+corrupt decisions without a trace.
+
+\paragraph{Readiness.} The service reports healthy only once all three
+models are loaded; the models warm up in a background thread so the
+server can answer ``not ready'' honestly instead of blocking its own
+start. The compose file holds the backend back until then, which turns
+the old first-request stall into one explicit wait at start-up. The
+start period is 900~s, measured rather than guessed: a cold model cache
+took about eleven minutes to become healthy.
+
+\paragraph{Pinned versions.} The service pins the exact library
+versions the backend had resolved. Left open, the resolver chose a new
+major version of \texttt{transformers}, which broke GLiNER's tokenizer
+loading outright.
+
+\paragraph{One trap left by the split.} The backend's configuration
+still names the sentiment and embedding models, but the names are
+documentary: the models load from the inference service's own
+configuration. Only the embedding dimension, which sizes the vector
+collection, is still read by the backend, and a test checks it against
+the live service.

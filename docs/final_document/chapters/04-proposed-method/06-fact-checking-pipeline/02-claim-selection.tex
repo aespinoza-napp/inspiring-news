@@ -3,7 +3,32 @@
 %   Section: The Fact-Checking Pipeline
 %     Subsection: Claim Selection
 % Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
+% Source: docs/arquitectura-tecnica.md 2.4.2; claim_selector.py.
 % ============================================================
 
 \subsection{Claim Selection}
-\pending{anchor claims, ranked by how load-bearing they are.}
+\label{subsec:claim-selection}
+
+Not every candidate claim of the enrichment stage is worth checking.
+Two controls, both in the embedding space, reduce them to the few that
+carry the article:
+
+\begin{itemize}
+    \item \textbf{Semantic deduplication}: when two candidates state the
+    same fact in different words (similarity above 0.92), only one
+    survives.
+    \item \textbf{An anchor band}: the remaining candidates are ranked
+    by how load-bearing they are for the article's thesis --- how
+    central they are to its headline and lead, how much they share its
+    main subjects, how specific they are --- and between two and four
+    are kept. The ceiling stops an unusually dense article from
+    multiplying the cost of verification; an article that yields fewer
+    than the minimum is reported as such rather than padded.
+\end{itemize}
+
+Sentences that read as opinion or interpretation are dropped before the
+ranking: no evidence can confirm or refute ``a hopeful step for the
+sector''. The selector's precision --- the share of its proposals a
+person accepts as checkable claims --- is measured by the daily
+labelling batches, which ask the annotator to label or reject every
+claim it proposes, with a reason (Section~\ref{sec:custom-dataset}).

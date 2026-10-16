@@ -2,8 +2,18 @@
 % Chapter 7: Results
 %   Section: Model Comparison
 %     Subsection: Verification Models
-% Included from chapters/07-results/05-model-comparison/model-comparison.tex
+% Included from chapters/07-results/06-model-comparison/model-comparison.tex
 % ============================================================
 
 \subsection{Verification Models}
-\pending{the models side by side (	exttt{cli table}) and each paired against the baseline.}
+
+Only the baseline, \texttt{llama3.2:3b}, has been run, on X-Fact
+(Section~\ref{sec:results-pilot}). The comparison of
+Subsection~\ref{subsec:benchmark-verification} --- the baseline, a local
+model of about 8 billion parameters and one hosted model on the custom
+test split --- is a P1 item and waits for the reviewed labels and the
+frozen split.
+\pending{the models side by side (\texttt{cli table}): accuracy,
+macro-$F_1$, coverage, selective accuracy and $\kappa$ with intervals,
+invalid outputs, claims set apart; each paired against the baseline;
+and the default model chosen on that evidence.}

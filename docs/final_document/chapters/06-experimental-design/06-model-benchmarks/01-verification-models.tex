@@ -3,7 +3,34 @@
 %   Section: Model Benchmarks
 %     Subsection: Verification Models
 % Included from chapters/06-experimental-design/06-model-benchmarks/model-benchmarks.tex
+% Source: docs/roadmap.md (Sprint 7; P1.4 of the thesis priorities);
+% docs/decisions/evaluation.md, "Metrics" (cli table).
 % ============================================================
 
 \subsection{Verification Models}
-\pending{models compared and how.}
+\label{subsec:benchmark-verification}
+
+The verifier is compared across three models on the test split of the
+custom set (Table~\ref{tab:priorities}, P1): the local baseline,
+\texttt{llama3.2:3b}; a local model of about 8 billion parameters; and
+one hosted model reached through an OpenAI-compatible endpoint. Every
+other part of the pipeline is held fixed --- thresholds, weights,
+engines, corpus snapshot --- so the runs differ by the model alone, and
+each run's key records that they do.
+
+Each model is one harness run. The models are set side by side, one
+row each, with accuracy and macro-$F_1$ and their intervals, coverage,
+selective accuracy, Cohen's $\kappa$, invalid outputs, claims set
+apart, median seconds per claim, tokens per claim and per second, and
+the cost per hundred claims. Each later model is paired against the
+baseline over the claims both scored. With about a hundred test claims
+a paired interval of roughly ten points is expected, so only large
+differences will separate models; two whose paired interval includes
+zero are not separated by this set, and the cheaper or faster one is
+preferred. The default model is then chosen on that evidence, and the
+confidence weights may be re-tuned for it on the tuning split.
+
+The same three runs are repeated under the evidence conditions of RQ2
+--- no evidence, retrieved evidence, the annotator's evidence --- only
+for the baseline, so that the cost of the comparison stays within the
+plan.

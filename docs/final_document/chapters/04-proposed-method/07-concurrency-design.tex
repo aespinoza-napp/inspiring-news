@@ -2,10 +2,63 @@
 % Chapter 4: Proposed Method: Specification and Design
 %   Section: Concurrency Design
 % Included from chapters/04-proposed-method/proposed-method.tex
+% Source: docs/decisions/concurrency.md; src/services/concurrency.py.
 % ============================================================
 
 \section{Concurrency Design}
 \label{sec:design-concurrency}
-\pending{claims checked concurrently, each claim's stages
-sequential; resource ceilings per external service; results in input
-order. Source: docs/decisions/concurrency.md.}
+
+Checking one article used to be sequential end to end: per claim, the
+searches one after another, the page fetches one after another, some
+twenty embedding calls one at a time and one model call, then the next
+claim. A four-claim article spent minutes waiting, and none of that
+waiting was on the processor. Three changes, in the order they were
+worth making, removed most of it: the embedding calls were batched; a
+claim's queries and page fetches, and the web search and the corpus
+search, were run in parallel; and claims were run in parallel with one
+another.
+
+The design rests on four rules.
+
+\begin{enumerate}
+    \item \textbf{A claim's own stages stay sequential.} Retrieval feeds
+    ranking, ranking feeds the model, and the model's answer is what
+    recalibration works on. The concurrency is between claims, never
+    inside one.
+    \item \textbf{Limits belong to the resource.} Fan-out multiplies:
+    three articles times four claims times eight page fetches is 96
+    simultaneous requests from one machine, enough for the search
+    engines behind SearXNG to start refusing it. The real ceilings are
+    therefore one semaphore per external service --- two concurrent
+    searches, one inference call, two model calls by default (one on a
+    CPU), eight page fetches, two browser pages --- applied inside the
+    client that talks to each service. They are process settings, not
+    per-run thresholds: a per-request override would let one caller
+    decide how hard the process leans on a service every other caller
+    shares.
+    \item \textbf{A permit is held only around a single call.} Holding
+    one while waiting on work that needs the same resource is the
+    bounded-pool deadlock, in which every worker holds what every other
+    is waiting for.
+    \item \textbf{Results come back in input order.} The evidence list's
+    positions are what the model cites by number and what the response,
+    the cache and the lake record. Results in completion order would
+    silently point every citation at a different source --- a wrong
+    answer, not a crash. A test pins it.
+\end{enumerate}
+
+Threads were chosen over asynchronous code because everything the
+pipeline calls --- the HTTP clients, trafilatura, the embedded vector
+store, the model client --- is synchronous, and the workload is waiting
+on input and output, for which threads are adequate. Progress events
+from several claim threads are serialised in one place, so the code that
+receives them keeps a single-threaded contract, and each event carries
+the index of its claim, so a client can follow claims whose events
+interleave.
+
+The speed-up was measured against a simulated network at the declared
+ceilings: $3.4\times$ on a four-claim article with a fast model, and
+$1.16\times$ with the production CPU model at one call at a time, where
+the model takes 180 of the 184 seconds and nothing else is left to
+overlap. The simulation's 184~s matches the production stack's real run
+of the same article.

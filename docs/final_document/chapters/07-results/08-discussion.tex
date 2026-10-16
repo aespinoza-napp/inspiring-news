@@ -6,4 +6,54 @@
 
 \section{Discussion}
 \label{sec:discussion}
-\pending{what the results mean for each research question, and how they compare with the state of the art.}
+
+\paragraph{The steps before the verdict work better than the verdict.}
+The clearest results of the project so far are about finding the news,
+not about verifying it. Scoping, screening and ranking a round do what
+an editor needs from them: a fraction of the links, and first places
+that hold few stories not worth offering, with signals that cost no
+model call (Section~\ref{sec:results-rq1}). That is consistent with the
+literature's view that automation is most useful where it assists a
+step of the work rather than replaces the person
+\cite{nakov2021assisting}. It also rests on AI labels, and the first
+measurement against a person may lower it.
+
+\paragraph{A small local verifier is not yet a fact-checker.} On
+X-Fact the 3B model is barely above chance and leans to \texttt{FALSE}
+whatever the evidence. Part of that is the benchmark: claims years old,
+searched on today's web, with the verdict sometimes on the page; part
+is the label mapping and the stratified sample; and part is the model.
+The pilot cannot separate those parts, and a stronger model on the same
+claims, and the same model on constructive news, are the two
+measurements that would. The design choices of the verifier --- a
+closed label set, forced citation, verbatim quotes, and a confidence
+recomputed from the evidence --- make its failures visible and its
+right answers checkable, but they do not make a weak model strong.
+
+\paragraph{Retrieval and reasoning fail together.} The disagreement
+between the two attribution rules on the pilot (28 of 29 claims) is the
+most instructive single number: the model misread what it was shown,
+and it was never shown what the fact-checker used. Improving either
+alone would not have fixed most of those claims. That is the case for
+the oracle-evidence condition of RQ2, which gives the verifier the
+annotator's own evidence and so separates the two.
+
+\paragraph{Against the state of the art.} The supervised baselines of
+the X-Fact paper reach a macro-$F_1$ of 38 to 42 on its in-domain test
+set; the zero-shot pipeline reaches 11 on the Spanish part of it. The
+difference is large and in the expected direction, and
+Section~\ref{subsec:pilot-comparison} lists why the two are not like
+for like. AVeriTeC's restriction of evidence to what existed before the
+claim \cite{schlichtkrull2023averitec} and Glockner and colleagues'
+demonstration of leaked evidence \cite{glockner2022missing} are both
+borne out by the pilot: 23\% of the dated ranked sources were from the
+year of the search, the most frequent year of all.
+
+\paragraph{What the evaluation itself contributes.} The harness, the
+custom set and the experiments are designed so that every number comes
+with its interval, its provenance and the claims set apart. That is
+what allowed the pilot to show that one result was a measurement of
+time and not of verification, and what will make the custom-set
+results interpretable when they come.
+\pending{the discussion of the custom-set results per research
+question, once measured.}

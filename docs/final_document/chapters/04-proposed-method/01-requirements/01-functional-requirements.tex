@@ -6,5 +6,46 @@
 % ============================================================
 
 \subsection{Functional Requirements}
-\pending{discover, select, extract, enrich, admit, verify, store,
-publish; per-claim verdicts with cited evidence.}
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Functional requirements.}
+\label{tab:functional-requirements}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\textbf{Id} & \textbf{The system shall\ldots} \\
+\midrule
+FR1 & \textbf{Discover}: read the configured sources for up to three
+topic groups and list their recent articles with title, summary,
+date and language. \\
+FR2 & \textbf{Screen and rank}: leave out what the publication never
+covers and what is not an article, and order the rest by how well it
+fits the mission and the topics asked for. \\
+FR3 & \textbf{Select}: let a person, a language model, or both choose
+at most twenty candidates to analyse, and record who chose what. \\
+FR4 & \textbf{Extract}: turn any article URL into its text, title,
+author and publication time. \\
+FR5 & \textbf{Enrich}: annotate each article with topics, entities,
+keywords, sentiment, editorial quality, candidate claims and an
+embedding. \\
+FR6 & \textbf{Admit}: decide whether an article is on topic,
+constructive enough and not a duplicate before any evidence is sought,
+and record every reason it is turned away. \\
+FR7 & \textbf{Verify}: for each selected claim, retrieve evidence from
+the open web and the system's own corpus, rank it, and return one of
+five verdicts with a confidence, an explanation and the evidence it
+cites. \\
+FR8 & \textbf{Report failures as failures}: mark a claim whose search
+or model could not be reached as such, apart from the verdicts. \\
+FR9 & \textbf{Store}: keep the raw, processed and served form of every
+analysis with its lineage, and write it to a graph database. \\
+FR10 & \textbf{Publish}: show readers the published articles with each
+claim's verdict, its evidence and why each source was trusted. \\
+FR11 & \textbf{Trace}: show, during and after a run, every query sent,
+every source found and the rating each received. \\
+FR12 & \textbf{Evaluate}: run the claim-checking stage over a labelled
+set and report its metrics with their uncertainty. \\
+\bottomrule
+\end{tabularx}
+\end{table}

@@ -6,7 +6,32 @@
 % ============================================================
 
 \subsection{Biases in the Data}
-\pending{the source catalogue and its reliability ratings (only the
-configured domains are rated); English and Spanish only; topic and
-verdict balance of the custom set; one annotator; X-Fact's political
-domain.}
+
+\begin{itemize}
+    \item \textbf{The source catalogue.} The 37 sources were chosen by
+    hand, and their reliability ratings were set by hand. They are
+    mostly European and North American outlets, plus Infobae
+    (Argentina), The Conversation (Australia) and international bodies;
+    voices from the rest of the Global South, local
+    and community media, and outlets in other languages are absent. Only
+    the configured domains have a real rating; every other domain found
+    as evidence gets a neutral default, flagged as unrated, which favours
+    sources the catalogue already knows when the ranking breaks ties.
+    \item \textbf{Two languages.} English and Spanish only; the Spanish
+    side has fewer enabled sources (13 against 20), only three in the
+    environment group, and a claim selector that is markedly less
+    precise in Spanish (0.52 against 0.70).
+    \item \textbf{The custom set's balance.} By design it is balanced
+    over five topic groups and five verdicts, but the natural claims
+    contain no \texttt{FALSE} and one \texttt{MISLEADING}, two thirds of
+    the facts are in English, and science, environment and health hold
+    more facts than society and culture
+    (Table~\ref{tab:custom-matrix}).
+    \item \textbf{One annotator and an AI pass.} The labels reflect one
+    person's application of the guide, and for most facts the
+    proposals of one language model, whose own biases in reading
+    evidence are not known.
+    \item \textbf{X-Fact's domain.} The external benchmark is political
+    statements checked by fact-checkers, selected because someone
+    disputed them, from two organisations in the pilot.
+\end{itemize}

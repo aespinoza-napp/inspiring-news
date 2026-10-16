@@ -1,9 +1,51 @@
 % ============================================================
 % Chapter 7: Results
-%   Section: Journalist Effort (RQ3)
+%   Section: RQ3 --- Person and Model
 % Included from chapters/07-results/results.tex
+% Sources: docs/roadmap.md (P0.2, P1.5); docs/experiments.md.
 % ============================================================
 
-\section{Journalist Effort (RQ3)}
+\section{RQ3 --- How Close a Model Comes to a Person}
 \label{sec:results-rq3}
-\pending{claim selector precision, time per fact, share of verdicts usable without re-checking, and the selection experiments.}
+
+RQ3 compares a person and a language model taking the same decision on
+the same input, in three places (Section~\ref{sec:rq-metrics}): which
+candidates to publish, which label a claim deserves, and the verdict;
+the annotator's agreement with their own blind re-label is the ceiling.
+None of the three has yet been measured against a person, and this
+section says what exists and what is missing.
+
+\paragraph{Labelling: the AI pass against the annotator.} 108 of the
+139 facts in the custom set --- 78 natural claims and the 30 synthetic
+ones --- carry a label proposed by the AI labelling pass, each marked as
+such in its note. The annotator's review, keeping or changing each, is
+P0 work. Its outcome is the first RQ3 number: the agreement, as
+Cohen's $\kappa$ with its confusion matrix, between a strong language
+model applying the annotation guide and the person who wrote it. From
+the review onward the annotator labels each batch before the AI does,
+so that every new fact adds to that comparison without anchoring.
+\pending{$\kappa$ and observed agreement between the AI pass and the
+annotator's review, on the 108 facts, with the confusion matrix and the
+rules behind the disagreements; and the annotator's blind re-label of
+the hash-chosen 20\%, as the ceiling.}
+
+\paragraph{Selection: the AI against the editor.} The only comparison
+so far is indirect: on the 6~October candidates, the AI selection's
+0--10 score separated stories worth offering from the rest with an AUC
+of 0.650 [0.533, 0.759], below the ranking's 0.778, but both were
+measured against labels the AI labelling pass assigned, not against an
+editor (Table~\ref{tab:ranking-auc}). Rounds already sent with the AI's
+help are \emph{assisted}, and their agreement is inflated, because an
+editor anchors on a proposal; the number to report comes from
+\emph{blind} rounds, where the editor sends a choice before the model is
+run.
+\pending{ten blind and ten assisted rounds: precision, recall and
+Jaccard of the AI's picks against the editor's, and the AUC of its score,
+blind against assisted.}
+
+\paragraph{Verdicts: the pipeline against the annotator.} The
+verifier's agreement with the annotator is the $\kappa$ of the RQ2 runs
+on the reviewed custom set (Section~\ref{sec:results-rq2}), read against
+the annotator's self-agreement.
+\pending{$\kappa$ of the pipeline against the reviewed labels, beside
+the self-agreement ceiling and the AI pass's agreement.}

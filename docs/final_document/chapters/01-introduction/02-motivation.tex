@@ -2,10 +2,45 @@
 % Chapter 1: Introduction
 %   Section: Motivation
 % Included from chapters/01-introduction/introduction.tex
+% Source: docs/idea-de-negocio.md (principles), docs/roadmap.md
+% (the thesis in one sentence), docs/decisions/deployment.md (cost).
 % ============================================================
 
 \section{Motivation}
 \label{sec:motivation}
-\pending{why verification has to be part of the flow that produces
-and distributes constructive news, not a separate service; why
-low-cost and open-web (local models, no paid APIs).}
+
+\paragraph{Verification inside the flow, not after it.} A fact-check
+usually arrives after a story has circulated, and is read by fewer
+people than the story it corrects. A publication of constructive news
+has a stronger reason than most to check before it publishes: its
+value to readers is that the good news it reports is true, and a
+single inflated figure or misattributed result costs it that value.
+The motivation of this work is therefore to make verification a step
+of the flow that finds and prepares the news, so that every published
+article carries a verdict per claim, with the evidence behind it,
+rather than an editorial label nobody can inspect. The same flow also
+does the work before verification that takes a journalist's time ---
+reading many sources to find the few stories worth offering --- so
+that the two can be measured together.
+
+\paragraph{Failing towards caution.} An automated verifier that is
+sometimes confidently wrong is worse than none: a reader cannot tell
+its right answers from its wrong ones. The system is designed to
+prefer ``not verified'' to a confident verdict it cannot ground, to
+report a search or model failure as a failure rather than as a
+verdict, and to show the evidence and reasoning behind every answer.
+
+\paragraph{Low cost and the open web.} The evidence for a claim about
+last week's study or this month's project is not in any fixed corpus:
+it is on the web, if anywhere, on the day the claim is checked. The
+system therefore searches the open web at verification time, as a
+person would. It does so without paid services: the search goes
+through a self-hosted metasearch engine, and the language model,
+entity recogniser, sentiment classifier and embedding model all run
+locally from open weights. The whole stack runs on a laptop, or on a
+single cloud virtual machine of about 115~USD a month
+(Section~\ref{sec:dev-deployment}). A small newsroom or a single
+researcher can run it and reproduce every number in this thesis, and
+no result depends on a provider's undisclosed model or index. The
+price is a small model and a search engine that is sometimes refused
+by the engines behind it, and both are measured rather than assumed.

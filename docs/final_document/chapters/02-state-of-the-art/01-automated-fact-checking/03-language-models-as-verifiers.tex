@@ -6,5 +6,46 @@
 % ============================================================
 
 \subsection{Language Models as Verifiers}
-\pending{retrieval-augmented verification, citation of evidence,
-hallucination and its guardrails.}
+
+Large language models changed the verdict-prediction stage. A
+pre-trained model holds a good deal of factual knowledge in its weights
+and can answer some factual questions with no evidence at all
+\cite{petroni2019lama}; this \emph{closed-book} behaviour is the
+baseline against which the contribution of retrieval is measured in
+this work (Section~\ref{sec:rq-metrics}). Retrieval-augmented
+generation instead conditions the model on documents retrieved for the
+question \cite{lewis2020rag}, which is the shape of an evidence-based
+verifier: retrieve, then judge the claim against what was retrieved.
+More elaborate verifiers decompose a complex claim into simpler
+questions and answer each against evidence \cite{pan2023programfc}.
+
+The same models \emph{hallucinate}: they produce fluent statements that
+are unsupported by, or contradict, their input or the world
+\cite{ji2023hallucination}. For a verifier this is the central risk:
+a verdict whose explanation sounds right and rests on nothing. Three
+lines of work address it.
+
+\begin{itemize}
+    \item \textbf{Citation.} Asking the model to cite the sources each
+    statement rests on makes its grounding checkable; ALCE measures
+    citation precision and recall automatically
+    \cite{gao2023alce}.
+    \item \textbf{Atomic checking.} FActScore splits a generated text
+    into atomic facts and checks each against a knowledge source
+    \cite{min2023factscore}, the same unit of verification this work
+    uses for claims.
+    \item \textbf{Consistency and calibration.} SelfCheckGPT detects
+    hallucinations from the disagreement of several samples of the same
+    model \cite{manakul2023selfcheckgpt}; more generally, the confidence
+    a neural model reports is often poorly calibrated
+    \cite{guo2017calibration}, so it cannot be taken at face value.
+\end{itemize}
+
+The verifier of this work takes the first and the last of these into
+its design rather than its evaluation. It reduces the model's task to
+a closed classification over five verdicts, requires it to cite the
+evidence it used and to quote the passage each source supports or
+contradicts, discards any quote that does not appear verbatim in its
+source, and recomputes the final confidence from properties of the
+evidence instead of trusting the model's own
+(Sections~\ref{sec:design-fact-checking} and~\ref{sec:dev-fact-checking}).

@@ -6,5 +6,33 @@
 % ============================================================
 
 \subsection{Environmental Dimension}
-\pending{energy of the local models on GPU and CPU and of the VM;
-the reuse of open models instead of training new ones.}
+
+\paragraph{No model was trained.} The largest environmental decision of
+the project is negative: every model is used as published, from open
+weights. Training or fine-tuning a language model, even a small one,
+costs orders of magnitude more energy than running it, and none of the
+research questions needed it. The verifier is a 3-billion-parameter
+model rather than an 8-billion one, chosen for its footprint.
+
+\paragraph{The energy of running it.} The energy of the system is the
+energy of the machine it runs on, for the time it runs. That time is
+measured: about 36~s per claim on the development laptop, of which
+about 15~s is search and page fetching, 9~s ranking and 6~s the model;
+and about three minutes per four-claim article on a CPU-only server,
+almost all of it the model. The power drawn was not
+measured. As an order of magnitude only, at an assumed 100~W for a
+laptop under load, the whole X-Fact pilot (64 claims, two at a time,
+about 18 minutes of wall-clock time) cost about 30~Wh, or about half a
+watt-hour per claim; the figure should be read as an estimate under
+that assumption, not as a measurement. Several design choices reduce the work per article: the
+admission filter rejects an article before any search or model call;
+the claim selector keeps at most four claims; claims with no evidence
+are not sent to the model; repeated queries are sent once; and the
+selection step means only the articles a person or the model chose are
+analysed at all, rather than everything discovery finds.
+
+\paragraph{The server.} The production target is one shared virtual
+machine, sized from measured memory use, rather than a set of services
+each sized for a peak; it was never run, so it has consumed nothing.
+Choosing a region whose electricity has a low carbon intensity is a
+decision for the real deployment.

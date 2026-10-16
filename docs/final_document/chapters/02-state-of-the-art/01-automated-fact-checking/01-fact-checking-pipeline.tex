@@ -6,5 +6,39 @@
 % ============================================================
 
 \subsection{The Fact-Checking Pipeline}
-\pending{claim detection, evidence retrieval and verdict prediction
-\cite{guo2022survey}.}
+
+Automated fact-checking is commonly framed as a pipeline that mirrors
+the work of a human fact-checker \cite{thorne2018automated,
+guo2022survey}. Guo, Schlichtkrull and Vlachos organise the field into
+three stages and a fourth output:
+
+\begin{itemize}
+    \item \textbf{Claim detection}: deciding which sentences make a
+    claim worth checking. ClaimBuster is the early reference: it scores
+    sentences of political debates for \emph{check-worthiness}, the
+    likelihood that a fact-checker would want to check them
+    \cite{hassan2017claimbuster}.
+    \item \textbf{Evidence retrieval}: finding the documents, and the
+    passages in them, that bear on the claim.
+    \item \textbf{Verdict prediction}: classifying the claim against
+    the evidence, from a binary true/false to the fine-grained scales
+    fact-checkers publish.
+    \item \textbf{Justification}: producing an explanation of the
+    verdict that a reader can check.
+\end{itemize}
+
+A recurring conclusion of the field is that full automation is not yet
+realistic and that the most useful systems assist fact-checkers ---
+finding claims, finding evidence, detecting claims already checked ---
+rather than replace them \cite{nakov2021assisting}. This is the
+question RQ4 puts to the system built here: not whether it replaces a
+journalist, but which share of the work it can take on, at what
+quality.
+
+The proposed method follows the same decomposition
+(Section~\ref{sec:design-fact-checking}). Claim selection plays the
+part of claim detection, with a structural rather than a learned notion
+of what is checkable; evidence retrieval and ranking find and filter
+open-web documents; a language model predicts the verdict; and its
+justification is the set of sources it cites, each with the verbatim
+passage it relied on, which the system checks mechanically.

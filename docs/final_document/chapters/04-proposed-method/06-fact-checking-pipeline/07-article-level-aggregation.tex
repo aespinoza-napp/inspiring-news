@@ -3,7 +3,34 @@
 %   Section: The Fact-Checking Pipeline
 %     Subsection: Article-Level Aggregation
 % Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
+% Source: docs/arquitectura-tecnica.md 2.4.7; fact_checker.py
+% (_VERDICT_SEVERITY).
 % ============================================================
 
 \subsection{Article-Level Aggregation}
-\pending{worst-claim-wins and its known limitation.}
+\label{subsec:aggregation}
+
+An article's verdict is neither an average nor the verdict of its most
+important claim: it is the worst of its claims' verdicts, in a fixed
+order of severity,
+\[
+  \texttt{TRUE} < \texttt{PARTIALLY\_TRUE} < \texttt{UNVERIFIED} <
+  \texttt{MISLEADING} < \texttt{FALSE}.
+\]
+\texttt{PARTIALLY\_TRUE} sits below \texttt{UNVERIFIED} because a
+claim whose detail is off has at least been checked. The article's
+confidence is the mean of its claims' confidences. An article is
+publishable when it was admitted and its verdict is neither
+\texttt{FALSE} nor \texttt{MISLEADING}: \texttt{UNVERIFIED} does not
+block publication, because with a small local model it is the common
+outcome, and the reader view shows each claim's own verdict.
+
+\paragraph{Known limitation.} Because \texttt{UNVERIFIED} outranks
+\texttt{TRUE}, a single claim without enough evidence decides the
+article's verdict however many others were confirmed, and the mean
+confidence mixes confidences of different verdicts. Separating ``how
+much could be checked'' from ``what was found'' is left open
+(Section~\ref{sec:limitations}). The reader view works around it for
+the reader: a claim whose search or model failed reads ``not checked''
+and is counted apart, and an article none of whose claims was judged is
+shown as not checked rather than as unverified.

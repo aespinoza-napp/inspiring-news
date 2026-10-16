@@ -3,10 +3,69 @@
 %   Section: Evaluation Harness
 %     Subsection: Metrics and Confidence Intervals
 % Included from chapters/06-experimental-design/04-evaluation-harness/evaluation-harness.tex
+% Source: docs/decisions/evaluation.md, "What is reported apart",
+% "Metrics"; metrics.py, report.py.
 % ============================================================
 
 \subsection{Metrics and Confidence Intervals}
-\pending{accuracy, macro-F1, per-class precision and recall, Cohen's
-kappa against gold, coverage and selective accuracy, the bootstrap;
-what is reported apart (searchUnavailable, llmUnreachable, temporal
-and verdict leaks).}
+\label{subsec:harness-metrics}
+
+\paragraph{What is reported apart.} Each claim gets one outcome, the
+first that applies: \emph{error} (the harness or the pipeline crashed),
+\emph{search unavailable} (no web query was answered),
+\emph{model unreachable}, or \emph{scored}. Only scored claims enter
+the metrics. The others are listed by identifier and never counted as
+errors of the system: on 25~September, 68 of 69 searches came back
+empty, and folded into the error rate that would have measured the
+search engine's uptime. On top of the outcome, two flags:
+
+\begin{itemize}
+    \item \textbf{Temporal leak}: a cited source was published after
+    the claim (the annotation guide's Rule~3). Undetermined when the
+    claim or the source has no date.
+    \item \textbf{Verdict leak} (X-Fact only): a ranked source is on the
+    fact-checker's own site, so the verdict may have been read rather
+    than reached.
+\end{itemize}
+
+Every metric is reported on all scored claims and again without the
+flagged ones. An answer the model gave in no usable format is scored as
+the \texttt{UNVERIFIED} it became and counted per model.
+
+\paragraph{Verdict metrics.} Over the five verdicts:
+
+\begin{itemize}
+    \item \textbf{accuracy}, and \textbf{macro-averaged $F_1$} over the
+    classes present in the gold labels --- a class with no gold support
+    is shown with its predictions but not averaged in --- with
+    per-class precision, recall, $F_1$, support and predicted count, and
+    the confusion matrix;
+    \item \textbf{Cohen's $\kappa$} against the gold labels
+    \cite{cohen1960coefficient}, the same statistic as the annotator's
+    self-agreement, so that the system and the annotator are compared
+    on one scale;
+    \item \textbf{coverage} --- the share of claims given a definitive
+    verdict rather than \texttt{UNVERIFIED} --- and \textbf{selective
+    accuracy}, the accuracy on those claims, the standard pair for a
+    classifier allowed to abstain \cite{geifman2017selective}.
+\end{itemize}
+
+\paragraph{Intervals.} Every statistic comes with a percentile 95\%
+bootstrap interval over claims \cite{efron1993bootstrap}: 10,000
+resamples, seeded (2026 by default) and with the seed in the report,
+records ordered by identifier first so that the same run gives the same
+interval however its claims finished. Two runs are compared with a
+\emph{paired} bootstrap of their difference over the claims both
+scored, alongside how many claims only one of them got right; a run
+compared with itself gives exactly zero, which a test holds.
+
+\paragraph{Breakdowns.} By language for both sets; by topic group,
+claim type, source tier and origin (natural or synthetic) for the
+custom set; by fact-checking site for X-Fact. Each with its size,
+accuracy and interval, macro-$F_1$, coverage and selective accuracy.
+
+\paragraph{Cost.} Each record carries its model calls, tokens and the
+provider's answer time, measured inside the production client, so the
+report gives the median and 90th-percentile latency per claim, tokens
+per claim and per second, and the price per hundred claims from the
+price table --- ``n/a'' without a price, never zero.

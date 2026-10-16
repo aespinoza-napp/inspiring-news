@@ -1,0 +1,44 @@
+% ============================================================
+% Chapter 9: Conclusions
+%   Section: Future Work
+%     Subsection: Further Work
+% Included from chapters/09-conclusions/04-future-work/future-work.tex
+% Source: docs/roadmap.md, "Cut, or future work" and P2 (Oct 14).
+% ============================================================
+
+\subsection{Further Work}
+\label{subsec:future-further}
+
+\paragraph{Writing constructive news from verified sources.} The same
+story from two or three outlets --- which the ranking already groups ---
+turned into a short constructive piece that cites its sources; its
+claims extracted by the pipeline's own extractor and each verified
+against the given sources only, with no web search; scored by the
+share of supported claims \cite{min2023factscore} and the precision and
+recall of its citations \cite{gao2023alce}, validated by a hand check.
+The pipeline's verifier would become the evaluator of its own writer.
+It was moved out of scope on 14~October because no research question
+asks it.
+
+\paragraph{Evidence against the age of a claim.} Re-running retrieval on
+the same recent claims after a week and after a month, to put a number
+on how much evidence a claim gains as it ages --- the question that
+benchmarks of fresh knowledge ask of language models \cite{vu2024freshllms}
+and that the custom set's Rule~1 meets every day, when a new study has
+only its own press release.
+
+\paragraph{The rest of the product.} The recommendation system over the
+graph, with the verdict as one of its signals, and the mobile
+application of the wider project (Section~\ref{sec:sota-selection}).
+
+\paragraph{Operations.} The first real cloud deployment, with a search
+check from a data-centre address; reading \texttt{robots.txt}; evicting
+finished jobs; expiring the analysis cache; normalising URLs before
+comparing them; and the graph measured at scale beyond a few thousand
+articles.
+
+\paragraph{Quality.} End-to-end tests of the frontend; a policy for the
+three bluffs that still pass the guardrails; separating ``how much
+could be checked'' from ``what was found'' in the article's verdict;
+and the topic classifier, measured on the reviewed set and improved if
+it matters.

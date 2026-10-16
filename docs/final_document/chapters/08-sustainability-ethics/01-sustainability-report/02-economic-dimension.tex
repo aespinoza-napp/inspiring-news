@@ -6,5 +6,21 @@
 % ============================================================
 
 \subsection{Economic Dimension}
-\pending{the cost of the project (Section~\ref{sec:budget}) and of
-running it; low cost as a design requirement.}
+
+The cost of the project is its 900 hours of work, a laptop already
+owned, and no licences (Section~\ref{sec:budget}). The cost of running
+it was a design requirement from the start (Section~\ref{sec:motivation}):
+no paid search or model API, so the marginal cost of checking a claim
+is machine time, and the whole stack fits on one virtual machine of
+about 115~USD a month. That keeps the system within reach of a small
+newsroom or a single researcher, and makes every result reproducible
+without an account with a provider whose model or index may change
+underneath it.
+
+The trade-off is explicit. A free metasearch engine is refused by the
+engines behind it more often than a paid search API would be, and a
+small local model verifies worse than a large hosted one. Both costs
+are measured rather than hidden: failed searches are reported apart,
+and the model benchmarks compare the local model with a hosted one on
+accuracy, latency and price. An organisation that can pay for a search
+API or a hosted model can switch either by configuration.

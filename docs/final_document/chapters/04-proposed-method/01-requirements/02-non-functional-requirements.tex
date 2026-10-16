@@ -6,6 +6,37 @@
 % ============================================================
 
 \subsection{Non-Functional Requirements}
-\pending{low cost (local models, no paid APIs), auditability (every
-step journalled), fail towards caution, English and Spanish,
-reproducible evaluation.}
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Non-functional requirements and how each is met.}
+\label{tab:nonfunctional-requirements}
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+\textbf{Id} & \textbf{Requirement} & \textbf{How it is met} \\
+\midrule
+NFR1 & \textbf{Low cost}: no paid API; runs on a laptop or one VM &
+Local open-weight models; self-hosted metasearch; one compose stack \\
+NFR2 & \textbf{Auditability}: every verdict traceable to its evidence &
+Cited sources with verbatim quotes; a per-run journal of every event;
+lineage on every stored record \\
+NFR3 & \textbf{Fail towards caution} & \texttt{UNVERIFIED} when the
+evidence does not decide; ungrounded verdicts downgraded; outages
+reported apart \\
+NFR4 & \textbf{Two languages} & English and Spanish lexicons,
+language detection, per-language queries; a third language fails the
+test suite \\
+NFR5 & \textbf{Reproducible evaluation} & Resumable runs keyed by
+dataset, model, thresholds and commit; seeded bootstrap; committed
+reports \\
+NFR6 & \textbf{Per-run tunability} & Every threshold can be overridden
+for one run without affecting concurrent runs \\
+NFR7 & \textbf{Bounded load on shared services} & One concurrency
+ceiling per external service, not per request \\
+NFR8 & \textbf{Security} & An address-based guard on every server-side
+fetch; an API key and a site password in production; read-only graph
+console \\
+\bottomrule
+\end{tabularx}
+\end{table}

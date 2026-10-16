@@ -3,10 +3,31 @@
 %   Section: Scope
 %     Subsection: Out of Scope
 % Included from chapters/01-introduction/06-scope/scope.tex
+% Source: docs/roadmap.md (Phase 6, Sep 29; Thesis priorities, Oct 14),
+% docs/arquitectura-tecnica.md sections 3 and 4.
 % ============================================================
 
 \subsection{Out of Scope}
-\pending{cut on 29 September 2026 (docs/roadmap.md, Phase 6): user
-accounts, profiles, bookmarks and recommendations; the recommendation
-system and the mobile application of docs/arquitectura-tecnica.md
-(sections 3 and 4).}
+
+\begin{itemize}
+    \item \textbf{User accounts, profiles, bookmarks and
+    recommendations}, cut on 29~September~2026: none of them answers a
+    research question, and each is a subsystem to build, secure and
+    test. The reader view is what remains of the user-facing
+    application.
+    \item \textbf{The recommendation system and the mobile
+    application} of the wider project (docs/arquitectura-tecnica.md,
+    sections~3 and~4). The graph database this work writes is their
+    foundation, but neither is built.
+    \item \textbf{Writing news from verified sources}, moved on
+    14~October~2026 to ``only if time is left'', since none of the
+    four research questions asks it (Section~\ref{sec:future-work}).
+    \item \textbf{Training or fine-tuning any model.} Every model is
+    used as published; nothing is trained on the evaluation data.
+    \item \textbf{Languages other than English and Spanish.} A source
+    in a third language is refused by the test suite rather than scored
+    with the English word lists.
+    \item \textbf{Paid search or model APIs}, and a real cloud
+    deployment: the infrastructure is written and checked against an
+    emulator, but has never been applied to a billed project.
+\end{itemize}

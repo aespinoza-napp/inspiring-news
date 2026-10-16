@@ -2,9 +2,49 @@
 % Chapter 9: Conclusions
 %   Section: Achievement of the Objectives
 % Included from chapters/09-conclusions/conclusions.tex
+% Status as of 16 October 2026, from docs/roadmap.md.
 % ============================================================
 
 \section{Achievement of the Objectives}
 \label{sec:objectives-achieved}
-\pending{each specific objective of Section~\ref{sec:objectives}:
-achieved, partly achieved or not, and why.}
+
+\begin{table}[ht]
+\centering
+\small
+\caption{The specific objectives of Section~\ref{sec:objectives} as of
+16~October~2026.}
+\label{tab:objectives-achieved}
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+\textbf{Objective} & \textbf{Status} & \textbf{What was done, and what is left} \\
+\midrule
+O1 Discovery and selection & Achieved & Discovery by topic group, the
+mission screen, the ranked round, the AI selection and the editor's
+choice of up to twenty, all recorded and measured on live rounds. Left:
+measurement against a person's labels (RQ1, RQ3). \\
+\addlinespace
+O2 Extraction and enrichment & Achieved & A three-step extraction
+cascade, the enrichment stack in a separate model service, and a
+three-layer lake with lineage. \\
+\addlinespace
+O3 Open-web fact-checking & Achieved & Seven stages with cited,
+quoted, recalibrated verdicts, failures reported apart, and a trace per
+claim; tested end to end and against a bluffing model. Its accuracy is
+the open question of RQ2. \\
+\addlinespace
+O4 Validation set and harness & Partly & The harness, its metrics,
+retrieval evaluation and the X-Fact pilot are done. The custom set
+holds 139 facts (109 natural, 30 synthetic), but 108 labels await the
+annotator's review, the blind re-label has not been done, and stage
+attribution and the effort metrics are not yet part of the harness. \\
+\addlinespace
+O5 Model benchmarks & Not yet & Both benchmarks are built and tested;
+neither has been run beyond the baseline on X-Fact. The writing
+benchmark was moved to ``only if time is left''. \\
+\addlinespace
+O6 Reader view & Achieved & A public feed and article view with each
+claim's verdict, evidence and the reason each source was trusted. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\pending{update each status at the end of the project.}

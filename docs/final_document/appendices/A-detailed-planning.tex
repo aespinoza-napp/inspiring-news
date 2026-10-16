@@ -34,4 +34,85 @@ Dec 25 -- 31    & report: 35 & -- & -- & -- & 35 \\
 \end{tabularx}
 \end{table}
 
-\pending{the task list of every sprint, from docs/roadmap.md.}
+Table~\ref{tab:sprint-tasks} lists the tasks of every sprint and their
+status on 16~October~2026, from \path{docs/roadmap.md}, where each item
+is checked against the code rather than the plan. Done means done and
+verified; partly done says what is left.
+
+{\small
+\begin{longtable}{@{}p{2.6cm}p{9.4cm}p{1.6cm}@{}}
+\caption{Tasks per sprint and their status on 16 October 2026.}
+\label{tab:sprint-tasks} \\
+\toprule
+\textbf{Sprint} & \textbf{Tasks} & \textbf{Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Sprint} & \textbf{Tasks} & \textbf{Status} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+0.1 Setup and scraping core & Monorepo; FastAPI and settings;
+trafilatura extraction; RSS discovery; declarative YAML sources;
+compose with Neo4j, SearXNG, inference and backend & Done \\
+0.2 Enrichment & Keywords and entities; claim extraction in English and
+Spanish; topics, sentiment and quality; embeddings; the enriched
+article model & Done \\
+0.3 Fact-checking v1 & Admission validators; claim selector; SearXNG
+and vector retrieval; evidence ranker; language-model verifier and
+confidence scorer & Done \\
+0.4 Job API and frontend v1 & Synchronous and background analysis with
+polling; the text corrector; the first frontend; the lazy container and
+its lock fix; test-collection fixes & Done \\
+1 Stabilise the core & Pipeline edge cases; progress events for every
+stage; the analysis cache; shared fakes and their contracts; failing
+tests fixed & Done \\
+2 Testing and bug-fixing & Full regression; concurrency tests; load
+test of the synchronous endpoint; model-client failure handling;
+architecture documentation; the 21~September audit and its fixes &
+Done \\
+3 Scraping strategies & Ingestion path; headless-browser and
+BeautifulSoup steps; routing by \texttt{requires\_javascript}; 12 to 36
+sources; strategy tests; topic-page discovery and the source probe &
+Done \\
+4 Enrichment and fact-checking & Search fix with a ``search
+unavailable'' state and a keyless second route; alternative retrieval
+strategies; ranking and confidence regression tests; discovery by
+topic group; choice of up to twenty; the newsroom flow; the mission
+screen; the candidate ranking; alignment with the groups; topic
+emphasis; time to reception & Done (topic classifier de-scoped) \\
+5 Neo4j and infrastructure & Graph schema, write path, read use-case
+and live tests; hosting decision; production compose; SearXNG for
+production; logging and monitoring; Terraform checked against an
+emulator; frontend on the VM behind Caddy & Partly: the first real
+deployment and a domain are left \\
+Validation set & Daily batches; facts 1--150; blind 20\% re-label;
+agreement and join & Partly: 139 facts, 108 labels to review, re-label
+not done \\
+Evaluation harness & Research questions; harness; metrics; retrieval
+evaluation; stage attribution; journalist-effort metrics; X-Fact pilot
+& Partly: attribution and effort not in the harness \\
+Experiments before the verdict & Tools; discovery yield; source health;
+selection blind and assisted; admission thresholds; topic classifier;
+time per stage; tables into the thesis & Partly: tools and first runs
+done \\
+Tuning & Claim-selection thresholds; ranking, confidence and pertinence
+weights against the labels & Not started (P2) \\
+6 Writing models & Local and hosted benchmark on the corrector's
+metrics; rubric and comparison table; cost and latency logging &
+Built, not run (P2) \\
+7 Verification models & Verifier benchmark; agreement with the human
+labels; confidence re-tuning; default model chosen; results section &
+Built, not run \\
+8 Reader view & Topic feed; article view with verdicts, evidence and
+trust; design system; public access & Done \\
+Testing and QA & Unit, concurrency and graph tests; full pass with
+inference; CI; full-pipeline integration test; harness tests; model
+comparison tests; guardrail stress test; smoke and load tests; final
+regression, bug-fix and deployment check; frontend end-to-end tests &
+Partly: December items left \\
+9 Report & Methodology; benchmark results; delivery; wrap-up & In
+progress \\
+\end{longtable}
+}

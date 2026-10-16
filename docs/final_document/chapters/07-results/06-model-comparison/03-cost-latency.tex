@@ -2,8 +2,17 @@
 % Chapter 7: Results
 %   Section: Model Comparison
 %     Subsection: Cost and Latency
-% Included from chapters/07-results/05-model-comparison/model-comparison.tex
+% Included from chapters/07-results/06-model-comparison/model-comparison.tex
+% Source: the "Cost, latency and tokens" sections of the X-Fact reports.
 % ============================================================
 
 \subsection{Cost and Latency}
-\pending{tokens, latency and price per claim and per run.}
+
+For the baseline on the X-Fact pilot, the harness recorded 63 model
+calls (one claim had no evidence and was not sent to the model), none
+failed, with 2,141 prompt and 179 completion tokens per claim at the
+median, 28.3 completion tokens per second, and a model call of 5.6~s at
+the median (90th percentile 9.5~s, maximum 14.5~s) on the development
+laptop. Its per-token cost is zero; its cost is the machine's time.
+\pending{the same figures for the other verifier models, with the
+hosted model's price read from its provider on the day of the run.}

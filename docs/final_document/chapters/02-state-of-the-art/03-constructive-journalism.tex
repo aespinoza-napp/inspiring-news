@@ -6,5 +6,51 @@
 
 \section{Constructive and Solutions Journalism}
 \label{sec:constructive-journalism}
-\pending{what makes a news item constructive, and why its claims are
-harder to check than political statements.}
+
+Constructive journalism is defined by McIntyre and Gyldensted as
+journalism that applies techniques from positive psychology to news
+work in order to create more productive, engaging stories while
+holding to journalism's core functions \cite{mcintyre2017constructive}.
+It does not mean only good news: a constructive story reports a problem
+together with the responses to it, the evidence that they work, and
+what readers can take from it. Solutions journalism, a close relative,
+centres the story on a response to a problem and on the evidence of its
+results. Both react to a news supply that leans to the negative, which
+audiences attend to more strongly \cite{soroka2015negativity} and which
+can leave readers informed but discouraged.
+
+For this work the publication's \emph{mission} is that kind of news on
+five groups of topics: society, science, environment, culture and
+health. In practice the mission has to be stated operationally, because
+the same outlets publish both kinds of story. The system's discovery
+stage keeps what a constructive publication would offer and leaves out
+what it would not --- party politics, crime, war, disasters, celebrity,
+sport, markets, service pages --- and the line between hard news and
+constructive news on the same topic is left to a judgement, by a person
+or a language model (Section~\ref{sec:design-selection}).
+
+\paragraph{Why its claims are harder to check.} Fact-checking practice
+and its datasets were built around political statements: a quote, a
+speaker, a disputed figure. The claims of constructive news are
+different in ways that make them harder, not easier, to verify
+automatically.
+
+\begin{itemize}
+    \item \textbf{They are new.} A study published this week or a
+    project launched this month has little independent coverage yet,
+    and the open web may hold nothing but the announcement itself.
+    \item \textbf{They are often sourced to their protagonist.} The
+    figures of a positive story frequently come from the press release
+    of the organisation the story is about. That confirms what was
+    said, not that it is true, and the annotation guide of this work
+    treats such a claim as not enough evidence
+    (Section~\ref{subsec:custom-rules}).
+    \item \textbf{They mix facts and interpretation.} ``The first
+    hospital in the region to\ldots'' is checkable; ``a hopeful step
+    for the sector'' is not, and both appear in the same paragraph.
+    \item \textbf{They are rarely false.} The custom validation set of
+    this work found no refuted claim among 109 natural ones
+    (Section~\ref{subsec:custom-size}). Errors, when they occur, are in
+    a detail --- a figure, a date, an attribution --- which is the
+    \texttt{PARTIALLY\_TRUE} case rather than the \texttt{FALSE} one.
+\end{itemize}

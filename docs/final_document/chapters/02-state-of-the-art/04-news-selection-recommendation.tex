@@ -2,10 +2,45 @@
 % Chapter 2: State of the Art
 %   Section: News Discovery, Selection and Recommendation
 % Included from chapters/02-state-of-the-art/state-of-the-art.tex
+% Context: docs/arquitectura-tecnica.md section 3 (the recommendation
+% system of the wider project, out of scope here).
 % ============================================================
 
 \section{News Discovery, Selection and Recommendation}
 \label{sec:sota-selection}
-\pending{news aggregation and editorial selection by people and by
-models; graph-based recommendation as the context of
-docs/arquitectura-tecnica.md section 3.}
+
+Before a claim can be checked, someone has to decide which articles are
+worth reading. Two traditions address that decision.
+
+\paragraph{Editorial selection.} In a newsroom, an editor reads what
+the sources published and chooses what to run; aggregators of
+constructive news do the same by hand. The decision is a judgement of
+relevance and of fit with the publication's line, and it is the step
+this work tries to support rather than personalise: the system reads
+the sources, screens out what the publication never covers, ranks what
+is left, and leaves the choice to a person or to a language model that
+reads titles and summaries. Language models have been reported to match
+or exceed crowd workers on several text-annotation tasks
+\cite{gilardi2023chatgpt}, which makes them plausible stand-ins for a
+reader's first pass; whether they agree with an editor on \emph{this}
+judgement is part of what RQ3 measures.
+
+\paragraph{Recommendation.} News recommender systems choose, per
+reader, from a large and fast-changing pool. Their survey by Karimi,
+Jannach and Jugovac lists what makes news a hard domain --- short item
+lifetimes, the importance of recency, popularity effects, and the
+risk of narrowing what each reader sees \cite{karimi2018news} --- the
+last of which Pariser called the filter bubble
+\cite{pariser2011filter}. Industrial systems combine content
+similarity with graph structure: Twitter's SimClusters represents users
+and items by the communities they belong to
+\cite{satuluri2020simclusters}, and TwHIN learns embeddings over a
+heterogeneous graph of users, items and topics
+\cite{elkishky2022twhin}.
+
+The wider project behind this thesis plans a recommender of the second
+kind over the graph that every analysis writes, with the verification
+verdict as one of its signals (docs/arquitectura-tecnica.md,
+section~3). That recommender is out of scope here
+(Section~\ref{sec:scope}); this thesis builds the editorial selection
+that comes before it and the graph that would feed it.

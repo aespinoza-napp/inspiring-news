@@ -2,13 +2,65 @@
 % Chapter 4: Proposed Method: Specification and Design
 %   Section: The Fact-Checking Pipeline
 % Included from chapters/04-proposed-method/proposed-method.tex
+% Source: docs/arquitectura-tecnica.md section 2.4 (seven stages),
+% docs/decisions/retrieval.md, src/services/fact_checker/. The stage
+% list of Section~\ref{subsec:discard-justification} follows this one.
 % ============================================================
 
 \section{The Fact-Checking Pipeline}
 \label{sec:design-fact-checking}
-\pending{reconcile with the six stages listed in
-sections/evaluation\_dataset.tex: docs/arquitectura-tecnica.md
-section 2.4 describes seven.}
+
+Fact-checking is not one true-or-false step but a chain of seven stages
+(Figure~\ref{fig:fact-checking}), each more expensive than the one
+before it. Any stage can stop or downgrade the result, and no later
+stage can undo a strong rejection by an earlier one. The governing
+principle is to fail closed: when in doubt, the system leans towards
+``not verified'' rather than towards a confident verdict that may be
+wrong, because a false sense of certainty costs more than caution. The
+only point where a language model takes part is bounded to a closed
+classification that must cite its sources, and its output is then
+checked by rules that do not depend on the model's own judgement.
+
+\begin{figure}[ht]
+\centering
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    node distance=4.5mm,
+    st/.style={draw, rounded corners=2pt, font=\footnotesize, align=left,
+               text width=8.2cm, minimum height=7mm, fill=ganttplan!15,
+               inner sep=3pt},
+    out/.style={st, fill=black!6, text width=3.6cm, dashed},
+    arr/.style={-{Stealth[length=2mm]}, thick},
+    lbl/.style={font=\scriptsize\itshape, fill=white, inner sep=1pt,
+                align=right, text width=2.2cm},
+]
+\node[st] (a) {\textbf{1. Admission} --- on topic, constructive enough, not a duplicate};
+\node[st, below=of a] (b) {\textbf{2. Claim selection} --- two to four anchor claims};
+\node[st, below=of b] (c) {\textbf{3. Evidence retrieval} --- three queries per claim, fused; own corpus};
+\node[st, below=of c] (d) {\textbf{4. Ranking and pertinence gate} --- four factors; off-target sources cut};
+\node[st, below=of d] (e) {\textbf{5. Verification} --- closed verdict, cited sources, verbatim quotes};
+\node[st, below=of e] (f) {\textbf{6. Confidence recalibration} --- ungrounded verdicts downgraded};
+\node[st, below=of f] (g) {\textbf{7. Aggregation} --- the article takes its worst claim's verdict};
+\node[out, right=8mm of a] (x) {Rejected: no search, no model call; reasons stored};
+\node[out, right=8mm of c] (y) {\texttt{searchUnavailable}: every query failed};
+\node[out, right=8mm of e] (z) {\texttt{llmUnreachable}: the model never answered};
+\draw[arr] (a) -- (b); \draw[arr] (b) -- (c); \draw[arr] (c) -- (d);
+\draw[arr] (d) -- (e); \draw[arr] (e) -- (f); \draw[arr] (f) -- (g);
+\draw[arr] (a) -- (x); \draw[arr] (c) -- (y); \draw[arr] (e) -- (z);
+\draw[arr] (d.west) -- ++(-5mm,0) |- node[lbl, pos=0.25, left]{no evidence: model not asked} (f.west);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{The seven stages. Stages 2--6 run per claim, and claims run
+concurrently; each claim records the furthest stage it reached. The
+dashed boxes are outcomes reported apart from the verdicts.}
+\label{fig:fact-checking}
+\end{figure}
+
+Stages~1 and~7 work on the article; stages~2 to~6 work on each claim,
+in that order and never overlapped, since each feeds the next. What the
+evaluation measures is the claim-checking part, stages~3 to~6, through
+the same entry point the single-claim endpoint uses
+(Section~\ref{sec:harness}).
 
 \input{chapters/04-proposed-method/06-fact-checking-pipeline/01-admission-filter}
 

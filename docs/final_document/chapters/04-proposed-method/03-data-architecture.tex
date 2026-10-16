@@ -2,10 +2,84 @@
 % Chapter 4: Proposed Method: Specification and Design
 %   Section: Data Architecture
 % Included from chapters/04-proposed-method/proposed-method.tex
+% Sources: docs/decisions/storage.md, docs/decisions/graph.md.
 % ============================================================
 
 \section{Data Architecture}
 \label{sec:data-architecture}
-\pending{the three-layer lake (raw, processed, exploitation) with
-lineage, the vector store and the graph schema. Sources:
-docs/decisions/storage.md, docs/decisions/graph.md.}
+
+Three stores hold what the system produces, each for a different use.
+
+\paragraph{A three-layer data lake.} Every analysis is written into a
+lake of three layers, one write per stage as that stage completes:
+
+\begin{itemize}
+    \item \textbf{Raw}: the extracted article and its fetch metadata.
+    Nothing model-derived, so it stays valid when every model changes.
+    \item \textbf{Processed}: the full enriched article and its
+    fact-check report, rejections and discarded evidence included. It
+    is the layer everything else is re-derived from.
+    \item \textbf{Exploitation}: one flat, ready-to-serve record per
+    analysis, with the editorial decision precomputed as
+    \emph{publishable} --- admitted, and with no claim judged
+    \texttt{FALSE} or \texttt{MISLEADING}.
+\end{itemize}
+
+Writing per stage means that a fact-check that fails (the search
+engine down, the model timing out) does not discard an enrichment that
+already cost the whole NLP stack. Every record carries its
+\emph{lineage}: the run, the article, a hash of the body that joins the
+layers, its parent record, the pipeline version, the code revision, the
+model versions and any threshold the run overrode. Record identifiers
+are derived from the layer, the article and the run, so repeating a
+write overwrites rather than duplicates it, and an append-only manifest
+keeps the history of every write.
+
+\paragraph{A vector store.} Qdrant holds one embedding per analysed
+article. It serves three purposes: duplicate detection at admission,
+the system's own corpus searched for evidence, and the related-article
+signal. An article is added to it only after its fact-check, so it
+cannot be found as evidence for its own claims.
+
+\paragraph{A graph.} Every finished analysis is also written to Neo4j,
+in one transaction per article, after the lake. Its schema
+(Figure~\ref{fig:graph-schema}) has seven node types: articles, the
+sources that publish them and the evidence pages, the entities they
+mention, their topics, their claims and the five verdicts. Every
+relationship carries the method that wrote it --- the pipeline or a
+manual label --- so a hand label and the model's verdict on the same
+claim sit side by side instead of one overwriting the other. The lake
+is the record and the graph a view of it: a graph write that fails
+costs one event and never the analysis, and a synchronisation endpoint
+rebuilds the graph from the lake and the labelled facts at any time.
+
+\begin{figure}[ht]
+\centering
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    n/.style={draw, rounded corners=6pt, font=\footnotesize, fill=ganttplan!15,
+              minimum width=20mm, minimum height=7mm},
+    arr/.style={-{Stealth[length=2mm]}, thick},
+    lbl/.style={font=\scriptsize\ttfamily, fill=white, inner sep=1.5pt},
+]
+\node[n] (top) at (0, 2.2)  {Topic};
+\node[n] (art) at (0, 0)    {Article};
+\node[n] (src) at (6, 0)    {Source};
+\node[n] (ent) at (-6, 0)   {Entity};
+\node[n] (cl)  at (0, -2.4) {Claim};
+\node[n] (ver) at (-3.5, -4.6) {Verdict};
+\node[n] (ev)  at (3.5, -4.6)  {Evidence};
+\draw[arr] (art) -- node[lbl]{ABOUT} (top);
+\draw[arr] (art) -- node[lbl]{PUBLISHED\_BY} (src);
+\draw[arr] (art) -- node[lbl]{MENTIONS} (ent);
+\draw[arr] (art) -- node[lbl]{CONTAINS\_CLAIM} (cl);
+\draw[arr] (cl) -- node[lbl]{HAS\_VERDICT} (ver);
+\draw[arr] (cl) -- node[lbl]{CHECKED\_AGAINST} (ev);
+\draw[arr] (cl) -| node[lbl, pos=0.25]{MENTIONS} (ent);
+\draw[arr] (ev) -| node[lbl, pos=0.25]{PUBLISHED\_BY} (src);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{The graph schema. Every relationship carries
+\texttt{method} (\texttt{pipeline} or \texttt{manual}).}
+\label{fig:graph-schema}
+\end{figure}

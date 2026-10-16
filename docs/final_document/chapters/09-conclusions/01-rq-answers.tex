@@ -2,8 +2,53 @@
 % Chapter 9: Conclusions
 %   Section: Answers to the Research Questions
 % Included from chapters/09-conclusions/conclusions.tex
+% Provisional answers as of 16 October 2026, from what was measured;
+% each pending block names the measurement that will settle it.
 % ============================================================
 
 \section{Answers to the Research Questions}
 \label{sec:answers}
-\pending{one paragraph per research question, with the number that answers it.}
+
+The answers below are provisional: they state what the measurements
+made so far support, and each ends with the measurement still needed.
+
+\paragraph{RQ1 --- Finding.} \emph{Yes, on the evidence so far.} A round
+scoped to one topic group read 0.41 times the sources and 0.10 times the
+links of an every-topic reading; its ranking separated stories worth
+offering from the rest with an AUC of 0.78 [0.67, 0.87]; and after the
+alignment of 9~October the first twenty places of five one-group rounds
+held no non-articles and 17 stories not worth offering out of 100,
+against 13 and 29 before. All of it rests on labels assigned by the AI
+labelling pass and on one or two days of feeds.
+\pending{settle with the author's own labels on at least two rounds and
+discovery on five days.}
+
+\paragraph{RQ2 --- Verifying.} \emph{Not yet with the 3B model, on the
+only data measured.} On X-Fact the pipeline reached 29.7\% accuracy
+[18.8, 40.6] on the stratified pilot and 19.4\% [13.3, 25.5] on the
+Spanish test split, with a $\kappa$ against gold indistinguishable from
+zero; retrieved evidence added 10.9 points [3.1, 20.3] over the model
+alone on the pilot and nothing measurable on the Spanish test split.
+How it can be quantified is the other half of the question, and that
+half is answered: by the harness's metrics with intervals, the evidence
+conditions, retrieval recall and the stage attribution.
+\pending{the custom-set runs: accuracy, macro-$F_1$ and $\kappa$ under
+the three evidence conditions, natural and synthetic apart.}
+
+\paragraph{RQ3 --- Person and model.} \emph{Not yet measured.} The
+comparisons are designed and their data are being produced: 108 labels
+proposed by the AI pass await the annotator's review, and the blind
+selection rounds have not been run.
+\pending{$\kappa$ between the AI pass and the annotator; between the AI
+selection and the editor on blind rounds; between the pipeline and the
+annotator; and the annotator's self-agreement as the ceiling.}
+
+\paragraph{RQ4 --- The system.} \emph{Partly, and the person is still
+needed at every step.} The system takes on the reading of the sources
+and a first ordering of what it finds; about two in three of the claims
+it proposes are checkable (precision 0.64 [0.57, 0.70], lower in
+Spanish); and its verdicts, on the only data measured, are not yet
+reliable enough to be used without checking.
+\pending{coverage, selective accuracy and the share of verdicts usable
+without re-checking on the custom set, and time per fact against time
+per claim.}

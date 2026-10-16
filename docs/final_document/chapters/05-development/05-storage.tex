@@ -1,10 +1,65 @@
 % ============================================================
 % Chapter 5: Development
-%   Section: Storage: Data Lake, Vector Store and Graph
+%   Section: Storage
 % Included from chapters/05-development/development.tex
+% Sources: docs/decisions/storage.md, graph.md, thresholds.md.
 % ============================================================
 
-\section{Storage: Data Lake, Vector Store and Graph}
+\section{Storage, Journal and Per-Run Thresholds}
 \label{sec:dev-storage}
-\pending{the write path, the graph sync and the per-run thresholds
-(docs/decisions/thresholds.md).}
+
+\paragraph{The write path.} The analysis service writes the raw layer
+after extraction, the processed layer after enrichment, and the
+exploitation layer --- rewriting the processed record with the report
+--- after verification (Section~\ref{sec:data-architecture}). Each
+write is fail-soft on its own: a failure is reported as its own event
+and does not stop the next layer, which only loses its parent link. A
+storage error never discards a result that already cost a scrape, an
+enrichment and a model call per claim. Writes go to a temporary file
+and are moved into place atomically, because they run in the
+background thread pool. The storage sits behind a five-method interface,
+so moving the lake to a document database or object storage is one
+class, not a pipeline change.
+
+\paragraph{The journal.} The lake keeps results; what a run does on the
+way --- the queries, every source returned, the rating each got --- used
+to exist only in memory, so a crash lost exactly what was needed to
+understand a bad verdict. Every job event is now appended to a file per
+job as it happens. A job a restarted process no longer holds is still
+answered from its file, and a file with no final line is reported as
+interrupted rather than left looking as if it might still be running.
+
+\paragraph{The analysis cache.} A repeat request for the same URL is
+answered from a cache instead of re-running the pipeline. Two rules keep
+it sound. Its key includes the run's \emph{effective} thresholds, not
+only those that differ from the defaults: otherwise changing a default
+would serve answers computed under the old value. And every entry is
+stamped with a schema version that must change whenever the response
+changes shape, because the cache never expires and never rewrites an
+entry; the rule was broken in the week it was written, which is why it
+is now a test that builds a real response and compares its keys with
+the shape recorded for the current version.
+
+\paragraph{Per-run thresholds.} Every tunable threshold lives in one
+module, as a set of effective values for one run that default from the
+environment, and a request may override any of them for that run only.
+An override outside its range, or a misspelt one, is refused when the
+request is made rather than when the job runs. Thresholds are passed to
+each component per call, because the components are long-lived objects
+shared by every request; the earlier practice of copying a setting into
+a class attribute froze it at import time, so overrides had no effect,
+and the tests that seemed to cover them reassigned the attribute
+directly. A test now fails on any such copy. The lake records the
+overrides of every run, so a stored verdict stays reproducible. The two
+groups of scoring weights are the declared exception: they are set by
+the environment only, because each group must sum to one and a caller
+setting one weight alone would break that.
+
+\paragraph{The graph sync.} The graph is written after the lake, in one
+transaction per article, with short timeouts so that a stopped database
+costs seconds rather than a minute per run. Hand-labelled facts reach
+it only through a synchronisation that replays, in order, the source
+catalogue, the labelled facts and the newest verified run per URL from
+the lake. Every write merges on the schema's keys, so the sync can be
+run any number of times. The labelling tool imports nothing from the
+backend and does not write the graph itself.

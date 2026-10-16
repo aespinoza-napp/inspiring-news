@@ -2,11 +2,48 @@
 % Chapter 1: Introduction
 %   Section: Context
 % Included from chapters/01-introduction/introduction.tex
+% Source: docs/resumen-ejecutivo.md, "El problema que resuelve";
+% docs/idea-de-negocio.md, section 1.
 % ============================================================
 
 \section{Context}
 \label{sec:context}
-\pending{misinformation spreads faster than it can be checked by
-hand; news distribution optimises for engagement; the news cycle is
-dominated by negative content. Source: docs/resumen-ejecutivo.md,
-``El problema que resuelve''.}
+
+Three problems of today's news meet in this work.
+
+\paragraph{False information travels faster than its correction.}
+On Twitter between 2006 and 2017, false stories reached more people,
+faster and further than true ones, and the difference was driven by
+people rather than by automated accounts \cite{vosoughi2018spread}.
+Professional fact-checking grew in response: by the middle of the last
+decade dozens of fact-checking organisations were active in Europe
+alone \cite{graves2016rise}. Their method is manual --- a trained
+person chooses a claim, searches for evidence and writes a verdict
+--- and it cannot keep pace with the volume of what is published.
+Automated fact-checking, the research field that tries to support or
+partly automate that work, frames it as a pipeline of claim detection,
+evidence retrieval and verdict prediction \cite{guo2022survey}, and
+increasingly as a tool to assist fact-checkers rather than to replace
+them \cite{nakov2021assisting}.
+
+\paragraph{Distribution optimises for engagement.} The systems that
+decide what a reader sees are usually optimised for clicks and
+attention, not for accuracy or usefulness, and personalisation tuned
+that way tends to narrow what each reader is shown
+\cite{pariser2011filter,karimi2018news}.
+
+\paragraph{The news cycle is dominated by negative content.} Readers
+react more strongly to negative news than to positive news
+\cite{soroka2015negativity}, and a news supply shaped by that reaction
+erodes trust without necessarily giving readers anything they can act
+on. \emph{Constructive journalism} answers by reporting problems
+together with the responses to them, keeping journalism's core
+functions while applying what positive psychology has learned about
+how news affects its audience \cite{mcintyre2017constructive}.
+
+The project behind this thesis starts from the combination of the
+three: a source of constructive news on chosen topics whose claims are
+checked against real evidence before they are published, and whose
+verdicts can be inspected by whoever reads them. This thesis builds
+and evaluates the first part of that project --- finding the news and
+verifying it --- and leaves its distribution to future work.

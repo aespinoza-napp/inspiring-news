@@ -3,8 +3,42 @@
 %   Section: Evaluation Harness
 %     Subsection: Retrieval Evaluation
 % Included from chapters/06-experimental-design/04-evaluation-harness/evaluation-harness.tex
+% Source: docs/decisions/evaluation.md, "Retrieval evaluation";
+% retrieval.py.
 % ============================================================
 
 \subsection{Retrieval Evaluation}
-\pending{link and domain recall at three depths and MRR against the
-annotator's references (RQ2).}
+\label{subsec:harness-retrieval}
+
+RQ2 asks what retrieval contributes. The harness answers in two ways.
+
+\paragraph{Against the annotator's evidence.} For each claim with
+reference links, it checks at three depths --- every candidate seen,
+the ranked evidence the model was shown, and the evidence it cited ---
+whether a reference \emph{link} was found, and whether a reference
+\emph{domain} was; and it computes the reciprocal rank of the first hit
+in the ranked list. Links are normalised with the retriever's own
+function, imported rather than copied, so ``found'' means what the
+pipeline means by it. For X-Fact, links on the fact-checker's own site
+are removed from the references and counted, since they are the
+verdict. A miss is not proof of failure --- another source can be as
+good as the annotator's --- which is why domain hits are reported beside
+link hits. The cut reasons of references that were found and then cut
+show where they were lost.
+
+\paragraph{Without references.} For any set: the share of claims with
+any ranked evidence, candidates and ranked sources per claim, the share
+cut at ranking, distinct and rated domains, the share from the internal
+corpus, retrieval and ranking time, queries per claim, and which query
+kind --- anchor, proposition or refutation --- found each ranked
+source. All are means over claims with bootstrap intervals, by set and
+by language.
+
+\paragraph{Strategies.} A retrieval strategy is a run with its own
+thresholds, corpus, engines or code, named by a label that enters the
+run key. A retrieval-only mode stops before the model, so a strategy
+costs only its search and fetch time, and a comparison command sets
+strategies side by side, each paired against the first. This is what
+the planned ablation (Table~\ref{tab:priorities}) uses: switching a
+component off on the same frozen claims, in one window, rather than
+comparing versions of the code that cannot be re-run on today's web.

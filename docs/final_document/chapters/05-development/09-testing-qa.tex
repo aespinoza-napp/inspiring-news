@@ -2,10 +2,82 @@
 % Chapter 5: Development
 %   Section: Testing and Quality Assurance
 % Included from chapters/05-development/development.tex
+% Sources: backend/tests/, CLAUDE.md (Invariants), docs/roadmap.md
+% (Testing & QA), scripts/check.sh. Counts from ./scripts/check.sh on
+% 2026-10-16.
 % ============================================================
 
 \section{Testing and Quality Assurance}
 \label{sec:dev-testing}
-\pending{invariants enforced as tests, contracts for the shared
-fakes, the guardrail stress test, the full-pipeline integration test,
-continuous integration.}
+
+\paragraph{One command defines ``done''.} \texttt{./scripts/check.sh}
+runs the backend tests, the inference service's tests against the real
+models, the frontend's typecheck and the labelling tool's tests. On
+16~October~2026 it passed: 1,478 backend tests (21 skipped because the
+inference service was not running, 3 expected failures), 9 inference
+tests, the typecheck and 32 labeller tests. Run again the same day
+with the inference service reachable, the backend suite passed 1,498
+tests with one skipped, the model tests included. Separate targets run what
+needs more than a laptop: the slow tests over the whole stored corpus,
+the graph against a real Neo4j, and the cloud infrastructure against
+the emulator.
+
+\paragraph{Rules as tests.} The rules most costly to break are enforced
+by a test module rather than kept as conventions: no setting frozen
+into a class attribute; every per-run tunable in the thresholds module;
+the cache's schema version matching the response's shape; no test that
+calls itself at import (which once aborted collection and took down the
+whole suite); no test that asserts against a local configuration value;
+a progress event for every pipeline stage; English and Spanish lexicons
+complete; no test writing into committed data; concurrency ceilings
+kept out of per-run thresholds; and no model library imported by the
+backend. When one fails, either the code or the declared exception
+changes, deliberately.
+
+\paragraph{Fakes with contracts.} The fact-checker's collaborators that
+reach the network --- the search engine, page fetches, the model --- are
+replaced in tests by shared fakes, and each fake has a contract test
+that pins its signature to the real class, so a fake cannot drift out of
+step with what it stands in for.
+
+\paragraph{The full pipeline, end to end.} An integration test runs the
+real analysis from a URL: the real extraction cascade over a saved
+page, real enrichment over the inference service, real admission on a
+temporary vector store, and the real fact-checker, with only the search
+engine, the page fetches and the model faked. Its ten tests check every
+per-claim stage in order, that cited sources survive ranking, that a
+claim with no evidence is \texttt{UNVERIFIED} without a model call,
+that the article cannot corroborate itself, the three lake layers with
+their lineage and the response shape. It ran, rather than skipped,
+with the inference service reachable: ten passed in 26~s.
+
+\paragraph{The guardrail stress test.} 83 scenarios of a fake model
+bluffing through the real verifier, plus three strict expected failures
+for the bluffs that still get through
+(Subsection~\ref{subsec:recalibration}).
+
+\paragraph{The harness tested like the system.} Every metric of the
+evaluation harness is checked against values worked out by hand on a
+small fixture --- accuracy, per-class precision and recall, macro-$F_1$
+over the classes the gold labels contain, coverage, selective accuracy,
+Cohen's $\kappa$ and when it is undefined --- together with the
+bootstrap's determinism under a seed, a paired bootstrap that returns
+exactly zero for identical runs, and resuming after a crash. A wrong
+metric is a wrong thesis.
+
+\paragraph{Continuous integration.} A GitHub Actions workflow runs
+three of the check's targets on every push and pull request: the
+backend, the frontend and the labelling tool. The model, corpus, graph
+and cloud targets stay local, and a test holds the workflow to the
+check's list of targets.
+
+\paragraph{Load.} A load test of the synchronous analysis endpoint on a
+live stack succeeded for four concurrent analyses (median 156~s) and
+degraded at six (median 196~s, one beyond the client's 240~s timeout),
+with every per-service ceiling holding; sustained load on the job
+endpoint remains unmeasured.
+
+\paragraph{What is not tested.} The frontend has no test runner and no
+end-to-end tests; two of its rules are held only by comments
+(Section~\ref{sec:dev-frontend}). A real model trying to bluff is
+untested: the stress test uses a fake one.

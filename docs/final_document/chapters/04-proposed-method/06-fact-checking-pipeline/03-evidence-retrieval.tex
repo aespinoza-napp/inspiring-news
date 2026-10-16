@@ -3,8 +3,64 @@
 %   Section: The Fact-Checking Pipeline
 %     Subsection: Evidence Retrieval
 % Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
+% Source: docs/decisions/retrieval.md; retrieval/query_builder.py.
 % ============================================================
 
 \subsection{Evidence Retrieval}
-\pending{three queries per claim fused by reciprocal rank; search
-unavailable as its own state. Source: docs/decisions/retrieval.md.}
+\label{subsec:evidence-retrieval}
+
+\paragraph{The failure the design prevents.} An early version built one
+query per claim from its entities, figures and dates. A Spanish claim
+that the Coyote's mail-order ACME purchases stood for post-war American
+consumerism was searched as ``coyote ACME Estados Unidos Segunda
+Guerra Mundial'', which every page explaining the Greek word
+\emph{acme} matches; those pages were the best embedding match, the
+model was shown three of them, and the claim came back \texttt{FALSE}
+at 83\% confidence. Each stage had behaved as designed, and none could
+produce the honest answer, which was \texttt{UNVERIFIED}.
+
+\paragraph{Three queries, fused.} Each claim is now searched with a
+planned set of three queries:
+
+\begin{itemize}
+    \item an \textbf{anchor} query --- entities, quoted figures and
+    dates --- for precision on the subject;
+    \item a \textbf{proposition} query --- the claim's own content
+    words plus two anchors --- for what the claim asserts, which the
+    anchor query lacks;
+    \item a \textbf{refutation} query --- the anchors plus words that
+    would contradict the claim, per language --- because every query
+    built from a claim is phrased affirmatively and could otherwise only
+    confirm it.
+\end{itemize}
+
+The three run concurrently and their ranked lists are fused by
+reciprocal rank fusion \cite{cormack2009rrf}, which orders candidates by
+how much the queries agree rather than by which query ran first, and
+each candidate records which queries found it. When a claim lost its
+subject on being separated from its article (``the programme trained
+30 experts''), the headline words that the article's own keywords agree
+on are restored to its queries, and the article's own URL is dropped
+from the results, so an article cannot confirm itself.
+
+\paragraph{Two sources of candidates.} The queries go to SearXNG, which
+consults a closed list of engines measured one by one --- general web
+engines and, at half weight, four academic indexes (arXiv, Crossref,
+Semantic Scholar and PubMed) that keep answering when the web engines
+rate-limit. In parallel, the system's own corpus of analysed articles is
+searched by embedding, always excluding the article itself.
+
+\paragraph{A funnel.} Reading a page in full is the most expensive
+operation of the pipeline, so candidates are first pre-ranked cheaply
+on their title and snippet, with the same semantic and lexical split
+the ranking uses, and only the best eight are fetched through the
+extraction cascade. Evidence pages never escalate to the headless
+browser.
+
+\paragraph{Search unavailable is not a verdict.} If every query of a
+claim fails --- SearXNG unreachable, or answering empty while reporting
+its engines down --- the claim is marked \texttt{searchUnavailable}
+and stops here with a note that the web was never asked. Its verdict is
+still \texttt{UNVERIFIED}, but it no longer looks like a judgement about
+the claim, and the evaluation sets it apart. Before giving up, a query
+SearXNG cannot answer is sent once to a second, keyless route.

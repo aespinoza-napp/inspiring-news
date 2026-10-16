@@ -1,9 +1,68 @@
 % ============================================================
 % Chapter 7: Results
-%   Section: Where the System Fails (RQ2)
+%   Section: RQ2 --- Verifying
 % Included from chapters/07-results/results.tex
+% Sources: the X-Fact reports in backend/data/evaluation/reports/;
+% docs/decisions/evaluation.md (Pilot). The custom-set runs are P0.5 of
+% docs/roadmap.md and have not been made.
 % ============================================================
 
-\section{Where the System Fails (RQ2)}
+\section{RQ2 --- Verifying the Claims}
 \label{sec:results-rq2}
-\pending{the stage attribution of every wrong verdict and the retrieval recall.}
+
+RQ2 asks whether the pipeline can verify the claims of the news it
+retrieves, and how that can be quantified. The quantification is fixed
+in Section~\ref{sec:rq-metrics}: accuracy, macro-$F_1$ and Cohen's
+$\kappa$ against the gold labels, natural and synthetic claims apart,
+under three evidence conditions (none, retrieved, the annotator's),
+with retrieval recall and the stage each error comes from.
+
+\paragraph{What the X-Fact pilot already shows.} The only verification
+runs so far are on X-Fact (Section~\ref{sec:results-pilot}), and they
+answer RQ2 for political fact-checks rather than for the system's own
+domain. Four findings carry over.
+
+\begin{itemize}
+    \item \textbf{The zero-shot 3B verifier is weak.} On the 64-claim
+    pilot it reached 29.7\% accuracy [18.8, 40.6] and a $\kappa$ of 0.07
+    whose interval includes zero; on the 165 Spanish test claims, 19.4\%
+    [13.3, 25.5], below always answering the majority class.
+    \item \textbf{It leans to \texttt{FALSE}.} It answered
+    \texttt{FALSE} to 43 of 64 pilot claims and never
+    \texttt{MISLEADING}; without evidence the same model answered
+    \texttt{FALSE} to 60 of 64. The lean is the model's prior.
+    \item \textbf{Retrieved evidence helps, a little.} Paired over the
+    same claims, the pipeline beat the closed-book model by 10.9 accuracy
+    points [3.1, 20.3] on the pilot, and by an amount indistinguishable
+    from zero on the Spanish test split (3.0 points [$-3.0$, 9.1]).
+    \item \textbf{Errors are both retrieval and reasoning.} Under the
+    trace rule 44 of 45 wrong verdicts are reasoning errors; under the
+    reference rule, 27 of the 29 it can judge are retrieval errors. The
+    model misread what it was shown, and what it was shown was not what
+    the fact-checker had used --- no annotator link was retrieved at any
+    depth.
+\end{itemize}
+
+The pilot also showed how much of an open-retrieval score on an old
+benchmark is about time rather than verification: 16 of the 20 claims
+for which it can be decided cited a source newer than the claim, and
+the fact-checker's own verdict page was ranked for 9 of the 24 English
+claims (Section~\ref{subsec:pilot-time}). The custom set avoids the
+worst of this by construction: its claims are weeks old, not years, and
+its annotation rule restricts the gold label to evidence available at
+publication time.
+
+\paragraph{On the custom set.} The runs that answer RQ2 for
+constructive news --- the test split under the three evidence
+conditions, with natural and synthetic claims reported apart, retrieval
+recall against the annotator's links, and the stage attribution ---
+depend on two P0 items not yet done: the annotator's review of the 108
+labels proposed by the AI pass, and the frozen tuning/test split
+(Table~\ref{tab:priorities}). A run on unreviewed labels would measure
+the pipeline against another model.
+\pending{Table: accuracy, macro-$F_1$ and $\kappa$ with intervals on
+the custom test split --- closed-book, retrieved and oracle evidence;
+natural and synthetic apart; by language and topic group. Retrieval:
+link and domain recall at candidates, ranked and cited, and MRR. Stage
+attribution under both rules, with the disagreements. Claims set apart
+(search or model unreachable) by identifier.}

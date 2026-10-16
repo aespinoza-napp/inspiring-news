@@ -1,10 +1,91 @@
 % ============================================================
 % Appendix D: Reproducibility
 % Included from main.tex
+% Sources: CLAUDE.md, docs/decisions/evaluation.md ("Where it runs"),
+% docs/experiments.md, docker/README.md.
 % ============================================================
 
 \chapter{Reproducibility}
 \label{app:reproducibility}
-\pending{the repository, the commands that reproduce every table
-(\texttt{./scripts/check.sh}, the evaluation CLI, the experiments)
-and the data each one reads.}
+
+Everything in this thesis is produced from one repository, by the
+commands below. Every report states the commits its runs were made on.
+
+\section*{D.1\quad Verifying the system}
+
+\begin{lstlisting}
+./scripts/check.sh           # backend + inference + frontend + labeller
+./scripts/check.sh fast      # the invariants only, in seconds
+./scripts/check.sh inference # the real models
+./scripts/check.sh slow      # the whole stored corpus
+./scripts/check.sh graph     # the graph against a real Neo4j
+./scripts/check.sh gcp       # the cloud infrastructure against Floci
+./scripts/check.sh labeller  # the labelling tool
+\end{lstlisting}
+
+Backend tests that need a real model skip when the inference service is
+not running; start it first (\texttt{docker compose up inference}, or
+\texttt{cd inference \&\& uv run uvicorn src.main:app --port 8001}).
+
+\section*{D.2\quad Running the stack}
+
+\begin{lstlisting}
+./scripts/dev.sh all     # compose services + the frontend dev server
+\end{lstlisting}
+
+The backend's configuration (\path{backend/.env}) is not in the
+repository; \path{backend/.env-example} lists every setting. On a CPU,
+use the production limits for the language model: one call at a time
+and a 180~s timeout.
+
+\section*{D.3\quad Evaluation runs}
+
+Run inside the development stack with the evaluation layer, so that
+records carry their commit and the CPU limits apply:
+
+\begin{lstlisting}
+cd docker
+docker compose -f docker-compose.yml -f docker-compose.eval.yml \
+  --env-file ../backend/.env run --rm --no-deps -T backend \
+  python -m src.evaluation.cli run \
+    --dataset data/evaluation/xfact_en_es_pilot.jsonl --model llama3.2:3b
+# then, from backend/:
+uv run python -m src.evaluation.cli report --run <run directory>
+uv run python -m src.evaluation.cli table --run <dir> --run <dir>
+uv run python -m src.evaluation.cli retrieval --run <dir> --run <dir>
+\end{lstlisting}
+
+Data read: \path{backend/data/evaluation/xfact_en_es_pilot.jsonl} (the
+pilot), \path{xfact_es_test.jsonl} (the Spanish test split), and the
+custom set, either the directory \path{manual/} or its merge
+\path{custom_en_es.jsonl} (\texttt{python labeller/app.py join}). The
+closed-book baseline is \path{scripts/closed_book_probe.py}; the
+time-elapsed analysis and the pilot's stage attribution are
+\path{scripts/xfact_time_elapsed.py}. Committed reports are under
+\path{backend/data/evaluation/reports/}.
+
+\section*{D.4\quad Experiments before the verdict}
+
+\begin{lstlisting}
+cd backend
+uv run python -m src.evaluation.experiments discovery --group environment
+uv run python -m src.evaluation.experiments selection
+uv run python -m src.evaluation.experiments blind-ai --round <round id>
+uv run python -m src.evaluation.experiments admission --backend http://127.0.0.1:8000
+uv run python -m src.evaluation.experiments topics --backend http://127.0.0.1:8000
+uv run python -m src.evaluation.experiments emphasis
+\end{lstlisting}
+
+Results, and the labelled data of the one-off studies (the mission
+screen's margin, the ranking's weights, the alignment of 9~October),
+are under \path{backend/data/evaluation/experiments/}.
+
+\section*{D.5\quad Building this document}
+
+\begin{lstlisting}
+cd docs/final_document
+latexmk -pdf main.tex      # pdflatex + bibtex
+\end{lstlisting}
+
+Set \verb|\showpendingfalse| in \path{main.tex} to hide the remaining
+placeholders.

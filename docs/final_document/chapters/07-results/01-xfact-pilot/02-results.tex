@@ -53,8 +53,9 @@ $\kappa$ against the gold labels is 0.07, with an interval
 ($-0.03$ to $0.18$) that includes zero, and its macro-$F_1$ is below
 what a uniform random guess is expected to score on a set balanced by
 construction. The reason is visible in the confusion matrix: the
-system answered \texttt{FALSE} to 43 of the 64 claims, of which 16 are
-false, and never answered \texttt{MISLEADING}. Asked without evidence,
+system answered \texttt{FALSE} to 43 of the 64 claims, only 14 of them
+correctly (16 of the 64 are false), and never answered
+\texttt{MISLEADING}. Asked without evidence,
 the same model answers \texttt{FALSE} to 60 of 64, so this lean is the
 model's prior showing through the evidence rather than a property of
 the evidence. The evidence nevertheless helps: paired over the same

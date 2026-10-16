@@ -6,5 +6,26 @@
 % ============================================================
 
 \subsection{Hardware and Software Costs}
-\pending{the development laptop (GPU) amortised over the project;
-every software component is open source.}
+
+\paragraph{Hardware.} All development and every evaluation run in this
+thesis used one laptop: an Intel Core i7-12700H, 16~GB of RAM and an
+NVIDIA RTX~3050 Laptop GPU with 4~GB, on which the 3-billion-parameter
+language model runs mostly on the GPU. Its cost is amortised over the
+project rather than charged in full:
+\[
+  \text{cost} = \text{price} \times
+  \frac{\text{months of use in the project}}{\text{useful life in months}},
+\]
+with seven months of use (June to December 2026, the August pause
+included) and an assumed useful life of four years.
+\pending{the laptop's purchase price, and the amortised cost that
+results.}
+
+\paragraph{Software.} Every component is open source and free of
+licence cost: Python, FastAPI and \texttt{uv}; Next.js and TypeScript;
+Docker and Docker Compose; SearXNG, Qdrant, Neo4j Community Edition and
+Ollama; trafilatura, BeautifulSoup and Playwright; and the open-weight
+models GLiNER, the XLM-RoBERTa sentiment classifier, BGE-M3 and
+Llama~3.2. The repository is hosted on GitHub and its continuous
+integration runs on GitHub Actions, both within their free tiers.
+Software costs are therefore zero.

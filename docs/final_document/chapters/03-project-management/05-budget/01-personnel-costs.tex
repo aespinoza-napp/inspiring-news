@@ -6,6 +6,43 @@
 % ============================================================
 
 \subsection{Personnel Costs}
-\pending{hours per role (project manager, developer, data scientist,
-tester) from Table~\ref{tab:phases}, times an hourly rate with its
-source.}
+\label{subsec:personnel-costs}
+
+The 900 hours of Table~\ref{tab:phases} are carried by one person, but
+they are costed as the four roles a team would need. Each phase is
+assigned to the role whose work it is: building the system to the
+developer (Phases~0, 2, 3 and~6, and Sprint~1 of Phase~1); the
+validation set, the harness, the experiments and the model benchmarks
+to the data scientist (Phases~4 and~5); Sprint~2 and the transversal
+testing track to the tester; and planning, replanning and the report to
+the project manager (Phase~7). The allocation is approximate --- the
+foundations also contain modelling work, and every phase some planning
+--- but it adds up to the plan.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Planned hours per role, from Table~\ref{tab:phases}.}
+\label{tab:personnel-hours}
+\begin{tabular}{@{}llr@{}}
+\toprule
+Role & Phases & Hours \\
+\midrule
+Developer       & 0 (300), 1: Sprint 1 (70), 2 (120), 3 (50), 6 (35) & 575 \\
+Data scientist  & 4 (90), 5 (80)                                      & 170 \\
+Tester          & 1: Sprint 2 (70), testing track (50)                & 120 \\
+Project manager & 7 (35)                                              &  35 \\
+\midrule
+\textbf{Total}  &                                                     & \textbf{900} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 18 unfunded hours of experiments (Section~\ref{subsec:phases}) are
+data-scientist hours and are added to that role if the writing
+benchmark they are expected to replace is run.
+
+\pending{the gross hourly cost of each role, with its source (a
+published salary survey or collective agreement for Spain, plus
+employer social-security contributions), and the resulting cost per
+role and in total.}

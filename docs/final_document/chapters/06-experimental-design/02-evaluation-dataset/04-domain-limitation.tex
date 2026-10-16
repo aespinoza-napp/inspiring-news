@@ -11,20 +11,22 @@
 Nevertheless, X-Fact does not fully capture the nature of this
 work's application domain either. Its claims originate predominantly
 from political discourse and controversial public statements, while
-the developed system is applied to editorial articles from a
-positive-news outlet, with claims combining verifiable facts
-(figures, dates, events) with analytical or cultural
-interpretations --- a type of claim virtually absent from X-Fact and
-which, as documented in Chapter~\ref{ch:results}, exposes a real
-limitation of the system in its current version.
+the developed system is applied to constructive news about science,
+the environment, health, culture and society, from the positive-news
+outlets, general newspapers, public bodies and academic publishers of
+its source catalogue (Section~\ref{subsec:scraping-sources}). Their
+claims are mostly reports of studies, projects, figures and events,
+often sourced to the organisation the story is about, and they sit
+beside interpretations of those facts that no evidence can settle ---
+a mix virtually absent from X-Fact, whose claims were chosen by
+fact-checkers precisely because someone disputed them.
 
 For this reason, the quantitative evaluation in this work relies on
 \textbf{two complementary sources}: X-Fact \cite{gupta2021xfact}, as
 a standardised benchmark enabling comparison of the proposed method
 against the state of the art in multilingual, open-retrieval fact
 verification; and a custom validation set, built from claims
-extracted from real articles published by the outlet under study and
-manually labelled, specifically designed to expose and measure the
-system's behaviour on interpretive claims --- the real use case for
-which the system was conceived, and one that no existing academic
-benchmark adequately covers.
+extracted from real articles of the configured sources and labelled
+by hand (Section~\ref{sec:custom-dataset}), designed to measure the
+system on the claims of the domain it was built for --- the real use
+case, and one that no existing academic benchmark covers.

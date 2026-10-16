@@ -3,8 +3,58 @@
 %   Section: The Fact-Checking Pipeline
 %     Subsection: Evidence Ranking and the Pertinence Gate
 % Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
+% Source: docs/decisions/retrieval.md; ranking/ranking_retrieval.py;
+% settings.py (RANKING_*, EVIDENCE_MIN_PERTINENCE).
 % ============================================================
 
 \subsection{Evidence Ranking and the Pertinence Gate}
-\pending{similarity, recency, reliability and term coverage; the
-gate that cuts off-target sources before the model sees them.}
+\label{subsec:ranking}
+
+The fetched evidence is re-ranked by a score of four independent
+factors:
+\[
+  \textit{relevance} = 0.45\cdot\textit{semantic}
+    + 0.20\cdot\textit{lexical}
+    + 0.20\cdot\textit{recency}
+    + 0.15\cdot\textit{reliability}.
+\]
+
+\begin{itemize}
+    \item \textbf{Semantic}: the embedding similarity between the claim
+    and the evidence.
+    \item \textbf{Lexical}: the share of the claim's own terms the
+    evidence contains, anchors counted double. It is the counterweight
+    to the semantic factor, which scores a page \emph{about the same
+    subject} as highly as a page that addresses the claim --- exactly
+    how the ACME etymology pages won.
+    \item \textbf{Recency}: an exponential decay with a half-life of a
+    year, so old evidence loses weight gradually rather than being
+    discarded.
+    \item \textbf{Reliability}: a rating per domain, from the source
+    catalogue. Only the 37 configured domains have a real rating; any
+    other domain gets a neutral 0.5 and is flagged as unrated, so the
+    default is never presented as a rating.
+\end{itemize}
+
+The weights must sum to one, and the backend refuses to start if they
+do not: the configuration template once shipped weights summing to 1.2,
+and nothing noticed. The best five sources per claim are kept, at most
+one per domain.
+
+\paragraph{The pertinence gate.} In the same step, each source gets a
+second score that leaves recency and reliability out:
+\[
+  \textit{pertinence} = 0.5\cdot\textit{semantic} + 0.5\cdot\textit{lexical}.
+\]
+A recent, reliable page about something else is still about something
+else, and letting those two factors lift it would repeat the mistake
+the gate exists to stop. A source whose pertinence is below a threshold
+(0.25 by default) is cut \emph{before the model sees it}, with a reason
+that names the figure: it cannot be cited, counted towards the evidence
+minimum or treated as corroboration. The threshold is deliberately low
+--- a floor against off-target retrieval, not a relevance ranking ---
+because cutting real evidence turns a checkable claim into
+\texttt{UNVERIFIED}, another way of being useless. It is a per-run
+threshold, unlike the weights, because it is the knob that trades a
+confident wrong answer for an honest one. Its default was reasoned, not
+fitted: no labelled set existed when it was set.

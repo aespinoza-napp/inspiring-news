@@ -3,8 +3,51 @@
 %   Section: The Fact-Checking Pipeline
 %     Subsection: Confidence Recalibration
 % Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
+% Source: docs/arquitectura-tecnica.md 2.4.6;
+% verification/confidence_scorer.py.
 % ============================================================
 
 \subsection{Confidence Recalibration}
-\pending{confidence that does not depend on the model's own
-introspection; the hard UNVERIFIED fallback.}
+\label{subsec:recalibration}
+
+This is the most important safeguard of the system, and the reason a
+modest model can be used without compromising the reliability of the
+result. Its rules do not depend on the model's own judgement of itself,
+which is known to be poorly calibrated \cite{guo2017calibration}.
+
+\begin{enumerate}
+    \item \textbf{No evidence, no verdict.} Below the evidence minimum
+    the verdict is forced to \texttt{UNVERIFIED} with confidence zero,
+    and the model is never asked.
+    \item \textbf{Confidence is recomputed.} The final confidence is
+    $0.7$ times the model's confidence plus $0.3$ times an evidence
+    quality score computed independently: the mean relevance of the
+    retained evidence (half of it), the share of that evidence the model
+    cited (three tenths) and the amount of evidence against the maximum
+    expected (one fifth).
+    \item \textbf{An ungrounded verdict is downgraded.} A definitive
+    verdict that cites nothing, although evidence was available, becomes
+    \texttt{UNVERIFIED} with its confidence capped at 0.4. Citing only
+    sources the model itself called \emph{unrelated} counts as citing
+    nothing.
+    \item \textbf{A contradicted detail makes it partial.} A
+    \texttt{TRUE} verdict while some source contradicts the claim
+    becomes \texttt{PARTIALLY\_TRUE}: the central fact holds and a
+    detail does not, which is the ordinary shape of a real verification.
+    \item \textbf{One outlet is not confirmation.} A \texttt{TRUE} that
+    rests on fewer than two independent domains keeps its verdict with
+    its confidence capped at 0.6.
+\end{enumerate}
+
+The citation rules are independent of the model: they protect against
+the hallucinations of any model, present or future, without retraining
+or prompt changes. They were tested against a fake model that bluffs
+in 83 ways --- citations out of range, repeated or of the wrong type,
+fabricated or stitched quotes, verdicts outside the set, confidences of
+5 or of infinity, malformed answers --- which found and fixed six ways
+through (Section~\ref{sec:dev-testing}). Three remain, pinned as known
+failures because each needs a policy rather than a fix: a source the
+model calls both supporting and unrelated still grounds its citation; a
+\texttt{FALSE} whose every cited source supports the claim stands; and
+a \texttt{TRUE} whose every cited source contradicts it becomes only
+\texttt{PARTIALLY\_TRUE}.

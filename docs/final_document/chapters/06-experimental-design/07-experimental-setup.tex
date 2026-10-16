@@ -2,9 +2,65 @@
 % Chapter 6: Experimental Design
 %   Section: Experimental Setup
 % Included from chapters/06-experimental-design/experimental-design.tex
+% Sources: docs/decisions/evaluation.md ("Where it runs", "Pilot");
+% docs/decisions/deployment.md; the committed run.json of each report.
 % ============================================================
 
 \section{Experimental Setup}
 \label{sec:setup}
-\pending{hardware (development GPU, production CPU), model versions,
-thresholds and the commit each run was made on.}
+
+\paragraph{Hardware.} Two machines are relevant. Every run reported in
+this thesis was made on the development laptop: an Intel Core
+i7-12700H, 16~GB of RAM and an NVIDIA RTX~3050 Laptop GPU with 4~GB, on
+which about 80\% of the 3-billion-parameter model fits, the rest
+running on the processor; the inference service runs on the processor.
+The production target is a 4-vCPU, 16~GB virtual machine with no GPU,
+on which the same model takes about 45~s per claim against about 6~s on
+the laptop. Latency figures are therefore reported with the machine
+they were measured on, and a CPU deployment must use the production
+model limits (one call at a time, a 180~s timeout).
+
+\paragraph{Models.} The verifier is \texttt{llama3.2:3b} (Q4\_K\_M)
+served by Ollama (in production with a 4,096-token context and one
+request at a time); the inference service
+runs GLiNER (\texttt{gliner\_small}), the
+\texttt{twitter-xlm-roberta-base-sentiment} classifier and
+\texttt{BAAI/bge-m3}, with pinned library versions. Every record names
+the model and the provider that answered.
+
+\paragraph{Runs in containers.} Evaluation runs are made inside the
+development stack with an extra compose layer that mounts the
+evaluation data and the code (so a harness fix applies on resume
+without a rebuild) and the repository read-only, so that every record
+carries the commit it was made on. The layer also sets the CPU limits
+the pilot needed: a 180~s model timeout, one model call at a time, a
+120~s inference timeout and two claims at once, since four concurrent
+claims on CPU inference pushed the ranker's embedding calls past the
+30~s default.
+
+\paragraph{Thresholds and weights.} The X-Fact runs overrode no
+threshold; their effective values, written in full into each run's
+manifest, were those of Section~\ref{sec:design-fact-checking}:
+pertinence 0.25, ranking weights 0.45 / 0.20 / 0.20 / 0.15, pertinence
+weights 0.5 / 0.5, confidence weights 0.7 / 0.3, at most five sources
+per claim, one piece of evidence required for a verdict and two
+independent domains for full confidence in a \texttt{TRUE}. One value
+came from the environment's configuration rather than the declared
+default: the duplicate threshold was 0.96 instead of 0.90. Admission is
+not exercised by the harness, which checks claims, so it did not affect
+these runs; it is recorded because the manifest records it. A run's
+thresholds are hashed into its key.
+
+\paragraph{Provenance.} Each report states the commits its sessions
+ran on, the dataset's hash, the thresholds' hash, the harness version,
+the corpus mode and point count, and the bootstrap seed. Before every
+live run the health endpoint and the source probe's search check are
+read and recorded, because a run's verdicts mean nothing if the search
+engines refused it.
+
+\paragraph{The split.} Before any run on the custom set, the set is to
+be split once, stratified by label and language, into about one third
+for tuning and two thirds for testing (Table~\ref{tab:priorities}, P0):
+every threshold is tuned on the tuning part only, and every reported
+number comes from the test part. \pending{the frozen split: its date,
+its seed and its counts by label and language.}

@@ -1,0 +1,65 @@
+% ============================================================
+% Chapter 7: Results
+%   Section: RQ4 --- The System
+% Included from chapters/07-results/results.tex
+% Sources: backend/data/evaluation/queue/ (claim selector precision,
+% recomputed 2026-10-16: 136 labelled, 78 skipped; bootstrap 10,000,
+% seed 2026); the X-Fact reports; docs/decisions/deployment.md and
+% selection.md (time per article and per round).
+% ============================================================
+
+\section{RQ4 --- How Much of the Work the System Takes On}
+\label{sec:results-rq4}
+
+RQ4 asks, of the three steps joined, what share of a journalist's work
+the system takes on and at what quality. Its answer is a profile, built
+step by step from the other questions' measurements and from three of
+its own.
+
+\paragraph{Choosing the claims.} Over the nine daily labelling batches
+from 29~September to 14~October, the claim selector proposed 214
+claims, of which 136 were labelled and 78 rejected: a precision of
+0.636 [0.570, 0.701] (bootstrap over claims). It is markedly higher in
+English (98 of 141, 0.70) than in Spanish (38 of 73, 0.52). The
+rejection reasons were opinion or interpretation (22), a fragment of a
+sentence (21), a trivial statement (15), a prediction (8), a duplicate
+(6) and others (6). Two cautions apply. The batches from early October
+onwards were worked by the AI labelling pass, so the figure mixes the
+annotator's decisions with the AI's and will be recomputed on the
+reviewed batches; and the claim splitter was changed on 9~October,
+after fragments cut at abbreviations were found, so the later batches
+measure a slightly different selector. About two in three proposed
+claims are worth checking; the system takes on the choice of claims,
+but a person still discards about one in three.
+
+\paragraph{Verifying them.} On the X-Fact pilot the verifier gave a
+definitive verdict for 95.3\% of claims (its coverage) and was right on
+31.1\% of those (its selective accuracy): it almost never abstains, and
+when it answers it is mostly wrong. On that evidence the 3B verifier
+cannot take over verification on political claims; whether it can on
+constructive news, and what share of its verdicts would be usable
+without re-checking, is the custom-set measurement of RQ2.
+\pending{coverage, selective accuracy, the share usable without
+re-checking and the confidently-wrong share on the custom test split.}
+
+\paragraph{Time.} A claim took 36.5~s at the median on the development
+laptop in the pilot (90th percentile 59.9~s), of which 14.8~s
+retrieval, 8.6~s ranking and a 5.6~s model call; on the CPU-only
+production stack a four-claim article took 184~s, with the model 180 of
+those seconds. A round of discovery takes about a minute; the AI
+selection about 70~s for 117 candidates with the 3B model. Against
+these, the time a person spends is not yet measured: the labelling
+tool does not record time per fact.
+\pending{time per fact from the labelling tool (median and
+interquartile range), against the system's time per claim; the effort
+estimate of Subsection~\ref{subsec:harness-effort}.}
+
+\paragraph{The profile so far.} Finding: the system reads a tenth to
+two fifths of the links and orders them so that the first twenty
+places hold few stories not worth offering, on AI labels
+(Section~\ref{sec:results-rq1}). Choosing claims: about two in three of
+its proposals are checkable. Verifying: not yet at a quality a
+journalist could rely on with the 3B model, on the only data measured.
+At every step a person is still needed for the judgement the system is
+weakest at --- hard news against constructive news on the same topic,
+opinion against fact in Spanish, and whether a verdict can be trusted.

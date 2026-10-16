@@ -2,8 +2,45 @@
 % Chapter 9: Conclusions
 %   Section: Limitations
 % Included from chapters/09-conclusions/conclusions.tex
+% Source: CLAUDE.md, "Known slow / known unverified" and "Known dead /
+% known broken"; Section~\ref{sec:threats}.
 % ============================================================
 
 \section{Limitations}
 \label{sec:limitations}
-\pending{what the evaluation cannot show, and the known limitations of the system (CLAUDE.md, ``Known slow / known unverified'').}
+
+\paragraph{What the evaluation cannot show.} The threats of
+Section~\ref{sec:threats} bound every result. In short: the custom set
+is small, labelled by one person with an AI pass still to be reviewed,
+drawn from the claims the system's own selector proposes, and its
+refuted class is synthetic; the external benchmark is political and
+years old; and no search can be repeated.
+
+\paragraph{Known limitations of the system.}
+\begin{itemize}
+    \item \textbf{Worst claim wins.} One \texttt{UNVERIFIED} claim
+    outweighs any number of \texttt{TRUE} ones in the article's verdict,
+    and the article's confidence averages different verdicts.
+    \item \textbf{Search is fragile.} Keyless search is refused by the
+    engines behind it at times, and the second route was itself
+    challenged from the development machine. Failures are reported, not
+    prevented.
+    \item \textbf{On-point but not on-subject.} The pertinence gate
+    catches a page about something else; it does not catch a page about
+    the same subject making a different claim. That judgement is the
+    model's, enforced but unmeasured.
+    \item \textbf{Ratings for 37 domains only.} Every other domain gets a
+    neutral default, flagged as unrated.
+    \item \textbf{Thresholds reasoned, not fitted.} The pertinence gate,
+    the ranking and confidence weights and the claim selector's
+    thresholds were set by reasoning, because no labelled set existed;
+    tuning them on the tuning split is left for the end if time allows.
+    \item \textbf{Housekeeping.} Jobs are kept in memory without
+    eviction; the analysis cache never expires and also caches
+    rejections, although verdicts depend on today's web; and URLs are
+    compared as plain strings, so tracking parameters make the same
+    article look new.
+    \item \textbf{Never deployed.} The cloud infrastructure has only been
+    applied to an emulator, and the scraper does not read
+    \texttt{robots.txt}.
+\end{itemize}

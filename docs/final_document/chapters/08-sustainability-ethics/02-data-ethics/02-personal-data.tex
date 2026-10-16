@@ -6,5 +6,25 @@
 % ============================================================
 
 \subsection{Personal Data and Privacy}
-\pending{named people extracted as entities and stored in the graph;
-data protection.}
+
+The system processes no data about its users: there are no accounts,
+no profiles and no tracking, a consequence of cutting them from the
+scope. The personal data it does process are the names of people that
+appear in published news. The entity recogniser extracts them, and the
+graph stores them as entity nodes linked to the articles and claims
+that mention them, beside the claimant of each labelled fact.
+
+These are data that a publisher has already made public, processed
+for journalistic and research purposes, for which the General Data
+Protection Regulation provides room for exemptions and derogations
+(Article~85 for freedom of expression and information, Article~89 for
+scientific research, each subject to safeguards); they are not combined
+with any other source about the person, and nothing in the system
+profiles individuals. A public deployment would still need its own
+assessment of the legal basis. Three precautions follow nonetheless. The
+graph and the lake are local and not published; the graph's query
+console is read-only and behind an API key; and an entity is keyed by
+its type and name only, with no attempt to identify the person beyond
+what the article says. A claim attributed to a named person carries a
+verdict about the \emph{claim}, not about the person, and the reader
+view presents it that way.

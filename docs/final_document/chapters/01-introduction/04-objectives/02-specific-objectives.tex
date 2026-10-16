@@ -3,11 +3,37 @@
 %   Section: Objectives
 %     Subsection: Specific Objectives
 % Included from chapters/01-introduction/04-objectives/objectives.tex
+% One per deliverable of docs/roadmap.md. Whether each was achieved is
+% Section~\ref{sec:objectives-achieved}.
 % ============================================================
 
 \subsection{Specific Objectives}
-\pending{one per deliverable of docs/roadmap.md: a discovery and
-selection flow for constructive news; an extraction and enrichment
-pipeline; an open-web fact-checking pipeline with auditable verdicts;
-a labelled validation set and an evaluation harness; a benchmark of
-verification and writing models; a reader view.}
+
+\begin{description}[leftmargin=1.2cm,labelwidth=1cm]
+    \item[O1] \textbf{Discovery and selection.} A flow that reads the
+    configured English and Spanish sources for up to three topic
+    groups, keeps what fits the publication's mission, ranks the
+    candidates, and lets a person or a language model choose at most
+    twenty to analyse (RQ1, RQ3).
+    \item[O2] \textbf{Extraction and enrichment.} A pipeline that turns
+    any article URL into clean text with its metadata, and annotates it
+    with topics, entities, keywords, sentiment, quality scores,
+    candidate claims and an embedding, stored in a data lake that keeps
+    the lineage of every record.
+    \item[O3] \textbf{Open-web fact-checking with auditable verdicts.}
+    A pipeline that admits an article, selects its checkable claims,
+    retrieves evidence from the open web, and returns for each claim a
+    verdict that cites its sources and can be traced stage by stage
+    (RQ2).
+    \item[O4] \textbf{A validation set and an evaluation harness.} A
+    hand-labelled set of claims from the system's own domain, and a
+    harness that runs the pipeline over it and over X-Fact and reports
+    every metric with its uncertainty (RQ2, RQ3, RQ4).
+    \item[O5] \textbf{Model benchmarks.} A comparison of language
+    models as verifiers on the labelled sets, and of a local and a
+    hosted model as the editor behind the text corrector, with their
+    cost and latency (RQ2).
+    \item[O6] \textbf{A reader view.} A public view of the published
+    articles that shows each claim's verdict, its evidence and why each
+    source was trusted.
+\end{description}

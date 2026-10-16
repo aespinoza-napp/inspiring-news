@@ -36,11 +36,108 @@ Testing and QA, transversal         &   0 &  50 &  50 \\
 \end{tabular}
 \end{table}
 
-\pending{the reason for each change, from the roadmap's header:
-the validation set turned out to be a 40-hour task (Sep 28); its own
-window, a testing track, the evaluation harness and the search fix,
-paid for by cutting the user-facing application to a reader view and
-two hosted-model benchmarks (Sep 29); dates derived from hours, two
-parallel tracks, Neo4j done in less than planned (Sep 30); the 18
-unfunded hours of experiments (Oct 5). Close with the deviations
-found after this plan.}
+\paragraph{28 September: the validation set is a task of its own.} The
+custom validation set had been expected to fit into hours freed in
+Sprint~3. It turned out to be about 40 hours of work by itself ---
+finding articles, extracting claims, searching evidence and labelling
+150 facts --- and it was given those 40 hours, paid for by the writing
+benchmark (Sprint~6, 70 to 50 hours) and the interface (Sprint~8, 60 to
+40).
+
+\paragraph{29 September: evaluation and testing get hours.} Three
+things every later result depends on had no hours: the validation set's
+calendar, a harness that runs the pipeline over the labelled sets, and
+testing as a continuous activity. The validation set got its own
+window (29~September to 30~October, about ten facts a day, then the
+blind re-label a week later); testing became a transversal track of 50
+hours, weighted towards the end; the harness got 40 hours; and the
+search fix, without which a benchmark would measure the search engine's
+uptime, got 10 hours inside Sprint~4. They were paid for by cutting the
+user-facing application to a read-only reader view (accounts, profiles,
+bookmarks and recommendations answer no research question), by
+reducing the writing benchmark to one local and one hosted model, and
+by de-scoping the topic classifier's accuracy, which is on no research
+question's path.
+
+\paragraph{30 September: dates follow from hours.} The previous plan
+kept the hours honest but not the calendar: one week held 65 hours of
+infrastructure while the 20-hour interface had two. Every block's dates
+were recomputed from its hours at the 30--35 hours a week the first two
+phases had run at; development and evaluation became two tracks run
+side by side; and the Neo4j integration, done on 29~September in far
+less than its 35 hours, gave 15 hours to the interface.
+
+\paragraph{5 October: experiments before the verdict.} Eighteen hours
+of experiments on discovery, selection, admission and the topic
+classifier were added without funding; how they are expected to be
+absorbed is in Section~\ref{subsec:phases}.
+
+\paragraph{After the plan.} The 30~September plan was overtaken in both
+directions.
+
+\begin{itemize}
+    \item \textbf{Work done ahead of its dates.} The production compose
+    file and the cloud infrastructure (planned for 20~October --
+    9~November) were done on 1--2~October, except the first real
+    deployment, which needs a billed project and is left undone; the
+    reader view (planned for 11--17~December) on 2--4~October; the
+    evaluation harness, its metrics and retrieval evaluation (planned
+    for 20~October -- 9~November) on 2--4~October; continuous
+    integration and the full-pipeline integration test on 2~October;
+    and the X-Fact pilot on 13~October.
+    \item \textbf{Work added outside the plan.} Discovery by topic
+    group, the choice of up to twenty candidates by a person or the AI
+    and the newsroom flow (5~October); the mission screen and the
+    candidate ranking (6~October); the alignment of the rounds with the
+    mission and the groups (9~October); and the person's topic emphasis
+    (13~October). Each came from what a live round showed --- election
+    coverage in a Culture round, a match report ranked above an
+    analysis of decarbonisation --- and each was measured before it was
+    kept (Section~\ref{sec:design-selection}).
+    \item \textbf{Work behind its dates.} The labelling: by
+    14~October the set held 109 natural facts, of which 31 were
+    labelled by the annotator and 78 by an AI labelling pass not yet
+    reviewed (Subsection~\ref{subsec:custom-procedure}); 39 facts from
+    17 off-mission articles had been moved out of the set; and no
+    natural claim was \texttt{FALSE}.
+\end{itemize}
+
+\paragraph{14 October: feature freeze and thesis priorities.} With
+about a third of this document written, mostly on scraping, and no
+result yet on the questions the thesis asks, the plan was reordered by
+what the thesis needs rather than by the calendar. The author fixed the
+four research questions; nothing new is built unless a priority needs
+it; and the remaining work was sorted into three levels
+(Table~\ref{tab:priorities}). Writing news from verified sources moved
+to the lowest level, since no research question asks for it.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Thesis priorities from 14 October 2026 (docs/roadmap.md).
+Where they disagree with the calendar of
+Section~\ref{sec:planning}, they win.}
+\label{tab:priorities}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Level & Items \\
+\midrule
+P0 --- without these there is no thesis & Fix the research questions
+and their metrics (done, 14~October); human adjudication of the gold
+set and the agreement between the AI pass and the annotator; a
+\texttt{FALSE} class (done, 14~October); a frozen tuning/test split;
+the verification runs on the test split under three evidence
+conditions; stage attribution; writing, about 140 hours, alongside
+everything else \\
+\addlinespace
+P1 --- what makes it a good thesis & Retrieval as an ablation on frozen
+claims; evidence against the age of the claim; two more verifier
+models; ten blind and ten assisted selection rounds (RQ3); the
+discovery numbers on five days (RQ1) \\
+\addlinespace
+P2 --- only if time is left & Tuning the ranking and confidence weights
+and the pertinence gate; the remaining experiments before the verdict;
+the writing-model benchmark; writing news from verified sources \\
+\bottomrule
+\end{tabularx}
+\end{table}

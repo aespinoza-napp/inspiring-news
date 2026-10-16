@@ -1,10 +1,88 @@
 % ============================================================
 % Chapter 5: Development
-%   Section: Fact-Checking Pipeline Implementation
+%   Section: Fact-Checking Implementation
 % Included from chapters/05-development/development.tex
+% Sources: docs/decisions/incidents.md, retrieval.md, concurrency.md;
+% docs/roadmap.md (Sep 21 audit, Sep 28, Sep 30, Oct 2).
 % ============================================================
 
-\section{Fact-Checking Pipeline Implementation}
+\section{Fact-Checking Implementation}
 \label{sec:dev-fact-checking}
-\pending{the implementation choices behind Section~\ref{sec:design-fact-checking}
-and the incidents that shaped them (docs/decisions/incidents.md).}
+
+The design of Section~\ref{sec:design-fact-checking} is the result of
+incidents as much as of plans. Each one below was reproduced, fixed and
+pinned by a test, and each changed the design.
+
+\paragraph{A re-analysed article was a duplicate of itself.} Every
+extraction gives the article a new identifier, and the duplicate check
+skipped a stored match only when the identifiers were equal. A second
+analysis of the same URL --- a forced refresh, or any changed
+threshold, since thresholds are part of the cache key --- found its own
+earlier copy at similarity 1.0 and was rejected. Its quieter twin: the
+corpus search had no exclusion at all, so the earlier copy came back as
+evidence for its own claims. Both now exclude the article's URL inside
+the vector query, and the store keeps one point per URL.
+
+\paragraph{The title was never extracted.} trafilatura's second major
+version leaves the title, author and date out unless asked for them.
+Every article in the lake had no title, so everything built on the
+headline --- restoring a claim's lost subject among it --- was dead. The
+strategy's tests had mocked the library, which is why nobody noticed;
+one test now runs it for real.
+
+\paragraph{A claim was checked outside its article.} A Spanish sentence
+about August prize contests, from an article about a street game, came
+back \texttt{TRUE} at 84\% confirmed by the Mexico City marathon's prize
+money. The fix restores the article's subject to the claim's queries
+and gives the model the headline and the opening, with the rule that
+evidence about a different event is unrelated even when it shares a
+place, a date or a figure.
+
+\paragraph{No call to the model without evidence.} Below the evidence
+minimum the verdict was already forced to \texttt{UNVERIFIED}, yet the
+model was still called: on 25~September, 23 of 24 claims spent the
+slowest step of the pipeline on an answer that was thrown away. The
+call is now skipped, and so is the progress event that told the
+interface the model was being asked.
+
+\paragraph{The model was retried behind the system's back.} The client
+retried once, and the SDK underneath retried timeouts twice more by
+default, so a slow local model could hold one claim for six times the
+timeout and then report it unreachable. The SDK's own retries are off,
+and a provider that was never reached raises an error that becomes the
+claim's \texttt{llmUnreachable} flag, instead of returning nothing as a
+malformed answer would.
+
+\paragraph{The model's judgement of a source is enforced.} The verifier
+already asked the model, per source, whether it supports, contradicts
+or is unrelated to the claim, but a citation of a source the model had
+just called unrelated still counted. Since 30~September it does not: a
+definitive verdict resting only on such sources falls to
+\texttt{UNVERIFIED} with a note saying why, at no extra model call.
+
+\paragraph{Guardrails tested against a bluffing model.} A fake model ---
+raw text behind the real client --- was made to bluff through the real
+verifier and recalibration in 83 ways. Six got through and were fixed,
+each with a test that failed before the fix: repeated citations
+inflated the confidence (a one-source \texttt{FALSE} went from 0.70 to
+1.00); a citation of \texttt{true} cited source~1; a null citation
+list, or valid JSON that was not an object, failed the whole article; a
+quote stitched from a headline and its body passed as verbatim; and a
+per-run evidence minimum of zero sent a claim with no evidence to the
+model.
+
+\paragraph{Search failures look like verdicts.} The most consequential
+finding of the project is not in the code: on 25~September, 68 of 69
+search queries came back empty, because the engines behind SearXNG were
+rate-limiting, challenging or timing out, and every affected claim came
+back \texttt{UNVERIFIED}, indistinguishable from a real one. The
+response was a closed engine list measured one by one (dead engines
+removed, four academic indexes added at half weight, a three-second
+timeout), half as many concurrent searches, each repeated query sent
+once with non-empty answers cached for ten minutes, the
+\texttt{searchUnavailable} state, and a keyless second route. On
+1~October the cause of part of the rate-limiting was found in the
+stack's own health check, which had sent a real search to every engine
+every five seconds since September --- about 17,000 queries a day per
+engine from an idle stack. It now asks the engine's own health
+endpoint. In three runs that day every search answered.

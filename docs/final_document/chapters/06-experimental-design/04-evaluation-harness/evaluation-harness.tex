@@ -2,10 +2,37 @@
 % Chapter 6: Experimental Design
 %   Section: Evaluation Harness
 % Included from chapters/06-experimental-design/experimental-design.tex
+% Source: docs/decisions/evaluation.md; backend/src/evaluation/.
 % ============================================================
 
 \section{Evaluation Harness}
 \label{sec:harness}
+
+Every verdict-level number in this thesis is produced by one tool, the
+evaluation harness (\path{backend/src/evaluation/}). It runs the
+pipeline's own claim-checking stage --- the one behind the single-claim
+endpoint, not a copy of it --- over a labelled set in X-Fact's format,
+which both the X-Fact files and the custom set share, and scores the
+results against the labels:
+
+\begin{lstlisting}
+uv run python -m src.evaluation.cli run --dataset <set> --model <model>
+uv run python -m src.evaluation.cli report --run <run directory>
+\end{lstlisting}
+
+Two gaps in the pipeline were closed before it produced a single
+number. The claim-checking stage took no language, so Spanish claims
+would have been searched with the English word lists; and it took no
+article context, so a custom-set claim could have been confirmed by
+its own article. Both are now optional arguments: the harness passes
+each row's language, and for the custom set the article's URL, which
+the retriever excludes. X-Fact rows get no context: the harness gives
+the pipeline nothing from the gold row that production would not have.
+
+The model is an argument of the run and the provider is configuration
+only, so the same command measures the local model and a hosted one.
+The internal corpus is a snapshot copied into the run at its first
+start, so a run does not change as the live store grows.
 
 \input{chapters/06-experimental-design/04-evaluation-harness/01-record-format}
 

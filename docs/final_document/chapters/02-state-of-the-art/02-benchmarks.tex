@@ -6,5 +6,54 @@
 
 \section{Benchmarks for Fact Verification}
 \label{sec:sota-benchmarks}
-\pending{FEVER, X-Fact \cite{gupta2021xfact}, AVeriTeC; pointer to
-Section~\ref{sec:dataset-selection} for the choice made.}
+
+Table~\ref{tab:sota-benchmarks} summarises the benchmarks most relevant
+to this work. They differ in four respects that decide whether they can
+evaluate an open-web verifier of constructive news: where the claims
+come from, where the evidence comes from, the label scale, and the
+languages.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lrXXl@{}}
+\toprule
+\textbf{Benchmark} & \textbf{Claims} & \textbf{Claims from} &
+\textbf{Evidence} & \textbf{Labels} \\
+\midrule
+FEVER \cite{thorne2018fever} & 185,445 & Altered Wikipedia sentences
+(English) & Wikipedia sentences (closed) & 3 \\
+LIAR \cite{wang2017liar} & 12.8k & PolitiFact statements (English) &
+None; claim and metadata only & 6 \\
+MultiFC \cite{augenstein2019multifc} & 34,918 & 26 fact-checking
+websites (English) & Search-engine snippets & per site \\
+SciFact \cite{wadden2020scifact} & 1.4k & Rewritten citation sentences
+(English) & Scientific abstracts (closed) & 3 \\
+X-Fact \cite{gupta2021xfact} & 31,189 & Fact-checkers, 25 languages &
+Search-engine snippets & 7 \\
+AVeriTeC \cite{schlichtkrull2023averitec} & 4,568 & Real-world claims
+checked by fact-checkers (English) & Web documents from before the
+claim, with question--answer annotations & 4 \\
+\bottomrule
+\end{tabularx}
+\caption{Benchmarks for fact verification relevant to this work.}
+\label{tab:sota-benchmarks}
+\end{table}
+
+FEVER and SciFact are closed: their evidence is a fixed corpus, which
+makes them precise and unlike the task this system performs. LIAR
+gives no evidence at all, so it measures what can be guessed from a
+claim and its speaker. MultiFC and X-Fact are open, real-world and, in
+X-Fact's case, multilingual, with Spanish among the languages of its
+test sets; their evidence is search snippets collected when each
+dataset was built. AVeriTeC is the closest to how a fact-checker works
+--- web evidence, dated before the claim --- but is English only.
+
+Two observations follow for this work. First, every benchmark with
+real-world claims takes them from fact-checking organisations, which
+choose claims because someone disputed them; most are political, and
+none is drawn from constructive news. Second, the benchmarks report a
+verdict's quality, not the effort it saves, which is what RQ4 asks.
+The choice made here --- X-Fact as an external, open-retrieval
+benchmark and a custom validation set for the system's own domain ---
+and the reasons for it are in Section~\ref{sec:dataset-selection}.

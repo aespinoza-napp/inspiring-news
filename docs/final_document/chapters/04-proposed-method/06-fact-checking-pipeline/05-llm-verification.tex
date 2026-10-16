@@ -3,7 +3,46 @@
 %   Section: The Fact-Checking Pipeline
 %     Subsection: Verification with a Language Model
 % Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
+% Source: docs/arquitectura-tecnica.md 2.4.5; verification/.
 % ============================================================
 
 \subsection{Verification with a Language Model}
-\pending{a closed classification forced to cite its sources.}
+\label{subsec:llm-verification}
+
+The model is given the claim, the article's headline and opening (so
+that it reads the claim in its article's sense), and the ranked
+evidence, numbered. It must return a structured answer:
+
+\begin{itemize}
+    \item a verdict from a closed set of five --- \texttt{TRUE},
+    \texttt{PARTIALLY\_TRUE} (the central assertion holds, a detail does
+    not), \texttt{MISLEADING} (technically true but deceptive, or
+    sources of equal standing conflicting), \texttt{FALSE} and
+    \texttt{UNVERIFIED};
+    \item a confidence and a short explanation;
+    \item the numbers of the evidence it used; and
+    \item for each source, its stance --- \emph{supports},
+    \emph{contradicts} or \emph{unrelated} --- with the verbatim passage
+    it relied on.
+\end{itemize}
+
+It is told to answer \texttt{UNVERIFIED} when the evidence is empty or
+does not bear on the claim, never to assert what the evidence does not
+support, and to mark as \emph{unrelated} a source about a different
+event even when it shares a place, a date or a figure with the claim.
+
+Reducing the task to a closed classification with cited, quoted
+evidence --- instead of a free-form verdict --- turns the question of
+whether the model hallucinated into something that can be checked
+mechanically in the next stage. Any quote that does not appear
+verbatim in its source is discarded: an invented quotation is worse
+than none. The model is served locally by default
+(\texttt{llama3.2:3b}, a 3-billion-parameter model chosen for its
+footprint, not by a benchmark), and any OpenAI-compatible provider can
+take its place by configuration.
+
+If the model cannot be reached after its retries, the claim is marked
+\texttt{llmUnreachable} and reported apart from the verdicts, as a
+failed search is. If there is no evidence at all, the model is not
+asked: its answer would be discarded by the next stage anyway, and the
+call is the slowest step of the pipeline.

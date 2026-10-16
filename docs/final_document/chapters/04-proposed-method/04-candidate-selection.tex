@@ -2,11 +2,91 @@
 % Chapter 4: Proposed Method: Specification and Design
 %   Section: Candidate Selection
 % Included from chapters/04-proposed-method/proposed-method.tex
+% Source: docs/decisions/selection.md; src/services/selection/.
+% How the candidates are found is Section~\ref{sec:dev-scraping}.
 % ============================================================
 
 \section{Candidate Selection}
 \label{sec:design-selection}
-\pending{what happens between discovery and analysis: the mission
-screen, candidate ranking and the choice of up to twenty by a person
-or the AI. How the candidates are found is
-Section~\ref{sec:dev-scraping}. Source: docs/decisions/selection.md.}
+
+Between discovery and analysis sits a choice. Analysing an article
+costs a scrape, an enrichment and one language-model call per claim ---
+about three minutes per article on the production CPU --- so the
+system does not analyse everything it finds. A \emph{round} lists the
+candidates discovery found for up to three topic groups, ranked; a
+person, a language model or both choose at most twenty; only those
+become analysis jobs. Every round is recorded with what was found, what
+the model proposed and why, what was sent and who chose it, which is
+the data RQ1 and RQ3 are measured on. How candidates are found, and the
+filters applied to links before anything is fetched, are described in
+Section~\ref{sec:dev-scraping}; this section covers what happens to
+them once found.
+
+\paragraph{The mission screen.} Topic keywords say nothing about tone:
+a Culture round listed election polls and celebrity interviews beside a
+free music-education programme, all on topic by their words. The screen
+leaves a candidate out on any of three grounds: it is not an article (a
+podcast, a roundup, a quiz, a gallery, a media advisory, a promotion,
+shopping), recognised by phrases in its title or summary; its headline
+reports a death; or its title and summary are nearer, in the embedding
+space, to one of nine descriptions of what the publication never covers
+--- politics, strikes and protests, crime, accidents and disasters,
+war, celebrity, sport, markets and personal finance, service pages ---
+than to every one of the 23 topics, by more than a margin. The margin
+was chosen by reading 527 live candidates by hand: 0.04 in general, any
+amount for politics, 0.02 for the categories whose doubtful band held
+almost nothing worth keeping. The three outlets that publish only
+positive news are exempt, because their editors already chose. If the
+inference service cannot be reached, nothing is left out and the round
+says so; the screen never passes silently. What it cannot do --- tell
+the housing policy of a front page from good news on the same topic ---
+is left to the next steps.
+
+\paragraph{The ranking.} A round over two or three groups finds 60 to
+80 candidates, and a person reads the first twenty. Each candidate is
+scored in $[0,1]$ from what the round already holds, without fetching a
+page or calling a model:
+\[
+  s = 0.6\,(1-e)\cdot\textit{impact} \;+\; 0.6\,e\cdot\textit{topic}
+      \;+\; 0.25\cdot\textit{record} \;+\; 0.15\cdot\textit{reliability},
+\]
+where \textit{impact} is how much nearer the candidate comes to a
+description of positive impact than to the nearest off-mission one;
+\textit{topic} is how well it fits the groups asked for;
+\textit{record} is the share of its source's newest items the screen
+kept in this round; \textit{reliability} is the source's rating; and
+$e \in [0,1]$ is the \emph{topic emphasis}, the person's own trade
+between positive impact and topic, 0.6 by default. The weights were
+measured on 117 candidates labelled before any score existed, where the
+score separated stories worth offering from the rest with an AUC of
+0.78 (95\% interval 0.67 to 0.87); the default emphasis on ten labelled
+one-group rounds, where it is the value at which the first ten places
+hold only the group asked for (Section~\ref{sec:results-rq1}). Two
+rules act on the order rather than the score: a story several outlets
+carry is offered once before any story is offered twice, and a
+candidate nearer another group's topics than the round's is listed
+after every candidate that fits. The best twenty are shown, forty on
+request.
+
+\paragraph{The AI selection.} On request, a language model scores
+every shown candidate from 0 to 10 for positive impact, from its title
+and summary, against a written definition: a real change that improves
+things for people or the planet beyond those in the story, backed by
+something checkable; low for sport, celebrity, lifestyle, opinion,
+crime, conflict and disasters. It is told the round's topics, not the
+emphasis. Its picks are the best twenty at 6 or more, ticked on the
+page with a reason each, and remain the editor's to change. A language
+model is used here, where admission deliberately has none, because what
+the publication means by positive impact is a judgement of what changed
+and for whom, and the cost is one call per ten candidates rather than
+one per article. A pick still goes through admission and the whole
+pipeline: the selection decides what to spend analyses on, and replaces
+no check.
+
+\paragraph{The choice.} The editor keeps or changes the proposal and
+sends at most twenty. The backend, not the page, records whether the
+choice was the person's, the model's or both, and how many of the
+model's picks were kept, dropped and added. A round can also be chosen
+\emph{blind}: the editor sends a choice first and the model is run on
+the round afterwards, so that its agreement with the editor is not
+inflated by the editor having seen its picks (Section~\ref{sec:rq-metrics}).

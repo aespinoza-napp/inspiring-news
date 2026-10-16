@@ -1,6 +1,8 @@
 % ============================================================
 % Abstract
 % Included from main.tex
+% Draft of 16 October 2026, written from the results measured so far;
+% to be rewritten last, once the custom-set results exist.
 % ============================================================
 
 \chapter*{Abstract}
@@ -8,10 +10,51 @@
 % Mandatory (Art. 12). MDS requires it in English only (Art. 61);
 % the trilingual abstract of Arts. 22, 28, 34 and 39 is for other
 % degrees.
-\pending{one to two pages: the problem (verifying the claims of
-constructive news at a newsroom's pace), the proposed open-web
-pipeline, the evaluation (X-Fact and the custom validation set), the
-main results with their intervals, and the limitations. Written last.}
+
+A publication of constructive news has to find, among many sources,
+the few stories worth offering on the topics it covers, and check their
+claims before it publishes them. This thesis builds and evaluates a
+low-cost, end-to-end system that does both, in English and Spanish,
+with open-weight models running locally and no paid service. It reads
+37 configured news sources for up to three topic groups, screens out
+what the publication never covers, ranks the candidates and lets an
+editor, a language model or both choose at most twenty to analyse. For
+each chosen article it extracts and enriches the text, admits or
+rejects it, selects two to four checkable claims, searches the open web
+for evidence through a self-hosted metasearch engine, ranks the
+evidence with a gate that cuts off-target sources, and asks a local
+language model for one of five verdicts that must cite and quote its
+sources; the verdict's confidence is then recomputed from the evidence,
+ungrounded verdicts are downgraded, and failed searches and unreachable
+models are reported apart from verdicts.
+
+The evaluation is the contribution. It is organised around four
+research questions --- finding the news, verifying it, how close a
+model comes to a person, and how much of a journalist's work the joined
+system takes on --- and measures each stage against a person wherever a
+person takes the same decision. It uses an evaluation harness that
+reports every metric with a bootstrap interval and its provenance;
+X-Fact as an external, open-retrieval benchmark; and a custom
+validation set of 139 claims from constructive news (109 natural, 30
+synthetic refuted claims built by substitution), the first of its
+kind to the author's knowledge.
+
+On a 64-claim X-Fact pilot the zero-shot 3-billion-parameter verifier
+reached 29.7\% accuracy [18.8, 40.6] with a Cohen's $\kappa$ against
+gold indistinguishable from zero, and 19.4\% [13.3, 25.5] on the 165
+Spanish claims of X-Fact's in-domain test set; retrieved evidence added
+10.9 points [3.1, 20.3] over the model alone on the pilot. The pilot
+also showed how much of an open-retrieval score on an old benchmark
+measures time rather than verification: most decidable claims cited
+evidence newer than the claim, and the fact-checker's own verdict was
+retrieved for over a third of the English ones. Before the verdict, the
+ranked rounds separated stories worth offering from the rest with an
+AUC of 0.78 [0.67, 0.87], and the claim selector's proposals were
+checkable in 64\% of cases.
+\pending{the custom-set results for RQ2--RQ4 with their intervals, the
+agreement between the AI labelling pass and the annotator, and the
+limitations that remain; then rewrite this abstract to one or two
+pages.}
 
 \textbf{Keywords:} automated fact-checking, open-domain retrieval,
 large language models, constructive journalism, multilingual NLP,

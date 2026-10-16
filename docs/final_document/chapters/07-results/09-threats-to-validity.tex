@@ -6,5 +6,54 @@
 
 \section{Threats to Validity}
 \label{sec:threats}
-\pending{size of the sets, a single annotator, today's web against
-the claim's date, search availability.}
+
+\paragraph{Internal validity.}
+\begin{itemize}
+    \item \textbf{Labels by a model.} Most labels of the custom set and
+    all the candidate labels of the selection experiments were assigned
+    by an AI labelling pass. Until the annotator reviews them, a
+    result measured against them compares the system with another
+    model. Every such result is marked as such.
+    \item \textbf{One annotator.} Self-agreement measures whether the
+    guide is applied consistently, not whether it is right; a
+    systematic misreading applied twice agrees with itself.
+    \item \textbf{The selector chooses the set.} The custom set's claims
+    are those the system's own selector proposed, so verification is
+    measured on the system's choice of claims, not on an independent
+    sample of all check-worthy claims.
+    \item \textbf{Tuning on the test data.} No threshold has been tuned
+    on labelled data yet; the frozen split is there so that none is
+    tuned on the claims it is reported on.
+\end{itemize}
+
+\paragraph{Construct validity.}
+\begin{itemize}
+    \item \textbf{Synthetic refuted claims.} The \texttt{FALSE} class of
+    the custom set is built by substitution. It tests whether the system
+    notices a claim contradicting evidence it can find, not how often or
+    how real constructive news is wrong; it is reported apart.
+    \item \textbf{Today's web against the claim's date.} The system
+    searches without a date limit; the annotator may use only evidence
+    available at publication. Newer evidence is flagged, not removed,
+    and on X-Fact it dominated (Section~\ref{subsec:pilot-time}).
+    \item \textbf{Label mapping.} X-Fact's seven labels are mapped onto
+    the system's five, which changes what macro-$F_1$ averages over.
+\end{itemize}
+
+\paragraph{External validity.}
+\begin{itemize}
+    \item \textbf{Size.} With about 100 test claims, a 95\% interval on
+    accuracy is roughly $\pm10$ points: only large differences between
+    models or conditions will show.
+    \item \textbf{Two languages, 37 sources, one period.} The results
+    hold for these sources in October 2026, in English and Spanish; the
+    selection experiments come from one or two days of feeds.
+    \item \textbf{Search availability.} Results depend on which engines
+    answered SearXNG on the day; on 13~October Google and Brave refused
+    it. Every run records what the health and search checks said
+    before it, and claims whose search failed are set apart, but a
+    partially answering engine set still shapes the evidence.
+    \item \textbf{A moving web.} A search cannot be repeated: the same
+    query returns different pages on different days. Strategies are
+    compared on the same days, interleaved, rather than across time.
+\end{itemize}

@@ -3,8 +3,55 @@
 %   Section: Evaluation Harness
 %     Subsection: Stage Attribution
 % Included from chapters/06-experimental-design/04-evaluation-harness/evaluation-harness.tex
+% Source: docs/decisions/evaluation.md, "Stage attribution". Not yet a
+% module of the harness: the pilot's attribution was computed by
+% scripts/xfact_time_elapsed.py with this table.
 % ============================================================
 
 \subsection{Stage Attribution}
-\pending{every wrong verdict attributed to retrieval, ranking,
-reasoning or aggregation (RQ2).}
+\label{subsec:harness-attribution}
+
+Each scored claim whose verdict differs from its gold label is
+attributed to one stage of the architecture \cite{guo2022survey}, the
+first that matches in Table~\ref{tab:attribution}. The rule is applied
+twice, because the reference links are the better witness but not
+every row has them --- an \texttt{UNVERIFIED} gold label needs none.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{How a wrong verdict is attributed to a stage. The first row
+that matches decides.}
+\label{tab:attribution}
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+\textbf{Stage} & \textbf{Reference-based} & \textbf{Trace only} \\
+\midrule
+Retrieval & No reference link or domain among the candidates & No
+candidates at all \\
+Ranking & A reference among the candidates, none ranked (cut by the
+funnel, the same-domain rule, the pertinence gate or the cap) &
+Candidates, but nothing ranked \\
+Reasoning & A reference is ranked, and the model's raw verdict differs
+from gold & Something ranked, and the model's raw verdict differs from
+gold \\
+Aggregation & The raw verdict equals gold and recalibration changed it
+& The same \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Both columns are reported, with counts, shares and claim identifiers,
+and the claims on which they disagree are listed. Under the reference
+rule, a wrong verdict resting on sources other than the annotator's
+counts as retrieval: the decisive source was never found. Under the
+trace rule the same claim counts as reasoning: the model misread what
+it was shown. Both are true statements about the claim, and the
+disagreement between them is itself informative. Claims set apart
+(search or model unreachable, errors) are never attributed. Everything
+is read from fields the records already hold.
+
+The rule is not yet a module of the harness. For the X-Fact pilot it
+was computed by a script with this table
+(Section~\ref{sec:results-pilot}); building it into the report is one of
+the P0 items of Table~\ref{tab:priorities}.

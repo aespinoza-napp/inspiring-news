@@ -1,10 +1,63 @@
 % ============================================================
 % Chapter 7: Results
-%   Section: Stages Before the Verdict
+%   Section: The Stages Before the Verdict
 % Included from chapters/07-results/results.tex
+% Source: docs/experiments.md; backend/data/evaluation/experiments/.
+% Discovery and the candidate ranking are reported under RQ1
+% (Section~\ref{sec:results-rq1}); this section holds the rest.
 % ============================================================
 
-\section{Stages Before the Verdict}
+\section{The Stages Before the Verdict}
 \label{sec:results-pre-verdict}
-\pending{including the candidate ranking measured on 6 October
-(docs/experiments.md).}
+
+Discovery and the candidate ranking, measured on 5, 6, 9 and
+13~October, answer RQ1 and are reported in
+Section~\ref{sec:results-rq1}. This section reports the other stages
+that decide which articles get a verdict.
+
+\paragraph{The mission screen.} On 527 live candidates from Culture,
+Society and Health rounds (6~October), each title and summary was
+compared with the topics and the off-mission descriptions exactly as
+the screen does. At a margin of 0.04 it left out 68 of the 484
+candidates from general outlets; read by hand, nearly all were
+elections, crime, accidents, storms, market wire items and celebrity
+interviews, the doubtful ones four war-history pieces and one story on
+data-centre regulation. Between margins of 0.03 and 0.04 about 3 in 17
+candidates were worth keeping, which is why the line is at 0.04.
+Widened the same day with descriptions for labour disputes and
+markets, it left out 115 of 545 instead of 80, all 36 new ones being
+strikes, protests, finance and election politics, with one story wrongly
+let back in. The sentiment model was tried as a signal and rejected: it
+rated an endangered primate's birth 0.89 negative and a lost theatre
+reborn 0.89 negative, because a problem being solved reads as negative.
+
+\paragraph{Admission.} Replaying the admission thresholds offline over
+the articles of the 41 facts labelled by 5~October, 71\% would be
+admitted at the values of the local configuration that day (topic
+minimum 0.35, impact minimum 0.3, against a declared default of 0.1 for
+the latter); at a topic minimum of 0.40, 61\% at an impact minimum of
+0.1 and 49\% at 0.3. Four articles (10\%) have no topic at the
+classifier's floor and are rejected whatever the minimum.
+\pending{the admission experiment over at least 100 round candidates
+the editor chose for or against: admission rate, precision and recall
+over the grid, and the AUC of the positive-impact score.}
+
+\paragraph{The topic classifier.} On the same 41 articles, the
+classifier's top topic was the gold one 54\% of the time [37, 68], the
+gold topic was in its top three 78\% [66, 90], its top group was right
+73\% [59, 85], and 10\% [2, 20] of articles had no topic at the 0.35
+floor. Society is the weak group: five of its nine articles were
+classified as environment. Topics steer admission and the balance of
+the set, not verdicts, which is why improving the classifier was
+de-scoped on 29~September.
+\pending{the classifier again on the reviewed custom set (at least 100
+articles): top-1, top-3, group accuracy, the no-topic rate and the
+group confusion; and whether the 0.35 floor stays.}
+
+\paragraph{Time per stage.} The X-Fact pilot gives the claim-level
+split on the development laptop (Section~\ref{sec:results-rq4}); the
+production stack's single analysis gives the CPU's.
+\pending{time per stage --- enrichment, admission, retrieval, ranking
+and the model --- over the pilot and one ingestion round, on the
+development GPU and the production CPU, from the metrics endpoint and
+the job journal.}

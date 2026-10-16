@@ -10,25 +10,33 @@
 
 The system developed in this thesis --- described in detail in
 Chapter~\ref{ch:methodology} --- does not perform verification
-against a closed corpus. Its architecture is organised into six
+against a closed corpus. Its fact-checking pipeline
+(Section~\ref{sec:design-fact-checking}) is organised into seven
 sequential stages:
 
 \begin{enumerate}
-    \item \textbf{Admission}: ingestion and decomposition of the
-    news article into atomic, verifiable claims.
-    \item \textbf{Selection}: entity extraction and formulation of
-    search queries from each claim.
-    \item \textbf{Retrieval}: retrieval of candidate documents via
-    SearXNG, a metasearch engine that queries multiple search
-    engines over the open web in real time.
-    \item \textbf{Ranking}: ordering of the retrieved sources by
-    relevance to the claim.
-    \item \textbf{LLM check}: reasoning over the ranked evidence by a
-    language model (Llama 3.1, run locally via Ollama) to produce a
-    preliminary verdict.
-    \item \textbf{Recalibration}: adjustment of the verdict and its
-    associated confidence, propagating the result to the article's
-    overall verdict.
+    \item \textbf{Admission}: the article must be on one of the
+    publication's topics, constructive enough, and not a duplicate of
+    one already stored; otherwise nothing further is spent on it.
+    \item \textbf{Claim selection}: the article is decomposed into
+    candidate sentences, and the two to four most load-bearing
+    checkable claims are kept.
+    \item \textbf{Evidence retrieval}: three queries per claim are sent
+    to SearXNG, a self-hosted metasearch engine that queries several
+    search engines over the open web in real time, beside a search of
+    the system's own corpus of past articles.
+    \item \textbf{Ranking and the pertinence gate}: the retrieved
+    sources are ordered by relevance to the claim, and those that
+    share its subject without addressing it are cut.
+    \item \textbf{Verification}: a language model
+    (\texttt{llama3.2:3b} by default, run locally through Ollama)
+    reasons over the ranked evidence and returns a verdict that must
+    cite the sources it rests on.
+    \item \textbf{Confidence recalibration}: the verdict and its
+    confidence are checked against the evidence independently of the
+    model, and an ungrounded verdict is downgraded.
+    \item \textbf{Aggregation}: the claims' verdicts are combined into
+    the article's.
 \end{enumerate}
 
 This architecture --- referred to throughout this work as the
@@ -50,9 +58,9 @@ would introduce a serious methodological mismatch, for two reasons:
     the system's true performance.
     \item \textbf{Partial evaluation of the architecture.} Since
     FEVER fixes the source corpus in advance, evaluation against this
-    benchmark would measure almost exclusively the \textit{LLM check}
-    stage, leaving the \textit{Selection}, \textit{Retrieval}, and
-    \textit{Ranking} stages unevaluated --- precisely the stages that
+    benchmark would measure almost exclusively the
+    \textit{verification} stage, leaving \textit{evidence retrieval}
+    and \textit{ranking} unevaluated --- precisely the stages that
     constitute the most original, and also the most fragile,
     contribution of the system, as discussed in
     Chapter~\ref{ch:results}.

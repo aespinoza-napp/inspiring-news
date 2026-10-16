@@ -7,9 +7,35 @@
 
 \subsection{Collection of Third-Party Content}
 \label{subsec:third-party-content}
-\pending{scraping published articles: what is stored, what is
-shown (the reader view shows the lead and a link, never the body);
-the scraper names itself in its User-Agent and asks each source for a
-few articles per run, but does not read robots.txt
-(Section~\ref{subsec:scraping-limitations}); sources that refuse
-automated access are disabled, not worked around.}
+
+The system reads articles that other people wrote and published. What
+it does with them is limited in four ways.
+
+\begin{itemize}
+    \item \textbf{What is stored.} The text of an analysed article is
+    kept in the data lake, which is local and not published, so that a
+    verdict can be traced back to what was read. Evidence pages are
+    read for the claim they bear on; only their title, a quoted passage
+    and their address are kept with the verdict, and the evaluation
+    harness stores no page body at all. Raw evaluation runs, which hold
+    third-party titles and quotes, are not committed to the repository.
+    \item \textbf{What is shown.} The public reader view shows an
+    article's lead and a link to the original, never its body or a
+    scraped page; a test holds that rule. The original publisher keeps
+    the reader.
+    \item \textbf{How it asks.} The scraper names itself in its
+    user-agent, asks each source for a few articles per run rather than
+    crawling it, and is run on request, never on a timer. It does not
+    read \texttt{robots.txt} (Section~\ref{subsec:scraping-limitations}),
+    which is a limitation to correct before any public deployment.
+    \item \textbf{When it is refused.} A source that refuses automated
+    access is disabled, not worked around: EFE and Reuters, which
+    answered every request with 403 and 401 for two weeks, were disabled
+    on 6~October. The second search route, when challenged as a bot,
+    pauses rather than pretending to be a browser.
+\end{itemize}
+
+Fact-checking organisations' pages are used as evidence when a search
+returns them, and the two Spanish organisations are rated as sources,
+but they are not ingested: a fact-check quotes the claim it debunks, and
+the system would otherwise present that quotation as an article's claim.

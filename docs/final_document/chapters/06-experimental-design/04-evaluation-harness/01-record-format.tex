@@ -3,8 +3,47 @@
 %   Section: Evaluation Harness
 %     Subsection: Record Format and Run Layout
 % Included from chapters/06-experimental-design/04-evaluation-harness/evaluation-harness.tex
+% Source: docs/decisions/evaluation.md, "Record format", "Run layout,
+% cache and resume"; record.py, store.py.
 % ============================================================
 
 \subsection{Record Format and Run Layout}
-\pending{what is recorded per claim; runs keyed, cached and
-resumable.}
+\label{subsec:harness-records}
+
+\paragraph{One record per claim.} Each claim's result is one line of a
+JSON Lines file, with every field present even on an error, so a report
+never has to ask whether a key exists. A record holds the gold row's
+fields, so a report needs nothing else; the verdict and confidence
+after recalibration and the model's raw answer before it; the stage the
+claim reached and whether its search or model failed; the queries sent,
+with their kind; \emph{every} candidate source seen, once, with the
+stage that cut it and why; the ranked evidence in the order the model
+saw it, with each factor of its score, its stance, whether it was cited
+and the quote; the full trace of progress events with timestamps; the
+latency of each stage; the model calls with their tokens; and the
+provenance --- model, provider, thresholds, harness version and code
+commit. No scraped page body is stored.
+
+\paragraph{Runs are keyed, so the same command resumes.} A run lives in
+a directory named by a key derived from the dataset's hash, the model,
+the effective thresholds, the scoring weights, the corpus mode and the
+harness version: changing any of them starts a new run, while the same
+command continues the old one. The commit is recorded on every record
+but not keyed, which would discard a run on every commit. Editing a
+label changes the dataset's hash, so two gold sets are never mixed in
+one run.
+
+\paragraph{Resuming.} Claims already scored are not run again; errors
+are retried; a torn last line from a crash is cut and its claim re-run;
+and claims whose search or model was unreachable can be re-run on
+request, since those are outages, not results. Every record is flushed
+and synced to disk as it is written. During the X-Fact pilot this rule
+absorbed an interruption of the container runtime and two native
+crashes, re-running exactly the claims each had lost
+(Section~\ref{sec:results-pilot}). Each session of a run records its
+own settings --- timeouts and concurrency --- a fix the pilot prompted.
+
+\paragraph{What is committed.} Raw runs are not committed: they hold
+third-party titles and quotes. The report of a run --- its metrics in
+JSON, a readable report and a copy of the run's manifest --- is
+committed, and those are the numbers this document quotes.

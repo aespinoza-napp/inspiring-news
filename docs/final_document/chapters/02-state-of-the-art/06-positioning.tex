@@ -6,6 +6,41 @@
 
 \section{Positioning of This Work}
 \label{sec:positioning}
-\pending{what no existing system or benchmark covers: open-web
-verification of constructive news in English and Spanish, at low
-cost, with a verdict that can be audited.}
+
+Table~\ref{tab:positioning} sets the work against the closest
+benchmarks and tools on the properties the problem statement
+(Section~\ref{sec:problem}) requires.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}Xcccccc@{}}
+\toprule
+& \rotatebox{70}{Open-web evidence} & \rotatebox{70}{English and Spanish}
+& \rotatebox{70}{Constructive news} & \rotatebox{70}{Local, no paid API}
+& \rotatebox{70}{Cited, checkable verdict} & \rotatebox{70}{Finds the news} \\
+\midrule
+FEVER, SciFact & -- & -- & -- & n/a & -- & -- \\
+MultiFC, X-Fact & snippets & X-Fact & -- & n/a & -- & -- \\
+AVeriTeC & yes & -- & -- & n/a & yes & -- \\
+ClaimBuster & -- & -- & -- & yes & -- & -- \\
+Web-search LLM assistants & yes & yes & -- & -- & partly & -- \\
+\textbf{This work} & yes & yes & yes & yes & yes & yes \\
+\bottomrule
+\end{tabularx}
+\caption{The work against the closest benchmarks and tools. ``n/a'':
+a dataset, not a system.}
+\label{tab:positioning}
+\end{table}
+
+The contribution is therefore not a new model or a new benchmark
+result. It is an end-to-end pipeline that reads constructive news in
+two languages, finds and ranks what is worth publishing on the topics
+asked for, and verifies its claims on the open web with local models
+and verdicts that can be audited --- \emph{evaluated stage by stage,
+against a person wherever a person takes the same decision}. The
+pipeline is the artefact; the evaluation is the contribution. Its
+custom validation set is, to the author's knowledge, the first labelled
+set of claims drawn from constructive news, and its X-Fact pilot
+documents what years between a claim and the search for its evidence
+do to an open-retrieval score.

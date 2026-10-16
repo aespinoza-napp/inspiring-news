@@ -2,11 +2,71 @@
 % Chapter 6: Experimental Design
 %   Section: Experiments on the Stages Before the Verdict
 % Included from chapters/06-experimental-design/experimental-design.tex
+% Source: docs/experiments.md; backend/src/evaluation/experiments.py;
+% results in backend/data/evaluation/experiments/.
 % ============================================================
 
 \section{Experiments on the Stages Before the Verdict}
 \label{sec:experiments-pre-verdict}
-\pending{discovery yield per topic group, source health and
-extraction, selection (the AI against the editor), candidate ranking,
-admission thresholds, the topic classifier and time per stage; one
-command reproduces each. Source: docs/experiments.md.}
+
+The harness measures what the fact-checker concludes. A second tool
+measures what decides which articles reach it at all --- discovery, the
+selection step, admission and the topic classifier --- which is where
+the answer to RQ1 and part of RQ3 lie. One command runs each experiment:
+
+\begin{lstlisting}
+uv run python -m src.evaluation.experiments <experiment> [options]
+\end{lstlisting}
+
+and writes a JSON result and a readable report to a timestamped folder
+under \path{backend/data/evaluation/experiments/}. Intervals are
+percentile 95\% bootstrap intervals with a fixed seed and 2,000
+resamples; an AUC is the probability that a random positive outranks a
+random negative, 0.5 being a coin.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{The experiments on the stages before the verdict.}
+\label{tab:experiments}
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+\textbf{Experiment} & \textbf{Question} & \textbf{Measures} \\
+\midrule
+\texttt{discovery} & How much does scoping to topic groups save, and
+what does it still find? & Sources read, attempts, links, candidates by
+language, seconds, each against the every-topic baseline \\
+\texttt{selection} & How far does the editor agree with the AI
+selection? & Precision, recall and Jaccard of the AI's picks against
+what was sent; AUC of its score; assisted and blind rounds apart \\
+\texttt{blind-ai} & The same, without the editor having seen the AI's
+picks & Runs the AI on a round already sent \\
+\texttt{admission} & What do the admission thresholds admit? &
+Admission rate, and precision and recall against the editor's choice,
+over a grid of topic and impact minimums; AUC of the impact score \\
+\texttt{topics} & How often is the topic classifier right? & Top-1
+topic, gold in the top three, top-1 group, share with no topic \\
+\texttt{emphasis} & What does weighing the topic over positive impact
+change? & Re-scores recorded rounds at each emphasis; their first ten
+and twenty against labels \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two further studies were run once rather than as commands, to choose
+values that are now constants of the code: the mission screen's margin
+(527 live candidates read by hand) and the ranking's weights (117
+candidates labelled before any score was computed, with every reading
+kept so other weights can be tried without embedding anything again).
+Their data are committed with the experiments.
+
+\paragraph{Labels.} The candidate labels these experiments are scored
+against --- clearly positive, worth offering, not worth offering, and
+whether a page is an article at all --- were assigned from each
+candidate's title, summary and link. The labels of the 6 and
+9~October rounds were assigned by the AI labelling pass (Claude) and
+have not yet been checked by a person; the P1 items of
+Table~\ref{tab:priorities} require the author to label at least two
+rounds and to run ten blind selection rounds before RQ1 and RQ3 are
+answered. Feeds change through the day, so settings are compared
+within one run and repeated on several days for an interval.

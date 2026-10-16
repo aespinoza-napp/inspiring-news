@@ -1,9 +1,133 @@
 % ============================================================
 % Chapter 7: Results
-%   Section: Verification on the Custom Validation Set (RQ1)
+%   Section: RQ1 --- Finding
 % Included from chapters/07-results/results.tex
+% Sources: docs/experiments.md; docs/decisions/selection.md;
+% backend/data/evaluation/experiments/{discovery,ranking,alignment,
+% emphasis}/. Every candidate label below is the AI labelling pass's
+% (Claude), not yet checked by a person.
 % ============================================================
 
-\section{Verification on the Custom Validation Set (RQ1)}
+\section{RQ1 --- Finding Constructive News on Chosen Topics}
 \label{sec:results-rq1}
-\pending{accuracy, macro-F1 and kappa against gold with their intervals, by language, topic group and claim type; the partitions reported apart.}
+
+RQ1 asks whether a retriever of the open web, scoped to chosen topics,
+simplifies a journalist's task of finding constructive news on them. It
+is answered by two kinds of measurement: the work the scoping saves,
+and how well the ranked round orders what it finds
+(Section~\ref{sec:rq-metrics}). The candidate labels used below were
+assigned from title, summary and link by the AI labelling pass and have
+not been checked by a person; the P1 items of
+Table~\ref{tab:priorities} replace them with the author's own labels on
+at least two rounds, and repeat the discovery measurement on five days.
+
+\paragraph{The work saved.} On the first run of the discovery
+experiment (5~October, two candidates per source), a round scoped to
+Environment read 14 of the 34 sources then enabled ($0.41\times$ the
+every-topic baseline) and 153 of 1,536 links ($0.10\times$), in 10~s
+against 15~s; Culture and Health together read 23 sources
+($0.68\times$) and 596 links ($0.39\times$). A person reading a scoped
+round therefore starts from a tenth to two fifths of the links an
+unscoped reading would offer. One run is not an interval: the planned
+five days will give one.
+
+\paragraph{The ranking separates what is worth offering.} On the 117
+candidates of the five rounds recorded on 6~October, labelled before
+any score existed (62 not worth offering, 33 worth offering, 22 clearly
+positive), the chosen score separated stories worth offering from those
+not worth it with an AUC of 0.778 [0.673, 0.868], and clearly positive
+stories from the rest with 0.806 [0.679, 0.916]
+(Table~\ref{tab:ranking-auc}). In the rounds, the first twenty places
+of a Science and Society round held 8 stories not worth offering in
+the sources' order and 1 once ranked, and 14 clearly positive instead
+of 6; a Society round's first twenty went from 15 not worth offering to
+6.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{How well each signal separates the candidates of 6~October
+(AUC, 95\% bootstrap interval, 86 candidates the screen keeps). Labels
+by the AI labelling pass.}
+\label{tab:ranking-auc}
+\begin{tabularx}{\linewidth}{@{}Xcc@{}}
+\toprule
+\textbf{Signal} & \textbf{Worth offering vs not} & \textbf{Clearly positive vs rest} \\
+\midrule
+The chosen score (story 0.6, record 0.25, reliability 0.15) & 0.778 [0.673, 0.868] & 0.806 [0.679, 0.916] \\
+The story alone & 0.753 [0.647, 0.850] & 0.812 [0.692, 0.917] \\
+The source's record in the round & 0.684 [0.556, 0.797] & 0.664 [0.503, 0.808] \\
+The source's reliability rating & 0.486 [0.356, 0.605] & 0.425 [0.294, 0.566] \\
+Freshness (newer first) & 0.301 [0.195, 0.416] & 0.420 [0.269, 0.584] \\
+The AI selection's score (\texttt{llama3.2:3b}) & 0.650 [0.533, 0.759] & 0.755 [0.612, 0.881] \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Two signals were kept out or kept small on this evidence. Freshness
+points the wrong way within the 30-day limit (AUC 0.30): the day's
+breaking news is mostly the day's politics. The reliability rating
+carries no signal for the mission (0.49) and has the smallest weight;
+it is kept because how far a source is trusted is part of what the
+publication offers. The 3-billion-parameter AI selection separated the
+stories less well than the ranking on this sample.
+
+\paragraph{Aligning the rounds with the mission and the groups.} On
+9~October five one-group rounds were run live, then again after each
+of four changes, and their 324 candidates labelled. Over the first
+twenty places of the five rounds (100 places), pages that were not
+articles went from 13 to 0, stories of another group from 21 to 13,
+stories not worth offering from 29 to 17, and clearly positive stories
+stayed at 34. Health, the weakest round, went from 5, 5, 10 and 3 to 0,
+2, 3 and 4 on the same four counts. The format rules caught 28 of the
+35 non-articles and no article; the group-fit rule told a story of the
+round's group from one of another with an AUC of 0.874 [0.809, 0.930].
+
+\paragraph{The topic emphasis.} Re-scoring every candidate of ten
+labelled one-group rounds (200 places in their first twenties) at each
+emphasis (Table~\ref{tab:emphasis}) shows the trade the person controls.
+At the default of 0.6 the first ten places hold only the group asked
+for (100 of 100) and the first twenty 194 of 200, against 184 before;
+the cost is clearly positive stories of the group, 62 down to 53,
+replaced by on-topic hard news that the AI selection and the person
+are left to sort. The AUC for a story of the group against another's
+rises from 0.706 [0.608, 0.797] to 0.825 [0.751, 0.891].
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Ten one-group rounds re-scored at each topic emphasis: counts
+over their first twenty places (200), and over their first ten (100)
+in the last column. Labels by the AI labelling pass.}
+\label{tab:emphasis}
+\begin{tabularx}{\linewidth}{@{}lXXXXr@{}}
+\toprule
+\textbf{Emphasis} & \textbf{Of the group asked for} & \textbf{Worth
+offering, of the group} & \textbf{Clearly positive, of the group} &
+\textbf{Not worth offering} & \textbf{First ten} \\
+\midrule
+Before (fixed weights) & 184 & 154 & 62 & 36 & 94 \\
+0 (positive impact only) & 174 & 150 & 61 & 33 & 89 \\
+0.3 & 187 & 154 & 61 & 38 & 94 \\
+0.5 & 192 & 150 & 53 & 45 & 98 \\
+\textbf{0.6 (default)} & \textbf{194} & \textbf{150} & \textbf{53} &
+\textbf{48} & \textbf{100} \\
+0.7 & 194 & 139 & 46 & 60 & 100 \\
+1 (topic only) & 195 & 136 & 52 & 63 & 97 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{What this answers and what it does not.} On the evidence so
+far, the scoped, screened and ranked round does what RQ1 asks of it: a
+person reads a fraction of the sources and links, and the first twenty
+places hold markedly fewer stories not worth offering and stories of
+other groups than the sources' own order. Three limits keep this from
+being a final answer. The labels are an AI's, not a person's; the
+rounds come from one or two days, so the 25 rounds of 9~October are
+closer to five independent samples than to 25; and order is not supply
+--- a round of thirty with fourteen stories worth offering still shows
+six that are not.
+\pending{the P1 measurements: discovery on five days against the
+every-topic baseline, with intervals; precision of the first twenty and
+the ranking's AUC on at least two rounds labelled by the author.}

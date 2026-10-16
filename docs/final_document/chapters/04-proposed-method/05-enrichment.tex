@@ -2,11 +2,60 @@
 % Chapter 4: Proposed Method: Specification and Design
 %   Section: Enrichment
 % Included from chapters/04-proposed-method/proposed-method.tex
+% Source: docs/arquitectura-tecnica.md section 2.3; docs/decisions/
+% inference.md; src/processors/nlp/.
 % ============================================================
 
 \section{Enrichment}
 \label{sec:design-enrichment}
-\pending{keywords, entities, claims, topic, sentiment and embeddings,
-computed over the text the extraction cascade
-(Section~\ref{subsec:scraping-cascade}) returns. Source:
-docs/arquitectura-tecnica.md section 2.3.}
+
+Every article that comes out of the extraction cascade
+(Subsection~\ref{subsec:scraping-cascade}) is turned from plain text
+into an enriched record by a stack of language-processing steps. Each
+runs in the article's language, detected from stopword frequencies,
+with English and Spanish word lists for every heuristic.
+
+\begin{itemize}
+    \item \textbf{Keywords} by YAKE, an unsupervised statistical method
+    that needs no training data \cite{campos2020yake}, with the
+    article's language's stopwords.
+    \item \textbf{Entities} by GLiNER, a named-entity recogniser that
+    takes the entity types as input rather than fixing them at training
+    time \cite{zaratiana2024gliner}: people, organisations, places,
+    countries and others.
+    \item \textbf{Candidate claims}: each sentence is scored by the
+    presence of structural signals of a checkable fact --- named
+    entities, figures, dates, units, reporting verbs such as
+    ``announced'' or ``confirmed'', quotations, a minimum length --- and
+    kept above a threshold. The score measures whether a sentence has
+    the \emph{form} of a verifiable fact, not whether it is important;
+    a sentence must also end as a sentence, which removed headlines,
+    captions and fragments cut at an abbreviation.
+    \item \textbf{Topics}: the article's embedding is compared with
+    descriptions of 23 topics, organised in five groups. Each topic gets
+    a confidence, and a topic counts when its confidence clears a
+    threshold (0.35). A softmax over the same similarities is also
+    computed, but over 23 near-equal cosines it is close to uniform and
+    carries no signal; nothing downstream uses it.
+    \item \textbf{Sentiment} by a multilingual XLM-RoBERTa classifier
+    \cite{barbieri2022xlmt}, in full precision: an int8 version was
+    measured on 336 real texts and rejected because it changed the
+    label in 8--14\% of them, mostly from neutral to positive, which
+    would have quietly loosened the admission gate.
+    \item \textbf{Editorial quality}: readability, objectivity,
+    constructiveness, hopefulness, social impact and inspirational
+    value, from curated word lists per language and standard
+    readability formulas.
+    \item \textbf{An embedding} of the whole article by BGE-M3, a
+    multilingual embedding model \cite{chen2024bgem3}. The same
+    1,024-dimensional space underlies duplicate detection, topic
+    classification, the mission screen, claim deduplication and
+    evidence ranking.
+\end{itemize}
+
+The three transformer models run in the inference service
+(Section~\ref{sec:architecture}). Each step fails differently by
+design: if entity extraction fails, the claim scorer loses one weak
+signal and carries on; if sentiment or embeddings fail, the article
+fails, because a silently neutral sentiment or a zero vector would
+corrupt an admission decision without anyone noticing.

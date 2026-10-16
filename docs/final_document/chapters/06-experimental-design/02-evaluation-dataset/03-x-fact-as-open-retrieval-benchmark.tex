@@ -32,9 +32,11 @@ paradigm as the method proposed in this work.
 
 This alignment of paradigms --- open retrieval in the evaluation
 dataset and open retrieval in the evaluated system --- is what makes
-X-Fact a methodologically coherent choice: it allows the full
-pipeline (Selection, Retrieval, Ranking, and LLM check jointly) to be
-measured, not only its final reasoning stage, and situates the
-results obtained within a framework comparable to the state of the
-art reported by Gupta and Srikumar \cite{gupta2021xfact} for the
-Spanish-language subset.
+X-Fact a methodologically coherent choice: it allows the
+claim-checking half of the pipeline (evidence retrieval, ranking,
+verification and recalibration, jointly) to be measured, not only its
+final reasoning stage, and situates the results within the framework
+of the baselines Gupta and Srikumar \cite{gupta2021xfact} report for
+their in-domain test set, of which Spanish is one of twelve languages.
+(The paper gives no per-language figure, so the comparison of
+Section~\ref{subsec:pilot-comparison} is with the whole test set.)

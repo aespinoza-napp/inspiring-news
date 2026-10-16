@@ -2,9 +2,59 @@
 % Chapter 5: Development
 %   Section: The Labelling Tool
 % Included from chapters/05-development/development.tex
+% Source: labeller/README.md; labeller/app.py.
 % ============================================================
 
 \section{The Labelling Tool}
 \label{sec:dev-labeller}
-\pending{one file per fact, the daily batch, the blind review.
-Source: labeller/README.md.}
+
+The custom validation set (Section~\ref{sec:custom-dataset}) is labelled
+with a tool built for it: one Python file and one HTML page, using only
+the standard library, so that labelling needs nothing installed and
+none of the system's services running. It listens on the local machine
+only and accepts writes only as JSON, so another website open in the
+same browser cannot post facts into the repository through it.
+
+\paragraph{One file per fact.} Every saved fact is its own JSON file,
+numbered in the order of saving, with X-Fact's keys in X-Fact's order
+followed by the custom set's own. Every hand-verified fact therefore
+appears in the repository, and in a diff, on its own; a test holds the
+shared keys to the X-Fact files so that the harness scores both sets
+with the same code. When the set is complete, a \texttt{join} command
+re-validates every file and merges them into one JSON Lines file; it
+refuses, and writes nothing, if any file breaks a rule.
+
+\paragraph{The daily batch.} The \emph{Today} tab asks the backend for
+about ten articles drawn at random, seeded by the date, from what the
+sources published in the last 30 days: one per source, languages
+alternated, never one already labelled or proposed, none that the
+mission screen leaves out, preferring the topic groups the balance
+table is short of. Each comes with the one to three claims the
+pipeline's own claim selector would check. \emph{Label} fills the form
+from the article and claim; \emph{Skip} records why the claim is not
+worth labelling --- an opinion, a prediction, a trivial statement, a
+fragment, a duplicate --- and the share labelled is the claim
+selector's precision.
+
+\paragraph{The rules on save.} The tie-break rules that can be checked
+mechanically are refused on save: a verdict other than
+\texttt{UNVERIFIED} needs an evidence link; a claim backed only by its
+protagonist's own source must be \texttt{UNVERIFIED}; evidence dated
+after the article is refused. A verdict-by-group table shows the 25
+cells against their targets while labelling.
+
+\paragraph{The blind review.} The \emph{Review} tab shows 20\% of the
+facts, chosen by a hash of their file names, without their first label,
+note or own-source flag, and reports observed agreement and Cohen's
+$\kappa$ on the first label, so that correcting a fact afterwards
+cannot inflate it.
+
+\paragraph{Synthetic refuted claims.} A \texttt{mutate} command builds
+a \texttt{FALSE} fact from a natural \texttt{TRUE} one by substituting a
+number, a date, an entity or a relation, keeps the source's article,
+date and evidence, and records the provenance; the tool lists any
+mutation whose source has since been relabelled
+(Subsection~\ref{subsec:custom-mutations}).
+
+The tool has 32 tests, run by the project's check, which write to a
+temporary folder and never to the real set.

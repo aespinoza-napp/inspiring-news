@@ -6,6 +6,28 @@
 % ============================================================
 
 \subsection{Responsibility for Automated Verdicts}
-\pending{failing towards caution, the search and model failures
-reported apart from verdicts, every verdict with its evidence and
-reasoning visible.}
+
+An automated verdict that a claim is false can harm whoever made the
+claim, and one that a claim is true can mislead whoever reads it. The
+system is built to keep responsibility with people and to make its own
+contribution inspectable.
+
+\begin{itemize}
+    \item \textbf{Failing towards caution.} When the evidence does not
+    decide, the answer is \texttt{UNVERIFIED}; a definitive verdict that
+    cites nothing, or only sources the model itself called unrelated, is
+    downgraded; a \texttt{TRUE} confirmed by a single outlet keeps a
+    capped confidence.
+    \item \textbf{Failures are not verdicts.} A claim whose search or
+    model failed is marked as such, and the reader view says ``not
+    checked'' rather than showing the \texttt{UNVERIFIED} it is stored
+    as. A search outage is never presented as a judgement about a claim.
+    \item \textbf{Every verdict shows its work.} The model's reasoning,
+    its answer before the guardrails changed it, each source's stance and
+    quoted passage, and whether each source's reliability is a real
+    rating or a default, are visible to the reader.
+    \item \textbf{A person decides what is published.} The system
+    proposes and the editor chooses. Its accuracy has been measured on
+    one benchmark and found low, and it is not presented as a
+    fact-checker whose verdicts stand on their own.
+\end{itemize}

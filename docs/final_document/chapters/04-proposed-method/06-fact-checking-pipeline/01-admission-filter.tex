@@ -3,8 +3,41 @@
 %   Section: The Fact-Checking Pipeline
 %     Subsection: Admission Filter
 % Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
+% Sources: docs/arquitectura-tecnica.md 2.4.1;
+% backend/src/services/admission/README.md.
 % ============================================================
 
 \subsection{Admission Filter}
-\pending{docs/arquitectura-tecnica.md 2.4.1;
-backend/src/services/admission/README.md.}
+\label{subsec:admission}
+
+Before anything is spent on verification, the article must pass three
+independent checks. They judge the \emph{article} --- its topics, its
+tone, its neighbours in the vector store --- and none needs evidence, a
+search or a language model, which is why they come first and are the
+cheapest stage.
+
+\begin{itemize}
+    \item \textbf{Topic relevance}: at least one topic's confidence
+    must reach a minimum (0.35 by default). No topic has to dominate,
+    since an article can legitimately touch several.
+    \item \textbf{Positive impact}: a weighted average of
+    constructiveness, inspirational value, hopefulness, positive
+    sentiment, objectivity and social impact, in $[0,1]$, must reach a
+    minimum (0.1 by default). Hard floors on objectivity and negative
+    sentiment, which would reject an article whatever its average, exist
+    behind a single switch and are off by default: the floors on
+    constructiveness and inspiration rejected too many real articles,
+    and now only lower the score and are recorded as reasons.
+    \item \textbf{Not a duplicate}: the article's embedding is compared
+    with its nearest stored neighbour. Below a relatedness threshold
+    (0.80) the two are unrelated; between it and a duplicate threshold
+    (0.90) they are \emph{related}, a useful signal that does not
+    disqualify; above it the article is a duplicate. A stored article
+    with the same URL never counts: it is the same article from an
+    earlier run, and a re-analysis must not reject itself.
+\end{itemize}
+
+All three always run, even after one fails, so a rejection names every
+reason. A rejected article is stored with its reasons and is never
+searched or sent to a model. Every threshold can be overridden for one
+run (Section~\ref{sec:dev-storage}).

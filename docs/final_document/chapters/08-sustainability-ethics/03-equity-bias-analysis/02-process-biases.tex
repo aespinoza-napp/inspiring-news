@@ -6,5 +6,28 @@
 % ============================================================
 
 \subsection{Biases in the Processes}
-\pending{the mission screen, candidate ranking and AI selection;
-the search engines; the embedding model and the LLM.}
+
+\begin{itemize}
+    \item \textbf{The mission screen} encodes a view of what the
+    publication does not cover --- politics, protests, crime, markets ---
+    in nine written descriptions and their margins. It leaves out labour
+    disputes and protests along with party politics, which is an
+    editorial position, not a neutral filter, and it can leave out a
+    constructive story whose words sit near one of those subjects (a
+    prison-to-firefighter jobs programme was read as crime). The three
+    positive-only outlets are exempt, which favours their editors'
+    judgement over the screen's.
+    \item \textbf{The ranking and the AI selection} encode a definition
+    of positive impact written by the author. The ranking's weights were
+    fitted on labels an AI assigned; the AI selection scores threat
+    stories on topic highly and candidates without a summary low.
+    \item \textbf{The search engines} decide what evidence exists for
+    the system: their ranking, their refusals on a given day, and their
+    coverage of Spanish sources. Google and Brave refused the
+    metasearch engine during the pilot.
+    \item \textbf{The models.} The embedding model places stories in a
+    space learned from its training data; the sentiment model reads a
+    problem being solved as negative, which is why it was kept out of
+    the mission screen; and the verifier leans to \texttt{FALSE} on
+    political claims whatever the evidence.
+\end{itemize}
