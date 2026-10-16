@@ -166,3 +166,52 @@ the tokens English and Spanish use, since that matrix is ~70% of the
 weights. And the larger model here is `bge-m3` (~568M parameters), not
 this one or GLiNER (`gliner_small`, the smallest of the three) - but
 quantizing it changes every stored vector, so it waits for the gold set.
+
+## Where the CPU time went, and what changed (2026-10-16)
+
+Measured on the dev laptop (i7-12700H, inference/ on the CPU, no
+Docker), with the committed sample articles in `backend/data/processed/`.
+Nothing below changes a vector, a verdict or a claim except where it
+says so.
+
+| What | Before | After | Why |
+|---|---|---|---|
+| The ranker's request: 8 evidence pages cut at 2,000 characters | 9.4 s | 6.8 s | bge-m3 encoded them as one padded batch; on a CPU one at a time is faster (`EMBEDDING_BATCH_SIZE=1`, inference/src/config.py). Vectors equal to 3e-7 |
+| The same, with the lengths it really sends (some only a snippet) | 7.3 s | 4.2 s | the batch padded every text to the longest |
+| Enrichment of a 5,700-character article | 17.2 s | 14.1 s | the two rows below, less what the third costs |
+| ... the article's embedding | twice, 3.0 s each | once | `TopicClassifier.process` re-embedded the text the pipeline had just embedded for storage; it now takes `embedding=` |
+| ... claim extraction | 2.7 s, 37 requests | 1.5 s, 1 request | one `/entities` request per sentence; now `texts`, batched by GLiNER. Same 15 claims, same entities, same confidences |
+| ... whole-article entities | 2.4 s, **5 entities** | 3.2 s, the whole text | see below: a correctness fix that costs 0.8 s |
+| A claim's internal-corpus search | its own encode of the bare claim | the retriever's vector | one call fewer per claim behind the single INFERENCE permit, and the corpus is searched with the claim in its article's sense, as the web is. Identical with no article (x-fact, `/verify-claim`) |
+
+**GLiNER was reading the first 384 tokens of an article.** Its
+`max_len`; the rest is dropped with a `UserWarning` ("Sentence of length
+1069 has been truncated to 384"). On the sample article it found 5
+entities where its sentences, read one by one, hold 52 - so the
+article-level entities behind the claim selector's main subjects, the
+retriever's restored subject and the graph's `MENTIONS` came from the
+opening only. `EntityModel` now reads a long text in sentence-bounded
+chunks of at most 250 words (GLiNER counts punctuation as tokens), every
+chunk of every text in one batched `inference` call. A text of one chunk
+gets exactly what it got before. **This changes the entities of long
+articles**, and with them the inputs of claim selection; it was made
+before any custom-set run, so no reported number moves.
+
+Not changed: sentiment reads the first 512 tokens (`truncation=True` in
+`sentiment.py`). That is explicit, not silent, and sentiment is an
+admission input; reading the whole article would be a decision about
+admission, to be measured, not a fix.
+
+`scraper/sightings.py` was rewriting the whole file - every URL ever
+seen, 219 KB on the dev lake and never pruned - once per source per
+discovery round, ~33 times a round, mostly to record nothing new. It
+now saves only when something changed. `request_stats.py` still rewrites
+its file on every extraction (26 KB, milliseconds against page fetches
+of seconds); the first thing to batch if scraping volume grows.
+
+The benchmarks are scripts that were run once, not tests; the tests pin
+what they measured: one embedding per article
+(`test_pipeline_embeds_once.py`), the classifier and the corpus search
+using a given vector, the batch size reaching `encode()`, a long
+article's last-paragraph entities found, one entities request for many
+texts, and sightings not rewritten for nothing.

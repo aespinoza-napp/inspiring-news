@@ -160,6 +160,7 @@ class EvidenceRetriever:
                     claim,
                     thresholds=thresholds,
                     exclude_url=context.url if context and context.url else None,
+                    embedding=claim_embedding,
                 ),
             ],
             max_workers=2,

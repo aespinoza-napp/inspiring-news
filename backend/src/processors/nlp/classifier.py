@@ -88,20 +88,31 @@ class TopicClassifier(BaseProcessor):
         self,
         text: str,
         threshold: float | None = None,
+        embedding=None,
     ) -> List[TopicPrediction]:
+        """
+        `embedding` is the text's vector when the caller already has it.
+        The enrichment pipeline does - it embeds the article for storage -
+        and encoding the same whole article again here doubled the most
+        expensive embedding of an analysis: 3.0 s for a 5,700-character
+        article on the laptop's CPU (2026-10-16), for an identical vector.
+        """
 
         minimum = threshold if threshold is not None else self.threshold
 
-        article_embedding = self.embedding_service.encode(text)
+        article_embedding = (
+            embedding if embedding is not None
+            else self.embedding_service.encode(text)
+        )
 
         similarities = []
 
-        for topic_id, embedding in self._topic_embeddings.items():
+        for topic_id, topic_embedding in self._topic_embeddings.items():
 
             similarity = float(
                 np.dot(
                     article_embedding,
-                    embedding,
+                    topic_embedding,
                 )
             )
 

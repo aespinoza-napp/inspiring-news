@@ -75,9 +75,12 @@ class NewsEnrichmentPipeline:
                 thresholds.entity_threshold,
             ),
 
+            # The article's vector, computed above for storage: the
+            # classifier would otherwise embed the same text again.
             topics=self.topics.process(
                 article.content,
                 thresholds.topic_classifier_threshold,
+                embedding=embedding,
             ),
 
             claims=self.claims.process(

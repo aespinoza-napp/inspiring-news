@@ -59,6 +59,7 @@ CONTRACTS = [
     (fakes.FakeQualityAnalyzer, QualityAnalyzer, "readability"),
     (fakes.FakeSentimentAnalyzer, SentimentAnalyzer, "process"),
     (fakes.FakeEntityExtractor, EntityExtractor, "process"),
+    (fakes.FakeEntityExtractor, EntityExtractor, "process_many"),
 ]
 
 

@@ -123,6 +123,13 @@ def healthz():
 @app.post("/entities", response_model=EntitiesResponse, dependencies=[Depends(require_warm)])
 def entities(request: EntitiesRequest):
 
+    if request.texts is not None:
+        return EntitiesResponse(
+            entitiesPerText=entity_model.extract_many(
+                request.texts, request.threshold, request.labels,
+            )
+        )
+
     return EntitiesResponse(
         entities=entity_model.extract(request.text, request.threshold, request.labels)
     )

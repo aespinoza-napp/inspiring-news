@@ -275,10 +275,12 @@ class FakeVectorRetriever:
         self.evidence = evidence or []
         self.calls = []
         self.exclude_urls = []
+        self.embeddings = []
 
-    def retrieve(self, claim, limit: int = 5, thresholds=None, exclude_url=None):
+    def retrieve(self, claim, limit: int = 5, thresholds=None, exclude_url=None, embedding=None):
         self.calls.append((claim, limit, thresholds))
         self.exclude_urls.append(exclude_url)
+        self.embeddings.append(embedding)
         return list(self.evidence)
 
 
@@ -356,3 +358,6 @@ class FakeEntityExtractor:
     def process(self, text, threshold=None):
         self.calls.append((text, threshold))
         return dict(self.entities)
+
+    def process_many(self, texts, threshold=None):
+        return [self.process(text, threshold) for text in texts]

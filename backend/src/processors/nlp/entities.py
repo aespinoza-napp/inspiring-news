@@ -72,3 +72,27 @@ class EntityExtractor(BaseProcessor):
         # empty result would corrupt the decision rather than just
         # weaken one signal.
         return entities if entities is not None else {}
+
+    def process_many(
+        self,
+        texts: list[str],
+        threshold: float | None = None,
+    ) -> list[dict[str, list[str]]]:
+        """
+        `process` for several texts in one request, in input order. An
+        inference outage gives every text `{}`, as `process` would.
+        """
+
+        if not texts:
+            return []
+
+        entities = self._client.entities_many(
+            texts,
+            threshold=threshold if threshold is not None else self.threshold,
+            labels=self.labels,
+        )
+
+        if entities is None or len(entities) != len(texts):
+            return [{} for _ in texts]
+
+        return entities

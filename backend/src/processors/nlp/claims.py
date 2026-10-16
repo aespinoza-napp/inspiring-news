@@ -105,12 +105,20 @@ class ClaimExtractor(BaseProcessor):
 
         claims = []
 
-        for sentence in self._split_sentences(text):
+        sentences = [
+            sentence for sentence in self._split_sentences(text)
+            if self.SENTENCE_END.search(sentence)
+        ]
 
-            if not self.SENTENCE_END.search(sentence):
-                continue
+        # Every sentence's entities in one request, not one per sentence:
+        # 37 requests for a 5,700-character article took 4.8 s of the
+        # enrichment's 14, and one batched call finds the same entities
+        # (2026-10-16, docs/decisions/inference.md).
+        entities_per_sentence = self.entity_extractor.process_many(
+            sentences, entity_threshold,
+        )
 
-            entities = self.entity_extractor.process(sentence, entity_threshold)
+        for sentence, entities in zip(sentences, entities_per_sentence):
 
             confidence = self._score(
                 sentence,

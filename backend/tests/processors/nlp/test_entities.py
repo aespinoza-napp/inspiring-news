@@ -68,3 +68,31 @@ def test_empty_text_short_circuits_without_calling_the_client():
 
     assert extractor.process("") == {}
     assert client.calls == []
+
+
+class _ManyStubClient(_StubClient):
+
+    def entities_many(self, texts, threshold=None, labels=None):
+        self.calls.append((list(texts), threshold, labels))
+        return self.result
+
+
+def test_process_many_sends_every_text_in_one_request():
+    """
+    The claim extractor needs every sentence's entities; it sent one
+    request per sentence (37 for one article) before process_many.
+    """
+
+    client = _ManyStubClient(result=[{"company": ["Apple"]}, {}])
+
+    extractor = EntityExtractor(threshold=0.42, client=client)
+
+    assert extractor.process_many(["Apple grew.", "It rained."]) == [{"company": ["Apple"]}, {}]
+    assert client.calls == [(["Apple grew.", "It rained."], 0.42, extractor.labels)]
+
+
+def test_process_many_degrades_to_empty_dicts_when_the_client_fails():
+
+    assert EntityExtractor(client=_ManyStubClient(result=None)).process_many(["a", "b"]) == [{}, {}]
+    assert EntityExtractor(client=_ManyStubClient(result=[{}])).process_many(["a", "b"]) == [{}, {}]
+    assert EntityExtractor(client=_ManyStubClient()).process_many([]) == []

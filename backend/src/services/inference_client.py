@@ -68,6 +68,31 @@ class InferenceClient:
 
         return response.json()["entities"]
 
+    def entities_many(
+        self,
+        texts: list[str],
+        threshold: float | None = None,
+        labels: list[str] | None = None,
+    ) -> list[dict[str, list[str]]] | None:
+        """
+        Every text's entities in one request - None on any failure, like
+        entities(). The claim extractor sent one request per sentence:
+        37 for a 5,700-character article, 4.8 s of an enrichment's 14
+        (2026-10-16), one at a time behind INFERENCE's single permit.
+        """
+
+        try:
+            with INFERENCE.permit():
+                response = self._client.post(
+                    "/entities",
+                    json={"texts": texts, "threshold": threshold, "labels": labels},
+                )
+            response.raise_for_status()
+        except httpx.HTTPError:
+            return None
+
+        return response.json()["entitiesPerText"]
+
     def sentiment(self, text: str) -> dict[str, Any]:
         """Raises InferenceUnavailable on any failure - see module docstring."""
 

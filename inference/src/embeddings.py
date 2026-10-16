@@ -41,8 +41,11 @@ class EmbeddingModel:
 
     def encode_many(self, texts: Iterable[str]) -> list[list[float]]:
 
+        # batch_size from settings, not sentence-transformers' 32: on a
+        # CPU a padded batch is slower than one text at a time (config.py).
         return self._model.encode(
             list(texts),
+            batch_size=settings.EMBEDDING_BATCH_SIZE,
             normalize_embeddings=True,
             convert_to_numpy=True,
         ).tolist()

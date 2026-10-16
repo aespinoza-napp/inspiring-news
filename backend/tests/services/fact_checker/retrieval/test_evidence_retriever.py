@@ -223,6 +223,35 @@ def test_the_articles_own_url_is_excluded_from_internal_evidence():
     assert vectors.exclude_urls == ["https://example.com/the-article", None]
 
 
+def test_the_corpus_search_reuses_the_claim_vector_instead_of_encoding_again():
+    """
+    The retriever embeds the claim inside its article to score the web
+    candidates; the corpus search gets that vector rather than a second
+    call to inference/ for the bare text. With no article the two texts
+    are the same, so the corpus sees the same vector as before.
+    """
+
+    from src.services.fact_checker.claim_selector import ArticleContext
+    from src.services.fact_checker.terms import contextualised_claim
+
+    retriever, _, vectors = _retriever([])
+    claim = create_claim(text="The programme trained 30 experts.")
+    context = ArticleContext(
+        url="https://example.com/drones",
+        title="Drone rescue programme helps Mozambique",
+        keywords=["drone", "Mozambique"],
+    )
+
+    retriever.retrieve(claim, context=context)
+    retriever.retrieve(claim)
+
+    encode = FakeEmbeddingService().encode
+    assert vectors.embeddings == [
+        encode(contextualised_claim(claim, context, None)),
+        encode(claim.text),
+    ]
+
+
 def test_the_article_is_excluded_from_its_own_web_results():
     """
     Reproduced live: with the article's subject restored to the queries,

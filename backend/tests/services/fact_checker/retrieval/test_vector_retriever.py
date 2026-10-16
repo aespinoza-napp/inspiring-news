@@ -32,6 +32,30 @@ def test_retrieve_returns_related_article_as_internal_evidence(repository):
     assert results[0].relevance_score >= 0.80
 
 
+def test_a_given_claim_vector_is_searched_without_encoding_the_claim(repository):
+
+    article = create_article(
+        id="11111111-1111-1111-1111-111111111111",
+        url="https://bbc.com/mars-water",
+        embedding=[1.0] + [0.0] * 1023,
+    )
+
+    repository.save(article)
+
+    class NoEncoding(FakeEmbeddingService):
+        def encode(self, text):
+            raise AssertionError("the claim was encoded again")
+
+    retriever = VectorRetriever(repository, embeddings=NoEncoding())
+
+    results = retriever.retrieve(
+        create_claim(text="NASA found water on Mars."),
+        embedding=[1.0] + [0.0] * 1023,
+    )
+
+    assert [result.url for result in results] == [article.url]
+
+
 def test_retrieve_filters_out_unrelated_articles(repository):
 
     article = create_article(

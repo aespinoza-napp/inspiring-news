@@ -34,15 +34,26 @@ class VectorRetriever:
         limit: int = 5,
         thresholds: PipelineThresholds | None = None,
         exclude_url: str | None = None,
+        embedding=None,
     ) -> list[Evidence]:
         """
         `exclude_url` is the article the claim came from: its own earlier
         copy must not come back as "independent" corroboration of itself.
+
+        `embedding` is the claim's vector when the caller already has it.
+        EvidenceRetriever does: it embeds the claim inside its article
+        (`contextualised_claim`) a moment before, to score the web
+        candidates. Encoding the bare text again here cost a second call
+        to inference/ per claim - behind its single permit, so queued
+        behind other claims' batches - and searched the corpus for the
+        claim out of its article's sense, the thing the contextualised
+        vector exists to avoid. With no article the two texts are equal.
         """
 
         minimum = (thresholds or PipelineThresholds()).relatedness_threshold
 
-        embedding = self.embeddings.encode(claim.text)
+        if embedding is None:
+            embedding = self.embeddings.encode(claim.text)
 
         results = self.repository.search(
             _as_vector(embedding),

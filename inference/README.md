@@ -31,7 +31,10 @@ uv run uvicorn src.main:app --port 8001
 
 ## Endpoints
 
-- `POST /entities` - `{"text", "threshold"?, "labels"?}` → `{"entities": {...}}`
+- `POST /entities` - `{"text", "threshold"?, "labels"?}` → `{"entities": {...}}`,
+  or `{"texts": [...], ...}` → `{"entitiesPerText": [{...}, ...]}` in one
+  batched call. A text longer than GLiNER's 384 tokens is read in
+  sentence-bounded chunks rather than truncated.
 - `POST /sentiment` - `{"text"}` → sentiment fields
 - `POST /embeddings` - `{"text"}` or `{"texts": [...]}` → a vector or list of vectors
 - `GET /healthz` - 200 only once all three models are loaded; 503

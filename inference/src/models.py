@@ -14,13 +14,26 @@ from pydantic import BaseModel, model_validator
 
 
 class EntitiesRequest(BaseModel):
-    text: str
+    # Exactly one of the two, as for embeddings. `texts` exists for the
+    # claim extractor, which needs every sentence's entities: one request
+    # for all of them instead of one per sentence (2026-10-16).
+    text: str | None = None
+    texts: list[str] | None = None
     threshold: float | None = None
     labels: list[str] | None = None
 
+    @model_validator(mode="after")
+    def _exactly_one(self) -> "EntitiesRequest":
+
+        if (self.text is None) == (self.texts is None):
+            raise ValueError("Provide exactly one of 'text' or 'texts'.")
+
+        return self
+
 
 class EntitiesResponse(BaseModel):
-    entities: dict[str, list[str]]
+    entities: dict[str, list[str]] | None = None
+    entitiesPerText: list[dict[str, list[str]]] | None = None
 
 
 class SentimentRequest(BaseModel):

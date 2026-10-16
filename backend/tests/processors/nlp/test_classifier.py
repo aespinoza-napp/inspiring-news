@@ -190,3 +190,31 @@ def test_a_failed_start_does_not_leave_a_half_built_cache(fresh_caches):
         TopicClassifier(embedding_service=KeywordsFail())
 
     assert TopicClassifier._keyword_embeddings is None
+
+
+def test_a_given_article_vector_is_used_instead_of_encoding_the_text(fresh_caches):
+    """
+    The enrichment pipeline embeds the article for storage and hands the
+    vector over; encoding the whole article a second time here was the
+    most expensive call of an analysis, for an identical answer.
+    """
+
+    class Counting(FakeEmbeddingService):
+
+        def __init__(self, vectors):
+            super().__init__(vectors)
+            self.encoded = []
+
+        def encode(self, text):
+            self.encoded.append(text)
+            return super().encode(text)
+
+    embeddings = Counting({ARTICLE: E0, "education": E0, "school": E2, "teacher": E1})
+    classifier = TopicClassifier(threshold=-1.0, embedding_service=embeddings)
+
+    embeddings.encoded.clear()
+    given = classifier.process(ARTICLE, embedding=E0)
+    assert embeddings.encoded == []
+
+    assert given == classifier.process(ARTICLE)
+    assert embeddings.encoded == [ARTICLE]

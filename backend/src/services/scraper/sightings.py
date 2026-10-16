@@ -90,6 +90,7 @@ class Sightings:
         seen = _iso(seen_at or datetime.now(timezone.utc))
         published = published or {}
         new = 0
+        filled = 0
 
         with self._lock:
 
@@ -110,8 +111,15 @@ class Sightings:
                     new += 1
                 elif entry.get("feedPublishedAt") is None and feed_time:
                     entry["feedPublishedAt"] = feed_time
+                    filled += 1
 
-            self._save_locked()
+            # Only when something changed. A round calls this once per
+            # source, and most sources return links already seen: the
+            # whole file - every URL ever seen, 219 KB on the dev lake by
+            # Oct 5 and never pruned - was rewritten ~33 times a round to
+            # say nothing new.
+            if new or filled:
+                self._save_locked()
 
         return new
 

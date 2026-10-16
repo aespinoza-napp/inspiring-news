@@ -154,6 +154,29 @@ def test_the_first_sighting_is_kept_and_a_later_one_only_adds_a_feed_time(tmp_pa
     assert entry["feedPublishedAt"] == "2026-10-04T07:00:00+00:00"
 
 
+def test_a_record_with_nothing_new_does_not_rewrite_the_file(tmp_path, monkeypatch):
+    """
+    A round records once per source and most return links already seen;
+    each record used to rewrite the whole file (every URL ever seen).
+    """
+
+    at = lambda hour: datetime(2026, 10, 4, hour, tzinfo=timezone.utc)
+    store = Sightings(tmp_path / "sightings.json")
+    store.record(["https://bbc.com/a"], source_id="bbc", method="RSS", seen_at=at(9))
+
+    saves = []
+    monkeypatch.setattr(store, "_save_locked", lambda: saves.append(1))
+
+    assert store.record(["https://www.bbc.com/a/"], source_id="bbc", method="RSS", seen_at=at(10)) == 0
+    assert saves == []
+
+    store.record(
+        ["https://bbc.com/a"], source_id="bbc", method="RSS",
+        published={"https://bbc.com/a": at(8)}, seen_at=at(11),
+    )
+    assert saves == [1]   # a feed time learnt later is a change
+
+
 def test_ingestion_records_new_articles_with_their_feed_time_and_not_stored_ones():
 
     class Lake:

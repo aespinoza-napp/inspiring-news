@@ -23,5 +23,15 @@ class Settings(BaseSettings):
     SENTIMENT_MODEL: str = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
     EMBEDDING_MODEL: str = "BAAI/bge-m3"
 
+    # How many texts bge-m3 encodes per forward pass inside one request.
+    # On a CPU, one at a time is fastest. Measured 2026-10-16 on the dev
+    # laptop (i7-12700H), the ranker's own request - eight evidence pages
+    # cut at 2,000 characters - took 9.4 s as one batch and 6.6 s one by
+    # one; with the lengths it really sends (some pages are only a
+    # snippet) 7.3 s against 4.0 s, because a batch pads every text to
+    # the longest. Vectors identical to 3e-7. sentence-transformers'
+    # default is 32, which is right for a GPU: raise it there.
+    EMBEDDING_BATCH_SIZE: int = 1
+
 
 settings = Settings()

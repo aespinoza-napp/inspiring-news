@@ -45,3 +45,33 @@ def test_encode_many_batches_correctly():
 
     assert len(embeddings) == 2
     assert all(len(vector) == model.dimension for vector in embeddings)
+
+
+def test_encode_many_sends_the_configured_batch_size(monkeypatch):
+    """
+    sentence-transformers batches 32 by default; on a CPU one text at a
+    time was faster for the ranker's own request (9.4 s against 6.6 s for
+    eight pages, 2026-10-16, config.py), with identical vectors. Needs no
+    model: what is tested is that the setting reaches encode().
+    """
+
+    import numpy as np
+
+    from src.config import Settings, settings
+
+    seen = {}
+
+    class Recorder:
+
+        def encode(self, texts, **kwargs):
+            seen.update(kwargs)
+            return np.zeros((len(texts), 3))
+
+    model = EmbeddingModel()
+    model._model = Recorder()
+
+    assert Settings.model_fields["EMBEDDING_BATCH_SIZE"].default == 1
+
+    monkeypatch.setattr(settings, "EMBEDDING_BATCH_SIZE", 4)
+    assert model.encode_many(["a", "b"]) == [[0.0] * 3, [0.0] * 3]
+    assert seen["batch_size"] == 4
