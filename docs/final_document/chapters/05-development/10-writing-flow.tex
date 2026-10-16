@@ -1,0 +1,107 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: Writing, Reviewing and Publishing an Article
+% Included from chapters/05-development/development.tex
+% Source: docs/decisions/writing.md (built 2026-10-15, merged as
+% feature/newsroom-writing, outside the Oct 14 freeze by the author's
+% decision).
+% ============================================================
+
+\section{Writing, Reviewing and Publishing an Article}
+\label{sec:dev-writing}
+
+The newsroom's last steps were built on 15~October~2026, outside the
+feature freeze of 14~October by the author's decision; until then
+writing from verified sources was listed as work for ``only if time is
+left'' (Table~\ref{tab:priorities}). After an article has been analysed
+and judged publishable, a person can ask for a new article on the same
+story: the system finds news related to it, writes a draft from those
+sources and the fact-checks in Catalan, Spanish or English following
+the person's indications, reviews it, rewrites it if its metrics fall
+short, and publishes it once a person approves it --- today only to the
+system's own public reader.
+
+\paragraph{One draft, one store.} Every stage reads and writes one
+draft record, kept as a JSON file per draft beside the lake. Its body
+cites its sources as \texttt{[n]}, numbered once and never reordered,
+so a citation always points at the source it was written from. A
+draft's editorial status is \emph{draft}, \emph{approved} or
+\emph{published}; long steps run in the background, one at a time per
+draft, and a person's edit sends an approved draft back to
+\emph{draft}.
+
+\paragraph{Writing, in a closed world.} Only an article the reader
+publishes can be written from: analysed, admitted, and not judged
+\texttt{FALSE} or \texttt{MISLEADING}. Related news comes from two
+routes at once --- the internal corpus, by the analysed article's own
+stored vector, and the open web, by its headline through the same
+metasearch engine the fact-checker uses --- filtered to one source per
+domain and none from the article's own outlet. The analysed article is
+always source~\texttt{[1]}; then the related news; then only the
+evidence a verdict was actually based on, each excerpt taken around
+the passage the verdict quoted. One call to the language model writes
+the draft, under rules that keep it in a closed world: only the
+numbered sources and the fact-checks, a citation on every factual
+sentence, no number, name, date or quote the sources lack, and the
+verdicts deciding what may be stated --- a \texttt{FALSE} or
+\texttt{UNVERIFIED} claim never as fact. Text in a source is material,
+never an instruction. Checks without a model then repair what can be
+repaired (citations to sources that do not exist are removed) and log
+what needs a judgement: uncited sentences, runs copied from the
+analysed article, numbers no source contains.
+
+\paragraph{Reviewing against what the writer was given.} The review
+scores nine metrics from 0 to 100: the title and the subtitle, and the
+corrector's seven (Section~\ref{subsec:benchmark-writing}). Unlike free
+text, a draft can be held to its sources, so the model is given each
+source's excerpt and the verdicts and asked to check every factual
+sentence against the source it cites; deterministic checks then bind
+the scores where a small model reading a long prompt is unreliable ---
+a factual sentence with no citation caps the hallucination score, a
+citation to no source lowers factual consistency. A second call
+proposes a correction, which is offered to the person only if it adds
+no figure, keeps every citation on its statement, cites no new source,
+stays in the draft's language and keeps a plausible length. Catalan is
+supported with its own complete word lists and a named stand-in for
+readability, since no Catalan reading-ease formula was found to cite.
+
+\paragraph{Rewriting towards targets.} When metrics fall below their
+targets --- 85 for factual consistency and hallucination, 80 for
+grammar, lower for style and SEO, reasoned rather than fitted --- the
+person can ask for a rewrite guided by the failing metrics. Each round
+is a closed-world call over the draft's own sources, the same checks as
+the correction, and a new review; a rewrite that breaks a check is not
+kept, and any earlier text can be restored.
+
+\paragraph{Publishing, with the AI disclosed.} An approved draft is
+published as a snapshot built from an allowlist of fields --- never the
+instructions, the review or any source's excerpt, which is somebody
+else's text --- so the public page shows what a person approved until
+they publish again or take it down. Every published article says,
+before its text, that it was written by an AI model, names the model,
+and says that a person approved it. The EU AI Act's Article~50(4),
+applicable from 2~August~2026, asks for such a disclosure for
+AI-generated text published to inform the public, with an exemption for
+text under human editorial responsibility; whether this site meets the
+exemption has not been judged, and disclosing does not depend on it.
+Social channels are listed with what each would need (both publish
+media, not text) and are not built.
+
+\paragraph{What was measured.} The writer was run directly, outside the
+stack, with \texttt{llama3.2:3b} on four drafts of a sample article in
+Catalan and Spanish: none of the four cited a source; three stated as
+fact a claim the fact-checks had left \texttt{UNVERIFIED} (the planted
+\texttt{FALSE} one was not stated); and the Catalan had errors a reader
+sees at once. A fifth run repeated it. The review, on two seeded drafts,
+caught a claim judged \texttt{FALSE} and the missing subtitle, but
+missed both spelling errors and a wrong figure, and its correction
+changed a fact and moved a citation --- which is how the figure and
+moved-citation checks came to exist. The rewrite checks stopped four of
+five rewrites, three of them for pinning a source onto the false claim;
+they cannot see a fact a rewrite leaves out. Two practical findings
+followed: the 3-billion-parameter model is fit to verify claims quickly
+on a CPU and not to write or correct an article, and Ollama silently
+cuts a long prompt to its default 4,096-token context, so the writer's
+model needs its own larger context. A larger, openly licensed writer
+model is recommended from the model cards and has not been measured;
+no draft has been written through the running stack.

@@ -50,6 +50,24 @@ versions the backend had resolved. Left open, the resolver chose a new
 major version of \texttt{transformers}, which broke GLiNER's tokenizer
 loading outright.
 
+\paragraph{Where the CPU time went.} A profile of the service on the
+development laptop's CPU (16~October) found three costs that bought
+nothing, and one error. The ranker's eight evidence pages were embedded
+as one padded batch, which on a CPU took 9.4~s against 6.8~s one at a
+time (7.3~s against 4.2~s with the mixed lengths it really sends), with
+identical vectors; the service now embeds one text at a time unless
+configured for a GPU. Enrichment embedded each article twice, once for
+storage and once for the topic classifier, at 3.0~s a time for a
+5,700-character article; the classifier now reuses the vector. And the
+claim extractor sent one entity request per sentence, 37 for that
+article; one batched request finds the same entities in 1.5~s instead
+of 2.7~s. The error was GLiNER's input limit: a whole article was
+truncated to its first 384 tokens with only a warning, so the
+article-level entities came from its opening alone --- 5 found where
+its sentences hold 52. Long texts are now read in sentence-bounded
+chunks. Together, enrichment of that article went from 17.2~s to
+14.1~s while reading all of it.
+
 \paragraph{One trap left by the split.} The backend's configuration
 still names the sentiment and embedding models, but the names are
 documentary: the models load from the inference service's own

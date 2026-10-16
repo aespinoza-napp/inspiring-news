@@ -22,7 +22,9 @@ with English and Spanish word lists for every heuristic.
     \item \textbf{Entities} by GLiNER, a named-entity recogniser that
     takes the entity types as input rather than fixing them at training
     time \cite{zaratiana2024gliner}: people, organisations, places,
-    countries and others.
+    countries and others. The model reads at most 384 tokens, so a long
+    article is read in sentence-bounded chunks; until 16~October it was
+    silently truncated to its opening (Section~\ref{sec:dev-inference}).
     \item \textbf{Candidate claims}: each sentence is scored by the
     presence of structural signals of a checkable fact --- named
     entities, figures, dates, units, reporting verbs such as

@@ -9,16 +9,18 @@
 \subsection{Further Work}
 \label{subsec:future-further}
 
-\paragraph{Writing constructive news from verified sources.} The same
-story from two or three outlets --- which the ranking already groups ---
-turned into a short constructive piece that cites its sources; its
-claims extracted by the pipeline's own extractor and each verified
-against the given sources only, with no web search; scored by the
-share of supported claims \cite{min2023factscore} and the precision and
-recall of its citations \cite{gao2023alce}, validated by a hand check.
-The pipeline's verifier would become the evaluator of its own writer.
-It was moved out of scope on 14~October because no research question
-asks it.
+\paragraph{Evaluating the writer.} The writing flow is built
+(Section~\ref{sec:dev-writing}) but has been measured only on a handful
+of drafts with a model shown to be unfit for it. Its evaluation would
+take a larger, openly licensed writer model with a context of at least
+16k tokens; extract each draft's claims with the pipeline's own
+extractor and verify each against the draft's own sources only, with
+no web search; and score the share of supported claims
+\cite{min2023factscore} and the precision and recall of the citations
+\cite{gao2023alce}, validated by a hand check. The pipeline's verifier
+would become the evaluator of its own writer --- validated, not assumed.
+Publishing to social networks would first need a stage that turns an
+article into media.
 
 \paragraph{Evidence against the age of a claim.} Re-running retrieval on
 the same recent claims after a week and after a month, to put a number

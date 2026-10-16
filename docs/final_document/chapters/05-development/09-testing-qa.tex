@@ -13,11 +13,12 @@
 \paragraph{One command defines ``done''.} \texttt{./scripts/check.sh}
 runs the backend tests, the inference service's tests against the real
 models, the frontend's typecheck and the labelling tool's tests. On
-16~October~2026 it passed: 1,478 backend tests (21 skipped because the
-inference service was not running, 3 expected failures), 9 inference
-tests, the typecheck and 32 labeller tests. Run again the same day
-with the inference service reachable, the backend suite passed 1,498
-tests with one skipped, the model tests included. Separate targets run what
+16~October~2026, after the writing flow was merged, it passed with the
+inference service reachable, so the model tests ran rather than
+skipped: 1,760 backend tests (one skipped, a check Windows cannot make,
+and 3 expected failures), 13 inference tests, the typecheck and 32
+labeller tests; the two slow tests over the stored corpus passed as
+well. Separate targets run what
 needs more than a laptop: the slow tests over the whole stored corpus,
 the graph against a real Neo4j, and the cloud infrastructure against
 the emulator.
