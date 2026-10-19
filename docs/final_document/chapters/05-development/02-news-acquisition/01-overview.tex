@@ -69,21 +69,24 @@ a measured failure that is cited where it is described:
 % ---- Discovery ----
 \node[io]                   (src)    {Source catalogue\\(one YAML file per source)};
 \node[stage, below=of src]  (rss)    {1. The source's RSS feed};
-\node[stage, below=of rss]  (feeds)  {2. Feed discovery (trafilatura)};
+\node[stage, below=of rss]  (feeds)  {2. JSON listing or news sitemap};
 \node[stage, below=of feeds](pages)  {3. Topic section pages};
-\node[gate,  below=of pages](filt)   {Discovery filters: shape, topic,\\
+\node[stage, below=of pages](search) {4. Feed discovery (trafilatura)};
+\node[gate,  below=of search](filt)  {Discovery filters: shape, topic,\\
                                       off-mission sections, age,\\
                                       already stored};
 \node[io,    below=of filt] (round)  {Candidates $\rightarrow$ selection};
 
 \draw[arr] (src) -- (rss);
-\draw[alt] (rss) -- node[lbl]{nothing found} (feeds);
-\draw[alt] (feeds) -- node[lbl]{nothing found} (pages);
-\draw[arr] (pages) -- (filt);
+\draw[alt] (rss) -- node[lbl]{nothing recent} (feeds);
+\draw[alt] (feeds) -- node[lbl]{nothing recent} (pages);
+\draw[alt] (pages) -- node[lbl]{nothing recent} (search);
+\draw[arr] (search) -- (filt);
 \draw[arr] (filt) -- (round);
 \coordinate (dl) at ($(rss.west)+(-5mm,0)$);
 \draw[thick] (rss.west) -- (dl);
 \draw[thick] (feeds.west) -- (dl |- feeds.west);
+\draw[thick] (pages.west) -- (dl |- pages.west);
 \draw[arr] (dl) |- (filt.west);
 
 % ---- Extraction ----

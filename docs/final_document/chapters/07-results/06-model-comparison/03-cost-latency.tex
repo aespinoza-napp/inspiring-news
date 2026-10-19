@@ -3,16 +3,60 @@
 %   Section: Model Comparison
 %     Subsection: Cost and Latency
 % Included from chapters/07-results/06-model-comparison/model-comparison.tex
-% Source: the "Cost, latency and tokens" sections of the X-Fact reports.
+% Source: the "Response time" and "Cost, latency and tokens" sections of
+% the reports (docs/decisions/evaluation.md, "Choosing the models").
 % ============================================================
 
-\subsection{Cost and Latency}
+\subsection{Cost and Response Time}
+\label{subsec:results-response-time}
 
-For the baseline on the X-Fact pilot, the harness recorded 63 model
-calls (one claim had no evidence and was not sent to the model), none
-failed, with 2,141 prompt and 179 completion tokens per claim at the
-median, 28.3 completion tokens per second, and a model call of 5.6~s at
-the median (90th percentile 9.5~s, maximum 14.5~s) on the development
-laptop. Its per-token cost is zero; its cost is the machine's time.
-\pending{the same figures for the other verifier models, with the
-hosted model's price read from its provider on the day of the run.}
+Every model here is local and openly licensed: its per-token cost is
+zero, and its cost is the machine's time. Response time is therefore
+reported beside quality for every role, measured on the development
+machine's processor (no graphics card), each model alone on it: two
+runs at once share the processor, and their times are each other's
+waiting (Table~\ref{tab:response-time}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}llrr@{}}
+\toprule
+Role & Model & Median & 90th pct. \\
+\midrule
+Verifying a claim, whole & \texttt{llama3.2:3b} & 72.7 s & 94.8 s \\
+\quad evidence retrieval & & 9.0 s & 19.9 s \\
+\quad ranking & & 5.1 s & 6.9 s \\
+\quad the model, with its wait & & 55.6 s & 77.8 s \\
+\quad the model's answer alone & & 34.0 s & 48.9 s \\
+Verifying a claim, whole & \texttt{qwen3.5:4b} & 109.9 s & 130.5 s \\
+Writing a draft & \texttt{qwen3.5:4b} & \multicolumn{2}{c}{169 s (ca), 208 s (es)} \\
+Reviewing a draft & \texttt{qwen3.5:9b} & \multicolumn{2}{c}{200--224 s} \\
+Judging a text (benchmark) & \texttt{llama3.2:3b} & 28.1 s & --- \\
+Judging a text (benchmark) & \texttt{qwen3.5:4b} & 44.6 s & --- \\
+\bottomrule
+\end{tabular}
+\caption[Response time per role]{Response time per role on the
+development machine's processor, each model alone. A claim's stages are
+the pipeline's own events; the model's span includes waiting for the
+other claim's call (two claims at once, one model call at a time, as in
+production).}
+\label{tab:response-time}
+\end{table}
+
+The model is three quarters of a claim's time (77\% for the baseline),
+and about a third of its span is waiting for the other claim's call:
+retrieval and ranking together take 14 seconds. A faster verifier is
+therefore the only large speed-up left, and the candidate tried was
+slower as well as less accurate. End to end, an article of four claims
+took 184 seconds in the production stack on 1~October; a draft takes
+about three minutes and its review about three and a half more, with
+one model swap between them, since the production stack holds one model
+in memory at a time (Section~\ref{sec:dev-deployment}).
+
+For the X-Fact pilot of 13~October, on the development laptop's
+graphics card, the baseline's model call took 5.6~s at the median
+(90th percentile 9.5~s), 28.3 completion tokens per second against 5.2
+on the processor: the same model is about six times faster on a
+graphics card, which is the hardware choice the deployment's cost
+estimate does not yet include.

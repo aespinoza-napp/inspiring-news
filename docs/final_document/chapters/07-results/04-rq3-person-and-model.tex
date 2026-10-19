@@ -43,9 +43,48 @@ run.
 Jaccard of the AI's picks against the editor's, and the AUC of its score,
 blind against assisted.}
 
+\paragraph{Consistency: each against itself.} The protocol requires a
+fifth of the test half to be evaluated a second time
+(Subsection~\ref{subsec:custom-review}): 14 claims. The system's half of
+that requirement is done. The 14 were run through the pipeline again
+1~hour 51~minutes after the test run, with the same model and settings
+(Table~\ref{tab:consistency}). 13 of the 14 verdicts were the same
+twice --- $\kappa = 0.84$ [0.44, 1.00] --- although the evidence was
+not: the two runs' ranked sources overlapped by a mean Jaccard of 0.58,
+identically for 5 claims and not at all for 2. The one verdict that
+changed, \texttt{FALSE} then \texttt{TRUE} for a claim labelled
+\texttt{TRUE}, changed with entirely different evidence; no verdict
+changed on the same evidence. Over a short interval, then, the system's
+inconsistency comes from the web it searches rather than from the model,
+and it is small next to its disagreement with the labels. With 14
+claims the interval is wide, and two hours is not the week the
+annotator's re-label waits. The annotator's half --- the blind second
+label of the same 14 --- is still to be done.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Between two runs of the same 14 claims} & \textbf{n} & \textbf{Agreement [95\% CI]} & \textbf{$\kappa$ [95\% CI]} \\
+\midrule
+Final verdict & 14 & 92.9\% [78.6, 100] & 0.837 [0.440, 1.000] \\
+The model's raw verdict & 14 & 92.9\% [78.6, 100] & 0.837 [0.440, 1.000] \\
+First pass, before any second look & 14 & 92.9\% [78.6, 100] & 0.811 [0.000, 1.000] \\
+\bottomrule
+\end{tabular}
+\caption[Run-to-run consistency on the re-check sample]{Run-to-run consistency on the re-check sample
+(\texttt{reports/manual-test-recheck/consistency/}).}
+\label{tab:consistency}
+\end{table}
+\pending{The annotator's blind re-label of the same 14 claims: observed
+agreement and $\kappa$, beside the system's.}
+
 \paragraph{Verdicts: the pipeline against the annotator.} The
 verifier's agreement with the annotator is the $\kappa$ of the RQ2 runs
 on the reviewed custom set (Section~\ref{sec:results-rq2}), read against
-the annotator's self-agreement.
+the annotator's self-agreement. Before the review, on the test half it
+agrees with the 20 labels the annotator set on 6 and with the 35 the AI
+pass set on 19.
 \pending{$\kappa$ of the pipeline against the reviewed labels, beside
 the self-agreement ceiling and the AI pass's agreement.}

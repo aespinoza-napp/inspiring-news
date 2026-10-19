@@ -52,17 +52,93 @@ worst of this by construction: its claims are weeks old, not years, and
 its annotation rule restricts the gold label to evidence available at
 publication time.
 
-\paragraph{On the custom set.} The runs that answer RQ2 for
-constructive news --- the test split under the three evidence
-conditions, with natural and synthetic claims reported apart, retrieval
-recall against the annotator's links, and the stage attribution ---
-depend on two P0 items not yet done: the annotator's review of the 108
-labels proposed by the AI pass, and the frozen tuning/test split
-(Table~\ref{tab:priorities}). A run on unreviewed labels would measure
-the pipeline against another model.
-\pending{Table: accuracy, macro-$F_1$ and $\kappa$ with intervals on
-the custom test split --- closed-book, retrieved and oracle evidence;
-natural and synthetic apart; by language and topic group. Retrieval:
-link and domain recall at candidates, ranked and cited, and MRR. Stage
-attribution under both rules, with the disagreements. Claims set apart
-(search or model unreachable) by identifier.}
+\paragraph{On the custom set: the test half.} The split was frozen on
+19~October (Subsection~\ref{subsec:custom-split}) and the pipeline run on
+both halves the same day: \texttt{llama3.2:3b} on a processor without a
+graphics card, the corpus snapshot, every claim scored and none set
+apart. Every decision --- here, whether to turn on the second look --- was
+taken on the tuning half before the test half's report was read.
+Table~\ref{tab:custom-test} gives the test half; its headline is the
+default pipeline, the first pass.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \textbf{n} & \textbf{Accuracy [95\% CI]} & \textbf{Macro-$F_1$} & \textbf{$\kappa$ [95\% CI]} \\
+\midrule
+All claims        & 70 & 52.9\% [41.4, 64.3] & 0.227 & 0.195 [0.035, 0.359] \\
+Natural claims    & 55 & 45.5\% [32.7, 58.2] & 0.164 & $-0.013$ [$-0.104$, 0.078] \\
+Synthetic \texttt{FALSE} & 15 & 80.0\% [60.0, 100] & --- & --- \\
+English / Spanish & 47 / 23 & 51.1\% / 56.5\% & 0.279 / 0.286 & 0.191 / 0.199 \\
+\midrule
+Tuning half, for reference & 69 & 44.9\% [33.3, 56.5] & --- & --- \\
+\bottomrule
+\end{tabular}
+\caption[The custom set's test half, first pass]{The custom set's test half, first pass, against the gold labels
+(\texttt{backend/data/evaluation/reports/manual-test/}). Percentile
+bootstrap intervals over claims, 10{,}000 resamples.}
+\label{tab:custom-test}
+\end{table}
+
+Three findings. \textbf{On the natural claims the pipeline agrees with
+the labels no better than chance} ($\kappa = -0.01$): it answered
+\texttt{FALSE} to 18 of the 46 \texttt{TRUE} claims, the lean towards
+\texttt{FALSE} that the X-Fact pilot showed. \textbf{It catches the
+synthetic refuted claims} --- 12 of 15 --- whose evidence plainly
+contradicts a substituted figure or date. And \textbf{the labels' source
+matters}: on the 20 natural claims the annotator labelled the pipeline
+agrees with gold on 6 (30\%), on the 35 the AI pass labelled on 19
+(54\%). The samples are small and the intervals overlap, but the
+direction is the one a gold set labelled by a language model invites
+--- a second model agreeing with the first --- and is why the
+annotator's review of those labels (Section~\ref{sec:results-rq3})
+comes before any of these numbers is final.
+
+\textbf{Retrieval} found evidence for every claim (4.9 ranked sources
+from 21 candidates), but rarely the annotator's: the annotator's link
+was among the candidates for 14.5\% of the claims, ranked for 8.7\% and
+cited for 5.8\%; the annotator's domain among the candidates for 34.8\%,
+ranked for 23.2\% and cited for 13.0\%.
+
+\paragraph{The tuning loop and the second look.} On the tuning half
+every claim whose verdict disagreed with gold --- 38 of 69 --- was
+looked at again (Subsection~\ref{subsec:tuning-loop}):
+
+\begin{itemize}
+    \item \textbf{9 fixed} by the second look: a second search, planned
+    from what the first verdict said was missing, found the evidence.
+    \item \textbf{8 retrieval errors}: still wrong after the second look,
+    but right when judged on the annotator's own pages --- the decisive
+    source exists and the search never found it.
+    \item \textbf{15 for a person to decide}: on the annotator's own
+    pages the model gives the pipeline's verdict again. They are mostly
+    the model's: a \texttt{TRUE} label judged \texttt{FALSE} (5), a
+    synthetic \texttt{FALSE} judged \texttt{TRUE} on its source's
+    evidence (4, the substitution unnoticed), an \texttt{UNVERIFIED}
+    label judged \texttt{FALSE} (3); several explanations restate the
+    claim as supported and conclude \texttt{FALSE}.
+    \item 2 reasoning errors (a third verdict on the annotator's pages),
+    2 claims whose pages could not be read and 2 without pages.
+\end{itemize}
+
+Had the gold label chosen which claims get a second look, accuracy would
+have risen from 44.9\% to 58.0\%. The pipeline cannot use the gold
+label; its own trigger --- a verdict \texttt{UNVERIFIED} or below 0.5
+confidence --- fired on 15 claims and gained 2.9 points [$-2.9$,
+$+8.7$], fixing 3 claims and breaking 1. That gain does not exclude
+zero and costs a second look on a fifth of the claims, so the second
+look was left off by default. On the test half, where the pipeline took
+its second looks itself, it fired on 17 claims and changed the accuracy
+by 0.0 points [$-4.3$, $+4.3$], one claim fixed and one broken: the
+decision held. The loop's diagnosis says where the next points are. The
+model is wrong with confidence more often than it is unsure, so a trigger
+on doubt cannot find most of its errors; and on the annotator's own
+evidence it still contradicts 15 labels, most of them correct. The
+larger error is the 3-billion-parameter verifier's reasoning, which the
+model comparison (Section~\ref{sec:results-models}) addresses, not the
+search.
+\pending{Closed-book and oracle conditions on the test half; stage
+attribution under both rules; all three after the annotator's review of
+the AI-proposed labels.}

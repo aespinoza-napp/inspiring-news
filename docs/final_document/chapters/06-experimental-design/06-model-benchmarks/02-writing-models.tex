@@ -58,9 +58,29 @@ makes 30 pairs, 15 per language.
     rubric cannot separate.
 \end{enumerate}
 
-The local baseline is compared with one hosted provider, each paired
-against the baseline over the pairs both scored. With 30 pairs an
-interval of about $\pm15$ points is expected, so only large
-differences will show. Two defects of the corrector were found while
-building the benchmark and fixed: a null list of issues lost all five
-metrics, and a missing score counted as a judgement of zero.
+The local baseline is compared with the other local candidates, and
+with one hosted provider if time allows, each paired against the
+baseline over the pairs both scored. With 30 pairs an interval of about
+$\pm15$ points is expected, so only large differences will show. Two
+defects of the corrector were found while building the benchmark and
+fixed: a null list of issues lost all five metrics, and a missing score
+counted as a judgement of zero.
+
+\paragraph{The draft reviewer, on seeded drafts.} The benchmark judges
+free text; the reviewer of the writing flow
+(Section~\ref{sec:dev-writing}) judges a draft against the sources it
+was written from, and proposes a correction that is offered only if it
+passes the checks. It is tried apart, on the two drafts seeded with
+defects on 15~October, one English and one Catalan (the Catalan one as
+a test keeps it, the English one rebuilt from the record of that day),
+with the same two sources and fact-checks: in English a spelling error (``it's'' for
+``its''), a figure the cited source contradicts (3 million euros where
+it says 1.2), a claim the fact-checks judged \texttt{FALSE} stated
+uncited, an eight-character title and no subtitle; in Catalan a spelling
+error (``esta'' for ``està'') and the same \texttt{FALSE} claim. A
+defect counts as found when an issue the \emph{model} raised names it,
+read from its answer before the deterministic checks bind the scores;
+each draft is reviewed twice per model. Counted too: the seconds and
+tokens per call, whether every metric parsed, and whether the correction
+was offered or why not. Issues the model invented are read by a person.
+The script is \texttt{scripts/try\_reviewer\_model.py}.

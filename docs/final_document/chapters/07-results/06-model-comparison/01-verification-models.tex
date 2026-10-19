@@ -3,17 +3,69 @@
 %   Section: Model Comparison
 %     Subsection: Verification Models
 % Included from chapters/07-results/06-model-comparison/model-comparison.tex
+% Source: docs/decisions/evaluation.md, "Choosing the models" (2026-10-19);
+% reports/manual-train/{llama3.2-3b,qwen3.5-4b,qwen3.5-9b}/.
 % ============================================================
 
 \subsection{Verification Models}
+\label{subsec:results-verifier-models}
 
-Only the baseline, \texttt{llama3.2:3b}, has been run, on X-Fact
-(Section~\ref{sec:results-pilot}). The comparison of
-Subsection~\ref{subsec:benchmark-verification} --- the baseline, a local
-model of about 8 billion parameters and one hosted model on the custom
-test split --- is a P1 item and waits for the reviewed labels and the
-frozen split.
-\pending{the models side by side (\texttt{cli table}): accuracy,
-macro-$F_1$, coverage, selective accuracy and $\kappa$ with intervals,
-invalid outputs, claims set apart; each paired against the baseline;
-and the default model chosen on that evidence.}
+The verifier was compared on the train half of the custom set
+(Subsection~\ref{subsec:benchmark-verification}), each model alone on
+the development machine's processor, the Qwen models with their
+reasoning mode off. Two conditions were run: each model with the
+pipeline's own search, and each model on the annotator's own reference
+pages, the same evidence for every model, so that the models differ by
+their reading alone (Table~\ref{tab:verifier-models}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Train half, 69 claims & \texttt{llama3.2:3b} & \texttt{qwen3.5:4b} & \texttt{qwen3.5:9b} \\
+\midrule
+Accuracy, own search & 44.9\% & 30.4\% & not run \\
+Accuracy, the annotator's pages & 55.1\% & 34.8\% & 56.5\% \\
+\quad paired against the baseline & --- & $-20.3$ [$-34.8$, $-5.8$] & $+1.4$ [$-11.6$, $+14.5$] \\
+$\kappa$, the annotator's pages & 0.190 & 0.168 & 0.307 \\
+Right when it commits & 55.6\% & 39.6\% & 72.9\% \\
+The model's answer, median (s) & 21.7 & 30.6 & 61.4 \\
+\bottomrule
+\end{tabular}
+\caption[The verifier models compared]{The verifier models on the train
+half: with each model's own search, and on the annotator's own pages
+(the oracle condition), where the evidence is the same for every model.
+Intervals are paired 95\% bootstrap intervals over claims.}
+\label{tab:verifier-models}
+\end{table}
+
+\paragraph{The baseline stays.} With its own search \texttt{qwen3.5:4b}
+scored 14.5 points below the baseline ($[-29.0, 0.0]$); on the
+annotator's pages, 20.3 points below, an interval that excludes zero.
+Two runs of the baseline on the same half differ by $-2.9$ points
+($[-10.1, +4.3]$; 87\% of verdicts the same, $\kappa$ 0.76), so both
+gaps lie beyond the noise of the comparison. The pipeline's guardrails
+changed only 6 of its 69 answers; the rest is its reading. It answers
+\texttt{UNVERIFIED} when the pages do not repeat the claim and
+\texttt{PARTIALLY\_TRUE} for details the claim does not make --- one
+claim was marked partially true because its pages did not mention a
+larger diagram the claim never mentioned. \texttt{qwen3.5:9b}, on the same pages, was as accurate as the baseline
+($+1.4$ points, $[-11.6, +14.5]$) but far more careful: it left 21
+claims \texttt{UNVERIFIED} and answered \texttt{FALSE} to 6 true ones,
+where the baseline did to 14, so the verdicts it committed to were right
+72.9\% of the time against 55.6\% ($+17.4$, $[+2.7, +32.0]$), at three
+times the model's time. Its own search was not run. By the rule
+written before the runs --- accuracy, then speed --- the baseline
+remains the verifier. The rule leaves one decision open: if a wrong
+verdict costs more than an honest \texttt{UNVERIFIED}, as a
+fact-checker's purpose suggests, the 9B model is the better verifier,
+and its run with its own search is the one that would settle it.
+
+\paragraph{What retrieval costs.} The same comparison measures RQ2's
+second gap on the train half: the baseline on the annotator's pages
+against its own search, $+10.1$ points ($[-2.9, +24.6]$), macro-$F_1$
+$+0.142$ ($[+0.002, +0.257]$). Even on those pages it answers
+\texttt{FALSE} to 14 of 45 true claims: the lean the tuning loop found
+is the model's. The test half's three conditions are left
+(Table~\ref{tab:priorities}, P0.5).

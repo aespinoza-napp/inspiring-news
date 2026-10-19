@@ -1,0 +1,74 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Evaluation Harness
+%     Subsections: The Tuning Loop; Run-to-Run Consistency
+% Included from chapters/06-experimental-design/04-evaluation-harness/evaluation-harness.tex
+% Sources: backend/src/evaluation/runner.py (HarnessRunner._loop),
+% loop.py, consistency.py; docs/decisions/evaluation.md, "The second
+% look", "Consistency".
+% ============================================================
+
+\subsection{The Tuning Loop}
+\label{subsec:tuning-loop}
+
+On the tuning half of the custom set, and only there, every claim goes
+through a loop after its first verdict (\texttt{run --loop}). The loop
+asks of each disagreement with the gold label whether a second attempt
+fixes it, and if not, whether the claim or the system is at fault:
+
+\begin{enumerate}
+    \item \textbf{Verify.} The claim is checked as the pipeline checks
+    it. If the verdict equals the gold label, and the pipeline's own
+    trigger would not fire, the claim is done.
+    \item \textbf{Look again.} Otherwise the claim gets a second look
+    (Subsection~\ref{subsec:second-look}). If the second verdict equals
+    the gold label, the claim is \emph{fixed}: the evidence was on the
+    web, and the first search did not find it.
+    \item \textbf{Check the claim itself.} If it still disagrees, the
+    claim is judged once more, with no search, against the annotator's
+    own evidence links --- the pages the gold label was set from, the
+    ``oracle'' evidence condition of FEVER and AVeriTeC
+    \cite{thorne2018fever,schlichtkrull2023averitec}. If on those pages
+    the model reaches the gold label, the error is the
+    \emph{retrieval}'s: the decisive source exists and the search never
+    found it. If it gives the same verdict the pipeline gave, the model
+    and the label disagree on the same evidence, and a person decides
+    which is wrong (\emph{adjudicate}); a third verdict is a
+    \emph{reasoning} error.
+\end{enumerate}
+
+The outcomes are reported with the claims behind each, and the
+\emph{adjudicate} list goes to the annotator's review of the AI-assisted
+labels (Subsection~\ref{subsec:custom-procedure}): a gold set an LLM
+helped to label is the first thing the loop can find wrong. The loop
+uses the gold label to choose which claims to look at again, so its
+accuracy is an upper bound, not a score. What decides whether the second
+look is turned on is the other number it reports: the accuracy obtained
+when the second verdict replaces the first wherever the pipeline's own
+trigger fires, without gold, paired over the same claims, with the
+claims it fixes and the claims it breaks. Only that rule, chosen on the
+tuning half, is run on the test half.
+
+\subsection{Run-to-Run Consistency}
+\label{subsec:consistency}
+
+The fifth of the test half that the annotator labels twice
+(Subsection~\ref{subsec:custom-review}) is also run through the system
+twice, with the same model, thresholds and corpus snapshot, at a later
+time. The two runs are compared over the claims both scored:
+
+\begin{itemize}
+    \item \textbf{Verdict agreement and Cohen's $\kappa$} between the
+    runs, with percentile bootstrap intervals, and the confusion of one
+    run's verdicts by the other's --- on the scale of the annotator's
+    self-agreement, so the two can be read side by side; and the same
+    for the model's raw verdict before recalibration.
+    \item \textbf{Where a change came from}: the overlap of the two
+    runs' ranked evidence for each claim (Jaccard over normalised
+    addresses). A verdict that changed on the very same evidence is the
+    model's own variation; one that changed with the evidence comes from
+    the web, which changed between the two runs.
+    \item \textbf{Whether it matters}: each run's accuracy against the
+    gold labels on the same claims, and the paired difference --- two
+    runs can disagree on a claim and both be wrong.
+\end{itemize}

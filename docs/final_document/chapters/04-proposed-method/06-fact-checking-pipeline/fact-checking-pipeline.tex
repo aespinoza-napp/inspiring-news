@@ -29,7 +29,7 @@ checked by rules that do not depend on the model's own judgement.
     st/.style={draw, rounded corners=2pt, font=\footnotesize, align=left,
                text width=8.2cm, minimum height=7mm, fill=ganttplan!15,
                inner sep=3pt},
-    out/.style={st, fill=black!6, text width=3.6cm, dashed},
+    outcome/.style={st, fill=black!6, text width=3.6cm, dashed},
     arr/.style={-{Stealth[length=2mm]}, thick},
     lbl/.style={font=\scriptsize\itshape, fill=white, inner sep=1pt,
                 align=right, text width=2.2cm},
@@ -41,9 +41,9 @@ checked by rules that do not depend on the model's own judgement.
 \node[st, below=of d] (e) {\textbf{5. Verification} --- closed verdict, cited sources, verbatim quotes};
 \node[st, below=of e] (f) {\textbf{6. Confidence recalibration} --- ungrounded verdicts downgraded};
 \node[st, below=of f] (g) {\textbf{7. Aggregation} --- the article takes its worst claim's verdict};
-\node[out, right=8mm of a] (x) {Rejected: no search, no model call; reasons stored};
-\node[out, right=8mm of c] (y) {\texttt{searchUnavailable}: every query failed};
-\node[out, right=8mm of e] (z) {\texttt{llmUnreachable}: the model never answered};
+\node[outcome, right=8mm of a] (x) {Rejected: no search, no model call; reasons stored};
+\node[outcome, right=8mm of c] (y) {\texttt{searchUnavailable}: every query failed};
+\node[outcome, right=8mm of e] (z) {\texttt{llmUnreachable}: the model never answered};
 \draw[arr] (a) -- (b); \draw[arr] (b) -- (c); \draw[arr] (c) -- (d);
 \draw[arr] (d) -- (e); \draw[arr] (e) -- (f); \draw[arr] (f) -- (g);
 \draw[arr] (a) -- (x); \draw[arr] (c) -- (y); \draw[arr] (e) -- (z);
@@ -57,7 +57,10 @@ dashed boxes are outcomes reported apart from the verdicts.}
 \end{figure}
 
 Stages~1 and~7 work on the article; stages~2 to~6 work on each claim,
-in that order and never overlapped, since each feeds the next. What the
+in that order and never overlapped, since each feeds the next. A claim
+whose verdict leaves stage~6 in doubt can, when the run enables it, go
+back through stages~3 to~6 once more with a second, wider search
+(Subsection~\ref{subsec:second-look}). What the
 evaluation measures is the claim-checking part, stages~3 to~6, through
 the same entry point the single-claim endpoint uses
 (Section~\ref{sec:harness}).
@@ -73,5 +76,7 @@ the same entry point the single-claim endpoint uses
 \input{chapters/04-proposed-method/06-fact-checking-pipeline/05-llm-verification}
 
 \input{chapters/04-proposed-method/06-fact-checking-pipeline/06-confidence-recalibration}
+
+\input{chapters/04-proposed-method/06-fact-checking-pipeline/06b-second-look}
 
 \input{chapters/04-proposed-method/06-fact-checking-pipeline/07-article-level-aggregation}

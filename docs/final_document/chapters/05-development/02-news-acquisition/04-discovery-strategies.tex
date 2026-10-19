@@ -8,28 +8,34 @@
 \subsection{Discovery Strategies}
 \label{subsec:scraping-discovery}
 
-Discovery tries three strategies per source, cheapest first, and stops
-at the first that returns links (Table~\ref{tab:discovery-strategies}).
-Every attempt is recorded under the purpose \texttt{discovery}, so a
-feed that starts failing appears on the monitoring page next to the
-articles it no longer delivers.
+Discovery tries up to four strategies per source, cheapest first, and
+stops at the first that returns recent links
+(Table~\ref{tab:discovery-strategies}). Every attempt is recorded under
+the purpose \texttt{discovery}, so a feed that starts failing appears
+on the monitoring page next to the articles it no longer delivers.
 
 \begin{table}[ht]
 \centering
 \small
-\caption{Discovery strategies, in the order they are tried.}
+\caption{Discovery strategies, in the order they are tried (since
+9~October~2026).}
 \label{tab:discovery-strategies}
 \begin{tabularx}{\linewidth}{@{}lXl@{}}
 \toprule
 Strategy & Tried when & Gives per link \\
 \midrule
-1. RSS feed            & Always, if the source has a feed URL.
-                       & time, title, summary \\
-2. Feed discovery      & The feed gave nothing: it is searched for on
-                         the feed URL and then on the homepage.
-                       & URL only \\
-3. Topic section pages & There is no feed at all.
-                       & URL only \\
+1. RSS feed              & Always, if the source has a feed URL.
+                         & time, title, summary \\
+2. JSON listing or news sitemap & The feed has nothing from the last
+                           30 days, and the source names one.
+                         & time, title \\
+3. Topic section pages   & Still nothing recent: the source's own
+                           section paths, or those its homepage links
+                           to, or guesses.
+                         & title \\
+4. Feed discovery        & Still nothing: a feed is searched for on the
+                           feed URL and then on the homepage.
+                         & URL only \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -43,11 +49,13 @@ and the AI selection reads before any article is opened. On
 4~October~2026, all 1,248 URLs from the 29 feeds that answered carried
 a time.
 
-\paragraph{Feed discovery.} When the configured feed yields nothing,
-\texttt{trafilatura}'s feed discovery looks for one, first on the
-configured feed URL and then on the homepage. It is lenient with
-malformed XML and finds the feed a site advertises today rather than
-the one it advertised when the source was configured.
+\paragraph{JSON listings and news sitemaps.} Two sources' feeds froze:
+the World Health Organization's newest item was from February~2026 and
+CNN's feed stopped in 2024. A source can name a JSON listing (WHO's news
+API, about thirty items a week) or a Google News sitemap (CNN's, 268
+articles of the last two days, with titles and times), read only when
+its feed has nothing recent and handed to the same filters in the
+feed's own shape.
 
 \paragraph{Topic section pages.} Four configured feed URLs were found
 to answer 404 (National Geographic, Reuters, RTVE and SINC), and their
@@ -59,7 +67,10 @@ configuration already names. The third strategy
 and keeps the article links on them:
 
 \begin{enumerate}
-    \item first, the sections the homepage itself links to (a short
+    \item first, the section paths the source's own configuration names
+    per topic group (Smithsonian's Environment candidates had all come
+    from a guessed \texttt{/food/} before it named its own);
+    \item then the sections the homepage itself links to (a short
     path, at most three segments, ending in a topic's section name), so
     that nothing is spent on a guess;
     \item then guesses, the base URL followed by a section name, one per
@@ -76,9 +87,18 @@ English feeds. A link is kept when it is on the source's host or one
 of its subdomains (NASA's science sections live on
 \texttt{science.nasa.gov}), is not itself a section, and passes the
 same article-shape test as feed links
-(Section~\ref{subsec:scraping-filters}). A section page gives no title
-or summary; the candidate list shows a title built from the link's
-slug and marks it as such.
+(Section~\ref{subsec:scraping-filters}). Each link carries the headline
+it is linked with on the section page (94 of ABC's 96 links, 59 of
+France~24's 59); only a link with no text gets a title built from its
+slug, marked as such. A section page gives no summary.
+
+\paragraph{Feed discovery, last.} \texttt{trafilatura}'s feed discovery
+looks for a feed on the configured feed URL and then on the homepage. It
+was the second strategy until 9~October; run for real it did worse than
+section pages --- ABC's homepage feeds gave a Culture round 38 untitled
+links from every section, and WHO's dead feed 21 items from 2024 and
+2025 --- so it is now tried last, drops off-mission and live links, and
+holds a narrowed Spanish source to a topic word in the link's slug.
 
 \paragraph{Stale feeds.} A feed whose items are all older than the
 age limit counts as empty, so the next strategy runs. RTVE's feed has
@@ -98,3 +118,7 @@ the dead feed again instead of crawling the sections: National
 Geographic, Reuters and SINC found nothing for a day. It was fixed on
 5~October, with a test that runs the strategy through
 \texttt{DiscoveryService} as discovery does rather than in isolation.
+The same bug was found again on 9~October in the step beside it:
+\texttt{trafilatura}'s feed discovery had inherited the feed reader too
+and had not run since 4~October, which is how it came to be measured
+and moved last.

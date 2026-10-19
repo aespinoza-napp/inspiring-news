@@ -63,3 +63,27 @@ metrics endpoint in Prometheus' format counts stages, outcomes, verdicts
 and empty or failed searches; and a health endpoint asks every
 dependency. On Google Cloud an agent ships both to Cloud Logging and
 managed Prometheus.
+
+\paragraph{Models in memory.} A writer model beside the verifier changes
+that sizing: a 7--9-billion-parameter writer at the 16k-token context a
+draft needs takes about 6--7~GB loaded, beside the verifier's 3~GB, on a
+machine already about 9.6~GiB resident. Three measures keep it within
+memory, each covering what the one before cannot. In production, Ollama
+holds one model at a time and unloads the idle one to load the other;
+since the backend sends one model call at a time anyway, the swap is
+paid only when a draft follows a verdict or the other way round, and the
+model container's memory cap follows the largest model rather than the
+sum. Every model the configuration names --- verifier, writer and
+reviewer, and the writer's long-context variant --- is pulled before the
+backend starts, and only the verifier is required, so a missing writer
+cannot stop verification. On the development machine a script brings up
+only the services an activity needs (analysing, writing, evaluating or
+labelling), stops the others --- the writer needs no graph database,
+the evaluation harness neither the graph nor the API --- and keeps
+exactly one model in memory, refusing to load one when the machine does
+not have its size and a margin free. On 19~October that machine, which
+has no graphics card, ran two evaluation runs at once with the verifier
+on its processor, each model call taking 40 to 75~seconds; the writer
+models were downloaded meanwhile and tried only afterwards, because a
+second model loaded between the runs' calls would have evicted the
+verifier on every one.

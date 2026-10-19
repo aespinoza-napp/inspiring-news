@@ -4,33 +4,53 @@
 %     Subsection: Verification Models
 % Included from chapters/06-experimental-design/06-model-benchmarks/model-benchmarks.tex
 % Source: docs/roadmap.md (Sprint 7; P1.4 of the thesis priorities);
-% docs/decisions/evaluation.md, "Metrics" (cli table).
+% docs/decisions/evaluation.md, "Metrics" (cli table) and "Choosing the
+% models" (2026-10-19).
 % ============================================================
 
 \subsection{Verification Models}
 \label{subsec:benchmark-verification}
 
-The verifier is compared across three models on the test split of the
-custom set (Table~\ref{tab:priorities}, P1): the local baseline,
-\texttt{llama3.2:3b}; a local model of about 8 billion parameters; and
-one hosted model reached through an OpenAI-compatible endpoint. Every
-other part of the pipeline is held fixed --- thresholds, weights,
-engines, corpus snapshot --- so the runs differ by the model alone, and
-each run's key records that they do.
+The verifier is compared across models on the custom set
+(Table~\ref{tab:priorities}, P1): the local baseline,
+\texttt{llama3.2:3b}; two openly licensed local models of the same
+family at two sizes, \texttt{qwen3.5:4b} and \texttt{qwen3.5:9b}, with
+their reasoning mode switched off; and, if time allows, one hosted model
+reached through an OpenAI-compatible endpoint. Every other part of the
+pipeline is held fixed --- thresholds, weights, engines, corpus
+snapshot --- so the runs differ by the model alone, and each run's key
+records that they do, the reasoning mode included: a hybrid model told
+not to think and the same model thinking answer differently under one
+name.
 
-Each model is one harness run. The models are set side by side, one
-row each, with accuracy and macro-$F_1$ and their intervals, coverage,
-selective accuracy, Cohen's $\kappa$, invalid outputs, claims set
-apart, median seconds per claim, tokens per claim and per second, and
-the cost per hundred claims. Each later model is paired against the
-baseline over the claims both scored. With about a hundred test claims
-a paired interval of roughly ten points is expected, so only large
-differences will separate models; two whose paired interval includes
-zero are not separated by this set, and the cheaper or faster one is
-preferred. The default model is then chosen on that evidence, and the
-confidence weights may be re-tuned for it on the tuning split.
+\paragraph{Chosen on one half, reported on the other.} Since the split
+of Subsection~\ref{subsec:custom-split} exists, the models are compared on the
+\emph{train} half, and the one chosen is then run once on the
+\emph{test} half to report it; the test half chooses nothing. The rule
+was written before any candidate's result was read: a candidate replaces
+the baseline when its accuracy gain's paired 95\% interval over the
+claims both runs scored lies above zero; when the interval includes
+zero, the faster model is kept. With 69 claims a paired interval of
+roughly ten points is expected, so only large differences separate
+models. Two runs of the same model already differ --- the run-to-run
+consistency of Subsection~\ref{subsec:consistency} and Table~\ref{tab:consistency} --- so a
+small gain is not read as one.
 
-The same three runs are repeated under the evidence conditions of RQ2
---- no evidence, retrieved evidence, the annotator's evidence --- only
-for the baseline, so that the cost of the comparison stays within the
+\paragraph{What is set side by side.} Each model is one harness run.
+The models are set side by side, one row each, with accuracy and
+macro-$F_1$ and their intervals, coverage, selective accuracy, Cohen's
+$\kappa$, invalid outputs, claims set apart, tokens per claim and per
+second, the cost per hundred claims, and the \textbf{response time}: the
+seconds a claim takes at the median and the 90th percentile, and the
+model's own answer time per call. A run's report breaks the claim's time
+into its stages --- the claim's entities, evidence retrieval, ranking,
+the model's verdict, and a second look where one was taken --- with each
+stage's share. The model's span includes waiting for its turn at the
+model; the answer time does not; the gap between them is a busy model,
+not a slow one. Response times compare only between runs made alone on
+the machine, and each model is run alone.
+
+The same models are repeated under the evidence conditions of RQ2 ---
+no evidence, retrieved evidence, the annotator's evidence --- only for
+the chosen one, so that the cost of the comparison stays within the
 plan.

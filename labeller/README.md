@@ -7,6 +7,7 @@ does not need the backend, Docker or the frontend running.
 ```bash
 python labeller/app.py          # opens http://127.0.0.1:8765
 python labeller/app.py join     # when the set is finished
+python labeller/app.py split    # freeze the train/test halves (done 2026-10-19)
 python labeller/app.py mutate fact030 --kind date \
     --claim "...from October 14-18, 2026." --note "..."   # a synthetic FALSE
 ```
@@ -54,6 +55,24 @@ the summary's `staleMutations` lists any whose source has since been
 relabelled. The harness reports natural and mutated claims apart
 (`origin`). Thesis §6.3, "Synthetic Refuted Claims".
 
+## Split
+
+`python labeller/app.py split` divides the set into a tuning half
+(`train`) and a test half (`test`), and writes each fact's `split` and
+`backend/data/evaluation/split.json`. Frozen on 2026-10-19: 69 / 70.
+
+- Facts of one article, and a synthetic FALSE with its source, go to
+  the same side (`split_groups`).
+- Each side holds its share of every verdict in each language and of
+  every topic group (`assign_splits`, iterative stratification over
+  groups); ties by SHA-256 of the group's first id. Nobody chooses.
+- Frozen: a relabelled fact keeps its side, and running `split` again
+  moves nothing. Once `split.json` exists, a new fact gets its side when
+  it is saved - its article's, or the one its strata are short of.
+- `split.json`'s `recheck` is the review sample below, a fifth of the
+  test half: what the annotator labels again, and what the harness runs
+  again (`--sample recheck`).
+
 ## Join
 
 `python labeller/app.py join` re-validates every file and writes them,
@@ -87,9 +106,10 @@ later edit.
   cells, 6 facts each, 150 total; 100 is the floor), and every fact with
   an Edit button. After a save the article's fields (URL, outlet,
   claimant, date, language, topic) stay filled for its next claim.
-- **Review 20%**: `ceil(20%)` of the facts, chosen by a hash of their
-  file name, labelled again **blind** (no first label, note or own-source
-  flag). Reports observed agreement and Cohen's kappa on the *first*
+- **Review 20%**: `ceil(20%)` of the test half (of every fact, before
+  the split was frozen), chosen by a hash of their id, labelled again
+  **blind** (no first label, note or own-source flag) - 14 facts since
+  2026-10-19, the same ones the pipeline is run on twice. Reports observed agreement and Cohen's kappa on the *first*
   label, so correcting a fact afterwards cannot inflate it.
 
 ## The rules it enforces

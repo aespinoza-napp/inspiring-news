@@ -4,6 +4,8 @@ The plan, and what is true of it **today**. Every checkbox below was checked
 against the code, not against the plan. `[x]` means done *and* working as
 described; anything less is `[ ]` with a note saying exactly how far it got.
 
+- **Oct 19 (the author's four goals):** the custom set **split 50/50** and frozen (69 train / 70 test; grouped by article, stratified by verdict x language and topic group; `split.json`), P0.4 done. The blind 20% re-label now a fifth of the test half (14 facts), and the same 14 **run twice through the pipeline**: 13 of 14 verdicts the same, kappa 0.84 [0.44, 1], the one change the web's. **The second look** (a second search for a verdict in doubt) and **the tuning loop** built; on train it fixed 9 of 38 disagreements, found 8 retrieval misses and 15 claims for a person, and its trigger gained +2.9 points [-2.9, +8.7] - left off; on test +0.0. **The test half, first pass: 52.9% [41.4, 64.3]; natural claims kappa -0.013**, the 3B model's FALSE lean. Writer models: Qwen3.5 4B/9B pulled and tried with thinking off per model (`LLM_REASONING_EFFORT`): both cite every sentence and state neither withheld claim (llama3.2:3b: no citation, 3 of 4); **`qwen3.5:4b` recommended** - ~3 min a draft on the CPU, 3.7 GB, the better Catalan (the 9B wrote "litigi" for *liti*); one model in Ollama at a time in production, every configured model pulled before the backend starts, `scripts/stack.sh` per activity on the dev machine. This machine has no GPU: every LLM call 40-75 s.
+- **Oct 19, afternoon (models by measurement, response time, the hours):** each role's model tried, each alone on the CPU, by a rule written before any result (`evaluation.md`, "Choosing the models"). **Verifier: `llama3.2:3b` stays.** On the train half `qwen3.5:4b` (thinking off) scored 30.4% to its 44.9% with its own search and 34.8% to 55.1% on the annotator's own pages (`run --oracle`, new: the same evidence for every model; -20.3 [-34.8, -5.8]), slower too; two runs of the 3B differ by -2.9 [-10.1, +4.3] (87% the same verdict), the noise floor. `qwen3.5:9b` on the same pages was as accurate (+1.4) and far more careful - right on 72.9% of the verdicts it committed to against 55.6% (+17.4 [+2.7, +32.0]), FALSE to 6 true claims against 14 - at three times the time: **the rule keeps the 3B; whether a wrong verdict costs more than an honest UNVERIFIED is the author's call**, and the 9B with its own search the run that would settle it. **Writer: `qwen3.5:4b`** (the morning's trial). **Reviewer: `qwen3.5:9b`** - all 10 planted defects of the seeded drafts and every metric parsed, against 6 and 5 for the 4B and the 3B (`scripts/try_reviewer_model.py`), ~3.5 min a review. **Response time** is now a metric of every report (each stage's median, p90 and share; `/evaluation` shows the seconds a claim took): the 3B alone, a claim 73 s, 77% of it the model. Found on the way: the corrector read only top-level JSON, and `qwen3.5:4b` nests each metric inside the one before (`WRITING_VERSION` 2); the production pull script now serves the reviewer at 16k too (`CORRECTOR_LLM_BASE`). **Hours rebalanced** (below): the reader 10 -> 30h, the paper 35 -> 55h.
 - **Oct 16, afternoon (performance):** measured on the dev CPU, `docs/decisions/inference.md` §"Where the CPU time went": bge-m3 now encodes one text at a time (`EMBEDDING_BATCH_SIZE=1`; the ranker's 8-page request 9.4 → 6.8 s, 7.3 → 4.2 s with real lengths, same vectors); enrichment embeds the article once (the topic classifier re-embedded it); the claim extractor's 37 entity requests per article are one (2.7 → 1.5 s, same claims); the corpus search reuses the retriever's claim vector; sightings are not rewritten when nothing is new. **Fixed, an error:** GLiNER truncated a whole article to its first 384 tokens (5 entities found where its sentences hold 52); long texts are now read in sentence chunks. Enrichment of a 5,700-character article 17.2 → 14.1 s while reading all of it. 1,760 backend tests pass with `inference/` up.
 - **Oct 15 (outside the freeze, the author's decision):** the writing flow - write a new article from a publishable one (related news, its sources and fact-checks, closed world, Catalan/Spanish/English), review it on nine grounded metrics, rewrite it towards targets, publish it to the reader with the AI disclosed. `docs/decisions/writing.md`. `llama3.2:3b` measured unfit as writer (no citation in 4 of 4 drafts, an `UNVERIFIED` claim stated as fact in 3); a larger openly licensed model recommended, not measured. P1.3's evaluation (FActScore, ALCE) is not done.
 - **Oct 16 (audit, `docs/audit-2026-10-16.md`):** the thesis compiles for the first time (MiKTeX; every `tabularx` had failed on a `colortbl`/`array` mismatch), 135 pages, 60 of its 88 placeholders written from the repo's own records and 28 left, each naming the run or the fact it waits for; the results chapter follows the four RQs; bibliography 12 → 43. Fixed: 8 AI-labelled facts (fact094-107) without their `[AI label:` prefix, counted as human by `/evaluation`; production's inference limits (`INFERENCE_TIMEOUT=120`, `CLAIM_MAX_CONCURRENCY=2`, the pilot's finding); stale counts in the thesis (37 sources, 33 enabled) and in `evaluation.md`'s RQ table. Full check passes.
@@ -110,6 +112,23 @@ described; anything less is `[ ]` with a note saying exactly how far it got.
   | Dec 18–24 | — | — | — | final · 20 | 20 |
   | Dec 25–31 | paper · 35 | — | — | — | 35 |
 
+- **Rebalanced on Oct 19**, still 900h, the author's request ("add some
+  hours to the reader and rebalance"). The build-status page has carried
+  the budget since Oct 6 (evaluation 153h, the reader 10h after its four
+  tasks were built early); this rebalance is made on that budget:
+
+  | Bucket | Before | After | Why |
+  |---|---:|---:|---|
+  | Phase 6 · Reader view | 10 | 30 | +20, the author's decision: the reader in Catalan and Spanish (8), stories and checked articles in one feed with RSS and a sitemap (4), a reader's guide to the verdicts (2), an accessibility pass (3), five readers trying it (3). **Reverses the Oct 14 cut of "any further reader-view work".** |
+  | Phase 7 · Paper | 35 | 55 | +20, a new block Nov 17 – Dec 10: reading, owning and revising the 145 drafted pages before the draft goes to the director |
+  | Phase 5 · Sprint 7, verification models | 60 | 35 | -25: harness, split, second look and consistency built; the first model comparison ran Oct 19. Left: the test half, P0.5's three evidence conditions (10h, now a task here), one hosted model |
+  | Phase 5 · Sprint 6, writing models | 20 | 10 | -10: writer and reviewer tried Oct 19; left: one hosted provider |
+  | Phase 4 · Validation set | 60 | 55 | -5: the blind re-label is 14 facts (a fifth of the test half), 7h -> 2h |
+  | **Total** | **900** | **900** | |
+
+  From Oct 20, 233h remain planned: development 35 (infrastructure 15,
+  reader 20), evaluation 60, model testing 39, paper 55, testing 44.
+
 - **Verification used for "done"** is `./scripts/check.sh`: on Sep 28, 737
   backend tests passed (11 skipped, 2 slow ones deselected), 9 inference
   tests against the real models, the frontend typechecks, and the fact
@@ -212,10 +231,27 @@ built.
    it. Thesis §6.3 "Synthetic Refuted Claims". **Proposed by the AI
    pass: part of P0.2's review.** Set: 139 - 91 TRUE, 30 FALSE, 10
    UNVERIFIED, 7 PARTIALLY_TRUE, 1 MISLEADING.
-4. [ ] ✂️ **Freeze a tuning/test split before any run** · 1h - stratified by
-   label and language, ~1/3 tuning, ~2/3 test. Every threshold is tuned
-   on the tuning part only; tuning and reporting on the same facts
-   inflates the result.
+4. [x] ✂️ **Freeze a tuning/test split before any run** · 1h · Oct 19 -
+   **50/50, not ~1/3-2/3: the author's decision** (the pipeline learns
+   nothing from the facts; the tuning half needs disagreements to
+   decide on). `python labeller/app.py split`: grouped by article (a
+   synthetic FALSE with its source), stratified by verdict x language
+   and by topic group (the first draw, on verdict x language alone, put
+   all 21 culture facts in test), ties by hash, frozen in
+   `split.json`: 69 train / 70 test. The blind re-label sample is now a
+   fifth of the test half, 14 facts, run through the pipeline twice too
+   (`cli consistency`). Harness: `--split`, `--sample recheck`.
+   `docs/decisions/evaluation.md`, "The split"; thesis §6.3.
+4b. [x] 🔁 **The second look and its tuning loop** · Oct 19 (outside the
+   freeze, the author's request) - a second, wider search for a verdict
+   in doubt (`second_look.py`, off by default), decided on the train
+   half by `run --loop` (second look on every disagreement, then the
+   annotator's own pages: `fixed` / `retrieval` / `adjudicate` /
+   `reasoning`), measured on the test half. Built, tested and run
+   (Oct 19): +2.9 points [-2.9, +8.7] on train, +0.0 on test - **off by
+   default**. The 15 `adjudicate` claims feed P0.2; the 8 `retrieval`
+   ones say where search misses; the loop's diagnosis points at the 3B
+   verifier, not the search (`evaluation.md`, "The second look").
 5. [ ] 🧪 **The RQ1 runs on the test split** · 10h · Nov 1-15 - three
    conditions, one model: no evidence (closed-book), the pipeline's own
    retrieval, and **oracle evidence** (the annotator's reference links
@@ -274,7 +310,13 @@ built.
    validated by that hand check, not assumed.
 4. [ ] 🤖 **Two more verifier models** on the test split · 15h · Nov 22 - Dec
    5 - a local 8B and one hosted; `cli table`. Replaces Sprint 7's
-   broader plan.
+   broader plan. **Oct 19, the local half done early, on the train half**
+   (the split exists, so models are chosen there and only the chosen one
+   is reported on test): `qwen3.5:4b` and `qwen3.5:9b` against
+   `llama3.2:3b`, with each one's search and on the annotator's own
+   pages; the 3B stays by the rule, the 9B more careful at three times
+   the time. Left: a hosted model, and the 9B with its own search if the
+   author weighs a wrong verdict above an unverified one.
 5. [ ] 🗳️ **Person against model in selection (RQ3)** · 5h · Oct 20 - Nov 15
    - ten blind rounds (choose and send, then `blind-ai --round <id>`) and
    ten assisted ones; precision, recall, Jaccard, the AI score's AUC.
@@ -297,7 +339,7 @@ built.
 ### Cut, or future work
 
 The real Google Cloud deploy (it stays "designed and applied to an
-emulator"); any further reader-view work (done); Neo4j at scale;
+emulator"); reader-view work beyond the five tasks the Oct 19 rebalance funded; Neo4j at scale;
 `JobStore` eviction, cache expiry and URL normalisation unless one blocks
 a run; new discovery or selection features; frontend E2E tests; the
 topic classifier. Each is listed in the conclusions as future work, not
@@ -626,16 +668,18 @@ wire format as the providers kept and add the least that is new.
 
 ---
 
-## 💻 Phase 6 — Interface: Reader View (Dec 11–17) · 35h
+## 💻 Phase 6 — Interface: Reader View (Dec 11–17) · 30h (Oct 19)
 
 Before this sprint the frontend was an internal tool — eight pages (`/` analyzer, `/live`, `/claim`, `/enrich`, `/corrector`, `/scraper`, `/sources`, `/graph`). Since Oct 2, ahead of its week, it also has the reader view: `/reader` and `/reader/[id]`, over `GET /reader/articles` and `GET /reader/articles/{id}`.
 
-### Sprint 8 (Dec 11–17, one week) · 35h
+### Sprint 8 (Dec 11–17, one week) · 30h (Oct 19)
 
 60h → 40h on Sep 28 (validation set), 40h → 20h on Sep 29 (testing track),
 20h → 35h on Sep 30: the 15h Neo4j gave back, so the interface gets one
 full week. It comes after the benchmarks, so it shows the final model's
-output.
+output. 35h → 10h on the build-status page's Oct 6 rebalance, its four
+tasks built on Oct 2-4; **10h → 30h on Oct 19**, the author's request,
+for the five new tasks below (the week the director reads the draft).
 
 **Cut from scope on Sep 29:** user authentication, profiles, bookmarks and
 recommendations v1. The paper is about automating a journalist's
@@ -648,6 +692,11 @@ journalist or reader actually looks at.
 - [x] 🎨 Extend the existing hand-written CSS design system (no new UI libs) — Oct 2: a reader section in `globals.css`, through its variables only, reusing `.trace-*`, `.badge`, `.claim-verdict-*`; no new dependency. Measured with playwright in the system Chrome: no horizontal overflow at 375px on either page, light or dark; animations off under `prefers-reduced-motion`. The header's nav now wraps on a phone instead of running off it
 - [x] 🌍 The reader view is public (Oct 4) — Caddy serves `/reader`, `/reader/<id>`, their `/api/reader/*` proxies and the static bundles without the site password (on plain HTTP too when there is no domain); every other page still asks for it. On a reader page the nav's operator links no longer prefetch, or each visit would send nine requests answering 401. Checked in real `caddy:2.10.2` in both modes; `test_only_the_reader_view_is_served_without_the_password` holds the list.
 - ↪️ E2E test for the feed — in the testing track's final window (Dec 18–24), the week after
+- [ ] 🌐 The reader in Catalan and Spanish, not only English · 8h — the stories are written in ca/es/en and the page around them is English only (`<html lang="en">`, "Checked articles", the verdict names): labels per language, `lang` from the story's language, a switch kept in the URL like the filters; a dictionary per language, no i18n library
+- [ ] 📡 Stories and checked articles in one feed, with RSS and a sitemap · 4h — today they are listed apart; an RSS feed of the stories, a sitemap of the public pages, and metadata for `/reader/[id]` (the stories already have `generateMetadata`)
+- [ ] 📖 A reader's guide to the verdicts · 2h — what each label means here, why "Not checked" is not `UNVERIFIED`, what a confidence is and is not; linked from every badge; the measured accuracy once the labels are checked
+- [ ] ♿ Accessibility pass on the public pages (WCAG 2.1 AA) · 3h — keyboard and focus, verdict colours' contrast in both themes, names for badges and stance icons, 375 px with the language switch; checked in a browser's accessibility tree
+- [ ] 🧑‍🤝‍🧑 Five readers try it · 3h — five people who are not the author, three tasks each (why was this claim judged so; a FALSE against a "Not checked"; was this story written by a person): success, time, what confused them. RQ4 from the reader's side
 
 ---
 

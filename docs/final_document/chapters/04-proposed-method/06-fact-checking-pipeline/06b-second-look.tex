@@ -1,0 +1,54 @@
+% ============================================================
+% Chapter 4: Proposed Method: Specification and Design
+%   Section: The Fact-Checking Pipeline
+%     Subsection: The Second Look
+% Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
+% Source: backend/src/services/fact_checker/second_look.py;
+% docs/decisions/evaluation.md, "The second look".
+% ============================================================
+
+\subsection{The Second Look}
+\label{subsec:second-look}
+
+The first search for a claim is planned from the claim alone: who and
+what it names, what it asserts, and its refutation
+(Subsection~\ref{subsec:evidence-retrieval}). When those three queries
+find nothing usable the claim ends \texttt{UNVERIFIED}; when they find
+something thin, the model answers with low confidence. In both cases the
+model's own explanation usually says what was missing --- ``no source
+reports the 2024 figure'', ``the sources describe a different
+programme''. The second look turns that sentence into a second search.
+
+\begin{enumerate}
+    \item \textbf{Follow-up queries.} The model is given the claim, the
+    first verdict, its explanation and the titles of the sources it had,
+    and asked for at most three queries, in the claim's language, aimed
+    at what was missing: the original study or report, an official
+    figure, the organisation's own announcement, an independent report
+    of the same event. A model that writes none gets the claim itself as
+    its query, a sentence the first search never sent whole.
+    \item \textbf{Only new pages.} The queries go through the same
+    search, with the same concurrency and fusion, and only pages the
+    first pass never saw, on domains it did not already have, are kept;
+    the article itself never is.
+    \item \textbf{One judgement over both.} The first pass's evidence
+    and the new pages are ranked, gated, judged by the model and
+    recalibrated together, by the same code as the first pass. The
+    second verdict replaces the first, which stays on the claim with the
+    reason the second look was taken and the queries it sent, so a
+    reader can see that the verdict came from a second search.
+\end{enumerate}
+
+It fires only when a run enables it, and only on a verdict in doubt:
+\texttt{UNVERIFIED}, or a confidence below a threshold (0.5 by default).
+It never fires on an outage --- with no search or no model, a second
+search meets the same outage --- and never twice. It follows the
+iterative retrieval of FIRE \cite{xie2025fire} and the question
+generation of AVeriTeC's baseline \cite{schlichtkrull2023averitec},
+reduced to one extra round: on a processor without a graphics card each
+round costs a search, a handful of page fetches and two model calls.
+
+Whether it should be on is not assumed. It is decided on the tuning
+half of the custom set (Subsection~\ref{subsec:custom-split}) by the
+tuning loop of Subsection~\ref{subsec:tuning-loop}, and measured on the
+test half.

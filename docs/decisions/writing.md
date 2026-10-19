@@ -364,6 +364,97 @@ read - including the Catalan. The writing benchmark
 (`docs/decisions/evaluation.md`, "Writing-model benchmark") measures
 models as *editors*, not writers, and has not been run either.
 
+### The model, again (2026-10-19): newer candidates, thinking off, one in memory
+
+The table above was written from the model cards of 15 October. Four
+days later, checked again, from the cards and Ollama's library:
+
+- **Qwen3.5, small series** (February-March 2026): `qwen3.5:4b`
+  (3.3 GB at Q4_K_M) and `qwen3.5:9b` (6.6 GB), **Apache 2.0** (the card
+  says `apache-2.0`), **262,144 tokens of context natively**, "201
+  languages and dialects" (Catalan is not named on the card; that it is
+  among them is the first thing a trial reads). Both are **hybrid
+  reasoning models**: they think before answering unless told not to,
+  and Qwen3.5 dropped Qwen3's `/no_think` prompt switch ("does not
+  officially support the soft switch of Qwen3"). Through Ollama's
+  OpenAI endpoint the switch is `reasoning_effort: "none"`
+  ([Ollama: OpenAI compatibility](https://docs.ollama.com/api/openai-compatibility)),
+  which `LLMClient` now sends per model: `LLM_REASONING_EFFORT={"qwen3.5:4b": "none"}`.
+  Without it, every draft pays for the model's thinking first.
+- **Qwen3.6** (April 2026) and **Qwen3.8** (August 2026) are 27B and up:
+  17 GB at Q4 for the smallest, more than either machine has for one
+  model. Qwen3.7 shipped no weights.
+- **Salamandra** (BSC) and **Mistral** are as in the table above; Llama
+  and Gemma are still excluded by their licences.
+
+**The recommendation, in order** (from the cards; the trial below is the
+measurement):
+
+1. **`qwen3.5:4b`, thinking off, at a 16k context** - the writer for the
+   machines this project has: it fits a 4 GB GPU almost whole, runs on
+   a CPU at a speed a draft can wait for, and on the 16 GB VM it is the
+   only writer that leaves the verifier and the rest of the stack room
+   without swapping models on every call.
+2. **`qwen3.5:9b`, thinking off, at a 16k context** - where quality
+   matters more than minutes, or on a GPU with 8 GB or more. On the VM
+   only with one model in memory at a time (below).
+3. **`qwen2.5:7b-instruct`** - the 15 October first choice, kept as the
+   fallback that never thinks: no switch to get wrong.
+4. **Salamandra 7B** for Catalan first, served by llama.cpp with its own
+   base URL, if the Qwen models' Catalan reads badly.
+
+Serving one at a 16k context, without a download beyond its own:
+
+```
+printf 'FROM qwen3.5:4b\nPARAMETER num_ctx 16384\n' > Modelfile
+ollama create writer -f Modelfile
+# backend/.env
+WRITER_LLM_MODEL=writer
+LLM_REASONING_EFFORT={"writer": "none"}
+```
+
+In production the same is configuration only: `WRITER_LLM_BASE=qwen3.5:4b`
+and `WRITER_LLM_MODEL=writer` in `backend/.env`, and the `ollama-pull`
+one-shot pulls the base and creates the variant before the backend
+starts (`docker/ollama/pull-models.sh`).
+
+**Measured the same day** (`scripts/try_writer_model.py`, the committed
+CNN sample, one draft each in Catalan and Spanish, thinking off through
+`LLM_REASONING_EFFORT`, a 16k context from a Modelfile, on the dev
+machine's CPU - it has no GPU - after the evaluation runs had finished):
+
+| | `llama3.2:3b` (Oct 15) | `qwen3.5:4b` | `qwen3.5:9b` |
+|---|---|---|---|
+| Seconds a draft (ca / es) | 17-25 (on a GPU) | 169 / 208 | 351 / 256 |
+| Citations (ca / es) | none in 4 drafts | 14 / 26 | 22 / 21 |
+| Sentences without one | 9-20 a draft | 0 / 1 (an "EE. UU." the splitter cut) | 0 / 0 |
+| Metadata | missing in 2 of 4 | complete in both | complete in both |
+| The UNVERIFIED or FALSE claim stated | 3 of 4 | neither, in either | neither, in either |
+| Loaded (`ollama ps`) | | 3.7 GB at 16k | 6.7 GB at 16k |
+
+Both fix everything that ruled the 3B out. The Catalan is where they
+differ, read by a person on one sample: the 4B's has slips a reader
+sees ("la exposició", "durant el gestació", "la doctora David
+C. Bellinger", "Dància" once for Dinamarca); the 9B wrote **"litigi"**
+(a lawsuit) for *liti* (lithium) all through, and ran the article as one
+paragraph. Spanish was good from both. **So: `qwen3.5:4b`, thinking off,
+at 16k** - twice as fast on a CPU, half the memory, the better Catalan of
+the two on this sample - as the writer (`WRITER_LLM_MODEL=writer` from a
+`FROM qwen3.5:4b` Modelfile, `LLM_REASONING_EFFORT={"writer": "none"}`).
+One article per language is a trial, not a benchmark; the Catalan of
+any of them needs a person's reading before publishing, which the flow
+already requires.
+
+**Not running out of memory** (`docs/decisions/deployment.md`, "Models
+in memory"): production's Ollama now holds **one model at a time**
+(`OLLAMA_MAX_LOADED_MODELS=1`) and swaps on demand - the backend sends
+one LLM call at a time anyway - with its cap set for the largest model
+(`OLLAMA_MEM_LIMIT`, ~8g for the 9B). On the dev machine,
+`./scripts/stack.sh write [MODEL]` stops what writing does not need
+(Neo4j), unloads the verifier, pulls the writer if missing and loads it
+only if the host has room; `./scripts/stack.sh analyse` puts the
+verifier back.
+
 **On the production VM it will be slow, and it shares the LLM.** An
 estimate, not a measurement: `llama3.2:3b` took 31-53 s per verdict on
 a CPU (`docs/decisions/deployment.md`); a 7B model is roughly 2-2.5x
@@ -599,6 +690,50 @@ verdicts but not the excerpts, and its proposal changes facts. Set
 the brief allowed no pulls) and run the writing benchmark on it. Until
 then the deterministic checks are what holds, and no proposal reaches
 the article without a person accepting it.
+
+### The reviewer, measured (2026-10-19)
+
+`scripts/try_reviewer_model.py`: the real `DraftReviewer` over the two
+seeded drafts above (the Catalan one as the test keeps it, the English
+one rebuilt from this section's description), two reviews of each per
+model, each model alone on the CPU in the stack's Ollama, Qwen with
+thinking off. A defect counts as found when an issue the **model**
+raised names it, read from its answer before the checks bind the
+scores. Outputs: `backend/data/evaluation/writing/reviewer-trial/`.
+
+| | `llama3.2:3b` | `qwen3.5:4b` | `qwen3.5:9b` |
+|---|---|---|---|
+| Planted defects found (of 10) | 5 | 6 | **10** |
+| it's / esta (spelling) | 0 of 4 | 2 of 4 | **4 of 4** |
+| 3 million against [1]'s 1.2 | 1 of 2 | 1 of 2 | **2 of 2** |
+| The FALSE claim stated | 4 of 4 | 3 of 4 | **4 of 4** |
+| Metrics parsed (of 28) | 24 | 21 | **28** |
+| Corrections offered (of 4) | 0 | 2 | 2 |
+| Seconds a review (two calls) | 26-58 | 106-142; 488 once | 200-224 |
+
+- `llama3.2:3b` as on 15 October: grammar 100 over both typos, the
+  inverted scale (hallucinationIndex 0 with no issue named), its
+  corrections refused (no body; a dropped citation).
+- `qwen3.5:4b`: good when it answers; one of its four reviews was two
+  answers that were not JSON (the first 378 s and ~3,000 tokens long, a
+  model looping), so none of the seven metrics parsed. It invented a
+  little (that `[2]` does not mention 2025; that the Catalan subtitle
+  states the plastics claim).
+- `qwen3.5:9b`: every planted defect in every review, every metric
+  parsed. Invented: the Catalan subtitle stating the plastics claim
+  (twice), "citing source [1]" for the uncited FALSE sentence, a missing
+  full stop. Its English corrections were refused for adding a figure
+  (the safe side: the rule cannot tell 1.2 put right from a new number);
+  its Catalan ones offered.
+
+**Recommended reviewer: `qwen3.5:9b`** (`CORRECTOR_LLM_MODEL`), with the
+writing benchmark's verdict beside it (`docs/decisions/evaluation.md`,
+"Writing-model benchmark"). A different model from the writer, which
+the setting is kept apart for: a draft is not judged by the model that
+wrote it. The cost is time and memory: ~3.5 minutes a review on this
+CPU, 6.2 GB loaded (6.7 GB at the 16k context a long draft needs, so
+serve it from a Modelfile like the writer's), and with one model in
+memory a write-then-review swaps models once.
 
 ### Gaps in the contract
 

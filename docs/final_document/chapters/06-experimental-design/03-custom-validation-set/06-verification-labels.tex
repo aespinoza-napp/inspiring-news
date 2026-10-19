@@ -11,15 +11,20 @@
 The set is labelled by a single annotator, so inter-annotator
 agreement cannot be measured. What can be measured is
 \textbf{intra-annotator agreement}: whether the guide, applied by the
-same person at a different time, produces the same label. Once
-labelling is complete, 20\% of the records are labelled a second
-time:
+same person at a different time, produces the same label. Re-evaluating
+a sample is a requirement of the protocol, not an option: without it
+there is no way to tell a consistent label from one that would have come
+out differently on another day. Once labelling is complete, 20\% of the
+\emph{test half} (Subsection~\ref{subsec:custom-split}) is labelled a
+second time --- the claims the reported numbers rest on:
 
 \begin{itemize}
     \item \textbf{The sample is not chosen by the annotator.} It is
-    the first $\lceil 0.2\,n \rceil$ records in the order of a
-    cryptographic hash (SHA-256) of their identifier, which is fixed
-    in advance and independent of content.
+    the first $\lceil 0.2\,n \rceil$ records of the test half in the
+    order of a cryptographic hash (SHA-256) of their identifier, which
+    is fixed in advance and independent of content: 14 of the 70
+    test claims, listed in the split's record
+    (\texttt{split.json}, \texttt{recheck}).
     \item \textbf{The second pass is blind.} The review view shows
     the claim, its source article, dates, topic and evidence links,
     but not the first label, the \texttt{onlyOwnSource} flag or the
@@ -45,3 +50,14 @@ label proves wrong, the record is corrected. Agreement remains
 measured on the \emph{first} label, which the record keeps beside the
 second: correcting a record after its review must not turn a
 disagreement into an agreement.
+
+\paragraph{The same requirement, applied to the system.} A label can
+be inconsistent; so can a verdict. The pipeline searches a web that
+changes between two runs, through engines that answer differently from
+one request to the next, and a local model at temperature zero still
+varies. The same 14 claims are therefore also evaluated a second time
+by the system, with the same configuration, and the two runs are
+compared verdict against verdict (Subsection~\ref{subsec:consistency}).
+The annotator's self-agreement and the system's run-to-run agreement
+are both reported as Cohen's $\kappa$ on the same claims, so the two
+consistencies can be read side by side.

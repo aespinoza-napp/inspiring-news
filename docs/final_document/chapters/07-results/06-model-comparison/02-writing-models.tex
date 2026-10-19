@@ -7,11 +7,91 @@
 
 \subsection{Writing Models}
 
-The writing-model benchmark (Subsection~\ref{subsec:benchmark-writing})
-is built and tested but has not been run, and on 14~October it was moved
-to ``only if time is left'' because it answers none of the research
-questions. If it is not run, the conclusions record it as future work.
-\pending{only if run: the local baseline against one hosted provider on
-the corrector's five model-based metrics --- format compliance,
-detection with its interval, defect named, off-target drift,
-consistency, calibration --- each paired against the baseline.}
+\paragraph{The writer.}
+\label{subsec:results-writing-trial}
+The verifier, \texttt{llama3.2:3b}, was measured unfit to write: no
+citation in four drafts, and an unverified claim stated as fact in three
+(Section~\ref{sec:dev-writing}). Two openly licensed candidates were
+tried on 19~October with the same sample article, one draft in Catalan
+and one in Spanish each, on a processor with no graphics card, after
+the evaluation runs had finished (Table~\ref{tab:writer-trial}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+& \texttt{llama3.2:3b} & \texttt{qwen3.5:4b} & \texttt{qwen3.5:9b} \\
+\midrule
+Seconds a draft (ca / es) & 17--25 (GPU) & 169 / 208 & 351 / 256 \\
+Citations (ca / es) & none in 4 drafts & 14 / 26 & 22 / 21 \\
+Sentences with no citation & 9--20 a draft & 0 / 1 & 0 / 0 \\
+Metadata complete & 2 of 4 & 2 of 2 & 2 of 2 \\
+Withheld claim stated & 3 of 4 & none & none \\
+Memory loaded, 16k context & --- & 3.7 GB & 6.7 GB \\
+\bottomrule
+\end{tabular}
+\caption[The writer trial]{The writer trial: one sample article, the
+two Qwen3.5 models with their reasoning mode off, against the
+verifier's drafts of 15 October.}
+\label{tab:writer-trial}
+\end{table}
+
+Both candidates fix what ruled the 3B model out. Read by a person, their
+Spanish was good, and their Catalan decided between them: the 4B model's
+had slips a reader notices; the 9B model wrote ``litigi'' (a lawsuit)
+for \emph{liti} (lithium) throughout. The 4B model is recommended:
+twice as fast on a processor, half the memory, and the better Catalan
+on this sample. One article per language is a trial, not a benchmark,
+and the Catalan of either needs a person's reading before it is
+published, which the flow already requires.
+
+\paragraph{The reviewer.} The draft reviewer was tried on the two seeded
+drafts of Subsection~\ref{subsec:benchmark-writing}, twice each per
+model (Table~\ref{tab:reviewer-trial}). Only \texttt{qwen3.5:9b} found
+every planted defect --- both spelling errors, the contradicted figure,
+the claim judged \texttt{FALSE} --- and every one of its answers could
+be read. The 3B model found no spelling error in four reviews and
+scored the hallucination metric on an inverted scale; the 4B model was
+good when it answered, but one of its reviews was two answers that were
+not JSON at all. The 9B model still invents a little (twice, that the
+Catalan subtitle states the false claim), and its English corrections
+were refused for adding a figure --- the check cannot tell a figure put
+right from a new one, and keeps to the safe side. It is the recommended
+reviewer: a different model from the writer, as the setting is meant,
+at about three and a half minutes a review on a processor.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+& \texttt{llama3.2:3b} & \texttt{qwen3.5:4b} & \texttt{qwen3.5:9b} \\
+\midrule
+Planted defects found (of 10) & 5 & 6 & 10 \\
+Spelling errors found (of 4) & 0 & 2 & 4 \\
+Metrics parsed (of 28) & 24 & 21 & 28 \\
+Corrections offered (of 4) & 0 & 2 & 2 \\
+Seconds a review & 26--58 & 106--142, 488 once & 200--224 \\
+\bottomrule
+\end{tabular}
+\caption[The reviewer trial]{The draft reviewer on the two seeded drafts,
+twice each: defects found by the model itself, before the deterministic
+checks bind the scores.}
+\label{tab:reviewer-trial}
+\end{table}
+
+\paragraph{The editor.} The writing-model benchmark
+(Subsection~\ref{subsec:benchmark-writing}) was run on 19~October for
+the three local models, one repeat each. The 3B model answered every
+text usably (100\%) and detected the planted defect in 80\% of pairs
+($[72, 88]$), a defect lowering its metric by only 3 to 46 points. The
+4B model's first run fell under the format gate (80\%) while detecting
+93\% ($[82, 100]$) of the pairs it scored: seven of its eight failures
+were answers that nested each metric inside the one before, valid JSON
+with every score in it, which the corrector read at the top level only.
+The reader was corrected, and the 4B model's re-run and the 9B
+model's run were started; both were stopped unfinished on 19~October
+and resume where they stopped.
+\pending{the 4B model's re-run under the corrected reader and the 9B
+model's run: format compliance and detection, paired against the 3B.}

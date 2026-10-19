@@ -491,8 +491,9 @@ replication, which loses nothing for a few random strings. On
 - **`restart: unless-stopped` and log rotation** (json-file, 5 × 10MB)
   everywhere. One four-claim analysis wrote 140 lines, 20KB.
 - **The LLM is a service:** `ollama`, pinned, model kept loaded, one
-  request at a time; `ollama-pull` fetches `LLM_MODEL` before the backend
-  starts.
+  request at a time, **one model in memory at a time** (since
+  2026-10-19, below); `ollama-pull` fetches every model `backend/.env`
+  names before the backend starts (`docker/ollama/pull-models.sh`).
 - **The LLM limits for a CPU** (above) and **memory caps** from the table.
 
 `backend/tests/test_deployment_config.py` holds all of it, and the
@@ -501,6 +502,79 @@ the API; the UI only over HTTPS and behind the password; the domain's
 way from `variables.tf` to the Caddyfile; every secret Terraform creates
 read by the bootstrap; the password hash quoted; the scripts LF; the
 firewall's two rules; the state never committable.
+
+## Models in memory (2026-10-19)
+
+A second model - the writer's, and perhaps the corrector's - changes
+the sizing above, which was made for one 3B model. A 7-9B writer at the
+16k context it needs (`docs/decisions/writing.md`, "The model") is
+~6-7 GB loaded; beside the verifier (~3.2 GB) and with
+`OLLAMA_KEEP_ALIVE=-1`, both would stay in memory for good on a machine
+already ~9.6 GB resident. And `ollama-pull` fetched only `LLM_MODEL`, so
+the first draft met a missing model. Three levels, each doing what the
+one above it cannot:
+
+1. **Ollama, automatic (production).** `OLLAMA_MAX_LOADED_MODELS=1`:
+   one model resident; a call to the other unloads the idle one and
+   loads its own. The backend already sends one LLM call at a time
+   (`LLM_MAX_CONCURRENCY=1`, and the writer takes the same permit), so
+   a swap is paid only when a draft follows a verdict or the other way
+   round: seconds to read a model from disk, against a draft's minutes
+   on a CPU. The cap follows the largest model, not the sum:
+   `mem_limit: ${OLLAMA_MEM_LIMIT:-4g}`, ~8g for a 7-9B writer.
+2. **The models, pulled before the backend starts ("autodeploy").**
+   `docker/ollama/pull-models.sh`, the `ollama-pull` one-shot: `LLM_MODEL`
+   (required), `WRITER_LLM_MODEL` and `CORRECTOR_LLM_MODEL` when set, and
+   - when `WRITER_LLM_BASE` is set - the writer's long-context variant
+   (`FROM $WRITER_LLM_BASE`, `num_ctx $WRITER_NUM_CTX`, 16384 by default)
+   created under `WRITER_LLM_MODEL`; the same for the reviewer with
+   `CORRECTOR_LLM_BASE` under `CORRECTOR_LLM_MODEL` (since 2026-10-19,
+   when `qwen3.5:9b` was measured the better reviewer: a review reads
+   the draft and up to 14,000 characters of its sources, past the 4k
+   default). Only the verifier is required: a writer that cannot be
+   pulled is a warning, and verification still starts.
+   `test_ollama_holds_one_model_and_every_configured_model_is_pulled`.
+   With the recommended three (verifier `llama3.2:3b` 2.6 GB, writer
+   `qwen3.5:4b` 3.7 GB, reviewer `qwen3.5:9b` 6.7 GB at 16k), the cap is
+   the reviewer's: `OLLAMA_MEM_LIMIT=8g`.
+3. **What runs at all, per activity (the dev machine).**
+   `scripts/stack.sh analyse|write|eval|label|idle|status` starts the
+   compose services an activity needs, stops the others, and keeps one
+   model in the host's Ollama - pulling it if missing, unloading every
+   other one (`keep_alive: 0` on the native API), and refusing to load
+   it when the host has less than its size x 1.2 + 1.5 GB free:
+
+   | Activity | searxng | inference | neo4j | backend | Model loaded |
+   |---|---|---|---|---|---|
+   | analyse | x | x | x | x | `LLM_MODEL` |
+   | write | x | x | | x | `WRITER_LLM_MODEL`, else `LLM_MODEL` |
+   | eval | x | x | | | the run's model (the harness has its own container) |
+   | label | x | x | | x | none |
+   | idle | | | | | none |
+
+   The writer needs no graph and the harness neither graph nor API:
+   Neo4j's ~1 GB and the API's ~0.5 GB go back to the model.
+
+**Measured the day it was written** (dev machine, 2026-10-19): this
+laptop has **no NVIDIA GPU** (Intel UHD 630; `ollama ps`: `100% CPU`)
+and 32 GB. Two evaluation runs at once - two harness containers,
+inference at ~900% CPU, `llama3.2:3b` on the host - left 8.8 GB free.
+A model call took 40-75 s; a second model loaded meanwhile would have
+evicted the verifier between every call of either run. So the writer
+models were downloaded during the runs (`ollama pull` is disk and
+network) and tried only after them - the rule `stack.sh` enforces.
+
+**Its first use found three bugs, fixed the same day**: `compose up -d
+backend` also started Neo4j (backend `depends_on` it), now `up -d
+--no-deps`; every unload failed, because Python on Windows ends lines
+with CRLF and a model name read back with its `\r` is a model Ollama
+does not have (`tr -d '\r'`); and the unload gave a busy model 30 s,
+now 120 s and a wait until it has left memory. The guard itself was
+right: it refused a 3.7 GB writer at 4.8 GB free, with Docker Desktop's
+VM holding what inference and the stray Neo4j took. After the fixes,
+`eval` -> `write writer-4b` -> `idle` ran end to end: one model in memory
+at each step (`llama3.1` 5.6 GB, then `writer-4b` 3.7 GB, then none),
+16.3 GB free at the end.
 
 ## SearXNG's settings and secret
 

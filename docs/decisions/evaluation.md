@@ -4,6 +4,16 @@
 > the evaluation harness, its metrics, or anything the paper reports a
 > number from.
 
+**Status, 2026-10-19: the custom set is split** into a tuning and a
+test half, 50/50, frozen (§The split); **the second look** - a second,
+wider search for a verdict in doubt - is built into the pipeline, off
+by default, with **the tuning loop** that decides on it on the train
+half (§The second look); and **consistency** compares two runs of the
+same claims (§Consistency). Results in each section: test half 52.9%
+[41.4, 64.3] on the first pass (natural claims: kappa -0.013); the
+second look +2.9 points on train and +0.0 on test, so it stays off;
+the re-check sample 13 of 14 verdicts the same twice (kappa 0.84).
+
 **Status, 2026-10-13: the harness (G2), metrics (G3) and retrieval
 evaluation (G4) are built, and the pilot (G7) has run them against live
 services (§Pilot).** Stage attribution (G5) and journalist effort (G6)
@@ -244,6 +254,18 @@ provider has been run.
   total) and completion tokens per second, which is what tells a fast
   provider from a slow one. Each session in `run.json` carries its own
   totals; the report carries the run's.
+- **Response time, stage by stage** (since 2026-10-19, the author's
+  request: time as a metric of everything, beside quality). `metrics.json`
+  `responseTime` and the report's "Response time" table: for the
+  claim's entities, retrieval, ranking, the model's verdict, the second
+  look where one was taken, and the whole claim, the median, p90, max
+  and each stage's share of the summed claim time, over the **scored**
+  claims only (a claim whose search was unavailable ends in a second and
+  would read as a fast pipeline). `cli table` adds the p90 per claim and
+  the model's own answer time per call. A response time compares only
+  between runs made **alone** on the machine: the 2026-10-19 train and
+  test runs of `llama3.2:3b` shared the CPU, so their times are each
+  other's waiting too.
 - **Unknown is not zero.** A server behind an OpenAI-shaped URL may send
   no `usage`; its tokens are `null` and `usageMissing` counts the calls,
   rather than a mean of zeros passing for a cheap model.
@@ -447,6 +469,21 @@ on either side is left out of both: an outage is not a strategy. A
 retrieval-only run's report has no verdict metrics, and `cli table`
 refuses one.
 
+**The oracle mode** (`run --oracle`, built 2026-10-19 for the model
+comparison; RQ2's third evidence condition, P0.5): no search; each claim
+is judged on the pages at its own reference links
+(`FactChecker.check_against`, the tuning loop's last step made a run),
+web addresses only, each once, every readable page kept, no pertinence
+gate. Mode `oracle` is keyed, so it never resumes a run that searched.
+A row with no link, or none readable, reaches the model with no
+evidence and is `UNVERIFIED`, as the pipeline would be; an `UNVERIFIED`
+gold label needs no link, so those rows agree by construction and are
+read as such. Its report has an "Evidence" note instead of the retrieval
+section, whose recall of the annotator's links would be 100% by
+construction. Two models' oracle runs differ by their reading alone,
+which two searching runs never do (the web changes between them:
+`## Consistency`).
+
 **Live check, 2026-10-04**, on the first 6 pilot claims, two
 retrieval-only strategies (`baseline`, and `no-gate`:
 `evidence_min_pertinence` 0.0), corpus `none`, with Google and Brave
@@ -622,6 +659,417 @@ run. Raw runs go to `data/evaluation/writing/runs/` (gitignored); the
 comparison the paper quotes, `comparison.md` and `comparison.json`, to
 `data/evaluation/writing/reports/<set>/` (committed).
 
+**First runs, 2026-10-19** (one repeat each, each model alone on the
+CPU; "Choosing the models" below has the decision):
+
+- `llama3.2:3b` (`ab15b8f715d5`): format compliance 100%, detection 80%
+  [72, 88] over 30 pairs, a defect lowering its metric by 3 to 46
+  points; 28 s a text.
+- `qwen3.5:4b`, version 1 (`fcab9102d82a`): format compliance **80%**,
+  under the gate; detection 93% [82, 100] over the 22 pairs it scored,
+  +14 points [+2, +25] paired against the baseline; 45 s a text.
+- **Found by it: a reader too strict, not a model too loose.** Seven of
+  qwen's eight failures came back as JSON whose metrics after the
+  first were unusable (six in one call; one after a 440 s answer of
+  3,716 tokens and a retry). Its raw answer, captured on
+  `en-library-seo`: each metric opened *inside* the one before
+  (`"grammar": {"score": 95, ..., "issues": [...], "factConsistency":
+  {...`), every brace closed at the end - valid JSON with all five
+  scores, which the corrector read at the top level only. The prompt
+  shows only the first entry in full and the rest as `{...}`.
+  `normalize_metric` now finds a metric nested in another entry, the
+  top level first (`text_corrector._find_metric`); `WRITING_VERSION` 2,
+  so the version-1 run stays as the record of the failure. The draft
+  reviewer reads its metrics through the same function. The eighth was
+  Ollama's 500 twice (a small model looping until the server stops it).
+
+## The split (P0.4)
+
+**Frozen on 2026-10-19** by `python labeller/app.py split`
+(`labeller/app.py`: `split_groups`, `assign_splits`), before any run
+over the custom set. Each fact's `split` is `train` or `test` (x-fact's
+names), and `backend/data/evaluation/split.json` records when, the rule,
+the counts, the re-check sample and every fact's side.
+
+- **50/50, the author's decision**, not the third the roadmap first
+  planned: the pipeline learns nothing from the facts (it searches the
+  open web at verification time), so what tuning can carry across is a
+  threshold or a trigger, not an answer; and the tuning half needs
+  enough disagreements for the loop below to decide on.
+- **Grouped**: facts of one article, and a synthetic FALSE with its
+  source (`mutatedFrom`; they share `articleUrl` anyway), go to the same
+  side. 139 facts, 59 groups.
+- **Stratified** by verdict x language and by topic group, after
+  iterative stratification (Sechidis et al. 2011) with groups for
+  examples: rarest stratum first, then larger groups, each placed on the
+  side whose targets it falls shortest of; ties by SHA-256 of the
+  group's first id. **The first dry run balanced verdict x language
+  only and put all 21 culture facts in test**; the topic group was added
+  as a second dimension.
+- **Frozen**: a fact keeps its side when relabelled; a later fact joins
+  its article's side, or the side its strata are short of, by the same
+  rule (`Store.create`, once `split.json` exists). Re-running `split`
+  moves nothing.
+
+| | train | test |
+|---|---:|---:|
+| Facts (articles) | 69 (28) | 70 (31) |
+| TRUE / PARTIALLY_TRUE / MISLEADING / UNVERIFIED / FALSE | 45 / 3 / 0 / 6 / 15 | 46 / 4 / 1 / 4 / 15 |
+| en / es | 48 / 21 | 47 / 23 |
+| society / science / environment / culture / health | 11 / 17 / 16 / 10 / 15 | 9 / 16 / 18 / 11 / 16 |
+
+The harness runs one half with `--split train|test`; the selection is a
+dataset of its own (`select_rows`: stem `manual-train`, a sha256 over
+the set's and the ids'), so it never shares a run directory or key with
+the whole set. `--sample recheck` reads the re-check sample from
+`split.json` rather than recomputing it.
+
+**The re-check sample**: `ceil(20%)` of the test half by SHA-256 of the
+id - 14 facts (fact003, 007, 031, 034, 053, 057, 083, 084, 111, 135,
+149, 150, 155, 164). The labeller's blind review (`review_sample`) now
+draws from the test half only, and the same 14 are run through the
+pipeline a second time (§Consistency): the labels' consistency and the
+system's on one sample.
+
+## The second look and the tuning loop
+
+**Built on 2026-10-19**: `backend/src/services/fact_checker/second_look.py`,
+`FactChecker.second_look` / `check_against` / `_judge`, the harness's
+`run --loop` and `cli loop`. Tests: `tests/services/fact_checker/test_second_look.py`,
+`tests/evaluation/test_harness_runner.py` (the loop),
+`tests/evaluation/test_loop_and_consistency.py`.
+
+**The second look** (a pipeline stage, per run): a claim whose first
+verdict is `UNVERIFIED`, or below `second_look_below_confidence` (0.5),
+is searched again. The model writes up to three follow-up queries, in
+the claim's language, from the first verdict's explanation and the
+titles it had (`FollowUpPlanner`; the claim itself when it writes none);
+they go through `SearchProvider.search_queries` (same concurrency,
+failure rule and fusion as the first pass, `found_by: follow_up`); only
+pages and domains the first pass never saw are fetched, never the
+article; and old and new evidence are judged together by `_judge` - the
+first pass's rank / verify / recalibrate, factored out so the three
+callers cannot drift. The first verdict stays on the claim
+(`FactCheck.second_look`, `secondLook` in the API, cache schema 12).
+Never on an outage, never twice. `second_look_enabled` defaults to off
+(`SECOND_LOOK_ENABLED`): it costs a search, a few fetches and two model
+calls a claim, and whether it helps is measured, not assumed. After
+FIRE (Xie et al., Findings of NAACL 2025) and AVeriTeC's question
+generation, cut to one round.
+
+**The tuning loop** (`run --loop`, train only): after each claim's
+first pass, a second look when the verdict disagrees with gold - and
+also when the pipeline's own trigger would fire, so its effect without
+gold can be read - then, when it still disagrees, the claim judged with
+no search against the row's `referenceEvidenceLinks`
+(`FactChecker.check_against`: the annotator's pages, no pertinence
+gate; the oracle condition of P0.5). Each claim gets one outcome
+(`runner.py`, `LOOP_*`):
+
+| Outcome | Meaning |
+|---|---|
+| `agreed` | the first verdict is gold |
+| `fixed` | the second look reached gold |
+| `retrieval` | the annotator's pages give gold: the search never found them |
+| `adjudicate` | the annotator's pages give the pipeline's verdict: a person decides, model or label |
+| `reasoning` | the annotator's pages give a third verdict |
+| `unreadable` / `no_reference` | no page could be read / the row has no links |
+| `unavailable` | the first pass's search or model was never reached |
+
+The record's verdict stays the first pass's; `loop` sits beside it with
+its own `usage`, so the record's cost stays comparable with a run
+without the loop. `cli loop --run <dir>` writes `loop.md` / `loop.json`
+beside the run's report: the outcomes with their ids, the `adjudicate`
+list (for P0.2's review), the accuracy with gold choosing which claims
+get a second look (an upper bound), and **the trigger without gold**:
+accuracy with the second verdict wherever the pipeline's rule fires,
+paired against the first pass, for `UNVERIFIED or < 0.5` and for
+`UNVERIFIED` alone, with the claims each fixes and breaks. That last
+table is what decides `SECOND_LOOK_ENABLED`. For a run made with
+`second_look_enabled` (the test half), `cli loop` reads first against
+final verdicts the same way.
+
+### The train half (run 2026-10-19, `ba36c5721e58`)
+
+`llama3.2:3b` on the dev machine's CPU (no GPU), compose's eval layer,
+corpus snapshot of 12 points, all 69 claims scored, none set apart.
+Report: `backend/data/evaluation/reports/manual-train/llama3.2-3b/ba36c5721e58/`
+(`report.md`, `loop.md`).
+
+- **First pass**: accuracy 44.9% [33.3, 56.5]; natural 42.6% (54),
+  synthetic FALSE 53.3% (15). The model answered FALSE to 32 claims
+  (gold: 15) - 18 of the 45 TRUE claims among them - the lean the X-Fact
+  pilot showed.
+- **The loop on the 38 disagreements**: 9 `fixed` by the second look, 8
+  `retrieval` (on the annotator's pages the model reaches gold: the
+  search never found them), 15 `adjudicate`, 2 `reasoning`, 2
+  `unreadable`, 2 `no_reference`. With gold choosing which claims get a
+  second look, accuracy would be 58.0%: the room a perfect doubt
+  detector would have.
+- **`adjudicate` is mostly the model**: gold -> the model's verdict on
+  the annotator's own pages is TRUE -> FALSE 5, FALSE -> TRUE 4 (all 4
+  synthetic: on its source's evidence the model did not see the
+  substituted figure or date), UNVERIFIED -> FALSE 3, PARTIALLY_TRUE ->
+  FALSE 2, -> TRUE 1. Several explanations restate the claim as
+  supported and then answer FALSE. The 15 go to P0.2's review as a
+  list, not as suspected labels.
+- **The trigger, without gold**: `UNVERIFIED or < 0.5` fired on 15
+  claims: +2.9 points [-2.9, +8.7], 3 wrong to right, 1 right to wrong.
+  `UNVERIFIED` alone fired on 2 and changed nothing: this model is
+  rarely UNVERIFIED, its doubt shows as low confidence.
+
+**Decided on this, 2026-10-19, before the test half's report was
+read** (one five-claim smoke check of the report's format had been run
+on the partial test run): the rule taken to the test half is
+`UNVERIFIED or < 0.5`; **`SECOND_LOOK_ENABLED` stays false** - the gain
+is within an interval that includes zero, and it costs a second look
+(a search, page fetches, two model calls: ~2 minutes on this CPU) on a
+fifth of the claims. The test half's headline is the first pass, the
+default pipeline; the second look is reported beside it as a paired
+treatment.
+
+### The test half (run 2026-10-19, `2605a2c02380`)
+
+Same model, machine and corpus, `second_look_enabled` (each record keeps
+its first verdict), run beside the train half; all 70 scored, none set
+apart. Reports: `reports/manual-test/llama3.2-3b/2605a2c02380/`
+(`report.md` on the final verdicts, `loop.md` first against final).
+
+| First pass (the default pipeline) | n | Accuracy [95% CI] | Macro-F1 | Kappa |
+|---|---|---|---|---|
+| All | 70 | 52.9% [41.4, 64.3] | 0.227 [0.176, 0.273] | 0.195 [0.035, 0.359] |
+| Natural | 55 | 45.5% [32.7, 58.2] | 0.164 | -0.013 [-0.104, 0.078] |
+| Synthetic FALSE | 15 | 80.0% [60.0, 100] | - | - |
+| English / Spanish | 47 / 23 | 51.1% / 56.5% | 0.279 / 0.286 | 0.191 / 0.199 |
+
+On the natural claims the pipeline agrees with gold no better than
+chance (kappa -0.013): it answered FALSE to 18 of the 46 TRUE claims, the
+lean of the pilot and of the train half. It catches 12 of the 15
+synthetic FALSE claims, whose evidence plainly contradicts a substituted
+figure or date. **The second look on the test half**: fired on 17 claims
+(14 below 0.5, 3 UNVERIFIED), 16 of them with a new source in the final
+evidence, 2,210 s in all; accuracy +0.0 points [-4.3, +4.3], one claim
+fixed and one broken. It confirms the decision taken on the train half:
+`SECOND_LOOK_ENABLED` stays false for this model.
+
+**Retrieval** (69 claims with references): the annotator's link among
+the candidates for 14.5% [7.2, 23.2], ranked 8.7%, cited 5.8%; the
+annotator's domain among the candidates 34.8%, ranked 23.2%, cited
+13.0%; every claim had ranked evidence (4.9 sources, 21 candidates);
+the follow-up queries found 28 of the ranked sources. Retrieval 16.5 s
+and ranking 7.3 s a claim; the LLM call 59 s median (p90 92 s) on this
+CPU with two runs sharing it; a claim 151 s median.
+
+**What the loop says to do next**, from the train half: the 8
+`retrieval` claims and the 58% upper bound say the evidence is often on
+the web and the trigger does not find the claims that need it - the
+model is wrong with confidence, not unsure; the 15 `adjudicate` claims,
+most of them TRUE or synthetic FALSE labels the model contradicts on the
+annotator's own pages, say the 3B verifier's reasoning, not the labels,
+is the larger error. A stronger verifier (P1, the model benchmark), not
+a wider search, is where the next points are.
+
+## Consistency
+
+**Built on 2026-10-19**: `backend/src/evaluation/consistency.py`, `cli
+consistency --run A --run B`, into `reports/<B's set>/consistency/`.
+The re-check sample run a second time (`run --split test --sample
+recheck`, same model and thresholds), compared over the claims both
+runs scored: verdict agreement and Cohen's kappa between the runs, with
+intervals (and the same for `rawVerdict`), the confusion of A by B; the
+Jaccard overlap of the two runs' ranked evidence per claim, so a change
+on identical evidence (the model's) is told from one with different
+evidence (the web's); and each run's accuracy against gold on those
+claims, paired. The thesis requires the 20% re-evaluation for the
+labels (§6.3, verification of the labels); this applies it to the
+system.
+
+### The result (2026-10-19)
+
+The re-check sample (14 test facts) run a second time,
+`manual-test-recheck` `41a44a11d699`, started 1 h 51 min after the test
+run, same model and thresholds (`second_look_enabled`); all 14 scored.
+Report: `reports/manual-test-recheck/consistency/2605a2c02380-41a44a11d699.md`.
+
+| Between the two runs | n | Agreement [95% CI] | Kappa [95% CI] |
+|---|---|---|---|
+| Final verdict | 14 | 92.9% [78.6, 100] | 0.837 [0.440, 1.000] |
+| The model's raw verdict | 14 | 92.9% [78.6, 100] | 0.837 [0.440, 1.000] |
+| First pass, before any second look | 14 | 92.9% [78.6, 100] | 0.811 [0.000, 1.000] |
+
+13 of 14 verdicts were the same twice, while the evidence was not: the
+ranked sources of the two runs overlapped by a mean Jaccard of 0.58
+[0.39, 0.77], identical for 5 claims and disjoint for 2. The one change
+(fact057, TRUE: FALSE then TRUE) came with entirely different evidence:
+the web's variation, not the model's - no verdict changed on the same
+evidence. Against gold on these 14: 50.0% and 57.1%. With 14 claims the
+kappa interval is wide (0.44 to 1); it is the system's half of the
+consistency the protocol requires, beside the annotator's blind
+re-label of the same 14, which a person still has to do.
+
+**On the whole train half, too** (2026-10-19, a by-product of the model
+comparison): `llama3.2:3b` run again on the 69 train claims, alone on
+the CPU, seven hours after the first run (`7bcd048954e5` against
+`ba36c5721e58`; `reports/manual-train/consistency/`). Same verdict for
+87.0% [78.3, 94.2], kappa 0.759 [0.613, 0.890]; the ranked evidence
+overlapped by a mean Jaccard of 0.67, identical for 26 claims; 1 verdict
+of 9 changed on the very same evidence (fact016), 8 with different
+evidence. Against gold: 44.9% then 42.0%, -2.9 points [-10.1, +4.3].
+**That is the noise floor for comparing two models on this half**: a
+difference inside about ten points is what two runs of one model
+already show.
+
+## Choosing the models (2026-10-19)
+
+Three roles call a language model, and each was chosen apart: the
+**verifier** (`LLM_MODEL`, one call per claim), the **writer**
+(`WRITER_LLM_MODEL`, one call per draft or rewrite) and the
+**reviewer** (`CORRECTOR_LLM_MODEL`, the draft review and its proposed
+correction; also `/correct`). Every candidate is openly licensed and
+runs in the stack's own Ollama, on this machine's CPU (no GPU), so the
+time each one takes is measured where it would run. **Response time is
+a metric beside quality for every role**: per call, per claim or draft,
+median and 90th percentile, and tokens per second.
+
+Candidates: `llama3.2:3b` (the baseline everywhere), `qwen3.5:4b` and
+`qwen3.5:9b` (Apache 2.0), the Qwen models with thinking off
+(`LLM_REASONING_EFFORT`, keyed since 2026-10-19 so a thinking run never
+resumes into one without).
+
+**Written before any candidate's result was read** (the second look's
+rule, applied to the model):
+
+- **Verifier.** Chosen on the **train half only**, first pass
+  (`run --split train`, compared paired with `report --compare` against
+  `ba36c5721e58`). A candidate replaces `llama3.2:3b` when its accuracy
+  gain's paired 95% interval is above zero; when the interval includes
+  zero, the faster model is kept, since on a CPU the model is most of a
+  claim's time (64 s of 133 s median on train). Two runs of one model
+  already differ: 13 of 14 verdicts the same, evidence overlapping by
+  0.58 (above), so a small gain is not read as one. The chosen model is
+  then run once on the **test half** to report it; the test half chooses
+  nothing.
+- **Reviewer.** The writing benchmark (§Writing-model benchmark):
+  format compliance first as a gate (95%), then detection of the
+  planted defect with its interval, paired against `llama3.2:3b`; then
+  the draft reviewer itself on the seeded drafts of 15 October
+  (`scripts/try_reviewer_model.py`): which planted defects the model
+  finds, and whether its correction passes the checks.
+- **Writer.** Chosen on 19 October before this section
+  (`docs/decisions/writing.md`, "The model, again"): `qwen3.5:4b`.
+
+### The verifier on the train half: `qwen3.5:4b` (`5a4f4ee5baac`)
+
+Run alone on the CPU, thinking off, all 69 scored, none set apart.
+Report: `reports/manual-train/qwen3.5-4b/5a4f4ee5baac/` (paired against
+`ba36c5721e58`).
+
+| Train half, first pass | `llama3.2:3b` | `qwen3.5:4b` | B - A [95% CI] |
+|---|---|---|---|
+| Accuracy | 44.9% | 30.4% | -14.5 pts [-29.0, +0.0] |
+| Macro-F1 | 0.233 | 0.236 | +0.004 [-0.099, +0.106] |
+| Coverage (not UNVERIFIED) | 97.1% | 72.5% | -24.6 pts [-36.2, -13.0] |
+| Selective accuracy | 46.3% | 38.0% | -8.3 pts [-24.3, +7.6] |
+| Kappa | 0.056 | 0.091 | +0.035 [-0.157, +0.234] |
+
+**By the rule, `qwen3.5:4b` does not replace the baseline**: its
+accuracy is lower, at the edge of significance (only the baseline
+right on 19 claims, only it on 9). It is not the guardrails: they
+changed 6 of its 69 answers (FALSE cited only on sources it called
+unrelated). It answers differently: **UNVERIFIED 19 times** (the
+baseline 2), saying the retrieved pages do not mention the claim -
+fact037's evidence was "unrelated lists of cities, a tourism guide, and
+election myths" - and **PARTIALLY_TRUE 14 times** (0 right), flagging a
+detail, often against evidence newer than the claim (fact036: 190 cases
+then, 252 later). It cites 4.1 of its sources on average (the
+baseline 2.8), and is more confident (median 0.81 against 0.71).
+Against labels set on the annotator's pages, caution over the
+pipeline's pages scores as error: of its 19 UNVERIFIED the baseline got
+9 right, with other pages from another day's search. Whether it is the
+weaker reader or the more honest one is what the **oracle runs** answer
+(`run --oracle`, the annotator's own pages for every model: same
+evidence, so only the reading differs).
+
+### Same evidence for both: the oracle runs (2026-10-19)
+
+`run --split train --oracle`, each model alone on the CPU:
+`llama3.2:3b` `809d08813762`, `qwen3.5:4b` `4cf17fc6c36b`.
+
+| Train half, the annotator's pages | `llama3.2:3b` | `qwen3.5:4b` | `qwen3.5:9b` |
+|---|---|---|---|
+| Accuracy | 55.1% [43.5, 66.7] | 34.8% [23.2, 46.4] | 56.5% [44.9, 68.1] |
+| Paired against the 3B | - | -20.3 [-34.8, -5.8] | +1.4 [-11.6, +14.5] |
+| Selective accuracy (right when it commits) | 55.6% | 39.6% | **72.9%** (+17.4 [+2.7, +32.0]) |
+| Coverage (not UNVERIFIED) | 91.3% | 76.8% | 69.6% |
+| FALSE to a TRUE claim (of 45) | 14 | 9 | 6 |
+| Macro-F1 | 0.375 | 0.316 | 0.386 |
+| Kappa | 0.190 | 0.168 | 0.307 |
+| The model's answer, median / p90 (alone) | 21.7 / 32.2 s | 30.6 / 41.6 s | 61.4 / 85.6 s |
+| A whole claim, pages read, median / p90 | 41.3 / 60.8 s | 58.5 / 78.4 s | 125.0 / 159.2 s |
+| Completion tokens per second | 7.0 | 5.3 | 3.3 |
+
+(`qwen3.5:9b` `8ef44d0de909`.)
+
+**On identical pages `qwen3.5:4b` reads worse**: -20.3 points
+[-34.8, -5.8], the baseline alone right on 22 claims, it alone on 8. Its
+answers on TRUE claims the annotator's pages support are misreadings
+more than caution: PARTIALLY_TRUE for a claim (fact081) because the
+pages do not mention a 19-set diagram the claim never mentions, a
+nitpick on who reported a count (fact036), a confused ranking (fact038);
+a few are defensible (fact015, an older page against a newer claim). It
+is also slower.
+
+**`qwen3.5:9b` reads differently, not worse**: as accurate as the 3B on
+the same pages (+1.4 [-11.6, +14.5]) but far more careful - right on
+72.9% of the verdicts it commits to against 55.6%, +17.4 points
+[+2.7, +32.0], an interval that excludes zero; `UNVERIFIED` for 21
+claims (13 of them TRUE), `FALSE` to 6 true claims where the 3B says it
+to 14; kappa 0.307 against 0.190. The 3B's FALSE lean is mostly gone.
+The price: three times the model's time (61 s a call against 22), and a
+fifth more claims left unverified. Its own search on train was not run
+(about 2.5 h on this CPU).
+
+**The verifier stays `llama3.2:3b`**, by the rule written before the
+runs (accuracy, then speed): neither candidate's accuracy gain excludes
+zero. **The decision the rule does not make**, left to the author: if a
+wrong verdict costs the newsroom more than an honest `UNVERIFIED` -
+which a fact-checker's purpose suggests - `qwen3.5:9b` is the better
+verifier, at about three times the time; the run that would settle it
+is the 9B with its own search on the train half, then the test half.
+
+**What retrieval costs** (P0.5's second gap, on train): the baseline on
+the annotator's pages against its own search, +10.1 points [-2.9,
++24.6], macro-F1 +0.142 [+0.002, +0.257]. Even with the annotator's own
+pages it answers FALSE to 14 of 45 TRUE claims: the lean is the
+model's, as the tuning loop said. The 15 synthetic FALSE claims fare
+worse on the annotator's pages (40%) than on its search (53%): those
+pages are the source the substitution was made from, where the model
+must notice the one changed figure.
+
+Caveat for every number here: 108 of the 139 gold labels are the AI
+pass's, unchecked (P0.2).
+
+### Response time of the verifier, alone on this CPU
+
+The searching pipeline, train half, each model the only thing running
+(`llama3.2:3b` `7bcd048954e5`, `qwen3.5:4b` `5a4f4ee5baac`; two claims at
+once, one model call at a time, as in production):
+
+| Seconds, median (p90) | `llama3.2:3b` | `qwen3.5:4b` |
+|---|---|---|
+| Evidence retrieval | 9.0 (19.9) | 10.5 (15.4) |
+| Ranking | 5.1 (6.9) | 5.0 (7.2) |
+| The model's verdict, with its wait for the model | 55.6 (77.8) | 93.2 (113.5) |
+| The model's answer alone | 34.0 (48.9) | 53.6 (68.6) |
+| **A whole claim** | **72.7 (94.8)** | **109.9 (130.5)** |
+| Completion tokens per second | 5.2 | 4.1 |
+
+The model is three quarters of a claim's time (77% for the 3B), and
+about a third of its span is waiting for the other claim's call: one
+model, two claims at once. The first `llama3.2:3b` runs (133 s a claim)
+shared the CPU with the test run; their times are each other's waiting
+too and are not quoted as the model's.
+
 ## Where it runs
 
 The harness needs `inference/`, SearXNG and the LLM, like any analysis.
@@ -682,11 +1130,14 @@ The harness needs `inference/`, SearXNG and the LLM, like any analysis.
 | `effort.py` | effort | Usable and confidently-wrong shares |
 | `usage.py` | cost | Tokens and latency per LLM call, run totals, prices |
 | `writing.py` | writing benchmark | The text set, its runner, the rubric, `writing run` / `writing report` |
+| `loop.py` | second look | `cli loop`: the tuning loop's outcomes, the trigger without gold; first against final for a `second_look_enabled` run |
+| `consistency.py` | consistency | `cli consistency`: two runs of the same claims, agreement, kappa, evidence overlap |
 
 Run as `cd backend && uv run python -m src.evaluation.cli run --dataset
 data/evaluation/xfact_en_es_pilot.jsonl --model llama3.2:3b [--limit N]
 [--thresholds f.json] [--corpus snapshot|none] [--retry-unavailable]
-[--fresh]`, then `... report --run <dir> [--compare <dir>]`.
+[--fresh] [--split train|test] [--sample recheck] [--loop]`, then `...
+report --run <dir> [--compare <dir>]`.
 
 Tests live in `backend/tests/evaluation/` and use only fakes
 (`tests/services/fact_checker/fakes.py`; a new shared fake needs its

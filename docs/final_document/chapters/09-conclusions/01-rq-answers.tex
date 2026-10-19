@@ -2,7 +2,7 @@
 % Chapter 9: Conclusions
 %   Section: Answers to the Research Questions
 % Included from chapters/09-conclusions/conclusions.tex
-% Provisional answers as of 16 October 2026, from what was measured;
+% Provisional answers as of 19 October 2026, from what was measured;
 % each pending block names the measurement that will settle it.
 % ============================================================
 
@@ -31,14 +31,24 @@ zero; retrieved evidence added 10.9 points [3.1, 20.3] over the model
 alone on the pilot and nothing measurable on the Spanish test split.
 How it can be quantified is the other half of the question, and that
 half is answered: by the harness's metrics with intervals, the evidence
-conditions, retrieval recall and the stage attribution.
-\pending{the custom-set runs: accuracy, macro-$F_1$ and $\kappa$ under
-the three evidence conditions, natural and synthetic apart.}
+conditions, retrieval recall and the stage attribution. On the custom
+set's test half, with the default pipeline, it reached 52.9\% [41.4,
+64.3]: it caught 12 of 15 synthetic refuted claims, but on the natural
+claims agreed with the labels no better than chance ($\kappa = -0.01$),
+calling 18 of 46 supported claims false. A second, wider search for
+verdicts in doubt, tuned on the other half, changed nothing on the
+test half; the tuning loop placed most errors in the 3B model's
+reasoning rather than in the search. The same claims run twice gave the
+same verdict 13 times in 14.
+\pending{the closed-book and oracle conditions on the test half, after the
+annotator's review of the AI-proposed labels.}
 
 \paragraph{RQ3 --- Person and model.} \emph{Not yet measured.} The
 comparisons are designed and their data are being produced: 108 labels
 proposed by the AI pass await the annotator's review, and the blind
-selection rounds have not been run.
+selection rounds have not been run. The system's own consistency is
+measured: 13 of 14 verdicts the same on a second run ($\kappa = 0.84$
+[0.44, 1.00]), the one change coming from different evidence.
 \pending{$\kappa$ between the AI pass and the annotator; between the AI
 selection and the editor on blind rounds; between the pipeline and the
 annotator; and the annotator's self-agreement as the ceiling.}

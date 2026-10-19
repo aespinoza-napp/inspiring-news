@@ -76,6 +76,9 @@ src.main:app --port 8001`.
 | Running the stack | `docker/README.md` |
 | Production, Google Cloud, sizing, `/healthz` and `/metrics` | `docs/decisions/deployment.md` |
 | The evaluation harness: research questions, record format, metrics, stage attribution | `docs/decisions/evaluation.md` |
+| The custom set's frozen train/test split; the second look and its tuning loop; run-to-run consistency | `docs/decisions/evaluation.md`, `backend/data/evaluation/split.json` |
+| What to run for an activity without running out of memory; one model in Ollama at a time | `scripts/stack.sh`, `docs/decisions/deployment.md` ("Models in memory") |
+| Which model verifies, writes and reviews, how each was chosen, and what each costs in time | `docs/decisions/evaluation.md` ("Choosing the models"), `scripts/try_reviewer_model.py` |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
 

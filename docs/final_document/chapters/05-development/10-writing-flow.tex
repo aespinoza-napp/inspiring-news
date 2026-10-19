@@ -102,6 +102,15 @@ they cannot see a fact a rewrite leaves out. Two practical findings
 followed: the 3-billion-parameter model is fit to verify claims quickly
 on a CPU and not to write or correct an article, and Ollama silently
 cuts a long prompt to its default 4,096-token context, so the writer's
-model needs its own larger context. A larger, openly licensed writer
-model is recommended from the model cards and has not been measured;
-no draft has been written through the running stack.
+model needs its own larger context. On 19~October two openly licensed
+writers were tried the same way: Qwen3.5 at 4 and 9 billion parameters
+(Apache~2.0), served at a 16k-token context and with their reasoning
+mode switched off, since both otherwise think before every answer. Both
+cited a source for every sentence or all but one, filled the metadata
+and stated neither the unverified nor the planted false claim; on a
+processor alone a draft took about three minutes with the smaller and
+four to six with the larger. Their Catalan differed: the smaller made
+slips a reader notices, the larger wrote ``litigi'' (a lawsuit) for
+\emph{liti} (lithium) throughout. The smaller is the recommended writer
+(Subsection~\ref{subsec:results-writing-trial}); no draft has yet been
+written through the running stack.

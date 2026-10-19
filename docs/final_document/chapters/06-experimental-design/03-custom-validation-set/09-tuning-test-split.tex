@@ -1,0 +1,90 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Construction of the Custom Validation Set
+%     Subsection: The Tuning and Test Halves
+% Included from chapters/06-experimental-design/03-custom-validation-set/custom-validation-set.tex
+% Sources: labeller/app.py (split, assign_splits);
+% backend/data/evaluation/split.json; docs/decisions/evaluation.md
+% ("The split").
+% ============================================================
+
+\subsection{The Tuning and Test Halves}
+\label{subsec:custom-split}
+
+The system is not trained on the set: it searches the open web when a
+claim is checked, and nothing it learns from a labelled claim is stored.
+What can still be fitted to the labels is everything the author decides
+by looking at results --- a threshold, the trigger of a second search
+(Section~\ref{subsec:second-look}), a prompt. Reporting on the same
+claims that guided those decisions would inflate the result, so before
+any run over the set it was divided once, on 19~October~2026, into a
+\textbf{tuning half} (\texttt{train}) and a \textbf{test half}
+(\texttt{test}). Every decision is taken on the first; the second is
+read once, for the numbers this chapter reports.
+
+\paragraph{Half and half.} The plan first set aside a third for tuning.
+Because the pipeline learns nothing from the claims, the risk the split
+guards against is limited to the few decisions above, and the author
+chose an even split: the tuning half then holds enough disagreements
+between system and label to decide on, and the test half still holds
+70 claims.
+
+\paragraph{How the halves were drawn.} Three rules, applied by the
+labelling tool (\texttt{labeller/app.py split}) rather than by hand:
+
+\begin{itemize}
+    \item \textbf{Claims travel with their article.} Claims of one
+    article share its evidence, and a synthetic refuted claim
+    (Subsection~\ref{subsec:custom-mutations}) is its source claim with
+    one element changed and the same evidence. Split apart, tuning on
+    one would be tuning on the other; the 139 claims form 59 such
+    groups, and a group is never divided.
+    \item \textbf{Each half holds its share of every stratum}: of each
+    verdict in each language, and of each topic group. Groups are placed
+    one at a time, the group holding the rarest stratum first, on the
+    side whose targets its claims fall furthest short of --- iterative
+    stratification \cite{sechidis2011stratification}, with groups in
+    place of single claims. A first draw balanced verdict and language
+    only, and put all 21 culture claims in the test half; adding the
+    topic group as a second dimension corrected it.
+    \item \textbf{Ties are broken by a hash} (SHA-256) of the group's
+    first identifier, so no step depends on a choice, and the
+    assignment is frozen: a claim keeps its side when it is relabelled,
+    and a claim added later joins its article's side, or the side its
+    stratum is short of.
+\end{itemize}
+
+Table~\ref{tab:custom-split} gives the result. The single
+\texttt{MISLEADING} claim fell in the test half, and the two Spanish
+\texttt{UNVERIFIED} claims belong to one article and fell in the
+tuning half; strata of one or two claims cannot be shared.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+& \textbf{Tuning} & \textbf{Test} \\
+\midrule
+Claims (articles)        & 69 (28) & 70 (31) \\
+\texttt{TRUE}            & 45 & 46 \\
+\texttt{PARTIALLY\_TRUE} &  3 &  4 \\
+\texttt{MISLEADING}      &  0 &  1 \\
+\texttt{UNVERIFIED}      &  6 &  4 \\
+\texttt{FALSE} (synthetic) & 15 & 15 \\
+\midrule
+English / Spanish        & 48 / 21 & 47 / 23 \\
+Society / science / environment / culture / health & 11 / 17 / 16 / 10 / 15 & 9 / 16 / 18 / 11 / 16 \\
+\bottomrule
+\end{tabular}
+\caption[The two halves of the custom set]{The two halves of the custom set, frozen on 19 October 2026
+(\texttt{backend/data/evaluation/split.json}).}
+\label{tab:custom-split}
+\end{table}
+
+\paragraph{The re-check sample.} The fifth of the test half that is
+labelled a second time (Subsection~\ref{subsec:custom-review}) is
+drawn from it by the same hash, and recorded with the split: 14 claims.
+The same 14 claims are also run through the system a second time
+(Subsection~\ref{subsec:consistency}), so the consistency of the labels
+and the consistency of the system are measured on one sample.
