@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://www.kctv5.com/2026/10/04/stranger-keeps-promise-cover-storm-damaged-wyandotte-county-home-with-tarp/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact107",
   "topic": "community",
   "claimType": "factual",

@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://www.floridahealth.gov/wp-content/uploads/2026/09/fl-arbovirus-report-w37-2026.pdf"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact138",
   "topic": "public_health",
   "claimType": "numerical",

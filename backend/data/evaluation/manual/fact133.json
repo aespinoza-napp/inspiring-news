@@ -11,7 +11,7 @@
     "https://about.bnef.com/insights/data-centers/gas-is-letting-data-centers-grow-beyond-the-grid/",
     "https://news.bloomberglaw.com/energy/data-centers-plan-to-boost-on-site-gas-power-57-fold-bnef-says"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact133",
   "topic": "energy",
   "claimType": "interpretive",

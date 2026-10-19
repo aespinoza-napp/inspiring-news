@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://tradingeconomics.com/commodity/uk-natural-gas/news/580137"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact101",
   "topic": "energy",
   "claimType": "numerical",

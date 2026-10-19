@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://universemagazine.com/en/juice-probes-view-of-earth-from-an-altitude-of-8000-km/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact123",
   "topic": "space",
   "claimType": "numerical",

@@ -12,7 +12,7 @@
     "https://www.cs.uvic.ca/~ruskey/Publications/Venn11/Venn11.html",
     "https://arxiv.org/abs/2609.26546v1"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact081",
   "topic": "research",
   "claimType": "numerical",

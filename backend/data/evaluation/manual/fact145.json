@@ -11,7 +11,7 @@
     "https://doi.org/10.1038/s41561-026-02089-9",
     "https://www.esa.int/ESA_Multimedia/Images/2026/10/New_modelling_of_Mars_s_most_striking_cloud"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact145",
   "topic": "space",
   "claimType": "factual",

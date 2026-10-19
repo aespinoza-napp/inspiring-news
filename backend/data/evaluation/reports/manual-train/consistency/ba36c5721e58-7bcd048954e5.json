@@ -1,0 +1,204 @@
+{
+  "runA": {
+    "run": "data\\evaluation\\runs\\manual-train\\llama3.2-3b\\ba36c5721e58",
+    "key": "ba36c5721e58",
+    "dataset": "manual-train",
+    "startedAt": "2026-10-19T07:41:32+00:00"
+  },
+  "runB": {
+    "run": "data\\evaluation\\runs\\manual-train\\llama3.2-3b\\7bcd048954e5",
+    "key": "7bcd048954e5",
+    "dataset": "manual-train",
+    "startedAt": "2026-10-19T14:45:43+00:00"
+  },
+  "model": "llama3.2:3b",
+  "seed": 2026,
+  "resamples": 10000,
+  "shared": 69,
+  "onlyA": [],
+  "onlyB": [],
+  "scored": 69,
+  "setApart": {},
+  "verdict": {
+    "n": 69,
+    "agreement": 0.8695652173913043,
+    "kappa": 0.7591155934833204,
+    "ci": {
+      "agreement": {
+        "low": 0.782608695652174,
+        "high": 0.9420289855072463,
+        "undefinedResamples": 0
+      },
+      "kappa": {
+        "low": 0.6125010516618361,
+        "high": 0.8902147971360381,
+        "undefinedResamples": 0
+      }
+    }
+  },
+  "rawVerdict": {
+    "n": 69,
+    "agreement": 0.8840579710144928,
+    "kappa": 0.7709543568464731,
+    "ci": {
+      "agreement": {
+        "low": 0.7971014492753623,
+        "high": 0.9565217391304348,
+        "undefinedResamples": 0
+      },
+      "kappa": {
+        "low": 0.6111815489091174,
+        "high": 0.9123994921709692,
+        "undefinedResamples": 0
+      }
+    }
+  },
+  "firstPass": null,
+  "confusion": {
+    "TRUE": {
+      "TRUE": 31,
+      "PARTIALLY_TRUE": 0,
+      "MISLEADING": 0,
+      "FALSE": 2,
+      "UNVERIFIED": 0
+    },
+    "PARTIALLY_TRUE": {
+      "TRUE": 0,
+      "PARTIALLY_TRUE": 1,
+      "MISLEADING": 0,
+      "FALSE": 1,
+      "UNVERIFIED": 0
+    },
+    "MISLEADING": {
+      "TRUE": 0,
+      "PARTIALLY_TRUE": 0,
+      "MISLEADING": 0,
+      "FALSE": 0,
+      "UNVERIFIED": 0
+    },
+    "FALSE": {
+      "TRUE": 3,
+      "PARTIALLY_TRUE": 1,
+      "MISLEADING": 0,
+      "FALSE": 28,
+      "UNVERIFIED": 0
+    },
+    "UNVERIFIED": {
+      "TRUE": 1,
+      "PARTIALLY_TRUE": 0,
+      "MISLEADING": 0,
+      "FALSE": 1,
+      "UNVERIFIED": 0
+    }
+  },
+  "evidenceOverlap": {
+    "mean": 0.6698297676558547,
+    "ci": {
+      "low": 0.5975327812284335,
+      "high": 0.7398220036806992
+    },
+    "identical": 26,
+    "disjoint": 2
+  },
+  "changedOnSameEvidence": [
+    "fact016"
+  ],
+  "changedWithEvidence": [
+    "fact090",
+    "fact106",
+    "fact114",
+    "fact122",
+    "fact132",
+    "fact139",
+    "fact162",
+    "fact171"
+  ],
+  "changes": [
+    {
+      "id": "fact016",
+      "claim": "Book Bunk has cataloged 138,000 books and added another 23,000 titles, converting 10 books by African authors into Braille and many others into audio formats.",
+      "gold": "TRUE",
+      "a": "UNVERIFIED",
+      "b": "FALSE",
+      "evidenceOverlap": 1.0
+    },
+    {
+      "id": "fact090",
+      "claim": "“It’s like in the Great Stink,” she adds, referring to the hot, dry summer of 1858, when the Thames – and all the raw sewage and rubbish dumped into it, rotting flesh and all – became a foul-smelling health hazard.",
+      "gold": "TRUE",
+      "a": "UNVERIFIED",
+      "b": "TRUE",
+      "evidenceOverlap": 0.0
+    },
+    {
+      "id": "fact106",
+      "claim": "Two days later, last Friday, a stranger arrived at Kirk’s debris-laden front lawn in Wyandotte County, and said he’d be back in 30 minutes with a tarp, some lumber, and a crew to cover up the maple-shaped gash in Kirk’s house.",
+      "gold": "TRUE",
+      "a": "FALSE",
+      "b": "PARTIALLY_TRUE",
+      "evidenceOverlap": 0.25
+    },
+    {
+      "id": "fact114",
+      "claim": "El Presidente del Gobierno, Pedro Sánchez, ha presentado hoy en Barcelona un ejercicio de prospectiva social, impulsado y coordinado por la Oficina Nacional de Prospectiva y Estrategia (ONPE), que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años.",
+      "gold": "TRUE",
+      "a": "PARTIALLY_TRUE",
+      "b": "FALSE",
+      "evidenceOverlap": 0.667
+    },
+    {
+      "id": "fact122",
+      "claim": "While the main goal was to alter Juice’s trajectory, the flyby also provided a third opportunity to test out Juice’s science instruments on a real surface in space – with the first being during the spacecraft’s 2024 lunar-Earth gravity assist, and the second during the 2025 observations of Comet 3I/ATLAS.",
+      "gold": "TRUE",
+      "a": "TRUE",
+      "b": "FALSE",
+      "evidenceOverlap": 0.667
+    },
+    {
+      "id": "fact132",
+      "claim": "By one estimate, more than 100 gigawatts of onsite gas power, the rough equivalent of 100 large gas power plants, is planned for data centers across the U.S.",
+      "gold": "TRUE",
+      "a": "FALSE",
+      "b": "TRUE",
+      "evidenceOverlap": 0.25
+    },
+    {
+      "id": "fact139",
+      "claim": "Designated a UNESCO World Heritage Site in 2005, the limes have produced dozens of important archeological discoveries.",
+      "gold": "TRUE",
+      "a": "TRUE",
+      "b": "FALSE",
+      "evidenceOverlap": 0.0
+    },
+    {
+      "id": "fact162",
+      "claim": "Jire carried the the lifeless body of her one-year-old infant Jimato for some 168 days.",
+      "gold": "FALSE",
+      "a": "FALSE",
+      "b": "TRUE",
+      "evidenceOverlap": 0.667
+    },
+    {
+      "id": "fact171",
+      "claim": "Lara Fernández, conocida artísticamente como Judeline, nació en Granada en 2003.",
+      "gold": "FALSE",
+      "a": "FALSE",
+      "b": "TRUE",
+      "evidenceOverlap": 0.429
+    }
+  ],
+  "gold": {
+    "accuracyA": 0.4492753623188406,
+    "accuracyB": 0.42028985507246375,
+    "comparison": {
+      "a": 0.4492753623188406,
+      "b": 0.42028985507246375,
+      "difference": -0.02898550724637683,
+      "low": -0.10144927536231885,
+      "high": 0.04347826086956519,
+      "undefinedResamples": 0
+    },
+    "onlyA": 4,
+    "onlyB": 2
+  }
+}

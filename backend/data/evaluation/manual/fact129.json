@@ -11,7 +11,7 @@
     "https://www.fairhealth.org/article/from-2018-to-2022-eating-disorder-claim-lines-increased-65-percent-nationally-as-a-percentage-of-all-medical-claim-lines",
     "https://www.ajmc.com/view/eating-disorder-claim-lines-rose-65-across-nation-from-2018-to-2022"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact129",
   "topic": "mental_health",
   "claimType": "numerical",

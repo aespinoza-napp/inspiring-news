@@ -11,7 +11,7 @@
     "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/sanidad14/paginas/2026/160126-balance-trasplantes-2025.aspx",
     "https://www.sanidad.gob.es/va/gabinete/notasPrensa.do?id=6828"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact118",
   "topic": "public_health",
   "claimType": "factual",

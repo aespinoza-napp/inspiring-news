@@ -11,7 +11,7 @@
     "https://www.jordannews.jo/Section-129/Technology/Can-a-machine-learn-morality-10554",
     "https://www.geekwire.com/2021/teaching-artificial-intelligence-right-from-wrong-new-tool-from-ai2-aims-to-model-ethical-judgments/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact128",
   "topic": "technology",
   "claimType": "numerical",

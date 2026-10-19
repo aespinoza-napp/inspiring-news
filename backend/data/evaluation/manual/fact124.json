@@ -11,7 +11,7 @@
     "https://doi.org/10.1017/S0033291726105315",
     "https://www.news-medical.net/news/20260902/Progesterone-levels-linked-to-brain-patterns-underlying-mood-changes.aspx"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact124",
   "topic": "mental_health",
   "claimType": "factual",

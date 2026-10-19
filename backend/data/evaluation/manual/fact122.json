@@ -12,7 +12,7 @@
     "https://www.dlr.de/en/latest/news/2024/juice-space-probe-flies-by-the-moon-and-earth",
     "https://www.skyatnightmagazine.com/news/comet-3i-atlas-juice-janus"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact122",
   "topic": "space",
   "claimType": "factual",

@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://www.nature.com/articles/s41593-026-02363-4"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact012",
   "topic": "medicine",
   "claimType": "factual",

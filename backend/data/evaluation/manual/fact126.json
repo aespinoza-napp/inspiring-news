@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://www.pewresearch.org/internet/2026/06/17/americans-and-ai-2026-chatbots-smart-devices-and-views-on-impact/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact126",
   "topic": "technology",
   "claimType": "numerical",

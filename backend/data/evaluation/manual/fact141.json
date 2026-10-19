@@ -11,7 +11,7 @@
     "https://bpb-us-e1.wpmucdn.com/sites.mit.edu/dist/d/2418/files/2026/08/AI-Committee-Final-Report-Aug-13.pdf",
     "https://govtech.com/education/higher-ed/mit-outlines-responsible-use-policy-recommendations-for-ai"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact141",
   "topic": "education",
   "claimType": "factual",

@@ -11,7 +11,7 @@
     "https://hcfl.gov/newsroom/2026/09/24/dengue-fever-prompts-hillsborough-county-to-declare-state-of-local-emergency",
     "https://baynews9.com/fl/tampa/news/2026/09/24/pasco-county-issues-local-state-of-emergency-on-dengue-fever"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact036",
   "topic": "public_health",
   "claimType": "numerical",

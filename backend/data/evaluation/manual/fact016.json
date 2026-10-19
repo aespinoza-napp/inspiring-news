@@ -11,7 +11,7 @@
     "https://bookbunk.org/collections/",
     "https://bookbunk.org/about-us/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact016",
   "topic": "education",
   "claimType": "numerical",

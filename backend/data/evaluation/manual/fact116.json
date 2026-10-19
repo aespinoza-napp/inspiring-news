@@ -11,7 +11,7 @@
     "https://www.mondosonoro.com/blog-musica/mejores-discos-2024-nacionales/",
     "https://www.rockdelux.com/en/listas/2024--discos-nacionales"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact116",
   "topic": "entertainment",
   "claimType": "interpretive",

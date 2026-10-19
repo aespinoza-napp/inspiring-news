@@ -1,0 +1,93 @@
+
+=== qwen3.5:4b, en, review 1
+Draft add710ea75efc08f: correction discarded: it has figures the draft does not: 1
+106.4 s; calls [75.5, 30.3] s; tokens 1927 in / 663 out; metrics parsed 7 of 7
+model's scores: title 60, subtitle 0, grammar 100, factConsistency 40, seo 80, hallucinationIndex 30, style 70
+  missed  spelling: it's for its
+  FOUND   figure: 3 million where [1] says 1.2
+  FOUND   the claim judged FALSE, stated
+correction: not offered: it has figures the draft does not: 1
+issues the model raised - read for invented ones:
+  - title: Too short (3 words), missing key context.
+  - title: Does not clearly promise the specific outcome described in the body.
+  - title: Lacks the location 'Barceloneta' which is central to the story.
+  - subtitle: No subtitle provided as per draft data.
+  - subtitle: Fails to add context or summarize the impact for search snippets.
+  - factConsistency: Claims funding was 3 million euros; Source [1] says 1.2 million euros.
+  - factConsistency: States the bay is 'completely free of plastic pollution'; Source [1] says 'Plastic waste remains a problem'.
+  - factConsistency: Fact-checks marked the plastic claim as FALSE.
+  - seo: Headline is too vague; adding 'Barceloneta' and 'replanting' would help.
+  - seo: No subheadings to break up the short body text.
+  - hallucinationIndex: Claims 3 million euros funding; Source [1] excerpt states 1.2 million euros.
+  - hallucinationIndex: Claims bay is free of plastic pollution; Source [1] explicitly states plastic waste remains a problem.
+  - hallucinationIndex: Cites Source [2] for fish counts, but the excerpt does not mention '2025' (only implies comparison).
+  - style: Body text is very short and lacks descriptive subheadings.
+  - style: Sentence structure is simple; could benefit from more active, engaging phrasing.
+  - style: Missing a clear narrative arc beyond just listing facts.
+
+=== qwen3.5:4b, ca, review 1
+142.2 s; calls [99.2, 43.0] s; tokens 2100 in / 913 out; metrics parsed 7 of 7
+model's scores: title 60, subtitle 40, grammar 95, factConsistency 30, seo 85, hallucinationIndex 40, style 75
+  FOUND   spelling: esta for està
+  FOUND   the claim judged FALSE, stated
+correction: offered
+issues the model raised - read for invented ones:
+  - title: Too short; could benefit from including 'Barceloneta' or 'seagrass' earlier for clarity.
+  - title: Lacks a strong hook regarding the positive impact (e.g., fish return).
+  - subtitle: States 'completament lliure de contaminació per plàstics' which is FALSE according to fact-checks and contradicts Source [1] ('Plastic waste remains a problem').
+  - subtitle: Exceeds the recommended character count slightly and feels promotional rather than factual.
+  - subtitle: Creates a false impression of total success where none exists regarding plastic pollution.
+  - grammar: Typo: 'La badia ja esta completament...' should be 'està'.
+  - factConsistency: Claims the bay is 'completament lliure de contaminació per plàstics' [2], but Source [1] explicitly states 'Plastic waste remains a problem', and Fact-Checks mark this as FALSE.
+  - factConsistency: Cites Source [1] for funding figures which are accurate, but fails to align the plastic claim with the source's warning.
+  - factConsistency: The 4.2 hectares figure is consistent with Source [1].
+  - seo: Could benefit from a more descriptive subheading to improve search visibility beyond the current short form.
+  - seo: The body is quite short for typical SEO standards; adding more context on the fish return or volunteer effort would help.
+  - hallucinationIndex: Claims 'La badia ja esta completament lliure de contaminació per plàstics' which is NOT in Source [1] (which says plastic remains a problem) and contradicts Fact-Checks.
+  - hallucinationIndex: Source [2] only mentions fish counts, not plastic pollution; citing it for the plastic claim is a hallucination of content.
+  - hallucinationIndex: All other claims (4.2 hectares, 30% more fish, funding amount) are supported by the sources.
+  - style: The tone shifts from sober reporting to hype when claiming 'completament lliure de contaminació'.
+  - style: Could be more precise in describing the progress (e.g., 'significant reduction' vs 'completely free').
+
+=== qwen3.5:4b, en, review 2
+LLM returned non-JSON content on attempt 0
+LLM returned non-JSON content on attempt 1
+487.6 s; calls [378.6, 84.5, 24.5] s; tokens 5324 in / 3592 out; metrics parsed 0 of 7
+model's scores: title 0, subtitle 0, grammar 0, factConsistency 0, seo 0, hallucinationIndex 0, style 0
+  missed  spelling: it's for its
+  missed  figure: 3 million where [1] says 1.2
+  missed  the claim judged FALSE, stated
+correction: offered
+issues the model raised - read for invented ones:
+  - (none)
+
+=== qwen3.5:4b, ca, review 2
+Draft 9ff05472b664b731: correction discarded: it has figures the draft does not: 100
+129.5 s; calls [81.7, 47.8] s; tokens 2029 in / 870 out; metrics parsed 7 of 7
+model's scores: title 60, subtitle 40, grammar 95, factConsistency 40, seo 75, hallucinationIndex 50, style 85
+  FOUND   spelling: esta for està
+  FOUND   the claim judged FALSE, stated
+correction: not offered: it has figures the draft does not: 100
+issues the model raised - read for invented ones:
+  - title: Too short; misses key context like 'Barcelona' or 'beach'.
+  - title: Could be more descriptive to improve search visibility.
+  - title: Does not explicitly mention the positive outcome (restoration success).
+  - subtitle: Claims plastic pollution is completely gone, which is FALSE according to fact-checks.
+  - subtitle: Overstates the achievement; the source says plastic remains a problem.
+  - subtitle: Should reflect the actual progress rather than presenting it as complete success.
+  - grammar: 'La badia ja esta' should be 'la badia ja està' (accent missing).
+  - grammar: Otherwise correct spelling and punctuation.
+  - factConsistency: States the bay is 'completament lliure de contaminació per plàstics', but source [1] says 'Plastic waste remains a problem'.
+  - factConsistency: This contradicts the fact-check verdict of FALSE (confidence 0.90).
+  - factConsistency: All other claims appear consistent with sources.
+  - seo: Headline lacks 'Barcelona' for better local search relevance.
+  - seo: Body is very short; needs more descriptive subheadings and content to rank well.
+  - seo: Could benefit from a longer, more specific title.
+  - hallucinationIndex: Source [1] explicitly states 'Plastic waste remains a problem', but the draft claims the bay is free of plastic pollution.
+  - hallucinationIndex: This creates a hallucination where the draft asserts something the source denies.
+  - hallucinationIndex: Other figures (4.2 hectares, 30% more fish) are supported by sources.
+  - style: Tone is generally positive and constructive.
+  - style: However, the factual error undermines the credibility of the constructive message.
+  - style: Could expand on the volunteer aspect to better reflect the 'constructive' nature of the project.
+
+qwen3.5:4b: 6 of 10 planted defects found by the model; corrections offered 2 of 4; seconds per review 106.4, 142.2, 487.6, 129.5

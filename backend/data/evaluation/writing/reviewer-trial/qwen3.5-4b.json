@@ -1,0 +1,251 @@
+{
+  "model": "qwen3.5:4b",
+  "results": [
+    {
+      "language": "en",
+      "seconds": 106.4,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1927,
+        "completionTokens": 663,
+        "latency": 105.76
+      },
+      "perCall": [
+        75.5,
+        30.3
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 60.0,
+        "subtitle": 0.0,
+        "grammar": 100.0,
+        "factConsistency": 40.0,
+        "seo": 80.0,
+        "hallucinationIndex": 30.0,
+        "style": 70.0
+      },
+      "found": {
+        "spelling: it's for its": false,
+        "figure: 3 million where [1] says 1.2": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: Too short (3 words), missing key context.",
+        "title: Does not clearly promise the specific outcome described in the body.",
+        "title: Lacks the location 'Barceloneta' which is central to the story.",
+        "subtitle: No subtitle provided as per draft data.",
+        "subtitle: Fails to add context or summarize the impact for search snippets.",
+        "factConsistency: Claims funding was 3 million euros; Source [1] says 1.2 million euros.",
+        "factConsistency: States the bay is 'completely free of plastic pollution'; Source [1] says 'Plastic waste remains a problem'.",
+        "factConsistency: Fact-checks marked the plastic claim as FALSE.",
+        "seo: Headline is too vague; adding 'Barceloneta' and 'replanting' would help.",
+        "seo: No subheadings to break up the short body text.",
+        "hallucinationIndex: Claims 3 million euros funding; Source [1] excerpt states 1.2 million euros.",
+        "hallucinationIndex: Claims bay is free of plastic pollution; Source [1] explicitly states plastic waste remains a problem.",
+        "hallucinationIndex: Cites Source [2] for fish counts, but the excerpt does not mention '2025' (only implies comparison).",
+        "style: Body text is very short and lacks descriptive subheadings.",
+        "style: Sentence structure is simple; could benefit from more active, engaging phrasing.",
+        "style: Missing a clear narrative arc beyond just listing facts."
+      ],
+      "final": {
+        "title": 60.0,
+        "subtitle": 0.0,
+        "grammar": 100.0,
+        "factConsistency": 40.0,
+        "coverageVerification": 38.9,
+        "seo": 80.0,
+        "readability": 74.4,
+        "hallucinationIndex": 30.0,
+        "style": 70.0
+      },
+      "proposal": "not offered: it has figures the draft does not: 1",
+      "corrected": null
+    },
+    {
+      "language": "ca",
+      "seconds": 142.2,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 2100,
+        "completionTokens": 913,
+        "latency": 142.1631
+      },
+      "perCall": [
+        99.2,
+        43.0
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 60.0,
+        "subtitle": 40.0,
+        "grammar": 95.0,
+        "factConsistency": 30.0,
+        "seo": 85.0,
+        "hallucinationIndex": 40.0,
+        "style": 75.0
+      },
+      "found": {
+        "spelling: esta for està": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: Too short; could benefit from including 'Barceloneta' or 'seagrass' earlier for clarity.",
+        "title: Lacks a strong hook regarding the positive impact (e.g., fish return).",
+        "subtitle: States 'completament lliure de contaminació per plàstics' which is FALSE according to fact-checks and contradicts Source [1] ('Plastic waste remains a problem').",
+        "subtitle: Exceeds the recommended character count slightly and feels promotional rather than factual.",
+        "subtitle: Creates a false impression of total success where none exists regarding plastic pollution.",
+        "grammar: Typo: 'La badia ja esta completament...' should be 'està'.",
+        "factConsistency: Claims the bay is 'completament lliure de contaminació per plàstics' [2], but Source [1] explicitly states 'Plastic waste remains a problem', and Fact-Checks mark this as FALSE.",
+        "factConsistency: Cites Source [1] for funding figures which are accurate, but fails to align the plastic claim with the source's warning.",
+        "factConsistency: The 4.2 hectares figure is consistent with Source [1].",
+        "seo: Could benefit from a more descriptive subheading to improve search visibility beyond the current short form.",
+        "seo: The body is quite short for typical SEO standards; adding more context on the fish return or volunteer effort would help.",
+        "hallucinationIndex: Claims 'La badia ja esta completament lliure de contaminació per plàstics' which is NOT in Source [1] (which says plastic remains a problem) and contradicts Fact-Checks.",
+        "hallucinationIndex: Source [2] only mentions fish counts, not plastic pollution; citing it for the plastic claim is a hallucination of content.",
+        "hallucinationIndex: All other claims (4.2 hectares, 30% more fish, funding amount) are supported by the sources.",
+        "style: The tone shifts from sober reporting to hype when claiming 'completament lliure de contaminació'.",
+        "style: Could be more precise in describing the progress (e.g., 'significant reduction' vs 'completely free')."
+      ],
+      "final": {
+        "title": 60.0,
+        "subtitle": 40.0,
+        "grammar": 95.0,
+        "factConsistency": 30.0,
+        "coverageVerification": 39.4,
+        "seo": 85.0,
+        "readability": 85.9,
+        "hallucinationIndex": 40.0,
+        "style": 75.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "La posidònia torna a la Barceloneta: recuperació de la praderia",
+        "subtitle": "Diu anys de replantació han duplicat l'espai i augmenten els peixos, tot i que el plàstic segueix sent un repte.",
+        "body": "Davant la platja de la Barceloneta, deu anys de replantació han fet tornar la posidònia. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\nEls bussejadors van comptar un 30% més de peixos joves el 2025 que el 2020 [2]. Tot i aquest èxit, el plàstic segueix sent un repte per a la badia.\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris van fer la major part de la plantació."
+      }
+    },
+    {
+      "language": "en",
+      "seconds": 487.6,
+      "usage": {
+        "calls": 3,
+        "failedCalls": 0,
+        "promptTokens": 5324,
+        "completionTokens": 3592,
+        "latency": 487.5914
+      },
+      "perCall": [
+        378.6,
+        84.5,
+        24.5
+      ],
+      "error": null,
+      "parsed": 0,
+      "of": 7,
+      "scores": {
+        "title": 0.0,
+        "subtitle": 0.0,
+        "grammar": 0.0,
+        "factConsistency": 0.0,
+        "seo": 0.0,
+        "hallucinationIndex": 0.0,
+        "style": 0.0
+      },
+      "found": {
+        "spelling: it's for its": false,
+        "figure: 3 million where [1] says 1.2": false,
+        "the claim judged FALSE, stated": false
+      },
+      "issues": [],
+      "final": {
+        "title": 0.0,
+        "subtitle": 0.0,
+        "grammar": 0.0,
+        "factConsistency": 0.0,
+        "coverageVerification": 38.9,
+        "seo": 0.0,
+        "readability": 74.4,
+        "hallucinationIndex": 0.0,
+        "style": 0.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "Seagrass restoration returns fish to Barceloneta beach",
+        "subtitle": "Ten years of replanting has restored the meadow, though plastic pollution remains.",
+        "body": "Off Barceloneta beach, ten years of replanting have brought seagrass back. The restored meadow now covers 4.2 hectares, twice its 2015 area [1].\n\nDivers counted 30% more juvenile fish in 2025 than in 2020 [2]. Plastic pollution is still present in the bay.\n\n## Who made it possible\n\nThe city council funded the project with 3 million euros [1], and volunteers did most of the planting."
+      }
+    },
+    {
+      "language": "ca",
+      "seconds": 129.5,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 2029,
+        "completionTokens": 870,
+        "latency": 129.4761
+      },
+      "perCall": [
+        81.7,
+        47.8
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 60.0,
+        "subtitle": 40.0,
+        "grammar": 95.0,
+        "factConsistency": 40.0,
+        "seo": 75.0,
+        "hallucinationIndex": 50.0,
+        "style": 85.0
+      },
+      "found": {
+        "spelling: esta for està": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: Too short; misses key context like 'Barcelona' or 'beach'.",
+        "title: Could be more descriptive to improve search visibility.",
+        "title: Does not explicitly mention the positive outcome (restoration success).",
+        "subtitle: Claims plastic pollution is completely gone, which is FALSE according to fact-checks.",
+        "subtitle: Overstates the achievement; the source says plastic remains a problem.",
+        "subtitle: Should reflect the actual progress rather than presenting it as complete success.",
+        "grammar: 'La badia ja esta' should be 'la badia ja està' (accent missing).",
+        "grammar: Otherwise correct spelling and punctuation.",
+        "factConsistency: States the bay is 'completament lliure de contaminació per plàstics', but source [1] says 'Plastic waste remains a problem'.",
+        "factConsistency: This contradicts the fact-check verdict of FALSE (confidence 0.90).",
+        "factConsistency: All other claims appear consistent with sources.",
+        "seo: Headline lacks 'Barcelona' for better local search relevance.",
+        "seo: Body is very short; needs more descriptive subheadings and content to rank well.",
+        "seo: Could benefit from a longer, more specific title.",
+        "hallucinationIndex: Source [1] explicitly states 'Plastic waste remains a problem', but the draft claims the bay is free of plastic pollution.",
+        "hallucinationIndex: This creates a hallucination where the draft asserts something the source denies.",
+        "hallucinationIndex: Other figures (4.2 hectares, 30% more fish) are supported by sources.",
+        "style: Tone is generally positive and constructive.",
+        "style: However, the factual error undermines the credibility of the constructive message.",
+        "style: Could expand on the volunteer aspect to better reflect the 'constructive' nature of the project."
+      ],
+      "final": {
+        "title": 60.0,
+        "subtitle": 40.0,
+        "grammar": 95.0,
+        "factConsistency": 40.0,
+        "coverageVerification": 39.4,
+        "seo": 75.0,
+        "readability": 85.9,
+        "hallucinationIndex": 50.0,
+        "style": 85.0
+      },
+      "proposal": "not offered: it has figures the draft does not: 100",
+      "corrected": null
+    }
+  ]
+}

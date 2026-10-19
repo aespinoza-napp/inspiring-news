@@ -11,7 +11,7 @@
     "https://macan-wine.com/en/benjamin-de-rothschild/",
     "https://okdiario.com/coolthelifestyle/lifestyle/vega-sicilia-rothschild-macan-bodegas-entrevista-542724"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact066",
   "topic": "food",
   "claimType": "factual",

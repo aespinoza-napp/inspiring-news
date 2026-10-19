@@ -1,0 +1,204 @@
+{
+  "runA": {
+    "run": "data\\evaluation\\runs\\manual-test\\llama3.2-3b\\2605a2c02380",
+    "key": "2605a2c02380",
+    "dataset": "manual-test",
+    "startedAt": "2026-10-19T07:49:56+00:00"
+  },
+  "runB": {
+    "run": "data\\evaluation\\runs\\manual-test-recheck\\llama3.2-3b\\41a44a11d699",
+    "key": "41a44a11d699",
+    "dataset": "manual-test-recheck",
+    "startedAt": "2026-10-19T09:40:38+00:00"
+  },
+  "model": "llama3.2:3b",
+  "seed": 2026,
+  "resamples": 10000,
+  "shared": 14,
+  "onlyA": [
+    "fact001",
+    "fact002",
+    "fact004",
+    "fact005",
+    "fact006",
+    "fact013",
+    "fact014",
+    "fact017",
+    "fact018",
+    "fact019",
+    "fact024",
+    "fact025",
+    "fact028",
+    "fact029",
+    "fact030",
+    "fact035",
+    "fact045",
+    "fact046",
+    "fact047",
+    "fact048",
+    "fact050",
+    "fact052",
+    "fact054",
+    "fact055",
+    "fact056",
+    "fact058",
+    "fact074",
+    "fact075",
+    "fact076",
+    "fact078",
+    "fact079",
+    "fact080",
+    "fact094",
+    "fact095",
+    "fact096",
+    "fact112",
+    "fact113",
+    "fact119",
+    "fact120",
+    "fact121",
+    "fact130",
+    "fact131",
+    "fact134",
+    "fact147",
+    "fact148",
+    "fact152",
+    "fact157",
+    "fact160",
+    "fact161",
+    "fact166",
+    "fact167",
+    "fact168",
+    "fact170",
+    "fact173",
+    "fact175",
+    "fact177"
+  ],
+  "onlyB": [],
+  "scored": 14,
+  "setApart": {},
+  "verdict": {
+    "n": 14,
+    "agreement": 0.9285714285714286,
+    "kappa": 0.8372093023255814,
+    "ci": {
+      "agreement": {
+        "low": 0.7857142857142857,
+        "high": 1.0,
+        "undefinedResamples": 0
+      },
+      "kappa": {
+        "low": 0.4399999999999997,
+        "high": 1.0,
+        "undefinedResamples": 28
+      }
+    }
+  },
+  "rawVerdict": {
+    "n": 14,
+    "agreement": 0.9285714285714286,
+    "kappa": 0.8372093023255814,
+    "ci": {
+      "agreement": {
+        "low": 0.7857142857142857,
+        "high": 1.0,
+        "undefinedResamples": 0
+      },
+      "kappa": {
+        "low": 0.4399999999999997,
+        "high": 1.0,
+        "undefinedResamples": 28
+      }
+    }
+  },
+  "firstPass": {
+    "n": 14,
+    "agreement": 0.9285714285714286,
+    "kappa": 0.8108108108108109,
+    "ci": {
+      "agreement": {
+        "low": 0.7857142857142857,
+        "high": 1.0,
+        "undefinedResamples": 0
+      },
+      "kappa": {
+        "low": 0.0,
+        "high": 1.0,
+        "undefinedResamples": 98
+      }
+    }
+  },
+  "confusion": {
+    "TRUE": {
+      "TRUE": 4,
+      "PARTIALLY_TRUE": 0,
+      "MISLEADING": 0,
+      "FALSE": 0,
+      "UNVERIFIED": 0
+    },
+    "PARTIALLY_TRUE": {
+      "TRUE": 0,
+      "PARTIALLY_TRUE": 0,
+      "MISLEADING": 0,
+      "FALSE": 0,
+      "UNVERIFIED": 0
+    },
+    "MISLEADING": {
+      "TRUE": 0,
+      "PARTIALLY_TRUE": 0,
+      "MISLEADING": 0,
+      "FALSE": 0,
+      "UNVERIFIED": 0
+    },
+    "FALSE": {
+      "TRUE": 1,
+      "PARTIALLY_TRUE": 0,
+      "MISLEADING": 0,
+      "FALSE": 9,
+      "UNVERIFIED": 0
+    },
+    "UNVERIFIED": {
+      "TRUE": 0,
+      "PARTIALLY_TRUE": 0,
+      "MISLEADING": 0,
+      "FALSE": 0,
+      "UNVERIFIED": 0
+    }
+  },
+  "evidenceOverlap": {
+    "mean": 0.5841836734693878,
+    "ci": {
+      "low": 0.3869047619047619,
+      "high": 0.7738307823129249
+    },
+    "identical": 5,
+    "disjoint": 2
+  },
+  "changedOnSameEvidence": [],
+  "changedWithEvidence": [
+    "fact057"
+  ],
+  "changes": [
+    {
+      "id": "fact057",
+      "claim": "Taking first place for Young Bird Photographer of the Year was 16-year-old photographer Parham Pourahmad, from the US, with the shot Moonlit Night.",
+      "gold": "TRUE",
+      "a": "FALSE",
+      "b": "TRUE",
+      "evidenceOverlap": 0.0
+    }
+  ],
+  "gold": {
+    "accuracyA": 0.5,
+    "accuracyB": 0.5714285714285714,
+    "comparison": {
+      "a": 0.5,
+      "b": 0.5714285714285714,
+      "difference": 0.0714285714285714,
+      "low": 0.0,
+      "high": 0.21428571428571436,
+      "undefinedResamples": 0
+    },
+    "onlyA": 0,
+    "onlyB": 1
+  }
+}

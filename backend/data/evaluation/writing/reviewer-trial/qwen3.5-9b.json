@@ -1,0 +1,248 @@
+{
+  "model": "qwen3.5:9b",
+  "results": [
+    {
+      "language": "en",
+      "seconds": 200.3,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1891,
+        "completionTokens": 776,
+        "latency": 199.6738
+      },
+      "perCall": [
+        146.7,
+        53.0
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 85.0,
+        "subtitle": 40.0,
+        "grammar": 95.0,
+        "factConsistency": 0.0,
+        "seo": 70.0,
+        "hallucinationIndex": 0.0,
+        "style": 80.0
+      },
+      "found": {
+        "spelling: it's for its": true,
+        "figure: 3 million where [1] says 1.2": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: The title 'Seagrass' is too generic; it lacks specificity about the location or achievement promised in the body.",
+        "subtitle: The draft has no subtitle, violating the requirement for one or two sentences (120-160 characters) that adds context to the title.",
+        "grammar: Minor typo: 'it's' should be 'its' in the first paragraph ('twice it's 2015 area').",
+        "factConsistency: The draft states 'The bay is now completely free of plastic pollution' citing source [1]. Source [1] explicitly says 'Plastic waste remains a problem in the bay'. This contradicts the source text and the fact-check verdict (FALSE).",
+        "factConsistency: Source [1] states funding was 1.2 million euros, but the draft claims 3 million euros.",
+        "seo: Lack of descriptive subheadings in the body (only one H2 present).",
+        "seo: Title is too short and generic for effective SEO.",
+        "hallucinationIndex: Claim '3 million euros' has no support in source [1] (which says 1.2 million).",
+        "hallucinationIndex: Claim 'completely free of plastic pollution' is contradicted by source [1] and fact-checks.",
+        "style: The tone becomes misleading due to the false claim about plastic pollution, which violates the 'accurate and without hype' instruction."
+      ],
+      "final": {
+        "title": 85.0,
+        "subtitle": 20.0,
+        "grammar": 95.0,
+        "factConsistency": 0.0,
+        "coverageVerification": 38.9,
+        "seo": 70.0,
+        "readability": 74.4,
+        "hallucinationIndex": 0.0,
+        "style": 80.0
+      },
+      "proposal": "not offered: it has figures the draft does not: 1",
+      "corrected": null
+    },
+    {
+      "language": "ca",
+      "seconds": 223.6,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1993,
+        "completionTokens": 968,
+        "latency": 223.5985
+      },
+      "perCall": [
+        158.3,
+        65.3
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 85.0,
+        "subtitle": 60.0,
+        "grammar": 95.0,
+        "factConsistency": 0.0,
+        "seo": 80.0,
+        "hallucinationIndex": 20.0,
+        "style": 75.0
+      },
+      "found": {
+        "spelling: esta for està": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: The title is slightly under the recommended 50-70 character range (49 characters), though acceptable.",
+        "subtitle: The subtitle claims the bay is 'completament lliure de contaminació per plàstics' (completely free of plastic pollution). Source [1] explicitly states 'Plastic waste remains a problem in the bay'. Fact-check verdict is FALSE. This is a critical failure in factConsistency and hallucinationIndex.",
+        "subtitle: Length is appropriate (approx 130 chars).",
+        "factConsistency: Draft claims: 'La badia ja esta completament lliure de contaminació per plàstics.'",
+        "factConsistency: Source [1] states: 'Plastic waste remains a problem in the bay'.",
+        "factConsistency: Fact-check verdict: FALSE for the claim that the bay is free of plastic pollution.",
+        "factConsistency: The draft presents this false claim as an established fact without qualification, violating the instruction to report accurately.",
+        "seo: Subheadings are minimal (only one section header). For a longer body, more descriptive subheadings would improve SEO structure.",
+        "hallucinationIndex: Claim: 'La badia ja esta completament lliure de contaminació per plàstics.'",
+        "hallucinationIndex: Support in sources: None. Source [1] says the opposite ('Plastic waste remains a problem').",
+        "hallucinationIndex: This is a hallucination relative to the provided source text and fact-checks.",
+        "style: The article fails the 'without hype' and 'accurately' criteria by stating a proven falsehood as fact.",
+        "style: Constructive tone is present in other sections (mentioning volunteers)."
+      ],
+      "final": {
+        "title": 85.0,
+        "subtitle": 60.0,
+        "grammar": 95.0,
+        "factConsistency": 0.0,
+        "coverageVerification": 39.4,
+        "seo": 80.0,
+        "readability": 85.9,
+        "hallucinationIndex": 20.0,
+        "style": 75.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "La posidònia torna a la Barceloneta després de deu anys",
+        "subtitle": "La replantació ha duplicat l'extensió de la praderia, tot i que els residus plàstics segueixen sent un problema a la badia.",
+        "body": "Davant la platja de la Barceloneta, deu anys de treball han fet tornar la posidònia. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\nEls bussejadors van comptar un 30% més de peixos joves el 2025 que el 2020 [2]. No obstant això, els residus plàstics continuen sent un problema a la badia.\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris van fer la major part de la plantació."
+      }
+    },
+    {
+      "language": "en",
+      "seconds": 209.6,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 2006,
+        "completionTokens": 904,
+        "latency": 209.6314
+      },
+      "perCall": [
+        155.1,
+        54.6
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 85.0,
+        "subtitle": 40.0,
+        "grammar": 95.0,
+        "factConsistency": 0.0,
+        "seo": 70.0,
+        "hallucinationIndex": 20.0,
+        "style": 60.0
+      },
+      "found": {
+        "spelling: it's for its": true,
+        "figure: 3 million where [1] says 1.2": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: The title 'Seagrass' is too generic; it lacks the specific location (Barceloneta) or action (restoration) which would make it more informative within the 50-70 character limit.",
+        "subtitle: Missing entirely. The instructions require a subtitle (standfirst) that adds to the title and works as a search snippet.",
+        "subtitle: Even if added later, the current body contains a major factual error regarding plastic pollution that any subtitle would need to address or avoid.",
+        "grammar: Typo: 'it's' in the first paragraph should be 'its' (possessive).",
+        "grammar: Missing period at the end of the second paragraph.",
+        "factConsistency: The draft states: 'The bay is now completely free of plastic pollution.' This directly contradicts Source [1] which says 'Plastic waste remains a problem in the bay' and the Fact-Check verdict which labels this claim as FALSE.",
+        "factConsistency: Source [1] states the funding was 1.2 million euros, but the draft claims 3 million euros.",
+        "seo: Title 'Seagrass' is too short and lacks key search terms like 'Barceloneta' or 'restoration'.",
+        "seo: No subheadings exist in the body to break up text for web readability.",
+        "hallucinationIndex: Claim: '3 million euros' funding. Source [1] explicitly says '1.2 million euros'. This is a hallucination/error relative to the source.",
+        "hallucinationIndex: Claim: 'completely free of plastic pollution'. Source [1] says 'Plastic waste remains a problem'. This is unsupported and contradicted by the source.",
+        "style: The article presents a false claim ('completely free of plastic pollution') as an established fact, which violates the instruction to report accurately without hype or misinformation.",
+        "style: The lack of a subtitle makes it feel incomplete for a news publication."
+      ],
+      "final": {
+        "title": 85.0,
+        "subtitle": 20.0,
+        "grammar": 95.0,
+        "factConsistency": 0.0,
+        "coverageVerification": 38.9,
+        "seo": 70.0,
+        "readability": 74.4,
+        "hallucinationIndex": 20.0,
+        "style": 60.0
+      },
+      "proposal": "not offered: it has figures the draft does not: 1",
+      "corrected": null
+    },
+    {
+      "language": "ca",
+      "seconds": 203.3,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1993,
+        "completionTokens": 968,
+        "latency": 203.3397
+      },
+      "perCall": [
+        155.9,
+        47.4
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 85.0,
+        "subtitle": 60.0,
+        "grammar": 95.0,
+        "factConsistency": 0.0,
+        "seo": 80.0,
+        "hallucinationIndex": 20.0,
+        "style": 75.0
+      },
+      "found": {
+        "spelling: esta for està": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: The title is slightly under the recommended 50-70 character range (49 characters), though acceptable.",
+        "subtitle: The subtitle claims the bay is 'completament lliure de contaminació per plàstics' (completely free of plastic pollution). Source [1] explicitly states 'Plastic waste remains a problem in the bay'. Fact-check verdict is FALSE. This is a critical failure in factConsistency and hallucinationIndex.",
+        "subtitle: Length is appropriate (approx 130 chars).",
+        "factConsistency: Draft claims: 'La badia ja esta completament lliure de contaminació per plàstics.'",
+        "factConsistency: Source [1] states: 'Plastic waste remains a problem in the bay'.",
+        "factConsistency: Fact-check verdict: FALSE for the claim that the bay is free of plastic pollution.",
+        "factConsistency: The draft presents this false claim as an established fact without qualification, violating the instruction to report accurately.",
+        "seo: Subheadings are minimal (only one section header). For a longer body, more descriptive subheadings would improve SEO structure.",
+        "hallucinationIndex: Claim: 'La badia ja esta completament lliure de contaminació per plàstics.'",
+        "hallucinationIndex: Support in sources: None. Source [1] says the opposite ('Plastic waste remains a problem').",
+        "hallucinationIndex: This is a hallucination relative to the provided source text and fact-checks.",
+        "style: The article fails the 'without hype' and 'accurately' criteria by stating a proven falsehood as fact.",
+        "style: Constructive tone is present in other sections (mentioning volunteers)."
+      ],
+      "final": {
+        "title": 85.0,
+        "subtitle": 60.0,
+        "grammar": 95.0,
+        "factConsistency": 0.0,
+        "coverageVerification": 39.4,
+        "seo": 80.0,
+        "readability": 85.9,
+        "hallucinationIndex": 20.0,
+        "style": 75.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "La posidònia torna a la Barceloneta després de deu anys",
+        "subtitle": "La replantació ha duplicat l'extensió de la praderia, tot i que els residus plàstics segueixen sent un problema a la badia.",
+        "body": "Davant la platja de la Barceloneta, deu anys de treball han fet tornar la posidònia. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\nEls bussejadors van comptar un 30% més de peixos joves el 2025 que el 2020 [2]. No obstant això, els residus plàstics continuen sent un problema a la badia.\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris van fer la major part de la plantació."
+      }
+    }
+  ]
+}

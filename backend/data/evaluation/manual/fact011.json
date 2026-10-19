@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://www.abc.es/sevilla/ciudad/ronda-urbana-norte-gran-bulevar-verde-finales-20260927070433-nts.html"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact011",
   "topic": "cities",
   "claimType": "numerical",

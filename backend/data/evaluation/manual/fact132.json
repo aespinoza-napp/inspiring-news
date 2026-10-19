@@ -11,7 +11,7 @@
     "https://news.bloomberglaw.com/energy/data-centers-plan-to-boost-on-site-gas-power-57-fold-bnef-says",
     "https://humanprogress.org/us-data-centers-are-driving-a-surge-in-gas-fired-power-projects/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact132",
   "topic": "energy",
   "claimType": "numerical",

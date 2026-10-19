@@ -1,0 +1,1388 @@
+{
+  "run": {
+    "key": "8ef44d0de909",
+    "model": "qwen3.5:9b",
+    "provider": "host.docker.internal:11434",
+    "dataset": {
+      "path": "data/evaluation/manual",
+      "stem": "manual-train",
+      "sha256": "b261d136c66223f70f791fd59e17871f058511d5be2c143e0e03e4819f69e941",
+      "rows": 69,
+      "kinds": [
+        "custom"
+      ]
+    },
+    "harnessVersion": 1,
+    "thresholdsHash": "95cb7cf5a88b",
+    "thresholdsOverridden": {},
+    "corpus": {
+      "mode": "snapshot",
+      "points": 12
+    },
+    "mode": "oracle",
+    "label": null,
+    "gitCommits": [
+      "4e0e67ff3f1ead6fc8b99714dd8ec96f5f5b0c30-dirty"
+    ],
+    "records": 69,
+    "notRun": 0
+  },
+  "bootstrap": {
+    "seed": 2026,
+    "resamples": 10000,
+    "level": 0.95
+  },
+  "outcomes": {
+    "error": {
+      "count": 0,
+      "ids": []
+    },
+    "searchUnavailable": {
+      "count": 0,
+      "ids": []
+    },
+    "llmUnreachable": {
+      "count": 0,
+      "ids": []
+    },
+    "scored": {
+      "count": 69,
+      "ids": null
+    }
+  },
+  "flags": {
+    "temporalLeak": {
+      "flagged": [
+        "fact088",
+        "fact146",
+        "fact176"
+      ],
+      "clear": 66,
+      "undetermined": 0
+    },
+    "verdictLeak": {
+      "flagged": [],
+      "clear": 0,
+      "notApplicable": 69
+    },
+    "newerUncitedSources": {
+      "sources": 0,
+      "claims": 0
+    },
+    "invalidOutput": []
+  },
+  "metrics": {
+    "scored": {
+      "accuracy": 0.5652173913043478,
+      "macroF1": 0.3857517056530214,
+      "coverage": 0.6956521739130435,
+      "selectiveAccuracy": 0.7291666666666666,
+      "kappa": 0.30653266331658285,
+      "n": 69,
+      "goldClasses": [
+        "TRUE",
+        "PARTIALLY_TRUE",
+        "FALSE",
+        "UNVERIFIED"
+      ],
+      "perClass": {
+        "TRUE": {
+          "precision": 0.8387096774193549,
+          "recall": 0.5777777777777777,
+          "f1": 0.6842105263157895,
+          "support": 45,
+          "predicted": 31
+        },
+        "PARTIALLY_TRUE": {
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3,
+          "predicted": 0
+        },
+        "MISLEADING": {
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "support": 0,
+          "predicted": 0
+        },
+        "FALSE": {
+          "precision": 0.5294117647058824,
+          "recall": 0.6,
+          "f1": 0.5625,
+          "support": 15,
+          "predicted": 17
+        },
+        "UNVERIFIED": {
+          "precision": 0.19047619047619047,
+          "recall": 0.6666666666666666,
+          "f1": 0.2962962962962963,
+          "support": 6,
+          "predicted": 21
+        }
+      },
+      "confusion": {
+        "TRUE": {
+          "TRUE": 26,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 6,
+          "UNVERIFIED": 13
+        },
+        "PARTIALLY_TRUE": {
+          "TRUE": 2,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 1,
+          "UNVERIFIED": 0
+        },
+        "MISLEADING": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 0,
+          "UNVERIFIED": 0
+        },
+        "FALSE": {
+          "TRUE": 2,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 9,
+          "UNVERIFIED": 4
+        },
+        "UNVERIFIED": {
+          "TRUE": 1,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 1,
+          "UNVERIFIED": 4
+        }
+      },
+      "ci": {
+        "accuracy": {
+          "low": 0.4492753623188406,
+          "high": 0.6811594202898551,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.28912042124542126,
+          "high": 0.472936157105565,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.5797101449275363,
+          "high": 0.7971014492753623,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.6,
+          "high": 0.8478568498769479,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": 0.14591039550620338,
+          "high": 0.46373358948326565,
+          "undefinedResamples": 0
+        }
+      }
+    },
+    "scoredUnflagged": {
+      "accuracy": 0.5454545454545454,
+      "macroF1": 0.37407407407407406,
+      "coverage": 0.6818181818181818,
+      "selectiveAccuracy": 0.7111111111111111,
+      "kappa": 0.28234867705690464,
+      "n": 66,
+      "goldClasses": [
+        "TRUE",
+        "PARTIALLY_TRUE",
+        "FALSE",
+        "UNVERIFIED"
+      ],
+      "perClass": {
+        "TRUE": {
+          "precision": 0.8275862068965517,
+          "recall": 0.5581395348837209,
+          "f1": 0.6666666666666666,
+          "support": 43,
+          "predicted": 29
+        },
+        "PARTIALLY_TRUE": {
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3,
+          "predicted": 0
+        },
+        "MISLEADING": {
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "support": 0,
+          "predicted": 0
+        },
+        "FALSE": {
+          "precision": 0.5,
+          "recall": 0.5714285714285714,
+          "f1": 0.5333333333333333,
+          "support": 14,
+          "predicted": 16
+        },
+        "UNVERIFIED": {
+          "precision": 0.19047619047619047,
+          "recall": 0.6666666666666666,
+          "f1": 0.2962962962962963,
+          "support": 6,
+          "predicted": 21
+        }
+      },
+      "confusion": {
+        "TRUE": {
+          "TRUE": 24,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 6,
+          "UNVERIFIED": 13
+        },
+        "PARTIALLY_TRUE": {
+          "TRUE": 2,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 1,
+          "UNVERIFIED": 0
+        },
+        "MISLEADING": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 0,
+          "UNVERIFIED": 0
+        },
+        "FALSE": {
+          "TRUE": 2,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 8,
+          "UNVERIFIED": 4
+        },
+        "UNVERIFIED": {
+          "TRUE": 1,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 1,
+          "UNVERIFIED": 4
+        }
+      },
+      "ci": {
+        "accuracy": {
+          "low": 0.42424242424242425,
+          "high": 0.6666666666666666,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.27516670931927206,
+          "high": 0.46592006603956576,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.5757575757575758,
+          "high": 0.7878787878787878,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.5714285714285714,
+          "high": 0.840022727272727,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": 0.12113976176811246,
+          "high": 0.44874851737708493,
+          "undefinedResamples": 0
+        }
+      }
+    }
+  },
+  "breakdowns": {
+    "language": {
+      "en": {
+        "n": 48,
+        "accuracy": 0.5833333333333334,
+        "macroF1": 0.39123693071061494,
+        "coverage": 0.6875,
+        "selectiveAccuracy": 0.7575757575757576,
+        "kappa": 0.3234672304439747,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.4375,
+            "high": 0.7291666666666666,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.27049764925312486,
+            "high": 0.49827135672464695,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.5416666666666666,
+            "high": 0.8125,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.6052631578947368,
+            "high": 0.896551724137931,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": 0.1272727272727273,
+            "high": 0.5186269402264683,
+            "undefinedResamples": 0
+          }
+        }
+      },
+      "es": {
+        "n": 21,
+        "accuracy": 0.5238095238095238,
+        "macroF1": 0.3715909090909091,
+        "coverage": 0.7142857142857143,
+        "selectiveAccuracy": 0.6666666666666666,
+        "kappa": 0.27083333333333337,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.2857142857142857,
+            "high": 0.7142857142857143,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.19055944055944057,
+            "high": 0.5205761129602662,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.5238095238095238,
+            "high": 0.9047619047619048,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.4166666666666667,
+            "high": 0.8888888888888888,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.017301038062283784,
+            "high": 0.5483870967741935,
+            "undefinedResamples": 0
+          }
+        }
+      }
+    },
+    "topicGroup": {
+      "culture": {
+        "n": 10,
+        "accuracy": 0.7,
+        "macroF1": 0.7922077922077921,
+        "coverage": 0.8,
+        "selectiveAccuracy": 0.875,
+        "kappa": 0.4999999999999999,
+        "goldClasses": [
+          "TRUE",
+          "FALSE"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.4,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.38461538461538464,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.5,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.6,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": 0.0,
+            "high": 1.0,
+            "undefinedResamples": 2
+          }
+        }
+      },
+      "environment": {
+        "n": 16,
+        "accuracy": 0.5,
+        "macroF1": 0.39460539460539457,
+        "coverage": 0.75,
+        "selectiveAccuracy": 0.5,
+        "kappa": 0.30434782608695654,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.25,
+            "high": 0.75,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.17142857142857143,
+            "high": 0.5666666666666667,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.5,
+            "high": 0.9375,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.21428571428571427,
+            "high": 0.7857142857142857,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": 0.025380710659898477,
+            "high": 0.6190476190476191,
+            "undefinedResamples": 0
+          }
+        }
+      },
+      "health": {
+        "n": 15,
+        "accuracy": 0.5333333333333333,
+        "macroF1": 0.41228070175438597,
+        "coverage": 0.6,
+        "selectiveAccuracy": 0.8888888888888888,
+        "kappa": 0.21641791044776118,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.26666666666666666,
+            "high": 0.8,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.1851851851851852,
+            "high": 0.5942028985507246,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.3333333333333333,
+            "high": 0.8666666666666667,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.6666666666666666,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.06060606060606075,
+            "high": 0.5000000000000001,
+            "undefinedResamples": 0
+          }
+        }
+      },
+      "science": {
+        "n": 17,
+        "accuracy": 0.5882352941176471,
+        "macroF1": 0.3571428571428571,
+        "coverage": 0.7058823529411765,
+        "selectiveAccuracy": 0.75,
+        "kappa": 0.2874251497005989,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.35294117647058826,
+            "high": 0.8235294117647058,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.16666666666666666,
+            "high": 0.5476190476190476,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.47058823529411764,
+            "high": 0.8823529411764706,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.5,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.023171854082998437,
+            "high": 0.6077298850574707,
+            "undefinedResamples": 0
+          }
+        }
+      },
+      "society": {
+        "n": 11,
+        "accuracy": 0.5454545454545454,
+        "macroF1": 0.5,
+        "coverage": 0.6363636363636364,
+        "selectiveAccuracy": 0.7142857142857143,
+        "kappa": 0.25675675675675674,
+        "goldClasses": [
+          "TRUE",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.2727272727272727,
+            "high": 0.8181818181818182,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.17777777777777778,
+            "high": 0.7857142857142857,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.36363636363636365,
+            "high": 0.9090909090909091,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.3333333333333333,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.20547945205479456,
+            "high": 0.6901408450704225,
+            "undefinedResamples": 0
+          }
+        }
+      }
+    },
+    "claimType": {
+      "factual": {
+        "n": 37,
+        "accuracy": 0.7297297297297297,
+        "macroF1": 0.5245098039215687,
+        "coverage": 0.8378378378378378,
+        "selectiveAccuracy": 0.8709677419354839,
+        "kappa": 0.4376899696048632,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.5675675675675675,
+            "high": 0.8648648648648649,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.3992575254203162,
+            "high": 0.6091228070175438,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.7027027027027027,
+            "high": 0.9459459459459459,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.7419354838709677,
+            "high": 0.96875,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": 0.16082474226804128,
+            "high": 0.680483592400691,
+            "undefinedResamples": 0
+          }
+        }
+      },
+      "interpretive": {
+        "n": 3,
+        "accuracy": 0.3333333333333333,
+        "macroF1": 0.5,
+        "coverage": 0.3333333333333333,
+        "selectiveAccuracy": 1.0,
+        "kappa": 0.0,
+        "goldClasses": [
+          "TRUE"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.0,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.0,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.0,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 1.0,
+            "high": 1.0,
+            "undefinedResamples": 3046
+          },
+          "kappa": {
+            "low": 0.0,
+            "high": 0.0,
+            "undefinedResamples": 360
+          }
+        }
+      },
+      "numerical": {
+        "n": 29,
+        "accuracy": 0.3793103448275862,
+        "macroF1": 0.29425125313283207,
+        "coverage": 0.5517241379310345,
+        "selectiveAccuracy": 0.4375,
+        "kappa": 0.1484502446982055,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.20689655172413793,
+            "high": 0.5517241379310345,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.1547531512605043,
+            "high": 0.42484068627450977,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.3793103448275862,
+            "high": 0.7241379310344828,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.2,
+            "high": 0.6923076923076923,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.058043117744610295,
+            "high": 0.369591529360528,
+            "undefinedResamples": 0
+          }
+        }
+      }
+    },
+    "sourceTier": {
+      "press_release": {
+        "n": 1,
+        "accuracy": 1.0,
+        "macroF1": 1.0,
+        "coverage": 1.0,
+        "selectiveAccuracy": 1.0,
+        "kappa": null,
+        "goldClasses": [
+          "TRUE"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 1.0,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 1.0,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 1.0,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 1.0,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": null,
+            "high": null,
+            "undefinedResamples": 10000
+          }
+        }
+      },
+      "primary": {
+        "n": 43,
+        "accuracy": 0.4418604651162791,
+        "macroF1": 0.29158322903629535,
+        "coverage": 0.6046511627906976,
+        "selectiveAccuracy": 0.6923076923076923,
+        "kappa": 0.14285714285714285,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.3023255813953488,
+            "high": 0.5813953488372093,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.18103382997464224,
+            "high": 0.38888991451843896,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.46511627906976744,
+            "high": 0.7441860465116279,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.5172413793103449,
+            "high": 0.8620689655172413,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.033033033033033045,
+            "high": 0.3217721900074609,
+            "undefinedResamples": 0
+          }
+        }
+      },
+      "reference_media": {
+        "n": 25,
+        "accuracy": 0.76,
+        "macroF1": 0.5846560846560847,
+        "coverage": 0.84,
+        "selectiveAccuracy": 0.7619047619047619,
+        "kappa": 0.604221635883905,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.6,
+            "high": 0.92,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.375,
+            "high": 0.6964285714285714,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.68,
+            "high": 0.96,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.5714285714285714,
+            "high": 0.9411764705882353,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": 0.30167597765363124,
+            "high": 0.8626373626373626,
+            "undefinedResamples": 0
+          }
+        }
+      }
+    },
+    "origin": {
+      "mutated": {
+        "n": 15,
+        "accuracy": 0.6,
+        "macroF1": 0.75,
+        "coverage": 0.7333333333333333,
+        "selectiveAccuracy": 0.8181818181818182,
+        "kappa": 0.0,
+        "goldClasses": [
+          "FALSE"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.3333333333333333,
+            "high": 0.8666666666666667,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.5,
+            "high": 0.9285714285714286,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.4666666666666667,
+            "high": 0.9333333333333333,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.5555555555555556,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": 0.0,
+            "high": 0.0,
+            "undefinedResamples": 3
+          }
+        }
+      },
+      "natural": {
+        "n": 54,
+        "accuracy": 0.5555555555555556,
+        "macroF1": 0.35017626321974155,
+        "coverage": 0.6851851851851852,
+        "selectiveAccuracy": 0.7027027027027027,
+        "kappa": 0.14115308151093445,
+        "goldClasses": [
+          "TRUE",
+          "PARTIALLY_TRUE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.42592592592592593,
+            "high": 0.6851851851851852,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.2457624976914628,
+            "high": 0.44779352173930487,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.5555555555555556,
+            "high": 0.7962962962962963,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.5526315789473685,
+            "high": 0.8409090909090909,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.021446364114904456,
+            "high": 0.31561101217692605,
+            "undefinedResamples": 0
+          }
+        }
+      }
+    }
+  },
+  "retrieval": {
+    "claims": {
+      "total": 69,
+      "searched": 69,
+      "withReferences": 67,
+      "searchUnavailable": 0,
+      "errors": 0,
+      "selfLinksRemoved": 0,
+      "referencesUnavailable": 0
+    },
+    "gold": {
+      "linkRecall@candidates": {
+        "n": 67,
+        "value": 0.9403,
+        "low": 0.8806,
+        "high": 0.9851
+      },
+      "linkRecall@ranked": {
+        "n": 67,
+        "value": 0.9403,
+        "low": 0.8806,
+        "high": 0.9851
+      },
+      "linkRecall@cited": {
+        "n": 67,
+        "value": 0.806,
+        "low": 0.7015,
+        "high": 0.8955
+      },
+      "domainRecall@candidates": {
+        "n": 67,
+        "value": 0.9403,
+        "low": 0.8806,
+        "high": 0.9851
+      },
+      "domainRecall@ranked": {
+        "n": 67,
+        "value": 0.9403,
+        "low": 0.8806,
+        "high": 0.9851
+      },
+      "domainRecall@cited": {
+        "n": 67,
+        "value": 0.806,
+        "low": 0.7015,
+        "high": 0.8955
+      },
+      "linkMRR": {
+        "n": 67,
+        "value": 0.9403,
+        "low": 0.8806,
+        "high": 0.9851
+      },
+      "domainMRR": {
+        "n": 67,
+        "value": 0.9403,
+        "low": 0.8806,
+        "high": 0.9851
+      }
+    },
+    "goldFree": {
+      "hasEvidence": {
+        "n": 69,
+        "value": 0.913,
+        "low": 0.8406,
+        "high": 0.971
+      },
+      "candidates": {
+        "n": 69,
+        "value": 1.6957,
+        "low": 1.5072,
+        "high": 1.8841
+      },
+      "ranked": {
+        "n": 69,
+        "value": 1.6957,
+        "low": 1.5072,
+        "high": 1.8841
+      },
+      "gateCut": {
+        "n": 63,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "uniqueDomains": {
+        "n": 69,
+        "value": 1.6232,
+        "low": 1.4348,
+        "high": 1.8116
+      },
+      "ratedShare": {
+        "n": 63,
+        "value": 0.0794,
+        "low": 0.0238,
+        "high": 0.1429
+      },
+      "corpusShare": {
+        "n": 63,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "verdictLeak": {
+        "n": 0,
+        "value": null,
+        "low": null,
+        "high": null
+      },
+      "retrievalSeconds": {
+        "n": 0,
+        "value": null,
+        "low": null,
+        "high": null
+      },
+      "rankingSeconds": {
+        "n": 0,
+        "value": null,
+        "low": null,
+        "high": null
+      }
+    },
+    "medians": {
+      "candidates": 2.0,
+      "ranked": 2.0,
+      "retrievalSeconds": null,
+      "rankingSeconds": null
+    },
+    "queriesPerClaim": 0.0,
+    "foundBy": {
+      "reference": 117
+    },
+    "referencesCut": {},
+    "groups": {
+      "dataset": {
+        "custom": {
+          "claims": 69,
+          "withReferences": 67,
+          "linkRecall@ranked": 0.9403,
+          "domainRecall@ranked": 0.9403,
+          "hasEvidence": 0.913
+        }
+      },
+      "language": {
+        "en": {
+          "claims": 48,
+          "withReferences": 46,
+          "linkRecall@ranked": 0.913,
+          "domainRecall@ranked": 0.913,
+          "hasEvidence": 0.875
+        },
+        "es": {
+          "claims": 21,
+          "withReferences": 21,
+          "linkRecall@ranked": 1.0,
+          "domainRecall@ranked": 1.0,
+          "hasEvidence": 1.0
+        }
+      }
+    },
+    "bootstrap": {
+      "seed": 2026,
+      "resamples": 10000
+    }
+  },
+  "responseTime": {
+    "claims": 69,
+    "stages": {
+      "entities": {
+        "claims": 69,
+        "median": 0.0899,
+        "p90": 0.1316,
+        "max": 0.2511,
+        "share": 0.0009
+      },
+      "retrieval": {
+        "claims": 0,
+        "median": null,
+        "p90": null,
+        "max": null,
+        "share": 0.0
+      },
+      "ranking": {
+        "claims": 0,
+        "median": null,
+        "p90": null,
+        "max": null,
+        "share": 0.0
+      },
+      "llm": {
+        "claims": 63,
+        "median": 123.6535,
+        "p90": 153.6204,
+        "max": 187.1516,
+        "share": 0.9613
+      },
+      "secondLook": {
+        "claims": 0,
+        "median": null,
+        "p90": null,
+        "max": null,
+        "share": 0.0
+      },
+      "total": {
+        "claims": 69,
+        "median": 125.0067,
+        "p90": 159.1761,
+        "max": 190.747,
+        "share": null
+      }
+    }
+  },
+  "usage": {
+    "units": 69,
+    "llmCalls": 63,
+    "failedCalls": 0,
+    "unitsWithoutCalls": 6,
+    "promptTokens": 79246,
+    "completionTokens": 13242,
+    "usageMissing": 0,
+    "promptTokensPerUnit": 1257.9,
+    "completionTokensPerUnit": 210.2,
+    "llmSeconds": 4018.35,
+    "callLatency": {
+      "median": 61.381,
+      "p90": 85.569,
+      "max": 124.108
+    },
+    "unitLatency": {
+      "median": 125.007,
+      "p90": 159.176,
+      "total": 7999.9
+    },
+    "completionTokensPerSecond": 3.3,
+    "cost": null
+  },
+  "comparison": {
+    "baseline": {
+      "key": "809d08813762",
+      "model": "llama3.2:3b",
+      "provider": "host.docker.internal:11434",
+      "directory": "data\\evaluation\\runs\\manual-train\\llama3.2-3b\\809d08813762"
+    },
+    "candidate": {
+      "key": "8ef44d0de909",
+      "model": "qwen3.5:9b",
+      "provider": "host.docker.internal:11434"
+    },
+    "sameDataset": true,
+    "claims": {
+      "paired": 69,
+      "onlyInBaseline": 0,
+      "onlyInCandidate": 0,
+      "setApartOnEitherSide": 0,
+      "goldDiffers": []
+    },
+    "discordant": {
+      "onlyA": 11,
+      "onlyB": 12
+    },
+    "difference": {
+      "accuracy": {
+        "a": 0.5507246376811594,
+        "b": 0.5652173913043478,
+        "difference": 0.01449275362318836,
+        "low": -0.11594202898550726,
+        "high": 0.1449275362318841,
+        "undefinedResamples": 0
+      },
+      "macroF1": {
+        "a": 0.3746987951807229,
+        "b": 0.3857517056530214,
+        "difference": 0.011052910472298505,
+        "low": -0.0952188305825186,
+        "high": 0.12595394760958398,
+        "undefinedResamples": 0
+      },
+      "coverage": {
+        "a": 0.9130434782608695,
+        "b": 0.6956521739130435,
+        "difference": -0.21739130434782605,
+        "low": -0.3188405797101449,
+        "high": -0.13043478260869557,
+        "undefinedResamples": 0
+      },
+      "selectiveAccuracy": {
+        "a": 0.5555555555555556,
+        "b": 0.7291666666666666,
+        "difference": 0.17361111111111105,
+        "low": 0.026919642857142902,
+        "high": 0.32001257621951207,
+        "undefinedResamples": 0
+      },
+      "kappa": {
+        "a": 0.18977272727272723,
+        "b": 0.30653266331658285,
+        "difference": 0.11675993604385562,
+        "low": -0.0861060286763465,
+        "high": 0.3264111209112399,
+        "undefinedResamples": 0
+      }
+    },
+    "retrieval": {
+      "pairedClaims": 69,
+      "onlyInBaseline": 0,
+      "onlyInCandidate": 0,
+      "differences": {
+        "linkRecall@candidates": {
+          "pairs": 67,
+          "baseline": 0.9403,
+          "candidate": 0.9403,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "linkRecall@ranked": {
+          "pairs": 67,
+          "baseline": 0.9403,
+          "candidate": 0.9403,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "linkRecall@cited": {
+          "pairs": 67,
+          "baseline": 0.9403,
+          "candidate": 0.806,
+          "difference": -0.1343,
+          "low": -0.2239,
+          "high": -0.0597,
+          "onlyBaseline": 9,
+          "onlyCandidate": 0
+        },
+        "domainRecall@candidates": {
+          "pairs": 67,
+          "baseline": 0.9403,
+          "candidate": 0.9403,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "domainRecall@ranked": {
+          "pairs": 67,
+          "baseline": 0.9403,
+          "candidate": 0.9403,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "domainRecall@cited": {
+          "pairs": 67,
+          "baseline": 0.9403,
+          "candidate": 0.806,
+          "difference": -0.1343,
+          "low": -0.2239,
+          "high": -0.0597,
+          "onlyBaseline": 9,
+          "onlyCandidate": 0
+        },
+        "linkMRR": {
+          "pairs": 67,
+          "baseline": 0.9403,
+          "candidate": 0.9403,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "domainMRR": {
+          "pairs": 67,
+          "baseline": 0.9403,
+          "candidate": 0.9403,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "hasEvidence": {
+          "pairs": 69,
+          "baseline": 0.913,
+          "candidate": 0.913,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "candidates": {
+          "pairs": 69,
+          "baseline": 1.6957,
+          "candidate": 1.6957,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "ranked": {
+          "pairs": 69,
+          "baseline": 1.6957,
+          "candidate": 1.6957,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "gateCut": {
+          "pairs": 63,
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "uniqueDomains": {
+          "pairs": 69,
+          "baseline": 1.6232,
+          "candidate": 1.6232,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "ratedShare": {
+          "pairs": 63,
+          "baseline": 0.0794,
+          "candidate": 0.0794,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "corpusShare": {
+          "pairs": 63,
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "verdictLeak": {
+          "pairs": 0,
+          "baseline": null,
+          "candidate": null,
+          "difference": null,
+          "low": null,
+          "high": null
+        },
+        "retrievalSeconds": {
+          "pairs": 0,
+          "baseline": null,
+          "candidate": null,
+          "difference": null,
+          "low": null,
+          "high": null
+        },
+        "rankingSeconds": {
+          "pairs": 0,
+          "baseline": null,
+          "candidate": null,
+          "difference": null,
+          "low": null,
+          "high": null
+        }
+      }
+    }
+  }
+}

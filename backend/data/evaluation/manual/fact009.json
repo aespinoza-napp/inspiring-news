@@ -11,7 +11,7 @@
     "https://www.elmundo.es/ciencia/2026/09/28/6aba6d92fc6c832f2b8b4597.html",
     "https://www.xataka.com/espacio/cohete-grande-jamas-construido-acaba-alcanzar-orbita-starship-ha-cruzado-sus-grandes-fronteras"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact009",
   "topic": "space",
   "claimType": "numerical",

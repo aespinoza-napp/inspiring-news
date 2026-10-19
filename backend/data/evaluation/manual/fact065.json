@@ -11,7 +11,7 @@
     "https://www.elespanol.com/invertia/mis-finanzas/fondos-de-inversion/20251103/edmond-rothschild-crea-consejo-asesor-espana-ismael-clemente-xandra-falco-inigo-sagardoy/1003743997500_0.html",
     "https://okdiario.com/coolthelifestyle/lifestyle/vega-sicilia-rothschild-macan-bodegas-entrevista-542724"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact065",
   "topic": "food",
   "claimType": "factual",

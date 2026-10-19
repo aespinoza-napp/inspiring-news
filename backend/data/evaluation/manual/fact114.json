@@ -11,7 +11,7 @@
     "https://www.publico.es/sociedad/sera-espana-25-anos-acceso-vivienda-desigualdad-marcaran-sociedad-familias-pequenas.html",
     "https://www.atlas-news.com/politica/l019-barcelona-acto-pedro-sanchez_4_02205970.html"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact114",
   "topic": "cities",
   "claimType": "factual",

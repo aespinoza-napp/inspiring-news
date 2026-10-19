@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://www.gov.uk/government/statistics/energy-trends-and-prices-statistical-release-29-september-2026/energy-trends-and-prices-statistical-release-29-september-2026"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact100",
   "topic": "energy",
   "claimType": "numerical",

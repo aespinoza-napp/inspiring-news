@@ -11,7 +11,7 @@
     "https://ember-energy.org/app/uploads/2026/09/China-Energy-Transition-Review-2026.pdf",
     "https://www.climatechangenews.com/2026/09/08/chinas-industrial-engine-starts-to-break-its-fossil-fuel-habit/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact064",
   "topic": "energy",
   "claimType": "numerical",

@@ -12,7 +12,7 @@
     "https://www.lahiguera.net/musicalia/artistas/judeline/biografia.php",
     "https://remezcla.com/features/music/meet-judeline-the-andalusian-pop-siren-conjuring-spiritual-realms"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact171",
   "topic": "entertainment",
   "claimType": "factual",

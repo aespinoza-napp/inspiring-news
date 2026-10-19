@@ -1,0 +1,49 @@
+
+=== llama3.2:3b, en, review 1
+Draft 79ffc0254ee09705: correction discarded: no body
+42.4 s; calls [32.1, 9.8] s; tokens 1558 in / 311 out; metrics parsed 6 of 7
+model's scores: title 80, subtitle 90, grammar 100, factConsistency 90, seo 95, hallucinationIndex 70, style 0
+  missed  spelling: it's for its
+  FOUND   figure: 3 million where [1] says 1.2
+  FOUND   the claim judged FALSE, stated
+correction: not offered: no body
+issues the model raised - read for invented ones:
+  - factConsistency: The bay is now completely free of plastic pollution.
+  - hallucinationIndex: The city council funded the project with 3 million euros.
+
+=== llama3.2:3b, ca, review 1
+Draft f8e8667ef3c05c7f: correction discarded: it no longer cites [1, 2]
+57.9 s; calls [34.9, 23.0] s; tokens 1645 in / 543 out; metrics parsed 7 of 7
+model's scores: title 90, subtitle 80, grammar 100, factConsistency 90, seo 70, hallucinationIndex 0, style 95
+  missed  spelling: esta for està
+  FOUND   the claim judged FALSE, stated
+correction: not offered: it no longer cites [1, 2]
+issues the model raised - read for invented ones:
+  - factConsistency: The bay is not completely free of plastic pollution, according to the fact-checks.
+  - seo: The main keyword could be more prominent in the title and subtitle.
+  - style: The tone could be more precise and objective.
+
+=== llama3.2:3b, en, review 2
+Draft 7fee4d27b8ae9f0b: correction discarded: no body
+25.5 s; calls [19.5, 5.9] s; tokens 1551 in / 234 out; metrics parsed 4 of 7
+model's scores: title 80, subtitle 90, grammar 100, factConsistency 95, seo 0, hallucinationIndex 0, style 0
+  missed  spelling: it's for its
+  missed  figure: 3 million where [1] says 1.2
+  FOUND   the claim judged FALSE, stated
+correction: not offered: no body
+issues the model raised - read for invented ones:
+  - factConsistency: The article states the bay is completely free of plastic pollution, but the fact-checks judged this claim FALSE.
+
+=== llama3.2:3b, ca, review 2
+Draft aafd638c9ca52c0e: correction discarded: it no longer cites [1, 2]
+56.2 s; calls [32.0, 24.2] s; tokens 1645 in / 627 out; metrics parsed 7 of 7
+model's scores: title 90, subtitle 80, grammar 100, factConsistency 90, seo 70, hallucinationIndex 0, style 95
+  missed  spelling: esta for està
+  FOUND   the claim judged FALSE, stated
+correction: not offered: it no longer cites [1, 2]
+issues the model raised - read for invented ones:
+  - factConsistency: The bay is not completely free of plastic pollution, according to the fact-checks.
+  - seo: The main keyword could be more prominent in the title and subtitle.
+  - style: The tone could be more precise and objective.
+
+llama3.2:3b: 5 of 10 planted defects found by the model; corrections offered 0 of 4; seconds per review 42.4, 57.9, 25.5, 56.2

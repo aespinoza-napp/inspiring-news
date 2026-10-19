@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://ora.ox.ac.uk/objects/uuid:f7c4dbcc-def6-4c9e-917f-e10cb86ffc56"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact020",
   "topic": "nature",
   "claimType": "numerical",

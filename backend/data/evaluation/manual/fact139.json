@@ -11,7 +11,7 @@
     "https://www.deutsche-limeskommission.de/en/world-heritage-site-fre/fre-upper-german-raetian-limes/",
     "https://whc.unesco.org/en/list/430"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact139",
   "topic": "heritage",
   "claimType": "factual",

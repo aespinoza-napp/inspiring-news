@@ -11,7 +11,7 @@
     "https://www.wri.org/insights/reviving-nairobis-libraries-builds-healthier-communities",
     "https://brittlepaper.com/2025/12/library/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact015",
   "topic": "cities",
   "claimType": "factual",

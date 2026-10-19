@@ -12,7 +12,7 @@
     "https://www.amazon.com/Guide-Mudlarking-River-Thames-Treasure/dp/1036147010",
     "https://www.emmylouthemudlark.com/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact089",
   "topic": "heritage",
   "claimType": "factual",

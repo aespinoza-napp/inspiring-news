@@ -11,7 +11,7 @@
     "https://nsidc.org/sea-ice-today/analyses/arctic-sea-ice-minimum-ties-tenth-lowest-0",
     "https://www.natureworldnews.com/articles/73337/20260922/arctic-sea-ice-likely-bottomed-out-460-million-square-kilometers-tying-11th-lowest-record.htm"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact163",
   "topic": "climate",
   "claimType": "factual",

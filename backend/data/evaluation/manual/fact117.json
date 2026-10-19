@@ -12,7 +12,7 @@
     "https://elgeneracionalpost.com/cultura/musica/2026/0223/264989/judeline-conquista-su-primer-movistar-arena.html",
     "https://es.wikipedia.org/wiki/Palacio_de_Deportes_de_la_Comunidad_de_Madrid"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact117",
   "topic": "entertainment",
   "claimType": "factual",

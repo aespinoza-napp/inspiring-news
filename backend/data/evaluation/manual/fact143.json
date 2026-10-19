@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://arxiv.org/abs/2508.15425"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact143",
   "topic": "space",
   "claimType": "factual",

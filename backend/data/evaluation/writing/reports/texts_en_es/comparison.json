@@ -1,0 +1,794 @@
+{
+  "texts": {
+    "path": "data\\evaluation\\writing\\texts_en_es.jsonl",
+    "stem": "texts_en_es",
+    "sha256": "daca2f8f0f3e48014311f3ff7d9062cbf1f5d52304cdcf6c940bad1c19dcadb7",
+    "count": 36
+  },
+  "promptSha256": "28102224126348b9499406e958042bdd0cd365403f26ca9025a974adab419a06",
+  "bootstrap": {
+    "seed": 2026,
+    "resamples": 10000
+  },
+  "runs": [
+    {
+      "model": "llama3.2:3b",
+      "provider": "host.docker.internal:11434",
+      "key": "ab15b8f715d5",
+      "directory": "data\\evaluation\\writing\\runs\\texts_en_es\\llama3.2-3b\\ab15b8f715d5",
+      "units": {
+        "total": 36,
+        "ok": 36,
+        "unreachable": 0,
+        "errors": 0,
+        "repeats": 1
+      },
+      "formatCompliance": 1.0,
+      "detection": {
+        "value": 0.8,
+        "low": 0.7166666666666667,
+        "high": 0.8833333333333333,
+        "pairs": 30,
+        "unscorable": 0
+      },
+      "named": 0.6666666666666666,
+      "offTargetDrift": 11.8,
+      "consistency": {
+        "meanRange": null,
+        "perMetric": {
+          "grammar": null,
+          "factConsistency": null,
+          "seo": null,
+          "hallucinationIndex": null,
+          "style": null
+        },
+        "textsRepeated": 0
+      },
+      "perMetric": {
+        "grammar": {
+          "pairs": 6,
+          "detection": 0.8333333333333334,
+          "meanDrop": 5.83,
+          "named": 0.16666666666666666,
+          "unusable": 0,
+          "cleanMean": 92.5
+        },
+        "factConsistency": {
+          "pairs": 6,
+          "detection": 0.6666666666666666,
+          "meanDrop": 3.33,
+          "named": 0.3333333333333333,
+          "unusable": 0,
+          "cleanMean": 97.5
+        },
+        "seo": {
+          "pairs": 6,
+          "detection": 0.6666666666666666,
+          "meanDrop": 3.33,
+          "named": 1.0,
+          "unusable": 0,
+          "cleanMean": 80.0
+        },
+        "hallucinationIndex": {
+          "pairs": 6,
+          "detection": 0.9166666666666666,
+          "meanDrop": 46.33,
+          "named": 0.8333333333333334,
+          "unusable": 0,
+          "cleanMean": 73.0
+        },
+        "style": {
+          "pairs": 6,
+          "detection": 0.9166666666666666,
+          "meanDrop": 18.33,
+          "named": 1.0,
+          "unusable": 0,
+          "cleanMean": 87.5
+        }
+      },
+      "byLanguage": {
+        "en": {
+          "pairs": 15,
+          "detection": 0.8333333333333334
+        },
+        "es": {
+          "pairs": 15,
+          "detection": 0.7666666666666667
+        }
+      },
+      "pairs": [
+        {
+          "id": "en-solar-grammar",
+          "target": "grammar",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 5.0,
+          "offTarget": 7.5
+        },
+        {
+          "id": "en-solar-contradiction",
+          "target": "factConsistency",
+          "language": "en",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 0.0
+        },
+        {
+          "id": "en-solar-fabrication",
+          "target": "hallucinationIndex",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 30.0,
+          "offTarget": 10.0
+        },
+        {
+          "id": "en-solar-seo",
+          "target": "seo",
+          "language": "en",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 0.0
+        },
+        {
+          "id": "en-solar-style",
+          "target": "style",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 20.0,
+          "offTarget": 28.75
+        },
+        {
+          "id": "en-library-grammar",
+          "target": "grammar",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 15.0,
+          "offTarget": 17.5
+        },
+        {
+          "id": "en-library-contradiction",
+          "target": "factConsistency",
+          "language": "en",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 0.0
+        },
+        {
+          "id": "en-library-fabrication",
+          "target": "hallucinationIndex",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 70.0,
+          "offTarget": 10.0
+        },
+        {
+          "id": "en-library-seo",
+          "target": "seo",
+          "language": "en",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 0.0
+        },
+        {
+          "id": "en-library-style",
+          "target": "style",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 20.0,
+          "offTarget": 28.75
+        },
+        {
+          "id": "en-walking-grammar",
+          "target": "grammar",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 5.0,
+          "offTarget": 2.5
+        },
+        {
+          "id": "en-walking-contradiction",
+          "target": "factConsistency",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 5.0,
+          "offTarget": 7.5
+        },
+        {
+          "id": "en-walking-fabrication",
+          "target": "hallucinationIndex",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 70.0,
+          "offTarget": 10.0
+        },
+        {
+          "id": "en-walking-seo",
+          "target": "seo",
+          "language": "en",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 3.75
+        },
+        {
+          "id": "en-walking-style",
+          "target": "style",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 20.0,
+          "offTarget": 28.75
+        },
+        {
+          "id": "es-huerto-grammar",
+          "target": "grammar",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 17.5
+        },
+        {
+          "id": "es-huerto-contradiction",
+          "target": "factConsistency",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 15.0
+        },
+        {
+          "id": "es-huerto-fabrication",
+          "target": "hallucinationIndex",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 25.0
+        },
+        {
+          "id": "es-huerto-seo",
+          "target": "seo",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 10.0,
+          "offTarget": 21.25
+        },
+        {
+          "id": "es-huerto-style",
+          "target": "style",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 15.0,
+          "offTarget": 26.25
+        },
+        {
+          "id": "es-sensor-grammar",
+          "target": "grammar",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 10.0,
+          "offTarget": 10.0
+        },
+        {
+          "id": "es-sensor-contradiction",
+          "target": "factConsistency",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 15.0,
+          "offTarget": 5.0
+        },
+        {
+          "id": "es-sensor-fabrication",
+          "target": "hallucinationIndex",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 70.0,
+          "offTarget": 30.0
+        },
+        {
+          "id": "es-sensor-seo",
+          "target": "seo",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 10.0,
+          "offTarget": 3.75
+        },
+        {
+          "id": "es-sensor-style",
+          "target": "style",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 35.0,
+          "offTarget": 21.25
+        },
+        {
+          "id": "es-cine-grammar",
+          "target": "grammar",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 0.0
+        },
+        {
+          "id": "es-cine-contradiction",
+          "target": "factConsistency",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 0.0
+        },
+        {
+          "id": "es-cine-fabrication",
+          "target": "hallucinationIndex",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 38.0,
+          "offTarget": 6.25
+        },
+        {
+          "id": "es-cine-seo",
+          "target": "seo",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 2.0
+        },
+        {
+          "id": "es-cine-style",
+          "target": "style",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 15.75
+        }
+      ],
+      "usage": {
+        "units": 36,
+        "llmCalls": 36,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 13860,
+        "completionTokens": 12140,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 385.0,
+        "completionTokensPerUnit": 337.2,
+        "llmSeconds": 1027.08,
+        "callLatency": {
+          "median": 28.066,
+          "p90": 38.85,
+          "max": 47.201
+        },
+        "unitLatency": {
+          "median": 28.066,
+          "p90": 38.85,
+          "total": 1027.09
+        },
+        "completionTokensPerSecond": 11.8,
+        "cost": null
+      },
+      "bootstrap": {
+        "seed": 2026,
+        "resamples": 10000
+      }
+    },
+    {
+      "model": "qwen3.5:4b",
+      "provider": "host.docker.internal:11434",
+      "key": "fcab9102d82a",
+      "directory": "data\\evaluation\\writing\\runs\\texts_en_es\\qwen3.5-4b\\fcab9102d82a",
+      "units": {
+        "total": 36,
+        "ok": 35,
+        "unreachable": 1,
+        "errors": 0,
+        "repeats": 1
+      },
+      "formatCompliance": 0.8,
+      "detection": {
+        "value": 0.9318181818181818,
+        "low": 0.8181818181818182,
+        "high": 1.0,
+        "pairs": 22,
+        "unscorable": 8
+      },
+      "named": 0.6896551724137931,
+      "offTargetDrift": 17.11,
+      "consistency": {
+        "meanRange": null,
+        "perMetric": {
+          "grammar": null,
+          "factConsistency": null,
+          "seo": null,
+          "hallucinationIndex": null,
+          "style": null
+        },
+        "textsRepeated": 0
+      },
+      "perMetric": {
+        "grammar": {
+          "pairs": 5,
+          "detection": 1.0,
+          "meanDrop": 23.0,
+          "named": 1.0,
+          "unusable": 1,
+          "cleanMean": 100.0
+        },
+        "factConsistency": {
+          "pairs": 5,
+          "detection": 0.7,
+          "meanDrop": 16.0,
+          "named": 0.5,
+          "unusable": 6,
+          "cleanMean": 90.83
+        },
+        "seo": {
+          "pairs": 5,
+          "detection": 1.0,
+          "meanDrop": 31.0,
+          "named": 0.8333333333333334,
+          "unusable": 6,
+          "cleanMean": 85.0
+        },
+        "hallucinationIndex": {
+          "pairs": 5,
+          "detection": 1.0,
+          "meanDrop": 56.0,
+          "named": 0.8333333333333334,
+          "unusable": 7,
+          "cleanMean": 79.17
+        },
+        "style": {
+          "pairs": 2,
+          "detection": 1.0,
+          "meanDrop": 67.5,
+          "named": 0.3333333333333333,
+          "unusable": 7,
+          "cleanMean": 92.5
+        }
+      },
+      "byLanguage": {
+        "en": {
+          "pairs": 11,
+          "detection": 1.0
+        },
+        "es": {
+          "pairs": 11,
+          "detection": 0.8636363636363636
+        }
+      },
+      "pairs": [
+        {
+          "id": "en-solar-grammar",
+          "target": "grammar",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 35.0,
+          "offTarget": 7.5
+        },
+        {
+          "id": "en-solar-contradiction",
+          "target": "factConsistency",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 15.0,
+          "offTarget": 21.25
+        },
+        {
+          "id": "en-solar-fabrication",
+          "target": "hallucinationIndex",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 80.0,
+          "offTarget": 21.25
+        },
+        {
+          "id": "en-solar-seo",
+          "target": "seo",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 20.0,
+          "offTarget": 1.25
+        },
+        {
+          "id": "en-solar-style",
+          "target": "style",
+          "language": "en",
+          "scorable": false,
+          "detected": null,
+          "drop": null,
+          "offTarget": null
+        },
+        {
+          "id": "en-library-grammar",
+          "target": "grammar",
+          "language": "en",
+          "scorable": false,
+          "detected": null,
+          "drop": null,
+          "offTarget": null
+        },
+        {
+          "id": "en-library-contradiction",
+          "target": "factConsistency",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 50.0,
+          "offTarget": 26.25
+        },
+        {
+          "id": "en-library-fabrication",
+          "target": "hallucinationIndex",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 80.0,
+          "offTarget": 36.25
+        },
+        {
+          "id": "en-library-seo",
+          "target": "seo",
+          "language": "en",
+          "scorable": false,
+          "detected": null,
+          "drop": null,
+          "offTarget": null
+        },
+        {
+          "id": "en-library-style",
+          "target": "style",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 70.0,
+          "offTarget": 27.5
+        },
+        {
+          "id": "en-walking-grammar",
+          "target": "grammar",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 35.0,
+          "offTarget": 17.5
+        },
+        {
+          "id": "en-walking-contradiction",
+          "target": "factConsistency",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 55.0,
+          "offTarget": 16.25
+        },
+        {
+          "id": "en-walking-fabrication",
+          "target": "hallucinationIndex",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 25.0,
+          "offTarget": 22.5
+        },
+        {
+          "id": "en-walking-seo",
+          "target": "seo",
+          "language": "en",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 25.0,
+          "offTarget": 16.25
+        },
+        {
+          "id": "en-walking-style",
+          "target": "style",
+          "language": "en",
+          "scorable": false,
+          "detected": null,
+          "drop": null,
+          "offTarget": null
+        },
+        {
+          "id": "es-huerto-grammar",
+          "target": "grammar",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 15.0,
+          "offTarget": 30.0
+        },
+        {
+          "id": "es-huerto-contradiction",
+          "target": "factConsistency",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.0,
+          "drop": -40.0,
+          "offTarget": 3.75
+        },
+        {
+          "id": "es-huerto-fabrication",
+          "target": "hallucinationIndex",
+          "language": "es",
+          "scorable": false,
+          "detected": null,
+          "drop": null,
+          "offTarget": null
+        },
+        {
+          "id": "es-huerto-seo",
+          "target": "seo",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 25.0,
+          "offTarget": 27.5
+        },
+        {
+          "id": "es-huerto-style",
+          "target": "style",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 65.0,
+          "offTarget": 41.25
+        },
+        {
+          "id": "es-sensor-grammar",
+          "target": "grammar",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 15.0,
+          "offTarget": 6.25
+        },
+        {
+          "id": "es-sensor-contradiction",
+          "target": "factConsistency",
+          "language": "es",
+          "scorable": false,
+          "detected": null,
+          "drop": null,
+          "offTarget": null
+        },
+        {
+          "id": "es-sensor-fabrication",
+          "target": "hallucinationIndex",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 85.0,
+          "offTarget": 28.75
+        },
+        {
+          "id": "es-sensor-seo",
+          "target": "seo",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 45.0,
+          "offTarget": 8.75
+        },
+        {
+          "id": "es-sensor-style",
+          "target": "style",
+          "language": "es",
+          "scorable": false,
+          "detected": null,
+          "drop": null,
+          "offTarget": null
+        },
+        {
+          "id": "es-cine-grammar",
+          "target": "grammar",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 15.0,
+          "offTarget": 5.0
+        },
+        {
+          "id": "es-cine-contradiction",
+          "target": "factConsistency",
+          "language": "es",
+          "scorable": true,
+          "detected": 0.5,
+          "drop": 0.0,
+          "offTarget": 4.5
+        },
+        {
+          "id": "es-cine-fabrication",
+          "target": "hallucinationIndex",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 10.0,
+          "offTarget": 2.0
+        },
+        {
+          "id": "es-cine-seo",
+          "target": "seo",
+          "language": "es",
+          "scorable": true,
+          "detected": 1.0,
+          "drop": 40.0,
+          "offTarget": 5.0
+        },
+        {
+          "id": "es-cine-style",
+          "target": "style",
+          "language": "es",
+          "scorable": false,
+          "detected": null,
+          "drop": null,
+          "offTarget": null
+        }
+      ],
+      "usage": {
+        "units": 36,
+        "llmCalls": 38,
+        "failedCalls": 2,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 17444,
+        "completionTokens": 17752,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 498.4,
+        "completionTokensPerUnit": 507.2,
+        "llmSeconds": 2280.21,
+        "callLatency": {
+          "median": 44.646,
+          "p90": 95.776,
+          "max": 439.749
+        },
+        "unitLatency": {
+          "median": 44.646,
+          "p90": 95.776,
+          "total": 2280.72
+        },
+        "completionTokensPerSecond": 8.0,
+        "cost": null
+      },
+      "bootstrap": {
+        "seed": 2026,
+        "resamples": 10000
+      },
+      "vsBaseline": {
+        "baseline": "llama3.2:3b",
+        "pairs": 22,
+        "difference": 0.13636363636363635,
+        "low": 0.022727272727272728,
+        "high": 0.25
+      }
+    }
+  ]
+}

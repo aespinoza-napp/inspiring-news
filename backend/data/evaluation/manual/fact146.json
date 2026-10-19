@@ -11,7 +11,7 @@
     "https://www.who.int/publications/i/item/B09930",
     "https://www.wam.ae/en/article/17h02at-who-pandemic-hub-sets-ambitious-goal-detect-new"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact146",
   "topic": "public_health",
   "claimType": "factual",

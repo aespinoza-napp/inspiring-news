@@ -11,7 +11,7 @@
     "https://ember-energy.org/latest-insights/china-energy-transition-review-2026/",
     "https://ember-energy.org/app/uploads/2026/09/China-Energy-Transition-Review-2026.pdf"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact062",
   "topic": "energy",
   "claimType": "interpretive",

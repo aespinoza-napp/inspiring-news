@@ -1,0 +1,614 @@
+{
+  "run": "data\\evaluation\\runs\\manual-train\\llama3.2-3b\\ba36c5721e58",
+  "key": "ba36c5721e58",
+  "model": "llama3.2:3b",
+  "dataset": "manual-train",
+  "seed": 2026,
+  "resamples": 10000,
+  "claims": 69,
+  "scored": 69,
+  "firstPass": {
+    "accuracy": 0.4492753623188406,
+    "macroF1": 0.23254228041462083,
+    "coverage": 0.9710144927536232,
+    "selectiveAccuracy": 0.4626865671641791,
+    "kappa": 0.05615550755939525,
+    "n": 69,
+    "goldClasses": [
+      "TRUE",
+      "PARTIALLY_TRUE",
+      "FALSE",
+      "UNVERIFIED"
+    ],
+    "perClass": {
+      "TRUE": {
+        "precision": 0.696969696969697,
+        "recall": 0.5111111111111111,
+        "f1": 0.5897435897435898,
+        "support": 45,
+        "predicted": 33
+      },
+      "PARTIALLY_TRUE": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3,
+        "predicted": 2
+      },
+      "MISLEADING": {
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "support": 0,
+        "predicted": 0
+      },
+      "FALSE": {
+        "precision": 0.25,
+        "recall": 0.5333333333333333,
+        "f1": 0.3404255319148936,
+        "support": 15,
+        "predicted": 32
+      },
+      "UNVERIFIED": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6,
+        "predicted": 2
+      }
+    },
+    "confusion": {
+      "TRUE": {
+        "TRUE": 23,
+        "PARTIALLY_TRUE": 2,
+        "MISLEADING": 0,
+        "FALSE": 18,
+        "UNVERIFIED": 2
+      },
+      "PARTIALLY_TRUE": {
+        "TRUE": 2,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 1,
+        "UNVERIFIED": 0
+      },
+      "MISLEADING": {
+        "TRUE": 0,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 0,
+        "UNVERIFIED": 0
+      },
+      "FALSE": {
+        "TRUE": 7,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 8,
+        "UNVERIFIED": 0
+      },
+      "UNVERIFIED": {
+        "TRUE": 1,
+        "PARTIALLY_TRUE": 0,
+        "MISLEADING": 0,
+        "FALSE": 5,
+        "UNVERIFIED": 0
+      }
+    },
+    "ci": {
+      "accuracy": {
+        "low": 0.3333333333333333,
+        "high": 0.5652173913043478,
+        "undefinedResamples": 0
+      },
+      "macroF1": {
+        "low": 0.17034644539299384,
+        "high": 0.2909742324561403,
+        "undefinedResamples": 0
+      },
+      "coverage": {
+        "low": 0.927536231884058,
+        "high": 1.0,
+        "undefinedResamples": 0
+      },
+      "selectiveAccuracy": {
+        "low": 0.34328358208955223,
+        "high": 0.582089552238806,
+        "undefinedResamples": 0
+      },
+      "kappa": {
+        "low": -0.11123595505617975,
+        "high": 0.2198844232884369,
+        "undefinedResamples": 0
+      }
+    }
+  },
+  "disagreements": 38,
+  "outcomes": {
+    "agreed": 31,
+    "fixed": 9,
+    "retrieval": 8,
+    "adjudicate": 15,
+    "reasoning": 2,
+    "unreadable": 2,
+    "no_reference": 2,
+    "unavailable": 0
+  },
+  "outcomeIds": {
+    "agreed": [
+      "fact012",
+      "fact020",
+      "fact021",
+      "fact036",
+      "fact062",
+      "fact063",
+      "fact065",
+      "fact082",
+      "fact086",
+      "fact089",
+      "fact115",
+      "fact116",
+      "fact117",
+      "fact118",
+      "fact122",
+      "fact128",
+      "fact139",
+      "fact140",
+      "fact141",
+      "fact142",
+      "fact144",
+      "fact145",
+      "fact146",
+      "fact156",
+      "fact158",
+      "fact159",
+      "fact162",
+      "fact165",
+      "fact171",
+      "fact172",
+      "fact174"
+    ],
+    "fixed": [
+      "fact008",
+      "fact085",
+      "fact106",
+      "fact125",
+      "fact127",
+      "fact132",
+      "fact133",
+      "fact138",
+      "fact163"
+    ],
+    "retrieval": [
+      "fact015",
+      "fact064",
+      "fact090",
+      "fact107",
+      "fact114",
+      "fact124",
+      "fact176",
+      "fact178"
+    ],
+    "adjudicate": [
+      "fact009",
+      "fact010",
+      "fact011",
+      "fact038",
+      "fact066",
+      "fact081",
+      "fact088",
+      "fact100",
+      "fact123",
+      "fact126",
+      "fact129",
+      "fact151",
+      "fact153",
+      "fact154",
+      "fact169"
+    ],
+    "reasoning": [
+      "fact016",
+      "fact143"
+    ],
+    "unreadable": [
+      "fact037",
+      "fact101"
+    ],
+    "no_reference": [
+      "fact049",
+      "fact099"
+    ],
+    "unavailable": []
+  },
+  "byOrigin": {
+    "mutated": {
+      "adjudicate": 4,
+      "fixed": 1,
+      "retrieval": 2
+    },
+    "natural": {
+      "fixed": 8,
+      "adjudicate": 11,
+      "retrieval": 6,
+      "reasoning": 2,
+      "unreadable": 2,
+      "no_reference": 2
+    }
+  },
+  "goldTriggered": {
+    "accuracy": 0.5797101449275363
+  },
+  "triggers": {
+    "unverifiedOrUnsure": {
+      "fired": 15,
+      "comparison": {
+        "accuracy": {
+          "a": 0.4492753623188406,
+          "b": 0.4782608695652174,
+          "difference": 0.02898550724637683,
+          "low": -0.028985507246376774,
+          "high": 0.08695652173913043,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "a": 0.23254228041462083,
+          "b": 0.23808203991130822,
+          "difference": 0.005539759496687391,
+          "low": -0.02519480936915146,
+          "high": 0.034543786452431426,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "a": 0.9710144927536232,
+          "b": 0.9855072463768116,
+          "difference": 0.01449275362318847,
+          "low": 0.0,
+          "high": 0.0434782608695653,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "a": 0.4626865671641791,
+          "b": 0.4852941176470588,
+          "difference": 0.022607550482879712,
+          "low": -0.0337138188608777,
+          "high": 0.08695652173913043,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "a": 0.05615550755939525,
+          "b": 0.06228765571913932,
+          "difference": 0.006132148159744069,
+          "low": -0.08441022724236194,
+          "high": 0.08409014198207625,
+          "undefinedResamples": 0
+        }
+      },
+      "changed": 5,
+      "wrongToRight": [
+        "fact008",
+        "fact085",
+        "fact125"
+      ],
+      "rightToWrong": [
+        "fact171"
+      ]
+    },
+    "unverifiedOnly": {
+      "fired": 2,
+      "comparison": {
+        "accuracy": {
+          "a": 0.4492753623188406,
+          "b": 0.4492753623188406,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "a": 0.23254228041462083,
+          "b": 0.23076923076923078,
+          "difference": -0.0017730496453900457,
+          "low": -0.006249999999999979,
+          "high": 0.0,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "a": 0.9710144927536232,
+          "b": 0.9855072463768116,
+          "difference": 0.01449275362318847,
+          "low": 0.0,
+          "high": 0.0434782608695653,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "a": 0.4626865671641791,
+          "b": 0.45588235294117646,
+          "difference": -0.006804214223002647,
+          "low": -0.023691068467187826,
+          "high": 0.0,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "a": 0.05615550755939525,
+          "b": 0.0530877573131094,
+          "difference": -0.003067750246285854,
+          "low": -0.012985605471671479,
+          "high": 0.0,
+          "undefinedResamples": 0
+        }
+      },
+      "changed": 1,
+      "wrongToRight": [],
+      "rightToWrong": []
+    }
+  },
+  "adjudicate": [
+    {
+      "id": "fact009",
+      "claim": "La nave despegó hacia las 14:49 (hora española) en su decimocuarta prueba desde el complejo de SpaceX en el extremo sur de Texas, EE.UU, y reingresó entorno a las 17.58, unas tres horas después sin que la compañía haya detallado cuántas vueltas ha conseguido completar.",
+      "origin": "natural",
+      "gold": "PARTIALLY_TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "La nave no reingresó en la órbita terrestre, sino que se situó en la órbita terrestre y realizó una maniobra orbital, pero no reingresó",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact010",
+      "claim": "Cuando sea ejecutada esta infraestructura, la función de ronda metropolitana pasará a esa 'nueva' SE-20 y desaparecerá por tanto de la Ronda Urbana Norte, que de ese modo será el gran bulevar verde diseñado por el Ayuntamiento de Sevilla y en el que se invertirán casi 25 millones de euros hasta su culminación a finales de 2028.",
+      "origin": "natural",
+      "gold": "UNVERIFIED",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "La Ronda Urbana Norte no será un gran bulevar verde, sino que se convertirá en la SE-20 y desaparecerá de la Ronda Urbana Norte.",
+      "pagesRead": 1
+    },
+    {
+      "id": "fact011",
+      "claim": "El proyecto original de ronda intermedia que tumbó Europa hace diez años se transformará en una vía urbana que conectará la Supernorte con la SE-40 y la SE-30 a la altura del Calonge para desatascar la Ronda Urbana Norte",
+      "origin": "natural",
+      "gold": "UNVERIFIED",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "El proyecto original de ronda intermedia que tumbó Europa hace diez años se transformará en una vía urbana que conectará la Supernorte con la SE-40 y la SE-30 a la altura del Calonge para desatascar la Ronda Urbana Norte",
+      "pagesRead": 1
+    },
+    {
+      "id": "fact038",
+      "claim": "Meanwhile, the Arctic recorded its minimum summer sea ice extent on 12 September.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "The claim states the Arctic recorded its minimum summer sea ice extent on September 12, but the evidence actually states that the minimum likely reached on September 12, and the 2026 minimum shares the tenth lowest spot with other years, not that it is the minimum.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact066",
+      "claim": "Bodegas Benjamin de Rothschild & Vega Sicilia (Macán) es el proyecto conjunto, con sede en Samaniego (La Rioja), de estas dos familias [los Rothschild y la de Vega Sicilia] tan ligadas al mundo del vino.",
+      "origin": "natural",
+      "gold": "PARTIALLY_TRUE",
+      "first": "TRUE",
+      "secondLook": "TRUE",
+      "reference": "TRUE",
+      "referenceExplanation": "The claim states that Bodegas Benjamin de Rothschild & Vega Sicilia is a joint project between the Rothschild and Vega Sicilia families, with its headquarters in Samaniego, La Rioja. The evidence confirms this, stating that the bodega was created in 2004 as a result of the union of two great names in the viticulture industry: Tempos Vega Sicilia and the Compañía Vinícola Barón Edmond de Rothschild.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact081",
+      "claim": "In 2012, an 11-set Venn diagram that met those criteria was discovered, and another with 13 sets was found in 2014.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "The claim states that an 11-set Venn diagram was discovered in 2012, but the evidence shows that a simple symmetric 11-Venn diagram was found in 2012, not an 11-set Venn diagram.",
+      "pagesRead": 3
+    },
+    {
+      "id": "fact088",
+      "claim": "Blau and her colleague, Nidhi Bhutani, an associate professor of orthopedic surgery, discovered that in older mice, blocking 15‑PGDH reversed the cartilage loss that normally accompanies aging in the knee.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "The claim states that blocking 15-PGDH reversed cartilage loss in older mice, but the evidence shows that blocking 15-PGDH prevented the development of arthritis after knee injuries, not reversed existing cartilage loss.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact100",
+      "claim": "In total, wind and solar have generated a record 41% share of the UK’s electricity needs in 2026 to date, compared with 25% from gas, according to Carbon Brief’s analysis.",
+      "origin": "natural",
+      "gold": "UNVERIFIED",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "The claim states that wind and solar have generated a record 41% share of the UK's electricity needs, but the evidence only reports the share of electricity generation by Major Power Producers, which is 48.5% for renewables, 35.9% for gas, and 14.7% for nuclear. The overall share of wind and solar in the UK's electricity needs is not explicitly stated in the evidence.",
+      "pagesRead": 1
+    },
+    {
+      "id": "fact123",
+      "claim": "As Juice flew just 8640 km above the Indian Ocean, it snapped a series of images with its onboard monitoring cameras.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "The claim states Juice flew 8640 km above the Indian Ocean, but the evidence states it passed at an altitude of 8,640 km above the Indian Ocean, which is not the same location.",
+      "pagesRead": 1
+    },
+    {
+      "id": "fact126",
+      "claim": "A 2026 Pew report found that 10% of Americans are using chatbots for emotional support or companionship.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "The claim states that 10% of Americans use chatbots for emotional support or companionship, but the evidence only mentions that 'about half of U.S. adults now report using AI chatbots', without providing a specific percentage or context for the 10% figure.",
+      "pagesRead": 1
+    },
+    {
+      "id": "fact129",
+      "claim": "Cases of ARFID are also on the rise, increasing by 305 percent from 2018 to 2022, according to a 2023 FAIR Health white paper.",
+      "origin": "natural",
+      "gold": "PARTIALLY_TRUE",
+      "first": "TRUE",
+      "secondLook": "FALSE",
+      "reference": "FALSE",
+      "referenceExplanation": "The claim states that ARFID increased by 305 percent, but the evidence shows that ARFID increased by 305 percent from 2018 to 2022, while the overall increase in eating disorder claim lines was 65 percent. The two increases are not directly comparable.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact151",
+      "claim": "La vicepresidenta segunda del Gobierno, Yolanda Díaz, ha presentado hoy en Barcelona un ejercicio de prospectiva social, impulsado y coordinado por la Oficina Nacional de Prospectiva y Estrategia (ONPE), que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años.",
+      "origin": "mutated",
+      "gold": "FALSE",
+      "first": "TRUE",
+      "secondLook": "TRUE",
+      "reference": "TRUE",
+      "referenceExplanation": "La vicepresidenta segunda del Gobierno, Yolanda Díaz, ha presentado un ejercicio de prospectiva social que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años, un tema que ha sido abordado por la Oficina Nacional de Prospectiva y Estrategia en un informe presentado por Pedro Sánchez en Barcelona.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact153",
+      "claim": "Much attention is now directed toward this, including an MIT report on AI and education published this spring.",
+      "origin": "mutated",
+      "gold": "FALSE",
+      "first": "TRUE",
+      "secondLook": "TRUE",
+      "reference": "TRUE",
+      "referenceExplanation": "The MIT report outlines recommendations for responsible AI use in education, including creating an 'AI-aware' curriculum, centering decisions on people and community, and building ongoing infrastructure.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact154",
+      "claim": "Two days later, last Friday, a county emergency official arrived at Kirk’s debris-laden front lawn in Wyandotte County, and said he’d be back in 30 minutes with a tarp, some lumber, and a crew to cover up the maple-shaped gash in Kirk’s house.",
+      "origin": "mutated",
+      "gold": "FALSE",
+      "first": "TRUE",
+      "secondLook": "TRUE",
+      "reference": "TRUE",
+      "referenceExplanation": "The claim states that a county emergency official arrived at Kirk's debris-laden front lawn with a tarp, lumber, and a crew to cover up the maple-shaped gash in Kirk's house, and this is supported by the evidence of a stranger keeping a promise to cover the storm-damaged home with a tarp.",
+      "pagesRead": 1
+    },
+    {
+      "id": "fact169",
+      "claim": "“It’s like in the Great Stink,” she adds, referring to the hot, dry summer of 1958, when the Thames – and all the raw sewage and rubbish dumped into it, rotting flesh and all – became a foul-smelling health hazard.",
+      "origin": "mutated",
+      "gold": "FALSE",
+      "first": "TRUE",
+      "secondLook": "TRUE",
+      "reference": "TRUE",
+      "referenceExplanation": "The claim refers to the hot, dry summer of 1858 when the Thames became a foul-smelling health hazard due to raw sewage and rubbish dumped into it, which is accurately described in the provided evidence.",
+      "pagesRead": 3
+    }
+  ],
+  "adjudicateVerdicts": {
+    "TRUE -> FALSE": 5,
+    "FALSE -> TRUE": 4,
+    "UNVERIFIED -> FALSE": 3,
+    "PARTIALLY_TRUE -> FALSE": 2,
+    "PARTIALLY_TRUE -> TRUE": 1
+  },
+  "retrieval": [
+    {
+      "id": "fact015",
+      "claim": "Founded in 2017 by writer Wanjiru Koinange and publisher Angela Wachuka, the nonprofit has restored the Eastlands and Kaloleni libraries; and work is underway at the city’s oldest library, McMillan Memorial.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "TRUE",
+      "referenceExplanation": "The claim states that the nonprofit was founded in 2017 by writer Wanjiru Koinange and publisher Angela Wachuka, which is supported by evidence [0] and [1]. However, the exact date of the founding is not explicitly stated in the evidence, but the five-year contract signed in 2017 is mentioned, indicating that 2017 is the correct year.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact064",
+      "claim": "In eight of 11 industrial sectors — including textiles, food, pharmaceuticals, and machinery — fossil fuel use has already peaked, the analysis found.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "TRUE",
+      "referenceExplanation": "The evidence confirms that China's industrial sectors are shifting away from fossil fuels and towards clean electricity, with wind, solar, and batteries displacing coal, oil, and gas.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact090",
+      "claim": "“It’s like in the Great Stink,” she adds, referring to the hot, dry summer of 1858, when the Thames – and all the raw sewage and rubbish dumped into it, rotting flesh and all – became a foul-smelling health hazard.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "UNVERIFIED",
+      "secondLook": "FALSE",
+      "reference": "TRUE",
+      "referenceExplanation": "The claim accurately references the Great Stink of 1858, a significant event in London's history where the Thames River became a public health menace due to severe pollution.",
+      "pagesRead": 3
+    },
+    {
+      "id": "fact107",
+      "claim": "“Oh, it’s unbelievable, the way the community has come together,” Kirk said.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "TRUE",
+      "referenceExplanation": "The claim is supported by the quote from Kirk, where he expresses gratitude and amazement at the community's response to his situation.",
+      "pagesRead": 1
+    },
+    {
+      "id": "fact114",
+      "claim": "El Presidente del Gobierno, Pedro Sánchez, ha presentado hoy en Barcelona un ejercicio de prospectiva social, impulsado y coordinado por la Oficina Nacional de Prospectiva y Estrategia (ONPE), que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "PARTIALLY_TRUE",
+      "secondLook": "PARTIALLY_TRUE",
+      "reference": "TRUE",
+      "referenceExplanation": "El Presidente del Gobierno, Pedro Sánchez, ha presentado un ejercicio de prospectiva social que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años, según un informe elaborado por la Oficina Nacional de Prospectiva y Estrategia.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact124",
+      "claim": "Esto también conlleva un estado de ánimo más bajo que afecta al bienestar emocional de las mujeres, según un estudio publicado en la revista Psychological Medicine, de Cambridge University Press, y dirigido por el profesor Macià Buades, de la Facultad de Psicología y el Instituto de Neurociencias de la Universidad de Barcelona.",
+      "origin": "natural",
+      "gold": "TRUE",
+      "first": "FALSE",
+      "secondLook": "FALSE",
+      "reference": "TRUE",
+      "referenceExplanation": "The study found a link between higher progesterone levels and less distinct brain patterns involved in emotion control, which could explain differences in mood among women.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact176",
+      "claim": "Blau and her colleague, Nidhi Bhutani, an associate professor of orthopedic surgery, discovered that in older mice, blocking 15‑PGDH accelerated the cartilage loss that normally accompanies aging in the knee.",
+      "origin": "mutated",
+      "gold": "FALSE",
+      "first": "TRUE",
+      "secondLook": "TRUE",
+      "reference": "FALSE",
+      "referenceExplanation": "The claim states that blocking 15-PGDH accelerated cartilage loss in older mice, but the evidence shows that blocking 15-PGDH actually reversed cartilage loss and prevented arthritis.",
+      "pagesRead": 2
+    },
+    {
+      "id": "fact178",
+      "claim": "En el estudio participaron 316 mujeres con ciclos menstruales naturales (que no utilizaban anticonceptivos hormonales).",
+      "origin": "mutated",
+      "gold": "FALSE",
+      "first": "TRUE",
+      "secondLook": "TRUE",
+      "reference": "FALSE",
+      "referenceExplanation": "The study focuses on the effect of endogenous progesterone on frontostriatal representations of emotion control, but does not mention menstrual cycles or hormone use in women.",
+      "pagesRead": 1
+    }
+  ],
+  "cost": {
+    "secondLooks": 40,
+    "referenceChecks": 27,
+    "llmCalls": 108,
+    "seconds": 9884.7
+  }
+}

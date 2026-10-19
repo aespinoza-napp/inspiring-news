@@ -116,14 +116,26 @@ starts with x-fact's ten keys in x-fact's order (a test in
 `labelRaw` is the guide's label, after AVeriTeC: `supported`,
 `partially supported`, `conflicting evidence/cherrypicking`, `refuted`,
 `not enough evidence` -> `TRUE`, `PARTIALLY_TRUE`, `MISLEADING`, `FALSE`,
-`UNVERIFIED`. `split` is always `test`: nothing is tuned on it.
+`UNVERIFIED`.
+
+**`split` is `train` or `test`**, frozen on 2026-10-19 by `python
+labeller/app.py split` (roadmap P0.4; before it, every fact was
+`test`): half to tune on, half to report. Grouped by article (a
+synthetic FALSE goes with its source), stratified by verdict x language
+and by topic group, ties by hash - 69 train, 70 test. **`split.json`**,
+beside `manual/`, records the freeze: when, the rule, the counts, every
+fact's side, and `recheck` - the fifth of the test half labelled again
+blind and run again through the pipeline (14 facts). Nothing is tuned on
+`test`. The harness takes one half with `--split` and the sample with
+`--sample recheck`. `docs/decisions/evaluation.md`, "The split".
 
 **Balance.** 5 verdicts x 5 topic groups = 25 cells of 6. The targets
 steer labelling; they are not a quota. A short `FALSE` cell is reported
 short, not padded.
 
-**Self-agreement.** `ceil(20%)` of the facts - chosen by a hash of their
-id, not by hand - are labelled a second time, blind, ideally a week
-later. The labeller reports observed agreement and Cohen's kappa on the
+**Self-agreement.** `ceil(20%)` of the test half - chosen by a hash of
+their id, not by hand - are labelled a second time, blind, ideally a week
+later; the same facts are run through the pipeline twice (`cli
+consistency`). The labeller reports observed agreement and Cohen's kappa on the
 *first* label: correcting a fact after its review does not turn a
 disagreement into an agreement.

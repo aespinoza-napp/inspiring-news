@@ -11,7 +11,7 @@
     "https://arxiv.org/abs/2110.07574",
     "https://ar5iv.labs.arxiv.org/html/2110.07574"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact127",
   "topic": "technology",
   "claimType": "factual",

@@ -12,7 +12,7 @@
     "https://livescience.com/archaeology/romans/1-800-year-old-temple-to-mars-and-statue-of-victory-unearthed-at-roman-military-fort-in-germany",
     "https://greekreporter.com/2026/10/02/roman-temple-mars-germany/"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact140",
   "topic": "heritage",
   "claimType": "factual",

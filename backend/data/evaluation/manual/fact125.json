@@ -10,7 +10,7 @@
   "referenceEvidenceLinks": [
     "https://doi.org/10.1017/S0033291726105315"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact125",
   "topic": "mental_health",
   "claimType": "numerical",

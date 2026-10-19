@@ -11,7 +11,7 @@
     "https://med.stanford.edu/news/all-news/2025/11/joint-cartilage-aging.html",
     "https://www.sciencedaily.com/releases/2026/01/260120000333.htm"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact176",
   "topic": "medicine",
   "claimType": "factual",

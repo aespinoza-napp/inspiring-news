@@ -8,7 +8,7 @@
   "labelRaw": "not enough evidence",
   "label": "UNVERIFIED",
   "referenceEvidenceLinks": [],
-  "split": "test",
+  "split": "train",
   "id": "fact049",
   "topic": "biology",
   "claimType": "numerical",

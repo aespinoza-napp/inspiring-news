@@ -11,7 +11,7 @@
     "https://doi.org/10.1093/cvr/cvag193",
     "https://www.cnic.es/es/noticias/cardiovascular-research-obesidad-activa-un-mecanismo-especifico-que-altera-relajacion"
   ],
-  "split": "test",
+  "split": "train",
   "id": "fact085",
   "topic": "medicine",
   "claimType": "factual",
