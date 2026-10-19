@@ -276,6 +276,14 @@ class Settings(BaseSettings):
     # from the writer's so a draft need not be judged by the model that
     # wrote it.
     CORRECTOR_LLM_MODEL: str | None = None
+    # Per model, the `reasoning_effort` sent with every call to it, as
+    # JSON: {"qwen3.5:4b": "none"}. For hybrid reasoning models, which
+    # think before every answer unless told not to - minutes more per
+    # draft on a CPU. Ollama's OpenAI endpoint takes "none" as "do not
+    # think" (docs.ollama.com/api/openai-compatibility); Qwen3.5 dropped
+    # Qwen3's /no_think soft switch, so the request is the only way.
+    # A model not named here gets nothing, as before.
+    LLM_REASONING_EFFORT: dict[str, str] = {}
     # Base delay before complete_json's retry after a connection/timeout
     # failure, doubled each attempt and capped at 5s.
     LLM_RETRY_BACKOFF_SECONDS: float = 0.5
@@ -332,6 +340,13 @@ class Settings(BaseSettings):
     # not a relevance ranking, and cutting real evidence here turns a
     # checkable claim into UNVERIFIED.
     EVIDENCE_MIN_PERTINENCE: float = 0.25
+
+    # The second look (services/fact_checker/second_look.py): a second,
+    # wider search for a claim whose first verdict is in doubt - UNVERIFIED,
+    # or below this confidence. Off until the tuning half of the custom set
+    # says it helps (docs/decisions/evaluation.md, "The second look").
+    SECOND_LOOK_ENABLED: bool = False
+    SECOND_LOOK_BELOW_CONFIDENCE: float = 0.5
 
     # EvidenceRanker scoring weights (must sum to 1.0)
     #

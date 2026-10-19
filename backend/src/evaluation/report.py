@@ -34,9 +34,22 @@ from src.evaluation.metrics import (
     SCORED,
 )
 from src.evaluation import retrieval
-from src.evaluation.runner import FULL, MANIFEST, RESULTS, RETRIEVAL, model_slug
+from src.evaluation.runner import FULL, MANIFEST, ORACLE, RESULTS, RETRIEVAL, model_slug
+from src.evaluation.stats import median, percentile, rounded
 from src.evaluation.store import ResultsFile, read_json, write_json
 from src.evaluation.usage import cost, price_for, totals
+
+# A claim's stages, in the order they run, as the record's `latency`
+# holds them (record.py, latency_from). `llm` includes waiting for the LLM
+# permit; `secondLook` exists only where one was taken.
+STAGES = (
+    ("entities", "Entities of the claim"),
+    ("retrieval", "Evidence retrieval"),
+    ("ranking", "Ranking"),
+    ("llm", "The model's verdict (with its wait for a permit)"),
+    ("secondLook", "Second look, where taken"),
+    ("total", "Whole claim"),
+)
 
 # What a breakdown is by, and which set it applies to. Site is x-fact's
 # fact-checker; on the custom set it is just the article's publisher.
@@ -174,11 +187,44 @@ def evaluate(
         },
         "breakdowns": _breakdowns(scored, seed=seed, resamples=resamples),
         "retrieval": retrieval.retrieval_metrics(records, seed=seed, resamples=resamples),
+        "responseTime": response_time(scored),
         "usage": {
             **run_totals,
             "cost": cost(run_totals, price_for(prices, run.model, run.manifest.get("provider"))),
         },
     }
+
+
+def response_time(scored: list[dict]) -> dict:
+    """
+    Seconds per stage over the scored claims: what a person waits for, and
+    where it goes. Scored only: a claim whose search was unavailable ends in
+    seconds and would read as a fast pipeline. `share` is the stage's part
+    of the summed whole-claim time, so the stages' shares and what no stage
+    covers (queueing between them, building the claim) add up to 1.
+    """
+
+    totals_ = [record["latency"]["total"] for record in scored if (record.get("latency") or {}).get("total") is not None]
+    whole = sum(totals_)
+
+    stages = {}
+
+    for key, _ in STAGES:
+
+        values = [
+            record["latency"][key] for record in scored
+            if (record.get("latency") or {}).get(key) is not None
+        ]
+
+        stages[key] = {
+            "claims": len(values),
+            "median": rounded(median(values)),
+            "p90": rounded(percentile(values, 90)),
+            "max": rounded(max(values)) if values else None,
+            "share": rounded(sum(values) / whole) if whole and key != "total" else None,
+        }
+
+    return {"claims": len(scored), "stages": stages}
 
 
 def _flags(scored: list[dict]) -> dict:
@@ -476,7 +522,9 @@ def render(result: dict) -> str:
         return _render_retrieval_only(result)
 
     parts = [
-        f"# {dataset.get('stem', 'run')} · {run['model']}" + (f" · {run['label']}" if run.get("label") else ""),
+        f"# {dataset.get('stem', 'run')} · {run['model']}"
+        + (" · the annotator's evidence (oracle)" if run.get("mode") == ORACLE else "")
+        + (f" · {run['label']}" if run.get("label") else ""),
         "",
         f"Run `{run['key']}` · provider `{run.get('provider')}` · harness v{run.get('harnessVersion')} · "
         f"thresholds `{run.get('thresholdsHash')}` · corpus `{(run.get('corpus') or {}).get('mode')}`"
@@ -547,7 +595,23 @@ def render(result: dict) -> str:
             "",
         ]
 
-    parts += retrieval.render_section(result["retrieval"])
+    if run.get("mode") == ORACLE:
+        # The evidence is the annotator's own links, so "recall of the
+        # annotator's links" would be 100% by construction.
+        parts += [
+            "## Evidence",
+            "",
+            "No search: each claim was judged on the pages at its own reference links "
+            "(FactChecker.check_against), every readable one kept, no pertinence gate. "
+            "A claim with no link, or none readable, reached the model with no evidence "
+            "and is UNVERIFIED.",
+            "",
+        ]
+    else:
+        parts += retrieval.render_section(result["retrieval"])
+
+    if result.get("responseTime"):
+        parts += _render_response_time(result["responseTime"])
 
     parts += _render_usage(result["usage"])
 
@@ -581,6 +645,32 @@ def _render_retrieval_only(result: dict) -> str:
         )
 
     return "\n".join(parts).rstrip() + "\n"
+
+
+def _render_response_time(timing: dict) -> list[str]:
+
+    stages = timing["stages"]
+
+    return [
+        "## Response time",
+        "",
+        f"Seconds per stage over the {timing['claims']} scored claims, from the pipeline's own events. "
+        "The model's span includes waiting for the LLM permit; the call latency under Cost is the answer "
+        "time alone. A response time compares only between runs made alone on the machine.",
+        "",
+        _table(["Stage", "Claims", "Median", "p90", "Max", "Share of the time"], [
+            [
+                label,
+                stages[key]["claims"],
+                num(stages[key]["median"], 1),
+                num(stages[key]["p90"], 1),
+                num(stages[key]["max"], 1),
+                pct(stages[key]["share"]) if stages[key]["share"] is not None else "",
+            ]
+            for key, label in STAGES
+        ]),
+        "",
+    ]
 
 
 def _render_usage(usage: dict) -> list[str]:
@@ -673,6 +763,8 @@ def render_table(table: dict) -> str:
             row["outcomes"].get("llmUnreachable", 0) + row["outcomes"].get("searchUnavailable", 0)
             + row["outcomes"].get("error", 0),
             num(usage["unitLatency"]["median"], 1),
+            num(usage["unitLatency"]["p90"], 1),
+            num(usage["callLatency"]["median"], 1),
             usage["completionTokensPerUnit"],
             num(usage["completionTokensPerSecond"], 1),
             f"{priced['per100Units']:.4f}" if priced else "n/a",
@@ -687,7 +779,8 @@ def render_table(table: dict) -> str:
         "",
         _table([
             "Model", "Provider", "Scored", "Accuracy", "Macro-F1", "Coverage", "Selective acc.",
-            "Kappa", "Invalid output", "Set apart", "Median s/claim", "Completion tok/claim",
+            "Kappa", "Invalid output", "Set apart", "Median s/claim", "p90 s/claim",
+            "Median s/model call", "Completion tok/claim",
             "Tok/s", "Cost per 100 claims",
         ], rows),
         "",

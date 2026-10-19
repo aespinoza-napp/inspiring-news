@@ -268,6 +268,20 @@ def test_a_second_run_judges_nothing_and_more_repeats_add_only_the_new_ones(tmp_
     assert len(judge.calls) == 6
 
 
+def test_a_model_told_not_to_think_is_another_run(tmp_path, monkeypatch):
+
+    from src.config.settings import settings
+
+    judge = Judge({})
+    before = runner_for(small_set(tmp_path), tmp_path, judge).key
+    other = runner_for(small_set(tmp_path), tmp_path, judge, model="judge-2").key
+
+    monkeypatch.setattr(settings, "LLM_REASONING_EFFORT", {"judge-1": "none"})
+
+    assert runner_for(small_set(tmp_path), tmp_path, judge).key != before
+    assert runner_for(small_set(tmp_path), tmp_path, judge, model="judge-2").key == other
+
+
 def test_an_unreachable_provider_and_an_error_are_written_and_run_again(tmp_path):
 
     texts = load_texts(small_set(tmp_path))

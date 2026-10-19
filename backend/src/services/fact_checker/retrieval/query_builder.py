@@ -88,6 +88,10 @@ class QueryKind(str, Enum):
     PROPOSITION = "proposition"
     REFUTATION = "refutation"
 
+    # A second look's queries, written by the model from what the first
+    # verdict said was missing (fact_checker/second_look.py).
+    FOLLOW_UP = "follow_up"
+
 
 @dataclass(frozen=True)
 class PlannedQuery:

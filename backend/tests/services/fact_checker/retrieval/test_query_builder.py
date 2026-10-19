@@ -44,7 +44,8 @@ def test_every_query_carries_the_subject_the_sentence_lost():
 
     plan = plan_queries(_aura_claim(), _context(), "es")
 
-    assert {query.kind for query in plan} == set(QueryKind)
+    # Every kind the first pass plans; `follow_up` is a second look's only.
+    assert {query.kind for query in plan} == set(QueryKind) - {QueryKind.FOLLOW_UP}
 
     for query in plan:
         assert "Farmear aura" in query.text, query

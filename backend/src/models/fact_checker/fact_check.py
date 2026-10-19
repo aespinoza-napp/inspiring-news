@@ -18,6 +18,35 @@ class Verdict(str, Enum):
     UNVERIFIED = "UNVERIFIED"
 
 
+class SecondLook(BaseModel):
+    """
+    The first verdict, when a second look replaced it
+    (`services/fact_checker/second_look.py`): why it was taken, what it
+    searched for, and what the first pass had said. Kept on the claim so
+    a reader sees that the verdict came from a second search, and from
+    what.
+    """
+
+    # "unverified" or "low_confidence" - see `needs_second_look`.
+    trigger: str
+
+    first_verdict: Verdict
+
+    first_confidence: float
+
+    first_explanation: str = ""
+
+    # The follow-up queries, written by the model from the first verdict's
+    # explanation (what was missing), or the claim itself when it wrote none.
+    queries: list[str] = Field(default_factory=list)
+
+    # Sources the first pass had not seen that made the final evidence.
+    new_evidence: int = 0
+
+    # None of the follow-up queries could be answered.
+    search_unavailable: bool = False
+
+
 class FactCheck(BaseModel):
 
     verdict: Verdict
@@ -66,3 +95,7 @@ class FactCheck(BaseModel):
     # from a search that ran and found nothing. The verdict may still
     # rest on the internal corpus; it never rests on the web.
     search_unavailable: bool = False
+
+    # Set when a second look (a second, wider search) produced this
+    # verdict; None for a claim judged on its first pass.
+    second_look: SecondLook | None = None

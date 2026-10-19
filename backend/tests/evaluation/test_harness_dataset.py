@@ -18,6 +18,7 @@ from src.evaluation.dataset import (
     XFACT,
     DatasetError,
     load_dataset,
+    select_rows,
     xfact_id,
 )
 
@@ -72,6 +73,60 @@ def test_a_mutated_fact_is_told_from_a_natural_one_and_xfact_is_neither(tmp_path
 
     assert origins == {"fact001": "natural", "fact002": "mutated"}
     assert xfact.origin is None
+
+
+def _split_set(tmp_path, recheck=("fact003",)):
+
+    directory = tmp_path / "manual"
+    directory.mkdir()
+    for n, split in enumerate(["train", "train", "test", "test"], start=1):
+        write_jsonl(directory / f"fact00{n}.json", [custom_row(f"fact00{n}", f"Claim {n}.", split=split)])
+    (tmp_path / "split.json").write_text(json.dumps({"recheck": list(recheck)}), encoding="utf-8")
+
+    return load_dataset(directory)
+
+
+def test_a_split_or_the_recheck_sample_is_a_dataset_of_its_own(tmp_path):
+
+    dataset = _split_set(tmp_path)
+
+    train = select_rows(dataset, split="train")
+    test = select_rows(dataset, split="test")
+    recheck = select_rows(dataset, split="test", sample="recheck")
+
+    assert [row.id for row in train.rows] == ["fact001", "fact002"]
+    assert [row.id for row in test.rows] == ["fact003", "fact004"]
+    assert [row.id for row in recheck.rows] == ["fact003"]
+    # Its own run directory and run key: never resumed as the whole set.
+    assert (train.stem, test.stem, recheck.stem) == ("manual-train", "manual-test", "manual-test-recheck")
+    assert len({dataset.sha256, train.sha256, test.sha256, recheck.sha256}) == 4
+    assert select_rows(dataset) is dataset
+
+
+def test_an_empty_selection_or_a_missing_manifest_is_refused(tmp_path):
+
+    dataset = _split_set(tmp_path)
+
+    with pytest.raises(DatasetError, match="no rows in dev"):
+        select_rows(dataset, split="dev")
+
+    (tmp_path / "split.json").unlink()
+
+    with pytest.raises(DatasetError, match="split manifest"):
+        select_rows(dataset, sample="recheck")
+
+
+def test_the_committed_split_is_even_and_its_recheck_sample_a_fifth_of_test():
+    """The frozen split (labeller/app.py split, 2026-10-19), as committed."""
+
+    dataset = load_dataset(EVALUATION / "manual")
+    train, test = select_rows(dataset, split="train"), select_rows(dataset, split="test")
+    recheck = select_rows(dataset, sample="recheck")
+
+    assert len(train.rows) + len(test.rows) == len(dataset.rows)
+    assert abs(len(train.rows) - len(test.rows)) <= 2
+    assert {row.id for row in recheck.rows} <= {row.id for row in test.rows}
+    assert len(recheck.rows) == -(-len(test.rows) // 5)
 
 
 def test_xfact_ids_are_stable_and_depend_on_language_site_and_claim():

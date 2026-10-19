@@ -87,11 +87,23 @@ class SearchProvider:
         the hits the others found are still evidence.
         """
 
+        return self.search_queries(self.plan(claim, context, language), thresholds, language)
+
+    def search_queries(
+        self,
+        queries: list[PlannedQuery],
+        thresholds: PipelineThresholds | None = None,
+        language: str | None = None,
+    ) -> list[Evidence]:
+        """
+        `search`, over queries the caller planned: a second look's
+        follow-up queries go through the same concurrency, failure rule
+        and fusion as the first pass's three.
+        """
+
         thresholds = thresholds or PipelineThresholds()
 
         candidates = thresholds.evidence_fetch_candidates
-
-        queries = self.plan(claim, context, language)
 
         if not queries:
             return []

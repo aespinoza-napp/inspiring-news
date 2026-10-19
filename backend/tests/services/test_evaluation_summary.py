@@ -314,3 +314,8 @@ def test_a_real_harness_report_has_every_path_the_runs_panel_reads(tmp_path):
     # `${SCORED}.coverage` and `${SCORED}.confusion` (gold -> predicted -> count)
     assert isinstance(scored["coverage"], float)
     assert scored["confusion"]["FALSE"]["TRUE"] == 1
+
+    # The response time column: responseTime.stages.total.{median,p90}
+    # (make_record's claims take 10 s each).
+    total = metrics["responseTime"]["stages"]["total"]
+    assert (total["median"], total["p90"]) == (10.0, 10.0)

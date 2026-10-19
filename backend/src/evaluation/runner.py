@@ -61,6 +61,7 @@ from src.evaluation.store import ResultsFile, read_json, write_json
 from src.evaluation.usage import UsageMeter, summarise, totals
 from src.services.concurrency import bounded_map
 from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.fact_checker.second_look import doubt
 
 logger = logging.getLogger(__name__)
 
@@ -74,13 +75,34 @@ CORPUS_MODES = (SNAPSHOT, NONE)
 # mean nothing and its report has no classification metrics.
 FULL = "full"
 RETRIEVAL = "retrieval"
-MODES = (FULL, RETRIEVAL)
+# `oracle` gives the model the annotator's own pages instead of a search
+# (FactChecker.check_against): the gold-evidence condition of FEVER and
+# AVeriTeC, RQ2's third condition (P0.5). Two models given the same pages
+# differ by their reading alone, which a search, different on every run,
+# never allows. A row with no reference link, or none readable, reaches
+# the model with no evidence and is UNVERIFIED, as the pipeline would be.
+ORACLE = "oracle"
+MODES = (FULL, RETRIEVAL, ORACLE)
 
 # The "model" of a retrieval-only run: its directory and its records say
 # no model was asked.
 RETRIEVAL_ONLY_MODEL = "retrieval-only"
 
 RETRIEVAL_ONLY_EXPLANATION = "Retrieval-only run: the model was not asked."
+
+# What the tuning loop (`--loop`) made of a claim, the first that applies.
+LOOP_UNAVAILABLE = "unavailable"      # the first pass's search or model was never reached
+LOOP_AGREED = "agreed"                # the first verdict is the gold label
+LOOP_FIXED = "fixed"                  # the second look reached the gold label
+LOOP_NO_REFERENCE = "no_reference"    # still wrong; the row has no links to check against
+LOOP_UNREADABLE = "unreadable"        # still wrong; none of its links could be read
+LOOP_RETRIEVAL = "retrieval"          # the annotator's pages give gold: the search never found them
+LOOP_ADJUDICATE = "adjudicate"        # the annotator's pages give the pipeline's verdict: a person decides
+LOOP_REASONING = "reasoning"          # the annotator's pages give a third verdict
+LOOP_OUTCOMES = (
+    LOOP_AGREED, LOOP_FIXED, LOOP_RETRIEVAL, LOOP_ADJUDICATE, LOOP_REASONING,
+    LOOP_UNREADABLE, LOOP_NO_REFERENCE, LOOP_UNAVAILABLE,
+)
 
 MANIFEST = "run.json"
 RESULTS = "results.jsonl"
@@ -140,12 +162,17 @@ def run_key(
     weights: dict[str, float] | None = None,
     mode: str = FULL,
     label: str | None = None,
+    loop: bool = False,
+    reasoning_effort: str | None = None,
 ) -> str:
     """
-    The mode and the label count only when set, so a full, unlabelled
-    run keeps the key it had before either existed. The label is what
-    separates two strategies the settings cannot tell apart - the same
-    thresholds over two commits of the retriever.
+    The mode, the label, the loop and the reasoning effort count only
+    when set, so a full, unlabelled run keeps the key it had before any
+    existed. The label is what separates two strategies the settings
+    cannot tell apart - the same thresholds over two commits of the
+    retriever. The reasoning effort (LLM_REASONING_EFFORT for this model)
+    separates a hybrid model told not to think from the same model
+    thinking: one name, two answers, minutes apart per claim on a CPU.
     """
 
     keyed = {
@@ -162,6 +189,12 @@ def run_key(
 
     if label:
         keyed["label"] = label
+
+    if loop:
+        keyed["loop"] = True
+
+    if reasoning_effort:
+        keyed["reasoningEffort"] = reasoning_effort
 
     return _digest(keyed)[:12]
 
@@ -237,12 +270,20 @@ class RunConfig:
     # A name for the strategy this run measures (`--label`), keyed.
     label: str | None = None
 
+    # The tuning loop (`--loop`): after each claim, a second look when the
+    # verdict disagrees with gold (or is in doubt), then the annotator's
+    # own pages when it still disagrees. Keyed: its records hold more.
+    loop: bool = False
+
     @property
     def key(self) -> str:
 
         return run_key(
             self.dataset.sha256, self.model, self.thresholds, self.corpus, self.weights,
-            mode=self.mode, label=self.label,
+            mode=self.mode, label=self.label, loop=self.loop,
+            # The mapping LLMClient reads for the same model, so the key
+            # says what every call was sent.
+            reasoning_effort=settings.LLM_REASONING_EFFORT.get(self.model),
         )
 
     @property
@@ -283,6 +324,18 @@ def context_for(row: DatasetRow) -> ArticleContext | None:
         return None
 
     return ArticleContext(url=row.article_url, title="", lead="", keywords=[], entities={})
+
+
+def reference_urls(row: DatasetRow) -> list[str]:
+    """
+    The row's reference links an oracle run reads: web addresses only,
+    each once. x-fact's "<LINK NOT AVAILABLE>" placeholders are not pages.
+    """
+
+    return list(dict.fromkeys(
+        link for link in row.reference_links
+        if link.lower().startswith(("http://", "https://"))
+    ))
 
 
 class HarnessRunner:
@@ -456,21 +509,47 @@ class HarnessRunner:
 
                 entities = round(time.perf_counter() - started, 4)
 
-                check = self.checker.check_claim(
-                    claim,
-                    collect,
-                    self.config.thresholds,
-                    context=context_for(row),
-                    language=row.language,
-                )
+                if self.config.mode == ORACLE:
+                    check, read = self.checker.check_against(
+                        claim,
+                        reference_urls(row),
+                        collect,
+                        self.config.thresholds,
+                        context=context_for(row),
+                        language=row.language,
+                    )
+                    # The pipeline says claim_checked in _check_claim, which
+                    # check_against does not pass through; said here, the
+                    # model's span (verifying_claim -> claim_checked) is timed
+                    # as in a run that searched.
+                    collect("claim_checked", {"verdict": check.verdict.value, "pagesRead": read})
+                else:
+                    check = self.checker.check_claim(
+                        claim,
+                        collect,
+                        self.config.thresholds,
+                        context=context_for(row),
+                        language=row.language,
+                    )
+
+                timing = self._timing(started_at, started, entities)
+                first_calls = len(calls)
+
+                loop = self._loop(row, claim, check) if self.config.loop else None
+
+                if loop is not None:
+                    # Its own cost, apart: the record's `usage` stays the
+                    # first pass's, comparable with a run without the loop.
+                    loop["usage"] = summarise(calls[first_calls:])
 
                 record = build_record(
                     row,
                     check,
                     events=events,
-                    timing=self._timing(started_at, started, entities),
+                    timing=timing,
                     provenance=self._provenance,
-                    usage=summarise(calls),
+                    usage=summarise(calls[:first_calls]),
+                    loop=loop,
                 )
 
             except Exception as exc:
@@ -495,6 +574,100 @@ class HarnessRunner:
             self.on_record(record)
 
         return record["status"]
+
+    def _loop(self, row: DatasetRow, claim, check) -> dict:
+        """
+        The tuning loop on one claim (docs/decisions/evaluation.md, "The
+        second look"). The record's verdict stays the first pass's; this
+        says what a second look and the annotator's own pages made of it.
+
+        A second look is taken when the verdict disagrees with gold, and
+        also when the pipeline's own trigger would fire (`doubt`), so the
+        report can say what that trigger would do without gold. When the
+        claim still disagrees, it is judged once more against the row's
+        reference links: if those settle it, the error was the search's
+        (`retrieval`); if the model still answers what the pipeline did,
+        a person decides between the model and the gold label
+        (`adjudicate`).
+        """
+
+        thresholds = self.config.thresholds
+        context = context_for(row)
+        gold = row.label
+
+        loop = {
+            "firstVerdict": _verdict(check.verdict),
+            "disagrees": _verdict(check.verdict) != gold,
+            "trigger": doubt(check, thresholds.second_look_below_confidence),
+            "secondLook": None,
+            "reference": None,
+            "outcome": None,
+            "seconds": None,
+        }
+
+        started = time.perf_counter()
+
+        if check.llm_unreachable or check.search_unavailable:
+            loop["outcome"] = LOOP_UNAVAILABLE
+            return loop
+
+        if not loop["disagrees"] and not loop["trigger"]:
+            loop["outcome"] = LOOP_AGREED
+            return loop
+
+        second = self.checker.second_look(
+            claim,
+            check,
+            None,
+            thresholds,
+            context=context,
+            language=row.language,
+            trigger=loop["trigger"] or "disagreement",
+        )
+
+        trace = second.second_look
+
+        loop["secondLook"] = _judgement(second) | {
+            "queries": trace.queries if trace else [],
+            "newEvidence": trace.new_evidence if trace else 0,
+            "searchUnavailable": bool(trace and trace.search_unavailable),
+        }
+
+        final = _verdict(second.verdict)
+
+        if not loop["disagrees"]:
+            loop["outcome"] = LOOP_AGREED
+        elif final == gold:
+            loop["outcome"] = LOOP_FIXED
+        elif not row.reference_links:
+            loop["outcome"] = LOOP_NO_REFERENCE
+        else:
+            reference, read = self.checker.check_against(
+                claim,
+                list(row.reference_links),
+                None,
+                thresholds,
+                context=context,
+                language=row.language,
+            )
+
+            loop["reference"] = _judgement(reference) | {
+                "links": len(row.reference_links),
+                "pagesRead": read,
+            }
+
+            if not read:
+                loop["outcome"] = LOOP_UNREADABLE
+            elif _verdict(reference.verdict) == gold:
+                loop["outcome"] = LOOP_RETRIEVAL
+            elif _verdict(reference.verdict) == final:
+                loop["outcome"] = LOOP_ADJUDICATE
+            else:
+                loop["outcome"] = LOOP_REASONING
+
+        loop["seconds"] = round(time.perf_counter() - started, 4)
+
+        return loop
 
     @staticmethod
     def _timing(started_at: str, started: float, entities: float | None) -> Timing:
@@ -537,6 +710,7 @@ class HarnessRunner:
         return {
             "LLM_BASE_URL": without_credentials(settings.LLM_BASE_URL),
             "LLM_TIMEOUT": settings.LLM_TIMEOUT,
+            "LLM_REASONING_EFFORT": settings.LLM_REASONING_EFFORT.get(self.config.model),
             "SEARXNG_URL": settings.SEARXNG_URL,
             "INFERENCE_URL": settings.INFERENCE_URL,
             "INFERENCE_TIMEOUT": settings.INFERENCE_TIMEOUT,
@@ -575,11 +749,40 @@ class HarnessRunner:
             "corpus": {"mode": config.corpus},
             "mode": config.mode,
             "label": config.label,
+            "loop": config.loop,
             "gitCommit": self.commit,
             "startedAt": now(),
             "settings": self._settings(),
             **self.manifest_extra,
         }
+
+
+def _verdict(value) -> str:
+
+    return value.value if hasattr(value, "value") else str(value)
+
+
+def _judgement(check) -> dict:
+    """A verdict and what it rested on, without any page's text."""
+
+    cited = set(check.cited_evidence_indices)
+
+    return {
+        "verdict": _verdict(check.verdict),
+        "confidence": check.confidence,
+        "rawVerdict": _verdict(check.raw_verdict) if check.raw_verdict else None,
+        "explanation": check.explanation,
+        "evidence": [
+            {
+                "url": item.url,
+                "domain": item.domain,
+                "foundBy": list(item.found_by),
+                "stance": _verdict(item.stance) if item.stance else None,
+                "cited": index in cited,
+            }
+            for index, item in enumerate(check.evidence)
+        ],
+    }
 
 
 def without_credentials(url: str) -> str:

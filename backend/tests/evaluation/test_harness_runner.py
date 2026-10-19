@@ -54,6 +54,8 @@ def runner_for(dataset, checker, tmp_path, **kwargs) -> HarnessRunner:
         thresholds=kwargs.pop("thresholds", PipelineThresholds()),
         corpus="none",
         root=tmp_path / "runs",
+        loop=kwargs.pop("loop", False),
+        mode=kwargs.pop("mode", "full"),
     )
 
     return HarnessRunner(
@@ -239,9 +241,10 @@ def test_every_field_of_the_record_format_is_filled(repository, tmp_path):
 
     assert list(record) == list(RECORD_FIELDS)
 
-    # Null only where null is the pipeline's real answer: no error, and no
-    # stage note for a verdict that was not recalibrated.
-    nullable = {"error", "stageNote"}
+    # Null only where null is the pipeline's real answer: no error, no
+    # stage note for a verdict that was not recalibrated, no second look
+    # in a run that did not enable one, and no loop in a run without it.
+    nullable = {"error", "stageNote", "secondLook", "loop"}
 
     empty = [
         key for key, value in record.items()
@@ -586,3 +589,184 @@ def test_no_repository_is_still_unknown_and_a_dirty_tree_says_so(monkeypatch):
     monkeypatch.setattr(runner.subprocess, "run", dirty)
 
     assert runner.git_commit() == "abc123-dirty"
+
+
+# ----------------------------------------------------------------------
+# The tuning loop (`run --loop`)
+# ----------------------------------------------------------------------
+
+
+class LoopChecker:
+    """
+    A scripted checker: each claim's first verdict, second-look verdict
+    and verdict on the annotator's pages, by claim text. The pipeline's
+    own second look and reference check are tested in
+    tests/services/fact_checker/test_second_look.py; this holds what the
+    runner makes of their answers.
+    """
+
+    def __init__(self, script: dict[str, tuple]):
+        self.script = script
+        self.second_looks: list[str] = []
+        self.references: list[tuple[str, list[str]]] = []
+
+    def check_claim(self, claim, on_phase=None, thresholds=None, *, context=None, language=None):
+        first, *_ = self.script[claim.text]
+        verdict, confidence = first
+        return FactCheck(verdict=verdict, confidence=confidence, explanation="first", claim=claim.text)
+
+    def second_look(self, claim, first, on_phase=None, thresholds=None, *, context=None,
+                    language=None, trigger="requested"):
+        from src.models.fact_checker.fact_check import SecondLook
+
+        self.second_looks.append(claim.text)
+        _, second, *_ = self.script[claim.text]
+        return FactCheck(
+            verdict=second, confidence=0.8, explanation="second", claim=claim.text,
+            second_look=SecondLook(trigger=trigger, first_verdict=first.verdict,
+                                   first_confidence=first.confidence, queries=["q"], new_evidence=1),
+        )
+
+    def check_against(self, claim, urls, on_phase=None, thresholds=None, *, context=None, language=None):
+        self.references.append((claim.text, urls))
+        _, _, reference, read = self.script[claim.text]
+        return FactCheck(verdict=reference, confidence=0.9, explanation="reference", claim=claim.text), read
+
+
+def test_the_loop_rechecks_disagreements_and_sorts_what_stays_wrong(repository, tmp_path):
+
+    T, F, U, P = Verdict.TRUE, Verdict.FALSE, Verdict.UNVERIFIED, Verdict.PARTIALLY_TRUE
+    links = {"referenceEvidenceLinks": ["https://www.ine.es/informe"]}
+
+    rows = [
+        # (gold, first, second look, annotator's pages, pages read)
+        ("fact001", "Agreed.", "TRUE", ((T, 0.9), None, None, 0), {}),
+        ("fact002", "Fixed.", "TRUE", ((U, 0.0), T, None, 0), {}),
+        ("fact003", "Search missed it.", "FALSE", ((T, 0.9), T, F, 1), links),
+        ("fact004", "Model and gold differ.", "FALSE", ((T, 0.9), T, T, 1), links),
+        ("fact005", "A third answer.", "FALSE", ((T, 0.9), T, P, 1), links),
+        ("fact006", "Nothing readable.", "FALSE", ((T, 0.9), T, F, 0), links),
+        ("fact007", "No links.", "UNVERIFIED", ((T, 0.9), T, None, 0), {"referenceEvidenceLinks": []}),
+        # Agrees with gold, but unsure: a second look for the trigger's sake.
+        ("fact008", "Unsure but right.", "TRUE", ((T, 0.3), F, None, 0), {}),
+    ]
+
+    dataset = load_dataset(write_jsonl(tmp_path / "set.jsonl", [
+        custom_row(fact_id, claim, label=gold, **extra) for fact_id, claim, gold, _, extra in rows
+    ]))
+
+    checker = LoopChecker({claim: script for _, claim, _, script, _ in rows})
+
+    runner = runner_for(dataset, checker, tmp_path, thresholds=open_gate(), loop=True)
+    runner.run()
+
+    records = latest_records(runner.directory)
+    outcome = {fact_id: records[fact_id]["loop"]["outcome"] for fact_id, *_ in rows}
+
+    assert outcome == {
+        "fact001": "agreed",
+        "fact002": "fixed",
+        "fact003": "retrieval",
+        "fact004": "adjudicate",
+        "fact005": "reasoning",
+        "fact006": "unreadable",
+        "fact007": "no_reference",
+        "fact008": "agreed",
+    }
+
+    # A confident, correct verdict costs nothing more; the rest get one look.
+    assert "Agreed." not in checker.second_looks
+    assert len(checker.second_looks) == 7
+    # The annotator's pages only for claims still wrong that have links.
+    assert [claim for claim, _ in checker.references] == [
+        "Search missed it.", "Model and gold differ.", "A third answer.", "Nothing readable.",
+    ]
+
+    # The record's verdict stays the first pass's; the loop sits beside it.
+    fixed = records["fact002"]
+    assert (fixed["verdict"], fixed["loop"]["secondLook"]["verdict"]) == ("UNVERIFIED", "TRUE")
+    assert fixed["loop"]["trigger"] == "unverified"
+    assert records["fact008"]["loop"]["trigger"] == "low_confidence"
+    assert records["fact003"]["loop"]["reference"]["pagesRead"] == 1
+    assert set(fixed["loop"]["usage"]) == set(fixed["usage"])
+
+
+def test_the_loop_is_keyed_so_it_never_resumes_a_run_without_it(tmp_path):
+
+    dataset = five_rows(tmp_path)
+    plain = RunConfig(dataset=dataset, model="m", corpus="none", root=tmp_path)
+    looped = RunConfig(dataset=dataset, model="m", corpus="none", root=tmp_path, loop=True)
+
+    assert plain.key != looped.key
+
+
+def test_a_model_told_not_to_think_is_another_run(tmp_path, monkeypatch):
+    """
+    qwen3.5:4b thinking and qwen3.5:4b told not to are one name and two
+    models' worth of answers; resuming one into the other would mix them.
+    A model with no effort set keeps the key it always had.
+    """
+
+    from src.config.settings import settings
+
+    dataset = five_rows(tmp_path)
+    before = RunConfig(dataset=dataset, model="m", corpus="none", root=tmp_path).key
+    other = RunConfig(dataset=dataset, model="other", corpus="none", root=tmp_path).key
+
+    monkeypatch.setattr(settings, "LLM_REASONING_EFFORT", {"m": "none"})
+
+    assert RunConfig(dataset=dataset, model="m", corpus="none", root=tmp_path).key != before
+    assert RunConfig(dataset=dataset, model="other", corpus="none", root=tmp_path).key == other
+
+
+def test_an_oracle_run_reads_the_annotators_pages_and_never_searches(tmp_path):
+    """
+    `run --oracle`: each claim judged on its own reference links, web
+    addresses only and each once, with no search; a row without links
+    reaches the model with nothing. Keyed apart from a run that searched.
+    """
+
+    from src.evaluation.report import write_report
+    from src.evaluation.runner import ORACLE
+
+    T, F = Verdict.TRUE, Verdict.FALSE
+
+    rows = [
+        custom_row("fact001", "Read on its pages.", label="FALSE", referenceEvidenceLinks=[
+            "https://www.ine.es/informe", "<LINK NOT AVAILABLE>", "https://www.ine.es/informe",
+        ]),
+        custom_row("fact002", "No links at all.", label="UNVERIFIED", referenceEvidenceLinks=[]),
+    ]
+
+    dataset = load_dataset(write_jsonl(tmp_path / "set.jsonl", rows))
+
+    class NoSearch(LoopChecker):
+        def check_claim(self, *args, **kwargs):
+            raise AssertionError("an oracle run must not search")
+
+    checker = NoSearch({
+        "Read on its pages.": (None, None, F, 1),
+        "No links at all.": (None, None, Verdict.UNVERIFIED, 0),
+    })
+
+    runner = runner_for(dataset, checker, tmp_path, mode=ORACLE)
+    runner.run()
+
+    assert checker.references == [
+        ("Read on its pages.", ["https://www.ine.es/informe"]),
+        ("No links at all.", []),
+    ]
+
+    records = runner.results.latest(lambda record: record["id"])
+
+    assert records["fact001"]["verdict"] == "FALSE"
+    assert runner.config.key != runner_for(dataset, checker, tmp_path).config.key
+
+    # Closed by the runner, so the model's span is timed as in a searching run.
+    closing = [event for event in records["fact001"]["events"] if event["phase"] == "claim_checked"]
+    assert closing and closing[0]["data"] == {"verdict": "FALSE", "pagesRead": 1}
+
+    report = (write_report(runner.directory, resamples=50, root=tmp_path / "reports") / "report.md").read_text(encoding="utf-8")
+
+    assert "the annotator's evidence (oracle)" in report
+    assert "## Evidence" in report and "Reference link among candidates" not in report

@@ -140,6 +140,35 @@ class TextCorrector:
         return normalize_metric(result, key)
 
 
+def _find_metric(result, key: str):
+    """
+    The metric's entry: at the top of the answer, where the prompt puts
+    it, or else nested inside another entry. Found 2026-10-19 with
+    qwen3.5:4b: it opened each metric inside the one before -
+    `"grammar": {"score": 95, ..., "issues": [...], "factConsistency":
+    {...` - and closed every brace at the end. Valid JSON with all five
+    scores in it, read as one metric and four format failures (20% of the
+    writing benchmark's texts). Only dicts are searched, breadth first, so
+    the nearest entry wins and nothing is read out of a string.
+    """
+
+    if not isinstance(result, dict):
+        return None
+
+    queue = [result]
+
+    while queue:
+
+        current = queue.pop(0)
+
+        if isinstance(current.get(key), dict):
+            return current[key]
+
+        queue.extend(value for value in current.values() if isinstance(value, dict))
+
+    return None
+
+
 def normalize_metric(result: dict | None, key: str) -> CorrectionMetric:
     """
     One metric out of a model's JSON answer, or UNAVAILABLE_SUMMARY when
@@ -149,7 +178,7 @@ def normalize_metric(result: dict | None, key: str) -> CorrectionMetric:
     a usable score.
     """
 
-    item = result.get(key) if isinstance(result, dict) else None
+    item = _find_metric(result, key)
 
     if not isinstance(item, dict):
         return CorrectionMetric(

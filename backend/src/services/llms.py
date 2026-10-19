@@ -116,6 +116,12 @@ class LLMClient:
     ):
         self.model = model or settings.LLM_MODEL
 
+        # Thinking switched off (or set) for the models that need it
+        # (LLM_REASONING_EFFORT). Sent as an extra body field, so a
+        # provider that does not know it never sees a typed argument.
+        effort = settings.LLM_REASONING_EFFORT.get(self.model)
+        self._extra = {"extra_body": {"reasoning_effort": effort}} if effort else {}
+
         self._client = client or OpenAI(
             base_url=base_url or settings.LLM_BASE_URL,
             api_key=api_key or settings.LLM_API_KEY.get_secret_value(),
@@ -173,6 +179,7 @@ class LLMClient:
                         response_format={"type": "json_object"},
                         temperature=0.0,
                         **limits,
+                        **self._extra,
                     )
             except (APIConnectionError, APITimeoutError, APIError) as exc:
                 logger.warning(

@@ -188,3 +188,24 @@ def test_a_prompt_evaluated_whole_or_too_short_to_judge_is_not(caplog, prompt_to
         with_usage(prompt_tokens).complete_json("s", "x" * chars)
 
     assert "probably cut" not in caplog.text
+
+
+def test_a_hybrid_reasoning_model_is_told_not_to_think(monkeypatch):
+    """
+    Qwen3.5 thinks before every answer unless the request says otherwise,
+    and has no prompt switch for it. LLM_REASONING_EFFORT names the
+    models that get one; every other model's request is unchanged.
+    """
+
+    from src.config.settings import settings
+
+    monkeypatch.setattr(settings, "LLM_REASONING_EFFORT", {"qwen3.5:4b": "none"})
+
+    writer = LLMClient(model="qwen3.5:4b", client=FakeOpenAIClient(['{"title": "T"}']))
+    verifier = LLMClient(model="llama3.2:3b", client=FakeOpenAIClient(['{"verdict": "TRUE"}']))
+
+    writer.complete_json("system", "user")
+    verifier.complete_json("system", "user")
+
+    assert writer._client.chat.completions.calls[0]["extra_body"] == {"reasoning_effort": "none"}
+    assert "extra_body" not in verifier._client.chat.completions.calls[0]

@@ -43,6 +43,7 @@ CONTRACTS = [
     (fakes.FakeSearchProvider, SearchProvider, "search"),
     (fakes.FakeSearchProvider, SearchProvider, "queries_for"),
     (fakes.FakeSearchProvider, SearchProvider, "plan"),
+    (fakes.FakeSearchProvider, SearchProvider, "search_queries"),
     (fakes.FakeVectorRetriever, VectorRetriever, "retrieve"),
     (fakes.FakeEvidenceScraper, EvidenceScraper, "enrich"),
     (fakes.FakeEvidenceRetriever, EvidenceRetriever, "retrieve"),

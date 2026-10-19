@@ -560,6 +560,7 @@ class AnalysisService:
                     "independentDomains": 0,
                     "llmUnreachable": False,
                     "searchUnavailable": False,
+                    "secondLook": None,
                 }
                 for claim in (article.claims or [])
             ]
@@ -588,6 +589,8 @@ class AnalysisService:
                 "independentDomains": check.independent_domains,
                 "llmUnreachable": check.llm_unreachable,
                 "searchUnavailable": check.search_unavailable,
+                # The first verdict, when a second look replaced it.
+                "secondLook": self._build_second_look(check),
             }
             for check in checks
         ]
@@ -610,11 +613,30 @@ class AnalysisService:
                 "independentDomains": 0,
                 "llmUnreachable": False,
                 "searchUnavailable": False,
+                "secondLook": None,
             }
             for rejected in report.unselected_claims
         ]
 
         return checked + unselected
+
+    @staticmethod
+    def _build_second_look(check: FactCheck) -> dict | None:
+
+        trace = check.second_look
+
+        if trace is None:
+            return None
+
+        return {
+            "trigger": trace.trigger,
+            "firstVerdict": trace.first_verdict,
+            "firstConfidence": trace.first_confidence,
+            "firstExplanation": trace.first_explanation,
+            "queries": trace.queries,
+            "newEvidence": trace.new_evidence,
+            "searchUnavailable": trace.search_unavailable,
+        }
 
     @staticmethod
     def _build_evidence(check: FactCheck) -> list[dict]:

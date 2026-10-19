@@ -54,6 +54,22 @@ function Interval({ estimate }: { estimate: Estimate | null }) {
 }
 
 /**
+ * Seconds a claim took, median with the 90th percentile in the title:
+ * responseTime (reports since 2026-10-19, scored claims only), else the
+ * older usage.unitLatency (every claim). Comparable only between runs
+ * made alone on the machine, which the report says too.
+ */
+function ClaimSeconds({ metrics }: { metrics: unknown }) {
+  const median =
+    asNumber(pick(metrics, "responseTime.stages.total.median")) ?? asNumber(pick(metrics, "usage.unitLatency.median"));
+  const p90 = asNumber(pick(metrics, "responseTime.stages.total.p90")) ?? asNumber(pick(metrics, "usage.unitLatency.p90"));
+
+  if (median === null) return <span className="eval-muted">–</span>;
+
+  return <span title={p90 !== null ? `90th percentile ${p90.toFixed(0)} s` : undefined}>{median.toFixed(0)}</span>;
+}
+
+/**
  * gold -> predicted -> count, from either a nested object or
  * {labels, matrix}. Anything else is not drawn.
  */
@@ -175,6 +191,7 @@ export function RunsPanel({ runs }: { runs: HarnessRun[] }) {
               <th scope="col">Accuracy</th>
               <th scope="col">Macro-F1</th>
               <th scope="col">Coverage</th>
+              <th scope="col">Median s / claim</th>
               <th scope="col">When</th>
             </tr>
           </thead>
@@ -201,6 +218,9 @@ export function RunsPanel({ runs }: { runs: HarnessRun[] }) {
                   <Interval estimate={scoredEstimate(run.metrics, "macroF1")} />
                 </td>
                 <td>{percent(asNumber(pick(run.metrics, `${SCORED}.coverage`)))}</td>
+                <td>
+                  <ClaimSeconds metrics={run.metrics} />
+                </td>
                 <td className="eval-muted">
                   {new Date(run.modifiedAt * 1000).toLocaleDateString()}
                   {run.error && <span className="stats-bad"> · {run.error}</span>}

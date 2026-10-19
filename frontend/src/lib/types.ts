@@ -115,6 +115,19 @@ export interface ClaimResult {
   discrepancies?: string[];
   /** Distinct domains backing this claim, not raw evidence count. */
   independentDomains?: number;
+  /** The first verdict, when a second, wider search replaced it. */
+  secondLook?: SecondLook | null;
+}
+
+/** backend/src/services/fact_checker/second_look.py */
+export interface SecondLook {
+  trigger: "unverified" | "low_confidence" | string;
+  firstVerdict: Verdict;
+  firstConfidence: number;
+  firstExplanation: string;
+  queries: string[];
+  newEvidence: number;
+  searchUnavailable: boolean;
 }
 
 export interface ValidityInfo {
@@ -186,6 +199,10 @@ export interface ThresholdOverrides {
   evidence_fetch_candidates?: number;
   max_evidence_per_claim?: number;
   min_evidence_for_verdict?: number;
+  evidence_min_pertinence?: number;
+  /** A second, wider search for a verdict in doubt (second_look.py). */
+  second_look_enabled?: boolean;
+  second_look_below_confidence?: number;
 }
 
 /** The fully-resolved set a run actually used: defaults + overrides. */

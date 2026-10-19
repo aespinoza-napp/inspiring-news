@@ -122,8 +122,25 @@ TARGET_TOTAL = 150
 MINIMUM_TOTAL = 100
 REVIEW_SHARE = 0.2
 
-# Every custom fact is held out; x-fact's held-out split has this name.
+# Before the split is frozen every custom fact is held out; x-fact's
+# held-out split has this name.
 SPLIT = "test"
+
+# The tuning/test split (roadmap P0.4), frozen before any run over the
+# set: one half to tune the pipeline on, the other to report. Half, not
+# the third first planned - the author's decision of 2026-10-19: the
+# pipeline learns nothing from these facts, it searches the open web at
+# verification time, so what tuning can carry from one half to the other
+# is a threshold or a prompt, not a memorised answer, and a larger tuning
+# half gives the second-look loop more disagreements to learn from.
+# Names as x-fact's, which has `train` and `test` too.
+SPLITS = ("train", "test")
+TRAIN_SHARE = 0.5
+
+# Beside manual/: which side each fact is on, when the split was frozen,
+# the rule, the counts, and the re-check sample. The facts carry their
+# side in `split` as well; this file is what says it was decided once.
+SPLIT_FILE = "split.json"
 
 FACT_ID = re.compile(r"^fact(\d{3,})$")
 
@@ -278,8 +295,14 @@ def validate(data: dict, topics: dict[str, str]) -> tuple[dict, list[str]]:
     return clean, errors
 
 
-def build_record(fact_id: str, clean: dict, now: str, previous: dict | None = None) -> dict:
-    """x-fact's keys first and in x-fact's order, then the custom set's own."""
+def build_record(
+    fact_id: str, clean: dict, now: str, previous: dict | None = None, split: str = SPLIT
+) -> dict:
+    """
+    x-fact's keys first and in x-fact's order, then the custom set's own.
+    An edit keeps the fact's side of the split: it was frozen, and a
+    relabelled fact moving to the other half would be tuning by hand.
+    """
 
     return {
         "language": clean["language"],
@@ -293,7 +316,7 @@ def build_record(fact_id: str, clean: dict, now: str, previous: dict | None = No
         "labelRaw": LABELS[clean["label"]],
         "label": clean["label"],
         "referenceEvidenceLinks": clean["referenceEvidenceLinks"],
-        "split": SPLIT,
+        "split": (previous or {}).get("split") or split,
         "id": fact_id,
         "topic": clean["topic"],
         "claimType": clean["claimType"],
@@ -365,11 +388,91 @@ class Store:
         fact_id = f"fact{(max(numbers) + 1 if numbers else 1):03d}"
         record = build_record(fact_id, clean, _now())
 
+        # Once the split is frozen, a new fact joins its article's side,
+        # or the side its stratum is short of: by the same rule as the
+        # freeze, never by hand.
+        manifest = self.split_manifest()
+        if manifest:
+            facts, _ = self.load()
+            record["split"] = assign_splits(facts + [record], frozen=_sides(facts))[fact_id]
+
         # "x": never overwrite a fact that appeared under this name meanwhile.
         with self.path(fact_id).open("x", encoding="utf-8") as f:
             f.write(_dump(record))
 
+        if manifest:
+            self._write_manifest(facts + [record], manifest)
+
         return record, []
+
+    @property
+    def split_file(self) -> Path:
+        return self.folder.parent / SPLIT_FILE
+
+    def split_manifest(self) -> dict:
+        """The frozen split, or {} before it was frozen."""
+
+        if not self.split_file.exists():
+            return {}
+        return json.loads(self.split_file.read_text(encoding="utf-8"))
+
+    def split(self) -> dict:
+        """
+        Freeze the tuning/test split (`python labeller/app.py split`).
+
+        Facts the manifest already places keep their side; only facts it
+        does not name are assigned, so running it again after new facts
+        only adds to it. Writes each fact's `split` and the manifest.
+        """
+
+        facts, broken = self.load()
+        if broken:
+            raise ValueError("Not split - fix these first:\n  " + "\n  ".join(
+                f"{b['file']}: {b['error']}" for b in broken
+            ))
+
+        manifest = self.split_manifest()
+        frozen = {k: v for k, v in (manifest.get("facts") or {}).items() if k in {f["id"] for f in facts}}
+        sides = assign_splits(facts, frozen=frozen)
+
+        for fact in facts:
+            if fact.get("split") != sides[fact["id"]]:
+                fact["split"] = sides[fact["id"]]
+                self._write(fact)
+
+        return self._write_manifest(facts, manifest)
+
+    def _write_manifest(self, facts: list[dict], previous: dict) -> dict:
+
+        now = _now()
+        test = [f for f in facts if f.get("split") == "test"]
+        manifest = {
+            "frozenAt": previous.get("frozenAt") or now,
+            "updatedAt": now,
+            "rule": (
+                "Facts of one article, and a synthetic FALSE with the fact it was "
+                "made from, go to the same side. Groups are placed rarest stratum "
+                "(verdict x language, and topic group) first, then largest, then "
+                "by SHA-256 of their first fact id, each on the side whose targets "
+                "it falls shorter of. A fact keeps its side once placed."
+            ),
+            "trainShare": TRAIN_SHARE,
+            "stratifiedBy": [["label", "language"], ["topicGroup"]],
+            "groupedBy": ["articleUrl", "mutatedFrom"],
+            "counts": split_counts(facts),
+            # The fifth of the held-out half labelled again, blind, by the
+            # annotator, and run through the pipeline a second time: the
+            # labels' consistency and the system's, on the same facts.
+            "recheckShare": REVIEW_SHARE,
+            "recheck": sorted(f["id"] for f in review_sample(test)),
+            "facts": {f["id"]: f.get("split") for f in facts},
+        }
+
+        tmp = self.split_file.with_suffix(".json.tmp")
+        tmp.write_text(_dump(manifest), encoding="utf-8")
+        os.replace(tmp, self.split_file)
+
+        return manifest
 
     def update(self, fact_id: str, data: dict) -> tuple[dict | None, list[str]]:
 
@@ -461,6 +564,8 @@ class Store:
             missing = [k for k in XFACT_FIELDS if k not in fact]
             if missing:
                 problems.append(f"{fact.get('id')}: missing {', '.join(missing)}")
+            if fact.get("split") not in SPLITS:
+                problems.append(f"{fact.get('id')}: split must be one of {', '.join(SPLITS)}")
 
         if problems:
             raise ValueError("Not joined - fix these first:\n  " + "\n  ".join(problems))
@@ -500,6 +605,7 @@ def summarise(facts: list[dict]) -> dict:
         # FALSE row is these minus none found in the wild.
         "mutated": sum(1 for f in facts if f.get("mutatedFrom")),
         "staleMutations": stale_mutations(facts),
+        "bySplit": count(lambda f: f.get("split"), SPLITS),
         "matrix": matrix,
     }
 
@@ -520,12 +626,150 @@ def stale_mutations(facts: list[dict]) -> list[str]:
     ]
 
 
+def _sides(facts: list[dict]) -> dict[str, str]:
+    return {f["id"]: f.get("split") for f in facts if f.get("split") in SPLITS}
+
+
+def _strata(fact: dict) -> list[tuple]:
+    """
+    What each side should hold its share of: every verdict in each
+    language, and every topic group. The first dry run balanced verdict
+    and language alone and put all 21 culture facts in the test half.
+    """
+
+    return [("verdict", fact.get("label"), fact.get("language")), ("group", GROUP_OF.get(fact.get("topic")))]
+
+
+def split_groups(facts: list[dict]) -> list[list[dict]]:
+    """
+    Facts that must land on the same side. Claims of one article share
+    its evidence, and a synthetic FALSE is its source's claim with one
+    element changed and the same evidence: across the split, tuning on
+    one would be tuning on the other.
+    """
+
+    parent: dict[str, str] = {}
+
+    def find(x):
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        parent[find(a)] = find(b)
+
+    ids = {f["id"] for f in facts}
+    for fact in facts:
+        union(fact["id"], "article:" + (fact.get("articleUrl") or fact["id"]))
+        if fact.get("mutatedFrom") in ids:
+            union(fact["id"], fact["mutatedFrom"])
+
+    groups: dict[str, list[dict]] = {}
+    for fact in facts:
+        groups.setdefault(find(fact["id"]), []).append(fact)
+
+    return list(groups.values())
+
+
+def assign_splits(facts: list[dict], frozen: dict[str, str] | None = None) -> dict[str, str]:
+    """
+    {fact id: "train" | "test"}, stratified by verdict and language and
+    by topic group (`_strata`), grouped by `split_groups`, after iterative stratification (Sechidis et
+    al. 2011) with groups in place of examples: the group holding the
+    rarest stratum is placed first, on the side whose targets its facts
+    fall shortest of; ties go to the side with fewer facts than its
+    target, then to a SHA-256 of the group's first id. Deterministic,
+    and chosen by no one.
+
+    `frozen` sides are kept. A new fact of an article already placed
+    joins that side.
+    """
+
+    frozen = dict(frozen or {})
+    sizes = Counter(key for f in facts for key in _strata(f))
+    share = {"train": TRAIN_SHARE, "test": 1 - TRAIN_SHARE}
+    have = {side: Counter() for side in SPLITS}
+    total = Counter()
+    sides = {}
+
+    pending = []
+    for group in split_groups(facts):
+        placed = sorted({frozen[f["id"]] for f in group if f["id"] in frozen})
+        if not placed:
+            pending.append(group)
+            continue
+        for fact in group:
+            # A group split two ways before (two articles later found to be
+            # one) keeps both; a new fact goes with the first.
+            side = frozen.get(fact["id"], placed[0])
+            sides[fact["id"]] = side
+            have[side].update(_strata(fact))
+            total[side] += 1
+
+    def first_id(group):
+        return min(f["id"] for f in group)
+
+    pending.sort(key=lambda g: (
+        min(sizes[key] for f in g for key in _strata(f)),
+        -len(g),
+        hashlib.sha256(first_id(g).encode()).hexdigest(),
+    ))
+
+    for group in pending:
+        add = Counter(key for f in group for key in _strata(f))
+
+        def shortfall(side):
+            return (
+                sum(n * (sizes[s] * share[side] - have[side][s]) for s, n in add.items()),
+                len(facts) * share[side] - total[side],
+            )
+
+        train, test = shortfall("train"), shortfall("test")
+        if train != test:
+            side = "train" if train > test else "test"
+        else:
+            side = SPLITS[int(hashlib.sha256(first_id(group).encode()).hexdigest(), 16) % 2]
+
+        for fact in group:
+            sides[fact["id"]] = side
+            have[side].update(_strata(fact))
+            total[side] += 1
+
+    return sides
+
+
+def split_counts(facts: list[dict]) -> dict:
+    """Each side by label, language and origin, and the facts' articles."""
+
+    out = {}
+    for side in SPLITS:
+        part = [f for f in facts if f.get("split") == side]
+        out[side] = {
+            "total": len(part),
+            "articles": len({f.get("articleUrl") or f["id"] for f in part}),
+            "byLabel": {k: sum(f.get("label") == k for f in part) for k in LABELS},
+            "byLanguage": {k: sum(f.get("language") == k for f in part) for k in ("en", "es")},
+            "byGroup": {g: sum(GROUP_OF.get(f.get("topic")) == g for f in part) for g in TOPIC_GROUPS},
+            "mutated": sum(bool(f.get("mutatedFrom")) for f in part),
+        }
+    return out
+
+
 def review_sample(facts: list[dict]) -> list[dict]:
     """
-    ceil(20%) of the set: every fact already reviewed, then the rest in
-    the order of a SHA-256 of their id. Not chosen by the annotator, and
-    stable - adding facts only adds to it.
+    ceil(20%) of the held-out half: every fact already reviewed, then
+    the rest in the order of a SHA-256 of their id. Not chosen by the
+    annotator, and stable - adding facts only adds to it. Before the
+    split is frozen every fact is `test`, so this is a fifth of the set.
+
+    The same facts are run through the pipeline twice (the harness's
+    `--sample recheck`), so the labels' consistency and the system's are
+    measured on one sample.
     """
+
+    facts = [f for f in facts if f.get("split", SPLIT) == "test"]
 
     if not facts:
         return []
@@ -1011,7 +1255,7 @@ def _now() -> str:
 def main(argv=None) -> int:
 
     parser = argparse.ArgumentParser(description="Hand-label the custom validation set.")
-    parser.add_argument("command", nargs="?", default="serve", choices=("serve", "join", "mutate"))
+    parser.add_argument("command", nargs="?", default="serve", choices=("serve", "join", "mutate", "split"))
     parser.add_argument("source", nargs="?", help="mutate: the TRUE fact to make a FALSE one from")
     parser.add_argument("--kind", choices=MUTATIONS, help="mutate: what was substituted")
     parser.add_argument("--claim", help="mutate: the mutated claim")
@@ -1031,6 +1275,20 @@ def main(argv=None) -> int:
             print("\n".join(errors), file=sys.stderr)
             return 1
         print(f"{record['id']}: FALSE, {args.kind} mutation of {args.source}")
+        return 0
+
+    if args.command == "split":
+        try:
+            manifest = store.split()
+        except ValueError as error:
+            print(error, file=sys.stderr)
+            return 1
+        print(f"Split frozen {manifest['frozenAt']} (updated {manifest['updatedAt']}) "
+              f"into {store.split_file.relative_to(ROOT) if store.split_file.is_relative_to(ROOT) else store.split_file}")
+        for side, counts in manifest["counts"].items():
+            print(f"{side}: {counts['total']} facts, {counts['articles']} articles, "
+                  f"{counts['byLabel']}, {counts['byLanguage']}, mutated {counts['mutated']}")
+        print(f"Re-check sample ({len(manifest['recheck'])}, a fifth of test): {', '.join(manifest['recheck'])}")
         return 0
 
     if args.command == "join":

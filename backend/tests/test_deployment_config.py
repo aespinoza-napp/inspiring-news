@@ -544,3 +544,34 @@ def test_the_password_hash_is_rendered_where_compose_cannot_expand_it():
 
     assert "echo \"SITE_PASSWORD_HASH='$site_hash'\"" in bootstrap
     assert any(e.startswith("SITE_PASSWORD_HASH=${SITE_PASSWORD_HASH:?") for e in caddy["environment"])
+
+
+def test_ollama_holds_one_model_and_every_configured_model_is_pulled(prod):
+    """
+    With a writer beside the verifier, both stayed in memory for good
+    (KEEP_ALIVE=-1), and only LLM_MODEL was pulled: a 16 GB machine
+    held two models, and the first draft met a missing one. One resident
+    model, swapped on demand; every model backend/.env names, pulled
+    before the backend starts (2026-10-19).
+    """
+
+    ollama = prod["services"]["ollama"]
+    pull = prod["services"]["ollama-pull"]
+
+    assert "OLLAMA_MAX_LOADED_MODELS=1" in ollama["environment"]
+    assert ollama["mem_limit"].startswith("${OLLAMA_MEM_LIMIT:-")
+
+    assert pull["entrypoint"] == ["/bin/sh", "/pull-models.sh"]
+    assert "./ollama/pull-models.sh:/pull-models.sh:ro" in pull["volumes"]
+    passed = " ".join(pull["environment"])
+    for name in ("LLM_MODEL", "WRITER_LLM_MODEL", "WRITER_LLM_BASE", "CORRECTOR_LLM_MODEL", "CORRECTOR_LLM_BASE"):
+        assert f"{name}=${{{name}" in passed, name
+
+    script = (DOCKER / "ollama" / "pull-models.sh").read_text(encoding="utf-8")
+    assert 'pull "${LLM_MODEL:?' in script
+    # Only the verifier is required: a writer that cannot be had must
+    # not keep the backend from starting.
+    assert 'optional "${WRITER_LLM_MODEL:-}"' in script
+    assert "PARAMETER num_ctx" in script
+    # The reviewer reads a draft and its sources: a long context too.
+    assert 'serve_long "${CORRECTOR_LLM_MODEL:?' in script

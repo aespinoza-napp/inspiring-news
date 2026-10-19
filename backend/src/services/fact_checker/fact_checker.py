@@ -6,7 +6,7 @@ from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.core.enriched_article import EnrichedArticle
-from src.models.fact_checker.evidence import Evidence, RejectedEvidence
+from src.models.fact_checker.evidence import Evidence, EvidenceOrigin, RejectedEvidence
 from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
@@ -16,6 +16,8 @@ from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelect
 from src.services.fact_checker.progress import source_summary
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
 from src.services.fact_checker.retrieval.evidence_retriever import EvidenceRetriever
+from src.services.fact_checker.retrieval.search_provider import registrable_domain
+from src.services.fact_checker.second_look import SecondLooker, needs_second_look
 from src.services.fact_checker.verification.confidence_scorer import (
     ConfidenceScorer,
     below_evidence_floor,
@@ -99,6 +101,7 @@ class FactChecker:
         ranker: EvidenceRanker | None = None,
         verifier: LLMVerifier | None = None,
         confidence_scorer: ConfidenceScorer | None = None,
+        second_looker: SecondLooker | None = None,
     ):
         self.repository = repository
         self.claim_selector = claim_selector or ClaimSelector()
@@ -106,6 +109,7 @@ class FactChecker:
         self.ranker = ranker or EvidenceRanker()
         self.verifier = verifier or LLMVerifier()
         self.confidence_scorer = confidence_scorer or ConfidenceScorer()
+        self.second_looker = second_looker or SecondLooker()
 
     def run(
         self,
@@ -287,13 +291,160 @@ class FactChecker:
             "rejectedSources": self._rejected_summary(retrieval.rejected),
         })
 
-        ranking = self.ranker.rank(
+        check = self._judge(
             claim,
             retrieval.kept,
+            phase,
             thresholds,
+            context=context,
+            language=language,
             # Already computed during retrieval; re-encoding it here was
             # a second round trip to inference/ for the same answer.
             claim_embedding=retrieval.claim_embedding,
+            rejected=retrieval.rejected,
+            search_unavailable=retrieval.search_unavailable,
+        )
+
+        # A verdict in doubt gets a second, wider search before it is
+        # reported (second_look.py). Off unless the run asks for it.
+        trigger = needs_second_look(check, thresholds)
+
+        if trigger:
+            check = self.second_look(
+                claim,
+                check,
+                phase,
+                thresholds,
+                context=context,
+                language=language,
+                trigger=trigger,
+            )
+
+        cited = set(check.cited_evidence_indices)
+
+        phase("claim_checked", {
+            "claim": check.claim,
+            "verdict": check.verdict,
+            "confidence": check.confidence,
+            "explanation": check.explanation,
+            "evidenceCount": check.evidence_count,
+            "independentDomains": check.independent_domains,
+            "searchUnavailable": check.search_unavailable,
+            "agreements": check.agreements,
+            "discrepancies": check.discrepancies,
+            "evidence": [
+                source_summary(item, cited=index in cited)
+                for index, item in enumerate(check.evidence)
+            ],
+        })
+
+        return check
+
+    def second_look(
+        self,
+        claim: Claim,
+        first: FactCheck,
+        on_phase: Optional[OnPhase] = None,
+        thresholds: PipelineThresholds | None = None,
+        *,
+        context: ArticleContext | None = None,
+        language: str | None = None,
+        trigger: str = "requested",
+    ) -> FactCheck:
+        """
+        A claim checked again, wider: follow-up queries written from what
+        the first verdict said was missing, the new pages they find added
+        to the first pass's evidence, and the whole judged once more.
+        Public because the evaluation harness takes one on a claim whose
+        first verdict disagrees with the gold label (the tuning loop).
+        """
+
+        return self.second_looker.recheck(
+            self,
+            claim,
+            first,
+            on_phase or _noop,
+            thresholds or PipelineThresholds(),
+            context=context,
+            language=language,
+            trigger=trigger,
+        )
+
+    def check_against(
+        self,
+        claim: Claim,
+        urls: list[str],
+        on_phase: Optional[OnPhase] = None,
+        thresholds: PipelineThresholds | None = None,
+        *,
+        context: ArticleContext | None = None,
+        language: str | None = None,
+    ) -> tuple[FactCheck, int]:
+        """
+        The claim judged against the pages at `urls`, with no search: the
+        annotator's own evidence links, so the verifier sees what the
+        person who set the gold label saw (the "oracle" condition of
+        FEVER and AVeriTeC). Every page is kept that could be read - no
+        pertinence gate, since the annotator already chose them - up to
+        the evidence cap. Returns the check and how many pages were read.
+        """
+
+        thresholds = thresholds or PipelineThresholds()
+
+        pages = [
+            Evidence(
+                url=url,
+                title="",
+                origin=EvidenceOrigin.WEB,
+                domain=registrable_domain(url),
+                found_by=["reference"],
+            )
+            for url in dict.fromkeys(urls)
+        ]
+
+        read = [
+            page for page in self.evidence_retriever.scraper.enrich(pages)
+            if page.content
+        ]
+
+        check = self._judge(
+            claim,
+            read,
+            on_phase or _noop,
+            thresholds.model_copy(update={
+                "evidence_min_pertinence": 0.0,
+                "max_evidence_per_claim": max(thresholds.max_evidence_per_claim, len(read)),
+            }),
+            context=context,
+            language=language,
+        )
+
+        return check, len(read)
+
+    def _judge(
+        self,
+        claim: Claim,
+        candidates: list[Evidence],
+        phase: OnPhase,
+        thresholds: PipelineThresholds,
+        *,
+        context: ArticleContext | None = None,
+        language: str | None = None,
+        claim_embedding=None,
+        rejected: list[RejectedEvidence] | None = None,
+        search_unavailable: bool = False,
+    ) -> FactCheck:
+        """
+        Rank, ask, recalibrate: everything after retrieval. One copy, so
+        the first pass, a second look and a check against given pages
+        cannot drift apart in what they consider verified.
+        """
+
+        ranking = self.ranker.rank(
+            claim,
+            candidates,
+            thresholds,
+            claim_embedding=claim_embedding,
             language=language,
             context=context,
         )
@@ -346,38 +497,18 @@ class FactChecker:
         ]
 
         reached_stage, stage_note = self._trace(
-            ranked, llm_result, check, thresholds, retrieval.search_unavailable
+            ranked, llm_result, check, thresholds, search_unavailable
         )
 
-        check = check.model_copy(update={
-            "rejected_sources": retrieval.rejected + ranking.rejected + not_cited,
+        return check.model_copy(update={
+            "rejected_sources": (rejected or []) + ranking.rejected + not_cited,
             "reached_stage": reached_stage,
             "stage_note": stage_note,
             "raw_verdict": llm_result.verdict,
             "raw_confidence": llm_result.confidence,
             "llm_unreachable": llm_result.llm_unreachable,
-            "search_unavailable": retrieval.search_unavailable,
+            "search_unavailable": search_unavailable,
         })
-
-        cited = set(check.cited_evidence_indices)
-
-        phase("claim_checked", {
-            "claim": check.claim,
-            "verdict": check.verdict,
-            "confidence": check.confidence,
-            "explanation": check.explanation,
-            "evidenceCount": check.evidence_count,
-            "independentDomains": check.independent_domains,
-            "searchUnavailable": check.search_unavailable,
-            "agreements": check.agreements,
-            "discrepancies": check.discrepancies,
-            "evidence": [
-                source_summary(item, cited=index in cited)
-                for index, item in enumerate(check.evidence)
-            ],
-        })
-
-        return check
 
     @staticmethod
     def _rejected_summary(rejected: list[RejectedEvidence]) -> list[dict]:

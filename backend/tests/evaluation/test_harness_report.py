@@ -107,6 +107,53 @@ def test_a_report_renders_from_a_fixture_run(tmp_path):
     assert json.loads((target / "run.json").read_text(encoding="utf-8"))["key"] == "k" * 12
 
 
+def test_response_time_is_per_stage_over_the_scored_claims_only(tmp_path):
+    """
+    Three scored claims with hand-set stage times, and one whose search was
+    unavailable, which ends in a second and must not read as a fast pipeline.
+    A stage a claim did not reach (no second look) is left out of that
+    stage, not counted as zero.
+    """
+
+    from src.evaluation.report import response_time
+
+    spans = [
+        {"total": 100.0, "entities": 1.0, "retrieval": 10.0, "ranking": 5.0, "llm": 80.0, "secondLook": None},
+        {"total": 200.0, "entities": 1.0, "retrieval": 20.0, "ranking": 5.0, "llm": 100.0, "secondLook": 70.0},
+        {"total": 300.0, "entities": 1.0, "retrieval": 30.0, "ranking": 5.0, "llm": 260.0, "secondLook": None},
+    ]
+
+    scored = []
+
+    for number, latency in enumerate(spans):
+        record = make_record(custom_row(f"fact{number:03d}", f"Claim {number}."), "TRUE")
+        record["latency"] = latency
+        scored.append(record)
+
+    timing = response_time(scored)
+    stages = timing["stages"]
+
+    assert timing["claims"] == 3
+    assert stages["total"] == {"claims": 3, "median": 200.0, "p90": 280.0, "max": 300.0, "share": None}
+    assert stages["llm"]["median"] == 100.0
+    assert stages["llm"]["share"] == pytest.approx(440 / 600, abs=1e-4)
+    assert stages["secondLook"] == {"claims": 1, "median": 70.0, "p90": 70.0, "max": 70.0, "share": pytest.approx(70 / 600, abs=1e-4)}
+
+    unavailable = make_record(custom_row("fact009", "No search."), search_unavailable=True, total=1.0)
+
+    run_dir = write_run(tmp_path / "runs" / "fixture" / "stub-model" / ("k" * 12), scored + [unavailable])
+    target = write_report(run_dir, resamples=RESAMPLES, root=tmp_path / "reports")
+
+    result = json.loads((target / "metrics.json").read_text(encoding="utf-8"))
+
+    assert result["responseTime"]["stages"]["total"]["median"] == 200.0
+
+    report = (target / "report.md").read_text(encoding="utf-8")
+
+    assert "## Response time" in report
+    assert "| Whole claim | 3 | 200.0 | 280.0 | 300.0 |  |" in report
+
+
 def test_custom_set_breakdowns_are_by_topic_group_claim_type_tier_and_origin(tmp_path):
 
     records = [

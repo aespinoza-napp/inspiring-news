@@ -62,7 +62,11 @@ from src.services.llms import LLMUnavailableError
 logger = logging.getLogger(__name__)
 
 # Bump when a change alters what a run produces or how a record reads.
-WRITING_VERSION = 1
+# 2 (2026-10-19): a metric nested inside another entry is read where it
+# is (text_corrector._find_metric); qwen3.5:4b's version-1 run lost four
+# metrics in five of its answers to that alone. A version-1 run whose
+# every metric was usable at the top level reads the same under 2.
+WRITING_VERSION = 2
 
 CLEAN = "clean"
 
@@ -220,17 +224,20 @@ def load_texts(path: str | Path | None = None) -> TextSet:
     return TextSet(path=path, stem=path.stem, sha256=hashlib.sha256(lf(data)).hexdigest(), texts=tuple(texts))
 
 
-def writing_key(texts_sha256: str, model: str, prompt: str) -> str:
+def writing_key(texts_sha256: str, model: str, prompt: str, reasoning_effort: str | None = None) -> str:
     """
-    The text set, the model, the corrector's prompt and WRITING_VERSION.
-    Not the repeat count: `--repeats 3` after a run of 1 adds repeats to
-    the same run.
+    The text set, the model, the corrector's prompt and WRITING_VERSION,
+    and the reasoning effort only when one is set (the harness's run_key
+    says why), so every earlier run keeps its key. Not the repeat count:
+    `--repeats 3` after a run of 1 adds repeats to the same run.
     """
 
-    canonical = json.dumps(
-        {"texts": texts_sha256, "model": model, "prompt": prompt, "writingVersion": WRITING_VERSION},
-        sort_keys=True,
-    )
+    keyed = {"texts": texts_sha256, "model": model, "prompt": prompt, "writingVersion": WRITING_VERSION}
+
+    if reasoning_effort:
+        keyed["reasoningEffort"] = reasoning_effort
+
+    canonical = json.dumps(keyed, sort_keys=True)
 
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:12]
 
@@ -276,7 +283,8 @@ class WritingRunner:
         self.on_record = on_record
 
         self.prompt = prompt_sha256()
-        self.key = writing_key(texts.sha256, model, self.prompt)
+        self.reasoning_effort = settings.LLM_REASONING_EFFORT.get(model)
+        self.key = writing_key(texts.sha256, model, self.prompt, self.reasoning_effort)
         self.directory = Path(root or default_writing_runs()) / texts.stem / model_slug(model) / self.key
         self.results = ResultsFile(self.directory / RESULTS)
 
@@ -435,6 +443,7 @@ class WritingRunner:
                 "LLM_BASE_URL": without_credentials(settings.LLM_BASE_URL),
                 "LLM_TIMEOUT": settings.LLM_TIMEOUT,
                 "LLM_MAX_CONCURRENCY": settings.LLM_MAX_CONCURRENCY,
+                "LLM_REASONING_EFFORT": self.reasoning_effort,
             },
         }
 

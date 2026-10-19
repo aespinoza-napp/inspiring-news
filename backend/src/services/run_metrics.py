@@ -38,6 +38,9 @@ STAGES = {
     "sources_scraped": ("scrape_sources", "scraping_sources"),
     "evidence_retrieved": ("retrieve_evidence", "retrieving_evidence"),
     "claim_checked": ("verify_claim", "verifying_claim"),
+    # A second, wider search for a verdict in doubt (second_look.py): its
+    # own stage, so its minutes are seen apart from the first verdict's.
+    "second_look_checked": ("second_look", "second_look"),
     "graph_stored": ("store_graph", "graph_storing"),
     "graph_failed": ("store_graph", "graph_storing"),
 }

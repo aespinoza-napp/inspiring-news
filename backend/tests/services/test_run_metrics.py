@@ -135,3 +135,18 @@ def test_every_sample_line_is_declared_with_help_and_type():
             assert base in declared, line
 
     assert text.endswith("\n")
+
+
+def test_a_second_look_is_its_own_stage():
+
+    metrics, time = RunMetrics(), FakeClock()
+    clock = RunClock(metrics, "article", clock=time)
+
+    time.now = 10.0
+    clock.observe("second_look", {"claimIndex": 0})
+    time.now = 70.0
+    clock.observe("second_look_checked", {"claimIndex": 0})
+
+    text = metrics.render()
+
+    assert sample(text, 'inspiring_stage_seconds_sum{stage="second_look"}') == 60.0

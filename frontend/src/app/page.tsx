@@ -343,6 +343,16 @@ function JobCardView({
                   changed the final verdict to {claim.verdict ?? "UNVERIFIED"}.
                 </p>
               )}
+              {claim.secondLook && (
+                <p className="claims-note">
+                  Second look: the first search ended {claim.secondLook.firstVerdict} (
+                  {Math.round(claim.secondLook.firstConfidence * 100)}% confidence), so it searched
+                  again for {claim.secondLook.queries.map((q) => `“${q}”`).join(", ")}
+                  {claim.secondLook.searchUnavailable
+                    ? " — that search failed."
+                    : ` and found ${claim.secondLook.newEvidence} new source${claim.secondLook.newEvidence === 1 ? "" : "s"} among the evidence above.`}
+                </p>
+              )}
               <ClaimComparison claim={claim} />
               <SourcesPlot claim={claim} />
             </div>

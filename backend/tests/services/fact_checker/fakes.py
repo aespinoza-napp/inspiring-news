@@ -248,12 +248,17 @@ class FakeVerifier:
 
 
 class FakeSearchProvider:
-    """Canned web evidence, ignoring the query."""
+    """
+    Canned web evidence, ignoring the query. A second look's follow-up
+    queries (`search_queries`) get `follow_up` instead, and are recorded.
+    """
 
-    def __init__(self, evidence=None, unavailable: bool = False):
+    def __init__(self, evidence=None, unavailable: bool = False, follow_up=None):
         self.evidence = evidence or []
         self.unavailable = unavailable
+        self.follow_up = follow_up or []
         self.calls = []
+        self.follow_up_queries: list[list[str]] = []
 
     def plan(self, claim, context=None, language=None):
         return [PlannedQuery(f"query for {claim.text}", QueryKind.ANCHOR)]
@@ -266,6 +271,15 @@ class FakeSearchProvider:
         if self.unavailable:
             raise SearchUnavailableError("every query failed")
         return list(self.evidence)
+
+    def search_queries(self, queries, thresholds=None, language=None):
+        self.follow_up_queries.append([query.text for query in queries])
+        if self.unavailable:
+            raise SearchUnavailableError("every query failed")
+        return [
+            item.model_copy(update={"found_by": [query.kind.value for query in queries][:1]})
+            for item in self.follow_up
+        ]
 
 
 class FakeVectorRetriever:

@@ -97,6 +97,10 @@ class DatasetRow:
     # substituted claims and badly on the ones the world produces.
     origin: str | None = None
 
+    # x-fact's `train` / `dev` / `test`; the custom set's frozen half
+    # (`labeller/app.py split`, roadmap P0.4). None when the row has none.
+    split: str | None = None
+
     @property
     def topic_group(self) -> str | None:
 
@@ -257,7 +261,79 @@ def parse_row(raw: dict, where: str = "row") -> DatasetRow:
         claim_type=raw.get("claimType") or None,
         source_tier=raw.get("sourceTier") or None,
         origin=("mutated" if raw.get("mutatedFrom") else "natural") if is_custom else None,
+        split=raw.get("split") or None,
     )
+
+
+# The re-check sample: the fifth of the custom set's held-out half that
+# is labelled again by the annotator and run through the pipeline a
+# second time. Chosen by the labeller (a SHA-256 of the fact id, not by
+# hand) and written into its split manifest, read here rather than
+# recomputed, so the two can never pick different facts.
+RECHECK = "recheck"
+
+SAMPLES = (RECHECK,)
+
+SPLIT_MANIFEST = "split.json"
+
+
+def select_rows(dataset: Dataset, split: str | None = None, sample: str | None = None) -> Dataset:
+    """
+    The rows of one split, or of the re-check sample, as a dataset of
+    their own. Its stem and sha256 name the selection, so a run over the
+    test half and a run over the whole set never share a directory or a
+    key, and editing a label of either still starts a new run.
+    """
+
+    if not split and not sample:
+        return dataset
+
+    rows = dataset.rows
+    names = []
+
+    if split:
+        rows = tuple(row for row in rows if row.split == split)
+        names.append(split)
+
+    if sample:
+        if sample not in SAMPLES:
+            raise DatasetError(f"no sample {sample!r} ({', '.join(SAMPLES)})")
+        wanted = set(recheck_ids(dataset))
+        rows = tuple(row for row in rows if row.id in wanted)
+        names.append(sample)
+
+    if not rows:
+        raise DatasetError(
+            f"{dataset.path}: no rows in {' / '.join(names)} - is the split frozen? "
+            "python labeller/app.py split"
+        )
+
+    selection = hashlib.sha256(
+        "\n".join([dataset.sha256, *sorted(row.id for row in rows)]).encode("utf-8")
+    ).hexdigest()
+
+    return Dataset(
+        path=dataset.path,
+        stem="-".join([dataset.stem, *names]),
+        sha256=selection,
+        rows=rows,
+    )
+
+
+def recheck_ids(dataset: Dataset) -> list[str]:
+    """
+    The labeller's re-check sample, from the split manifest beside the
+    set: next to `manual/` for the directory, next to the joined file.
+    """
+
+    manifest = dataset.path.parent / SPLIT_MANIFEST
+
+    if not manifest.exists():
+        raise DatasetError(
+            f"{manifest}: no split manifest - freeze the split first: python labeller/app.py split"
+        )
+
+    return list(json.loads(manifest.read_text(encoding="utf-8")).get(RECHECK) or [])
 
 
 def _claim_date(value) -> str | None:

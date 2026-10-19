@@ -10,6 +10,11 @@ The evaluation harness's one command.
 
     uv run python -m src.evaluation.cli table --run <dir> --run <dir> ... [--prices ...]
 
+    uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split train --loop
+    uv run python -m src.evaluation.cli loop --run <dir>
+    uv run python -m src.evaluation.cli consistency --run <test run> --run <recheck run>
+    uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split train --oracle --model <m>
+
     uv run python -m src.evaluation.cli run --dataset <set> --retrieval-only --label <strategy>
     uv run python -m src.evaluation.cli retrieval --run <dir> --run <dir> ...
 
@@ -38,12 +43,15 @@ from pathlib import Path
 
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
-from src.evaluation.dataset import load_dataset
+from src.evaluation.dataset import SAMPLES, load_dataset, select_rows
+from src.evaluation.consistency import write_consistency
+from src.evaluation.loop import write_loop_report
 from src.evaluation.metrics import DEFAULT_RESAMPLES, DEFAULT_SEED
 from src.evaluation.report import models_table, retrieval_table, write_report
 from src.evaluation.runner import (
     CORPUS_MODES,
     FULL,
+    ORACLE,
     RETRIEVAL,
     RETRIEVAL_ONLY_MODEL,
     SNAPSHOT,
@@ -74,7 +82,12 @@ def load_thresholds(path: str | None) -> PipelineThresholds:
 
 def cmd_run(args: argparse.Namespace) -> int:
 
-    dataset = load_dataset(args.dataset)
+    dataset = select_rows(load_dataset(args.dataset), split=args.split, sample=args.sample)
+
+    if args.oracle and (args.retrieval_only or args.loop):
+        # The loop already ends on the annotator's pages, and retrieval-only
+        # asks no model: neither means anything over evidence given in.
+        raise SystemExit("--oracle takes neither --retrieval-only nor --loop")
 
     config = RunConfig(
         dataset=dataset,
@@ -83,8 +96,9 @@ def cmd_run(args: argparse.Namespace) -> int:
         thresholds=load_thresholds(args.thresholds),
         corpus=args.corpus,
         root=Path(args.root) if args.root else default_runs_root(),
-        mode=RETRIEVAL if args.retrieval_only else FULL,
+        mode=RETRIEVAL if args.retrieval_only else ORACLE if args.oracle else FULL,
         label=args.label,
+        loop=args.loop,
     )
 
     runner, close = build_runner(config)
@@ -186,6 +200,41 @@ def cmd_retrieval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_loop(args: argparse.Namespace) -> int:
+
+    target = write_loop_report(
+        args.run,
+        seed=args.seed,
+        resamples=args.resamples,
+        root=Path(args.out) if args.out else None,
+    )
+
+    print(f"Loop report written to {target / 'loop.md'}")
+    print((target / "loop.md").read_text(encoding="utf-8"))
+
+    return 0
+
+
+def cmd_consistency(args: argparse.Namespace) -> int:
+
+    if len(args.run) != 2:
+        print("consistency compares exactly two runs: --run A --run B", file=sys.stderr)
+        return 2
+
+    target = write_consistency(
+        args.run[0],
+        args.run[1],
+        seed=args.seed,
+        resamples=args.resamples,
+        root=Path(args.out) if args.out else None,
+    )
+
+    print(f"Consistency written to {target}")
+    print(target.read_text(encoding="utf-8"))
+
+    return 0
+
+
 def _report_options(command: argparse.ArgumentParser) -> None:
 
     command.add_argument("--prices", help="a prices file (data/evaluation/prices.json) to cost the run")
@@ -221,6 +270,17 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--dataset", required=True, help="a JSONL file, or a directory of one-fact JSON files")
     run.add_argument("--model", help=f"the LLM to verify with (default: LLM_MODEL, {settings.LLM_MODEL})")
     run.add_argument("--limit", type=int, help="only the first N rows of the dataset")
+    run.add_argument(
+        "--split",
+        help="only the rows of this split (the custom set's frozen train / test halves, "
+        "x-fact's train / dev / test); its own run directory, <dataset>-<split>",
+    )
+    run.add_argument(
+        "--sample",
+        choices=SAMPLES,
+        help="only the re-check sample from the labeller's split manifest: the fifth of "
+        "the test half labelled again and run again, for consistency",
+    )
     run.add_argument("--thresholds", help="a JSON file of threshold overrides")
     run.add_argument("--corpus", choices=CORPUS_MODES, default=SNAPSHOT)
     run.add_argument(
@@ -235,9 +295,22 @@ def parser() -> argparse.ArgumentParser:
         help="stop before the model: measure retrieval for its search and fetch time alone",
     )
     run.add_argument(
+        "--oracle",
+        action="store_true",
+        help="no search: the model judges each claim on the annotator's own reference pages "
+        "(RQ2's oracle condition); keyed, so it never resumes a run that searched",
+    )
+    run.add_argument(
         "--label",
         help="a name for the strategy this run measures; part of the run key, so two code "
         "variants with the same settings are two runs",
+    )
+    run.add_argument(
+        "--loop",
+        action="store_true",
+        help="the tuning loop: a second look on every claim whose verdict disagrees with gold "
+        "(or is in doubt), then the annotator's own pages when it still disagrees - "
+        "on the train half only",
     )
     run.add_argument("--root", help=argparse.SUPPRESS)
     run.set_defaults(handler=cmd_run)
@@ -252,6 +325,22 @@ def parser() -> argparse.ArgumentParser:
     table.add_argument("--run", required=True, action="append", help="a run directory; repeat per model")
     _report_options(table)
     table.set_defaults(handler=cmd_table)
+
+    loop = commands.add_parser(
+        "loop",
+        help="what the tuning loop found in a run made with --loop: fixed, retrieval, adjudicate...",
+    )
+    loop.add_argument("--run", required=True, help="the run directory")
+    _report_options(loop)
+    loop.set_defaults(handler=cmd_loop)
+
+    again = commands.add_parser(
+        "consistency",
+        help="two runs over the same claims: verdict agreement, kappa, and where a change came from",
+    )
+    again.add_argument("--run", required=True, action="append", help="a run directory; exactly two")
+    _report_options(again)
+    again.set_defaults(handler=cmd_consistency)
 
     strategies = commands.add_parser(
         "retrieval",

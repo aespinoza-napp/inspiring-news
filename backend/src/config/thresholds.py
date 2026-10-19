@@ -193,6 +193,23 @@ class PipelineThresholds(BaseModel):
         le=1.0,
     )
 
+    # The second look: when a claim's first verdict is UNVERIFIED, or its
+    # confidence is below `second_look_below_confidence`, search again
+    # with follow-up queries written from what the first verdict said was
+    # missing, and judge the old and new evidence together. Per-run
+    # because it costs a second search and two more model calls on the
+    # claims it fires on, and because whether it helps is measured, not
+    # assumed: on the tuning half first, then the test half.
+    second_look_enabled: bool = Field(
+        default_factory=lambda: settings.SECOND_LOOK_ENABLED,
+    )
+
+    second_look_below_confidence: float = Field(
+        default_factory=lambda: settings.SECOND_LOOK_BELOW_CONFIDENCE,
+        ge=0.0,
+        le=1.0,
+    )
+
     # ------------------------------------------------------------------
 
     @classmethod
@@ -259,6 +276,8 @@ class ThresholdOverrides(BaseModel):
     max_evidence_per_claim: Optional[int] = Field(None, ge=1)
     min_evidence_for_verdict: Optional[int] = Field(None, ge=0)
     evidence_min_pertinence: Optional[float] = Field(None, ge=0.0, le=1.0)
+    second_look_enabled: Optional[bool] = Field(None)
+    second_look_below_confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
 
 
 class WriterThresholds(BaseModel):

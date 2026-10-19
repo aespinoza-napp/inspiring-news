@@ -271,6 +271,97 @@ class LabellerTest(unittest.TestCase):
         self.assertIsNone(app.agreement(self.store.load()[0])["kappa"])
 
     # ------------------------------------------------------------------
+    # The tuning/test split
+    # ------------------------------------------------------------------
+
+    def article(self, n):
+        return f"https://www.positive.news/environment/story-{n}/"
+
+    def test_an_articles_facts_and_a_mutation_with_its_source_share_a_side(self):
+
+        for n in range(6):
+            self.create(claim=f"First claim {n}", articleUrl=self.article(n))
+            self.create(claim=f"Second claim {n}", articleUrl=self.article(n))
+        self.store.mutate("fact001", "The reserve's otter population tripled.", "number")
+
+        self.store.split()
+        facts = {f["id"]: f for f in self.store.load()[0]}
+
+        for n in range(6):
+            first, second = facts[f"fact{2 * n + 1:03d}"], facts[f"fact{2 * n + 2:03d}"]
+            self.assertEqual(first["split"], second["split"])
+        self.assertEqual(facts["fact013"]["split"], facts["fact001"]["split"])
+
+    def test_the_split_is_even_within_each_verdict_language_and_topic_group(self):
+
+        # Two of everything, one article each: an even split puts one of
+        # each pair on each side.
+        n = 0
+        for label in ("TRUE", "UNVERIFIED"):
+            for language in ("en", "es"):
+                for topic in ("nature", "arts"):
+                    for _ in range(2):
+                        n += 1
+                        extra = {} if label == "TRUE" else {"referenceEvidenceLinks": []}
+                        self.create(claim=f"Claim {n}", articleUrl=self.article(n), label=label,
+                                    language=language, topic=topic, **extra)
+
+        counts = self.store.split()["counts"]
+
+        self.assertEqual((counts["train"]["total"], counts["test"]["total"]), (8, 8))
+        for side in app.SPLITS:
+            self.assertEqual(counts[side]["byLabel"]["TRUE"], 4)
+            self.assertEqual(counts[side]["byLanguage"], {"en": 4, "es": 4})
+            self.assertEqual(counts[side]["byGroup"]["environment"], 4)
+
+    def test_the_split_is_frozen_and_new_facts_join_their_articles_side(self):
+
+        for n in range(8):
+            self.create(claim=f"Claim {n}", articleUrl=self.article(n))
+        first = self.store.split()
+
+        # Relabelling a fact keeps its side; running the split again moves nothing.
+        self.store.update("fact001", fact(articleUrl=self.article(0), label="PARTIALLY_TRUE"))
+        again = self.store.split()
+        self.assertEqual(again["facts"], first["facts"])
+        self.assertEqual(again["frozenAt"], first["frozenAt"])
+
+        # A later claim of an article already split goes where its article is.
+        later = self.create(claim="A third claim of story 3.", articleUrl=self.article(3))
+        self.assertEqual(later["split"], first["facts"]["fact004"])
+        self.assertEqual(self.store.split_manifest()["facts"]["fact009"], later["split"])
+
+    def test_before_the_freeze_every_fact_is_held_out(self):
+
+        self.assertEqual(self.create()["split"], "test")
+        self.assertEqual(self.store.split_manifest(), {})
+
+    def test_the_review_sample_is_a_fifth_of_the_held_out_half(self):
+
+        for n in range(20):
+            self.create(claim=f"Claim {n}", articleUrl=self.article(n))
+        manifest = self.store.split()
+        facts, _ = self.store.load()
+
+        sample = app.review_sample(facts)
+
+        self.assertEqual(len(sample), 2)  # ceil(10 test facts * 0.2)
+        self.assertTrue(all(f["split"] == "test" for f in sample))
+        self.assertEqual(sorted(f["id"] for f in sample), manifest["recheck"])
+
+    def test_join_refuses_a_fact_with_no_side(self):
+
+        self.create()
+        record = json.loads((self.folder / "fact001.json").read_text(encoding="utf-8"))
+        record["split"] = "dev"
+        (self.folder / "fact001.json").write_text(json.dumps(record), encoding="utf-8")
+
+        with self.assertRaises(ValueError) as caught:
+            self.store.join(Path(self.tmp.name) / "joined.jsonl")
+
+        self.assertIn("split must be one of", str(caught.exception))
+
+    # ------------------------------------------------------------------
     # Join
     # ------------------------------------------------------------------
 

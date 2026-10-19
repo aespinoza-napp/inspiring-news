@@ -59,11 +59,22 @@ services:
       # gets slower and none gets done sooner. It also holds one
       # context's KV cache in memory instead of one per slot.
       - OLLAMA_NUM_PARALLEL=1
+      # One model in memory at a time. With a writer configured beside
+      # the verifier, both stayed loaded for good (KEEP_ALIVE=-1): ~3.2
+      # GB plus ~6 GB at a 16k context, on a 16 GB machine already ~9.6
+      # GB resident. Ollama now unloads the idle one to load the other,
+      # and the backend sends one LLM call at a time anyway
+      # (LLM_MAX_CONCURRENCY=1), so the swap - seconds to load a model
+      # from disk - is paid only when a draft follows a verdict or the
+      # other way round (docs/decisions/deployment.md, "Models in memory").
+      - OLLAMA_MAX_LOADED_MODELS=1
     restart: unless-stopped
     logging: *logging
     # llama3.2:3b (Q4_K_M) at a 4096-token context: 2.9GB loaded,
-    # measured with /api/ps on 2026-10-01.
-    mem_limit: 4g
+    # measured with /api/ps on 2026-10-01. Sized for the largest model
+    # served, not the sum (one at a time, above): set OLLAMA_MEM_LIMIT in
+    # backend/.env to ~8g for a 7-9B writer at 16k context.
+    mem_limit: ${OLLAMA_MEM_LIMIT:-4g}
     healthcheck:
       test: ["CMD", "ollama", "list"]
       interval: 10s
@@ -72,13 +83,23 @@ services:
       start_period: 30s
 
   ollama-pull:
-    # One-shot: fetches LLM_MODEL into the ollama-models volume, then
-    # exits. A no-op once the model is there. backend waits for it to
-    # finish, so the first verification never meets a missing model.
+    # One-shot: fetches every model backend/.env names - LLM_MODEL, and
+    # the writer's and the corrector's when set, creating the writer's
+    # long-context variant - into the ollama-models volume, then exits.
+    # A no-op once they are there. backend waits for it to finish, so
+    # neither the first verdict nor the first draft meets a missing model.
     image: ollama/ollama:0.35.0
-    entrypoint: ["ollama", "pull", "${LLM_MODEL:?set LLM_MODEL in backend/.env}"]
+    entrypoint: ["/bin/sh", "/pull-models.sh"]
+    volumes:
+      - ./ollama/pull-models.sh:/pull-models.sh:ro
     environment:
       - OLLAMA_HOST=http://ollama:11434
+      - LLM_MODEL=${LLM_MODEL:?set LLM_MODEL in backend/.env}
+      - WRITER_LLM_MODEL=${WRITER_LLM_MODEL:-}
+      - WRITER_LLM_BASE=${WRITER_LLM_BASE:-}
+      - WRITER_NUM_CTX=${WRITER_NUM_CTX:-16384}
+      - CORRECTOR_LLM_MODEL=${CORRECTOR_LLM_MODEL:-}
+      - CORRECTOR_LLM_BASE=${CORRECTOR_LLM_BASE:-}
     depends_on:
       ollama:
         condition: service_healthy

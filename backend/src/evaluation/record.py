@@ -67,6 +67,14 @@ RECORD_FIELDS = (
     "events", "latency",
     # What it cost: the LLM calls this claim made (usage.py).
     "usage",
+    # Added 2026-10-19 without a HARNESS_VERSION bump (they change no
+    # outcome of a run without them). `secondLook`: the first verdict,
+    # when the pipeline's own second look replaced it (a run with
+    # `second_look_enabled`). `loop`: the harness's tuning loop (`run
+    # --loop`) - a second look on a claim whose verdict disagrees with
+    # gold, then the annotator's own pages - beside the verdict, never
+    # in place of it.
+    "secondLook", "loop",
     # Provenance.
     "model", "provider", "thresholdsHash", "harnessVersion", "gitCommit",
     "startedAt", "finishedAt",
@@ -114,6 +122,7 @@ def build_record(
     timing: Timing,
     provenance: Provenance,
     usage: dict,
+    loop: dict | None = None,
 ) -> dict:
 
     cited = set(check.cited_evidence_indices)
@@ -151,6 +160,11 @@ def build_record(
         "events": events,
         "latency": latency_from(events, timing),
         "usage": usage,
+        "secondLook": (
+            check.second_look.model_dump(mode="json", by_alias=False)
+            if check.second_look else None
+        ),
+        "loop": loop,
     })
 
     record.update(_provenance(provenance, timing))
@@ -332,9 +346,12 @@ def _domain(item: Evidence) -> str:
 # it. The LLM span is absent when the model was not asked (below the
 # evidence floor, no `verifying_claim`).
 _SPANS = {
-    "retrieval": ("retrieving_evidence", "evidence_retrieved"),
-    "ranking": ("evidence_retrieved", "evidence_ranked"),
-    "llm": ("verifying_claim", "claim_checked"),
+    "retrieval": ("retrieving_evidence", ("evidence_retrieved",)),
+    "ranking": ("evidence_retrieved", ("evidence_ranked",)),
+    # Up to the second look when the pipeline took one: its own search
+    # and calls are `secondLook`, not the first verdict's model time.
+    "llm": ("verifying_claim", ("second_look", "claim_checked")),
+    "secondLook": ("second_look", ("second_look_checked",)),
 }
 
 
@@ -352,10 +369,13 @@ def latency_from(events: list[dict], timing: Timing) -> dict:
 
     latency = {"total": round(timing.total, 4), "entities": timing.entities}
 
-    for name, (opening, closing) in _SPANS.items():
+    for name, (opening, closings) in _SPANS.items():
 
-        if opening in first and closing in first:
-            latency[name] = round(first[closing] - first[opening], 4)
+        # The earliest closing event: whichever came first ends the span.
+        ends = [first[phase] for phase in closings if phase in first]
+
+        if opening in first and ends:
+            latency[name] = round(min(ends) - first[opening], 4)
         else:
             latency[name] = None
 

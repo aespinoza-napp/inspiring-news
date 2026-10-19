@@ -160,6 +160,9 @@ NON_THRESHOLD_SETTINGS = {
     # The writing flow's storage and models (docs/decisions/writing.md):
     # infrastructure, like LLM_MODEL and LAKE_PATH.
     "DRAFTS_PATH", "WRITER_LLM_MODEL", "WRITER_LLM_TIMEOUT", "CORRECTOR_LLM_MODEL",
+    # How a model is served (thinking off for a hybrid reasoning model),
+    # a property of the model, not of a run: infrastructure, like LLM_MODEL.
+    "LLM_REASONING_EFFORT",
     "INFERENCE_URL", "INFERENCE_TIMEOUT",
     "SEARXNG_URL", "SEARXNG_TIMEOUT", "SEARXNG_MAX_RESULTS",
     "DUCKDUCKGO_FALLBACK_ENABLED", "DUCKDUCKGO_URL", "DUCKDUCKGO_TIMEOUT",
@@ -400,6 +403,14 @@ ANALYZE_RESPONSE_SHAPE = {
     # UNVERIFIED, and such citations no longer raise the confidence. A v10
     # entry may hold a TRUE resting on off-subject pages, served forever.
     11: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
+    # 12, same keys: every claim gained `secondLook` (the first verdict,
+    # when a second look replaced it - services/fact_checker/second_look.py),
+    # and `thresholds` the two second-look fields. A v11 entry has neither.
+    12: {
         "url", "storage", "thresholds", "title", "keywords", "entities",
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",

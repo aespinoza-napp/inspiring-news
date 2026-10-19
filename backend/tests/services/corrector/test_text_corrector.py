@@ -154,3 +154,36 @@ def test_a_score_that_is_not_a_number_is_unavailable_not_zero():
         assert "unavailable" in metrics[key].summary.lower(), key
 
     assert metrics["style"].score == 85
+
+
+def test_metrics_nested_one_inside_the_next_are_read_where_they_are():
+    """
+    qwen3.5:4b's answer on 2026-10-19, shape kept: each metric opened
+    inside the one before, every brace closed at the end. Valid JSON with
+    all five scores; the top-level read saw only grammar.
+    """
+
+    corrector = make_corrector(llm_response={
+        "grammar": {"score": 95, "summary": "Sound.", "issues": ["One phrase."],
+            "factConsistency": {"score": 100, "summary": "Consistent.", "issues": [],
+                "seo": {"score": 60, "summary": "Vague headline.", "issues": ["No keywords."],
+                    "hallucinationIndex": {"score": 98, "summary": "Grounded.", "issues": [],
+                        "style": {"score": 75, "summary": "Passive.", "issues": []}}}}},
+    })
+
+    metrics = corrector.llm_metrics("some text")
+
+    assert {key: metric.score for key, metric in metrics.items()} == {
+        "grammar": 95, "factConsistency": 100, "seo": 60, "hallucinationIndex": 98, "style": 75,
+    }
+    assert metrics["seo"].issues == ["No keywords."]
+
+
+def test_a_metric_at_the_top_wins_over_one_nested_elsewhere():
+
+    corrector = make_corrector(llm_response={
+        "grammar": {"score": 90, "summary": "Top.", "style": {"score": 10, "summary": "Nested."}},
+        "style": {"score": 70, "summary": "Top."},
+    })
+
+    assert corrector.llm_metrics("some text")["style"].score == 70
