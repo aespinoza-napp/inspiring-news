@@ -1221,7 +1221,10 @@ holds no credential; there is no setting that turns either on.
   it from the reader (its newest check decides), while the story stays.
 - **`docs/decisions/deployment.md` and the Caddyfile's comments** still
   say two proxies (above).
-- `lib/reader.ts`'s `languageName` knows `en` and `es`; the stories use
-  `storyLanguageName` in `lib/stories.ts`, which knows Catalan.
+- ~~`lib/reader.ts`'s `languageName` knows `en` and `es`; the stories use
+  `storyLanguageName` in `lib/stories.ts`, which knows Catalan.~~ Gone
+  2026-10-20: both reader pages and the story page name languages, dates
+  and the disclosure through `lib/readerText.ts`, in Catalan, Spanish or
+  English.
 - `ArticleBody`'s `.article-body` has no global style; the story page
   styles it under its own CSS module.

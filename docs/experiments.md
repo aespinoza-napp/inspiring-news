@@ -23,6 +23,7 @@ outranks a random negative, 0.5 being a coin.
 | `admission` | the stack (`inference/`) | What do the admission thresholds admit, and how well does the positive-impact score agree with the editor? |
 | `topics` | the stack (`inference/`) | How often is the topic classifier right on the labelled facts' articles? |
 | `emphasis` | recorded rounds and their labels (nothing running) | How much does weighing the topic over positive impact change what a round shows first? |
+| `sources` | the running backend (network) | Which sources are up this week, how their articles extract, and how long they take to reach us |
 
 ## discovery
 
@@ -43,6 +44,54 @@ the same run, and repeat on a few days for an interval.
 First run, 2026-10-05, two candidates per source: Environment read 14 of
 34 sources (0.41×) and 153 of 1,536 links (0.10×) in 10 s against 15 s;
 Culture + Health read 23 sources (0.68×) and 596 links (0.39×).
+
+The protocol for the paper (roadmap, "Scraping - discovery yield"): each
+group alone, three pairs (Environment + Science, Culture + Health,
+Society + Health) and the baseline, three candidates per source, on five
+different days:
+
+```bash
+uv run python -m src.evaluation.experiments discovery --group society --group science \
+    --group environment --group culture --group health --group environment,science \
+    --group culture,health --group society,health
+```
+
+**Day 1, 2026-10-20 12:21 UTC** (`discovery/20261020T122152Z/`): the
+baseline read 33 sources and 1,369 links for 99 candidates (en 60 / es
+39). One group alone read 0.27-0.67× the sources and **0.14-0.29× the
+links**; a pair 0.76-0.94× the sources and 0.40-0.50× the links.
+Environment is the lopsided one: 36 candidates, 30 of them English
+(Spanish feeds are filtered by title words, and few Spanish titles name
+the environment); Culture leans the other way (11 en / 15 es) from 9
+sources. Days 2-5 are still to run.
+
+## sources
+
+```bash
+uv run python -m src.evaluation.experiments sources [--last]
+```
+
+The weekly source health check (roadmap, "Scraping - source health and
+extraction"), once a week for four weeks. It starts the running
+backend's source probe (`POST /scraper/probe`, five sample articles per
+source; `--last` takes the last report instead of probing again) and
+joins it with `GET /scraper/freshness`: per source, up / degraded /
+down, its feed and section-page links, its sample's extraction by
+strategy and median time, and its time to reception from the lake; the
+two SearXNG checks; and every earlier week's result lined up beside it,
+source by source.
+
+**Week 1, 2026-10-20** (`sources/20261020T122555Z/`): 30 of 33 up, 3
+degraded, none down; 157 of 165 sample articles extracted (95.2%), every
+one by trafilatura, the first step - the cascade's later steps saved
+nothing. Degraded: **El País** (3 of 5 refused with 403, all three
+politics pages, and the Docker image's headless browser did not get
+past it either), National Geographic and SINC (no feed, found through
+their section pages, as known). Search: 86 and 90 results; Google and
+Brave suspended by their own rate limits, Bing and the science APIs
+answering. Time to reception has one article behind it: the backend's
+lake was emptied since the earlier measurements, so that column fills
+only as rounds are analysed again.
 
 ## selection and blind-ai
 
@@ -113,6 +162,19 @@ First run, 2026-10-05, 41 articles: top-1 topic 0.54 [0.37, 0.68], gold in
 top 3 0.78 [0.66, 0.90], group 0.73 [0.59, 0.85], no topic at the floor
 0.10 [0.02, 0.20]. Society is the weak group: 5 of its 9 articles were
 classified as environment.
+
+Second run, 2026-10-20, 58 articles (the 139 facts; 27 articles enriched
+anew through the dev stack's `/enrich`, 31 from the cache):
+top-1 topic 0.67 [0.55, 0.79], gold in top 3 0.88 [0.79, 0.95], group
+0.83 [0.72, 0.91], no topic at the floor 0.02 [0.00, 0.05]
+(`experiments/topics/20261020T093630Z/`). Every figure is up, inside
+overlapping intervals; the widened keyword coverage and the whole-article
+entity reading came between the two. Society is still the weak group, 5
+of 9 right, its misses spread over the other four; culture loses 3 of 7
+to environment. **`TOPIC_CLASSIFIER_THRESHOLD` stays at 0.35**: one
+article in fifty falls under it, so lowering it would admit little and
+raising it would start rejecting real articles. The gold topics are
+mostly the AI labelling pass's, unchecked like its verdicts (P0.2).
 
 ## The mission screen's margin (one-off, 2026-10-06)
 

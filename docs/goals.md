@@ -1,8 +1,12 @@
 # Goals
 
 Ready-to-paste `/goal` prompts for the evaluation harness (roadmap,
-Phase 4) and two testing-track items. Prepared on 2026-10-01; nothing
-here has been run. The design they all build on is
+Phase 4) and two testing-track items. Prepared on 2026-10-01. Done since:
+every one: G1-G4 and G7 by 2026-10-14, T1 (CI) and T2 (the integration
+test) on 2026-10-02, **G5 and G6 on 2026-10-20** (`attribution.py`,
+`effort.py` and the labeller's timing and `stats`;
+`docs/decisions/evaluation.md`). The prompts stay as the record of what
+was asked. The design they all build on is
 `docs/decisions/evaluation.md`. Each prompt names that file's section
 rather than repeating it, so the seven goals cannot drift apart.
 
@@ -93,4 +97,53 @@ These are in each prompt as "the goal rules":
 
 ```
 /goal Close the roadmap item "Integration test: full pipeline run". Today tests/test_real_pipeline_integration.py starts from a hand-built News (no extraction) and stops at claim selection (no retrieval, ranking, LLM or scoring). Add an end-to-end test of the real AnalysisService.analyze from a URL. Extraction reads a saved HTML fixture through a fake fetch (no network). Enrichment is real, over inference/ (require_inference: it skips without it). Admission is real, on a tmp_path Qdrant. The FactChecker is real (EvidenceRetriever, EvidenceRanker, LLMVerifier, ConfidenceScorer), with only the network clients faked from tests/services/fact_checker/fakes.py: SearXNG, the evidence-page fetch, and an LLM returning a canned JSON verdict. A new shared fake needs its contract entry. The lake and the AnalysisCache go to tmp_path (the cache otherwise defaults to the real data/cache), and the graph is off. Assert: each claim's on_phase events name every stage literal in order; a source the canned answer cites survives ranking; the verdict and cited indices match the canned answer; a claim with no evidence comes back UNVERIFIED without an LLM call; the article lands in all three lake layers; the response matches ANALYZE_RESPONSE_SHAPE. Then run it once with inference/ up and record the result in the roadmap. Follow the goal rules in docs/goals.md. Done when ./scripts/check.sh passes with inference/ reachable and the new test ran rather than skipped.
+```
+
+## Left to the author (prepared 2026-10-20)
+
+Five goals that need a person, or a model this machine does not yet
+serve. In each, Claude does the preparation and the bookkeeping; the
+judging, reading and testing stay human. The goal rules above apply,
+except that U3 is a live run by design.
+
+```
+U1 AI labels ──── kappa and join; U3's verdict accuracy is reported on the joined set
+U2 Pooled pages ── needs nothing but time (603 pages)
+U3 Model runs ──── needs an LLM the backend container can reach
+U4 Native readers ─┐
+U5 Five readers ───┴── U5 is worth more after U4
+```
+
+### U1 · Check the AI labels (P0.2) · 4h · by Oct 30
+
+```
+/goal Close P0.2. The 108 facts in backend/data/evaluation/manual/ labelled by the AI pass are checked by me in the labeller (`python labeller/app.py`): prepare the order (the 15 `adjudicate` claims from the second look first, then by topic group), and after each session report how many are confirmed, changed and left. Then the blind re-label of the 14 recheck facts in the labeller's Review tab, by me; settle each disagreement with me one at a time, recording the reason in the fact's note. Report AI-annotator and first-second-label agreement with Cohen's kappa and intervals in custom_dataset.tex, then `python labeller/app.py join` into custom_en_es.jsonl and check split.json still covers every fact. Never change a label I have not confirmed. Follow the goal rules in docs/goals.md. Done when ./scripts/check.sh passes, the set is joined, and roadmap P0.2 and the "Settle disagreements" item are ticked with the kappas.
+```
+
+### U2 · Judge the 603 pooled pages (P1.1) · ~5h
+
+```
+/goal Finish the retrieval ablation's relevance judgements. I judge the pages in data/evaluation/judgements/manual-test.jsonl with `cd backend && uv run python -m src.evaluation.cli judge --judgements data/evaluation/judgements/manual-test.jsonl` (it resumes where it stopped); between sessions, say how many are left. When none are, run `cli pooled` over the three retrieval-only runs in data/evaluation/runs/manual-test/retrieval-only/ (all, anchor, anchor_proposition) with the same --judgements, and write precision, recall, MRR and coverage with their paired intervals against the all-queries baseline into reports/manual-test/retrieval.md, the P1.1 roadmap item and the "First ablation, 2026-10-20" paragraph of docs/decisions/evaluation.md. Say plainly whether the default `query_kinds` should change, and change it only if I agree. Follow the goal rules in docs/goals.md. Done when ./scripts/check.sh passes and every page has a judgement.
+```
+
+### U3 · The model runs · ~12h of CPU, mostly unattended · needs an LLM
+
+```
+/goal Run the model half of the evaluation once an LLM is reachable. Run the harness from the host (`cd backend && uv run python -m src.evaluation.cli ...`), with `LLM_BASE_URL=http://localhost:11434/v1`, `INFERENCE_URL=http://localhost:8001` (a local `inference/`, since compose does not publish 8001) and `SEARXNG_URL=http://localhost:8080`: then Ollama need not listen beyond 127.0.0.1. First confirm the model is pulled (`ollama list`: llama3.2:3b, the baseline) and inference answers `/healthz`; stop and tell me what is missing if not. (Started 2026-10-20 this way: closed-book, full and oracle on the test half.) Use the CPU limits from docker-compose.prod.yml and one model in Ollama at a time (scripts/stack.sh). On the test half: `cli run --closed-book`, a full run and `--oracle`, then `cli report --compare` against the full run and `cli table` over the three. Re-run `cli report` on the existing train, test and oracle runs so they gain the attribution and effort sections, with `--minutes-per-fact` from `labeller/app.py stats` once facts are timed. If the dates allow, the freshness retrieval-only re-runs at day 7 (Oct 27) and day 30 (Nov 19). Record each result with its interval in docs/decisions/evaluation.md and the roadmap, and record any run that failed as failed. A hosted verifier is out of scope unless I name one and its key. Follow the goal rules in docs/goals.md. Done when ./scripts/check.sh passes and the three test-half runs are reported.
+```
+
+### U4 · Native readers for the Spanish and Catalan · 2h of theirs
+
+Prepared 2026-10-20: `docs/review/reader-ca.md` and `reader-es.md`, 223 rows each, generated by `node scripts/reader_strings.mjs` (functions rendered with sample values, plurals at 1 and 3). Regenerate after any change to `readerText.ts` and before sending.
+
+```
+/goal Get the reader's Spanish and Catalan read by native speakers. Export every es and ca string from frontend/src/lib/readerText.ts, and the guide's text from app/reader/guide/page.tsx, into two review sheets (one per language: key, English, current text, an empty column for the correction) under docs/review/. I send them to a reader of each language and paste back what they return. Apply each correction exactly, keeping the plural and gender agreement of verdictTally and sourcesLine, and keep a short log of what changed and why in the sheet. Nothing is changed without a reader's correction behind it. Follow the goal rules in docs/goals.md. Done when ./scripts/check.sh and ./scripts/check.sh e2e pass and the two roadmap items' "native read" is ticked with who read it (initials only).
+```
+
+### U5 · Five readers try it (RQ4) · 3h
+
+Prepared 2026-10-20: the protocol and the sheet, `docs/review/reader-test.md`. Two things left to decide before the first session: the three pages (written into its table), and task 2's form - the public reader never shows a FALSE claim, since an article with one is not publishable, so FALSE reaches a reader only through the guide.
+
+```
+/goal Run the five-reader test of the reader view. Write the protocol in docs/review/reader-test.md: five people who are not me, the same three tasks each (explain why a given claim was judged as it was; tell a FALSE from a "Not checked"; say whether a given story was written by a person), one fixed article and story per task chosen from what the stack serves, what I say and do not say, and a sheet per reader for success, time and what confused them. I run the sessions and paste back each sheet. Then summarise per task: successes out of 5, median time, and the confusions grouped, with each reader quoted by initials only; record it in the RQ4 section of docs/decisions/evaluation.md and the roadmap item, and file each confusion that needs a change as its own roadmap item rather than fixing it here. Follow the goal rules in docs/goals.md. Done when ./scripts/check.sh passes and all five sheets are summarised.
 ```

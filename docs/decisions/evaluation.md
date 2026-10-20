@@ -14,6 +14,14 @@ same claims (§Consistency). Results in each section: test half 52.9%
 second look +2.9 points on train and +0.0 on test, so it stays off;
 the re-check sample 13 of 14 verdicts the same twice (kappa 0.84).
 
+**Status, 2026-10-20: stage attribution (G5) is built**
+(`attribution.py`, a section of every `cli report`; §Stage attribution).
+It has not yet been run over the custom set's runs: their
+`results.jsonl` are not in git, so the numbers come from re-running
+`cli report` where those runs are. **Journalist effort (G6) is built
+too** (§Journalist effort): timing and `stats` in the labeller,
+`effort.py` in every report.
+
 **Status, 2026-10-13: the harness (G2), metrics (G3) and retrieval
 evaluation (G4) are built, and the pilot (G7) has run them against live
 services (§Pilot).** Stage attribution (G5) and journalist effort (G6)
@@ -460,6 +468,68 @@ uv run python -m src.evaluation.cli run --dataset data/evaluation/xfact_en_es_pi
 uv run python -m src.evaluation.cli retrieval --run <baseline dir> --run <no-gate dir>
 ```
 
+**Which queries are sent** (built 2026-10-20, the ablation switch P1.1
+needed): `query_kinds`, a per-run threshold, keeps only some of the
+first search's three questions - anchor, proposition, refutation
+(`query_builder.py`). Two variants are committed as threshold files;
+the third is the default:
+
+```bash
+for variant in queries_anchor queries_anchor_proposition; do
+  uv run python -m src.evaluation.cli run --dataset data/evaluation/manual/... --split train \
+      --retrieval-only --label "$variant" --thresholds "data/evaluation/thresholds/$variant.json"
+done
+uv run python -m src.evaluation.cli run ... --retrieval-only --label all-queries
+```
+
+The live view announces only what is sent (`searching_web`'s
+`queryKinds`), an unknown kind or an empty list is refused rather than
+dropped, and with the anchor off a proposition with the same words is
+still sent (the kinds are filtered before duplicates are). The run key
+and `thresholdsHash` count `query_kinds` only when it is not all three,
+so every run made before it existed keeps its key and resumes
+(`runner.py`, `keyed_thresholds`). The analysis cache's key does change
+once, as for any new threshold (`thresholds.md`). Not yet run.
+
+**Pooled relevance judgements** (built 2026-10-20, P1.1's other half;
+TREC's method, `src/evaluation/pooling.py`): the annotator's links are a
+strict witness - another page can be as good - so every variant's top 5
+ranked sources per claim are pooled (`cli pool`, one JSONL line per
+claim and page, keyed with the retriever's `_comparable` so a page two
+variants found is judged once), a person judges each page once in the
+terminal (`cli judge`: bears on the claim, for or against, or not; saved
+after every answer, resumable), and `cli pooled` scores every run on the
+same judgements: precision@5, recall of the pool's relevant pages, MRR,
+and the share of its top 5 that is judged - a variant pooled after the
+judging is scored on what was judged and says how much was not. Each a
+mean over the claims it searched with a bootstrap interval, paired
+against the first run. `pool` keeps every existing judgement and adds
+only new pages, so a later variant costs only its own. Tested in
+`backend/tests/evaluation/test_pooling.py` (8). No pool judged yet.
+
+**First ablation, 2026-10-20** (`reports/manual-test/retrieval.md`): the
+test half's 70 claims, `--retrieval-only --corpus none`, the three
+variants one after another between 11:37 and 12:27 on the dev stack's
+SearXNG (Brave and Google refusing, Bing, Yep, Wikipedia and the science
+indexes answering; every claim searched). Paired against all three
+queries:
+
+- **Anchor only** finds less: a reference domain among the candidates for
+  14.5% of claims against 33.3% (−18.8 pts [−29.0, −10.1]), a reference
+  link 10.1% against 15.9% (−5.8 [−11.6, −1.5]); 8 candidates a claim
+  instead of 19.5, the gate cuts 14.7% of what reaches ranking instead
+  of 1.7%, and 4.19 sources are ranked instead of 4.91. It saves 5.3 s
+  of retrieval a claim.
+- **Anchor + proposition** recovers nearly all of it: −4.3 pts [−10.1,
+  0.0] on reference domains among candidates, +1.5 [0.0, +4.3] among the
+  ranked, 4.87 sources ranked; 2.7 s faster than all three.
+- So **the proposition query earns its place, and the refutation query
+  shows no measurable gain on this set** - which has no natural FALSE
+  claim for it to surface. No verdict was asked (retrieval-only), so
+  whether it changes verdicts is not measured. One window on one day;
+  the variants' top-5 pages, 603, are pooled
+  (`data/evaluation/judgements/manual-test.jsonl`) for judging.
+
 `cli retrieval` writes `reports/<set>/retrieval.md` and `.json`: one row
 per strategy (what differs: label, mode, overridden thresholds, corpus,
 DuckDuckGo fallback, commit), then each later strategy minus the first,
@@ -484,6 +554,38 @@ construction. Two models' oracle runs differ by their reading alone,
 which two searching runs never do (the web changes between them:
 `## Consistency`).
 
+**The closed-book mode** (`run --closed-book`, built 2026-10-20; RQ2's
+first evidence condition, P0.5): the model on the claim alone - no
+evidence, no search, no pipeline, not even entity extraction, so
+`inference/` need not run (`src/evaluation/closed_book.py`). It cannot go
+through the pipeline: a claim without evidence never reaches the model
+there, and the verifier's prompt answers `UNVERIFIED` on an empty
+evidence list. So it has its own prompt, `scripts/closed_book_probe.py`'s
+(the probe now imports it, so the two mean the same thing): the five
+verdicts with LLMVerifier's definitions and "if you do not know, answer
+UNVERIFIED", plus whether the model remembers a published fact-check of
+the claim, recorded as `closedBook` and counted in the report's Evidence
+note. No guardrail: nothing to cite, and forcing `UNVERIFIED` for that
+would erase the condition. An unreachable model is set apart as in every
+run; an answer outside the five is invalid output, scored `UNVERIFIED`.
+Keyed like `oracle`; no retrieval or attribution section (every wrong
+verdict would be "retrieval" by construction). Its records are ordinary,
+so the three conditions pair claim by claim with `cli report --compare`
+and sit side by side in `cli table`. Tested in
+`backend/tests/evaluation/test_closed_book.py` (8).
+
+**First run, 2026-10-20** (`reports/manual-test/llama3.2-3b/038bea7a04be/`;
+the test half, `llama3.2:3b` on the host's Ollama, alone on the CPU):
+accuracy **34.3% [22.9, 45.7]**, macro-F1 0.156, kappa 0.036 [-0.087,
+0.162], coverage 85.7%; natural claims 27.3% [16.4, 40.0], the 15
+synthetic FALSE 60.0%. It answered FALSE to 40 of 70 and PARTIALLY_TRUE
+or MISLEADING to none - the FALSE lean of the X-Fact pilot, with nothing
+to push against it - and said it remembered a published fact-check of
+one claim (fact135). 9.3 s a call at the median. Against the 19 Oct
+first pass with search (52.9%), the gap is what retrieval adds; the
+paired difference waits for the full run made again on the same day
+(the 19 Oct records are gone).
+
 **Live check, 2026-10-04**, on the first 6 pilot claims, two
 retrieval-only strategies (`baseline`, and `no-gate`:
 `evidence_min_pertinence` 0.0), corpus `none`, with Google and Brave
@@ -507,53 +609,134 @@ strategies to measure with this harness rather than adopt untested:
 
 ## Stage attribution (RQ2)
 
+**Built on 2026-10-20 (G5)**: `backend/src/evaluation/attribution.py`,
+a "Stage attribution" section in every `cli report` (`metrics.json`
+key `attribution`), tested in `backend/tests/evaluation/test_attribution.py`
+on records built with `record.py`. Not yet run on a real run (see the
+status above).
+
 Each scored claim whose verdict differs from the gold label gets one
-stage, the first that matches. It is computed twice, because the
-reference links are the better witness but not every row has them (an
-`UNVERIFIED` gold label needs none):
+stage. It is computed twice, because the reference links are the better
+witness but not every row has them (an `UNVERIFIED` gold label needs
+none):
 
 | Stage | Reference-based (row has reference links) | Trace only |
 |---|---|---|
+| aggregation | `rawVerdict` equals gold, the final verdict does not: `ConfidenceScorer` changed it (evidence floor, nothing cited, only unrelated sources cited, a contradiction) | same |
 | retrieval | no reference link or domain among the candidates | no candidates at all |
 | ranking | a reference hit among the candidates, none ranked (cut by the funnel, same-domain, the pertinence gate or the cap; the reason is in `candidates`) | candidates, but nothing ranked |
 | reasoning | a reference hit is ranked, and `rawVerdict` differs from gold | something ranked, and `rawVerdict` differs from gold |
-| aggregation | `rawVerdict` equals gold, the final verdict does not: `ConfidenceScorer` changed it (evidence floor, nothing cited, only unrelated sources cited, a contradiction) | same |
 
-Both columns are reported, with counts, shares and claim ids, and the
-claims on which they disagree are listed. Under the reference rule, a
-wrong verdict resting on sources other than the reference counts as
+**Aggregation is tested first.** This table first listed it last, as
+the fourth of a first-match chain. But when the model's own verdict was
+gold, no stage before it caused the error, however little the model was
+shown - and in the last position a right answer the scorer overrode
+would be charged to retrieval whenever the references were missed.
+`scripts/xfact_time_elapsed.py`'s reference column, which produced the
+pilot's numbers below, already tested it first; its trace-only column
+did not, and could differ only on a claim with no ranked evidence whose
+`rawVerdict` was gold. The script now imports both columns from
+`attribution.py`.
+
+A hit is a reference **link or its domain**, as in §Retrieval
+evaluation: another page of the annotator's source counts as finding
+it. Both columns are reported, with counts, shares and claim ids; the
+ranking bucket lists why sources were cut (every cut for the trace
+column, the references' own for the reference column); the claims on
+which the two columns disagree are listed, and so are the wrong
+verdicts with no reference to judge by (placeholders only, or only the
+fact-checker's own verdict page). Under the reference rule, a wrong
+verdict resting on sources other than the reference counts as
 retrieval: the decisive source was never found. Claims set apart above
 (`searchUnavailable`, `llmUnreachable`, `error`) are never attributed.
+An **oracle** run has no reference column: its evidence is the
+annotator's links, so "found the reference" holds by construction, and
+trace-only retrieval there means none of the links could be read.
 
 Everything here is read from fields the record already holds. No new
-pipeline output is needed.
+pipeline output was needed.
+
+## Freshness: how new is too new (RQ2)
+
+**Built on 2026-10-20** (roadmap P1.2, its set-side half):
+`backend/src/evaluation/freshness.py`, `cli freshness --dataset <set>
+[--split] [--run <dir> ...]`, writing `reports/<stem>/freshness.md` and
+`.json`. Tests: `backend/tests/evaluation/test_evidence_freshness.py`.
+
+Two ages, in whole days, bucketed same day / 1-7 / 8-30 / 31-365 / over
+a year:
+
+- **The newest evidence's age at the claim**, `claimDate -
+  evidenceDate`, from the set alone. `evidenceDate` is the newest
+  evidence the annotator used (labeller Rule 3: never after the claim),
+  so 0 means the claim rested on something published that day. The
+  roadmap first called this the gap to the *earliest* evidence; the
+  field records the newest, which is the one that says whether the
+  evidence existed yet. Synthetic FALSE facts are left out (each copies
+  its source's dates); facts without an evidence date are listed.
+- **The claim's age when a run checked it**, the record's `startedAt -
+  claimDate`, per `--run`: FreshQA's and RealTime QA's axis, which the
+  planned day 0 / 7 / 30 re-runs vary on purpose. Records carry no
+  evidence date (they predate the field), so the command joins each run
+  to the set by id: runs already made get both tables without re-running.
+
+Per bucket and run: scored claims, accuracy with its bootstrap
+interval, the share with any ranked evidence, and the share answered
+UNVERIFIED; claims set apart are counted and left out.
+
+**The set, 2026-10-20** (`reports/manual/freshness.md`): 103 natural
+claims dated on both sides (30 synthetic left out, 6 without an
+evidence date). Median 22 days (IQR 1.5-389.5); **15 (14.6%) rested on
+evidence from the same day and 28 (27.2%) on evidence 1-7 days old**,
+so two claims in five could only have been checked against the first
+week's web; 26 (25.2%) restate something over a year old. Same-day
+evidence is most common among `reference_media` claims (10 of 38) and
+rare among `primary` ones (5 of 63). **74 of the 103 evidence dates are
+the AI labelling pass's**, unchecked like its labels (P0.2): the figures
+move when they are. The run tables wait for the runs' `results.jsonl`,
+which are not on this machine; the day 0 / 7 / 30 re-runs are not made.
 
 ## Journalist effort (RQ4; RQ3 in the Sep 29 numbering)
 
+**Built on 2026-10-20 (G6)**: the labeller's half in `labeller/app.py`
+(`timing` on every new fact, `python labeller/app.py stats`), tested in
+`labeller/test_app.py`; the harness's half in
+`backend/src/evaluation/effort.py`, a "Journalist effort" section in
+every `cli report`, tested in `backend/tests/evaluation/test_effort.py`.
+
 - **Claim selector's precision**: labelled / (labelled + skipped) over
   every batch in `backend/data/evaluation/queue/`, by skip reason and by
-  language. `labeller/app.py`'s `Queue.stats()` already computes the
-  total. The first six facts were chosen by hand before the daily batch
-  existed (no batch refers to them) and are excluded.
-- **Time per fact**: the labeller records `timing: {openedAt, savedAt,
-  activeSeconds}`, from the moment a fact's form opens (Label in Today,
-  or New) to its save. Only seconds with the page visible count, or a
-  lunch break becomes a one-hour fact. It is kept on re-save, written
-  after the existing keys (the labeller's test pins x-fact's ten keys and
-  their order, not the tail). Facts saved before the change have none;
-  reported as n, median and interquartile range.
+  language. Facts no batch names (the first six, chosen by hand before
+  the daily batch existed, and the synthetic FALSE ones) are listed
+  apart and never counted. **2026-10-20: 0.636 (136 of 214), 0.695 in
+  English (98 of 141) and 0.521 in Spanish (38 of 73)**; skips by
+  reason: opinion 22, fragment 21, trivial 15, prediction 8, duplicate
+  6, other 6. The batch counts include the claims of the 17 articles
+  later moved to `excluded/`: the selector proposed them, and the screen
+  that excluded them came after.
+- **Time per fact**: `timing: {openedAt, savedAt, activeSeconds}`, from
+  the moment a fact's form opens (Label in Today, or New) to its save.
+  `activeSeconds` counts only seconds with the page visible, or a lunch
+  break becomes a one-hour fact; the wall time from opening to saving
+  is reported beside it, because the visible seconds leave out the
+  minutes spent reading sources in other tabs - the truth is between
+  the two. Written after the existing keys (x-fact's ten stay pinned);
+  an edit keeps the first save's timing, since it would time the edit;
+  a timing that does not add up is dropped and never blocks a save.
+  Facts saved before the change have none; reported as n, median and
+  interquartile range. None is timed yet.
 - **Usable without re-checking**: the share of scored claims whose
   verdict equals gold, is not `UNVERIFIED`, cites at least one source
   with a stance, and has neither leak flag. Its counterpart,
   **confidently wrong**: a definitive verdict that differs from gold.
-  That is what a journalist who trusted the system would publish.
-- **Effort estimate**: usable share × median time per fact, in minutes
-  saved per 100 claims, beside the confidently-wrong share as the cost of
-  trusting it. Stated as an estimate, with its assumptions.
-
-The labeller owns the first two (standard library only, nothing from
-`backend/`): `python labeller/app.py stats` prints them as JSON. The
-harness report owns the last two, since they need the results.
+  That is what a journalist who trusted the system would publish. Both
+  with bootstrap intervals and ids; right-but-unsupported verdicts
+  (definitive and gold, nothing cited with a stance) are counted apart.
+- **Effort estimate**: usable share × median minutes per fact × 100,
+  minutes saved per 100 claims, beside the confidently-wrong claims per
+  100 as the cost of trusting it - only when `cli report
+  --minutes-per-fact` gives the median, since the report reads no
+  labeller file. Stated as an estimate, with its assumptions.
 
 ## Writing-model benchmark
 
@@ -1126,8 +1309,11 @@ The harness needs `inference/`, SearXNG and the LLM, like any analysis.
 | `cli.py` | harness, then each goal | `run`, `report [--compare]` |
 | `metrics.py`, `report.py` | metrics | Partitions, metrics, bootstrap, `metrics.json`, `report.md` |
 | `retrieval.py` | retrieval | Reference recall at three depths, MRR, the gold-free retrieval metrics, paired strategy comparison |
-| `attribution.py` | attribution | The stage table above |
-| `effort.py` | effort | Usable and confidently-wrong shares |
+| `attribution.py` | attribution | The stage table above, both columns, in every report |
+| `effort.py` | effort | Usable and confidently-wrong shares, the effort estimate (`report --minutes-per-fact`) |
+| `closed_book.py` | closed book (P0.5) | `run --closed-book`: the model on the claim alone, its own prompt |
+| `pooling.py` | pooled judgements (P1.1) | `cli pool` / `judge` / `pooled`: variants scored on the same judgements |
+| `freshness.py` | freshness (P1.2) | `cli freshness`: the newest evidence's age at each claim, verdicts by it and by the claim's age when checked |
 | `usage.py` | cost | Tokens and latency per LLM call, run totals, prices |
 | `writing.py` | writing benchmark | The text set, its runner, the rubric, `writing run` / `writing report` |
 | `loop.py` | second look | `cli loop`: the tuning loop's outcomes, the trigger without gold; first against final for a `second_look_enabled` run |
@@ -1206,7 +1392,7 @@ non-social reference links, 51 still answer (9 at a new address), 14 are
 gone and 4 refused the check (`reference_links.json`).
 
 **Stage attribution**, computed by `scripts/xfact_time_elapsed.py` with
-the table above until G5 builds `attribution.py`, over the 45 wrong
+the table above before G5 built `attribution.py`, over the 45 wrong
 verdicts: trace-only, 44 reasoning and 1 ranking (`xf-954337aa7ed2`,
 nothing ranked); by reference, 27 retrieval, 1 ranking, 1 reasoning, and
 16 English claims with no reference to judge by. The two columns

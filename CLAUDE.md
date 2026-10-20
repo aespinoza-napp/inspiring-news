@@ -17,6 +17,7 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ./scripts/check.sh graph     # the graph against a real Neo4j; fails if it is down
 ./scripts/check.sh gcp       # deploy/gcp/ applied to Floci (local GCP emulator); Docker only
 ./scripts/check.sh labeller  # the fact labeller, plain python
+./scripts/check.sh e2e       # built frontend in headless Chrome, stub backend
 ```
 
 `make check` / `make fast` / `make slow` do the same. Use these rather
@@ -102,8 +103,9 @@ the declared exception, deliberately.
    value read straight from `settings` cannot be overridden for one run.
 3. **Bump `AnalysisCache.SCHEMA_VERSION` whenever `analyze()` changes
    response shape,** and record the new key set in
-   `ANALYZE_RESPONSE_SHAPE`. The cache never expires and a hit never
-   rewrites its entry, so a stale shape is served forever.
+   `ANALYZE_RESPONSE_SHAPE`. A hit never rewrites its entry, and with
+   `ANALYSIS_CACHE_TTL_HOURS` at 0 the cache never expires, so a stale
+   shape would be served forever (a week, at the default TTL).
 4. **No test module calls its own test function at module level.** That
    runs during *collection*; it has already taken the whole suite down
    once.
@@ -221,10 +223,17 @@ Found by the 2026-09-21 audit; `docs/roadmap.md` tracks them under
 Phase 1.
 
 - **The article verdict is worst-claim-wins**, so one `UNVERIFIED` outweighs
-  any number of `TRUE`. `overall_confidence` averages across verdicts.
-- **`JobStore` never evicts**, and the analysis cache never expires (and caches
-  rejections).
-- **URLs are compared as plain strings** for duplicate detection.
+  any number of `TRUE`. `overall_confidence` averages across verdicts. Since
+  2026-10-20 `factCheck.foundVerdict` and the `claimsJudged` /
+  `claimsUnverified` / `claimsNotChecked` counts say what the definitive
+  claims found apart from how much could be checked; `overallVerdict` is
+  unchanged.
+- **Fixed 2026-10-20, from the same audit:** `JobStore` evicts finished jobs
+  past `JOB_STORE_KEEP_FINISHED` (only journalled ones; they still answer by
+  id), the analysis cache expires after `ANALYSIS_CACHE_TTL_HOURS`
+  (rejections too), and the job store, the cache and the vector store match
+  an article by host and path, not by the URL as typed - which assumes no
+  source names its articles by query string.
 - **Only the 37 configured domains have a real reliability rating**; every
   other domain gets the default and is flagged `reliability_known: false`.
 - **The LLM's accuracy has never been measured** against labelled data — and

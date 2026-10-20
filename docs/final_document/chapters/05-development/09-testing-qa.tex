@@ -78,7 +78,17 @@ degraded at six (median 196~s, one beyond the client's 240~s timeout),
 with every per-service ceiling holding; sustained load on the job
 endpoint remains unmeasured.
 
-\paragraph{What is not tested.} The frontend has no test runner and no
-end-to-end tests; two of its rules are held only by comments
-(Section~\ref{sec:dev-frontend}). A real model trying to bluff is
+\paragraph{End to end.} A separate target builds the frontend, serves it
+against a stub backend written for the purpose and checks seventeen
+things in a headless browser: that every poll of a job reaches the
+backend, that leaving a page mid-poll stops the polling, for one job
+and for a batch, the reader's feed, article, guide and story pages in each
+language, a real not-found page, the feed and sitemap, and an operator
+page. It uses only the standard library and the browser, no new
+frontend dependency, and is not part of the default run, since it needs
+a build and a browser.
+
+\paragraph{What is not tested.} The frontend has no test runner of its
+own: its components are checked only as whole pages, through the
+end-to-end target (Section~\ref{sec:dev-frontend}). A real model trying to bluff is
 untested: the stress test uses a fake one.

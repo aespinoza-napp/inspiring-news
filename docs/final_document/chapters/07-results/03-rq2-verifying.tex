@@ -3,8 +3,8 @@
 %   Section: RQ2 --- Verifying
 % Included from chapters/07-results/results.tex
 % Sources: the X-Fact reports in backend/data/evaluation/reports/;
-% docs/decisions/evaluation.md (Pilot). The custom-set runs are P0.5 of
-% docs/roadmap.md and have not been made.
+% docs/decisions/evaluation.md (Pilot; First ablation, 2026-10-20);
+% backend/data/evaluation/reports/manual-test/retrieval.md.
 % ============================================================
 
 \section{RQ2 --- Verifying the Claims}
@@ -139,6 +139,33 @@ evidence it still contradicts 15 labels, most of them correct. The
 larger error is the 3-billion-parameter verifier's reasoning, which the
 model comparison (Section~\ref{sec:results-models}) addresses, not the
 search.
-\pending{Closed-book and oracle conditions on the test half; stage
-attribution under both rules; all three after the annotator's review of
-the AI-proposed labels.}
+\paragraph{Retrieval as an ablation.} On 20~October the test half's 70
+claims were searched three times in one window of fifty minutes,
+stopping before the model, with no internal corpus: all three queries,
+the anchor query alone, and anchor and proposition without the
+refutation query. Every claim was searched; Brave and Google refused
+the meta-search engine throughout and the other engines answered.
+Paired against all three queries:
+
+\begin{itemize}
+    \item \textbf{The anchor query alone finds less.} The annotator's
+    domain was among the candidates for 14.5\% of the claims against
+    33.3\% ($-18.8$ points [$-29.0$, $-10.1$]), the annotator's link for
+    10.1\% against 15.9\% ($-5.8$ [$-11.6$, $-1.5$]); it brought 8
+    candidates a claim instead of 19.5 and saved 5.3 seconds of retrieval.
+    \item \textbf{Anchor and proposition recover nearly all of it}:
+    $-4.3$ points [$-10.1$, 0.0] on the annotator's domain among the
+    candidates, $+1.5$ [0.0, $+4.3$] among the ranked, 2.7 seconds a claim
+    faster than all three.
+\end{itemize}
+
+So the proposition query earns its place, and the refutation query
+shows no measurable gain on this set --- which has no natural
+\texttt{FALSE} claim for it to surface. No verdict was asked, so whether
+the refutation query changes verdicts is not measured; and the
+annotator's links are a strict witness. The three variants' top five
+pages, 603 of them, are pooled for relevance judgement.
+\pending{The pooled precision, recall and reciprocal rank of the three
+variants once the 603 pages are judged; closed-book and oracle conditions
+on the test half; stage attribution under both rules; all after the
+annotator's review of the AI-proposed labels.}

@@ -5,8 +5,8 @@
 % Included from chapters/06-experimental-design/04-evaluation-harness/evaluation-harness.tex
 % Source: docs/decisions/evaluation.md, "Journalist effort" (written
 % when the effort question was RQ3; under the questions fixed on
-% 14 October it is RQ4). Only the claim selector's precision is
-% computed today; time per fact and the usable share are designed.
+% 14 October it is RQ4). All four built on 20 October 2026:
+% labeller/app.py (timing, stats), backend/src/evaluation/effort.py.
 % ============================================================
 
 \subsection{Journalist-Effort Metrics}
@@ -20,21 +20,25 @@ what quality. Four measures answer it.
     claims labelled plus claims rejected, over every daily batch, in
     total, by rejection reason and by language. The first six facts,
     chosen by hand before the daily batch existed, are excluded.
-    \emph{Computed today} by the labelling tool and the evaluation page.
+    Computed by the labelling tool's \texttt{stats} command and the
+    evaluation page.
     \item \textbf{Time per fact}: the time from opening a fact's form to
     saving it, counting only the seconds the page is visible, reported
-    as median and interquartile range. \emph{Designed, not built}: the
-    labelling tool does not yet record it.
+    as median and interquartile range, with the wall time beside it:
+    the visible seconds leave out the minutes spent reading sources in
+    other tabs, so the truth lies between the two. Recorded by the
+    labelling tool since 20~October; facts saved earlier have none.
     \item \textbf{Usable without re-checking}: the share of scored
     claims whose verdict equals the gold label, is definitive, cites at
     least one source with a stance and has neither leak flag. Its
     counterpart is \textbf{confidently wrong}: a definitive verdict
     that differs from gold, which is what a journalist who trusted the
-    system would publish. \emph{Designed, not built}.
+    system would publish. A section of every run's report.
     \item \textbf{Effort estimate}: the usable share times the median
     time per fact, in minutes saved per hundred claims, beside the
     confidently-wrong share as the cost of trusting it --- stated as an
-    estimate, with its assumptions.
+    estimate, with its assumptions, and only when the median time per
+    fact is given to the report, which reads no labelling file.
 \end{itemize}
 
 For the steps before verification, the same question is asked of

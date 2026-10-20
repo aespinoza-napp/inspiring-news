@@ -39,8 +39,9 @@ finished jobs; expiring the analysis cache; normalising URLs before
 comparing them; and the graph measured at scale beyond a few thousand
 articles.
 
-\paragraph{Quality.} End-to-end tests of the frontend; a policy for the
-three bluffs that still pass the guardrails; separating ``how much
-could be checked'' from ``what was found'' in the article's verdict;
-and the topic classifier, measured on the reviewed set and improved if
-it matters.
+\paragraph{Quality.} A frontend test runner, beyond the end-to-end
+checks; a policy for the three bluffs
+that still pass the guardrails; deciding publication on the found
+verdict and the coverage counts rather than the worst claim, now that
+the response carries both; and the topic classifier, measured on the
+reviewed set and improved if it matters.

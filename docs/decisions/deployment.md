@@ -576,6 +576,23 @@ VM holding what inference and the stray Neo4j took. After the fixes,
 at each step (`llama3.1` 5.6 GB, then `writer-4b` 3.7 GB, then none),
 16.3 GB free at the end.
 
+
+### Threads on a hybrid CPU (2026-10-20)
+
+The dev machine is an Intel Core Ultra 7 165U: 2 performance cores and
+10 efficiency cores. Ollama (0.40.6, on the host) starts `llama-server`
+with no `--threads`, and llama.cpp then counts the performance cores
+only: `llama3.2:3b` ran at ~195% CPU with the load at 4 of 14. Measured
+on one 2,211-token prompt (a verifier call's size), alone: the default
+read it in 84.9 s, `num_thread` 6 in 60.1 s, 10 in 59.1 s, 12 in 61.9 s -
+1.4x at best, flat past six, so prompt reading is bound by more than
+the thread count. With two claims at once and the second look, verifier
+calls passed the harness's 180 s `LLM_TIMEOUT` three times in 23
+minutes (each retried and answered); the test half's full run of
+2026-10-20 resumed at `LLM_TIMEOUT=300`. Not changed: the model's
+threads (a `num_thread` in a Modelfile would be the place), since 1.4x
+did not seem worth a model that differs from production's.
+
 ## SearXNG's settings and secret
 
 `docker/searxng/settings.yml` is committed and mounted read-only; the

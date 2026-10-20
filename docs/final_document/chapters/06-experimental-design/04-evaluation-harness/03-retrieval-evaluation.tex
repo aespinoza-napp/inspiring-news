@@ -42,3 +42,19 @@ strategies side by side, each paired against the first. This is what
 the planned ablation (Table~\ref{tab:priorities}) uses: switching a
 component off on the same frozen claims, in one window, rather than
 comparing versions of the code that cannot be re-run on today's web.
+
+\paragraph{Switching queries off.} Which of the three queries are sent
+is a per-run threshold: a set of query kinds, all three by default.
+Only when it is not all three does it enter the run key, so every run
+made before the switch keeps its key.
+
+\paragraph{Pooled relevance judgements.} The annotator's links are a
+strict witness: another page can serve as well. So, as in TREC
+\cite{voorhees2005trec}, every variant's top five ranked sources per
+claim are pooled, a page found by two variants entering once; a person
+judges each page once, in the terminal, as bearing on the claim or not;
+and every variant is scored on the same judgements --- precision at
+five, recall of the pool's relevant pages, reciprocal rank, and the
+share of its top five that was judged. A variant pooled after the
+judging adds only its own pages and reports how much of it was not
+judged.

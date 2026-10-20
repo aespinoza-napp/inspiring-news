@@ -260,10 +260,33 @@ built.
    the standard way to put a number on a retriever (FEVER's and
    AVeriTeC's gold-evidence conditions). The oracle mode is new (~3h of
    the 10): `check_claim` with a fixed evidence list - and the same mode
-   is what P1.3 evaluates writing with.
-6. [ ] 🧭 **Stage attribution (RQ2)** · 5h · Nov 1-15 - already planned in
+   is what P1.3 evaluates writing with. **Oct 20: all three are harness
+   modes** - `run --oracle` (Oct 19) and now `run --closed-book`
+   (`src/evaluation/closed_book.py`, the probe's prompt moved into the
+   harness), so the three conditions pair claim by claim in
+   `cli report --compare` and `cli table`. 8 tests. **Oct 20, the runs
+   started** (from the host, against the host's Ollama, `llama3.2:3b`;
+   the 19 Oct runs' `results.jsonl` went with the backend's emptied
+   volume, so the full run is made again too): **closed-book
+   `038bea7a04be`: 34.3% [22.9, 45.7]**, macro-F1 0.156, kappa 0.036
+   [-0.087, 0.162]; natural 27.3%, synthetic FALSE 60%; FALSE to 40 of 70;
+   remembered a published fact-check for 1. Oracle `63ec8ea70a6c` and the
+   full run `2605a2c02380` (8 of 70; its harness segfaulted once while
+   fetching pages, exit 139, as in the pilot) are resumable: rerun the
+   same command (`docs/goals.md`, U3). This CPU gives llama.cpp 2 threads
+   and a claim ~3.5 min (`deployment.md`, "Threads on a hybrid CPU").
+6. [ ] 🟡 🧭 **Stage attribution (RQ2)** · 5h · Nov 1-15 - already planned in
    Phase 4; every wrong verdict to retrieval / ranking / reasoning /
-   aggregation, from the trace.
+   aggregation, from the trace. **Oct 20: built** - `src/evaluation/
+   attribution.py`, a "Stage attribution" section in every `cli report`,
+   both columns (by reference, trace only) with counts, shares, ids, the
+   ranking bucket's cut reasons and the claims the columns disagree on;
+   aggregation tested first (the model's own verdict was gold), an
+   oracle run without the reference column. 13 tests on fixture records
+   (`tests/evaluation/test_attribution.py`); `./scripts/check.sh` passes.
+   **Left:** `cli report` over the train, test and oracle runs, whose
+   `results.jsonl` are not in git and not on this machine, and the table
+   into the thesis.
 7. [ ] ✍️ **Write, starting this week, beside everything else** · ~140h -
    state of the art 25h (8 references today; 40+ needed - automated
    fact-checking, retrieval evaluation, LLM verifiers, grounded
@@ -277,7 +300,7 @@ built.
 
 ### P1 - what makes it a good thesis
 
-1. [ ] 🔎 **Retrieval as an ablation, not as a version history** · 12h ·
+1. [ ] 🟡 🔎 **Retrieval as an ablation, not as a version history** · 12h ·
    by Nov 22 - the versions in git cannot be re-run on today's web, and
    a changelog is not a measurement; switching each component off on the
    same frozen claims, in one window, is. Needs one switch that does not
@@ -290,7 +313,28 @@ built.
    same judgements - reusable for any later variant). Searches are not
    reproducible: interleave the variants on the same days and report
    `searchUnavailable` apart.
-2. [ ] 🕰️ **How new is too new: evidence against the age of the claim** ·
+   **Oct 20: the switch is built** - `query_kinds`, a per-run threshold
+   (anchor / proposition / refutation, any non-empty subset; a typo is
+   refused), sent by the search and announced by the live view alike;
+   variants as `data/evaluation/thresholds/queries_anchor.json` and
+   `queries_anchor_proposition.json`. Runs made before it keep their
+   keys (`keyed_thresholds`). 11 tests (`tests/services/fact_checker/
+   retrieval/test_query_kinds.py`, the run key in `test_harness_runner.py`).
+   **Oct 20, later: the pooled relevance judgements are built too** -
+   `cli pool` (every variant's top 5 per claim, each page once, earlier
+   judgements kept), `cli judge` (a person, page by page, in the
+   terminal) and `cli pooled` (precision@5, recall of the pool's
+   relevant, MRR and judged coverage per run, paired against the first);
+   8 tests. **Oct 20, first ablation run** on the test half (70 claims,
+   three variants in one window, `reports/manual-test/retrieval.md`):
+   anchor only loses a reference domain among the candidates for 18.8
+   pts of claims [−29.0, −10.1]; adding the proposition recovers nearly
+   all of it; the refutation query adds no measurable gain on a set with
+   no natural FALSE claim, for 2.7 s a claim. 603 pages pooled
+   (`data/evaluation/judgements/manual-test.jsonl`). **Left:** judging the
+   pool, repeat windows on other days, and the table into the thesis.
+
+2. [ ] 🟡 🕰️ **How new is too new: evidence against the age of the claim** ·
    6h, spread - start this week, it needs calendar time. Re-run
    retrieval-only on the same recent claims at day 0, 7 and 30 and plot
    the evidence rate against age; add, from the set itself, the gap
@@ -298,6 +342,16 @@ built.
    `evidenceDate`). Puts a number on "news that is new" (FreshQA, Vu et
    al. 2024; RealTime QA, Kasai et al. 2023), and on Rule 1's cases: a
    new study often has only its own press release on day 0.
+   **Oct 20: the set's half is built and measured** - `cli freshness`
+   (`src/evaluation/freshness.py`): the newest evidence's age at each
+   claim (`evidenceDate` is the newest the annotator used, not the
+   earliest), and, joined to any run by id, verdicts by that age and by
+   the claim's age when checked. On the 103 natural dated facts: median
+   22 days, 14.6% same day, 27.2% 1-7 days, 25.2% over a year
+   (`reports/manual/freshness.md`); 74 of the 103 dates are the AI
+   pass's. 15 tests. **Left:** the day 0 / 7 / 30 retrieval-only re-runs
+   (live), and `--run` over the existing runs where they are.
+
 3. [ ] ✍️ **Writing from verified sources, closed-world** · 35h - **moved
    to P2 on Oct 14**: none of the author's four RQs asks it. Kept here
    for its design; build it only if every P0 and P1 item is done. The same story from 2-3 outlets (the ranking already
@@ -448,11 +502,11 @@ Also fixed (Sep 21, second pass — `docs/decisions/concurrency.md`, `docs/decis
 - [x] 🎯 **Retrieval asked what a claim was about, never what it said.** A claim mentioning ACME was returned FALSE at 83% citing three pages on the Greek etymology of the word. Now: three queries per claim (anchor / proposition / refutation) fused by reciprocal rank; a lexical term-coverage factor in ranking beside the embedding one; and a per-run **pertinence gate** that cuts a source before the LLM sees it, so that claim comes back `UNVERIFIED` instead. **Unmeasured:** the threshold default is reasoned, not fitted — there is still no labelled set.
 
 Open — best done in this sprint or the next, and **before Phase 5**, because benchmarking runs many claims through the verifier:
-- [ ] ⚖️ The article verdict is "worst claim wins", so a single `UNVERIFIED` (the common outcome with a small local model) outweighs any number of `TRUE`; `overall_confidence` averages confidences of different verdicts. Separate "how much could be checked" from "what was found".
-- [ ] 🗑️ `JobStore` keeps every job in memory forever (now safe to evict, since the journal has them)
-- [ ] ⏳ The analysis cache never expires, and it also caches rejections; fact-check verdicts depend on today's web
-- [ ] 🔗 URLs are compared as plain strings, so `?utm_source=` variants and trailing slashes count as different articles
-- [ ] 🕸️ Neo4j is a hard start-up dependency of the backend container (`depends_on: service_healthy`), although since Sep 29 the graph write is fail-soft and the backend runs without it
+- [x] ⚖️ The article verdict is "worst claim wins", so a single `UNVERIFIED` (the common outcome with a small local model) outweighs any number of `TRUE`; `overall_confidence` averages confidences of different verdicts. Separate "how much could be checked" from "what was found". — **Oct 20, at the user's request:** added, not replaced. `factCheck` carries `foundVerdict` (the worst among claims with a definitive verdict, null when none) and `claimsJudged` / `claimsUnverified` / `claimsNotChecked` (search or model failed); `overallVerdict` keeps its meaning, since the reader's admission and the thesis's numbers rest on it. Cache schema 13; shown on the Analyze page. 4 tests. `overall_confidence` still averages across verdicts.
+- [x] 🗑️ `JobStore` keeps every job in memory forever (now safe to evict, since the journal has them) — **Oct 20, at the user's request (it was on the Oct 14 cut list):** with a journal attached, finished jobs past `JOB_STORE_KEEP_FINISHED` (200) leave memory, oldest first, journalled ones only, and still answer by id from the journal; active jobs never. 4 tests.
+- [x] ⏳ The analysis cache never expires, and it also caches rejections; fact-check verdicts depend on today's web — **Oct 20 (same):** entries carry `cachedAt` and expire after `ANALYSIS_CACHE_TTL_HOURS` (a week; 0 keeps the old behaviour), rejections included; an unstamped entry counts as expired. No shape change, so no schema bump. 4 tests.
+- [x] 🔗 URLs are compared as plain strings, so `?utm_source=` variants and trailing slashes count as different articles — **Oct 20 (same):** the job store's in-flight dedupe, the analysis cache key and the vector store use host and path (`comparable_url`, as ingestion and the reader already did). The vector store's was a correctness bug: an earlier copy saved under a tracking parameter was not excluded from its own article's evidence. Points carry `url_key`; old points are still matched by exact URL. Assumes no source names articles by query string (none of the 37 does). 5 tests; the cache's keys changed, so existing entries miss once.
+- [x] 🕸️ Neo4j is a hard start-up dependency of the backend container (`depends_on: service_healthy`), although since Sep 29 the graph write is fail-soft and the backend runs without it — **Oct 20 (same):** removed from the backend's `depends_on`; a full `up` still starts it, `up backend` no longer drags it in. A deployment test holds it; the dev, prod and eval compose files validate.
 
 ---
 
@@ -590,12 +644,12 @@ attribution table. Each item has a ready `/goal` in `docs/goals.md`
   averaged over the classes the gold labels contain, and the empty ones
   are shown, not averaged.
 
-- [ ] ❓ Fix 2–3 research questions, each with the metric that answers it · 3h (by Oct 13) — suggested: **RQ1** how well an open-web, low-cost pipeline verifies claims from constructive news in Spanish and English, against a temporally sound gold set; **RQ2** where it fails - retrieval, ranking or reasoning; **RQ3** how much of the verification work it takes off a journalist. Whatever answers none of them is cut or moved to future work.
+- [x] ❓ Fix 2–3 research questions, each with the metric that answers it · 3h (by Oct 13) — **done Oct 14 by the author** (four questions; Thesis priorities P0.1, thesis §1.5 and §6.1); this box was left unticked until Oct 20 — suggested: **RQ1** how well an open-web, low-cost pipeline verifies claims from constructive news in Spanish and English, against a temporally sound gold set; **RQ2** where it fails - retrieval, ranking or reasoning; **RQ3** how much of the verification work it takes off a journalist. Whatever answers none of them is cut or moved to future work.
 - [x] 🧰 Harness: run the pipeline's own `check_claim` over a JSONL set (x-fact and the custom set share a format) · 12h — per claim: verdict, raw verdict, confidence, stage reached, the queries sent, every candidate and ranked source, latency; per model, cached and resumable, so a crash at claim 90 does not re-pay claims 1–89. **Oct 2 (G2):** `check_claim` takes `context` and `language`; `backend/src/evaluation/` (`dataset`, `record`, `runner`, `store`, `cli`) runs `uv run python -m src.evaluation.cli run --dataset ... --model ...`, keyed by dataset/model/thresholds/corpus, resumable (torn last line cut and re-run, errors retried, `--retry-unavailable`, `--fresh` sets aside), corpus snapshotted per run, first Ctrl-C stops cleanly. Loads the 64-row pilot and the `manual/` directory as they stand. Verified by `backend/tests/evaluation/` with the shared fakes only (G2's five proofs, plus the store, dataset, CLI and usage tests); **not yet run against live services** — that is the pilot.
 - [x] 📐 Metrics · 6h — accuracy, macro-F1 and per-class precision/recall, the confusion matrix, bootstrap confidence intervals; search-unavailable runs and evidence newer than the claim (the guide's Rule 3) reported apart rather than folded into the error rate. **Oct 2 (G3):** `metrics.py`, `report.py`; `cli report --run <dir> [--compare <dir>]` writes `metrics.json`, `report.md` and `run.json` to `data/evaluation/reports/<dataset>/<model>/<key>/`. Also Cohen's kappa against gold, coverage and selective accuracy, seeded percentile bootstrap (10,000) and a paired bootstrap of B − A; error / searchUnavailable / llmUnreachable by id and `temporalLeak` / `verdictLeak` flags apart; breakdowns by language, topic group, claim type, tier and site; `cli table` for several models. Verified against hand-computed values on a ten-claim fixture built with `record.py`, bootstrap determinism, identical runs differing by exactly 0, and `report.md` rendered from a fixture run. Not yet run on real results.
 - [x] 🔍 Retrieval evaluation · 4h (RQ2) — did the system find the annotator's reference links, or their domains, among its candidates and among the evidence it ranked — **Oct 4 (G4):** `evaluation/retrieval.py`. Link and domain recall at three depths (candidates, ranked, cited) and MRR against the references (x-fact self-links removed and counted); for any set, evidence rate, candidates and ranked per claim, the share the gate cut, distinct and rated domains, corpus share, verdict leak, which query kind found each source, retrieval seconds; all with bootstrap intervals, by set and language. In every `cli report`; `--compare` adds the paired differences. **Strategies:** `cli run --retrieval-only --label <name>` (no LLM call, so a strategy costs search time only; the label is in the run key) and `cli retrieval --run A --run B ...` for the side-by-side and each paired against the first. Live check on 6 pilot claims (`evaluation.md` §Retrieval evaluation): it found that weak one-word queries return adult sites, which the gate cut. Left: the full pilot.
-- [ ] 🧭 Attribute every wrong verdict to a stage · 5h (RQ2) — retrieval (nothing pertinent found), ranking (it was found and cut), reasoning (it was ranked and misread) or aggregation - from the trace each run already records
-- [ ] ⏱️ Journalist-effort metrics · 5h (RQ3) — the claim selector's precision (the labelling batch's skip reasons, recorded since Sep 29), time per fact (to add to the labeller), and the share of verdicts usable without re-checking
+- [ ] 🟡 🧭 Attribute every wrong verdict to a stage · 5h (RQ2) — retrieval (nothing pertinent found), ranking (it was found and cut), reasoning (it was ranked and misread) or aggregation - from the trace each run already records. **Oct 20: built** (`attribution.py`, in every report; see Thesis priorities P0.6). Left: re-running `cli report` on the real runs.
+- [ ] 🟡 ⏱️ Journalist-effort metrics · 5h (RQ3) — the claim selector's precision (the labelling batch's skip reasons, recorded since Sep 29), time per fact (to add to the labeller), and the share of verdicts usable without re-checking. **Oct 20: built (G6)** - `python labeller/app.py stats` (precision 0.636 overall, 0.695 en / 0.521 es; time per fact as visible and wall seconds), `timing` on every new fact, and `effort.py` in every report (usable, confidently wrong, the estimate with `--minutes-per-fact`); 5 labeller tests, 7 backend. Left: timed facts (none yet - every fact so far predates the timer) and `cli report` over the real runs.
 - [x] 🧪 Pilot on the 64-claim x-fact set, end to end · 5h — shakes out the harness before the custom set is ready; its first numbers are the baseline for the fixed search. **Oct 13 (G7):** run live in compose (`docker/docker-compose.eval.yml`) with `llama3.2:3b` on the dev GPU, after `/healthz` (all four up) and the source probe's search check (89 results per language; Google and Brave refusing SearXNG). 64/64 scored over four sessions: accuracy 29.7% [18.8, 40.6], macro-F1 0.168 [0.104, 0.234], kappa 0.07 [-0.03, 0.18]; English 41.7% / 0.358 (3 classes), Spanish 22.5% / 0.130; answers `FALSE` to 43 of 64. `verdictLeak` 9 (all PolitiFact, 4 via `staging.politifact.com`; no Chequeado URL ever a candidate), `temporalLeak` 16 of 20 decidable; reference link recall 0%; median 36.5 s a claim. Same model with no evidence: 18.8%, `FALSE` 60 of 64; the pipeline beats it by +10.9 points [+3.1, +20.3]. Found and fixed: each session now records its own settings (`test_each_session_records_the_environment_it_ran_in`); `gitCommit` from the container via the compose layer, and kept when `git status` over the bind mount (5.0-5.3 s) outlasts its old 5 s timeout (`test_a_slow_dirty_check_keeps_the_commit`). Found, not fixed: `INFERENCE_TIMEOUT` 30 s fails at four concurrent claims on CPU inference (5 of 20 claims); a looping model (Ollama 500 "token repeat limit") is filed as `llmUnreachable`; the harness process segfaulted twice in the Spanish run (`munmap_chunk(): invalid pointer`, scraping threads, not located); SearXNG had two all-engines timeout bursts. Plus the Spanish `test` split (165, α1): 19.4% [13.3, 25.5], macro-F1 0.111 [0.079, 0.142], kappa -0.002, no gain over the closed-book model, against the paper's 38.2-41.9 (7 labels, supervised); the X-Fact paper's Tables 3-4 beside ours, why they are not comparable, and what the years between claim and search do (verdict and temporal leakage, drift, link rot, recency, the model's memory): `docs/decisions/xfact-comparison.md`. Recommendation, not implemented: a per-run `evidence_exclude_domains` for x-fact runs only.
 
 ### Experiments on the stages before the verdict (Oct 6 – Nov 16) · 18h — **new on Oct 5, not yet funded**
@@ -610,11 +664,11 @@ writing `result.json` and `report.md` to
 somewhere, or accept the overrun.
 
 - [x] 🧰 Experiment tools · Oct 5 — `discovery` (sources, attempts, links, candidates and time per topic-group setting against the every-topic baseline), `selection` (editor against AI: precision, recall, Jaccard, AUC of the AI score; blind and assisted rounds apart), `blind-ai` (the AI run on a round already sent, so it cannot anchor the editor), `admission` (each candidate through `/enrich` once, cached; the topic and impact thresholds replayed offline with the pipeline's own classes), `topics` (the classifier against the labelled facts' articles). 9 tests on hand-built data. First runs: Environment reads 0.41× the sources and 0.10× the links; the classifier gets the group right 0.73 [0.59, 0.85] of the time and leaves 10% of articles with no topic at its 0.35 floor.
-- [ ] 🔎 Scraping — discovery yield per topic group · 2h — `discovery` with each group, three useful pairs and the baseline, on five different days (feeds change through the day): the reduction in sources and links with an interval, and the language balance of what is left.
-- [ ] 🩺 Scraping — source health and extraction · 3h — the source probe (`/scraper` → Source health) once a week for four weeks, plus `/sources`: up / degraded / down per source, extraction success per strategy, and the time-to-reception medians, as one table.
+- [ ] 🔎 Scraping — discovery yield per topic group · 2h — `discovery` with each group, three useful pairs and the baseline, on five different days (feeds change through the day): the reduction in sources and links with an interval, and the language balance of what is left. **Oct 20: day 1 of 5** (`discovery/20261020T122152Z/`, the protocol in `docs/experiments.md`): one group alone reads 0.27-0.67× the sources and 0.14-0.29× the links of the baseline (33 sources, 1,369 links), a pair 0.40-0.50× the links; Environment's candidates 30 en / 6 es. Left: four more days, then the interval.
+- [ ] 🩺 Scraping — source health and extraction · 3h — the source probe (`/scraper` → Source health) once a week for four weeks, plus `/sources`: up / degraded / down per source, extraction success per strategy, and the time-to-reception medians, as one table. **Oct 20: week 1 of 4** - `experiments sources` (new: the probe, `/scraper/freshness` and every earlier week in one report; 1 test): 30 up, 3 degraded (El País 403 on 3 of 5 politics pages, past the browser too; National Geographic and SINC feedless, as known), 157 of 165 extracted, all by trafilatura. Time to reception has 1 article: the backend's lake was emptied since. Left: weeks 2-4 (Oct 27, Nov 3, Nov 10).
 - [ ] 🗳️ Selection — the AI against the editor · 5h — ten **blind** rounds (choose and send first, then `blind-ai --round <id>`) and ten assisted ones: precision, recall and Jaccard of the AI's picks, the AUC of its score, blind against assisted. A journalist-effort measure for RQ3, beside the claim selector's precision.
 - [ ] 🚪 Admission thresholds · 3h — `admission` over at least 100 round candidates the editor chose for or against: admission rate, precision and recall over topic minimum 0.30–0.45 × impact minimum 0.10–0.30, and the AUC of the positive-impact score (it ranked a match report above a decarbonisation analysis on Oct 5). Feeds the defaults chosen in the tuning below.
-- [ ] 🏷️ Topic classifier · 1h — `topics` again at 100 and at 150 facts: top-1, top-3, group accuracy, the no-topic rate and the group confusion; decide whether `TOPIC_CLASSIFIER_THRESHOLD` stays at 0.35. Replaces the de-scoped "improve topic classifier accuracy" item's missing measurement.
+- [x] 🏷️ Topic classifier · 1h — **Oct 20, at 139 facts (58 articles): top-1 0.67 [0.55, 0.79], top-3 0.88, group 0.83 [0.72, 0.91], no topic 2%; the threshold stays at 0.35** (`docs/experiments.md`, "topics"; the gold topics are mostly the AI pass's). Planned: `topics` again at 100 and at 150 facts: top-1, top-3, group accuracy, the no-topic rate and the group confusion; decide whether `TOPIC_CLASSIFIER_THRESHOLD` stays at 0.35. Replaces the de-scoped "improve topic classifier accuracy" item's missing measurement.
 - [ ] ⏲️ Time per stage · 2h — over the pilot and one ingestion round: enrichment, admission, retrieval, ranking and the LLM, from `/metrics` and the job journal, on the dev GPU and on the production CPU - the cost side of every result.
 - [ ] 📝 The tables into the paper · 2h — discovery, selection, admission and topics, in the evaluation section, each with the command that reproduces it.
 
@@ -692,11 +746,11 @@ journalist or reader actually looks at.
 - [x] 🎨 Extend the existing hand-written CSS design system (no new UI libs) — Oct 2: a reader section in `globals.css`, through its variables only, reusing `.trace-*`, `.badge`, `.claim-verdict-*`; no new dependency. Measured with playwright in the system Chrome: no horizontal overflow at 375px on either page, light or dark; animations off under `prefers-reduced-motion`. The header's nav now wraps on a phone instead of running off it
 - [x] 🌍 The reader view is public (Oct 4) — Caddy serves `/reader`, `/reader/<id>`, their `/api/reader/*` proxies and the static bundles without the site password (on plain HTTP too when there is no domain); every other page still asks for it. On a reader page the nav's operator links no longer prefetch, or each visit would send nine requests answering 401. Checked in real `caddy:2.10.2` in both modes; `test_only_the_reader_view_is_served_without_the_password` holds the list.
 - ↪️ E2E test for the feed — in the testing track's final window (Dec 18–24), the week after
-- [ ] 🌐 The reader in Catalan and Spanish, not only English · 8h — the stories are written in ca/es/en and the page around them is English only (`<html lang="en">`, "Checked articles", the verdict names): labels per language, `lang` from the story's language, a switch kept in the URL like the filters; a dictionary per language, no i18n library
-- [ ] 📡 Stories and checked articles in one feed, with RSS and a sitemap · 4h — today they are listed apart; an RSS feed of the stories, a sitemap of the public pages, and metadata for `/reader/[id]` (the stories already have `generateMetadata`)
-- [ ] 📖 A reader's guide to the verdicts · 2h — what each label means here, why "Not checked" is not `UNVERIFIED`, what a confidence is and is not; linked from every badge; the measured accuracy once the labels are checked
-- [ ] ♿ Accessibility pass on the public pages (WCAG 2.1 AA) · 3h — keyboard and focus, verdict colours' contrast in both themes, names for badges and stance icons, 375 px with the language switch; checked in a browser's accessibility tree
-- [ ] 🧑‍🤝‍🧑 Five readers try it · 3h — five people who are not the author, three tasks each (why was this claim judged so; a FALSE against a "Not checked"; was this story written by a person): success, time, what confused them. RQ4 from the reader's side
+- [ ] 🟡 🌐 The reader in Catalan and Spanish, not only English · 8h — the stories are written in ca/es/en and the page around them is English only (`<html lang="en">`, "Checked articles", the verdict names): labels per language, `lang` from the story's language, a switch kept in the URL like the filters; a dictionary per language, no i18n library. **Oct 20: built** - `lib/readerText.ts` (three dictionaries behind one interface: a missing string fails the typecheck), `LanguageSwitch`, `useReaderLang`; `?lang=`, else the content's language, else the browser's; `<html lang>` follows; dates in UTC with the page's locale (found and fixed on the way: a source dated `2026-09-12T00:00:00` showed the 11th east of Greenwich). Verified with `next build` and headless Chrome against a stub backend: the feed, an article and a story in each language, the links carrying `?lang`, the operator pages still English. **Left:** a native reader of Catalan and of Spanish to read the strings - written by the AI, unreviewed, like the drafts' Catalan. **Oct 20: the sheets are ready**, `docs/review/reader-{ca,es}.md` (223 rows each, `node scripts/reader_strings.mjs`, every function rendered as read, plurals at 1 and 3), with a log for the corrections applied.
+- [ ] 🟡 📡 Stories and checked articles in one feed, with RSS and a sitemap · 4h — today they are listed apart; an RSS feed of the stories, a sitemap of the public pages, and metadata for `/reader/[id]` (the stories already have `generateMetadata`). **Oct 20: built** - `/reader/feed.xml` (RSS 2.0, stories and checked articles in one list newest first, each article with its verdict line, in ca/es/en by `?lang=`), `/reader/sitemap.xml` (every public page with its language alternates), and `/reader/[id]/layout.tsx` for the article's title, description and Open Graph tags; `PUBLIC_SITE_URL` or the forwarded host for absolute links. Checked against a stub backend behind fake `X-Forwarded-*` headers: both files parse as XML, the links are absolute and carry `?lang`. **Left:** the page itself still shows our stories and the checked articles in two sections - a merged list on the page is a design decision for the author; and a `robots.txt` naming the sitemap, which would sit outside `/reader/` and behind the password.
+- [ ] 🟡 📖 A reader's guide to the verdicts · 2h — what each label means here, why "Not checked" is not `UNVERIFIED`, what a confidence is and is not; linked from every badge; the measured accuracy once the labels are checked. **Oct 20: built** - `/reader/guide` (server-rendered, in ca/es/en like the rest of the reader): the five verdicts in the verifier's own terms, Not checked, the article's worst-claim-wins verdict, what a confidence is (the model's certainty blended with the evidence's relevance, citation and quantity - checked against `ConfidenceScorer`) and is not, the sources; every badge on the reader's pages links to its own section (`VerdictBadge guide`), with an accessible name. Verified in headless Chrome. **Left:** the accuracy, deliberately unpublished until the labels are checked (P0.2), and a native read of the es/ca text.
+- [ ] 🟡 ♿ Accessibility pass on the public pages (WCAG 2.1 AA) · 3h — keyboard and focus, verdict colours' contrast in both themes, names for badges and stance icons, 375 px with the language switch; checked in a browser's accessibility tree. **Oct 20: contrast fixed, the rest checked** - computed every verdict colour against WCAG's 4.5:1: in light mode Partly true (3.79) and Misleading (3.43) failed, in dark mode all five badges failed (white on bright fills, 2.2-3.4), and so did the global button text on the dark accent (2.42); now light fills `#6d7c1c` / `#a56108` (4.62 / 4.87, and 4.66 for warnings on a card) and theme-aware text (`--badge-fg`, `--accent-fg`: 5.5-8.6 in dark mode). Every badge on the reader is a link with a name ("True: what this verdict means"); stances are words, not icons; the switch is a named `nav` with `aria-pressed`/`aria-current` and each language marked with its own `lang`; a global `:focus-visible` ring (accent, 5.2 / 7.8 against the background). Screenshots at 375 px in both themes: the switch and back link share a line, nothing overflows. **Left:** a run with a real screen reader and with axe (no dependency added for it), and the five readers below.
+- [ ] 🧑‍🤝‍🧑 Five readers try it · 3h — five people who are not the author, three tasks each (why was this claim judged so; a FALSE against a "Not checked"; was this story written by a person): success, time, what confused them. **Oct 20: the protocol is written** (`docs/review/reader-test.md`: who, what is said, the three tasks with what counts as success, a sheet per reader, the analysis), the pages to choose and task 2's form to decide: the public reader never shows a FALSE claim (an article with one is not publishable), so FALSE reaches a reader only through the guide. RQ4 from the reader's side
 
 ---
 
@@ -734,7 +788,7 @@ the definition of done throughout.
 - [ ] 🧪 Final full regression suite, backend + frontend + `slow` + `graph` (moved from the paper phase)
 - [ ] 🐛 Final bugfix pass across all phases (moved from the paper phase)
 - [ ] 🚀 Final deployment verification — prod smoke test (moved from the paper phase)
-- [ ] 💻 Frontend E2E tests — job polling and the reader view (no test runner exists yet; the typecheck is the only gate). Moved here from December 1–21 on Sep 30: the interface is built Dec 11–17.
+- [ ] 🟡 💻 Frontend E2E tests — job polling and the reader view (no test runner exists yet; the typecheck is the only gate). Moved here from December 1–21 on Sep 30: the interface is built Dec 11–17. **Oct 20, at the user's request (it was on the Oct 14 cut list):** `./scripts/check.sh e2e` (`scripts/e2e.py`, standard library and headless Chrome, no new frontend dependency) builds the frontend, serves it against a stub backend and checks 15 things: `/api/jobs/<id>` reaches the backend on every poll (mutation-checked: without `no-store` it fails), the reader's feed, article, guide and story in all three languages, a real 404, the feed and sitemap XML, and an operator page in English. Not in `all` (a build, and Chrome). **Oct 20, later: the `cancelled` guard too** - Chrome driven over the DevTools protocol on a pipe (standard library still): a job started on `/`, its first poll held three seconds by the stub, the page left for `/reader` meanwhile; no poll may follow. Mutation-checked: without the guard, 4 polls after leaving. The same for bulk mode (`useBatchAnalysisJobs`' guard, also caught when removed). 17 checks; nothing left of this item but a test runner, which the frontend still does not have.
 
 ---
 
@@ -746,7 +800,7 @@ the definition of done throughout.
 Sep 30 they run the week *before* (Dec 18–24), so the paper is written
 about a system that no longer changes. The paper itself is not cut.
 
-- [ ] ✍️ Consolidate methodology section (pipeline architecture) — `docs/arquitectura-tecnica.md` is the starting point and was brought back in line with the code on Sep 28 (v1.1)
+- [ ] ✍️ Consolidate methodology section (pipeline architecture) — `docs/arquitectura-tecnica.md` is the starting point and was brought back in line with the code on Sep 28 (v1.1). **Oct 20:** the thesis brought up to the day's code and results - the three evidence conditions as harness modes, stage attribution (built, aggregation first) and the effort measures (built), the query-kinds switch and pooled judgements (TREC, `voorhees2005trec` added), the first ablation (RQ2), the classifier on 58 articles, discovery day 1 and source health week 1, the found verdict and coverage counts, the reader in three languages, its guide, feed and contrast, the e2e target, and a 20 Oct paragraph in the deviations. Not compiled here (no LaTeX on this machine); braces and environments checked balanced.
 - [ ] 📊 Insert AI model benchmarking results (Phase 5 data)
 - ↪️ Final regression suite, bugfix pass and prod smoke test — moved to the testing track (Dec 18–24)
 - [ ] 📬 Submit / deliver paper draft

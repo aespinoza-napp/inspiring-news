@@ -3,9 +3,8 @@
 %   Section: Evaluation Harness
 %     Subsection: Stage Attribution
 % Included from chapters/06-experimental-design/04-evaluation-harness/evaluation-harness.tex
-% Source: docs/decisions/evaluation.md, "Stage attribution". Not yet a
-% module of the harness: the pilot's attribution was computed by
-% scripts/xfact_time_elapsed.py with this table.
+% Source: docs/decisions/evaluation.md, "Stage attribution";
+% backend/src/evaluation/attribution.py (built 20 October 2026).
 % ============================================================
 
 \subsection{Stage Attribution}
@@ -27,6 +26,8 @@ that matches decides.}
 \toprule
 \textbf{Stage} & \textbf{Reference-based} & \textbf{Trace only} \\
 \midrule
+Aggregation & The model's raw verdict equals gold and recalibration
+changed it & The same \\
 Retrieval & No reference link or domain among the candidates & No
 candidates at all \\
 Ranking & A reference among the candidates, none ranked (cut by the
@@ -35,8 +36,6 @@ Candidates, but nothing ranked \\
 Reasoning & A reference is ranked, and the model's raw verdict differs
 from gold & Something ranked, and the model's raw verdict differs from
 gold \\
-Aggregation & The raw verdict equals gold and recalibration changed it
-& The same \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -51,7 +50,14 @@ disagreement between them is itself informative. Claims set apart
 (search or model unreachable, errors) are never attributed. Everything
 is read from fields the records already hold.
 
-The rule is not yet a module of the harness. For the X-Fact pilot it
-was computed by a script with this table
-(Section~\ref{sec:results-pilot}); building it into the report is one of
-the P0 items of Table~\ref{tab:priorities}.
+Aggregation is tested first. When the model's own verdict was the gold
+label, no stage before it caused the error, however little the model was
+shown; tested last, a right answer the scorer overrode would be charged
+to retrieval whenever the references were missed. An oracle run has no
+reference column, since its evidence is the annotator's by
+construction.
+
+The rule is a module of the harness since 20~October, a section of
+every run's report, tested on records built by hand. For the X-Fact
+pilot it was first computed by a script (Section~\ref{sec:results-pilot}),
+which now imports the same module.

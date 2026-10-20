@@ -289,3 +289,23 @@ local model could hold one claim for `6 x LLM_TIMEOUT` and then report
 retries live in `complete_json` only.
 
 **What holds it in place:** `test_the_sdk_is_not_allowed_to_retry_on_its_own`.
+
+---
+
+## The inference suite failed after every test had passed
+
+On 2026-10-20 `./scripts/check.sh` reported the inference tests failed
+while printing "13 passed": the process then aborted with "terminate
+called without an active exception", exit 134. The native thread pools
+behind the real models (torch 2.14.0+cpu, and onnxruntime 1.29.0, which
+GLiNER pulls in) can abort the interpreter as it shuts down. 2 of 3 runs
+ended so, the third exited 0; the same 13 tests passed every time. A
+check that fails at random stops meaning "done".
+
+`inference/tests/conftest.py` now leaves the process with pytest's own
+exit status once everything is reported, skipping the destructors that
+abort. Five runs in a row then exited 0, and a run that collects nothing
+still exits 5, so a real failure still fails.
+
+**What holds it in place:** that conftest and its comment. Nothing tests
+it: the abort is in native code at exit, after any test could look.

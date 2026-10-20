@@ -27,8 +27,15 @@ longer knew.
 page polls its state every second. The interval is created only after
 the first poll returns, and only if the page has not been left in the
 meantime, otherwise an interval would leak and poll a finished job
-forever. Both rules are held by comments, not tests: the frontend has
-no test runner, and its typecheck is the only automated gate.
+forever. The frontend has no test runner, and its typecheck is the
+only gate inside it. Since 20~October an end-to-end check outside it
+builds the frontend, serves it against a stub backend and loads its
+pages in a headless browser, and it holds both rules. Every poll
+reaches the backend: removing the no-cache option makes it fail. And
+leaving the page stops the polling: the check drives the browser over
+its debugging protocol, starts a job, has the stub backend hold the
+first poll for three seconds, leaves the page meanwhile and fails if any
+poll follows --- without the guard, four did, one a second.
 
 \paragraph{One fold for the trace.} The analyzer page and the Live
 screen show the same per-claim trace --- queries, sources, ratings,
@@ -42,3 +49,18 @@ concurrent pipeline did not break it.
 The reader view was measured at phone width (375~px) in light and dark
 themes with no horizontal overflow, and its animations are off for
 readers who ask for reduced motion.
+
+\paragraph{The reader in three languages.} The stories are written in
+Catalan, Spanish and English, and since 20~October so is the page
+around them: one typed dictionary per language, with no translation
+library, so a string missing from one language fails the typecheck. The
+language comes from the address when it is given there, else from the
+content, else from the browser, else English, and the page's declared
+language follows it. Beside it came a guide to the verdicts, linked
+from every badge, which says what each label means here and what a
+confidence is and is not; an RSS feed of the stories; a sitemap of the
+public pages; and a title and description for each article page. A
+contrast pass computed every verdict colour against WCAG~2.1's 4.5:1:
+two badges failed in the light theme and all five in the dark one, now
+all pass. The Catalan and Spanish strings were written by the AI and
+await a native reader.

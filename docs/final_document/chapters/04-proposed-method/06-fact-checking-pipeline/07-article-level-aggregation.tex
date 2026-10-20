@@ -28,9 +28,12 @@ outcome, and the reader view shows each claim's own verdict.
 \paragraph{Known limitation.} Because \texttt{UNVERIFIED} outranks
 \texttt{TRUE}, a single claim without enough evidence decides the
 article's verdict however many others were confirmed, and the mean
-confidence mixes confidences of different verdicts. Separating ``how
-much could be checked'' from ``what was found'' is left open
-(Section~\ref{sec:limitations}). The reader view works around it for
-the reader: a claim whose search or model failed reads ``not checked''
+confidence mixes confidences of different verdicts. Since 20~October
+the response says the two apart without changing the verdict: beside
+it, a \emph{found verdict} --- the worst verdict among the claims judged
+definitively, or none --- and three counts, the claims judged, those
+left \texttt{UNVERIFIED} and those not checked at all. The article's
+verdict is unchanged, so every earlier result keeps its meaning. The
+reader view also works around it for the reader: a claim whose search or model failed reads ``not checked''
 and is counted apart, and an article none of whose claims was judged is
 shown as not checked rather than as unverified.
