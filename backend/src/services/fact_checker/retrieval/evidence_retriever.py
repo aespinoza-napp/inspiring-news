@@ -104,7 +104,7 @@ class EvidenceRetriever:
         # Announced before the search runs, not after: the search is the
         # slow part, and this is what lets a second screen show what is
         # being looked up while the answer is still pending.
-        plan = self.search_provider.plan(claim, context, language)
+        plan = self.search_provider.plan(claim, context, language, thresholds.query_kinds)
         queries = [query.text for query in plan]
 
         report("searching_web", {

@@ -232,6 +232,26 @@ let Q = null;          // last /api/queue
 let qName = null;      // batch file shown
 let queueRef = null;   // the batch claim the form was filled from
 let polling = null;
+let timer = null;      // how long the open new-fact form has taken (startTimer)
+
+// Time per fact (docs/decisions/evaluation.md, "Journalist effort"): from
+// the moment a new fact's form opens - Label in Today, or New - to its
+// save, counting only seconds with this page visible, so a lunch break is
+// not a one-hour fact. An edit is not timed: the server keeps the first
+// save's timing.
+function startTimer() {
+  timer = { openedAt: new Date().toISOString(), active: 0, since: document.hidden ? null : performance.now() };
+}
+function timing() {
+  if (!timer) return null;
+  const running = timer.since === null ? 0 : performance.now() - timer.since;
+  return { openedAt: timer.openedAt, activeSeconds: Math.round((timer.active + running) / 1000) };
+}
+document.addEventListener("visibilitychange", () => {
+  if (!timer) return;
+  if (document.hidden && timer.since !== null) { timer.active += performance.now() - timer.since; timer.since = null; }
+  else if (!document.hidden && timer.since === null) timer.since = performance.now();
+});
 
 function el(tag, attrs, ...kids) {
   const e = document.createElement(tag);
@@ -360,6 +380,7 @@ function editButton(fact) {
   const b = el("button", { class: "plain", type: "button" }, "Edit");
   b.addEventListener("click", () => {
     editing = fact.id;
+    timer = null;
     for (const k of FIELDS) $(k).value = fact[k] ?? "";
     $("links").value = fact.referenceEvidenceLinks.join("\n");
     $("onlyOwnSource").checked = !!fact.onlyOwnSource;
@@ -385,6 +406,10 @@ function resetForm(keepArticle) {
   $("save").textContent = "Save fact";
   $("cancel").hidden = true;
   labelHelp();
+  // The next fact's clock starts when its form is on screen: now, if it
+  // is (the form stays open after a save for the article's next claim).
+  timer = null;
+  if (!$("view-label").hidden) startTimer();
 }
 
 $("form").addEventListener("submit", async (event) => {
@@ -393,12 +418,14 @@ $("form").addEventListener("submit", async (event) => {
   for (const k of FIELDS) body[k] = $(k).value.trim() || null;
   const fromQueue = !editing && queueRef;
   if (fromQueue) body.queueRef = queueRef;
+  if (!editing) body.timing = timing();
   try {
     const fact = editing ? await call("PUT", `/api/facts/${editing}`, body) : await call("POST", "/api/facts", body);
     if (fromQueue) {
       resetForm(false);
       await load();
       tab("today");
+      timer = null;  // back to the batch: the next claim's Label starts it
       showMsg($("q-msg"), true, `Saved ${fact.id}.json from the batch.`);
       return;
     }
@@ -612,11 +639,13 @@ function tab(name) {
   $("tab-today").classList.toggle("on", name === "today");
   $("tab-label").classList.toggle("on", name === "label");
   $("tab-review").classList.toggle("on", name === "review");
+  if (name === "label" && !editing && !timer) startTimer();
 }
 $("tab-today").addEventListener("click", () => tab("today"));
 $("tab-label").addEventListener("click", () => tab("label"));
 $("tab-review").addEventListener("click", () => tab("review"));
 
+if (!$("view-label").hidden) startTimer();
 load().catch((errors) => showMsg($("broken"), false, [`Could not reach the labeller: ${errors}`]));
 </script>
 </body>

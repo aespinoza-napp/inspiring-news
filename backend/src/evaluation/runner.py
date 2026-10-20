@@ -46,7 +46,7 @@ from typing import Callable
 from urllib.parse import urlsplit
 
 from src.config.settings import WEIGHT_GROUPS, settings
-from src.config.thresholds import PipelineThresholds
+from src.config.thresholds import SEARCH_QUERY_KINDS, PipelineThresholds
 from src.evaluation.dataset import CUSTOM, Dataset, DatasetRow
 from src.evaluation.record import (
     HARNESS_VERSION,
@@ -82,7 +82,11 @@ RETRIEVAL = "retrieval"
 # never allows. A row with no reference link, or none readable, reaches
 # the model with no evidence and is UNVERIFIED, as the pipeline would be.
 ORACLE = "oracle"
-MODES = (FULL, RETRIEVAL, ORACLE)
+# `closed_book` asks the model about the claim alone, no evidence and no
+# pipeline (closed_book.py): RQ2's first condition. Its own prompt, since
+# the pipeline never asks the model without evidence.
+CLOSED_BOOK = "closed_book"
+MODES = (FULL, RETRIEVAL, ORACLE, CLOSED_BOOK)
 
 # The "model" of a retrieval-only run: its directory and its records say
 # no model was asked.
@@ -131,9 +135,25 @@ def provider_of(base_url: str) -> str:
     return f"{parts.hostname}:{parts.port}" if parts.port else parts.hostname
 
 
+def keyed_thresholds(thresholds: PipelineThresholds) -> dict:
+    """
+    The thresholds as a run's key and hash see them. A field added after
+    runs were made counts only when it differs from what those runs did,
+    so they keep their keys and still resume: `query_kinds` (2026-10-20)
+    when it is not all three, the only plan there was before.
+    """
+
+    dumped = thresholds.model_dump()
+
+    if tuple(dumped.get("query_kinds") or ()) == SEARCH_QUERY_KINDS:
+        dumped.pop("query_kinds")
+
+    return dumped
+
+
 def thresholds_hash(thresholds: PipelineThresholds) -> str:
 
-    return _digest(thresholds.model_dump())[:12]
+    return _digest(keyed_thresholds(thresholds))[:12]
 
 
 # The scoring constants that are environment-only, not per-run thresholds
@@ -178,7 +198,7 @@ def run_key(
     keyed = {
         "dataset": dataset_sha256,
         "model": model,
-        "thresholds": thresholds.model_dump(),
+        "thresholds": keyed_thresholds(thresholds),
         "weights": weights if weights is not None else scoring_weights(),
         "corpus": corpus,
         "harnessVersion": HARNESS_VERSION,
@@ -361,10 +381,13 @@ class HarnessRunner:
         manifest_extra: dict | None = None,
         on_record: Callable[[dict], None] | None = None,
         commit: str | None = None,
+        closed_book=None,
     ):
         self.config = config
         self.checker = checker
         self.claims = claims
+        # A ClosedBookJudge for a closed-book run; None otherwise.
+        self.closed_book = closed_book
         self.meter = meter or UsageMeter()
         self.provider = provider
         self.max_workers = max_workers or settings.CLAIM_MAX_CONCURRENCY
@@ -502,9 +525,31 @@ class HarnessRunner:
 
         entities = None
 
+        closed_book = None
+
         with self.meter.attribute() as calls:
 
             try:
+                if self.config.mode == CLOSED_BOOK:
+                    # The claim alone: no entities, no search, no pipeline,
+                    # so no inference/ either. The two events time the
+                    # model's span as in any other run (record.latency_from).
+                    collect("verifying_claim", {"claim": row.claim, "evidence": 0})
+                    check, closed_book = self.closed_book.judge(row.claim)
+                    collect("claim_checked", {"verdict": check.verdict.value})
+
+                    record = build_record(
+                        row,
+                        check,
+                        events=events,
+                        timing=self._timing(started_at, started, None),
+                        provenance=self._provenance,
+                        usage=summarise(calls),
+                        closed_book=closed_book,
+                    )
+
+                    return self._keep(record)
+
                 claim = self.claims.build_claim(row.claim, collect, self.config.thresholds)
 
                 entities = round(time.perf_counter() - started, 4)
@@ -564,6 +609,11 @@ class HarnessRunner:
                     provenance=self._provenance,
                     usage=summarise(calls),
                 )
+
+        return self._keep(record)
+
+    def _keep(self, record: dict) -> str:
+        """Append one finished record, count it for the session, report it."""
 
         self.results.append(record)
 
@@ -870,10 +920,16 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
 
     meter = UsageMeter()
 
+    closed_book = None
+
     if config.mode == RETRIEVAL:
         verifier = RetrievalOnlyVerifier()
     else:
         verifier = LLMVerifier(client=metered(LLMClient(model=config.model), meter))
+
+    if config.mode == CLOSED_BOOK:
+        from src.evaluation.closed_book import ClosedBookJudge
+        closed_book = ClosedBookJudge(metered(LLMClient(model=config.model), meter))
 
     checker = FactChecker(repository, verifier=verifier)
 
@@ -885,6 +941,7 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
         claims=claims,
         meter=meter,
         provider=provider_of(settings.LLM_BASE_URL),
+        closed_book=closed_book,
         manifest_extra={
             "corpus": {"mode": config.corpus, "points": repository.count()},
             # The verifier's prompt is the pipeline's, not the harness's,

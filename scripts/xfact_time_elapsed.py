@@ -30,9 +30,9 @@ bootstrap intervals), so "how much does it matter" is read off one table:
 
 Plus the evidence's age: publication years of what was ranked and cited,
 and how much of it postdates the dataset (mid-2021) and the model's
-training cutoff (December 2023). And, until G5's attribution.py exists,
-the trace-only column of evaluation.md's stage attribution for every
-wrong verdict.
+training cutoff (December 2023). And both columns of evaluation.md's
+stage attribution for every wrong verdict, from src/evaluation/
+attribution.py (here before it existed, kept so the JSON keeps its keys).
 
 Read-only. Standard library plus the harness's metrics.
 """
@@ -53,6 +53,7 @@ BACKEND = Path(__file__).resolve().parent.parent / "backend"
 sys.path.insert(0, str(BACKEND))
 
 from src.evaluation import metrics  # noqa: E402
+from src.evaluation.attribution import by_reference, by_trace  # noqa: E402
 from src.evaluation.report import load_run  # noqa: E402
 from src.evaluation.retrieval import claim_retrieval  # noqa: E402
 
@@ -159,43 +160,10 @@ def drift_markers(record: dict) -> dict[str, list[str]]:
     return found
 
 
-def attribute(record: dict) -> str:
-
-    if not record.get("candidates"):
-        return "retrieval"
-
-    if not record.get("evidence"):
-        return "ranking"
-
-    if record.get("rawVerdict") != record["label"]:
-        return "reasoning"
-
-    return "aggregation"
-
-
-def attribute_by_reference(record: dict) -> str | None:
-    """
-    The reference-based column: None when the row has no reference link
-    off the fact-checker's own site (every PolitiFact row).
-    """
-
-    retrieval = claim_retrieval(record)
-
-    if not retrieval["hasReferences"]:
-        return None
-
-    values = retrieval["values"]
-
-    if record.get("rawVerdict") == record["label"]:
-        return "aggregation"
-
-    if not (values["linkRecall@candidates"] or values["domainRecall@candidates"]):
-        return "retrieval"
-
-    if not (values["linkRecall@ranked"] or values["domainRecall@ranked"]):
-        return "ranking"
-
-    return "reasoning"
+# The stage attribution's two columns, from the harness's own module
+# since it exists (G5, 2026-10-20) - copied here before, they could drift.
+attribute = by_trace
+attribute_by_reference = by_reference
 
 
 def block(records: list[dict]) -> dict:
@@ -322,8 +290,8 @@ def main() -> int:
             record["id"]: drift_markers(record) for record in scored if drift_markers(record)
         },
         "evidenceAge": evidence_age(scored),
-        # evaluation.md §Stage attribution, trace-only column, until G5's
-        # attribution.py exists: the first of retrieval, ranking,
+        # evaluation.md §Stage attribution, both columns (attribution.py):
+        # aggregation first, then the first of retrieval, ranking,
         # reasoning, aggregation that explains a wrong verdict.
         "attributionTraceOnly": dict(Counter(
             attribute(record) for record in scored if record["verdict"] != record["label"]

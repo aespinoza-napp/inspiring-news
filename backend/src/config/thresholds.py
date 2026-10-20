@@ -30,10 +30,33 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic.alias_generators import to_camel
 
 from src.config.settings import settings
+
+# The questions a claim's first search asks, in the order they are
+# planned (services/fact_checker/retrieval/query_builder.py, QueryKind -
+# held equal to it by a test; named here so config imports no service).
+SEARCH_QUERY_KINDS = ("anchor", "proposition", "refutation")
+
+
+def _query_kinds(value) -> tuple[str, ...]:
+    """
+    At least one known kind, in planning order, each once. A typo must
+    fail the request: silently dropped, it would turn an ablation into
+    a different one than the run says it was.
+    """
+
+    unknown = [kind for kind in value if kind not in SEARCH_QUERY_KINDS]
+
+    if unknown:
+        raise ValueError(f"unknown query kind(s) {unknown}; known: {list(SEARCH_QUERY_KINDS)}")
+
+    if not value:
+        raise ValueError("at least one query kind is needed: a claim with no query is never searched")
+
+    return tuple(kind for kind in SEARCH_QUERY_KINDS if kind in value)
 
 
 class PipelineThresholds(BaseModel):
@@ -193,6 +216,22 @@ class PipelineThresholds(BaseModel):
         le=1.0,
     )
 
+    # Which of the first search's queries are sent: the retrieval
+    # ablation's switch (roadmap, Thesis priorities P1.1). Switching a
+    # query kind off on the same frozen claims, in one window, measures
+    # what it adds, which the versions in git cannot: they no longer run
+    # on today's web. Always all three outside an experiment, so the
+    # default is fixed here rather than read from the environment, and a
+    # run with all three keeps the key it had before this switch existed
+    # (evaluation/runner.py, keyed_thresholds). Order does not matter;
+    # it is normalised to the planning order.
+    query_kinds: tuple[str, ...] = Field(default=SEARCH_QUERY_KINDS)
+
+    @field_validator("query_kinds")
+    @classmethod
+    def _known_query_kinds(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        return _query_kinds(value)
+
     # The second look: when a claim's first verdict is UNVERIFIED, or its
     # confidence is below `second_look_below_confidence`, search again
     # with follow-up queries written from what the first verdict said was
@@ -278,6 +317,12 @@ class ThresholdOverrides(BaseModel):
     evidence_min_pertinence: Optional[float] = Field(None, ge=0.0, le=1.0)
     second_look_enabled: Optional[bool] = Field(None)
     second_look_below_confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
+    query_kinds: Optional[tuple[str, ...]] = Field(None)
+
+    @field_validator("query_kinds")
+    @classmethod
+    def _known_query_kinds(cls, value: tuple[str, ...] | None) -> tuple[str, ...] | None:
+        return None if value is None else _query_kinds(value)
 
 
 class WriterThresholds(BaseModel):

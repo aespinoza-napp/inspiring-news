@@ -33,8 +33,8 @@ from src.evaluation.metrics import (
     OUTCOMES,
     SCORED,
 )
-from src.evaluation import retrieval
-from src.evaluation.runner import FULL, MANIFEST, ORACLE, RESULTS, RETRIEVAL, model_slug
+from src.evaluation import attribution, effort, retrieval
+from src.evaluation.runner import CLOSED_BOOK, FULL, MANIFEST, ORACLE, RESULTS, RETRIEVAL, model_slug
 from src.evaluation.stats import median, percentile, rounded
 from src.evaluation.store import ResultsFile, read_json, write_json
 from src.evaluation.usage import cost, price_for, totals
@@ -136,6 +136,7 @@ def evaluate(
     seed: int = DEFAULT_SEED,
     resamples: int = DEFAULT_RESAMPLES,
     prices: dict | None = None,
+    minutes_per_fact: float | None = None,
 ) -> dict:
     """The whole of metrics.json for one run."""
 
@@ -187,7 +188,24 @@ def evaluate(
         },
         "breakdowns": _breakdowns(scored, seed=seed, resamples=resamples),
         "retrieval": retrieval.retrieval_metrics(records, seed=seed, resamples=resamples),
+        # None for a closed-book run: with no evidence at all, every wrong
+        # verdict would be "retrieval" by construction, which says nothing.
+        "attribution": (
+            None if run.manifest.get("mode") == CLOSED_BOOK
+            else attribution.attribution_metrics(records, oracle=(run.manifest.get("mode") or FULL) == ORACLE)
+        ),
+        "effort": effort.effort_metrics(
+            records, seed=seed, resamples=resamples, minutes_per_fact=minutes_per_fact,
+        ),
         "responseTime": response_time(scored),
+        # A closed-book run's "I remember a fact-check of this", counted
+        # (closed_book.py): x-fact's claims were checked and published
+        # before the models' training cut-off, so a verdict can be memory.
+        **({"closedBook": {
+            "answered": sum(1 for record in scored if (record.get("closedBook") or {}).get("recallsFactCheck") is not None),
+            "recalls": sum(1 for record in scored if (record.get("closedBook") or {}).get("recallsFactCheck")),
+            "ids": [record["id"] for record in scored if (record.get("closedBook") or {}).get("recallsFactCheck")],
+        }} if run.manifest.get("mode") == CLOSED_BOOK else {}),
         "usage": {
             **run_totals,
             "cost": cost(run_totals, price_for(prices, run.model, run.manifest.get("provider"))),
@@ -359,11 +377,12 @@ def write_report(
     seed: int = DEFAULT_SEED,
     resamples: int = DEFAULT_RESAMPLES,
     root: Path | None = None,
+    minutes_per_fact: float | None = None,
 ) -> Path:
 
     run = load_run(run_directory)
 
-    result = evaluate(run, seed=seed, resamples=resamples, prices=prices)
+    result = evaluate(run, seed=seed, resamples=resamples, prices=prices, minutes_per_fact=minutes_per_fact)
 
     if compare_with:
         result["comparison"] = compare(load_run(compare_with), run, seed=seed, resamples=resamples)
@@ -524,6 +543,7 @@ def render(result: dict) -> str:
     parts = [
         f"# {dataset.get('stem', 'run')} · {run['model']}"
         + (" · the annotator's evidence (oracle)" if run.get("mode") == ORACLE else "")
+        + (" · no evidence (closed book)" if run.get("mode") == CLOSED_BOOK else "")
         + (f" · {run['label']}" if run.get("label") else ""),
         "",
         f"Run `{run['key']}` · provider `{run.get('provider')}` · harness v{run.get('harnessVersion')} · "
@@ -595,7 +615,21 @@ def render(result: dict) -> str:
             "",
         ]
 
-    if run.get("mode") == ORACLE:
+    if run.get("mode") == CLOSED_BOOK:
+        recalled = result.get("closedBook") or {}
+        parts += [
+            "## Evidence",
+            "",
+            "None: each claim went to the model alone, with no evidence, no search and no pipeline "
+            "(src/evaluation/closed_book.py). Its accuracy is what the model knows; the gap to a run that "
+            "searched is what retrieval adds.",
+            "",
+            f"Said it remembered a published fact-check of the claim: {recalled.get('recalls', 0)} of "
+            f"{recalled.get('answered', 0)} answered"
+            + (f" ({', '.join(recalled['ids'])})" if recalled.get("ids") else "") + ".",
+            "",
+        ]
+    elif run.get("mode") == ORACLE:
         # The evidence is the annotator's own links, so "recall of the
         # annotator's links" would be 100% by construction.
         parts += [
@@ -609,6 +643,13 @@ def render(result: dict) -> str:
         ]
     else:
         parts += retrieval.render_section(result["retrieval"])
+
+    # Absent from a metrics.json written before attribution existed.
+    if result.get("attribution"):
+        parts += attribution.render_section(result["attribution"])
+
+    if result.get("effort"):
+        parts += effort.render_section(result["effort"])
 
     if result.get("responseTime"):
         parts += _render_response_time(result["responseTime"])

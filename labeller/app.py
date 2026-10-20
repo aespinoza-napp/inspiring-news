@@ -295,8 +295,49 @@ def validate(data: dict, topics: dict[str, str]) -> tuple[dict, list[str]]:
     return clean, errors
 
 
+# A form left open longer than this is not one fact's work; the timing is
+# dropped rather than let a forgotten tab turn into a day-long fact.
+MAX_FACT_SECONDS = 4 * 3600
+
+
+def clean_timing(raw, saved_at: str) -> dict | None:
+    """
+    The time a fact took, from what the page sent (`openedAt`, when the
+    form opened - Label in Today, or New - and `activeSeconds`, counted
+    only while the page was visible) and when it was saved. None when it
+    is missing or does not add up: a timing never blocks a save.
+    """
+
+    if not isinstance(raw, dict):
+        return None
+
+    try:
+        opened = datetime.fromisoformat(str(raw.get("openedAt")).replace("Z", "+00:00"))
+        saved = datetime.fromisoformat(saved_at).replace(tzinfo=timezone.utc)
+        active = float(raw.get("activeSeconds"))
+    except (TypeError, ValueError):
+        return None
+
+    if opened.tzinfo is None:
+        opened = opened.replace(tzinfo=timezone.utc)
+
+    wall = (saved - opened).total_seconds()
+
+    # Same machine, same clock (the server listens on 127.0.0.1 only);
+    # a minute's slack for rounding, not for disagreement.
+    if not (0 <= active <= wall + 60) or wall > MAX_FACT_SECONDS or math.isnan(active):
+        return None
+
+    return {
+        "openedAt": opened.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+        "savedAt": saved_at,
+        "activeSeconds": round(active),
+    }
+
+
 def build_record(
-    fact_id: str, clean: dict, now: str, previous: dict | None = None, split: str = SPLIT
+    fact_id: str, clean: dict, now: str, previous: dict | None = None, split: str = SPLIT,
+    timing: dict | None = None,
 ) -> dict:
     """
     x-fact's keys first and in x-fact's order, then the custom set's own.
@@ -332,6 +373,10 @@ def build_record(
         # A correction made after a review keeps the review: its
         # firstLabel is what self-agreement is measured on.
         "review": (previous or {}).get("review"),
+        # How long labelling it took (clean_timing), after every other
+        # key so x-fact's order is untouched. The first save's, kept on
+        # every edit: an edit times the edit, not the labelling.
+        "timing": (previous or {}).get("timing") or timing,
     }
 
 
@@ -386,7 +431,8 @@ class Store:
             for p in folder.glob("fact*.json")
         ]
         fact_id = f"fact{(max(numbers) + 1 if numbers else 1):03d}"
-        record = build_record(fact_id, clean, _now())
+        now = _now()
+        record = build_record(fact_id, clean, now, timing=clean_timing(data.get("timing"), now))
 
         # Once the split is frozen, a new fact joins its article's side,
         # or the side its stratum is short of: by the same rule as the
@@ -1017,6 +1063,101 @@ class Queue:
         os.replace(tmp, path)
 
 
+def _quantile(values: list[float], q: float) -> float | None:
+    """Linear between the nearest ranks: numpy's default, as the backend's stats.percentile."""
+
+    if not values:
+        return None
+
+    ordered = sorted(values)
+    position = (len(ordered) - 1) * q
+    lower, upper = math.floor(position), math.ceil(position)
+
+    return ordered[lower] + (ordered[upper] - ordered[lower]) * (position - lower)
+
+
+def _spread(values: list[float]) -> dict:
+
+    return {
+        "n": len(values),
+        "median": _quantile(values, 0.5),
+        "p25": _quantile(values, 0.25),
+        "p75": _quantile(values, 0.75),
+    }
+
+
+def effort_stats(store: "Store", queue: "Queue") -> dict:
+    """
+    The labeller's half of the journalist-effort metrics
+    (docs/decisions/evaluation.md, "Journalist effort"): the claim
+    selector's precision over every batch, in total, by skip reason and
+    by language, and the time per fact.
+
+    The first facts were chosen by hand before the daily batch existed;
+    no batch names them, so the precision never counts them, and they
+    carry no timing. Time per fact is reported twice: the seconds the
+    page was visible (`activeSeconds` - what the guide asks for, so a
+    lunch break is not a fact) and the wall time from opening the form
+    to saving it, which also holds the minutes spent reading sources in
+    other tabs. Neither alone is the effort; the truth is between them.
+    """
+
+    facts, _ = store.load()
+
+    by_language: dict[str, Counter] = {}
+
+    for batch in queue.all():
+        for article in batch.get("articles", []):
+            counts = by_language.setdefault(article.get("language") or "unknown", Counter())
+            for claim in article.get("claims", []):
+                counts[claim.get("status", "pending")] += 1
+
+    def precision(counts: Counter) -> float | None:
+        judged = counts["labelled"] + counts["skipped"]
+        return round(counts["labelled"] / judged, 4) if judged else None
+
+    from_batches = {
+        fact_id
+        for batch in queue.all()
+        for article in batch.get("articles", [])
+        for claim in article.get("claims", [])
+        for fact_id in claim.get("factIds", [])
+    }
+
+    timed = [fact["timing"] for fact in facts if isinstance(fact.get("timing"), dict)]
+
+    def wall(timing: dict) -> float | None:
+        try:
+            return (datetime.fromisoformat(timing["savedAt"]) - datetime.fromisoformat(timing["openedAt"])).total_seconds()
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    walls = [value for value in map(wall, timed) if value is not None]
+
+    return {
+        "selection": {
+            **queue.stats(),
+            "byLanguage": {
+                language: {
+                    "labelled": counts["labelled"],
+                    "skipped": counts["skipped"],
+                    "pending": counts["pending"],
+                    "precision": precision(counts),
+                }
+                for language, counts in sorted(by_language.items())
+            },
+        },
+        "facts": len(facts),
+        "factsNotFromABatch": sorted(fact["id"] for fact in facts if fact.get("id") not in from_batches),
+        "timePerFact": {
+            "timed": len(timed),
+            "untimed": len(facts) - len(timed),
+            "activeSeconds": _spread([float(t["activeSeconds"]) for t in timed if "activeSeconds" in t]),
+            "wallSeconds": _spread(walls),
+        },
+    }
+
+
 def prefer_topics(summary: dict) -> list[str]:
     """
     The topics of every group below the average group count: what the
@@ -1255,7 +1396,7 @@ def _now() -> str:
 def main(argv=None) -> int:
 
     parser = argparse.ArgumentParser(description="Hand-label the custom validation set.")
-    parser.add_argument("command", nargs="?", default="serve", choices=("serve", "join", "mutate", "split"))
+    parser.add_argument("command", nargs="?", default="serve", choices=("serve", "join", "mutate", "split", "stats"))
     parser.add_argument("source", nargs="?", help="mutate: the TRUE fact to make a FALSE one from")
     parser.add_argument("--kind", choices=MUTATIONS, help="mutate: what was substituted")
     parser.add_argument("--claim", help="mutate: the mutated claim")
@@ -1289,6 +1430,10 @@ def main(argv=None) -> int:
             print(f"{side}: {counts['total']} facts, {counts['articles']} articles, "
                   f"{counts['byLabel']}, {counts['byLanguage']}, mutated {counts['mutated']}")
         print(f"Re-check sample ({len(manifest['recheck'])}, a fifth of test): {', '.join(manifest['recheck'])}")
+        return 0
+
+    if args.command == "stats":
+        print(json.dumps(effort_stats(store, Queue()), indent=2, ensure_ascii=False))
         return 0
 
     if args.command == "join":

@@ -244,7 +244,8 @@ def test_every_field_of_the_record_format_is_filled(repository, tmp_path):
     # Null only where null is the pipeline's real answer: no error, no
     # stage note for a verdict that was not recalibrated, no second look
     # in a run that did not enable one, and no loop in a run without it.
-    nullable = {"error", "stageNote", "secondLook", "loop"}
+    # closedBook exists only in a closed-book run (test_closed_book.py).
+    nullable = {"error", "stageNote", "secondLook", "loop", "closedBook"}
 
     empty = [
         key for key, value in record.items()
@@ -408,6 +409,33 @@ def test_the_run_key_changes_with_what_changes_the_results(tmp_path):
     assert len({base.key, *(config.key for config in others)}) == 5
 
     assert base.directory == tmp_path / "set" / "a" / base.key
+
+
+def test_a_run_with_every_query_kind_keeps_the_key_it_had_before_the_switch(tmp_path):
+    """
+    query_kinds (2026-10-20) enters the key only when it is not all three:
+    every run made before it existed asked all three, and must resume.
+    """
+
+    from src.evaluation.runner import _digest, keyed_thresholds, thresholds_hash
+
+    thresholds = PipelineThresholds()
+
+    before = {name: value for name, value in thresholds.model_dump().items() if name != "query_kinds"}
+
+    assert keyed_thresholds(thresholds) == before
+    assert thresholds_hash(thresholds) == _digest(before)[:12]
+
+    dataset = five_rows(tmp_path)
+
+    base = RunConfig(dataset=dataset, model="a", corpus="none", root=tmp_path)
+    anchor_only = RunConfig(
+        dataset=dataset, model="a", corpus="none", root=tmp_path,
+        thresholds=PipelineThresholds(query_kinds=("anchor",)),
+    )
+
+    assert anchor_only.key != base.key
+    assert thresholds_hash(anchor_only.thresholds) != thresholds_hash(base.thresholds)
 
 
 def test_a_model_name_becomes_a_directory_name_and_a_url_a_provider():

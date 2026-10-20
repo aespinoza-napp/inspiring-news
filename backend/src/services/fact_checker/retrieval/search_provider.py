@@ -44,15 +44,17 @@ class SearchProvider:
         claim: Claim,
         context: ArticleContext | None = None,
         language: str | None = None,
+        kinds: tuple[str, ...] | None = None,
     ) -> list[PlannedQuery]:
         """
         The queries `search` will send, each with the question it asks.
         Public so the live view can show what is being looked up *before*
         the search returns, from the same code that runs it rather than a
-        copy that drifts.
+        copy that drifts - which is why `kinds` must be the run's
+        `query_kinds`, as `search` passes it.
         """
 
-        return plan_queries(claim, context, language)
+        return plan_queries(claim, context, language, kinds)
 
     def queries_for(
         self,
@@ -87,7 +89,9 @@ class SearchProvider:
         the hits the others found are still evidence.
         """
 
-        return self.search_queries(self.plan(claim, context, language), thresholds, language)
+        kinds = (thresholds or PipelineThresholds()).query_kinds
+
+        return self.search_queries(self.plan(claim, context, language, kinds), thresholds, language)
 
     def search_queries(
         self,

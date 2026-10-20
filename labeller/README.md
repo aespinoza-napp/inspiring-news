@@ -82,6 +82,30 @@ nothing) if any file is unreadable or breaks a rule. The per-fact files
 stay: they are the source, the JSONL is derived. Re-run it after any
 later edit.
 
+## Stats: selection precision and time per fact
+
+```bash
+python labeller/app.py stats
+```
+
+prints JSON: the claim selector's precision (labelled / (labelled +
+skipped)) over every batch in `queue/`, in total, by skip reason and by
+language, and the time per fact. Facts in no batch (the first six,
+chosen by hand, and the synthetic FALSE ones) are listed apart and never
+count towards the precision.
+
+Each new fact records `timing: {openedAt, savedAt, activeSeconds}`,
+written after every other key: from the moment its form opens (Label in
+Today, or New) to its save, with `activeSeconds` counting only while the
+page is visible, so a lunch break is not a fact. An edit keeps the first
+save's timing; a timing that does not add up (more visible seconds than
+the form was open, a form open over four hours) is dropped and never
+blocks the save. Facts saved before 2026-10-20 have none. Because the
+visible seconds leave out the minutes spent reading sources in other
+tabs, `stats` gives the wall time from opening to saving beside them.
+The backend's report turns the median into an effort estimate
+(`cli report --minutes-per-fact`).
+
 ## What the page does
 
 - **Today**: the day's batch. *Get a new batch* asks the backend

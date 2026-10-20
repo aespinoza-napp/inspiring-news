@@ -224,6 +224,7 @@ def plan_queries(
     claim: Claim,
     context: ArticleContext | None = None,
     language: str | None = None,
+    kinds: tuple[str, ...] | None = None,
 ) -> list[PlannedQuery]:
     """
     Every query this claim should be looked up with, in order.
@@ -231,6 +232,11 @@ def plan_queries(
     Empty queries are dropped rather than sent: an empty search is a
     round-trip that can only return noise, and a blank entry in the live
     view reads as a bug.
+
+    `kinds` keeps only those questions (`PipelineThresholds.query_kinds`,
+    the retrieval ablation's switch); None asks all three. Filtered
+    before duplicates are dropped, so with the anchor switched off a
+    proposition identical to it is still sent.
     """
 
     planned = [
@@ -244,6 +250,9 @@ def plan_queries(
             QueryKind.REFUTATION,
         ),
     ]
+
+    if kinds is not None:
+        planned = [query for query in planned if query.kind.value in kinds]
 
     seen: set[str] = set()
     unique: list[PlannedQuery] = []

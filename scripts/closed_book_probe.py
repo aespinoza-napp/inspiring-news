@@ -25,8 +25,10 @@ the JSON retry), the same five verdicts with the same definitions as
 `LLMVerifier`'s prompt, and nothing else: no evidence, no claimant, no
 date, no fact-checker named. One claim at a time.
 
-Not part of the harness: a diagnostic, run once per set, its output kept
-beside the run's report. Scored with the harness's own metrics and
+Before the harness had a closed-book mode (`cli run --closed-book`, whose
+records pair with every other run's), this was the only way to ask; kept
+because the x-fact reports cite its JSON. A diagnostic, run once per set,
+its output kept beside the run's report. Scored with the harness's own metrics and
 bootstrap (`src/evaluation/metrics.py`), so its numbers mean what the
 report's mean.
 """
@@ -47,26 +49,10 @@ from src.evaluation import metrics  # noqa: E402
 from src.evaluation.dataset import load_dataset  # noqa: E402
 from src.services.llms import LLMClient, LLMUnavailableError  # noqa: E402
 
-VERDICTS = ("TRUE", "PARTIALLY_TRUE", "MISLEADING", "FALSE", "UNVERIFIED")
-
-SYSTEM_PROMPT = (
-    "You are a rigorous fact-checking assistant. You are given a single "
-    "claim, with no evidence and no context. Say what you know about it "
-    "from your own knowledge.\n\n"
-    "Respond with ONLY a JSON object with this exact shape:\n"
-    '{"verdict": "TRUE" | "PARTIALLY_TRUE" | "FALSE" | "MISLEADING" | "UNVERIFIED", '
-    '"confidence": <float 0-1>, '
-    '"recalls_fact_check": <true if you remember a published fact-check of this '
-    'specific claim, else false>, '
-    '"fact_checker": "<the organisation that checked it, or empty>", '
-    '"explanation": "<one sentence>"}\n\n'
-    "Rules:\n"
-    "- PARTIALLY_TRUE means the central assertion holds but a detail "
-    "(a figure, a date, an attribution) does not.\n"
-    "- MISLEADING means technically-true-but-deceptive framing or missing "
-    "crucial context.\n"
-    "- If you do not know, answer UNVERIFIED."
-)
+# The prompt and the verdicts live in the harness since its closed-book
+# mode (src/evaluation/closed_book.py, 2026-10-20): one prompt, so the
+# probe's numbers and a closed-book run's mean the same thing.
+from src.evaluation.closed_book import SYSTEM_PROMPT, VERDICTS  # noqa: E402
 
 
 def ask(client: LLMClient, claim: str) -> dict:

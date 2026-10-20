@@ -75,6 +75,9 @@ RECORD_FIELDS = (
     # gold, then the annotator's own pages - beside the verdict, never
     # in place of it.
     "secondLook", "loop",
+    # Added 2026-10-20, same standing: a closed-book run's answer to
+    # "do you remember a published fact-check of this claim" (closed_book.py).
+    "closedBook",
     # Provenance.
     "model", "provider", "thresholdsHash", "harnessVersion", "gitCommit",
     "startedAt", "finishedAt",
@@ -123,6 +126,7 @@ def build_record(
     provenance: Provenance,
     usage: dict,
     loop: dict | None = None,
+    closed_book: dict | None = None,
 ) -> dict:
 
     cited = set(check.cited_evidence_indices)
@@ -165,6 +169,7 @@ def build_record(
             if check.second_look else None
         ),
         "loop": loop,
+        "closedBook": closed_book,
     })
 
     record.update(_provenance(provenance, timing))

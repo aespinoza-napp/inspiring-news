@@ -230,6 +230,9 @@ def test_every_threshold_is_actually_overridable_end_to_end():
         # toward the middle of [0, 1] without leaving it.
         if isinstance(current, bool):
             candidate = not current
+        elif isinstance(current, tuple):
+            # A choice of names (query_kinds): one fewer is still legal.
+            candidate = current[:-1]
         elif isinstance(current, int):
             candidate = current + 1
         else:

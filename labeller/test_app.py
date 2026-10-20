@@ -217,6 +217,57 @@ class LabellerTest(unittest.TestCase):
         self.assertEqual([p.name for p in self.folder.iterdir()], ["fact001.json"])
         self.assertEqual(self.store.update("fact009", fact())[1], ["Fact not found."])
 
+    # ------------------------------------------------------------------
+    # Time per fact
+    # ------------------------------------------------------------------
+
+    def timed(self, opened="2026-10-20T10:00:00Z", active=300, now="2026-10-20T10:12:00", **overrides):
+        from unittest import mock
+        with mock.patch.object(app, "_now", return_value=now):
+            return self.store.create(fact(timing={"openedAt": opened, "activeSeconds": active}, **overrides))
+
+    def test_a_new_fact_records_how_long_it_took_after_every_other_key(self):
+
+        record, errors = self.timed()
+
+        self.assertEqual(errors, [])
+        self.assertEqual(record["timing"], {
+            "openedAt": "2026-10-20T10:00:00", "savedAt": "2026-10-20T10:12:00", "activeSeconds": 300,
+        })
+
+        row = json.loads((self.folder / "fact001.json").read_text(encoding="utf-8"))
+        self.assertEqual(list(row)[-1], "timing")
+        # x-fact's ten keys still lead, in x-fact's order.
+        self.assertEqual(tuple(row)[: len(app.XFACT_FIELDS)], app.XFACT_FIELDS)
+
+    def test_an_edit_keeps_the_first_saves_timing(self):
+
+        first, _ = self.timed()
+        edited, errors = self.store.update(
+            "fact001", fact(label="FALSE", timing={"openedAt": "2026-10-21T09:00:00Z", "activeSeconds": 5}),
+        )
+
+        self.assertEqual(errors, [])
+        self.assertEqual(edited["timing"], first["timing"])
+
+    def test_a_timing_that_does_not_add_up_is_dropped_and_never_blocks_a_save(self):
+
+        cases = [
+            {"active": 2000},                             # more visible seconds than the form was open
+            {"active": -1},
+            {"active": "soon"},
+            {"opened": "yesterday"},
+            {"opened": "2026-10-20T01:00:00Z"},           # open for 11 hours: a forgotten tab
+        ]
+
+        for case in cases:
+            record, errors = self.timed(**case, claim=f"Claim for {case}.")
+            self.assertEqual(errors, [], case)
+            self.assertIsNone(record["timing"], case)
+
+        # A fact saved without one, from the command line or an old page.
+        self.assertIsNone(self.create(claim="No timing at all.")["timing"])
+
     def test_the_review_sample_is_a_stable_fifth(self):
 
         for i in range(11):
@@ -501,6 +552,58 @@ class QueueTest(unittest.TestCase):
         # Labelled over labelled + skipped: pending claims are not judged yet.
         self.assertEqual(stats["precision"], 0.5)
         self.assertEqual(stats["byReason"]["opinion"], 1)
+
+    def test_effort_stats_give_precision_by_language_and_time_per_fact(self):
+
+        from unittest import mock
+
+        spanish = self.queue.save(backend_batch("r1"), "2026-09-29")
+        english = backend_batch("r2", urls=("https://d.example/1",))
+        english["articles"][0]["language"] = "en"
+        english_name = self.queue.save(english, "2026-09-30")
+
+        with mock.patch.object(app, "_now", return_value="2026-10-20T10:10:00"):
+            labelled, _ = self.store.create(fact(timing={"openedAt": "2026-10-20T10:00:00Z", "activeSeconds": 240}))
+        with mock.patch.object(app, "_now", return_value="2026-10-20T10:30:00"):
+            self.store.create(fact(claim="Second.", timing={"openedAt": "2026-10-20T10:10:00Z", "activeSeconds": 480}))
+        # Chosen by hand before batches existed: in no batch, never timed.
+        self.store.create(fact(claim="By hand."))
+
+        self.queue.mark(spanish, 0, 0, "labelled", fact_id=labelled["id"])
+        self.queue.mark(spanish, 0, 1, "skipped", reason="opinion")
+        self.queue.mark(spanish, 1, 0, "skipped", reason="fragment")
+        self.queue.mark(english_name, 0, 0, "labelled", fact_id="fact002")
+
+        stats = app.effort_stats(self.store, self.queue)
+
+        selection = stats["selection"]
+        self.assertEqual((selection["labelled"], selection["skipped"], selection["pending"]), (2, 2, 2))
+        self.assertEqual(selection["precision"], 0.5)
+        self.assertEqual(selection["byLanguage"]["es"]["precision"], round(1 / 3, 4))
+        self.assertEqual(selection["byLanguage"]["en"]["precision"], 1.0)
+        self.assertEqual(selection["byReason"]["fragment"], 1)
+
+        self.assertEqual(stats["factsNotFromABatch"], ["fact003"])
+
+        time = stats["timePerFact"]
+        self.assertEqual((time["timed"], time["untimed"]), (2, 1))
+        self.assertEqual(time["activeSeconds"], {"n": 2, "median": 360.0, "p25": 300.0, "p75": 420.0})
+        self.assertEqual(time["wallSeconds"]["median"], 900.0)
+
+    def test_the_stats_command_prints_json(self):
+
+        import contextlib
+        import io
+        from unittest import mock
+
+        out = io.StringIO()
+        with mock.patch.object(app, "Store", return_value=self.store), \
+                mock.patch.object(app, "Queue", return_value=self.queue), \
+                contextlib.redirect_stdout(out):
+            code = app.main(["stats"])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(out.getvalue())["timePerFact"]["timed"], 0)
 
     def test_a_skip_needs_a_known_reason_and_a_real_claim(self):
 

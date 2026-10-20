@@ -101,6 +101,11 @@ class DatasetRow:
     # (`labeller/app.py split`, roadmap P0.4). None when the row has none.
     split: str | None = None
 
+    # Custom set only: the date of the newest evidence the annotator used
+    # (never after claim_date, labeller Rule 3). Read by freshness.py; not
+    # copied into records, which predate it.
+    evidence_date: str | None = None
+
     @property
     def topic_group(self) -> str | None:
 
@@ -262,6 +267,7 @@ def parse_row(raw: dict, where: str = "row") -> DatasetRow:
         source_tier=raw.get("sourceTier") or None,
         origin=("mutated" if raw.get("mutatedFrom") else "natural") if is_custom else None,
         split=raw.get("split") or None,
+        evidence_date=_claim_date(raw.get("evidenceDate")) if is_custom else None,
     )
 
 

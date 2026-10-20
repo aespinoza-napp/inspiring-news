@@ -14,9 +14,16 @@ The evaluation harness's one command.
     uv run python -m src.evaluation.cli loop --run <dir>
     uv run python -m src.evaluation.cli consistency --run <test run> --run <recheck run>
     uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split train --oracle --model <m>
+    uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split test --closed-book --model <m>
 
     uv run python -m src.evaluation.cli run --dataset <set> --retrieval-only --label <strategy>
     uv run python -m src.evaluation.cli retrieval --run <dir> --run <dir> ...
+
+    uv run python -m src.evaluation.cli pool --run A --run B ... --judgements data/evaluation/judgements/<set>.jsonl
+    uv run python -m src.evaluation.cli judge --judgements data/evaluation/judgements/<set>.jsonl
+    uv run python -m src.evaluation.cli pooled --run A --run B ... --judgements data/evaluation/judgements/<set>.jsonl
+
+    uv run python -m src.evaluation.cli freshness --dataset data/evaluation/manual [--split test] [--run <dir> ...]
 
     uv run python -m src.evaluation.cli writing run --model llama3.2:3b [--repeats 2] [--texts f.jsonl]
     uv run python -m src.evaluation.cli writing report --run <dir> --run <dir> ... [--prices ...]
@@ -45,12 +52,15 @@ from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
 from src.evaluation.dataset import SAMPLES, load_dataset, select_rows
 from src.evaluation.consistency import write_consistency
+from src.evaluation.freshness import freshness, write_freshness
+from src.evaluation import pooling
 from src.evaluation.loop import write_loop_report
 from src.evaluation.metrics import DEFAULT_RESAMPLES, DEFAULT_SEED
-from src.evaluation.report import models_table, retrieval_table, write_report
+from src.evaluation.report import default_reports_root, load_run, models_table, retrieval_table, write_report
 from src.evaluation.runner import (
     CORPUS_MODES,
     FULL,
+    CLOSED_BOOK,
     ORACLE,
     RETRIEVAL,
     RETRIEVAL_ONLY_MODEL,
@@ -89,6 +99,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         # asks no model: neither means anything over evidence given in.
         raise SystemExit("--oracle takes neither --retrieval-only nor --loop")
 
+    if args.closed_book and (args.retrieval_only or args.oracle or args.loop):
+        # Three evidence conditions, one per run; the loop needs evidence.
+        raise SystemExit("--closed-book takes none of --retrieval-only, --oracle or --loop")
+
     config = RunConfig(
         dataset=dataset,
         # No model is asked in a retrieval-only run; its directory says so.
@@ -96,7 +110,12 @@ def cmd_run(args: argparse.Namespace) -> int:
         thresholds=load_thresholds(args.thresholds),
         corpus=args.corpus,
         root=Path(args.root) if args.root else default_runs_root(),
-        mode=RETRIEVAL if args.retrieval_only else ORACLE if args.oracle else FULL,
+        mode=(
+            RETRIEVAL if args.retrieval_only
+            else ORACLE if args.oracle
+            else CLOSED_BOOK if args.closed_book
+            else FULL
+        ),
         label=args.label,
         loop=args.loop,
     )
@@ -128,6 +147,7 @@ def cmd_report(args: argparse.Namespace) -> int:
         seed=args.seed,
         resamples=args.resamples,
         root=Path(args.out) if args.out else None,
+        minutes_per_fact=args.minutes_per_fact,
     )
 
     print(f"Report written to {target}")
@@ -196,6 +216,69 @@ def cmd_retrieval(args: argparse.Namespace) -> int:
 
     print(f"Table written to {target / 'retrieval.md'}")
     print((target / "retrieval.md").read_text(encoding="utf-8"))
+
+    return 0
+
+
+def cmd_pool(args: argparse.Namespace) -> int:
+
+    path = Path(args.judgements)
+    entries, added = pooling.pool([load_run(run) for run in args.run], pooling.load_judgements(path), depth=args.depth)
+    pooling.save_judgements(path, entries)
+
+    left = sum(1 for entry in entries if entry["relevant"] is None)
+    print(f"{added} new page(s) pooled into {path}: {len(entries)} in all, {left} to judge "
+          f"(python -m src.evaluation.cli judge --judgements {path}).")
+
+    return 0
+
+
+def cmd_judge(args: argparse.Namespace) -> int:
+
+    pooling.judge(Path(args.judgements))
+
+    return 0
+
+
+def cmd_pooled(args: argparse.Namespace) -> int:
+
+    runs = [load_run(run) for run in args.run]
+    table = pooling.pooled_table(
+        runs, pooling.load_judgements(Path(args.judgements)),
+        depth=args.depth, seed=args.seed, resamples=args.resamples,
+    )
+
+    root = Path(args.out) if args.out else default_reports_root()
+    stem = (runs[0].manifest.get("dataset") or {}).get("stem") or "runs"
+    target = root / stem
+    target.mkdir(parents=True, exist_ok=True)
+
+    from src.evaluation.store import write_json
+
+    write_json(target / "pooled.json", table)
+    (target / "pooled.md").write_text(pooling.render(table), encoding="utf-8")
+
+    print(f"Pooled scores written to {target / 'pooled.md'}")
+    print((target / "pooled.md").read_text(encoding="utf-8"))
+
+    return 0
+
+
+def cmd_freshness(args: argparse.Namespace) -> int:
+
+    dataset = select_rows(load_dataset(args.dataset), split=args.split)
+
+    result = freshness(
+        dataset,
+        [load_run(directory) for directory in args.run or []],
+        seed=args.seed,
+        resamples=args.resamples,
+    )
+
+    target = write_freshness(result, Path(args.out) if args.out else default_reports_root())
+
+    print(f"Freshness written to {target / 'freshness.md'}")
+    print((target / "freshness.md").read_text(encoding="utf-8"))
 
     return 0
 
@@ -301,6 +384,12 @@ def parser() -> argparse.ArgumentParser:
         "(RQ2's oracle condition); keyed, so it never resumes a run that searched",
     )
     run.add_argument(
+        "--closed-book",
+        action="store_true",
+        help="no evidence and no pipeline: the model judges each claim from the claim alone "
+        "(RQ2's closed-book condition); keyed like --oracle",
+    )
+    run.add_argument(
         "--label",
         help="a name for the strategy this run measures; part of the run key, so two code "
         "variants with the same settings are two runs",
@@ -318,6 +407,11 @@ def parser() -> argparse.ArgumentParser:
     report = commands.add_parser("report", help="metrics.json and report.md for a run")
     report.add_argument("--run", required=True, help="the run directory (runs/<dataset>/<model>/<key>)")
     report.add_argument("--compare", help="a baseline run to compare against, paired over shared claims")
+    report.add_argument(
+        "--minutes-per-fact",
+        type=float,
+        help="a person's median minutes per fact (python labeller/app.py stats), for the effort estimate",
+    )
     _report_options(report)
     report.set_defaults(handler=cmd_report)
 
@@ -349,6 +443,40 @@ def parser() -> argparse.ArgumentParser:
     strategies.add_argument("--run", required=True, action="append", help="a run directory; repeat per strategy")
     _report_options(strategies)
     strategies.set_defaults(handler=cmd_retrieval)
+
+    pool_cmd = commands.add_parser(
+        "pool",
+        help="pool every run's top ranked sources per claim into a judgement file (new pages only)",
+    )
+    pool_cmd.add_argument("--run", required=True, action="append", help="a run directory; repeat per variant")
+    pool_cmd.add_argument("--judgements", required=True, help="the JSONL judgement file, created or extended")
+    pool_cmd.add_argument("--depth", type=int, default=pooling.DEPTH, help="how many ranked sources per claim")
+    pool_cmd.set_defaults(handler=cmd_pool)
+
+    judge_cmd = commands.add_parser("judge", help="judge the pooled pages, one at a time, in this terminal")
+    judge_cmd.add_argument("--judgements", required=True, help="the JSONL judgement file")
+    judge_cmd.set_defaults(handler=cmd_judge)
+
+    pooled_cmd = commands.add_parser(
+        "pooled",
+        help="score runs on the same pooled judgements, each paired against the first",
+    )
+    pooled_cmd.add_argument("--run", required=True, action="append", help="a run directory; the first is the baseline")
+    pooled_cmd.add_argument("--judgements", required=True, help="the JSONL judgement file")
+    pooled_cmd.add_argument("--depth", type=int, default=pooling.DEPTH, help="how many ranked sources per claim")
+    _report_options(pooled_cmd)
+    pooled_cmd.set_defaults(handler=cmd_pooled)
+
+    fresh = commands.add_parser(
+        "freshness",
+        help="the newest evidence's age at each claim, from the set; with runs, verdicts by that "
+        "age and by the claim's age when checked",
+    )
+    fresh.add_argument("--dataset", required=True, help="a JSONL file, or a directory of one-fact JSON files")
+    fresh.add_argument("--split", help="only the rows of this split")
+    fresh.add_argument("--run", action="append", help="a run over the set; repeat for several")
+    _report_options(fresh)
+    fresh.set_defaults(handler=cmd_freshness)
 
     writing = commands.add_parser(
         "writing",
