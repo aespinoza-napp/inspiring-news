@@ -23,6 +23,8 @@
 #                                 not skips, when it is not running
 #   ./scripts/check.sh gcp        the Google Cloud deployment against Floci,
 #                                 a local emulator - needs Docker only
+#   ./scripts/check.sh e2e        the built frontend in headless Chrome against
+#                                 a stub backend: the reader, the job polling
 
 set -uo pipefail
 
@@ -120,6 +122,17 @@ run_frontend() {
   fi
 }
 
+# Builds the frontend and needs Chrome, so not part of `all` (like graph,
+# which needs Neo4j). Standard library only, like the labeller.
+run_e2e() {
+  step "Frontend end to end (built, headless Chrome, stub backend)"
+  if (cd "$ROOT" && python scripts/e2e.py); then
+    pass "frontend e2e"
+  else
+    fail "frontend e2e"
+  fi
+}
+
 # Plain `python`, not uv: the labeller has no dependencies on purpose, so
 # the test must not lean on a virtualenv either.
 run_labeller() {
@@ -140,9 +153,10 @@ case "$TARGET" in
   inference) run_inference ;;
   frontend)  run_frontend ;;
   labeller)  run_labeller ;;
+  e2e)       run_e2e ;;
   all)       run_backend; run_inference; run_frontend; run_labeller ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller | e2e" >&2
     exit 2
     ;;
 esac
