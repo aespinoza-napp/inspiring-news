@@ -586,6 +586,15 @@ first pass with search (52.9%), the gap is what retrieval adds; the
 paired difference waits for the full run made again on the same day
 (the 19 Oct records are gone).
 
+**The oracle on the test half, 2026-10-20** (`63ec8ea70a6c`, the same
+model and day, second look on): **54.3% [42.9, 65.7]**, macro-F1 0.306,
+kappa 0.259 [0.093, 0.421]; natural claims 52.7% [40.0, 65.5], synthetic
+FALSE 60.0%. Paired against closed-book: **+20.0 points [+5.7, +34.3]**,
+kappa +0.223 [+0.003, +0.437]; 22 claims only the oracle got right, 8
+only closed-book. So the annotator's evidence is worth twenty points to
+this model; how much of that the pipeline's own search recovers is the
+full run's number, still running (8 of 70, resumable).
+
 **Live check, 2026-10-04**, on the first 6 pilot claims, two
 retrieval-only strategies (`baseline`, and `no-gate`:
 `evidence_min_pertinence` 0.0), corpus `none`, with Google and Brave

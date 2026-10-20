@@ -270,9 +270,12 @@ built.
    volume, so the full run is made again too): **closed-book
    `038bea7a04be`: 34.3% [22.9, 45.7]**, macro-F1 0.156, kappa 0.036
    [-0.087, 0.162]; natural 27.3%, synthetic FALSE 60%; FALSE to 40 of 70;
-   remembered a published fact-check for 1. Oracle `63ec8ea70a6c` and the
+   remembered a published fact-check for 1. **Oracle `63ec8ea70a6c`:
+   54.3% [42.9, 65.7]**, macro-F1 0.306, kappa 0.259 [0.093, 0.421];
+   natural 52.7%; paired against closed-book **+20.0 points [+5.7,
+   +34.3]** (22 claims only the oracle right, 8 only closed-book). The
    full run `2605a2c02380` (8 of 70; its harness segfaulted once while
-   fetching pages, exit 139, as in the pilot) are resumable: rerun the
+   fetching pages, exit 139, as in the pilot) is resumable: rerun the
    same command (`docs/goals.md`, U3). This CPU gives llama.cpp 2 threads
    and a claim ~3.5 min (`deployment.md`, "Threads on a hybrid CPU").
 6. [ ] 🟡 🧭 **Stage attribution (RQ2)** · 5h · Nov 1-15 - already planned in

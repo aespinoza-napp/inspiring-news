@@ -1,0 +1,140 @@
+{
+  "key": "63ec8ea70a6c",
+  "harnessVersion": 1,
+  "dataset": {
+    "path": "data/evaluation/manual",
+    "stem": "manual-test",
+    "sha256": "1ea9a8b72ec34346f46993052d583c26cc39f6cc8648a26bb38334bb98ca8b88",
+    "rows": 70,
+    "kinds": [
+      "custom"
+    ]
+  },
+  "model": "llama3.2:3b",
+  "provider": "localhost:11434",
+  "thresholds": {
+    "topic_classifier_threshold": 0.35,
+    "entity_threshold": 0.5,
+    "claim_min_confidence": 0.5,
+    "opinion_max_score": 0.5,
+    "min_body_length": 500,
+    "topic_min_confidence": 0.35,
+    "positive_impact_min_score": 0.3,
+    "positive_impact_hard_fail_enabled": false,
+    "duplicate_threshold": 0.96,
+    "relatedness_threshold": 0.8,
+    "anchor_claims_min": 2,
+    "anchor_claims_max": 4,
+    "min_independent_domains": 2,
+    "claim_dedup_threshold": 0.92,
+    "evidence_fetch_candidates": 8,
+    "max_evidence_per_claim": 5,
+    "min_evidence_for_verdict": 1,
+    "evidence_min_pertinence": 0.25,
+    "query_kinds": [
+      "anchor",
+      "proposition",
+      "refutation"
+    ],
+    "second_look_enabled": true,
+    "second_look_below_confidence": 0.5
+  },
+  "thresholdsHash": "e1bae39fd2a3",
+  "thresholdsOverridden": {
+    "second_look_enabled": true
+  },
+  "weights": {
+    "RANKING_SEMANTIC_WEIGHT": 0.45,
+    "RANKING_LEXICAL_WEIGHT": 0.2,
+    "RANKING_RECENCY_WEIGHT": 0.2,
+    "RANKING_RELIABILITY_WEIGHT": 0.15,
+    "PERTINENCE_SEMANTIC_WEIGHT": 0.5,
+    "PERTINENCE_LEXICAL_WEIGHT": 0.5,
+    "CONFIDENCE_LLM_WEIGHT": 0.7,
+    "CONFIDENCE_EVIDENCE_WEIGHT": 0.3,
+    "RANKING_DEFAULT_RELIABILITY": 0.5,
+    "EVIDENCE_RECENCY_HALF_LIFE_DAYS": 365.0
+  },
+  "corpus": {
+    "mode": "snapshot",
+    "points": 0
+  },
+  "mode": "oracle",
+  "label": null,
+  "loop": false,
+  "gitCommit": "0f70c68f100642993876f363ab2262b34bdce4d5-dirty",
+  "startedAt": "2026-10-20T15:03:44+02:00",
+  "settings": {
+    "LLM_BASE_URL": "http://localhost:11434/v1",
+    "LLM_TIMEOUT": 300.0,
+    "LLM_REASONING_EFFORT": null,
+    "SEARXNG_URL": "http://localhost:8080",
+    "INFERENCE_URL": "http://localhost:8001",
+    "INFERENCE_TIMEOUT": 120.0,
+    "DUCKDUCKGO_FALLBACK_ENABLED": true,
+    "CLAIM_MAX_CONCURRENCY": 2,
+    "LLM_MAX_CONCURRENCY": 1,
+    "QUERY_MAX_CONCURRENCY": 2,
+    "SEARXNG_MAX_CONCURRENCY": 2,
+    "SCRAPE_MAX_CONCURRENCY": 8,
+    "INFERENCE_MAX_CONCURRENCY": 1
+  },
+  "verifierPromptSha256": "7b5b5390c5b43cb605e6d9f19b3ef2c226ad4f5289ce44b61aed61cbc8772ccb",
+  "sessions": [
+    {
+      "startedAt": "2026-10-20T15:03:44+02:00",
+      "gitCommit": "0f70c68f100642993876f363ab2262b34bdce4d5-dirty",
+      "provider": "localhost:11434",
+      "limit": null,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 70,
+      "settings": {
+        "LLM_BASE_URL": "http://localhost:11434/v1",
+        "LLM_TIMEOUT": 300.0,
+        "LLM_REASONING_EFFORT": null,
+        "SEARXNG_URL": "http://localhost:8080",
+        "INFERENCE_URL": "http://localhost:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 2,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 1
+      },
+      "finishedAt": "2026-10-20T15:58:50+02:00",
+      "ran": 70,
+      "ok": 70,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 70,
+        "llmCalls": 61,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 9,
+        "promptTokens": 67657,
+        "completionTokens": 8678,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 1109.1,
+        "completionTokensPerUnit": 142.3,
+        "llmSeconds": 3297.95,
+        "callLatency": {
+          "median": 50.618,
+          "p90": 76.119,
+          "max": 206.348
+        },
+        "unitLatency": {
+          "median": 94.195,
+          "p90": 131.413,
+          "total": 6582.07
+        },
+        "completionTokensPerSecond": 2.6
+      }
+    }
+  ]
+}
