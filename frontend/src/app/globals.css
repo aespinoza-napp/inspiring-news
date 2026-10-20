@@ -7,10 +7,20 @@
   --accent: #2563eb;
 
   --true: #1a7f37;
-  --partially-true: #7a8b1f;
+  /* Darkened 2026-10-20 for WCAG AA: white badge text measured 3.79
+     (#7a8b1f) and 3.43 (#c9770a), and warnings in --misleading on a
+     card 4.46; now 4.62 and 4.87, and 4.66 on --surface. Same hues. */
+  --partially-true: #6d7c1c;
   --false: #c92a2a;
-  --misleading: #c9770a;
+  --misleading: #a56108;
   --unverified: #6b6b6b;
+  /* The text on a verdict badge: white on the light theme's dark fills,
+     near-black on the dark theme's bright ones - white there measured
+     2.2-3.4 against AA's 4.5, dark text measures 5.5-8.6. */
+  --badge-fg: #ffffff;
+  /* Text on --accent (buttons, the current flow step): white measured
+     2.42 on the dark theme's light blue; near-black there is 7.76. */
+  --accent-fg: #ffffff;
 
   /* Sentiment's diverging pair, with a gray middle: negative (warm) and
      positive (cool) read as opposite poles, neutral as "neither". Not the
@@ -66,6 +76,8 @@
     --false: #e5605a;
     --misleading: #e0a44b;
     --unverified: #9a9a9a;
+    --badge-fg: #121212;
+    --accent-fg: #121212;
 
     --sentiment-negative: #d95926;
     --sentiment-neutral: #6e6e6e;
@@ -280,7 +292,7 @@ button {
   border: none;
   border-radius: var(--radius);
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -441,7 +453,7 @@ button:disabled {
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--badge-fg);
 }
 
 .badge-true {
@@ -2125,6 +2137,115 @@ summary.trace-label {
 .reader-back {
   margin: 0 0 1.25rem;
   font-size: 0.85rem;
+}
+
+/* The back link and the language switch on one line, wrapping on a phone. */
+.reader-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin: 0 0 1.25rem;
+}
+
+.reader-top .reader-back {
+  margin: 0;
+}
+
+/* A reader's badge links to what it means (/reader/guide): the badge
+   stays the badge, with a focus ring and no underline. */
+.badge-link {
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.badge-link:hover .badge {
+  filter: brightness(0.95);
+}
+
+.badge-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.reader-guide-link {
+  margin: -0.5rem 0 1.25rem;
+  font-size: 0.85rem;
+}
+
+.reader-guide-page {
+  max-width: 44rem;
+}
+
+.reader-guide-verdicts {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.reader-guide-verdict {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, auto) 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  scroll-margin-top: 1rem;
+}
+
+.reader-guide-verdict dd {
+  margin: 0;
+}
+
+/* The badge's anchor target, when a badge link lands here. */
+.reader-guide-verdict:target,
+.reader-guide-page section:target {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-radius: 6px;
+}
+
+@media (max-width: 480px) {
+  .reader-guide-verdict {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+/* Català · Español · English: the reader's page language, not a filter. */
+.reader-lang {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+}
+
+.reader-top .reader-lang {
+  margin: 0;
+}
+
+/* Undoes the global button's accent fill, like .reader-filter. */
+.reader-lang-option {
+  margin: 0;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.reader-lang-option:hover:not(:disabled) {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--fg) 30%, var(--border));
+}
+
+.reader-lang-option[aria-pressed="true"],
+.reader-lang-option[aria-current="page"] {
+  border-color: var(--fg);
+  font-weight: 700;
 }
 
 .reader-headline {
@@ -4272,7 +4393,7 @@ button.graph-article.is-active {
 
 .flow-step.is-current .flow-step-number {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
 }
 
 .flow-step-text {

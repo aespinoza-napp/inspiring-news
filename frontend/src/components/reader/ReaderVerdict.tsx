@@ -1,12 +1,6 @@
 import { VerdictBadge } from "@/components/VerdictBadge";
-import {
-  ReaderVerdictSummary,
-  badgeVerdict,
-  notJudgedReasons,
-  percent,
-  plural,
-  tally,
-} from "@/lib/reader";
+import { ReaderVerdictSummary, badgeVerdict, notJudgedReasons, percent, tally } from "@/lib/reader";
+import { ReaderLang, readerText } from "@/lib/readerText";
 
 /**
  * The verdict as a feed card shows it: the badge, then how the judged
@@ -14,20 +8,20 @@ import {
  * we failed to check. "Unverified" next to "2 true · 1 not checked" says
  * what the badge alone hides: the article verdict is worst-claim-wins.
  */
-export function VerdictLine({ summary }: { summary: ReaderVerdictSummary }) {
-  const judged = tally(summary);
+export function VerdictLine({ summary, lang }: { summary: ReaderVerdictSummary; lang: ReaderLang }) {
+  const t = readerText(lang);
+  const judged = tally(summary, t);
+  const reasons = notJudgedReasons(summary, t);
 
   return (
     <div className="reader-verdict-line">
-      <VerdictBadge verdict={badgeVerdict(summary)} />
+      <VerdictBadge verdict={badgeVerdict(summary)} lang={lang} guide />
       {judged && <span>{judged}</span>}
       {/* Nothing judged: the badge already says "Not checked", so say why. */}
-      {summary.display === "NOT_CHECKED" && notJudgedReasons(summary) && (
-        <span>{capitalise(notJudgedReasons(summary))}</span>
-      )}
+      {summary.display === "NOT_CHECKED" && reasons && <span>{capitalise(reasons)}</span>}
       {summary.display !== "NOT_CHECKED" && summary.notJudged > 0 && (
-        <span className="reader-not-judged" title={notJudgedReasons(summary)}>
-          {summary.notJudged} not checked
+        <span className="reader-not-judged" title={reasons}>
+          {t.notCheckedCount(summary.notJudged)}
         </span>
       )}
     </div>
@@ -41,10 +35,11 @@ export function VerdictLine({ summary }: { summary: ReaderVerdictSummary }) {
  * outweighing several true ones, a verdict resting on fewer claims than
  * usual.
  */
-export function VerdictPanel({ summary }: { summary: ReaderVerdictSummary }) {
+export function VerdictPanel({ summary, lang }: { summary: ReaderVerdictSummary; lang: ReaderLang }) {
+  const t = readerText(lang);
   const notChecked = summary.display === "NOT_CHECKED";
-  const judged = tally(summary);
-  const reasons = notJudgedReasons(summary);
+  const judged = tally(summary, t);
+  const reasons = notJudgedReasons(summary, t);
 
   // The article is UNVERIFIED only because of claims we failed to check:
   // no judged claim is UNVERIFIED, so the failures decided it.
@@ -54,63 +49,41 @@ export function VerdictPanel({ summary }: { summary: ReaderVerdictSummary }) {
     !summary.counts.UNVERIFIED &&
     summary.notJudged > 0;
 
+  const parts = [judged, summary.notJudged > 0 ? t.couldNotBeChecked(summary.notJudged) : ""].filter(Boolean);
+
   return (
     <section className="card reader-verdict-panel" aria-labelledby="reader-verdict-title">
       <div className="reader-verdict-head">
         <span className="reader-verdict-badge">
-          <VerdictBadge verdict={badgeVerdict(summary)} />
+          <VerdictBadge verdict={badgeVerdict(summary)} lang={lang} guide />
         </span>
         {!notChecked && summary.confidence !== null && (
-          <span className="reader-confidence">
-            confidence {percent(summary.confidence)}
-          </span>
+          <span className="reader-confidence">{t.confidence(percent(summary.confidence))}</span>
         )}
       </div>
 
       <h2 id="reader-verdict-title" className="reader-verdict-title">
-        {notChecked
-          ? "None of this article's claims could be checked."
-          : `${plural(summary.claimsChecked, "claim")} selected${
-              summary.claimsTotal > summary.claimsChecked
-                ? ` from ${plural(summary.claimsTotal, "statement")}`
-                : ""
-            }: ${[judged, summary.notJudged > 0 && `${summary.notJudged} could not be checked`]
-              .filter(Boolean)
-              .join(", ")}.`}
+        {notChecked ? t.noneCouldBeChecked : t.claimsSelected(summary.claimsChecked, summary.claimsTotal, parts)}
       </h2>
 
       <ul className="reader-verdict-notes">
         {notChecked && (
           <li>
             {reasons ? `${capitalise(reasons)}. ` : ""}
-            That is a failure on our side, not a finding about the article.
+            {t.ourFailureArticle}
           </li>
         )}
 
         {!notChecked && summary.notJudged > 0 && (
           <li className="reader-note-warn">
-            {summary.notJudged === 1 ? "The one" : `The ${summary.notJudged}`} that could not be
-            checked {reasons ? `(${reasons}) ` : ""}
-            {summary.notJudged === 1 ? "is" : "are"} not counted as a verdict: that is a failure on
-            our side, not a finding about the claim.
-            {unverifiedByFailure &&
-              " The article reads Unverified because of them alone: no claim that was checked came out unverified."}
+            {t.notCountedAsVerdict(summary.notJudged, reasons)}
+            {unverifiedByFailure && t.unverifiedByFailure(summary.notJudged)}
           </li>
         )}
 
-        {!notChecked && (
-          <li>
-            The article takes its weakest claim&apos;s verdict, so one unverified claim outweighs
-            any number of true ones. Confidence is the average across its claims.
-          </li>
-        )}
+        {!notChecked && <li>{t.weakestClaim}</li>}
 
-        {summary.belowAnchorFloor && (
-          <li className="reader-note-warn">
-            Fewer central claims than usual were found in this article, so the verdict rests on
-            less than usual.
-          </li>
-        )}
+        {summary.belowAnchorFloor && <li className="reader-note-warn">{t.belowAnchorFloor}</li>}
       </ul>
     </section>
   );

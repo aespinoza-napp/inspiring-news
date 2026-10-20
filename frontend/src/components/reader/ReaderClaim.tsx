@@ -1,50 +1,42 @@
-import { QUERY_KIND_LABELS, Rating } from "@/components/LiveTrace";
+import { Rating } from "@/components/LiveTrace";
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { safeHref } from "@/lib/graphStyle";
-import {
-  ClaimOutcome,
-  NOT_JUDGED,
-  ReaderClaim as Claim,
-  ReaderSource,
-  VERDICT_WORDS,
-  percent,
-  plural,
-  readableDate,
-} from "@/lib/reader";
-import { EvidenceStance } from "@/lib/types";
+import { NOT_JUDGED, ReaderClaim as Claim, ReaderSource, percent } from "@/lib/reader";
+import { ReaderLang, ReaderText, dateIn, readerText } from "@/lib/readerText";
 
 /**
- * What each way a check can end means, said to a reader. The three
- * failures say plainly that nothing was judged: in the record they are
- * UNVERIFIED like a real one, and drawn as one they would present our
- * outage as a finding about the claim.
+ * What each way a check can end means, said to a reader (readerText's
+ * `outcome`). The three failures say plainly that nothing was judged: in
+ * the record they are UNVERIFIED like a real one, and drawn as one they
+ * would present our outage as a finding about the claim. `no_answer` and
+ * `llm_unreachable` read alike because the record cannot tell them apart:
+ * the pipeline wrote the same explanation for both before
+ * `llm_unreachable` existed.
  */
-const OUTCOME_TEXT: Record<ClaimOutcome, string> = {
-  judged: "",
-  ungrounded:
-    "The model gave an answer but could not point to a source that bears it out, so the claim stands as unverified.",
-  no_evidence:
-    "Searched for, and nothing that addresses this claim came back. Unverified here means looked for and not found.",
-  search_unavailable:
-    "Not checked: the web search failed, so nothing was looked at. This is not a verdict on the claim.",
-  llm_unreachable:
-    "Not checked: the model could not be reached. The sources found are listed below, but nobody weighed them.",
-  // The record cannot tell these two apart: the pipeline wrote the same
-  // explanation for both before `llm_unreachable` existed.
-  no_answer:
-    "Not checked: the model was unavailable or gave no usable answer. The sources found are listed below, but nobody weighed them.",
-};
+function outcomeText(t: ReaderText, outcome: Claim["outcome"]): string {
+  return outcome === "judged" ? "" : t.outcome[outcome];
+}
 
-const STANCE_TEXT: Record<EvidenceStance, string> = {
-  supports: "supports the claim",
-  contradicts: "contradicts the claim",
-  unrelated: "judged unrelated",
-};
-
-/** One checked claim: its verdict, how the check ended, and the sources it rests on. */
-export function ReaderClaim({ claim, number }: { claim: Claim; number: number }) {
+/**
+ * One checked claim: its verdict, how the check ended, and the sources it
+ * rests on. The claim, the model's explanation and the sources' own words
+ * stay in the language they were written in (`lang` on each).
+ */
+export function ReaderClaim({
+  claim,
+  number,
+  lang,
+  contentLang,
+}: {
+  claim: Claim;
+  number: number;
+  lang: ReaderLang;
+  contentLang: string | null;
+}) {
+  const t = readerText(lang);
   const failed = NOT_JUDGED.includes(claim.outcome);
   const cited = claim.sources.filter((source) => source.cited).length;
+  const outcome = outcomeText(t, claim.outcome);
 
   return (
     <li
@@ -54,40 +46,44 @@ export function ReaderClaim({ claim, number }: { claim: Claim; number: number })
     >
       <div className="reader-claim-head">
         <p className="reader-claim-text">
-          <span className="reader-claim-number">{number}.</span> {claim.text}
+          <span className="reader-claim-number">{number}.</span>{" "}
+          <span lang={contentLang ?? undefined}>{claim.text}</span>
         </p>
         <span className="reader-claim-verdict">
-          <VerdictBadge verdict={failed ? null : claim.verdict} />
+          <VerdictBadge verdict={failed ? null : claim.verdict} lang={lang} guide />
           {/* Only a judgement has a confidence; a forced UNVERIFIED's is 0 and says nothing. */}
           {claim.outcome === "judged" && claim.confidence !== null && (
-            <span>{percent(claim.confidence)} confident</span>
+            <span>{t.confident(percent(claim.confidence))}</span>
           )}
         </span>
       </div>
 
-      {OUTCOME_TEXT[claim.outcome] && (
-        <p className={`reader-outcome${failed ? " reader-outcome-failed" : ""}`}>
-          {OUTCOME_TEXT[claim.outcome]}
-        </p>
-      )}
+      {outcome && <p className={`reader-outcome${failed ? " reader-outcome-failed" : ""}`}>{outcome}</p>}
 
-      {/* The model's own reasoning - only where the model actually judged. */}
+      {/* The model's own reasoning - only where the model actually judged.
+          Not marked with a language: the verifier's prompt is English but
+          does not say which language to answer in, and it answers in either. */}
       {(claim.outcome === "judged" || claim.outcome === "ungrounded") && claim.explanation && (
         <p className="reader-explanation">{claim.explanation}</p>
       )}
 
       {claim.modelVerdict && !failed && (
         <p className="reader-fine">
-          The model itself answered <strong>{VERDICT_WORDS[claim.modelVerdict]}</strong>
-          {overrideReason(claim.note) ? `; it was changed because ${overrideReason(claim.note)}.` : "."}
+          {t.modelAnswered} <strong>{t.verdict[claim.modelVerdict]}</strong>
+          {/* The reason is the pipeline's own note, in English: shown as written. */}
+          {overrideReason(claim.note) ? (
+            <>
+              {t.changedBecause}
+              <span lang="en">{overrideReason(claim.note)}</span>.
+            </>
+          ) : (
+            "."
+          )}
         </p>
       )}
 
       {claim.searchUnavailable && claim.outcome === "judged" && (
-        <p className="reader-fine reader-note-warn">
-          The web search failed for this claim; the verdict rests only on articles this site had
-          already checked.
-        </p>
+        <p className="reader-fine reader-note-warn">{t.searchFailedNote}</p>
       )}
 
       {/* Stances are the model's reading of each source: where it never
@@ -95,10 +91,10 @@ export function ReaderClaim({ claim, number }: { claim: Claim; number: number })
       {!failed && (claim.agreements.length > 0 || claim.discrepancies.length > 0) && (
         <div className="comparison-block">
           {claim.agreements.length > 0 && (
-            <Comparison title="Where the sources agree" items={claim.agreements} kind="agreements" />
+            <Comparison title={t.sourcesAgree} items={claim.agreements} kind="agreements" />
           )}
           {claim.discrepancies.length > 0 && (
-            <Comparison title="Where they differ" items={claim.discrepancies} kind="discrepancies" />
+            <Comparison title={t.sourcesDiffer} items={claim.discrepancies} kind="discrepancies" />
           )}
         </div>
       )}
@@ -106,14 +102,12 @@ export function ReaderClaim({ claim, number }: { claim: Claim; number: number })
       {claim.sources.length > 0 && (
         <div className="trace-block">
           <p className="trace-label">
-            {plural(claim.sources.length, "source")}
-            {failed ? " found" : ` weighed, ${cited} cited by the model`}
-            {claim.independentDomains > 0 &&
-              ` · ${plural(claim.independentDomains, "independent site")}`}
+            {t.sourcesLine(claim.sources.length, failed ? null : cited)}
+            {claim.independentDomains > 0 && t.independentSites(claim.independentDomains)}
           </p>
           <ul className="trace-sources">
             {claim.sources.map((source, index) => (
-              <SourceRow key={`${source.url}-${index}`} source={source} judged={!failed} />
+              <SourceRow key={`${source.url}-${index}`} source={source} judged={!failed} t={t} />
             ))}
           </ul>
         </div>
@@ -121,19 +115,19 @@ export function ReaderClaim({ claim, number }: { claim: Claim; number: number })
 
       {claim.notUsedTotal > 0 && (
         <details className="trace-block reader-not-used">
-          <summary className="trace-label">
-            {plural(claim.notUsedTotal, "more page")} found and set aside
-          </summary>
+          <summary className="trace-label">{t.setAside(claim.notUsedTotal)}</summary>
           <ul className="trace-rejected">
             {claim.notUsed.map((item, index) => (
               <li key={`${item.url}-${index}`} className="trace-source">
                 <SourceLink url={item.url} title={item.title} />
-                <span className="trace-muted">{item.reason}</span>
+                <span className="trace-muted" lang="en">
+                  {item.reason}
+                </span>
               </li>
             ))}
           </ul>
           {claim.notUsedTotal > claim.notUsed.length && (
-            <p className="reader-fine">and {claim.notUsedTotal - claim.notUsed.length} more.</p>
+            <p className="reader-fine">{t.andMore(claim.notUsedTotal - claim.notUsed.length)}</p>
           )}
         </details>
       )}
@@ -148,8 +142,8 @@ export function ReaderClaim({ claim, number }: { claim: Claim; number: number })
  * unrated site gets), how well it addresses the claim, and the ranking
  * factors behind its relevance.
  */
-function SourceRow({ source, judged }: { source: ReaderSource; judged: boolean }) {
-  const published = readableDate(source.publishedAt);
+function SourceRow({ source, judged, t }: { source: ReaderSource; judged: boolean; t: ReaderText }) {
+  const published = dateIn(t, source.publishedAt);
 
   return (
     <li className="trace-source trace-source-rated reader-source">
@@ -161,14 +155,14 @@ function SourceRow({ source, judged }: { source: ReaderSource; judged: boolean }
       <span className="trace-source-meta">
         {judged &&
           (source.cited ? (
-            <span className="trace-tag trace-tag-ok">cited by the model</span>
+            <span className="trace-tag trace-tag-ok">{t.citedByModel}</span>
           ) : (
-            <span className="trace-tag">not cited</span>
+            <span className="trace-tag">{t.notCited}</span>
           ))}
         {judged && source.stance && (
-          <span className={`stance-chip stance-${source.stance}`}>{STANCE_TEXT[source.stance]}</span>
+          <span className={`stance-chip stance-${source.stance}`}>{t.stance[source.stance]}</span>
         )}
-        {source.origin === "internal" && <span className="trace-tag">an article checked here before</span>}
+        {source.origin === "internal" && <span className="trace-tag">{t.checkedHereBefore}</span>}
         {published && <span className="trace-muted">{published}</span>}
       </span>
 
@@ -178,25 +172,25 @@ function SourceRow({ source, judged }: { source: ReaderSource; judged: boolean }
         source.snippet && <p className="reader-snippet">{source.snippet}</p>
       )}
 
-      <div className="trace-ratings" aria-label="Why this source was trusted">
+      <div className="trace-ratings" aria-label={t.whyTrusted}>
         <Rating
-          label="Site reliability"
+          label={t.rating.reliability}
           value={source.reliabilityKnown ? source.scores.reliability : null}
-          note={source.reliabilityKnown ? percent(source.scores.reliability) : "unrated"}
+          note={source.reliabilityKnown ? percent(source.scores.reliability) : t.unrated}
         />
-        <Rating label="Addresses the claim" value={source.scores.pertinence} />
-        <Rating label="Relevance" value={source.scores.relevance} strong />
-        <Rating label="Wording match" value={source.scores.semantic} />
-        <Rating label="Claim terms" value={source.scores.lexical} />
-        <Rating label="Recency" value={source.scores.recency} />
+        <Rating label={t.rating.pertinence} value={source.scores.pertinence} />
+        <Rating label={t.rating.relevance} value={source.scores.relevance} strong />
+        <Rating label={t.rating.semantic} value={source.scores.semantic} />
+        <Rating label={t.rating.lexical} value={source.scores.lexical} />
+        <Rating label={t.rating.recency} value={source.scores.recency} />
       </div>
 
       <p className="trace-muted trace-fine reader-source-why">
         {source.reliabilityKnown
-          ? `A site with a reliability rating of ${percent(source.scores.reliability)}.`
-          : `Nobody has rated this site; ranking assumed ${percent(source.scores.reliability)}.`}
+          ? t.ratedSite(percent(source.scores.reliability))
+          : t.unratedSite(percent(source.scores.reliability))}
         {source.foundBy.length > 0 &&
-          ` Found by the search for ${source.foundBy.map((kind) => QUERY_KIND_LABELS[kind] ?? kind).join(" and ")}.`}
+          t.foundBySearch(source.foundBy.map((kind) => t.queryKind[kind] ?? kind).join(t.and))}
       </p>
     </li>
   );

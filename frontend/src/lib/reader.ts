@@ -8,6 +8,7 @@
  * for different reasons. Keep it in sync with views.py all the same.
  */
 
+import type { ReaderText } from "@/lib/readerText";
 import { EvidenceStance, QueryKind, Verdict } from "@/lib/types";
 
 /**
@@ -165,29 +166,14 @@ export interface ReaderArticle extends ReaderCard {
 /** Worst first, the order the article verdict is decided in. */
 export const VERDICT_ORDER: Verdict[] = ["FALSE", "MISLEADING", "UNVERIFIED", "PARTIALLY_TRUE", "TRUE"];
 
-export const VERDICT_WORDS: Record<Verdict, string> = {
-  TRUE: "true",
-  PARTIALLY_TRUE: "partly true",
-  FALSE: "false",
-  MISLEADING: "misleading",
-  UNVERIFIED: "unverified",
-};
-
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: "English",
-  es: "Spanish",
-};
-
-export function languageName(code: string | null): string {
-  if (!code) return "Unknown language";
-  return LANGUAGE_NAMES[code.toLowerCase()] ?? code.toUpperCase();
-}
-
 export function percent(value: number | null | undefined): string {
   return value === null || value === undefined ? "–" : `${Math.round(value * 100)}%`;
 }
 
-/** A date for a reader: "18 Sep 2026". The raw string if it does not parse. */
+/**
+ * A date for the operator pages (drafts): the runtime's locale. The
+ * reader's pages use readerText's dateIn, in the page's language.
+ */
 export function readableDate(iso: string | null): string | null {
   if (!iso) return null;
   const date = new Date(iso);
@@ -200,24 +186,20 @@ export function badgeVerdict(summary: ReaderVerdictSummary): Verdict | null {
   return summary.display === "NOT_CHECKED" ? null : summary.display;
 }
 
-/** "2 true, 1 unverified" - judged claims only, worst first. */
-export function tally(summary: ReaderVerdictSummary): string {
+/** "2 true, 1 unverified" - judged claims only, worst first, in the page's language. */
+export function tally(summary: ReaderVerdictSummary, t: ReaderText): string {
   return VERDICT_ORDER.filter((verdict) => summary.counts[verdict])
-    .map((verdict) => `${summary.counts[verdict]} ${VERDICT_WORDS[verdict]}`)
+    .map((verdict) => t.verdictTally(verdict, summary.counts[verdict] ?? 0))
     .join(", ");
 }
 
 /** Why claims went unjudged, e.g. "web search failed for 2, the model was unreachable for 1". */
-export function notJudgedReasons(summary: ReaderVerdictSummary): string {
+export function notJudgedReasons(summary: ReaderVerdictSummary, t: ReaderText): string {
   return [
-    summary.searchUnavailable && `web search failed for ${summary.searchUnavailable}`,
-    summary.llmUnreachable && `the model was unreachable for ${summary.llmUnreachable}`,
-    summary.noAnswer && `the model was unavailable or gave no usable answer for ${summary.noAnswer}`,
+    summary.searchUnavailable && t.searchFailedFor(summary.searchUnavailable),
+    summary.llmUnreachable && t.modelUnreachableFor(summary.llmUnreachable),
+    summary.noAnswer && t.noAnswerFor(summary.noAnswer),
   ]
     .filter(Boolean)
     .join(", ");
-}
-
-export function plural(count: number, one: string, many = `${one}s`): string {
-  return `${count} ${count === 1 ? one : many}`;
 }

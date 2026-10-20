@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { LanguageSwitch } from "@/components/reader/LanguageSwitch";
 import { ReaderCard } from "@/components/reader/ReaderCard";
 import { StoryList } from "@/components/reader/StoryList";
-import { ReaderFeed, languageName, plural } from "@/lib/reader";
+import { ReaderFeed } from "@/lib/reader";
+import { ReaderText, languageNameIn, readerText, topicName, withLang } from "@/lib/readerText";
+import { useReaderLang } from "@/lib/useReaderLang";
 
 const PAGE_SIZE = 20;
 
@@ -20,6 +23,8 @@ const EMPTY_QUERY: FeedQuery = { topic: null, language: null, page: 0 };
 /**
  * The filters live in the URL (?topic=Climate&language=es&page=2), so a
  * filtered feed can be linked to and Back from an article returns to it.
+ * `language` filters the articles; `lang` (useReaderLang) is the page's
+ * own language, kept beside them.
  * Read once on arrival, written on every change - in the handler, not in
  * an effect, for the Strict Mode reason given in app/graph/page.tsx.
  */
@@ -36,21 +41,25 @@ function readQuery(): FeedQuery {
 
 function writeQuery(query: FeedQuery) {
   const url = new URL(window.location.href);
+  const lang = url.searchParams.get("lang");
   url.search = "";
+  if (lang) url.searchParams.set("lang", lang);
   if (query.topic) url.searchParams.set("topic", query.topic);
   if (query.language) url.searchParams.set("language", query.language);
   if (query.page > 0) url.searchParams.set("page", String(query.page + 1));
   window.history.replaceState(null, "", url);
 }
 
-function errorMessage(data: unknown, status: number): string {
+function errorMessage(data: unknown, status: number, t: ReaderText): string {
   const body = (data ?? {}) as { detail?: unknown; error?: unknown };
   if (typeof body.detail === "string") return body.detail;
   if (typeof body.error === "string") return body.error;
-  return `Loading the feed failed (${status}).`;
+  return t.feedFailed(status);
 }
 
 export default function ReaderPage() {
+  const [lang, setLang] = useReaderLang();
+  const t = readerText(lang);
   const [query, setQuery] = useState<FeedQuery | null>(null);
   const [feed, setFeed] = useState<ReaderFeed | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +87,7 @@ export default function ReaderPage() {
       try {
         const response = await fetch(`/api/reader/articles?${search}`, { cache: "no-store" });
         const data = await response.json();
-        if (!response.ok) throw new Error(errorMessage(data, response.status));
+        if (!response.ok) throw new Error(errorMessage(data, response.status, readerText(lang)));
         if (cancelled) return;
         setFeed(data as ReaderFeed);
         setError(null);
@@ -93,6 +102,8 @@ export default function ReaderPage() {
     return () => {
       cancelled = true;
     };
+    // Not on `lang`: it only words an error, and a new language is no
+    // reason to fetch the feed again.
   }, [query]);
 
   function update(next: FeedQuery) {
@@ -110,34 +121,36 @@ export default function ReaderPage() {
 
   return (
     <>
-      <h1>Checked articles</h1>
-      <p className="subtitle">
-        Articles that passed every step: on a topic we cover, constructive, not a duplicate, and
-        not judged false or misleading. Each says how its claims came out and what the verdict
-        rests on.
+      <LanguageSwitch lang={lang} onSelect={setLang} />
+
+      <h1>{t.feedTitle}</h1>
+      <p className="subtitle">{t.feedSubtitle}</p>
+      <p className="reader-guide-link">
+        <Link href={withLang("/reader/guide", lang)}>{t.guidePage.title}</Link>
       </p>
 
       {/* The articles the newsroom wrote from these (docs/decisions/
           writing.md, "Publishing"). Shown only once one is published, and
           outside the filters below, which are the checked articles'. */}
-      <StoryList />
+      <StoryList lang={lang} />
 
       {error && <div className="error-banner">{error}</div>}
 
       {!feed && loading && !error && (
         <p className="reader-loading">
-          <span className="spinner" aria-hidden="true" /> Loading the feed…
+          <span className="spinner" aria-hidden="true" /> {t.loadingFeed}
         </p>
       )}
 
       {feed && query && feed.lake.publishable > 0 && (
-        <Filters feed={feed} query={query} onChange={update} />
+        <Filters feed={feed} query={query} onChange={update} t={t} />
       )}
 
       {feed && query && (
         <div className="reader-feed" aria-busy={loading}>
           {feed.items.length === 0 ? (
             <EmptyFeed
+              t={t}
               feed={feed}
               filtered={filtered}
               onClear={() => update(EMPTY_QUERY)}
@@ -146,28 +159,28 @@ export default function ReaderPage() {
           ) : (
             <>
               <p className="reader-count">
-                {plural(feed.total, "article")}
-                {filtered ? " match" : ""}
+                {t.articles(feed.total)}
+                {filtered ? t.match : ""}
                 {feed.total > feed.limit &&
-                  ` · ${feed.offset + 1}–${Math.min(feed.offset + feed.items.length, feed.total)} shown`}
+                  t.shown(feed.offset + 1, Math.min(feed.offset + feed.items.length, feed.total))}
               </p>
 
               {feed.items.map((article) => (
-                <ReaderCard key={article.id} article={article} />
+                <ReaderCard key={article.id} article={article} lang={lang} />
               ))}
 
               {feed.total > feed.limit && (
-                <nav className="reader-pager" aria-label="Pages">
+                <nav className="reader-pager" aria-label={t.pages}>
                   <button
                     type="button"
                     className="reader-pager-button"
                     disabled={query.page === 0 || loading}
                     onClick={() => goToPage(query.page - 1)}
                   >
-                    ← Newer
+                    {t.newer}
                   </button>
                   <span className="reader-pager-status">
-                    Page {query.page + 1} of {Math.ceil(feed.total / feed.limit)}
+                    {t.pageOf(query.page + 1, Math.ceil(feed.total / feed.limit))}
                   </span>
                   <button
                     type="button"
@@ -175,7 +188,7 @@ export default function ReaderPage() {
                     disabled={feed.offset + feed.items.length >= feed.total || loading}
                     onClick={() => goToPage(query.page + 1)}
                   >
-                    Older →
+                    {t.older}
                   </button>
                 </nav>
               )}
@@ -191,10 +204,12 @@ function Filters({
   feed,
   query,
   onChange,
+  t,
 }: {
   feed: ReaderFeed;
   query: FeedQuery;
   onChange: (next: FeedQuery) => void;
+  t: ReaderText;
 }) {
   // A selected value stays on screen even where the other filter leaves
   // it no articles, so it can still be seen and switched off.
@@ -207,18 +222,20 @@ function Filters({
   return (
     <div className="reader-filters">
       <FilterRow
-        label="Topic"
+        label={t.filterTopic}
+        all={t.all}
         options={topics}
         selected={query.topic}
-        describe={(value) => value}
+        describe={(value) => topicName(t, value)}
         onSelect={(topic) => onChange({ ...query, topic, page: 0 })}
       />
       {languages.length > 1 || query.language ? (
         <FilterRow
-          label="Language"
+          label={t.filterLanguage}
+          all={t.all}
           options={languages}
           selected={query.language}
-          describe={languageName}
+          describe={(value) => languageNameIn(t, value)}
           onSelect={(language) => onChange({ ...query, language, page: 0 })}
         />
       ) : null}
@@ -240,12 +257,14 @@ function withSelected(options: FilterOption[], selected: string | null): FilterO
 
 function FilterRow({
   label,
+  all,
   options,
   selected,
   describe,
   onSelect,
 }: {
   label: string;
+  all: string;
   options: FilterOption[];
   selected: string | null;
   describe: (value: string) => string;
@@ -264,7 +283,7 @@ function FilterRow({
           aria-pressed={isSelected(null)}
           onClick={() => onSelect(null)}
         >
-          All
+          {all}
         </button>
         {options.map((option) => (
           <button
@@ -290,24 +309,29 @@ function FilterRow({
  * misleading; the rest are this page's own filters and paging.
  */
 function EmptyFeed({
+  t,
   feed,
   filtered,
   onClear,
   onFirstPage,
 }: {
+  t: ReaderText;
   feed: ReaderFeed;
   filtered: boolean;
   onClear: () => void;
   onFirstPage: () => void;
 }) {
   if (feed.lake.analysed === 0) {
+    const words = t.emptyNothingAnalysed;
     return (
       <div className="card reader-empty">
-        <h2>Nothing has been analysed yet</h2>
+        <h2>{t.emptyNothingAnalysedTitle}</h2>
         <p>
-          The store holds no analysed article, so there is nothing to publish. Analyse one on
-          the <Link href="/">Analyzer</Link>, or queue a batch from the ingest panel on{" "}
-          <Link href="/scraper">Scraper</Link>; every article that passes appears here.
+          {words.before}
+          <Link href="/">{words.analyzer}</Link>
+          {words.middle}
+          <Link href="/scraper">{words.scraper}</Link>
+          {words.after}
         </p>
       </div>
     );
@@ -316,11 +340,11 @@ function EmptyFeed({
   if (feed.lake.publishable === 0) {
     return (
       <div className="card reader-empty">
-        <h2>Nothing has been published</h2>
+        <h2>{t.emptyNothingPublishedTitle}</h2>
         <p>
-          {plural(feed.lake.analysed, "article")} analysed, and none passed. Each was turned away
-          before checking (off-topic, not constructive, or a duplicate) or was judged false or
-          misleading. <Link href="/scraper">Scraper</Link> shows what became of each one.
+          {t.emptyNothingPublished(feed.lake.analysed)}
+          <Link href="/scraper">{t.emptyNothingPublishedLink}</Link>
+          {t.emptyNothingPublishedAfter}
         </p>
       </div>
     );
@@ -329,10 +353,10 @@ function EmptyFeed({
   if (feed.total > 0) {
     return (
       <div className="card reader-empty">
-        <h2>This page is past the end</h2>
-        <p>There are {plural(feed.total, "article")} on fewer pages than that.</p>
+        <h2>{t.emptyPastEndTitle}</h2>
+        <p>{t.emptyPastEnd(feed.total)}</p>
         <button type="button" className="reader-pager-button" onClick={onFirstPage}>
-          Go to the first page
+          {t.firstPage}
         </button>
       </div>
     );
@@ -340,14 +364,11 @@ function EmptyFeed({
 
   return (
     <div className="card reader-empty">
-      <h2>No published article matches</h2>
-      <p>
-        {plural(feed.lake.publishable, "article")} published; none matches{" "}
-        {filtered ? "these filters" : "this view"}.
-      </p>
+      <h2>{t.emptyNoMatchTitle}</h2>
+      <p>{t.emptyNoMatch(feed.lake.publishable, filtered)}</p>
       {filtered && (
         <button type="button" className="reader-pager-button" onClick={onClear}>
-          Clear the filters
+          {t.clearFilters}
         </button>
       )}
     </div>

@@ -3,16 +3,8 @@ import { ArticleBody } from "@/components/drafts/ArticleBody";
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { safeHref } from "@/lib/links";
 import { percent } from "@/lib/reader";
-import {
-  ORIGIN_LABEL,
-  PublishedStory,
-  StoryFactCheck,
-  StorySource,
-  disclosureText,
-  storyDate,
-  storyLanguageName,
-  verdictOf,
-} from "@/lib/stories";
+import { ReaderLang, ReaderText, dateIn, languageNameIn, readerText, topicName, withLang } from "@/lib/readerText";
+import { PublishedStory, StoryFactCheck, StorySource, verdictOf } from "@/lib/stories";
 import styles from "./StoryArticle.module.css";
 
 const READER_ID = /^[0-9a-f]{16}$/;
@@ -23,17 +15,18 @@ const READER_ID = /^[0-9a-f]{16}$/;
  * in its HTML. Nothing here acts on the draft - no operator control
  * belongs on a /reader page, which Caddy serves without the password.
  */
-export function StoryArticle({ story }: { story: PublishedStory }) {
-  const published = storyDate(story.publishedAt);
+export function StoryArticle({ story, lang }: { story: PublishedStory; lang: ReaderLang }) {
+  const t = readerText(lang);
+  const published = dateIn(t, story.publishedAt);
 
   return (
     <article className={styles.article}>
       <header>
         <p className="reader-byline">
-          <span className="reader-source-name">Our newsroom</span>
+          <span className="reader-source-name">{t.ourNewsroom}</span>
           <time dateTime={story.publishedAt}>{published}</time>
-          <span>{storyLanguageName(story.language)}</span>
-          {story.metadata.topic && <span className="reader-topic">{story.metadata.topic}</span>}
+          <span>{languageNameIn(t, story.language)}</span>
+          {story.metadata.topic && <span className="reader-topic">{topicName(t, story.metadata.topic)}</span>}
         </p>
 
         <h1 className={`reader-headline ${styles.headline}`} lang={story.language}>{story.content.title}</h1>
@@ -46,12 +39,13 @@ export function StoryArticle({ story }: { story: PublishedStory }) {
 
       {/* Before the text, not after it: a reader should know what wrote
           it before reading it (docs/decisions/writing.md, "Publishing"). */}
-      <aside className={styles.disclosure} aria-label="How this article was written">
-        <p>{disclosureText(story.disclosure)}</p>
+      <aside className={styles.disclosure} aria-label={t.howWritten}>
+        <p>{t.disclosure(story.disclosure.aiWritten, story.disclosure.humanEdited, story.disclosure.models)}</p>
         {READER_ID.test(story.sourceArticleId) && (
           <p>
-            It starts from <Link href={`/reader/${story.sourceArticleId}`}>a news article we checked</Link>, where each
-            of its claims and the sources behind the verdict are shown.
+            {t.startsFrom.before}
+            <Link href={withLang(`/reader/${story.sourceArticleId}`, lang)}>{t.startsFrom.link}</Link>
+            {t.startsFrom.after}
           </p>
         )}
       </aside>
@@ -60,12 +54,14 @@ export function StoryArticle({ story }: { story: PublishedStory }) {
         <ArticleBody body={story.content.body} />
       </div>
 
-      {story.sources.length > 0 && <Sources sources={story.sources} />}
+      {story.sources.length > 0 && <Sources sources={story.sources} t={t} />}
 
-      {story.factChecks.length > 0 && <FactChecks checks={story.factChecks} sources={story.sources} />}
+      {story.factChecks.length > 0 && (
+        <FactChecks checks={story.factChecks} sources={story.sources} t={t} lang={lang} />
+      )}
 
       {story.metadata.tags.length > 0 && (
-        <div className={`chip-row ${styles.tags}`} aria-label="Tags">
+        <div className={`chip-row ${styles.tags}`} aria-label={t.tags} lang={story.language}>
           {story.metadata.tags.map((tag) => (
             <span key={tag} className="chip">
               {tag}
@@ -75,24 +71,24 @@ export function StoryArticle({ story }: { story: PublishedStory }) {
       )}
 
       <footer className={styles.footer}>
-        Published {published}.{" "}
-        <Link href="/reader">More checked news and our articles</Link>
+        {t.publishedOn(published ?? "")}{" "}
+        <Link href={withLang("/reader", lang)}>{t.moreNews}</Link>
       </footer>
     </article>
   );
 }
 
 /** Numbered as the body cites them: the n-th is `#source-n`, the target of `[n]`. */
-function Sources({ sources }: { sources: StorySource[] }) {
+function Sources({ sources, t }: { sources: StorySource[]; t: ReaderText }) {
   return (
     <section className="reader-section" aria-labelledby="story-sources-title">
       <h2 id="story-sources-title" className="section-label">
-        Sources
+        {t.sourcesTitle}
       </h2>
       <ol className={styles.sources}>
         {sources.map((source, index) => {
           const href = safeHref(source.url);
-          const date = source.publishedAt ? storyDate(source.publishedAt) : null;
+          const date = dateIn(t, source.publishedAt);
           const title = source.title || source.domain || source.url;
 
           return (
@@ -105,7 +101,7 @@ function Sources({ sources }: { sources: StorySource[] }) {
                 <span>{title}</span>
               )}
               <span className={styles.sourceMeta}>
-                {[source.domain, date, ORIGIN_LABEL[source.origin] ?? null].filter(Boolean).join(" · ")}
+                {[source.domain, date, t.origin[source.origin] ?? null].filter(Boolean).join(" · ")}
               </span>
             </li>
           );
@@ -120,30 +116,38 @@ function Sources({ sources }: { sources: StorySource[] }) {
  * the sources its verdict used: by number when the article cites the same
  * page, as a link otherwise.
  */
-function FactChecks({ checks, sources }: { checks: StoryFactCheck[]; sources: StorySource[] }) {
+function FactChecks({
+  checks,
+  sources,
+  t,
+  lang,
+}: {
+  checks: StoryFactCheck[];
+  sources: StorySource[];
+  t: ReaderText;
+  lang: ReaderLang;
+}) {
   const numberOf = new Map(sources.map((source, index) => [source.url, index + 1]));
 
   return (
     <section className="reader-section" aria-labelledby="story-checks-title">
       <h2 id="story-checks-title" className="section-label">
-        What was checked
+        {t.checkedTitle}
       </h2>
-      <p className="reader-fine">
-        The claims of the article we started from, as our fact-checker judged them.
-      </p>
+      <p className="reader-fine">{t.checkedIntro}</p>
       <ul className={styles.checks}>
         {checks.map((check, index) => (
           <li key={index} className={styles.check}>
             <div className={styles.checkHead}>
-              <VerdictBadge verdict={verdictOf(check.verdict)} />
+              <VerdictBadge verdict={verdictOf(check.verdict)} lang={lang} guide />
               {check.confidence !== null && (
-                <span className={styles.confidence}>confidence {percent(check.confidence)}</span>
+                <span className={styles.confidence}>{t.confidence(percent(check.confidence))}</span>
               )}
             </div>
             <p className={styles.claim}>{check.claim}</p>
             {check.sourceUrls.length > 0 && (
               <p className={styles.checkSources}>
-                Rests on{" "}
+                {t.restsOn}
                 {check.sourceUrls.map((url, item) => {
                   const number = numberOf.get(url);
                   const href = safeHref(url);
