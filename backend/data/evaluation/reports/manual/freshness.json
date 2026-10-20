@@ -1,0 +1,416 @@
+{
+  "dataset": {
+    "path": "data/evaluation/manual",
+    "stem": "manual",
+    "sha256": "d115df02ec4486e8a055e3251b266e0a28db47eb6d98d73f1c4f5bb7cb43813a"
+  },
+  "set": {
+    "rows": 139,
+    "mutatedLeftOut": 30,
+    "undated": [
+      "fact025",
+      "fact031",
+      "fact048",
+      "fact049",
+      "fact054",
+      "fact099"
+    ],
+    "evidenceAfterClaim": [],
+    "all": {
+      "n": 103,
+      "median": 22.0,
+      "p25": 1.5,
+      "p75": 389.5,
+      "buckets": {
+        "same day": {
+          "count": 15,
+          "share": 0.1456
+        },
+        "1-7 days": {
+          "count": 28,
+          "share": 0.2718
+        },
+        "8-30 days": {
+          "count": 11,
+          "share": 0.1068
+        },
+        "31-365 days": {
+          "count": 23,
+          "share": 0.2233
+        },
+        "over a year": {
+          "count": 26,
+          "share": 0.2524
+        }
+      }
+    },
+    "by": {
+      "language": {
+        "en": {
+          "n": 69,
+          "median": 13.0,
+          "p25": 1.0,
+          "p75": 301.0,
+          "buckets": {
+            "same day": {
+              "count": 12,
+              "share": 0.1739
+            },
+            "1-7 days": {
+              "count": 18,
+              "share": 0.2609
+            },
+            "8-30 days": {
+              "count": 6,
+              "share": 0.087
+            },
+            "31-365 days": {
+              "count": 16,
+              "share": 0.2319
+            },
+            "over a year": {
+              "count": 17,
+              "share": 0.2464
+            }
+          }
+        },
+        "es": {
+          "n": 34,
+          "median": 24.5,
+          "p25": 2.2,
+          "p75": 402.2,
+          "buckets": {
+            "same day": {
+              "count": 3,
+              "share": 0.0882
+            },
+            "1-7 days": {
+              "count": 10,
+              "share": 0.2941
+            },
+            "8-30 days": {
+              "count": 5,
+              "share": 0.1471
+            },
+            "31-365 days": {
+              "count": 7,
+              "share": 0.2059
+            },
+            "over a year": {
+              "count": 9,
+              "share": 0.2647
+            }
+          }
+        }
+      },
+      "claimType": {
+        "factual": {
+          "n": 61,
+          "median": 31.0,
+          "p25": 2.0,
+          "p75": 443.0,
+          "buckets": {
+            "same day": {
+              "count": 12,
+              "share": 0.1967
+            },
+            "1-7 days": {
+              "count": 13,
+              "share": 0.2131
+            },
+            "8-30 days": {
+              "count": 5,
+              "share": 0.082
+            },
+            "31-365 days": {
+              "count": 13,
+              "share": 0.2131
+            },
+            "over a year": {
+              "count": 18,
+              "share": 0.2951
+            }
+          }
+        },
+        "interpretive": {
+          "n": 4,
+          "median": 199.5,
+          "p25": 26.5,
+          "p75": 437.2,
+          "buckets": {
+            "same day": {
+              "count": 0,
+              "share": 0.0
+            },
+            "1-7 days": {
+              "count": 1,
+              "share": 0.25
+            },
+            "8-30 days": {
+              "count": 0,
+              "share": 0.0
+            },
+            "31-365 days": {
+              "count": 2,
+              "share": 0.5
+            },
+            "over a year": {
+              "count": 1,
+              "share": 0.25
+            }
+          }
+        },
+        "numerical": {
+          "n": 38,
+          "median": 11.0,
+          "p25": 1.2,
+          "p75": 236.0,
+          "buckets": {
+            "same day": {
+              "count": 3,
+              "share": 0.0789
+            },
+            "1-7 days": {
+              "count": 14,
+              "share": 0.3684
+            },
+            "8-30 days": {
+              "count": 6,
+              "share": 0.1579
+            },
+            "31-365 days": {
+              "count": 8,
+              "share": 0.2105
+            },
+            "over a year": {
+              "count": 7,
+              "share": 0.1842
+            }
+          }
+        }
+      },
+      "sourceTier": {
+        "press_release": {
+          "n": 2,
+          "median": 9.5,
+          "p25": 8.2,
+          "p75": 10.8,
+          "buckets": {
+            "same day": {
+              "count": 0,
+              "share": 0.0
+            },
+            "1-7 days": {
+              "count": 1,
+              "share": 0.5
+            },
+            "8-30 days": {
+              "count": 1,
+              "share": 0.5
+            },
+            "31-365 days": {
+              "count": 0,
+              "share": 0.0
+            },
+            "over a year": {
+              "count": 0,
+              "share": 0.0
+            }
+          }
+        },
+        "primary": {
+          "n": 63,
+          "median": 41.0,
+          "p25": 2.0,
+          "p75": 438.0,
+          "buckets": {
+            "same day": {
+              "count": 5,
+              "share": 0.0794
+            },
+            "1-7 days": {
+              "count": 17,
+              "share": 0.2698
+            },
+            "8-30 days": {
+              "count": 9,
+              "share": 0.1429
+            },
+            "31-365 days": {
+              "count": 14,
+              "share": 0.2222
+            },
+            "over a year": {
+              "count": 18,
+              "share": 0.2857
+            }
+          }
+        },
+        "reference_media": {
+          "n": 38,
+          "median": 5.5,
+          "p25": 0.2,
+          "p75": 283.2,
+          "buckets": {
+            "same day": {
+              "count": 10,
+              "share": 0.2632
+            },
+            "1-7 days": {
+              "count": 10,
+              "share": 0.2632
+            },
+            "8-30 days": {
+              "count": 1,
+              "share": 0.0263
+            },
+            "31-365 days": {
+              "count": 9,
+              "share": 0.2368
+            },
+            "over a year": {
+              "count": 8,
+              "share": 0.2105
+            }
+          }
+        }
+      },
+      "label": {
+        "MISLEADING": {
+          "n": 1,
+          "median": 230.0,
+          "p25": 230.0,
+          "p75": 230.0,
+          "buckets": {
+            "same day": {
+              "count": 0,
+              "share": 0.0
+            },
+            "1-7 days": {
+              "count": 0,
+              "share": 0.0
+            },
+            "8-30 days": {
+              "count": 0,
+              "share": 0.0
+            },
+            "31-365 days": {
+              "count": 1,
+              "share": 1.0
+            },
+            "over a year": {
+              "count": 0,
+              "share": 0.0
+            }
+          }
+        },
+        "PARTIALLY_TRUE": {
+          "n": 7,
+          "median": 92.0,
+          "p25": 14.0,
+          "p75": 746.0,
+          "buckets": {
+            "same day": {
+              "count": 1,
+              "share": 0.1429
+            },
+            "1-7 days": {
+              "count": 1,
+              "share": 0.1429
+            },
+            "8-30 days": {
+              "count": 1,
+              "share": 0.1429
+            },
+            "31-365 days": {
+              "count": 1,
+              "share": 0.1429
+            },
+            "over a year": {
+              "count": 3,
+              "share": 0.4286
+            }
+          }
+        },
+        "TRUE": {
+          "n": 89,
+          "median": 22.0,
+          "p25": 2.0,
+          "p75": 415.0,
+          "buckets": {
+            "same day": {
+              "count": 13,
+              "share": 0.1461
+            },
+            "1-7 days": {
+              "count": 24,
+              "share": 0.2697
+            },
+            "8-30 days": {
+              "count": 9,
+              "share": 0.1011
+            },
+            "31-365 days": {
+              "count": 20,
+              "share": 0.2247
+            },
+            "over a year": {
+              "count": 23,
+              "share": 0.2584
+            }
+          }
+        },
+        "UNVERIFIED": {
+          "n": 6,
+          "median": 3.0,
+          "p25": 1.5,
+          "p75": 22.5,
+          "buckets": {
+            "same day": {
+              "count": 1,
+              "share": 0.1667
+            },
+            "1-7 days": {
+              "count": 3,
+              "share": 0.5
+            },
+            "8-30 days": {
+              "count": 1,
+              "share": 0.1667
+            },
+            "31-365 days": {
+              "count": 1,
+              "share": 0.1667
+            },
+            "over a year": {
+              "count": 0,
+              "share": 0.0
+            }
+          }
+        }
+      }
+    },
+    "sameDayIds": [
+      "fact014",
+      "fact016",
+      "fact050",
+      "fact056",
+      "fact058",
+      "fact080",
+      "fact094",
+      "fact095",
+      "fact112",
+      "fact113",
+      "fact114",
+      "fact131",
+      "fact145",
+      "fact146",
+      "fact148"
+    ]
+  },
+  "runs": [],
+  "bootstrap": {
+    "seed": 2026,
+    "resamples": 10000
+  }
+}

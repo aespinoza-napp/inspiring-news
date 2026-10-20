@@ -289,3 +289,50 @@ def test_the_emphasis_experiment_reports_every_setting_against_before(tmp_path):
     report = experiments.emphasis_report(result)
 
     assert "**0.60 (chosen)**" in report and "before (0.51 / 0.15 / 0.21 / 0.13)" in report
+
+
+def probed(source, status, sample, language="en"):
+
+    return {"source": source, "language": language, "status": status, "reason": "", "feedLinks": 10, "topicLinks": 4, "sample": sample}
+
+
+def item(ok, strategy=None, outcome="ok", ms=100):
+
+    return {"ok": ok, "strategy": strategy, "outcome": outcome, "ms": ms}
+
+
+def test_source_health_joins_the_probe_with_time_to_reception_and_lines_up_the_weeks():
+
+    probe = {
+        "startedAt": "2026-10-20T12:22:06+00:00",
+        "perSource": 2,
+        "sources": [
+            probed("bbc", "up", [item(True, "TrafilaturaStrategy", ms=100), item(True, "BeautifulSoupStrategy", ms=300)]),
+            probed("el_pais", "degraded", [item(True, "TrafilaturaStrategy"), item(False, outcome="http_error")], "es"),
+        ],
+        "search": [{"language": "en", "ok": True, "results": 86, "engines": ["bing"], "unresponsive": [{"engine": "google", "reason": "access denied"}]}],
+    }
+    freshness = {"sources": [{"source": "bbc", "hours": {"reception": {"n": 3, "median": 6.5}}}], "totals": {"hours": {"reception": {"n": 3, "median": 6.5}}}}
+
+    result = experiments.sources_experiment(probe, freshness)
+
+    assert (result["totals"]["up"], result["totals"]["degraded"], result["totals"]["down"]) == (1, 1, 0)
+    assert result["totals"]["extractionRate"] == 0.75
+    assert result["totals"]["byStrategy"] == {"TrafilaturaStrategy": 2, "BeautifulSoupStrategy": 1}
+    assert result["totals"]["failures"] == {"http_error": 1}
+    assert result["search"][0]["unresponsive"] == ["google"]
+
+    bbc, el_pais = result["sources"]
+    assert (bbc["extracted"], bbc["medianMs"], bbc["receptionHours"], bbc["receptionN"]) == (2, 200, 6.5, 3)
+    assert (el_pais["receptionHours"], el_pais["receptionN"]) == (None, 0)
+
+    earlier = json.loads(json.dumps(result))
+    earlier["probedAt"] = "2026-10-13T09:00:00+00:00"
+    earlier["sources"][1]["status"] = "up"
+
+    report = experiments.sources_report(result, [earlier])
+
+    assert "| el_pais | es | **degraded** |" in report
+    assert "| el_pais | up | degraded |" in report
+    assert "## Week by week" in report
+    assert "## Week by week" not in experiments.sources_report(result)

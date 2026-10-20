@@ -1,0 +1,195 @@
+{
+ "perSource": 3,
+ "settings": [
+  {
+   "groups": null,
+   "label": "all (baseline)",
+   "topics": 23,
+   "sources": 33,
+   "attempts": 36,
+   "failedAttempts": 3,
+   "links": 1369,
+   "candidates": 99,
+   "candidatesByLanguage": {
+    "en": 60,
+    "es": 39
+   },
+   "sourcesFindingNothing": 0,
+   "seconds": 13.53,
+   "sourcesVsBaseline": 1.0,
+   "attemptsVsBaseline": 1.0,
+   "linksVsBaseline": 1.0
+  },
+  {
+   "groups": [
+    "society"
+   ],
+   "label": "society",
+   "topics": 4,
+   "sources": 18,
+   "attempts": 23,
+   "failedAttempts": 6,
+   "links": 403,
+   "candidates": 49,
+   "candidatesByLanguage": {
+    "en": 26,
+    "es": 23
+   },
+   "sourcesFindingNothing": 1,
+   "seconds": 11.33,
+   "sourcesVsBaseline": 0.545,
+   "attemptsVsBaseline": 0.639,
+   "linksVsBaseline": 0.294
+  },
+  {
+   "groups": [
+    "science"
+   ],
+   "label": "science",
+   "topics": 4,
+   "sources": 22,
+   "attempts": 25,
+   "failedAttempts": 3,
+   "links": 279,
+   "candidates": 62,
+   "candidatesByLanguage": {
+    "en": 32,
+    "es": 30
+   },
+   "sourcesFindingNothing": 0,
+   "seconds": 9.63,
+   "sourcesVsBaseline": 0.667,
+   "attemptsVsBaseline": 0.694,
+   "linksVsBaseline": 0.204
+  },
+  {
+   "groups": [
+    "environment"
+   ],
+   "label": "environment",
+   "topics": 5,
+   "sources": 15,
+   "attempts": 20,
+   "failedAttempts": 7,
+   "links": 196,
+   "candidates": 36,
+   "candidatesByLanguage": {
+    "en": 30,
+    "es": 6
+   },
+   "sourcesFindingNothing": 2,
+   "seconds": 10.93,
+   "sourcesVsBaseline": 0.455,
+   "attemptsVsBaseline": 0.556,
+   "linksVsBaseline": 0.143
+  },
+  {
+   "groups": [
+    "culture"
+   ],
+   "label": "culture",
+   "topics": 5,
+   "sources": 9,
+   "attempts": 11,
+   "failedAttempts": 2,
+   "links": 193,
+   "candidates": 26,
+   "candidatesByLanguage": {
+    "en": 11,
+    "es": 15
+   },
+   "sourcesFindingNothing": 0,
+   "seconds": 9.57,
+   "sourcesVsBaseline": 0.273,
+   "attemptsVsBaseline": 0.306,
+   "linksVsBaseline": 0.141
+  },
+  {
+   "groups": [
+    "health"
+   ],
+   "label": "health",
+   "topics": 5,
+   "sources": 18,
+   "attempts": 23,
+   "failedAttempts": 6,
+   "links": 246,
+   "candidates": 40,
+   "candidatesByLanguage": {
+    "es": 13,
+    "en": 27
+   },
+   "sourcesFindingNothing": 1,
+   "seconds": 11.07,
+   "sourcesVsBaseline": 0.545,
+   "attemptsVsBaseline": 0.639,
+   "linksVsBaseline": 0.18
+  },
+  {
+   "groups": [
+    "environment",
+    "science"
+   ],
+   "label": "environment, science",
+   "topics": 9,
+   "sources": 31,
+   "attempts": 34,
+   "failedAttempts": 3,
+   "links": 548,
+   "candidates": 92,
+   "candidatesByLanguage": {
+    "en": 56,
+    "es": 36
+   },
+   "sourcesFindingNothing": 0,
+   "seconds": 18.38,
+   "sourcesVsBaseline": 0.939,
+   "attemptsVsBaseline": 0.944,
+   "linksVsBaseline": 0.4
+  },
+  {
+   "groups": [
+    "culture",
+    "health"
+   ],
+   "label": "culture, health",
+   "topics": 10,
+   "sources": 25,
+   "attempts": 30,
+   "failedAttempts": 5,
+   "links": 634,
+   "candidates": 70,
+   "candidatesByLanguage": {
+    "es": 31,
+    "en": 39
+   },
+   "sourcesFindingNothing": 0,
+   "seconds": 13.52,
+   "sourcesVsBaseline": 0.758,
+   "attemptsVsBaseline": 0.833,
+   "linksVsBaseline": 0.463
+  },
+  {
+   "groups": [
+    "society",
+    "health"
+   ],
+   "label": "society, health",
+   "topics": 9,
+   "sources": 25,
+   "attempts": 29,
+   "failedAttempts": 4,
+   "links": 689,
+   "candidates": 74,
+   "candidatesByLanguage": {
+    "es": 35,
+    "en": 39
+   },
+   "sourcesFindingNothing": 0,
+   "seconds": 12.74,
+   "sourcesVsBaseline": 0.758,
+   "attemptsVsBaseline": 0.806,
+   "linksVsBaseline": 0.503
+  }
+ ]
+}

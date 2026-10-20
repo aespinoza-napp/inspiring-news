@@ -11,6 +11,7 @@ measures verdicts; these measure what decides which articles get one.
         [--topic-min 0.30,0.35,0.40,0.45] [--impact-min 0.10,0.20,0.25,0.30]
     uv run python -m src.evaluation.experiments topics [--backend http://127.0.0.1:8000]
     uv run python -m src.evaluation.experiments emphasis [--emphasis 0,0.3,0.6,1]
+    uv run python -m src.evaluation.experiments sources [--backend http://127.0.0.1:8000] [--last]
 
 Each writes `result.json` and `report.md` to
 `data/evaluation/experiments/<name>/<UTC time>/` and prints the report.
@@ -45,6 +46,11 @@ What each costs, and what it needs:
   readings the rounds recorded: nothing is embedded or fetched. RQ: how
   much does weighing the topic over positive impact change what a round
   shows first - of the group asked for, and worth offering?
+- **sources** runs the running backend's source probe (or, with `--last`,
+  takes its last report) and joins it with /scraper/freshness: each
+  source up, degraded or down, its sample's extraction by strategy, and
+  its time to reception; every earlier week's result lined up beside it.
+  Real network: ~10-15 requests to every configured site.
 
 docs/experiments.md says which paper question each one answers and how
 to read it.
@@ -241,6 +247,204 @@ def discovery_report(result: dict) -> str:
         ),
         "",
     ])
+
+
+# ----------------------------------------------------------------------
+# sources: the weekly health check
+# ----------------------------------------------------------------------
+
+
+def http_backend(backend: str) -> Callable[..., dict]:
+    """GET or POST one path on a running backend, with the storage key when this process has one."""
+
+    import requests
+
+    key = settings.STORAGE_API_KEY.get_secret_value() if settings.STORAGE_API_KEY else None
+    headers = {"X-API-Key": key} if key else {}
+
+    def call(path: str, body: dict | None = None) -> dict:
+        url = f"{backend.rstrip('/')}{path}"
+        response = (
+            requests.post(url, json=body, headers=headers, timeout=60) if body is not None
+            else requests.get(url, headers=headers, timeout=60)
+        )
+        response.raise_for_status()
+        return response.json()
+
+    return call
+
+
+def probe_now(call: Callable[..., dict], per_source: int, poll_seconds: float = 10.0, give_up_seconds: float = 1800.0) -> dict:
+    """Start a source probe and wait for its report: it sends ~10-15 requests to every configured site."""
+
+    call("/scraper/probe", {"perSource": per_source})
+    deadline = time.monotonic() + give_up_seconds
+
+    while time.monotonic() < deadline:
+        state = call("/scraper/probe")
+        if not state.get("running"):
+            if state.get("error"):
+                raise RuntimeError(f"the probe failed: {state['error']}")
+            return state["report"]
+        time.sleep(poll_seconds)
+
+    raise TimeoutError("the probe was still running after 30 minutes")
+
+
+def sources_experiment(probe: dict, freshness: dict) -> dict:
+    """
+    One week's row per source: the probe's status, where its links came
+    from, how its sample of articles extracted and by which strategy, and
+    how long its articles took to reach us (from what the lake holds, so
+    a source never ingested has none).
+    """
+
+    reception = {
+        row["source"]: row["hours"]["reception"]
+        for row in freshness.get("sources") or []
+    }
+
+    rows = []
+    strategies: Counter = Counter()
+    failures: Counter = Counter()
+
+    for source in probe["sources"]:
+
+        sample = source.get("sample") or []
+        ok = [item for item in sample if item.get("ok")]
+        by_strategy = Counter(item.get("strategy") or "?" for item in ok)
+        strategies.update(by_strategy)
+        failures.update(item.get("outcome") or "error" for item in sample if not item.get("ok"))
+        hours = reception.get(source["source"]) or {}
+
+        median_ms = percentile([item["ms"] for item in sample if item.get("ms") is not None], 50)
+
+        rows.append({
+            "source": source["source"],
+            "language": source.get("language"),
+            "status": source["status"],
+            "reason": source.get("reason"),
+            "feedLinks": source.get("feedLinks", 0),
+            "topicLinks": source.get("topicLinks", 0),
+            "sampled": len(sample),
+            "extracted": len(ok),
+            "byStrategy": dict(by_strategy),
+            "medianMs": round(median_ms) if median_ms is not None else None,
+            "receptionHours": hours.get("median"),
+            "receptionN": hours.get("n", 0),
+        })
+
+    sampled = sum(row["sampled"] for row in rows)
+    extracted = sum(row["extracted"] for row in rows)
+
+    return {
+        "probedAt": probe.get("startedAt"),
+        "perSource": probe.get("perSource"),
+        "totals": {
+            **{status: sum(row["status"] == status for row in rows) for status in ("up", "degraded", "down")},
+            "sources": len(rows),
+            "sampled": sampled,
+            "extracted": extracted,
+            "extractionRate": rounded(extracted / sampled, 3) if sampled else None,
+            "byStrategy": dict(strategies.most_common()),
+            "failures": dict(failures.most_common()),
+            "receptionHours": (freshness.get("totals") or {}).get("hours", {}).get("reception"),
+        },
+        "search": [
+            {
+                "language": check.get("language"),
+                "ok": check.get("ok"),
+                "results": check.get("results"),
+                "engines": check.get("engines") or [],
+                "unresponsive": [engine["engine"] for engine in check.get("unresponsive") or []],
+            }
+            for check in probe.get("search") or []
+        ],
+        "sources": rows,
+    }
+
+
+def load_history(folder: Path) -> list[dict]:
+    """Every earlier `sources` result, oldest first: the weeks the report lines up."""
+
+    if not folder.is_dir():
+        return []
+
+    return [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted(folder.glob("*/result.json"))
+    ]
+
+
+def sources_report(result: dict, history: Sequence[dict] = ()) -> str:
+
+    totals = result["totals"]
+    status_mark = {"up": "up", "degraded": "**degraded**", "down": "**DOWN**"}
+
+    rows = [
+        (
+            row["source"], row["language"], status_mark.get(row["status"], row["status"]),
+            row["feedLinks"], row["topicLinks"], f"{row['extracted']}/{row['sampled']}",
+            ", ".join(f"{name.removesuffix('Strategy')} {n}" for name, n in sorted(row["byStrategy"].items())) or "–",
+            row["medianMs"], row["receptionHours"], row["receptionN"],
+        )
+        for row in sorted(result["sources"], key=lambda r: (r["status"] == "up", r["source"]))
+    ]
+
+    lines = [
+        f"# Source health, {(result.get('probedAt') or '')[:10]}",
+        "",
+        f"{totals['sources']} enabled sources: {totals['up']} up, {totals['degraded']} degraded, {totals['down']} down. "
+        f"Sample extractions {totals['extracted']} of {totals['sampled']} ({result['perSource']} per source)"
+        + (f", {totals['extractionRate']:.1%}." if totals["extractionRate"] is not None else "."),
+        "",
+        "By strategy (extracted): " + (", ".join(f"{k} {v}" for k, v in totals["byStrategy"].items()) or "none") + ".",
+        "Failures by outcome: " + (", ".join(f"{k} {v}" for k, v in totals["failures"].items()) or "none") + ".",
+        "",
+    ]
+
+    for check in result["search"]:
+        lines.append(
+            f"Search ({check['language']}): {check['results']} results from {', '.join(check['engines']) or 'no engine'}"
+            + (f"; not answering: {', '.join(check['unresponsive'])}." if check["unresponsive"] else ".")
+        )
+
+    lines += [
+        "",
+        "Time to reception (published to first seen) comes from the lake: a source with no ingested",
+        "article has none, and a handful is not a median to lean on.",
+        "",
+        table(
+            ["Source", "Lang", "Status", "Feed links", "Section links", "Extracted", "By strategy", "Median ms", "Reception h (median)", "n"],
+            rows,
+        ),
+        "",
+    ]
+
+    weeks = [*history, result]
+
+    if len(weeks) > 1:
+        names = sorted({row["source"] for week in weeks for row in week["sources"]})
+        status = [{row["source"]: row["status"] for row in week["sources"]} for week in weeks]
+        lines += [
+            "## Week by week",
+            "",
+            table(
+                ["Source", *[(week.get("probedAt") or "?")[:10] for week in weeks]],
+                [(name, *[week.get(name, "–") for week in status]) for name in names],
+            ),
+            "",
+            table(
+                ["", *[(week.get("probedAt") or "?")[:10] for week in weeks]],
+                [
+                    (label, *[week["totals"][key] for week in weeks])
+                    for label, key in (("Up", "up"), ("Degraded", "degraded"), ("Down", "down"), ("Extraction rate", "extractionRate"))
+                ],
+            ),
+            "",
+        ]
+
+    return "\n".join(lines)
 
 
 # ----------------------------------------------------------------------
@@ -1281,6 +1485,11 @@ def parser() -> argparse.ArgumentParser:
     )
     emphasis.add_argument("--emphasis", help="comma-separated emphases (default %s)" % ",".join(str(e) for e in EMPHASES))
 
+    sources = commands.add_parser("sources", help="the weekly source health check: probe, extraction, time to reception")
+    sources.add_argument("--backend", default="http://127.0.0.1:8000")
+    sources.add_argument("--per-source", type=int, default=5)
+    sources.add_argument("--last", action="store_true", help="the backend's last probe report instead of a new probe")
+
     return root
 
 
@@ -1331,6 +1540,14 @@ def main(argv: list[str] | None = None) -> int:
         emphases = _floats(args.emphasis) if args.emphasis else EMPHASES
         result = emphasis_experiment(rounds, labels, emphases, provenance)
         name, report = "emphasis", emphasis_report(result)
+
+    elif args.command == "sources":
+        call = http_backend(args.backend)
+        probe = call("/scraper/probe")["report"] if args.last else probe_now(call, args.per_source)
+        if not probe:
+            raise SystemExit("The backend has no probe report yet: run without --last.")
+        result = sources_experiment(probe, call("/scraper/freshness"))
+        name, report = "sources", sources_report(result, load_history(EXPERIMENTS / "sources"))
 
     else:
         gold = labelled_articles()

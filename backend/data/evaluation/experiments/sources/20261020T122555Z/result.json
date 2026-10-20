@@ -1,0 +1,593 @@
+{
+ "probedAt": "2026-10-20T12:22:06.841301+00:00",
+ "perSource": 5,
+ "totals": {
+  "up": 30,
+  "degraded": 3,
+  "down": 0,
+  "sources": 33,
+  "sampled": 165,
+  "extracted": 157,
+  "extractionRate": 0.952,
+  "byStrategy": {
+   "TrafilaturaStrategy": 157
+  },
+  "failures": {
+   "too_short": 5,
+   "http_error": 3
+  },
+  "receptionHours": {
+   "n": 1,
+   "median": 6.72,
+   "p90": 6.72,
+   "negative": 0
+  }
+ },
+ "search": [
+  {
+   "language": "en",
+   "ok": true,
+   "results": 86,
+   "engines": [
+    "arxiv",
+    "bing",
+    "crossref",
+    "pubmed",
+    "semantic scholar",
+    "wikipedia",
+    "yep"
+   ],
+   "unresponsive": [
+    "brave",
+    "google"
+   ]
+  },
+  {
+   "language": "es",
+   "ok": true,
+   "results": 90,
+   "engines": [
+    "arxiv",
+    "bing",
+    "crossref",
+    "pubmed",
+    "semantic scholar",
+    "yep"
+   ],
+   "unresponsive": [
+    "brave",
+    "google"
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "source": "20minutos",
+   "language": "es",
+   "status": "up",
+   "reason": "145 feed links, 5/5 extracted",
+   "feedLinks": 145,
+   "topicLinks": 137,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 419,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "abc",
+   "language": "es",
+   "status": "up",
+   "reason": "32 feed links, 5/5 extracted",
+   "feedLinks": 32,
+   "topicLinks": 110,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 714,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "bbc",
+   "language": "en",
+   "status": "up",
+   "reason": "7 feed links, 5/5 extracted",
+   "feedLinks": 7,
+   "topicLinks": 118,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 590,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "carbon_brief",
+   "language": "en",
+   "status": "up",
+   "reason": "11 feed links, 5/5 extracted",
+   "feedLinks": 11,
+   "topicLinks": 50,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 813,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "cnn",
+   "language": "en",
+   "status": "up",
+   "reason": "14 feed links, 5/5 extracted",
+   "feedLinks": 14,
+   "topicLinks": 67,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 1029,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "el_mundo",
+   "language": "es",
+   "status": "up",
+   "reason": "23 feed links, 5/5 extracted",
+   "feedLinks": 23,
+   "topicLinks": 81,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 731,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "el_pais",
+   "language": "es",
+   "status": "degraded",
+   "reason": "only 2/5 sampled articles extracted",
+   "feedLinks": 109,
+   "topicLinks": 0,
+   "sampled": 5,
+   "extracted": 2,
+   "byStrategy": {
+    "TrafilaturaStrategy": 2
+   },
+   "medianMs": 3532,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "eldiario",
+   "language": "es",
+   "status": "up",
+   "reason": "96 feed links, 5/5 extracted",
+   "feedLinks": 96,
+   "topicLinks": 182,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 1680,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "esa",
+   "language": "en",
+   "status": "up",
+   "reason": "9 feed links, 5/5 extracted",
+   "feedLinks": 9,
+   "topicLinks": 28,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 543,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "europa_press",
+   "language": "es",
+   "status": "up",
+   "reason": "10 feed links, 5/5 extracted",
+   "feedLinks": 10,
+   "topicLinks": 162,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 2185,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "france24_es",
+   "language": "es",
+   "status": "up",
+   "reason": "12 feed links, 5/5 extracted",
+   "feedLinks": 12,
+   "topicLinks": 68,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 529,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "good_news_network",
+   "language": "en",
+   "status": "up",
+   "reason": "36 feed links, 4/5 extracted",
+   "feedLinks": 36,
+   "topicLinks": 97,
+   "sampled": 5,
+   "extracted": 4,
+   "byStrategy": {
+    "TrafilaturaStrategy": 4
+   },
+   "medianMs": 769,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "guardian",
+   "language": "en",
+   "status": "up",
+   "reason": "17 feed links, 5/5 extracted",
+   "feedLinks": 17,
+   "topicLinks": 209,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 537,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "infobae",
+   "language": "es",
+   "status": "up",
+   "reason": "89 feed links, 5/5 extracted",
+   "feedLinks": 89,
+   "topicLinks": 121,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 444,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "la_vanguardia",
+   "language": "es",
+   "status": "up",
+   "reason": "104 feed links, 5/5 extracted",
+   "feedLinks": 104,
+   "topicLinks": 140,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 441,
+   "receptionHours": 6.72,
+   "receptionN": 1
+  },
+  {
+   "source": "mit_news",
+   "language": "en",
+   "status": "up",
+   "reason": "48 feed links, 3/5 extracted",
+   "feedLinks": 48,
+   "topicLinks": 48,
+   "sampled": 5,
+   "extracted": 3,
+   "byStrategy": {
+    "TrafilaturaStrategy": 3
+   },
+   "medianMs": 614,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "mongabay",
+   "language": "en",
+   "status": "up",
+   "reason": "23 feed links, 5/5 extracted",
+   "feedLinks": 23,
+   "topicLinks": 22,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 609,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "muy_interesante",
+   "language": "es",
+   "status": "up",
+   "reason": "15 feed links, 5/5 extracted",
+   "feedLinks": 15,
+   "topicLinks": 0,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 444,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "nasa",
+   "language": "en",
+   "status": "up",
+   "reason": "3 feed links, 5/5 extracted",
+   "feedLinks": 3,
+   "topicLinks": 72,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 666,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "national_geographic",
+   "language": "en",
+   "status": "degraded",
+   "reason": "feed gives nothing (TrafilaturaFeedDiscoveryStrategy: no matching article links); 88 links from topic pages, 4/5 extracted",
+   "feedLinks": 0,
+   "topicLinks": 88,
+   "sampled": 5,
+   "extracted": 4,
+   "byStrategy": {
+    "TrafilaturaStrategy": 4
+   },
+   "medianMs": 1258,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "nature",
+   "language": "en",
+   "status": "up",
+   "reason": "43 feed links, 5/5 extracted",
+   "feedLinks": 43,
+   "topicLinks": 28,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 2094,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "new_scientist",
+   "language": "en",
+   "status": "up",
+   "reason": "7 feed links, 5/5 extracted",
+   "feedLinks": 7,
+   "topicLinks": 82,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 989,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "optimist_daily",
+   "language": "en",
+   "status": "up",
+   "reason": "9 feed links, 5/5 extracted",
+   "feedLinks": 9,
+   "topicLinks": 34,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 1174,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "positive_news",
+   "language": "en",
+   "status": "up",
+   "reason": "10 feed links, 4/5 extracted",
+   "feedLinks": 10,
+   "topicLinks": 28,
+   "sampled": 5,
+   "extracted": 4,
+   "byStrategy": {
+    "TrafilaturaStrategy": 4
+   },
+   "medianMs": 523,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "reasons_to_be_cheerful",
+   "language": "en",
+   "status": "up",
+   "reason": "9 feed links, 5/5 extracted",
+   "feedLinks": 9,
+   "topicLinks": 344,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 591,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "rtve",
+   "language": "es",
+   "status": "up",
+   "reason": "38 feed links, 5/5 extracted",
+   "feedLinks": 38,
+   "topicLinks": 15,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 431,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "sinc",
+   "language": "es",
+   "status": "degraded",
+   "reason": "feed gives nothing (TrafilaturaFeedDiscoveryStrategy: no matching article links); 58 links from topic pages, 5/5 extracted",
+   "feedLinks": 0,
+   "topicLinks": 58,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 637,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "smithsonian",
+   "language": "en",
+   "status": "up",
+   "reason": "7 feed links, 5/5 extracted",
+   "feedLinks": 7,
+   "topicLinks": 87,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 520,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "the_conversation",
+   "language": "en",
+   "status": "up",
+   "reason": "26 feed links, 5/5 extracted",
+   "feedLinks": 26,
+   "topicLinks": 0,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 400,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "un_news",
+   "language": "en",
+   "status": "up",
+   "reason": "16 feed links, 5/5 extracted",
+   "feedLinks": 16,
+   "topicLinks": 25,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 962,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "who",
+   "language": "en",
+   "status": "up",
+   "reason": "124 feed links, 5/5 extracted",
+   "feedLinks": 124,
+   "topicLinks": 54,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 564,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "xataka_ciencia",
+   "language": "es",
+   "status": "up",
+   "reason": "12 feed links, 5/5 extracted",
+   "feedLinks": 12,
+   "topicLinks": 131,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 505,
+   "receptionHours": null,
+   "receptionN": 0
+  },
+  {
+   "source": "yale_e360",
+   "language": "en",
+   "status": "up",
+   "reason": "42 feed links, 5/5 extracted",
+   "feedLinks": 42,
+   "topicLinks": 40,
+   "sampled": 5,
+   "extracted": 5,
+   "byStrategy": {
+    "TrafilaturaStrategy": 5
+   },
+   "medianMs": 543,
+   "receptionHours": null,
+   "receptionN": 0
+  }
+ ]
+}
