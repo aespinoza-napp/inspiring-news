@@ -151,6 +151,8 @@ activemq-data/
 
 # Environments
 .env
+# The shared settings (scripts/init_env.sh) - holds the secrets.
+.env_global
 .envrc
 .venv
 env/

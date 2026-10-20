@@ -141,32 +141,71 @@ method and results are in [`docs/decisions/evaluation.md`](docs/decisions/evalua
 | [`frontend/`](frontend/) | The newsroom (Discover, Analyze, Live, Write, Reader) and the lab tools per stage |
 | [`labeller/`](labeller/) | A dependency-free app for hand-labelling the validation set |
 | [`docker/`](docker/), [`deploy/gcp/`](deploy/gcp/) | Compose stacks and the Google Cloud Terraform |
-| [`scripts/`](scripts/) | `check.sh` (the definition of done), `stack.sh` (what to run per activity), model trials |
+| [`scripts/`](scripts/) | `check.sh` (the definition of done), `dev.sh` (start everything), `init_env.sh` (settings from `.env_global`), `stack.sh` (what to run per activity), model trials |
 | [`docs/decisions/`](docs/decisions/) | Why each part is the way it is |
 | [`docs/roadmap.md`](docs/roadmap.md) | The plan and its verified status, task by task |
 | [`docs/final_document/`](docs/final_document/) | The thesis (LaTeX and PDF) |
 
+## Requirements
+
+What has to be on the machine before anything runs:
+
+| Need | Version | Used for |
+|---|---|---|
+| Docker with Compose v2 | Docker Desktop, or Engine + the `compose` plugin | SearXNG, inference, Neo4j and the API (`docker/docker-compose.yml`) |
+| [Ollama](https://ollama.com) | any recent | The LLM, on the host: `ollama pull llama3.2:3b` once |
+| Node.js + npm | 22 (what `docker/frontend.Dockerfile` builds with) | The frontend dev server |
+| bash, curl | any | `scripts/*.sh`; on Windows, Git Bash or WSL |
+| Python + [uv](https://docs.astral.sh/uv/) | Python 3.12+ | Only to run the backend or the tests outside Docker (`./scripts/check.sh`) |
+| Python | 3.x, standard library only | Only for the labeller (`python labeller/app.py`) |
+
+Optional: `make` (a thin wrapper over the scripts); Playwright with
+Chromium, for the last step of the extraction cascade outside Docker
+(the image already has it); Terraform, only for `deploy/gcp/`.
+
+Machine: **16 GB of RAM** is the measured floor for the whole stack with
+one model loaded (`docs/decisions/deployment.md`) - `scripts/stack.sh`
+keeps one model in memory at a time and refuses to load one that does
+not fit. Leave about **40 GB of disk** for the images, the Docker build
+cache (21 GB measured, `docker/README.md`) and the models; no GPU needed.
+
 ## Running it
 
-Copy the example settings. Every value is a working default but the
-secrets:
+The settings shared by several components - the secrets, the API key,
+the LLM, where the frontend finds the backend - live in one file,
+`.env_global`. One command creates it, generates the secrets, and writes
+those values into `backend/.env` and `frontend/.env.local` (creating
+them from their examples first):
 
 ```bash
-cp backend/.env-example backend/.env          # then fill SEARXNG_SECRET and change NEO4J_PASSWORD
-cp frontend/.env.local.example frontend/.env.local
+./scripts/init_env.sh         # or `make init`; rerun after editing .env_global
 ```
 
-The quickest way in is Docker, with Ollama on the host
-(`ollama pull llama3.2:3b`):
+Everything else (thresholds, weights) keeps its own default in
+`backend/.env-example`; edit `backend/.env` for those - the script only
+touches the shared keys.
+
+Then start everything - it runs `init_env.sh` itself, so on a fresh
+clone this alone is enough:
 
 ```bash
-./scripts/stack.sh analyse    # SearXNG, inference, Neo4j and the API, one model loaded
-cd frontend && npm install && npm run dev      # http://localhost:3000
+cd frontend && npm install && cd ..   # once
+./scripts/dev.sh              # a menu: Enter starts Docker + the frontend
 ```
 
-The API documentation is at `http://localhost:8000/docs`, and
-`/healthz` says which dependency is down. To run the pieces without
-Docker, see [`backend/CLAUDE.md`](backend/CLAUDE.md) and
+`./scripts/dev.sh status`, `logs [service]`, `restart [service]` and
+`stop` do what they say. To run only what one activity needs, with
+one model loaded:
+
+```bash
+./scripts/stack.sh analyse    # SearXNG, inference, Neo4j and the API
+```
+
+The first start downloads the models into a Docker volume and can take
+several minutes. The frontend is at `http://localhost:3000`, the API
+documentation at `http://localhost:8000/docs`, and `/healthz` says which
+dependency is down. To run the pieces without Docker, see
+[`backend/CLAUDE.md`](backend/CLAUDE.md) and
 [`docker/README.md`](docker/README.md).
 
 ```bash

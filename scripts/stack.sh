@@ -200,9 +200,11 @@ services() {
   done
   if [ ${#wanted[@]} -gt 0 ]; then
     step "Starting ${wanted[*]}"
-    # --no-deps: backend depends_on neo4j in compose, and a plain `up`
-    # started the graph for writing too - the first trial did. The
-    # backend runs without it (the graph write is fail-soft).
+    # --no-deps: only what the activity asked for. Until 2026-10-20 the
+    # backend depended on neo4j in compose, and a plain `up` started the
+    # graph for writing too - the first trial did; that dependency is
+    # gone (the graph write is fail-soft), and this keeps any other one
+    # from pulling in a service the activity does not need.
     "${COMPOSE[@]}" up -d --no-deps "${wanted[@]}" || die "docker compose up failed"
   fi
 }
