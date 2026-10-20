@@ -110,6 +110,11 @@ def test_run_produces_worst_case_wins_overall_verdict(repository):
     assert report.overall_verdict == Verdict.FALSE
     assert 0.0 < report.overall_confidence <= 1.0
 
+    # Both reached a definitive verdict, so what was found agrees, and
+    # the run's report carries the counts.
+    assert report.found_verdict == Verdict.FALSE
+    assert (report.claims_judged, report.claims_unverified, report.claims_not_checked) == (2, 0, 0)
+
 
 def test_run_tracks_reached_stage_for_each_claim(repository):
 
@@ -727,3 +732,55 @@ def test_check_claim_without_context_or_language_is_unchanged(repository):
 
     assert passed_context is None
     assert passed_language is None
+
+
+# ----------------------------------------------------------------------
+# What was found, apart from how much could be checked (Sep 21 audit)
+# ----------------------------------------------------------------------
+
+
+def _check(verdict, **flags):
+
+    from src.models.fact_checker.fact_check import FactCheck
+
+    return FactCheck(verdict=verdict, explanation="", confidence=0.5, **flags)
+
+
+def test_the_found_verdict_ignores_unverified_and_unchecked_claims():
+    """
+    Three TRUE, one honest UNVERIFIED, one a dead search: the article is
+    UNVERIFIED by worst-claim-wins, but what was found is TRUE, and the
+    counts say how the other two ended.
+    """
+
+    checks = [
+        _check(Verdict.TRUE), _check(Verdict.TRUE), _check(Verdict.TRUE),
+        _check(Verdict.UNVERIFIED),
+        _check(Verdict.UNVERIFIED, search_unavailable=True),
+    ]
+
+    assert FactChecker._aggregate_verdict(checks) == Verdict.UNVERIFIED
+    assert FactChecker._coverage(checks) == {
+        "found_verdict": Verdict.TRUE,
+        "claims_judged": 3,
+        "claims_unverified": 1,
+        "claims_not_checked": 1,
+    }
+
+
+def test_the_found_verdict_is_the_worst_definitive_one_by_the_same_severity():
+
+    checks = [_check(Verdict.TRUE), _check(Verdict.PARTIALLY_TRUE), _check(Verdict.MISLEADING)]
+
+    assert FactChecker._coverage(checks)["found_verdict"] == Verdict.MISLEADING
+
+
+def test_nothing_definitive_means_no_found_verdict():
+
+    checks = [_check(Verdict.UNVERIFIED), _check(Verdict.UNVERIFIED, llm_unreachable=True)]
+
+    coverage = FactChecker._coverage(checks)
+
+    assert coverage["found_verdict"] is None
+    assert (coverage["claims_unverified"], coverage["claims_not_checked"]) == (1, 1)
+    assert FactChecker._coverage([])["found_verdict"] is None

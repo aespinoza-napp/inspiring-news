@@ -234,6 +234,12 @@ class AnalysisService:
                 "claimsTotal": report.claims_total,
                 "claimsChecked": report.claims_selected,
                 "belowAnchorFloor": report.below_anchor_floor,
+                # What was found, apart from how much could be checked
+                # (FactChecker._coverage; cache schema 13).
+                "foundVerdict": report.found_verdict,
+                "claimsJudged": report.claims_judged,
+                "claimsUnverified": report.claims_unverified,
+                "claimsNotChecked": report.claims_not_checked,
             },
         }
 

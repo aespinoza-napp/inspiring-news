@@ -200,3 +200,62 @@ def test_two_different_overrides_get_two_different_entries(tmp_path):
 
     assert cache.get("https://example.com/a", first)["which"] == "first"
     assert cache.get("https://example.com/a", second)["which"] == "second"
+
+
+# ----------------------------------------------------------------------
+# Expiry (Sep 21 audit: the cache never expired, rejections included)
+# ----------------------------------------------------------------------
+
+
+def _age(cache, url, hours):
+    """Rewrite an entry's stamp as if it had been cached `hours` ago."""
+
+    from datetime import datetime, timedelta, timezone
+
+    path = cache._path(url)
+    entry = json.loads(path.read_text(encoding="utf-8"))
+    entry["cachedAt"] = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+    path.write_text(json.dumps(entry), encoding="utf-8")
+
+
+def test_an_entry_older_than_the_ttl_is_a_miss(tmp_path):
+
+    cache = AnalysisCache(directory=tmp_path, ttl_hours=24)
+
+    cache.set("https://example.com/a", {"title": "A"})
+    assert cache.get("https://example.com/a") == {"title": "A"}
+
+    _age(cache, "https://example.com/a", 23)
+    assert cache.get("https://example.com/a") == {"title": "A"}
+
+    _age(cache, "https://example.com/a", 25)
+    assert cache.get("https://example.com/a") is None
+
+
+def test_no_ttl_keeps_every_entry(tmp_path):
+
+    cache = AnalysisCache(directory=tmp_path, ttl_hours=0)
+
+    cache.set("https://example.com/a", {"title": "A"})
+    _age(cache, "https://example.com/a", 24 * 365)
+
+    assert cache.get("https://example.com/a") == {"title": "A"}
+
+
+def test_an_entry_from_before_the_stamp_counts_as_expired(tmp_path):
+
+    cache = AnalysisCache(directory=tmp_path, ttl_hours=24)
+
+    cache._path("https://example.com/a").write_text(json.dumps({
+        "schemaVersion": AnalysisCache.SCHEMA_VERSION, "url": "https://example.com/a", "result": {"title": "old"},
+    }), encoding="utf-8")
+
+    assert cache.get("https://example.com/a") is None
+    assert AnalysisCache(directory=tmp_path, ttl_hours=0).get("https://example.com/a") == {"title": "old"}
+
+
+def test_the_default_ttl_is_a_week(tmp_path):
+
+    from datetime import timedelta
+
+    assert AnalysisCache(directory=tmp_path).ttl == timedelta(hours=168)

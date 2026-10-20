@@ -74,3 +74,65 @@ def test_operations_on_unknown_job_id_are_noops():
     store.fail("missing", "boom")
 
     assert store.get("missing") is None
+
+
+# ----------------------------------------------------------------------
+# Eviction (Sep 21 audit: the store never evicted)
+# ----------------------------------------------------------------------
+
+
+def _finish(store, n, start=0):
+
+    jobs = []
+    for i in range(start, start + n):
+        job = store.create(f"https://example.com/{i}")
+        store.complete(job.job_id, {"i": i})
+        jobs.append(job)
+    return jobs
+
+
+def test_finished_jobs_beyond_the_cap_leave_memory_but_answer_from_the_journal(tmp_path):
+
+    from src.services.job_journal import JobJournal
+
+    store = JobStore(JobJournal(tmp_path / "journal"), keep_finished=2)
+
+    running = store.create("https://example.com/running")
+    store.add_event(running.job_id, "scraping", {})
+
+    oldest, middle, newest = _finish(store, 3)
+
+    listed = {job.job_id for job in store.list(limit=10)}
+
+    # The oldest finished one left memory; the active one never does.
+    assert listed == {running.job_id, middle.job_id, newest.job_id}
+
+    # Still served by id, from the journal, with its result.
+    restored = store.get(oldest.job_id)
+    assert restored is not None and restored.result == {"i": 0}
+
+
+def test_without_a_journal_nothing_is_evicted():
+
+    store = JobStore(keep_finished=1)
+
+    _finish(store, 3)
+
+    assert len(store.list(limit=10)) == 3
+
+
+def test_a_job_from_before_the_journal_is_never_evicted(tmp_path):
+    """It was never journalled: evicted, nothing could serve it again."""
+
+    from src.services.job_journal import JobJournal
+
+    store = JobStore()
+    [early] = _finish(store, 1)
+
+    store.attach_journal(JobJournal(tmp_path / "journal"), keep_finished=1)
+    _finish(store, 2, start=1)
+
+    ids = {job.job_id for job in store.list(limit=10)}
+
+    assert early.job_id in ids
+    assert store.get(early.job_id).result == {"i": 0}

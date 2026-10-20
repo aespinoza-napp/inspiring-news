@@ -172,6 +172,17 @@ export interface FactCheckSummary {
    * report rather than on any single claim.
    */
   belowAnchorFloor?: boolean;
+  /**
+   * What was found, apart from how much could be checked (cache schema
+   * 13): the worst verdict among the claims that reached a definitive
+   * one (null when none did), and how the others ended. overallVerdict
+   * is worst-claim-wins over every claim, UNVERIFIED and outages included.
+   * Absent from results cached before schema 13.
+   */
+  foundVerdict?: Verdict | null;
+  claimsJudged?: number;
+  claimsUnverified?: number;
+  claimsNotChecked?: number;
 }
 
 /**

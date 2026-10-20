@@ -164,6 +164,10 @@ NON_THRESHOLD_SETTINGS = {
     # a property of the model, not of a run: infrastructure, like LLM_MODEL.
     "LLM_REASONING_EFFORT",
     "INFERENCE_URL", "INFERENCE_TIMEOUT",
+    # How many finished jobs stay in memory beside the journal (JobStore).
+    "JOB_STORE_KEEP_FINISHED",
+    # How long an analysis stays cached (AnalysisCache).
+    "ANALYSIS_CACHE_TTL_HOURS",
     "SEARXNG_URL", "SEARXNG_TIMEOUT", "SEARXNG_MAX_RESULTS",
     "DUCKDUCKGO_FALLBACK_ENABLED", "DUCKDUCKGO_URL", "DUCKDUCKGO_TIMEOUT",
     "NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD", "GRAPH_ENABLED",
@@ -411,6 +415,14 @@ ANALYZE_RESPONSE_SHAPE = {
     # when a second look replaced it - services/fact_checker/second_look.py),
     # and `thresholds` the two second-look fields. A v11 entry has neither.
     12: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
+    # 13, same keys: `factCheck` gained foundVerdict, claimsJudged,
+    # claimsUnverified and claimsNotChecked - what was found, apart from
+    # how much could be checked (Sep 21 audit). A v12 entry has none.
+    13: {
         "url", "storage", "thresholds", "title", "keywords", "entities",
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",

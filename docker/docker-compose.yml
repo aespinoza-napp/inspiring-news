@@ -193,8 +193,12 @@ services:
       # model-cache moved to the `inference` service above - the
       # transformer models live there now, not here.
     depends_on:
-      neo4j:
-        condition: service_healthy
+      # Not neo4j (Sep 21 audit; removed 2026-10-20): the graph write is
+      # fail-soft since Sep 29 - a graph_failed event, never a failed
+      # analysis - so waiting for Neo4j's health only kept the backend
+      # down for nothing, and made `up backend` start a ~1 GB database an
+      # activity may not need (scripts/stack.sh's write mode). A full
+      # `up` still starts it; /graph answers 503 until it is ready.
       searxng:
         condition: service_healthy
       # 900s start_period on inference's own healthcheck (above) means

@@ -174,6 +174,7 @@ class FactChecker:
             overall_verdict=self._aggregate_verdict(claim_checks),
             overall_confidence=self._aggregate_confidence(claim_checks),
             below_anchor_floor=len(selected) < thresholds.anchor_claims_min,
+            **self._coverage(claim_checks),
         )
 
         report_phase("fact_check_done", {
@@ -586,6 +587,32 @@ class FactChecker:
             (check.verdict for check in claim_checks),
             key=lambda verdict: _VERDICT_SEVERITY[verdict],
         )
+
+    @staticmethod
+    def _coverage(claim_checks: list[FactCheck]) -> dict:
+        """
+        How each claim ended, apart from what the definitive ones found:
+        not checked (the search or the model failed - ours, not a finding),
+        unverified (looked for, nothing decisive), judged (a definitive
+        verdict). found_verdict is the worst of the judged, by the same
+        severity as the article's verdict.
+        """
+
+        def failed(check: FactCheck) -> bool:
+            return check.search_unavailable or check.llm_unreachable
+
+        judged = [check for check in claim_checks if not failed(check) and check.verdict != Verdict.UNVERIFIED]
+        not_checked = sum(1 for check in claim_checks if failed(check))
+
+        return {
+            "found_verdict": (
+                max((check.verdict for check in judged), key=lambda verdict: _VERDICT_SEVERITY[verdict])
+                if judged else None
+            ),
+            "claims_judged": len(judged),
+            "claims_unverified": len(claim_checks) - len(judged) - not_checked,
+            "claims_not_checked": not_checked,
+        }
 
     @staticmethod
     def _aggregate_confidence(claim_checks: list[FactCheck]) -> float:

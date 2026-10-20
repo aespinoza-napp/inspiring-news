@@ -18,6 +18,11 @@ from src.models.nlp.quality import Quality
 from src.models.nlp.sentiment_result import SentimentResult
 from src.models.core.similarity import SimilarArticle
 
+from src.services.scraper.article_stats import comparable_url
+
+# The payload key holding an article's host and path (see _to_point).
+URL_KEY = "url_key"
+
 class VectorRepository:
     """
     The one handle on Qdrant in the process (see container.py).
@@ -69,7 +74,15 @@ class VectorRepository:
         return PointStruct(
             id=article.id,
             vector=article.embedding,
-            payload=article.model_dump(mode="json"),
+            # url_key: host and path (comparable_url), so the same article
+            # under a tracking parameter, a trailing slash or `www.` is one
+            # article to save() and search() - the Sep 21 audit's "URLs are
+            # compared as plain strings". Points saved before 2026-10-20
+            # have only `url`, which is why both are matched below. It
+            # assumes no source names its articles by query string
+            # (`?id=123`): true of all 37 configured ones on 2026-10-20,
+            # and the reader and ingestion already key on host and path.
+            payload={**article.model_dump(mode="json"), URL_KEY: comparable_url(article.url)},
         )
 
     def _to_article(
@@ -79,16 +92,20 @@ class VectorRepository:
 
         payload = dict(point.payload)
 
+        payload.pop(URL_KEY, None)
+
         payload["embedding"] = point.vector
 
         return EnrichedArticle.model_validate(payload)
 
     @staticmethod
-    def _same_url(url: str) -> Filter:
+    def _same_article(url: str) -> list[FieldCondition]:
+        """The exact URL, or the same host and path: either is this article."""
 
-        return Filter(
-            must=[FieldCondition(key="url", match=MatchValue(value=url))]
-        )
+        return [
+            FieldCondition(key="url", match=MatchValue(value=url)),
+            FieldCondition(key=URL_KEY, match=MatchValue(value=comparable_url(url))),
+        ]
 
     def save(
         self,
@@ -104,7 +121,7 @@ class VectorRepository:
             # with the article itself.
             self.client.delete(
                 collection_name=self.COLLECTION,
-                points_selector=self._same_url(article.url),
+                points_selector=Filter(should=self._same_article(article.url)),
                 wait=True,
             )
 
@@ -152,9 +169,7 @@ class VectorRepository:
                 query=vector,
                 limit=limit,
                 query_filter=(
-                    Filter(must_not=[
-                        FieldCondition(key="url", match=MatchValue(value=exclude_url))
-                    ])
+                    Filter(must_not=self._same_article(exclude_url))
                     if exclude_url
                     else None
                 ),

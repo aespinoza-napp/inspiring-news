@@ -308,6 +308,18 @@ function JobCardView({
               not fact-checked.
             </p>
           )}
+          {job.result?.factCheck?.claimsJudged !== undefined && (
+            // Worst-claim-wins makes one UNVERIFIED outweigh any number of
+            // TRUE; this line says what the definitive claims found, apart
+            // from how much could be checked.
+            <p className="claims-note">
+              {job.result.factCheck.claimsJudged} judged
+              {job.result.factCheck.foundVerdict ? `, finding at worst ${job.result.factCheck.foundVerdict}` : ""}
+              {" · "}
+              {job.result.factCheck.claimsUnverified ?? 0} unverified · {job.result.factCheck.claimsNotChecked ?? 0} not
+              checked (search or model failed)
+            </p>
+          )}
           {job.result?.factCheck?.belowAnchorFloor && (
             <p className="claims-note">
               Fewer load-bearing claims were found than this run asks for, so

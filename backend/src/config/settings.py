@@ -127,6 +127,18 @@ class Settings(BaseSettings):
     # How many of an article's claims are verified at the same time.
     CLAIM_MAX_CONCURRENCY: int = 4
 
+    # Finished jobs kept in memory once the journal holds them (JobStore):
+    # the rest are served from the journal by id. Memory, not a run's
+    # judgement - infrastructure, listed in NON_THRESHOLD_SETTINGS.
+    JOB_STORE_KEEP_FINISHED: int = 200
+
+    # How long an analysis stays cached (AnalysisCache), in hours; 0 or
+    # less never expires. A verdict rests on that day's web search, and a
+    # duplicate rejection on what the corpus held: a week, not forever.
+    # Infrastructure, in NON_THRESHOLD_SETTINGS: it says when to recompute,
+    # not how a run judges.
+    ANALYSIS_CACHE_TTL_HOURS: float = 168
+
     # How many of one claim's queries are sent at the same time. Two is
     # the whole set today (affirmative + refutation).
     QUERY_MAX_CONCURRENCY: int = 2

@@ -42,6 +42,21 @@ class FactCheckReport(BaseModel):
 
     overall_confidence: float = 0.0
 
+    # "How much could be checked" apart from "what was found" (Sep 21
+    # audit). overall_verdict is worst-claim-wins over every claim, so one
+    # UNVERIFIED outweighs any number of TRUE and a search outage reads
+    # like a finding. found_verdict is the worst among the claims that
+    # reached a definitive verdict (None when none did); the three counts
+    # say how the rest ended. overall_verdict keeps its meaning: the
+    # reader's admission and the thesis's numbers rest on it.
+    found_verdict: Optional[Verdict] = None
+
+    claims_judged: int = 0
+
+    claims_unverified: int = 0
+
+    claims_not_checked: int = 0
+
     # True when the article yielded fewer anchor claims than
     # anchor_claims_min. The verdict still stands for what was checked,
     # but it rests on one assertion rather than on the two-to-four an

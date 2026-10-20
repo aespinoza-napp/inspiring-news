@@ -199,6 +199,10 @@ def test_analyze_shapes_successful_result_with_sorted_claims():
     assert result["factCheck"]["overallVerdict"] == Verdict.FALSE
     assert result["factCheck"]["claimsChecked"] == 2
 
+    # What was found, apart from how much could be checked (schema 13).
+    for key in ("foundVerdict", "claimsJudged", "claimsUnverified", "claimsNotChecked"):
+        assert key in result["factCheck"]
+
 
 def test_analyze_exposes_evidence_with_cited_flag():
 

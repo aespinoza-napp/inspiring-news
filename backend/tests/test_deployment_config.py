@@ -575,3 +575,15 @@ def test_ollama_holds_one_model_and_every_configured_model_is_pulled(prod):
     assert "PARAMETER num_ctx" in script
     # The reviewer reads a draft and its sources: a long context too.
     assert 'serve_long "${CORRECTOR_LLM_MODEL:?' in script
+
+
+def test_the_backend_starts_without_waiting_for_neo4j(base, prod):
+    """
+    The graph write is fail-soft (graph_failed, never a failed analysis),
+    so the backend must not wait on Neo4j's health, nor drag a ~1 GB
+    database into an activity that has no use for it (Sep 21 audit;
+    removed 2026-10-20).
+    """
+
+    for backend in (base["backend"], prod["services"]["backend"]):
+        assert "neo4j" not in (backend.get("depends_on") or {})

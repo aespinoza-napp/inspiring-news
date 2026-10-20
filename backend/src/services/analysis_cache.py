@@ -1,9 +1,11 @@
 import hashlib
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
+from src.services.scraper.article_stats import comparable_url
 
 
 class AnalysisCache:
@@ -19,13 +21,24 @@ class AnalysisCache:
     whatever field was added (and keep receiving it, since a hit never
     rewrites the entry). Bump SCHEMA_VERSION whenever the dict returned
     by AnalysisService.analyze() changes shape.
+
+    Since 2026-10-20 entries also expire (Sep 21 audit: "the analysis
+    cache never expires, and it also caches rejections"): a verdict rests
+    on today's web, and a duplicate rejection on what the corpus held
+    then. An entry older than `ttl_hours` - ANALYSIS_CACHE_TTL_HOURS, a
+    week by default - is a miss and is rewritten by the next run; 0 or
+    less keeps every entry, as before. An entry written before the stamp
+    existed has no age to judge, so with a TTL it counts as expired.
     """
 
-    SCHEMA_VERSION = 12
+    SCHEMA_VERSION = 13
 
-    def __init__(self, directory: Path | None = None):
+    def __init__(self, directory: Path | None = None, ttl_hours: float | None = None):
 
         self.directory = directory or (settings.CACHE_PATH / "analysis")
+
+        hours = settings.ANALYSIS_CACHE_TTL_HOURS if ttl_hours is None else ttl_hours
+        self.ttl = timedelta(hours=hours) if hours > 0 else None
 
         self.directory.mkdir(parents=True, exist_ok=True)
 
@@ -51,7 +64,22 @@ class AnalysisCache:
         if entry.get("schemaVersion") != self.SCHEMA_VERSION:
             return None
 
+        if self.ttl is not None and self._expired(entry.get("cachedAt")):
+            return None
+
         return entry.get("result")
+
+    def _expired(self, stamp) -> bool:
+
+        try:
+            cached_at = datetime.fromisoformat(str(stamp))
+        except (TypeError, ValueError):
+            return True
+
+        if cached_at.tzinfo is None:
+            cached_at = cached_at.replace(tzinfo=timezone.utc)
+
+        return datetime.now(timezone.utc) - cached_at > self.ttl
 
     def set(
         self,
@@ -65,6 +93,7 @@ class AnalysisCache:
                 {
                     "schemaVersion": self.SCHEMA_VERSION,
                     "url": url,
+                    "cachedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                     "result": result,
                 },
                 default=str,
@@ -100,7 +129,10 @@ class AnalysisCache:
             (thresholds or PipelineThresholds()).model_dump()
         )
 
-        material = url.strip() + "|" + json.dumps(effective, sort_keys=True)
+        # Host and path, not the URL as typed: the same article with a
+        # tracking parameter or a trailing slash is one entry (Sep 21
+        # audit). Changed 2026-10-20, so entries from before miss once.
+        material = comparable_url(url) + "|" + json.dumps(effective, sort_keys=True)
 
         key = hashlib.sha256(material.encode("utf-8")).hexdigest()
 

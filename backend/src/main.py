@@ -28,7 +28,10 @@ async def lifespan(app: FastAPI):
     # into the real lake. TestClient only runs this when used as a
     # context manager, which those tests do not do.
     if settings.LAKE_ENABLED:
-        job_store.attach_journal(JobJournal(settings.LAKE_PATH / "journal"))
+        job_store.attach_journal(
+            JobJournal(settings.LAKE_PATH / "journal"),
+            keep_finished=settings.JOB_STORE_KEEP_FINISHED,
+        )
 
         # Same reasoning: counts persist only for the real app, so the
         # tests' fetches never land in the lake's stats file.
