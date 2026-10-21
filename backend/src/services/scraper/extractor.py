@@ -2,6 +2,7 @@ import time
 from logging import getLogger
 from urllib.parse import urlsplit
 
+from src.services.concurrency import PARSE
 from src.config.thresholds import PipelineThresholds
 from src.models.core.news import News
 from src.processors.nlp.language import LanguageDetector
@@ -74,7 +75,8 @@ def _fill_metadata(result, source: NewsSource, page, timed: bool = False):
         return result
 
     try:
-        found = BeautifulSoupStrategy.metadata(source, page)
+        with PARSE.permit():
+            found = BeautifulSoupStrategy.metadata(source, page)
     except Exception:
         return result
 

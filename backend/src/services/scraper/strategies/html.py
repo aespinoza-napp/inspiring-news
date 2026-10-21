@@ -10,6 +10,7 @@ from logging import getLogger
 
 from src.models.core.source import NewsSource
 from src.models.scraper.extraction import ExtractionResult
+from src.services.concurrency import PARSE
 from src.services.scraper.fetcher import FetchedPage, Fetcher, classify
 from src.services.scraper.request_stats import Outcome
 
@@ -57,7 +58,10 @@ class HtmlStrategy(ExtractionStrategy):
                 sent = 1
                 page = self.fetcher.get(url)
 
-            result = self.parse(source, page)
+            # The fetch above runs alongside others; the parse waits its
+            # turn (concurrency.py, PARSE).
+            with PARSE.permit():
+                result = self.parse(source, page)
 
             if result is None or not result.body.strip():
                 return ExtractionAttempt(None, Outcome.NO_CONTENT, page.status, page=page, sent=sent)

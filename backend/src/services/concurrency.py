@@ -107,6 +107,18 @@ LLM = BoundedResource("llm", settings.LLM_MAX_CONCURRENCY)
 # the nesting cannot close into the bounded-pool deadlock.
 BROWSER = BoundedResource("browser", settings.BROWSER_MAX_CONCURRENCY)
 
+# Parsing a fetched page (trafilatura, BeautifulSoup): one at a time in
+# the process, while the fetches around it stay concurrent. Parsing is
+# pure Python on the CPU and holds the GIL, and threads parsing at once
+# do not share it - they thrash it: eight extractions of one 2.6 MB page
+# took 239-304 s side by side and 14.3 s one after another (2026-10-21,
+# docs/decisions/performance.md); two at once were already slower than
+# in turn. Not a setting: nothing past this process waits on it, and 1
+# is what was measured best. Held around the parse only - after the
+# fetch, inside SCRAPE or BROWSER's holders - and nothing holding it
+# waits on any other resource.
+PARSE = BoundedResource("parse", 1)
+
 
 def bounded_map(
     fn: Callable[[T], R],

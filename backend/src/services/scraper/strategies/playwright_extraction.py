@@ -27,7 +27,7 @@ from urllib.parse import urlsplit
 
 from src.models.core.source import NewsSource
 from src.models.scraper.extraction import ExtractionResult
-from src.services.concurrency import BROWSER
+from src.services.concurrency import BROWSER, PARSE
 from src.services.scraper.fetcher import FetchedPage, USER_AGENT
 from src.services.scraper.request_stats import Outcome
 from src.services.scraper.url_guard import BlockedURL, UnresolvableHost, check_url
@@ -133,7 +133,8 @@ class PlaywrightExtractionStrategy(ExtractionStrategy):
         # The same parsers as the cheap steps, on the rendered DOM.
         for parser in self.parsers:
 
-            result = parser.parse(source, rendered)
+            with PARSE.permit():
+                result = parser.parse(source, rendered)
 
             if result is not None and result.body.strip():
                 return ExtractionAttempt(result, Outcome.OK, rendered.status, page=rendered)
