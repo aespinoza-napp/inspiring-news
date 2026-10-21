@@ -111,7 +111,8 @@ def make_rewriter(rewrites: list, reviews: list) -> DraftRewriter:
     """
     `rewrites` answer the writer's model in order; `reviews` the reviewer's,
     two calls per review - the metrics, then the proposed correction
-    (None: no proposal).
+    (None: no proposal) - except a review another round follows, which
+    makes the first call only.
     """
 
     return DraftRewriter(

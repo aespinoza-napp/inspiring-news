@@ -570,6 +570,7 @@ def get_draft_reviewer():
                     sentiment_analyzer=corrector.sentiment_analyzer,
                     quality_analyzer=corrector.quality_analyzer,
                     impact_scorer=corrector.impact_scorer,
+                    correction=settings.REVIEW_CORRECTION,
                 )
 
     return _draft_reviewer

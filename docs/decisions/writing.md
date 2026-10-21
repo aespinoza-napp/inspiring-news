@@ -905,9 +905,12 @@ production VM's CPU is estimated at tens of minutes for a 7B model ("The
 model" above), with fact-checking paused behind it; and a person should
 see what one rewrite did to the scores before paying for another. Past
 three, a model that has not met the targets is not converging, and the
-person's own edit is the better step. Every intermediate review proposes
-a correction too: it is wasted time when another round follows, and kept
-because a restored revision's review then has its proposal.
+person's own edit is the better step. Since 2026-10-21 a review that
+another round follows proposes no correction (`propose_if`): the next
+rewrite replaces the text it would correct, and the proposal is the
+review's longer call. The review that ends the loop proposes one; a
+restored revision's review, or one whose next rewrite was refused, may
+have none - reviewing again proposes one (`performance.md`).
 
 ### Going back: restore
 

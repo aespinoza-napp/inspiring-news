@@ -160,6 +160,9 @@ NON_THRESHOLD_SETTINGS = {
     # The writing flow's storage and models (docs/decisions/writing.md):
     # infrastructure, like LLM_MODEL and LAKE_PATH.
     "DRAFTS_PATH", "WRITER_LLM_MODEL", "WRITER_LLM_TIMEOUT", "CORRECTOR_LLM_MODEL",
+    # How the review asks its model for a correction: the shape of a
+    # call, like the model it goes to - not a judgement a run makes.
+    "REVIEW_CORRECTION",
     # How a model is served (thinking off for a hybrid reasoning model),
     # a property of the model, not of a run: infrastructure, like LLM_MODEL.
     "LLM_REASONING_EFFORT",

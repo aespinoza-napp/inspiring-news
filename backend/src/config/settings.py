@@ -288,6 +288,15 @@ class Settings(BaseSettings):
     # from the writer's so a draft need not be judged by the model that
     # wrote it.
     CORRECTOR_LLM_MODEL: str | None = None
+    # How the review's proposed correction is asked for: `rewrite`, the
+    # whole article written out again, or `edits`, only the changes to it,
+    # applied where each passage occurs exactly once and then checked like
+    # any proposal (services/corrector/draft_reviewer.py). Measured
+    # 2026-10-21: edits halved the correction of a draft with a few planted
+    # defects and took 65% more tokens on a draft the writer wrote, where
+    # nearly every sentence changes and each edit copies its sentence
+    # twice. Hence `rewrite`. docs/decisions/performance.md.
+    REVIEW_CORRECTION: Literal["rewrite", "edits"] = "rewrite"
     # Per model, the `reasoning_effort` sent with every call to it, as
     # JSON: {"qwen3.5:4b": "none"}. For hybrid reasoning models, which
     # think before every answer unless told not to - minutes more per

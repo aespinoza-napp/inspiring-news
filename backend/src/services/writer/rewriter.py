@@ -559,18 +559,37 @@ class DraftRewriter:
 
             store.update(draft_id, keep)
 
-            self._review(store, draft_id, rewritten.content, number, rounds)
+            self._review(store, draft_id, rewritten.content, number, rounds, targets)
 
-    def _review(self, store: DraftStore, draft_id: str, content: DraftContent, number: int, rounds: int) -> None:
-        """The rewritten text's own review, attached only if it is still the text."""
+    def _review(
+        self,
+        store: DraftStore,
+        draft_id: str,
+        content: DraftContent,
+        number: int,
+        rounds: int,
+        targets: RewriteTargets,
+    ) -> None:
+        """
+        The rewritten text's own review, attached only if it is still the
+        text. Without a proposed correction when the loop's own test says
+        another round follows - a round left and a scored metric below its
+        target: that round rewrites this text, so a correction of it is
+        minutes of the model spent on a proposal nobody is shown. If that
+        next rewrite is then refused, the draft keeps this text with a
+        review that proposes nothing; reviewing it again proposes one.
+        """
 
         draft = store.get(draft_id)
 
         if draft is None:
             return
 
+        def propose_if(review: DraftReview) -> bool:
+            return number >= rounds or not below_target(review, targets)
+
         try:
-            review = self.reviewer.review(draft)
+            review = self.reviewer.review(draft, propose_if=propose_if)
         except Exception as exc:  # noqa: BLE001 - reported on the draft
             logger.exception("Draft %s: the review of rewrite %d failed", draft_id, number)
             raise RuntimeError(

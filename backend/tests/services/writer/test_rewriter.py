@@ -418,7 +418,8 @@ def test_the_rounds_stop_at_the_limit_when_the_targets_are_not_met(draft_store):
 
     rewriter = make_rewriter(
         [rewrite_answer(), rewrite_answer(second), rewrite_answer(GOOD_BODY)],
-        [review_answer(90, factConsistency=60), None, review_answer(90, factConsistency=70), None],
+        # Round 1's review is below target with a round left: no proposal.
+        [review_answer(90, factConsistency=60), review_answer(90, factConsistency=70), None],
     )
 
     rewriter.run(draft_store, draft.id, LOOSE_TARGETS, rounds=2)
@@ -426,6 +427,7 @@ def test_the_rounds_stop_at_the_limit_when_the_targets_are_not_met(draft_store):
     stored = draft_store.get(draft.id)
 
     assert len(rewriter.writer.llm.calls) == 2
+    assert len(rewriter.reviewer.llm.calls) == 3
     assert [revision.reason for revision in stored.revisions] == ["generated", "rewritten", "rewritten"]
     # Every revision keeps the review of its own text.
     assert stored.revisions[1].review.metrics["factConsistency"].score == 60
@@ -445,12 +447,14 @@ def test_more_rounds_than_the_cap_are_not_run(draft_store):
 
     rewriter = make_rewriter(
         [rewrite_answer(body) for body in bodies],
-        [item for _ in bodies for item in (review_answer(90, factConsistency=10), None)],
+        # Every review but the last is followed by another round: one call each.
+        [review_answer(90, factConsistency=10)] * (MAX_ROUNDS - 1) + [review_answer(90, factConsistency=10), None],
     )
 
     rewriter.run(draft_store, draft.id, LOOSE_TARGETS, rounds=MAX_ROUNDS + 5)
 
     assert len(rewriter.writer.llm.calls) == MAX_ROUNDS
+    assert len(rewriter.reviewer.llm.calls) == MAX_ROUNDS + 1
 
 
 def test_an_unscored_metric_does_not_send_the_draft_round_again(draft_store):
@@ -559,3 +563,43 @@ def test_a_failed_review_of_the_new_text_says_the_rewrite_was_kept(draft_store):
 
     assert stored.content.body == GOOD_BODY
     assert stored.review is None
+
+
+def test_the_last_rounds_review_proposes_a_correction_and_an_intermediate_one_does_not(draft_store):
+    """
+    A proposal is a whole article written out by the reviewer's model.
+    Below target with a round left, the next rewrite replaces the text it
+    would correct, so it is not asked for; the review that ends the loop
+    proposes one, as a review from the button does.
+    """
+
+    draft = draft_store.save(reviewed_draft())
+
+    rewriter = make_rewriter(
+        [rewrite_answer(), rewrite_answer(GOOD_BODY.replace("rose", "grew"))],
+        [review_answer(90, factConsistency=60), review_answer(90, factConsistency=70), None],
+    )
+
+    rewriter.run(draft_store, draft.id, LOOSE_TARGETS, rounds=2)
+
+    stored = draft_store.get(draft.id)
+
+    first_review, second_review, proposal = rewriter.reviewer.llm.calls
+
+    assert "=== SOURCES" in first_review[1]
+    assert "=== SOURCES" in second_review[1]
+    assert "Problems the review found" in proposal[1]
+    assert stored.revisions[1].review.corrected is None
+
+
+def test_a_review_that_meets_every_target_still_proposes_when_rounds_are_left(draft_store):
+    """The loop stops there, so this review is the last: it proposes."""
+
+    draft = draft_store.save(reviewed_draft())
+
+    rewriter = make_rewriter([rewrite_answer()], [review_answer(90), None])
+
+    rewriter.run(draft_store, draft.id, LOOSE_TARGETS, rounds=3)
+
+    assert len(rewriter.writer.llm.calls) == 1
+    assert len(rewriter.reviewer.llm.calls) == 2

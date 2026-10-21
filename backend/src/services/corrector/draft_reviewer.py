@@ -42,6 +42,7 @@ prompt, and this one is a different instrument.
 from __future__ import annotations
 
 import logging
+from typing import Callable
 
 from src.config.lexicons import Lexicon, writing_lexicon_for
 from src.models.corrector.correction_metric import CorrectionMetric
@@ -204,6 +205,66 @@ def correction_system_prompt(language: str) -> str:
     )
 
 
+def edits_system_prompt(language: str) -> str:
+    """
+    The same copy editor and the same rules, answering with the changes
+    instead of the whole article: the body is the long part of a
+    correction, and written out in full it is most of a review's time on
+    a CPU (docs/decisions/performance.md). The edits are applied here
+    (`apply_edits`) and the result checked as any proposal is.
+    """
+
+    rewrite = correction_system_prompt(language)
+    rules = rewrite[: rewrite.index("Respond with ONLY")]
+
+    return (
+        rules.replace("Propose a corrected version of a draft article.", "Propose corrections to a draft article.", 1)
+        + "Do not write the body out again. List each change to it as an edit: "
+        '"find" is a passage copied exactly, character for character, from the '
+        'draft\'s BODY - a whole sentence, or enough words to occur only once - and '
+        '"replace" is what it becomes. Leave everything you do not change out. '
+        "Give the title and the subtitle whole, corrected or not.\n\n"
+        'Respond with ONLY a JSON object: {"title": "...", "subtitle": "...", '
+        '"edits": [{"find": "...", "replace": "..."}]}'
+    )
+
+
+def apply_edits(answer, body: str) -> tuple[dict | None, list[str]]:
+    """
+    The edits answer as a rewrite answer (`title`, `subtitle`, `body`),
+    for `read_proposal` to judge like any other, and why each edit that
+    was not applied was not. An edit applies only where its `find`
+    occurs exactly once in the body as it stands: anywhere else the
+    model named a passage it did not copy, or one that is not the one it
+    meant, and guessing would change text nobody asked to change.
+    """
+
+    if not isinstance(answer, dict):
+        return None, []
+
+    skipped: list[str] = []
+    edits = answer.get("edits")
+
+    for entry in edits if isinstance(edits, list) else []:
+
+        find = entry.get("find") if isinstance(entry, dict) else None
+        replace = entry.get("replace") if isinstance(entry, dict) else None
+
+        if not isinstance(find, str) or not find.strip() or not isinstance(replace, str):
+            skipped.append("an edit without a passage and its replacement")
+            continue
+
+        found = body.count(find)
+
+        if found != 1:
+            skipped.append(f"{'not found' if found == 0 else f'found {found} times'}: {grounding.quote(find)}")
+            continue
+
+        body = body.replace(find, replace, 1)
+
+    return {"title": answer.get("title"), "subtitle": answer.get("subtitle"), "body": body}, skipped
+
+
 class DraftReviewer:
 
     def __init__(
@@ -212,11 +273,15 @@ class DraftReviewer:
         sentiment_analyzer=None,
         quality_analyzer: QualityAnalyzer | None = None,
         impact_scorer: PositiveImpactScorer | None = None,
+        correction: str = "rewrite",
     ):
         self.llm = llm or LLMClient()
         self.sentiment_analyzer = sentiment_analyzer or SentimentAnalyzer()
         self.quality_analyzer = quality_analyzer or QualityAnalyzer()
         self.impact_scorer = impact_scorer or PositiveImpactScorer()
+        # How the correction is asked for: the article written out again
+        # (`rewrite`), or the changes to it (`edits`). REVIEW_CORRECTION.
+        self.correction = correction
 
     @property
     def model(self) -> str | None:
@@ -227,13 +292,24 @@ class DraftReviewer:
     # The review
     # ------------------------------------------------------------------
 
-    def review(self, draft: ArticleDraft) -> DraftReview:
+    def review(
+        self,
+        draft: ArticleDraft,
+        propose_if: Callable[[DraftReview], bool] | None = None,
+    ) -> DraftReview:
         """
         Review `draft.content` as it is now. Raises when the review cannot
         be made at all - an unknown language, inference/ or the model
         unreachable - so the caller records a failure rather than a
         review of zeros. A model that answers with something unusable is
         not that: those metrics come back as UNAVAILABLE_SUMMARY.
+
+        `propose_if` is asked, with the scored review, whether the
+        correction is worth proposing; None always proposes. The rewrite
+        loop says no when another round will follow: the proposal is the
+        longer of the two calls - a whole article written out at the
+        model's speed - and the next rewrite replaces the text it
+        corrects (docs/decisions/performance.md).
         """
 
         language = draft.language
@@ -263,14 +339,17 @@ class DraftReviewer:
         apply_grounding(metrics, found, len(draft.sources))
         apply_headline_checks(metrics, content)
 
-        corrected = self._propose(draft, metrics, lexicon)
-
-        return DraftReview(
+        review = DraftReview(
             metrics={key: metrics[key] for key in METRIC_ORDER},
-            corrected=corrected,
+            corrected=None,
             model=self.model,
             reviewed_at=now(),
         )
+
+        if propose_if is not None and not propose_if(review):
+            return review
+
+        return review.model_copy(update={"corrected": self._propose(draft, metrics, lexicon)})
 
     # ------------------------------------------------------------------
     # Deterministic metrics
@@ -348,9 +427,11 @@ class DraftReviewer:
 
     def _propose(self, draft: ArticleDraft, metrics: dict[str, CorrectionMetric], lexicon: Lexicon) -> DraftContent | None:
 
+        edits = self.correction == "edits"
+
         try:
             answer = self.llm.complete_json(
-                correction_system_prompt(draft.language),
+                (edits_system_prompt if edits else correction_system_prompt)(draft.language),
                 correction_prompt(draft, metrics),
             )
         except LLMUnavailableError as exc:
@@ -361,7 +442,16 @@ class DraftReviewer:
             logger.warning("Draft %s: no correction proposed, the model call failed: %s", draft.id, exc)
             return None
 
+        if edits:
+            answer, skipped = apply_edits(answer, draft.content.body)
+            for why in skipped:
+                logger.info("Draft %s: a proposed edit was not applied, %s", draft.id, why)
+
         proposal, reason = read_proposal(answer, draft.content, lexicon)
+
+        # No edit applied and the headline untouched: nothing to offer.
+        if edits and proposal is not None and proposal == draft.content:
+            return None
 
         if proposal is None:
             logger.warning("Draft %s: correction discarded: %s", draft.id, reason)

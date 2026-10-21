@@ -274,7 +274,8 @@ def test_the_rounds_stop_at_max_rounds_when_the_targets_are_not(draft_store, mon
     rewriter = install(
         monkeypatch,
         [rewrite_answer(), rewrite_answer(GOOD_BODY.replace("rose", "grew")), rewrite_answer()],
-        [review_answer(90, factConsistency=50), None, review_answer(90, factConsistency=60), None],
+        # Round 1's review has a round after it: no proposal is asked for.
+        [review_answer(90, factConsistency=50), review_answer(90, factConsistency=60), None],
     )
 
     draft = draft_store.save(reviewed_draft())

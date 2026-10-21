@@ -70,7 +70,7 @@ from src.models.writer.draft import (  # noqa: E402
     DraftRevision,
     DraftSource,
 )
-from src.services.corrector.draft_reviewer import REVIEW_LLM_KEYS, DraftReviewer, read_proposal  # noqa: E402
+from src.services.corrector.draft_reviewer import REVIEW_LLM_KEYS, DraftReviewer, apply_edits, read_proposal  # noqa: E402
 from src.services.corrector.text_corrector import UNAVAILABLE_SUMMARY, normalize_metric  # noqa: E402
 from src.services.llms import LLMClient  # noqa: E402
 from src.services.writer.draft_store import new_draft_id, now  # noqa: E402
@@ -212,12 +212,12 @@ def draft_for(seeded: Seeded) -> ArticleDraft:
     )
 
 
-def review_once(model: str, timeout: float, seeded: Seeded) -> dict:
+def review_once(model: str, timeout: float, seeded: Seeded, correction: str = "rewrite") -> dict:
 
     meter = UsageMeter()
     llm = Recording(metered(LLMClient(model=model, timeout=timeout), meter))
 
-    reviewer = DraftReviewer(llm=llm, sentiment_analyzer=_Fixed())
+    reviewer = DraftReviewer(llm=llm, sentiment_analyzer=_Fixed(), correction=correction)
     draft = draft_for(seeded)
 
     started = time.monotonic()
@@ -246,9 +246,15 @@ def review_once(model: str, timeout: float, seeded: Seeded) -> dict:
     }
 
     proposal_reason = None
+    skipped_edits: list[str] = []
 
     if len(llm.answers) > 1:
-        _, proposal_reason = read_proposal(llm.answers[1], draft.content, writing_lexicon_for(seeded.language))
+        answer = llm.answers[1]
+        if correction == "edits":
+            answer, skipped_edits = apply_edits(answer, draft.content.body)
+        proposal, proposal_reason = read_proposal(answer, draft.content, writing_lexicon_for(seeded.language))
+        if proposal is not None and proposal == draft.content:
+            proposal_reason = "no edit applied, headline unchanged"
 
     return {
         "language": seeded.language,
@@ -268,6 +274,8 @@ def review_once(model: str, timeout: float, seeded: Seeded) -> dict:
             else f"not offered: {proposal_reason}"
         ),
         "corrected": review.corrected.model_dump() if review and review.corrected else None,
+        "correctionAnswer": llm.answers[1] if len(llm.answers) > 1 else None,
+        "skippedEdits": skipped_edits,
     }
 
 
@@ -284,6 +292,12 @@ def main() -> int:
     parser.add_argument("--repeats", type=int, default=1, help="reviews of each draft (default 1)")
     parser.add_argument("--timeout", type=float, default=900.0, help="seconds per call (default 900)")
     parser.add_argument("--json", help="write every result to this file")
+    parser.add_argument(
+        "--correction",
+        choices=["rewrite", "edits"],
+        default="rewrite",
+        help="how the correction is asked for (REVIEW_CORRECTION; default rewrite)",
+    )
     args = parser.parse_args()
 
     results = []
@@ -291,9 +305,9 @@ def main() -> int:
     for repeat in range(args.repeats):
         for seeded in SEEDED:
 
-            print(f"\n=== {args.model}, {seeded.language}, review {repeat + 1}", flush=True)
+            print(f"\n=== {args.model}, {seeded.language}, review {repeat + 1}, correction as {args.correction}", flush=True)
 
-            result = review_once(args.model, args.timeout, seeded)
+            result = review_once(args.model, args.timeout, seeded, args.correction)
             results.append(result)
 
             usage = result["usage"]

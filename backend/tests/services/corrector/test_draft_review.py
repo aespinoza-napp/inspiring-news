@@ -22,6 +22,7 @@ from src.models.writer.draft import DraftContent, DraftFactCheck, DraftSource, L
 from src.processors.nlp.quality import QualityAnalyzer, _TEXTSTAT_LOCK
 from src.services.corrector import draft_language, grounding
 from src.services.corrector.draft_reviewer import (
+    apply_edits,
     METRIC_ORDER,
     REVIEW_SYSTEM_PROMPT,
     DraftReviewer,
@@ -691,3 +692,102 @@ def test_the_correction_prompt_has_no_notes_when_nothing_was_found():
     prompt = correction_prompt(draft, {key: CorrectionMetric(score=90, summary="Fine.") for key in METRIC_ORDER})
 
     assert "(none recorded)" in prompt
+
+
+# ----------------------------------------------------------------------
+# The correction as edits (REVIEW_CORRECTION=edits)
+# ----------------------------------------------------------------------
+
+
+def edits_reviewer(*responses) -> DraftReviewer:
+
+    return DraftReviewer(
+        llm=FakeLLMClient(list(responses)),
+        sentiment_analyzer=FakeSentimentAnalyzer(POSITIVE),
+        correction="edits",
+    )
+
+
+def test_edits_are_asked_for_instead_of_the_whole_article():
+
+    draft = create_draft()
+    llm_reviewer = edits_reviewer(answer(), {"title": draft.content.title, "subtitle": draft.content.subtitle, "edits": []})
+
+    llm_reviewer.review(draft)
+
+    system_prompt, _ = llm_reviewer.llm.calls[1]
+
+    assert '"edits": [{"find"' in system_prompt
+    assert '"body": "..."' not in system_prompt
+    # The rules a rewrite is held to are the edits' too.
+    assert "Add no facts" in system_prompt
+    assert "Keep every citation [n]" in system_prompt
+
+
+def test_edits_are_applied_and_the_result_offered():
+
+    draft = create_draft()
+
+    review = edits_reviewer(answer(), {
+        "title": "Seagrass meadows double in the bay after ten years",
+        "subtitle": draft.content.subtitle,
+        "edits": [{"find": "fish counts rose with it", "replace": "the fish came back with it"}],
+    }).review(draft)
+
+    assert review.corrected == DraftContent(
+        title="Seagrass meadows double in the bay after ten years",
+        subtitle=draft.content.subtitle,
+        body="The meadow has doubled since 2015 [1], and the fish came back with it [2].",
+    )
+
+
+def test_an_edit_whose_passage_is_not_in_the_body_exactly_once_is_not_applied():
+
+    body, skipped = apply_edits(
+        {"title": "T", "edits": [
+            {"find": "fish counts climbed", "replace": "x"},      # not copied verbatim
+            {"find": "[", "replace": "("},                          # twice in the body
+            {"find": "since 2015", "replace": "since the 2015 replanting"},
+            {"replace": "no passage"},
+        ]},
+        "The meadow has doubled since 2015 [1], and fish counts rose with it [2].",
+    )
+
+    assert body["body"] == "The meadow has doubled since the 2015 replanting [1], and fish counts rose with it [2]."
+    assert len(skipped) == 3
+
+
+def test_edits_are_held_to_the_rules_a_rewrite_is():
+
+    draft = create_draft()
+
+    review = edits_reviewer(answer(), {
+        "title": draft.content.title,
+        "subtitle": draft.content.subtitle,
+        "edits": [{"find": "doubled since 2015 [1]", "replace": "tripled since 2015 [1]"}],
+    }).review(draft)
+
+    # A word changed passes the checks; a figure the draft does not have
+    # (2012) does not, as in a rewritten proposal.
+    assert review.corrected is not None
+
+    refused = edits_reviewer(answer(), {
+        "title": draft.content.title,
+        "subtitle": draft.content.subtitle,
+        "edits": [{"find": "since 2015", "replace": "since 2012"}],
+    }).review(draft)
+
+    assert refused.corrected is None
+
+
+def test_no_applicable_edit_and_the_same_headline_offer_nothing():
+
+    draft = create_draft()
+
+    review = edits_reviewer(answer(), {
+        "title": draft.content.title,
+        "subtitle": draft.content.subtitle,
+        "edits": [{"find": "a sentence the draft does not have", "replace": "x"}],
+    }).review(draft)
+
+    assert review.corrected is None
