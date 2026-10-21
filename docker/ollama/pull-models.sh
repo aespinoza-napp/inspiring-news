@@ -20,6 +20,15 @@
 #                        reads the draft and up to 14,000 characters of its
 #                        sources, past 4k tokens as surely as a draft does
 #                        (2026-10-19: qwen3.5:9b recommended as reviewer)
+#   OLLAMA_NUM_THREAD    threads for those two variants; unset is Ollama's
+#                        own choice. On the dev laptop's hybrid CPU that
+#                        choice spread onto two low-power cores, and 10
+#                        threads wrote a draft in 298 s against 381 s
+#                        (docs/decisions/performance.md). Measure on the
+#                        machine before setting: scripts/bench_ollama.py
+#   OLLAMA_NUM_BATCH     their prompt batch; unset is Ollama's 512. 128
+#                        where an integrated GPU serves the Qwen 3.5 models,
+#                        which crash it at 512 (vk::DeviceLostError)
 #
 # Ollama holds one of them in memory at a time (OLLAMA_MAX_LOADED_MODELS=1
 # on the ollama service): pulled is on disk, not resident.
@@ -45,6 +54,8 @@ optional() {
 serve_long() {
   optional "$2"
   printf 'FROM %s\nPARAMETER num_ctx %s\n' "$2" "${WRITER_NUM_CTX:-16384}" > /tmp/Modelfile
+  [ -z "${OLLAMA_NUM_THREAD:-}" ] || printf 'PARAMETER num_thread %s\n' "$OLLAMA_NUM_THREAD" >> /tmp/Modelfile
+  [ -z "${OLLAMA_NUM_BATCH:-}" ] || printf 'PARAMETER num_batch %s\n' "$OLLAMA_NUM_BATCH" >> /tmp/Modelfile
   echo "ollama-pull: $1 from $2, ${WRITER_NUM_CTX:-16384} tokens of context"
   ollama create "$1" -f /tmp/Modelfile \
     || echo "ollama-pull: WARNING - could not create $1; drafts that need it will fail"

@@ -100,6 +100,9 @@ services:
       - WRITER_NUM_CTX=${WRITER_NUM_CTX:-16384}
       - CORRECTOR_LLM_MODEL=${CORRECTOR_LLM_MODEL:-}
       - CORRECTOR_LLM_BASE=${CORRECTOR_LLM_BASE:-}
+      # Unset: Ollama's own choice (pull-models.sh, performance.md).
+      - OLLAMA_NUM_THREAD=${OLLAMA_NUM_THREAD:-}
+      - OLLAMA_NUM_BATCH=${OLLAMA_NUM_BATCH:-}
     depends_on:
       ollama:
         condition: service_healthy

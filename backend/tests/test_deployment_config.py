@@ -577,6 +577,23 @@ def test_ollama_holds_one_model_and_every_configured_model_is_pulled(prod):
     assert 'serve_long "${CORRECTOR_LLM_MODEL:?' in script
 
 
+def test_the_writing_variants_take_a_thread_count_and_a_batch_only_when_set(prod):
+    """
+    Ollama's default thread count halved the answer speed on the dev
+    laptop's hybrid CPU, and its default batch crashes an integrated GPU
+    serving Qwen 3.5 (2026-10-21, docs/decisions/performance.md). Both
+    are machine facts: passed through, unset by default, and only then
+    written into the variants' Modelfile.
+    """
+
+    passed = " ".join(prod["services"]["ollama-pull"]["environment"])
+    script = (DOCKER / "ollama" / "pull-models.sh").read_text(encoding="utf-8")
+
+    for name, parameter in (("OLLAMA_NUM_THREAD", "num_thread"), ("OLLAMA_NUM_BATCH", "num_batch")):
+        assert f"{name}=${{{name}:-}}" in passed, name
+        assert f'[ -z "${{{name}:-}}" ] || printf \'PARAMETER {parameter} %s' in script, name
+
+
 def test_the_backend_starts_without_waiting_for_neo4j(base, prod):
     """
     The graph write is fail-soft (graph_failed, never a failed analysis),
