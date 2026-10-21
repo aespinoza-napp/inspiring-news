@@ -81,6 +81,7 @@ src.main:app --port 8001`.
 | What to run for an activity without running out of memory; one model in Ollama at a time | `scripts/stack.sh`, `docs/decisions/deployment.md` ("Models in memory") |
 | Which model verifies, writes and reviews, how each was chosen, and what each costs in time | `docs/decisions/evaluation.md` ("Choosing the models"), `scripts/try_reviewer_model.py` |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
+| Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
 
 ## Invariants

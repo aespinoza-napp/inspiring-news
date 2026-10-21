@@ -1,49 +1,139 @@
-Session of 14 October 2026. Final prompt, then the summary of what it produced.
+Session of 21 October 2026. Final prompt, then the summary of what it produced.
 
 FINAL PROMPT (verbatim)
 
-/goal fix the artefact according to the new distribution. it should be a good aproach replicating what it has been used in other papers in mine??
+compare the structure of the actual pipeline and measure how it differs from the one provided by anthropic, the logic followed, provide the reason why it takes less time
 
-/goal My research questions are:
-- Can i create a retriever that uses internet that simplifies journalist finding tasks according to certain topics??
-- Can i verify the information by my llogic and also verify the news i retrieve by the structure we are creating and how can we quanitfy it??
-- How close a person vs a LLM can go after getting the
-- All of this joined creating a system which would in some way replace the journalists job??
-
-that are my real questions save them into the final_document and commit and push the changes
+(Asked which pipeline: "the logic claude uses in order to verify facts i would like to compare both".)
 
 SUMMARY
 
-Your four research questions are in the thesis, the gold set now has a FALSE class built the way FEVER and SciFact built theirs, and two commits are pushed to origin/dev (3ad4ccd, 8aae6be). The full check passes: 1,478 backend tests, 9 inference, 32 labeller, frontend typecheck. There's no LaTeX compiler on this machine, so the thesis PDF hasn't been built. I only checked statically that braces, environments, citations and references are consistent.
+Earlier in the session: the previous session's performance work was finished. Its last open
+item, the review's correction asked for as {find, replace} edits instead of the article
+written out again, was measured on a draft the writer really wrote (3,278 characters,
+qwen3.5:9b): 1,384 answer tokens against 838 for the rewrite, 522 s against 357 s, because
+a copy editor touches nearly every sentence and each edit copies its sentence twice.
+REVIEW_CORRECTION stays "rewrite"; the result is in docs/decisions/performance.md, section 7.
+./scripts/check.sh passed.
 
-1. Your research questions.
+Then the comparison below.
 
-- Where they are: docs/final_document/chapters/01-introduction/05-research-questions.tex, in academic English, with your original wording kept as a comment.
-- Metrics: section 6.1 (docs/final_document/chapters/06-experimental-design/01-research-questions-metrics.tex) gives each question what is measured, the metric, the data and the papers it follows.
-- Two wording decisions to check:
-  - Your third question was cut off after "after getting the". I completed it as "the same news and evidence" and marked it for you to confirm.
-  - I asked RQ4 as a question of extent ("to what extent can it take over the journalist's work, and where is a person still needed?") instead of "replace". "Replace" can't be measured; the share of the work done at a stated quality can.
+How Claude verifies a fact, against how the pipeline does - and why Claude takes less time
+-----------------------------------------------------------------------------------------
 
-2. Fixing the distribution.
+2026-10-21. Claude (Opus 5.5, in Claude Code) verified 8 claims of the test half by hand,
+the way it labelled facts 52-138: one web search per claim, a second only when needed,
+its own knowledge, a verdict. Timed with `date` around each claim. The pipeline's side is
+the local rerun of run 2605a2c02380 (the same 8 claims, llama3.2:3b on the laptop's CPU,
+2026-10-20) and the whole 70-claim test run in Docker (reports/manual-test/llama3.2-3b/
+2605a2c02380/report.md). The gold labels of these 8 are the human annotator's, not Claude's.
 
-Of the 109 real claims, none was FALSE. A system that always says TRUE would have scored 83%. I added 30 synthetic FALSE claims (fact149 to fact178), the method FEVER and SciFact used:
-- Each takes one verified TRUE claim and changes the thing it asserts: a number, a date, a name or a relation. It keeps the source's article and evidence, so that evidence is what refutes it.
-- There are 6 per topic group, 9 of them in Spanish.
-- No negations. Adding "not" let a model guess FEVER's refuted claims without reading any evidence (Schuster et al. 2019).
-- Only what the claim asserts, never a detail. Under your Rule 2, a wrong detail makes a claim PARTIALLY_TRUE, not FALSE.
-- Reported apart. Every evaluation report now shows real and synthetic claims separately, as the papers do.
-- Labeller support. It records which fact each mutation came from, refuses bad sources, keeps that link when you edit a mutation in the form, and lists mutations whose source you later relabel. "python labeller/app.py mutate" creates new ones.
 
-The set is now 139 facts: 91 TRUE, 30 FALSE, 10 UNVERIFIED, 7 PARTIALLY_TRUE, 1 MISLEADING.
+The two structures
+------------------
 
-3. In the thesis chapter on the dataset.
+The pipeline, for every claim (docs/decisions/retrieval.md):
+  1. Entities of the claim, then 3 fixed queries from its terms: anchor, proposition, refutation.
+  2. SearXNG, two searches at a time: ~19 candidates.
+  3. Fetch 8 pages; parse each locally (trafilatura, BeautifulSoup).
+  4. Rank them with embeddings (bge-m3 in inference/), the pertinence gate, keep 5.
+  5. Cut each to the passages about the claim (700 characters).
+  6. One llama3.2:3b call, which must judge from those 5 excerpts only:
+     ~2,544 prompt and 252 answer tokens.
+  7. A second look (search again, ask again) if its confidence is low.
+  The same work for every claim, easy or hard.
 
-- The real distribution table and the rule used to remove off-topic articles.
-- A new subsection on the synthetic claims, with four references I checked against their publishers.
-- A disclosure that part of the set was labelled by an AI. The chapter didn't say so before, and a committee would have read that as hiding it.
+Claude, for each claim:
+  1. Read the claim; write one query from understanding it (it fixed "Bollardo II" to
+     "Bordalo II" before searching).
+  2. One web search. The search tool reads the results server-side: no pages fetched or
+     parsed on this machine.
+  3. Decide whether that is enough: it was for 7 of 8 (only fact003 needed a second search).
+  4. Judge with background knowledge as well as the sources (e.g. Spain's age of majority
+     was 21 until 1978, which makes "my mother signed my first contract" plausible for a
+     singer born in 1949).
 
-4. What still depends on you.
 
-- Review my labels. 108 labels are mine: 78 real claims and the 30 mutations. None counts as gold until you check it.
-- Your agreement with my labels is a result. That number is exactly what your RQ3 measures.
-- The roadmap now follows your questions. Generating news moved down to "only if time", because none of your four asks for it. The blind selection rounds and the discovery numbers moved up, because RQ3 and RQ1 need them.
+Measured on the same 8 claims
+-----------------------------
+
+  claim     gold             Claude        s  searches | pipeline         s
+  fact001*  MISLEADING       MISLEADING   20  1        | TRUE           396
+  fact002   PARTIALLY_TRUE   TRUE         14  1        | FALSE          473
+  fact003   TRUE             UNVERIFIED   21  2        | TRUE           473
+  fact004   TRUE             TRUE         10  1        | TRUE           489
+  fact005   TRUE             MISLEADING   17  1        | TRUE           224
+  fact006   TRUE             TRUE         11  1        | TRUE           499
+  fact007*  TRUE             TRUE         13  1        | TRUE           280
+  fact013   PARTIALLY_TRUE   TRUE         12  1        | TRUE           158
+  right     4 of 8           median 14 s, 1.1 searches | 5 of 8, median 434 s
+
+  * not fully blind: fact001's gold label had been seen earlier in the session; fact007
+    had a synthetic FALSE made from it, a hint that it is true.
+
+  The pipeline's 434 s is the CPU with four claims sharing one model. In the full Docker
+  run a claim's median was 151 s: search and fetch 14 s, ranking 6 s, the verdict 120 s
+  including the wait for the model's one permit, the call alone 59 s.
+
+
+Why Claude takes less time (largest first)
+------------------------------------------
+
+  1. Hardware. On the laptop's CPU the 3B model reads ~49 tokens a second and writes ~6,
+     so a verdict is 30-60 s. Claude runs on data-centre accelerators reading thousands
+     of tokens a second. This alone is most of the gap; no change to the pipeline's logic
+     closes it.
+  2. No queue. The pipeline allows one model call at a time on a CPU, so about half of
+     the 120 s verdict stage is waiting for the claim ahead. Claude's calls run in parallel.
+  3. Adaptive stopping. Claude: 1.1 searches, no page fetched. The pipeline always runs 3
+     queries, fetches 8 pages, ranks ~19 candidates and reads 5 excerpts, even when the
+     first result settles the claim (AEMET's summary for fact004).
+  4. Search and reading run on someone else's servers. A commercial index, read
+     server-side; the pipeline scrapes SearXNG (rate-limited, two at a time on purpose),
+     then downloads and parses pages on this machine.
+  5. Knowledge. A 3B model knows little, so everything must be in its prompt; Claude
+     caught the misspelt name and knew the 1970s age of majority without searching.
+
+
+What the accuracy says
+----------------------
+
+Faster did not mean more accurate here. Claude's misses were mostly a different rubric,
+not factual errors:
+  - fact005 is gold TRUE because a newspaper did report the study; Claude judged the
+    medical claim itself (the longevity research points to blood type B, not O).
+  - fact002 is gold PARTIALLY_TRUE because only weak sources back it; Claude found the
+    artist's own interview saying he went to the fine-arts school (without finishing).
+Eight claims cannot separate 4 from 5 either way.
+
+
+What the pipeline could take from this
+--------------------------------------
+
+  - Stop early (code, cheap to try): run the anchor query first; do the refutation query
+    and the page fetches only when the snippets are not enough. Cuts most of the ~20 s of
+    search, fetch and ranking a claim; does not touch the model's time.
+  - Not worth copying on a CPU: letting the model write its own queries, as Claude does.
+    Each would be another 30-60 s model call.
+  - The real lever is still where the model runs: a GPU, or a hosted endpoint
+    (docs/decisions/performance.md, "Proposals").
+
+Caveat: Claude's timings are this session's wall-clock time, its own thinking included.
+
+
+Sources Claude read
+-------------------
+
+  fact001  https://www.diarioestrategia.cl/texto-diario/mostrar/5993268/casi-tercio-menores-18-anos-espana-vivia-2025-bajo-umbral-pobreza-segun-fedea
+  fact002  https://www.dn.pt/artes/bordalo-ii-estou-a-criar-imagens-com-o-que-destroi-o-mundo-5655569.html
+  fact003  https://www.elespanol.com/corazon/bluper/20230517/paco-pastor-cantante-participa-pasapalabra-mayo-invitado/764423879_0.html
+           https://www.scenicrights.com/en/?p=22979
+  fact004  https://www.aemet.es/es/noticias/2026/09/resumen_verano2026
+  fact005  https://www.lanacion.com.ar/lifestyle/cuidado-cuerpo-belleza/las-personas-con-este-grupo-sanguineo-podrian-tener-un-envejecimiento-mas-lento-segun-un-estudio-nid03022025/
+           https://www.meteored.cl/noticias/ciencia/revelan-los-secretos-que-esconde-la-sangre-de-los-centenarios-cual-es-la-clave-para-vivir-100-anos.html
+  fact006  https://bmjgroup.com/?p=17815
+           https://www.euronews.com/2026/09/09/getting-those-steps-in-does-reduce-the-risk-of-early-death-but-it-is-also-the-pace-that-ma
+  fact007  https://www.usharbors.com/2026/09/first-ever-olive-ridley-sea-turtle-nested-in-california/
+           https://abcnews.com/Technology/wireStory/agency-sea-turtle-eggs-laid-california-beaches-us-136664710
+  fact013  https://www.newsbytesapp.com/news/science/prepare-for-ai-intelligence-explosion-warn-geoffrey-hinton-yoshua-bengio/story
+           https://cryptobriefing.com/ai-executives-urge-oversight-self-improving-ai/
