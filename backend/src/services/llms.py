@@ -204,6 +204,20 @@ class LLMClient:
             if parsed is not None:
                 return parsed
 
+            # Cut at max_tokens: asking again sends the same question at
+            # temperature 0 with the cut answer appended, and a model that
+            # looped once loops again - another cap's worth of tokens on
+            # the process's one LLM permit, for the same None. A verifier
+            # call ran into its timeout twice this way (fact081,
+            # 2026-10-21: 360 s, where it usually answers in 30).
+            if getattr(response.choices[0], "finish_reason", None) == "length":
+                logger.warning(
+                    "LLM answer cut at max_tokens (%s) on attempt %d; not retried",
+                    max_tokens,
+                    attempt,
+                )
+                return None
+
             logger.warning(
                 "LLM returned non-JSON content on attempt %d",
                 attempt,

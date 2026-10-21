@@ -10,13 +10,18 @@ class FakeMessage:
 
 
 class FakeChoice:
-    def __init__(self, content):
+    def __init__(self, content, finish_reason="stop"):
         self.message = FakeMessage(content)
+        self.finish_reason = finish_reason
 
 
 class FakeCompletion:
-    def __init__(self, content):
-        self.choices = [FakeChoice(content)]
+    def __init__(self, content, finish_reason="stop"):
+        self.choices = [FakeChoice(content, finish_reason)]
+
+
+class Cut(str):
+    """An answer the server stopped at max_tokens."""
 
 
 class FakeCompletions:
@@ -30,7 +35,7 @@ class FakeCompletions:
         item = self._responses.pop(0)
         if isinstance(item, Exception):
             raise item
-        return FakeCompletion(item)
+        return FakeCompletion(item, "length" if isinstance(item, Cut) else "stop")
 
 
 class FakeChat:
@@ -85,6 +90,20 @@ def test_complete_json_returns_none_after_exhausting_retries():
     result = client.complete_json("system", "user", max_retries=1)
 
     assert result is None
+
+
+def test_an_answer_cut_at_the_cap_is_not_asked_for_again():
+    """
+    A model that looped to max_tokens once loops again at temperature 0:
+    the retry would spend a second cap's worth of tokens on the same None.
+    """
+
+    client = make_client([Cut('{"verdict": "TRUE", "assessments": [{"index": 0, "quote": "again and again'), '{"verdict": "TRUE"}'])
+
+    result = client.complete_json("system", "user", max_retries=1, max_tokens=1024)
+
+    assert result is None
+    assert len(client._client.chat.completions.calls) == 1
 
 
 def test_complete_json_raises_llm_unavailable_on_connection_error(monkeypatch):
