@@ -31,7 +31,19 @@ class Settings(BaseSettings):
     # snippet) 7.3 s against 4.0 s, because a batch pads every text to
     # the longest. Vectors identical to 3e-7. sentence-transformers'
     # default is 32, which is right for a GPU: raise it there.
-    EMBEDDING_BATCH_SIZE: int = 1
+    #
+    # But one at a time is slowest for *short* texts, which pad nothing:
+    # the 163 topic keywords (TopicClassifier, once per backend process,
+    # in the first article analysed) took 17.9 s one by one and 4.5 s in
+    # batches; a claim's 21 search snippets (the retriever's funnel) 12.6 s
+    # and 6.5 s; eight pages and three snippets 16.7 s and 16.9 s. Measured
+    # 2026-10-21 on the dev laptop (Core Ultra 7 165U), vectors equal to
+    # 2e-7 (docs/decisions/performance.md). So texts are sorted by length
+    # and batched while a batch, padded to its longest, stays within this
+    # many tokens: short texts go together, a long page goes alone. 0 is
+    # one at a time, as before. EMBEDDING_BATCH_SIZE caps the texts per batch.
+    EMBEDDING_BATCH_TOKENS: int = 2048
+    EMBEDDING_BATCH_SIZE: int = 64
 
 
 settings = Settings()

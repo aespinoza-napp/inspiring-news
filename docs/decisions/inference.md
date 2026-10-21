@@ -176,7 +176,7 @@ says so.
 
 | What | Before | After | Why |
 |---|---|---|---|
-| The ranker's request: 8 evidence pages cut at 2,000 characters | 9.4 s | 6.8 s | bge-m3 encoded them as one padded batch; on a CPU one at a time is faster (`EMBEDDING_BATCH_SIZE=1`, inference/src/config.py). Vectors equal to 3e-7 |
+| The ranker's request: 8 evidence pages cut at 2,000 characters | 9.4 s | 6.8 s | bge-m3 encoded them as one padded batch; on a CPU one at a time is faster (`EMBEDDING_BATCH_SIZE=1`, inference/src/config.py). Vectors equal to 3e-7. Since 2026-10-21 batched by length instead (`EMBEDDING_BATCH_TOKENS`): long pages still go alone, short texts together - the topic keywords 17.9 → 4.4 s (`performance.md`) |
 | The same, with the lengths it really sends (some only a snippet) | 7.3 s | 4.2 s | the batch padded every text to the longest |
 | Enrichment of a 5,700-character article | 17.2 s | 14.1 s | the two rows below, less what the third costs |
 | ... the article's embedding | twice, 3.0 s each | once | `TopicClassifier.process` re-embedded the text the pipeline had just embedded for storage; it now takes `embedding=` |
