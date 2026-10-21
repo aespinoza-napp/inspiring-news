@@ -1,0 +1,138 @@
+{
+  "key": "1e045c3dea31",
+  "harnessVersion": 1,
+  "dataset": {
+    "path": "data/evaluation/manual",
+    "stem": "manual-train",
+    "sha256": "b261d136c66223f70f791fd59e17871f058511d5be2c143e0e03e4819f69e941",
+    "rows": 69,
+    "kinds": [
+      "custom"
+    ]
+  },
+  "model": "llama3.2:3b",
+  "provider": "localhost:11435",
+  "thresholds": {
+    "topic_classifier_threshold": 0.35,
+    "entity_threshold": 0.5,
+    "claim_min_confidence": 0.5,
+    "opinion_max_score": 0.5,
+    "min_body_length": 500,
+    "topic_min_confidence": 0.35,
+    "positive_impact_min_score": 0.3,
+    "positive_impact_hard_fail_enabled": false,
+    "duplicate_threshold": 0.96,
+    "relatedness_threshold": 0.8,
+    "anchor_claims_min": 2,
+    "anchor_claims_max": 4,
+    "min_independent_domains": 2,
+    "claim_dedup_threshold": 0.92,
+    "evidence_fetch_candidates": 8,
+    "max_evidence_per_claim": 5,
+    "min_evidence_for_verdict": 1,
+    "evidence_min_pertinence": 0.25,
+    "query_kinds": [
+      "anchor",
+      "proposition",
+      "refutation"
+    ],
+    "second_look_enabled": false,
+    "second_look_below_confidence": 0.5
+  },
+  "thresholdsHash": "95cb7cf5a88b",
+  "thresholdsOverridden": {},
+  "weights": {
+    "RANKING_SEMANTIC_WEIGHT": 0.45,
+    "RANKING_LEXICAL_WEIGHT": 0.2,
+    "RANKING_RECENCY_WEIGHT": 0.2,
+    "RANKING_RELIABILITY_WEIGHT": 0.15,
+    "PERTINENCE_SEMANTIC_WEIGHT": 0.5,
+    "PERTINENCE_LEXICAL_WEIGHT": 0.5,
+    "CONFIDENCE_LLM_WEIGHT": 0.7,
+    "CONFIDENCE_EVIDENCE_WEIGHT": 0.3,
+    "RANKING_DEFAULT_RELIABILITY": 0.5,
+    "EVIDENCE_RECENCY_HALF_LIFE_DAYS": 365.0
+  },
+  "corpus": {
+    "mode": "snapshot",
+    "points": 0
+  },
+  "mode": "oracle",
+  "label": "igpu-head1500",
+  "loop": false,
+  "gitCommit": "eb25b5473a237f53520515b8cf4c7ad1b2bc95da",
+  "startedAt": "2026-10-21T08:43:10+02:00",
+  "settings": {
+    "LLM_BASE_URL": "http://localhost:11435/v1",
+    "LLM_TIMEOUT": 180.0,
+    "LLM_REASONING_EFFORT": null,
+    "SEARXNG_URL": "http://localhost:8080",
+    "INFERENCE_URL": "http://localhost:8001",
+    "INFERENCE_TIMEOUT": 120.0,
+    "DUCKDUCKGO_FALLBACK_ENABLED": true,
+    "CLAIM_MAX_CONCURRENCY": 2,
+    "LLM_MAX_CONCURRENCY": 1,
+    "QUERY_MAX_CONCURRENCY": 2,
+    "SEARXNG_MAX_CONCURRENCY": 2,
+    "SCRAPE_MAX_CONCURRENCY": 8,
+    "INFERENCE_MAX_CONCURRENCY": 1
+  },
+  "verifierPromptSha256": "7b5b5390c5b43cb605e6d9f19b3ef2c226ad4f5289ce44b61aed61cbc8772ccb",
+  "sessions": [
+    {
+      "startedAt": "2026-10-21T08:43:10+02:00",
+      "gitCommit": "eb25b5473a237f53520515b8cf4c7ad1b2bc95da",
+      "provider": "localhost:11435",
+      "limit": null,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 69,
+      "settings": {
+        "LLM_BASE_URL": "http://localhost:11435/v1",
+        "LLM_TIMEOUT": 180.0,
+        "LLM_REASONING_EFFORT": null,
+        "SEARXNG_URL": "http://localhost:8080",
+        "INFERENCE_URL": "http://localhost:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 2,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 1
+      },
+      "finishedAt": "2026-10-21T09:14:50+02:00",
+      "ran": 69,
+      "ok": 69,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 69,
+        "llmCalls": 62,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 7,
+        "promptTokens": 77354,
+        "completionTokens": 9742,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 1247.6,
+        "completionTokensPerUnit": 157.1,
+        "llmSeconds": 1895.67,
+        "callLatency": {
+          "median": 29.935,
+          "p90": 45.42,
+          "max": 59.507
+        },
+        "unitLatency": {
+          "median": 58.406,
+          "p90": 81.822,
+          "total": 3784.26
+        },
+        "completionTokensPerSecond": 5.1
+      }
+    }
+  ]
+}

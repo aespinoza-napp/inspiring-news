@@ -231,7 +231,7 @@ class FakeVerifier:
     def __init__(self, result_by_claim: dict | None = None):
         self.result_by_claim = result_by_claim or {}
 
-    def verify(self, claim, evidence, context=None):
+    def verify(self, claim, evidence, context=None, *, thresholds=None, language=None):
         return self.result_by_claim[claim.text]
 
 

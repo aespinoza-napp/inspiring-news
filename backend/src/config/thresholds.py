@@ -28,7 +28,7 @@ normalises. Those stay environment-only.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic.alias_generators import to_camel
@@ -249,6 +249,23 @@ class PipelineThresholds(BaseModel):
         le=1.0,
     )
 
+    # What the verifier is shown of each source, and how much of it
+    # (verification/excerpts.py): `head`, the page's first characters, or
+    # `passages`, the sentences that carry the claim's terms. The model
+    # reads its prompt at CPU speed, so this is most of a claim's time
+    # (docs/decisions/performance.md). Per-run because it changes what
+    # the model judges on, and whether it reads as well is measured on
+    # the tuning half, like the second look.
+    verifier_excerpt: Literal["head", "passages"] = Field(
+        default_factory=lambda: settings.VERIFIER_EXCERPT,
+    )
+
+    verifier_excerpt_chars: int = Field(
+        default_factory=lambda: settings.VERIFIER_EXCERPT_CHARS,
+        ge=200,
+        le=8000,
+    )
+
     # ------------------------------------------------------------------
 
     @classmethod
@@ -318,6 +335,8 @@ class ThresholdOverrides(BaseModel):
     second_look_enabled: Optional[bool] = Field(None)
     second_look_below_confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
     query_kinds: Optional[tuple[str, ...]] = Field(None)
+    verifier_excerpt: Optional[Literal["head", "passages"]] = Field(None)
+    verifier_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
 
     @field_validator("query_kinds")
     @classmethod

@@ -480,7 +480,13 @@ class FactChecker:
             # after it is the single longest step, so it gets one.
             phase("verifying_claim", {"evidence": len(ranked)})
 
-            llm_result = self.verifier.verify(claim, ranked, context=context)
+            llm_result = self.verifier.verify(
+                claim,
+                ranked,
+                context=context,
+                thresholds=thresholds,
+                language=language,
+            )
 
         check = self.confidence_scorer.score(claim, ranked, llm_result, thresholds)
 

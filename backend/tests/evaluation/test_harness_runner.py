@@ -419,23 +419,55 @@ def test_a_run_with_every_query_kind_keeps_the_key_it_had_before_the_switch(tmp_
 
     from src.evaluation.runner import _digest, keyed_thresholds, thresholds_hash
 
-    thresholds = PipelineThresholds()
+    # As every run before either switch read: all three queries, each
+    # source's first 1,500 characters.
+    thresholds = PipelineThresholds(verifier_excerpt="head", verifier_excerpt_chars=1500)
 
-    before = {name: value for name, value in thresholds.model_dump().items() if name != "query_kinds"}
+    added_later = {"query_kinds", "verifier_excerpt", "verifier_excerpt_chars"}
+
+    before = {name: value for name, value in thresholds.model_dump().items() if name not in added_later}
 
     assert keyed_thresholds(thresholds) == before
     assert thresholds_hash(thresholds) == _digest(before)[:12]
 
     dataset = five_rows(tmp_path)
 
-    base = RunConfig(dataset=dataset, model="a", corpus="none", root=tmp_path)
+    base = RunConfig(dataset=dataset, model="a", corpus="none", root=tmp_path, thresholds=thresholds)
     anchor_only = RunConfig(
         dataset=dataset, model="a", corpus="none", root=tmp_path,
-        thresholds=PipelineThresholds(query_kinds=("anchor",)),
+        thresholds=thresholds.model_copy(update={"query_kinds": ("anchor",)}),
     )
 
     assert anchor_only.key != base.key
     assert thresholds_hash(anchor_only.thresholds) != thresholds_hash(base.thresholds)
+
+
+def test_a_run_reading_each_sources_head_keeps_the_key_it_had_before_the_excerpt_switch(tmp_path):
+    """
+    verifier_excerpt (2026-10-21) enters the key only when the verifier
+    reads something other than each source's first 1,500 characters,
+    which every earlier run read; passages are a different run.
+    """
+
+    from src.evaluation.runner import keyed_thresholds
+
+    head = PipelineThresholds(verifier_excerpt="head", verifier_excerpt_chars=1500)
+    passages = PipelineThresholds(verifier_excerpt="passages", verifier_excerpt_chars=1500)
+    shorter = PipelineThresholds(verifier_excerpt="head", verifier_excerpt_chars=700)
+
+    assert "verifier_excerpt" not in keyed_thresholds(head)
+    assert "verifier_excerpt_chars" not in keyed_thresholds(head)
+    assert keyed_thresholds(passages)["verifier_excerpt"] == "passages"
+    assert keyed_thresholds(shorter)["verifier_excerpt_chars"] == 700
+
+    dataset = five_rows(tmp_path)
+
+    keys = {
+        RunConfig(dataset=dataset, model="a", corpus="none", root=tmp_path, thresholds=thresholds).key
+        for thresholds in (head, passages, shorter)
+    }
+
+    assert len(keys) == 3
 
 
 def test_a_model_name_becomes_a_directory_name_and_a_url_a_provider():

@@ -135,18 +135,28 @@ def provider_of(base_url: str) -> str:
     return f"{parts.hostname}:{parts.port}" if parts.port else parts.hostname
 
 
+# What the verifier read of each source before it was a threshold.
+_EXCERPT_BEFORE = {"verifier_excerpt": "head", "verifier_excerpt_chars": 1500}
+
+
 def keyed_thresholds(thresholds: PipelineThresholds) -> dict:
     """
     The thresholds as a run's key and hash see them. A field added after
     runs were made counts only when it differs from what those runs did,
     so they keep their keys and still resume: `query_kinds` (2026-10-20)
-    when it is not all three, the only plan there was before.
+    when it is not all three, the only plan there was before; the
+    verifier's excerpt (2026-10-21) when it is the first 1,500 characters
+    of each source, which every earlier run read.
     """
 
     dumped = thresholds.model_dump()
 
     if tuple(dumped.get("query_kinds") or ()) == SEARCH_QUERY_KINDS:
         dumped.pop("query_kinds")
+
+    for name, before in _EXCERPT_BEFORE.items():
+        if dumped.get(name) == before:
+            dumped.pop(name)
 
     return dumped
 
@@ -961,7 +971,7 @@ class RetrievalOnlyVerifier:
     fetch, ranking, the pertinence gate - is the real pipeline's.
     """
 
-    def verify(self, claim, evidence, context=None):
+    def verify(self, claim, evidence, context=None, *, thresholds=None, language=None):
 
         from src.models.fact_checker.fact_check import Verdict
         from src.services.fact_checker.verification.llm_verification import LLMVerificationResult

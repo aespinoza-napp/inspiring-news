@@ -1,3 +1,5 @@
+from typing import get_args
+
 import pytest
 from pydantic import ValidationError
 
@@ -233,6 +235,9 @@ def test_every_threshold_is_actually_overridable_end_to_end():
         elif isinstance(current, tuple):
             # A choice of names (query_kinds): one fewer is still legal.
             candidate = current[:-1]
+        elif isinstance(current, str):
+            # One of a few named modes (verifier_excerpt): another of them.
+            candidate = next(choice for choice in get_args(field.annotation) if choice != current)
         elif isinstance(current, int):
             candidate = current + 1
         else:

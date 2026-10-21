@@ -185,7 +185,7 @@ def test_a_claim_without_evidence_is_never_sent_to_the_llm(repository):
         def __init__(self):
             self.calls = []
 
-        def verify(self, claim, evidence, context=None):
+        def verify(self, claim, evidence, context=None, *, thresholds=None, language=None):
             self.calls.append(claim.text)
             raise AssertionError("the LLM was asked about a claim with no evidence")
 

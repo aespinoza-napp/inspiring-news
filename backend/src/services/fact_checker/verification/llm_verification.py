@@ -3,10 +3,13 @@ from logging import getLogger
 
 from pydantic import BaseModel, Field
 
+from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceStance
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.fact_checker.terms import claim_terms
+from src.services.fact_checker.verification import excerpts
 from src.services.llms import LLMClient, LLMUnavailableError
 
 logger = getLogger(__name__)
@@ -30,6 +33,14 @@ _WHITESPACE = re.compile(r"\s+")
 # format is a model-quality result. A copy of the sentence in either would
 # stop matching the day it is reworded here.
 INVALID_OUTPUT_EXPLANATION = "LLM verification unavailable or returned invalid output."
+
+# A ceiling on the verdict's answer, so a model that loops stops. The
+# longest of 196 answers in four evaluation runs (2026-10-20/21) was 328
+# tokens, the median ~145; one call in those runs never stopped and held
+# the LLM permit until LLM_TIMEOUT, twice. At ~9 tokens a second this
+# ends a loop in under two minutes, and an answer cut here is not retried
+# (LLMClient.complete_json): it comes back as invalid output, UNVERIFIED.
+MAX_ANSWER_TOKENS = 1024
 
 SYSTEM_PROMPT = (
     "You are a rigorous fact-checking assistant. You are given a claim "
@@ -120,6 +131,9 @@ class LLMVerifier:
         claim: Claim,
         evidence: list[Evidence],
         context: ArticleContext | None = None,
+        *,
+        thresholds: PipelineThresholds | None = None,
+        language: str | None = None,
     ) -> LLMVerificationResult:
         """
         `context` is the article the claim came from. Without it the
@@ -127,12 +141,17 @@ class LLMVerifier:
         contests in Mexico City was confirmed by the city's marathon when
         the article was about aura-farming battles. Every word matched;
         the subject did not.
+
+        `thresholds` says how much of each source the model is shown
+        (`verifier_excerpt`, `verifier_excerpt_chars`); `language` is the
+        claim's, for the stopwords the passages are chosen without.
         """
 
         try:
             result = self.client.complete_json(
                 SYSTEM_PROMPT,
-                self._build_prompt(claim, evidence, context),
+                self._build_prompt(claim, evidence, context, thresholds, language),
+                max_tokens=MAX_ANSWER_TOKENS,
             )
         except LLMUnavailableError as exc:
             logger.warning("LLM unreachable while verifying claim: %s", exc)
@@ -150,17 +169,40 @@ class LLMVerifier:
         claim: Claim,
         evidence: list[Evidence],
         context: ArticleContext | None = None,
+        thresholds: PipelineThresholds | None = None,
+        language: str | None = None,
     ) -> str:
+
+        thresholds = thresholds or PipelineThresholds()
 
         if not evidence:
             block = "(no evidence retrieved)"
         else:
+            excerpt = self._excerpter(claim, context, thresholds, language)
             block = "\n\n".join(
-                f"[{i}] {item.title}\nURL: {item.url}\n{(item.content or item.snippet)[:1500]}"
+                f"[{i}] {item.title}\nURL: {item.url}\n{excerpt(item.content or item.snippet)}"
                 for i, item in enumerate(evidence)
             )
 
         return f"{self._article_block(context)}Claim:\n{claim.text}\n\nEvidence:\n{block}"
+
+    @staticmethod
+    def _excerpter(
+        claim: Claim,
+        context: ArticleContext | None,
+        thresholds: PipelineThresholds,
+        language: str | None,
+    ):
+        """What of one source's text goes into the prompt."""
+
+        budget = thresholds.verifier_excerpt_chars
+
+        if thresholds.verifier_excerpt == "head":
+            return lambda text: excerpts.head(text, budget)
+
+        anchors, content = claim_terms(claim, language, context)
+
+        return lambda text: excerpts.passages(text, budget, anchors, content)
 
     @staticmethod
     def _article_block(context: ArticleContext | None) -> str:

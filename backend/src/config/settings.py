@@ -360,6 +360,16 @@ class Settings(BaseSettings):
     SECOND_LOOK_ENABLED: bool = False
     SECOND_LOOK_BELOW_CONFIDENCE: float = 0.5
 
+    # What the verifier reads of each source (verification/excerpts.py):
+    # `head` (the page's first VERIFIER_EXCERPT_CHARS characters) or
+    # `passages` (the sentences carrying the claim's terms, within the same
+    # budget). Every run until 2026-10-21 read the head at 1500. Passages at
+    # 700 on the train half, same pages, same day: accuracy +4.4 points
+    # [-4.4, +13.2], 29.5% fewer prompt tokens a call, the call 24% faster.
+    # docs/decisions/performance.md.
+    VERIFIER_EXCERPT: Literal["head", "passages"] = "passages"
+    VERIFIER_EXCERPT_CHARS: int = 700
+
     # EvidenceRanker scoring weights (must sum to 1.0)
     #
     # RANKING_LEXICAL_WEIGHT is the newest of the four and the reason the
