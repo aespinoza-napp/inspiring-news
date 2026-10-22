@@ -169,6 +169,8 @@ by 6-9 points. Rules written before each run:
 | Stated rules: each verdict defined by what a source states, a `silent` stance, the scorer holding the verdict to the stances | `verifier_rules=stated`; `confidence_scorer.holds_to_stances` | Train -8.7 points [-17.4, 0.0]: the 3B's stances do not match its own verdicts, and the check removed right FALSEs as readily as wrong ones. Kept as an option, off |
 | One source at a time | `verifier_answer=per_source`; `verification/per_source.py` | One short call per source, the verdict the side more outlets take, a tie UNVERIFIED. Train 44.9 -> 47.8%, test 51.4 -> 55.7% (+4.3 [-8.6, +17.1]); right when it commits +13.9 [+0.3, +27.3]; confidently wrong 47 -> 29%; natural claims 49 -> 67%, altered ones 60 -> 13%. **The default since** |
 | A file is not a page | `scraper/fetcher.py`, `NotAPage` | A PDF's bytes had become a 167-million-character evidence page for two claims; refused before the body is read |
+| A larger reader, `qwen3.5:9b` (V3) | the list verifier, replayed | Train 50.7%, right when it commits 67.4% against 47.7% (+19.7 [+4.1, +35.6]), kappa 0.141 -> 0.282, altered claims 11 of 15 and FALSE to only 8 true claims - at ~90 s a call here. The case for a GPU or hosted endpoint |
+| Quote first (V4) | the per-source prompt | Ties V2b on train (47.8%) with more FALSE to true claims (11 against 6). Not adopted |
 
 **What to do next:** catch the altered detail without bringing back FALSE
 for true claims - the per-source prompt comparing the claim's figures,

@@ -1,0 +1,149 @@
+{
+  "key": "7975364fe90b",
+  "harnessVersion": 1,
+  "dataset": {
+    "path": "data\\evaluation\\manual",
+    "stem": "manual-train",
+    "sha256": "b261d136c66223f70f791fd59e17871f058511d5be2c143e0e03e4819f69e941",
+    "rows": 69,
+    "kinds": [
+      "custom"
+    ]
+  },
+  "model": "llama3.2:3b",
+  "provider": "localhost:11434",
+  "thresholds": {
+    "topic_classifier_threshold": 0.35,
+    "entity_threshold": 0.5,
+    "claim_min_confidence": 0.5,
+    "opinion_max_score": 0.5,
+    "min_body_length": 500,
+    "topic_min_confidence": 0.35,
+    "positive_impact_min_score": 0.3,
+    "positive_impact_hard_fail_enabled": false,
+    "duplicate_threshold": 0.96,
+    "relatedness_threshold": 0.8,
+    "anchor_claims_min": 2,
+    "anchor_claims_max": 4,
+    "min_independent_domains": 2,
+    "claim_dedup_threshold": 0.92,
+    "evidence_fetch_candidates": 8,
+    "max_evidence_per_claim": 5,
+    "min_evidence_for_verdict": 1,
+    "evidence_min_pertinence": 0.25,
+    "query_kinds": [
+      "anchor",
+      "proposition",
+      "refutation"
+    ],
+    "second_look_enabled": false,
+    "second_look_below_confidence": 0.5,
+    "verifier_excerpt": "passages",
+    "verifier_excerpt_chars": 700,
+    "verifier_answer": "per_source",
+    "verifier_rules": "stated",
+    "evidence_prerank": "embedding",
+    "ranking_text": "head",
+    "fetch_evidence_pages": true,
+    "claim_deadline_seconds": 0
+  },
+  "thresholdsHash": "4f41294f90c7",
+  "thresholdsOverridden": {
+    "verifier_rules": "stated"
+  },
+  "weights": {
+    "RANKING_SEMANTIC_WEIGHT": 0.45,
+    "RANKING_LEXICAL_WEIGHT": 0.2,
+    "RANKING_RECENCY_WEIGHT": 0.2,
+    "RANKING_RELIABILITY_WEIGHT": 0.15,
+    "PERTINENCE_SEMANTIC_WEIGHT": 0.5,
+    "PERTINENCE_LEXICAL_WEIGHT": 0.5,
+    "CONFIDENCE_LLM_WEIGHT": 0.7,
+    "CONFIDENCE_EVIDENCE_WEIGHT": 0.3,
+    "RANKING_DEFAULT_RELIABILITY": 0.5,
+    "EVIDENCE_RECENCY_HALF_LIFE_DAYS": 365.0
+  },
+  "corpus": {
+    "mode": "snapshot",
+    "points": 1
+  },
+  "mode": "replay",
+  "label": "verifier-2026-10-22-quote-first",
+  "loop": false,
+  "gitCommit": "d2ec95f91e9088176356025082db753a74533ce1-dirty",
+  "startedAt": "2026-10-22T17:20:54+02:00",
+  "settings": {
+    "LLM_BASE_URL": "http://localhost:11434/v1",
+    "LLM_TIMEOUT": 180.0,
+    "LLM_REASONING_EFFORT": null,
+    "SEARXNG_URL": "http://localhost:8080",
+    "INFERENCE_URL": "http://localhost:8001",
+    "INFERENCE_TIMEOUT": 120.0,
+    "DUCKDUCKGO_FALLBACK_ENABLED": true,
+    "CLAIM_MAX_CONCURRENCY": 2,
+    "LLM_MAX_CONCURRENCY": 1,
+    "QUERY_MAX_CONCURRENCY": 2,
+    "SEARXNG_MAX_CONCURRENCY": 2,
+    "SCRAPE_MAX_CONCURRENCY": 8,
+    "INFERENCE_MAX_CONCURRENCY": 1
+  },
+  "replayOf": "data\\evaluation\\runs\\manual-train\\llama3.2-3b\\2a4d7dde37b2",
+  "verifierPromptSha256": "a7b0f5f27ff13a22b813edb95d8eddfaef03730af2bb4c3dd85157f761792b89",
+  "sessions": [
+    {
+      "startedAt": "2026-10-22T17:20:54+02:00",
+      "gitCommit": "d2ec95f91e9088176356025082db753a74533ce1-dirty",
+      "provider": "localhost:11434",
+      "limit": null,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 69,
+      "settings": {
+        "LLM_BASE_URL": "http://localhost:11434/v1",
+        "LLM_TIMEOUT": 180.0,
+        "LLM_REASONING_EFFORT": null,
+        "SEARXNG_URL": "http://localhost:8080",
+        "INFERENCE_URL": "http://localhost:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 2,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 1
+      },
+      "finishedAt": "2026-10-22T17:50:47+02:00",
+      "ran": 69,
+      "ok": 69,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 69,
+        "llmCalls": 322,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 141886,
+        "completionTokens": 12925,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2056.3,
+        "completionTokensPerUnit": 187.3,
+        "llmSeconds": 1757.57,
+        "callLatency": {
+          "median": 5.033,
+          "p90": 8.089,
+          "max": 17.47
+        },
+        "unitLatency": {
+          "median": 48.455,
+          "p90": 73.53,
+          "total": 3559.62
+        },
+        "completionTokensPerSecond": 7.4
+      }
+    }
+  ]
+}

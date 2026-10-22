@@ -1417,13 +1417,56 @@ claims the app actually checks, the natural ones, where it is right
 78.7% of the times it commits. `VERIFIER_ANSWER=full` is the list
 verifier again, and `thorough.json` keeps it for the harness.
 
-### A larger reader (V3, running)
+### A larger reader (V3)
 
 `qwen3.5:9b`, thinking off, on the same train evidence with the list
-verifier (`thorough.json`), started 15:18; about three times the 3B's
-time a call on this CPU. Recorded here when it ends.
+verifier (`thorough.json`; `594130bf966f`). Two claims never got an
+answer: the call timed out at `LLM_TIMEOUT` (180 s) twice each, and they
+are set apart. Paired against B0 over the other 67:
+
+| Train, 67 claims | B0, 3B | V3, 9B | B - A [95% CI] |
+|---|---|---|---|
+| Accuracy | 46.3% | 50.7% | +4.5 [-10.4, +19.4] |
+| Right when it commits | 47.7% | 67.4% | +19.7 [+4.1, +35.6] |
+| Coverage | 97.0% | 68.7% | -28.4 [-40.3, -16.4] |
+| Kappa against gold | 0.141 | 0.282 | +0.141 [-0.040, +0.335] |
+| Confidently wrong | 36 | 15 (22.4%) | |
+| FALSE to true claims | 24 | 8 | |
+| Altered claims (15) | 80.0% | 73.3% | |
+| Natural claims (52) | 35.2%* | 44.2% | |
+| A model call, median | ~27 s | 90.5 s (p90 132) | |
+
+\* over B0's 54 natural claims.
+
+The 9B is the first reader that does both: it rarely calls a true claim
+false and still catches most altered ones - kappa doubles. What it
+costs is time (a claim ~3 minutes here, two claims timed out) and
+coverage: it leaves a third UNVERIFIED, so on natural claims it is below
+V2b (44.2% against 53.7%). By the rule it is better than B0; on this CPU
+it is not the app's default - it is the case for a GPU or a hosted
+endpoint, where its call would take seconds.
+
+### Quote first (V4)
+
+V2b's per-source prompt with the quote asked before the stance and one
+added rule - a sentence giving a different figure, date, place or name
+for the same thing contradicts the claim (`7975364fe90b`). Designed after
+reading V2b's misses, test half included, so judged on the train half
+against V2b: 47.8% against 47.8% (+0.0 [-13.0, +13.0]), but confidently
+wrong 25 against 18 and FALSE to 11 true claims against 6, for one more
+altered claim caught (5 of 15 against 4). Told that one different detail
+is a contradiction, the 3B finds differences that are not there. Not
+adopted; its test-half run was stopped at the train result, and the
+prompt reverted.
 
 ### Found on the way
+
+A check of the figures in a "supporting" quote was tried on V2b's train
+records before V4: several altered claims had a supporting quote that
+states the original figure ("68 days" for a claim of 168). Comparing
+figures by their unit (a year with a year, "days" with "days") flagged 5
+quotes of false claims and 3 of true ones - years mentioned in passing -
+and would have changed about one verdict. Not built.
 
 A PDF is not a page. Two sources of four claims (the IPES-Food and Pew
 reports) were fetched as text and passed down the extraction cascade,

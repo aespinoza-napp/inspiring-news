@@ -65,7 +65,40 @@ after seeing the train half, the train half cannot confirm it: **V2b is
 adopted only if it also meets the rule on the test half**, against a
 fresh thorough run there that keeps its evidence, replayed once.
 
-V3 is judged by the same rule. Its call takes about three times the
+V3 is judged by the same rule.
+
+Added at 15:55, after V2b's adoption and before V4 ran:
+
+| Entry | Thresholds | What changes |
+|---|---|---|
+| V4, quote first | `per_source.json`, label `verifier-2026-10-22-quote-first` | V2b's per-source prompt with the quote asked before the stance, and one rule: a sentence that gives a different figure, date, place or name for the same thing contradicts the claim |
+
+Why: of the altered claims V2b called TRUE, several had a "supporting"
+quote that states the original detail outright (fact162's "68 days" for
+the claim's 168; fact171's Jerez for Granada). A rule-based check of
+the figures in those quotes was tried on the train records first and
+dropped: 5 flags on false claims against 3 on true ones (years in
+passing), about one verdict changed. V4 asks the model instead.
+
+Added at 17:25, after V3's result (9B, list verifier, train: 50.7%,
+selective 67.4% against 47.7%, kappa 0.282 against 0.141, altered claims
+73%, natural 44%; ~90 s a call) and before V4's or V5's:
+
+| Entry | Thresholds | What changes |
+|---|---|---|
+| V5, the 9B one source at a time | `per_source.json`, `qwen3.5:9b`, thinking off, label `verifier-2026-10-22-9b-per-source` | V3's reader with the per-source question: whichever per-source prompt the train half prefers between V2b's and V4's, decided by V4's train result before V5 starts |
+
+V3 catches altered claims and V2b natural ones; V5 asks whether the
+larger reader keeps the first while the per-source question brings the
+second. Judged by the same rule on the train half; the test half only if
+it meets it there. Its time decides nothing about adoption on this CPU:
+like V3, if it wins it is the recommendation for a faster endpoint.
+
+**The test half is not untouched for V4**: its altered-claim misses were
+read (their quotes) before V4 was designed. V4 is judged on the train
+half against V2b, replayed; its test-half result is reported as seen,
+not as a confirmation, and adoption needs the train half to show it and
+the test half not to contradict it. Its call takes about three times the
 3B's on this CPU, so if it wins it is the recommendation for a faster
 endpoint (a GPU or a hosted model), and the app's default on this CPU is
 the author's call.
