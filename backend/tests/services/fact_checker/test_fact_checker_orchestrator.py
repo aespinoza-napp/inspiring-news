@@ -1,3 +1,5 @@
+import pytest
+
 from src.config.thresholds import PipelineThresholds
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.claim_selector import ClaimSelector
@@ -12,6 +14,9 @@ from tests.services.fact_checker.fakes import (
     FakeRanker,
     FakeVerifier,
 )
+
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
 
 
 def test_run_does_not_judge_admission(repository):

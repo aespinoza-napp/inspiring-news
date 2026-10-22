@@ -38,6 +38,9 @@ from tests.evaluation.support import (
     xfact_row,
 )
 
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
+
 
 def five_rows(tmp_path):
 

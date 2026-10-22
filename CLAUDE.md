@@ -82,6 +82,7 @@ src.main:app --port 8001`.
 | Which model verifies, writes and reviews, how each was chosen, and what each costs in time | `docs/decisions/evaluation.md` ("Choosing the models"), `scripts/try_reviewer_model.py` |
 | Every change ever made to fact-checking, by date, with a summary | `docs/fact-checking-changes.md` |
 | Where a claim's seconds go; the speed switches, the claim deadline, the 22 Oct contest | `docs/decisions/performance.md` ("The 20-second fact-check"), `backend/data/evaluation/experiments/speed/` |
+| Why the verifier asks one source at a time; comparing verifiers on one run's evidence (`--replay`) | `docs/decisions/evaluation.md` ("The verifier's FALSE", "Replay"), `backend/data/evaluation/experiments/verifier/` |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
@@ -203,7 +204,15 @@ write them down than to have each be rediscovered.
   defaults every run takes, the evaluation harness's included; the
   harness warns when it is not `thorough`, and
   `--thresholds data/evaluation/thresholds/thorough.json` runs the
-  pipeline as before. `docs/decisions/performance.md`.
+  pipeline as it was on 22 Oct morning. `docs/decisions/performance.md`.
+- **The verifier asks one source at a time since 2026-10-22**
+  (`VERIFIER_ANSWER=per_source`, the default; `full` is the old single
+  call). Adopted by a rule written before the runs, on the same evidence
+  as the old one: natural claims 49 -> 67% on the test half, confidently
+  wrong 47 -> 29% - and claims with one altered detail 60 -> 13%. It
+  rarely catches a changed figure. Every report before 22 Oct afternoon,
+  and `thorough.json`, is the list verifier. Never compare two verifiers
+  across two searched runs: replay one (`cli run --replay`).
 - **`SENTIMENT_MODEL` and `EMBEDDING_MODEL` in `backend/.env` are
   documentary.** The models load in `inference/`, from
   `inference/src/config.py`'s own defaults. Editing the backend values
@@ -270,13 +279,21 @@ Phase 1.
   seconds - likely a cause, not proven. `/metrics` counts empty and
   failed searches (`inspiring_web_searches_total`).
 - **A claim's time, measured on the dev desktop (2026-10-22, i9-10900,
-  no GPU):** 57 s at the median with the thorough defaults, 17.8 s with
-  the `fast` profile, 14.2 s with `fast_snippets`, on the first ten
-  train claims; every setup got 2-3 of 10 right, the 3B answering FALSE
-  to true claims in all of them (Claude, by hand: 7). On all 69 train
-  claims the fast profiles cost ~17 points (thorough 50.7%, fast 33.8%,
-  snippets 33.3%), so `backend/.env` stays `thorough`. The app shows every search's, page's
-  and model call's seconds (`TimingBreakdown`).
+  no GPU):** 57 s at the median with the thorough defaults and the list
+  verifier, 17.8 s with the `fast` profile, 14.2 s with `fast_snippets`,
+  on the first ten train claims; every setup got 2-3 of 10 right, the 3B
+  answering FALSE to true claims in all of them (Claude, by hand: 7). On
+  all 69 train claims the fast profiles cost ~17 points (thorough 50.7%,
+  fast 33.8%, snippets 33.3%), so `backend/.env` stays `thorough`. With
+  the per-source verifier a thorough claim is ~44 s (the model 21 s of
+  it). The app shows every search's, page's and model call's seconds
+  (`TimingBreakdown`).
+- **The same pipeline, searched twice, differs by 6-9 points** on the
+  train half (50.7% and 44.9% three hours apart; 42.0% on 19 Oct), with
+  every retrieval figure alike: the pages differ, not the recall. On
+  fixed evidence the 3B is deterministic (10 of 10 replayed claims
+  identical). An evidence page was a PDF's raw bytes until 22 Oct
+  (`fetcher.NotAPage`).
 - **The speedup is measured against a simulated network, not the live
   stack.** `scripts/bench_claim_concurrency.py` (2026-10-04): ×3.4 on one
   four-claim article with a fast model, ×1.16 with production's CPU LLM

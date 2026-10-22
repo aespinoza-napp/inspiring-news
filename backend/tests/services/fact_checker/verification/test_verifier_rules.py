@@ -27,8 +27,10 @@ from src.services.llms import LLMUnavailableError
 from tests.factories import create_claim, create_evidence
 from tests.services.fact_checker.fakes import FakeLLMClient
 
-STATED = PipelineThresholds(verifier_rules="stated")
-ORIGINAL = PipelineThresholds(verifier_rules="original")
+# Each names its verifier: the default changed under these tests once
+# already (per_source, 2026-10-22).
+STATED = PipelineThresholds(verifier_answer="full", verifier_rules="stated")
+ORIGINAL = PipelineThresholds(verifier_answer="full", verifier_rules="original")
 PER_SOURCE = PipelineThresholds(verifier_answer="per_source")
 
 
@@ -140,10 +142,36 @@ def test_the_verdict_follows_from_the_stances():
     assert per_source.verdict_from(stanced("contradicts", "silent", None, "silent"), evidence)[0] == Verdict.FALSE
     assert per_source.verdict_from(stanced("silent", "silent", "unrelated", None), evidence) == (Verdict.UNVERIFIED, 0.0, [])
 
-    # Disagreement: the side with more outlets; a tie is TRUE, which the
-    # scorer makes PARTIALLY_TRUE for the contradicting source.
+    # Disagreement: the side with more outlets; a tie is not settled.
     assert per_source.verdict_from(stanced("supports", "contradicts", "contradicts", "silent"), evidence)[0] == Verdict.FALSE
-    assert per_source.verdict_from(stanced("supports", "contradicts", "silent", "silent"), evidence)[:1] == (Verdict.TRUE,)
+    assert per_source.verdict_from(stanced("supports", "supports", "contradicts", "silent"), evidence)[0] == Verdict.TRUE
+    assert per_source.verdict_from(stanced("supports", "contradicts", "silent", "silent"), evidence)[0] == Verdict.UNVERIFIED
+
+
+def test_a_true_by_more_outlets_stays_true_with_one_dissenting():
+    """
+    The scorer's own rule - TRUE with a contradicting source becomes
+    PARTIALLY_TRUE - is the list verifier's. The per-source verdict has
+    already counted the dissent: on 2026-10-22 that rule turned 9 true
+    train claims PARTIALLY_TRUE over one stray "contradicts" each.
+    """
+
+    evidence = sources("a.org", "b.org", "c.org")
+
+    said = LLMVerificationResult(
+        verdict=Verdict.TRUE,
+        confidence=0.83,
+        explanation="x",
+        cited_evidence=[0, 1, 2],
+        assessments=[
+            EvidenceAssessment(index=0, stance=EvidenceStance.SUPPORTS),
+            EvidenceAssessment(index=1, stance=EvidenceStance.SUPPORTS),
+            EvidenceAssessment(index=2, stance=EvidenceStance.CONTRADICTS),
+        ],
+    )
+
+    assert ConfidenceScorer().score(create_claim(), evidence, said, PER_SOURCE).verdict == Verdict.TRUE
+    assert ConfidenceScorer().score(create_claim(), evidence, said, STATED).verdict == Verdict.PARTIALLY_TRUE
 
 
 def test_two_pages_of_one_outlet_are_one_voice():
@@ -153,7 +181,7 @@ def test_two_pages_of_one_outlet_are_one_voice():
     verdict, _, cited = per_source.verdict_from(stanced("supports", "contradicts", "contradicts", "silent"), evidence)
 
     # One outlet each way: a tie, not two against one.
-    assert verdict == Verdict.TRUE
+    assert verdict == Verdict.UNVERIFIED
     assert cited == [0, 1, 2]
 
 

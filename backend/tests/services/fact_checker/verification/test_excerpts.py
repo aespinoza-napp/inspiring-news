@@ -1,9 +1,14 @@
+import pytest
+
 from src.config.thresholds import PipelineThresholds
 from src.services.fact_checker.verification import excerpts
 from src.services.fact_checker.verification.llm_verification import LLMVerifier
 
 from tests.factories import create_claim, create_evidence
 from tests.services.fact_checker.fakes import FakeLLMClient
+
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
 
 # A page whose opening is about something else, with the sentence that
 # addresses the claim far down - the shape the head of a page misses.

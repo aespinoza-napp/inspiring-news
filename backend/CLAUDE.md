@@ -131,10 +131,13 @@ detection, where a silently empty result corrupts a decision).
   by what a source states, adds the `silent` stance (`EvidenceStance`),
   and `ConfidenceScorer` turns a FALSE no cited source contradicts, or a
   TRUE none supports, into UNVERIFIED (`holds_to_stances`).
-  `verifier_answer=per_source` asks one short question per source
-  (`verification/per_source.py`) and makes the verdict from the stances
-  by a written rule; its calls run on the claim's own thread, because the
-  harness meters calls by thread. Compare verifiers with
+  `verifier_answer=per_source` - **the default since 2026-10-22** - asks
+  one short question per source (`verification/per_source.py`) and makes
+  the verdict the side more outlets take, a tie UNVERIFIED; the scorer
+  does not split its TRUE into PARTIALLY_TRUE. Its calls run on the
+  claim's own thread, because the harness meters calls by thread. Tests
+  written against the single-call list verifier say so with
+  `pytest.mark.usefixtures("list_verifier")` (conftest). Compare verifiers with
   `cli run --replay <run>` (same evidence, `docs/decisions/evaluation.md`,
   "Replay"), never with two searched runs.
 - **Across claims those events interleave**, because the claims run at

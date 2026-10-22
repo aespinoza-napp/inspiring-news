@@ -381,7 +381,8 @@ class Settings(BaseSettings):
 
     # The speed switches (2026-10-22, docs/decisions/performance.md, "The
     # 20-second fact-check"). Each default is what every run did before
-    # it existed; `data/evaluation/thresholds/fast.json` turns them on.
+    # it existed, but VERIFIER_ANSWER's, changed by the verifier experiment
+    # (below); `data/evaluation/thresholds/fast.json` turns them on.
     #
     # VERIFIER_ANSWER: `full` asks for a stance and a verbatim quote per
     # source and one or two sentences (~145 answer tokens, the median);
@@ -389,9 +390,15 @@ class Settings(BaseSettings):
     # (~50). On a CPU the model writes 6-14 tokens a second, so the answer
     # is most of a call. `per_source` asks about one source at a time
     # (does it state the claim, state otherwise, or say nothing on it?)
-    # with a stance and a quote, and the verdict follows from the stances
-    # by a written rule (verification/per_source.py).
-    VERIFIER_ANSWER: Literal["full", "compact", "per_source"] = "full"
+    # with a stance and a quote, and the verdict is the side more outlets
+    # take (verification/per_source.py). The default since the verifier
+    # experiment of 2026-10-22 (data/evaluation/experiments/verifier/),
+    # on the same evidence as the list verifier: natural claims 49.1 ->
+    # 67.3% on the test half, confidently wrong verdicts 47 -> 29%, the
+    # model's time a claim 27 -> 21 s - and claims with one altered detail
+    # 60 -> 13%: it rarely catches a changed figure. `full` was the
+    # default before; `thorough.json` keeps it for the harness.
+    VERIFIER_ANSWER: Literal["full", "compact", "per_source"] = "per_source"
     # VERIFIER_RULES: `original` is the prompt every run had until
     # 2026-10-22, which defines neither TRUE nor FALSE and has no stance
     # for a source that is on the subject but silent on the claim's point;

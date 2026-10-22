@@ -1303,6 +1303,138 @@ model, two claims at once. The first `llama3.2:3b` runs (133 s a claim)
 shared the CPU with the test run; their times are each other's waiting
 too and are not quoted as the model's.
 
+## The verifier's FALSE (2026-10-22)
+
+The author's priority after the speed work: the fact-check itself.
+Everything below is on the custom set's train half (69 claims) unless it
+says test, with `llama3.2:3b` unless it says otherwise, and the rule for
+each entry was written before it ran
+(`backend/data/evaluation/experiments/verifier/rule.md`).
+
+### What was wrong
+
+The thorough pipeline answered FALSE to 21 of the 45 true claims
+(`340a36ac8972`, 50.7%), and to 24 in a second run the same day
+(`2a4d7dde37b2`, 44.9%). Every such FALSE marked exactly one source
+"contradicts" and left the rest without a stance, for true and false
+claims alike; most explained themselves by absence - "the evidence does
+not mention ...", "no se menciona ..." - where the right FALSEs named the
+other value ("3 million, not 300,000"). The prompt defined neither TRUE
+nor FALSE and had no stance for a source on the subject but silent on
+the claim's point.
+
+It is not mainly retrieval. Of the 29 true claims that carry a figure,
+22 had a ranked source whose text contains every figure, and for 17 of
+them every figure was in the 700-character passage the model actually
+read (`verifier_excerpt=passages`); it said FALSE to 12 of the 22.
+
+### Fixed evidence
+
+The two thorough runs above differ by -5.8 points [-14.5, +1.4] and 8
+verdicts, with every retrieval figure within 1.5 points: the same
+recall, different pages. Comparing verifiers across two searches would
+measure that. Every variant below is a **replay** of `2a4d7dde37b2`'s
+evidence (§Replay). The baseline replayed under its own thresholds on
+its first ten claims (`9adb65e5ab94`) gave the same verdict, the same
+stance on every source and the same explanation text 10 times of 10:
+at temperature 0, on fixed evidence, the 3B is deterministic, and every
+difference below is the variant's.
+
+### The entries
+
+Paired against B0 (`2a4d7dde37b2`) on the same 69 claims and the same
+evidence; model time is the calls' own seconds per claim, at the median.
+
+| Entry | Run | Accuracy | B - A [95% CI] | Confidently wrong | FALSE to true claims | UNVERIFIED | Model time |
+|---|---|---|---|---|---|---|---|
+| B0, thorough (searched) | `2a4d7dde37b2` | 44.9% | | 36 (52.2%) | 24 of 45 | 2 | 27.2 s |
+| V1, stated rules | `20c970d87114` | 36.2% | -8.7 [-17.4, 0.0] | 30 (43.5%) | 19 | 15 | 25.9 s |
+| V2, one source at a time, as run | `d70e76cc6319` | 39.1% | -5.8 [-20.3, +8.7] | 32 (46.4%) | 6 | 12 | 21.4 s |
+| V2b, one source at a time, by majority | `a2b3a553f3c0` | 47.8% | +2.9 [-11.6, +17.4] | 18 (26.1%) | 6 | 22 | 21.4 s |
+
+- **V1** (`verifier_rules=stated`: each verdict defined by what a source
+  states, a `silent` stance, and the scorer holding the verdict to the
+  stances) made the model itself slightly worse - 27 right before the
+  scorer's check against 31 - and the check then took back correct
+  FALSEs as readily as wrong ones, because the 3B's stances often do not
+  match its own verdict: fact178 found the 116 against 316 women, marked
+  imfarmacias.es "contradicts" and cited only a source it gave no
+  stance; fact176 marked four sources "supports" and answered FALSE.
+  Not adopted.
+- **V2** (`verifier_answer=per_source`: one short call per source,
+  supports / contradicts / silent / unrelated with a quote, the verdict
+  by a written rule) cut FALSE to true claims from 24 to 6 and raised
+  TRUE recall, but its first rule let the scorer make any disagreement
+  PARTIALLY_TRUE: 18 claims, 9 of them true ones carrying one stray
+  "contradicts". Asked about one source, the 3B says "contradicts" to a
+  true claim about as often as "supports" to a changed one (fact176,
+  "accelerated" for "reversed": four "supports"). Not adopted.
+- **V2b** counts outlets: the side more of them take wins, a tie is
+  UNVERIFIED, and the scorer does not split a majority TRUE into
+  PARTIALLY_TRUE. Recounted from V2's recorded stances it gave 47.8%;
+  run, the same (67 of 69 claims with identical stances). A tie going to
+  TRUE would score 52.2% - by leaning on a set two thirds true, so it is
+  not the rule. Right when it commits: 61.7% against 46.3%, +15.4
+  [0.0, +30.4], at 68% coverage against 97%. Its weakness is the changed
+  claims: FALSE recall 4 of 15, the 3B confirming a claim whose one
+  detail was altered.
+
+V2b was chosen after V2's train result, so the train half cannot confirm
+it: the rule sends it to the test half.
+
+### The test half, once
+
+A fresh thorough run on the test half's 70 claims, keeping its evidence
+(`66034c5fea72`: 51.4% [40.0, 62.9], against 52.9% for the 19 Oct run of
+the same half), and V2b replayed on it (`e7231c962477`). Paired, same
+evidence:
+
+| Test half | Thorough, list verifier | V2b | B - A [95% CI] |
+|---|---|---|---|
+| Accuracy | 51.4% | 55.7% | +4.3 [-8.6, +17.1] |
+| Right when it commits (selective) | 52.2% | 66.1% | +13.9 [+0.3, +27.3] |
+| Coverage (not UNVERIFIED) | 98.6% | 84.3% | -14.3 [-24.3, -5.7] |
+| Kappa against gold | 0.143 | 0.055 | -0.088 [-0.268, +0.088] |
+| Usable without re-checking | 21 (30.0%) | 31 (44.3%) | |
+| Confidently wrong | 33 (47.1%) | 20 (28.6%) | |
+| FALSE to true claims | 17 of 46 | 2 of 46 | |
+| The changed claims caught (gold FALSE) | 9 of 15 | 2 of 15 | |
+| Natural claims (55) | 49.1% | 67.3% | |
+| Changed claims (15) | 60.0% | 13.3% | |
+| A claim, at the median | 63 s | 44 s | |
+
+The same on the train half: natural claims 35.2 -> 53.7%, changed ones
+80.0 -> 26.7%.
+
+**By the rule V2b is adopted** - at least B0's accuracy and fewer
+confidently wrong verdicts, on both halves - and `VERIFIER_ANSWER`
+defaults to `per_source` since. What it trades is plain in the table: it
+stopped calling true claims FALSE, and it no longer catches most claims
+with one altered detail - the 3B, asked whether a source states a claim,
+answers "supports" when the story is the same and a figure is not. Kappa
+fell because it now says TRUE to 54 of 70 claims; its gain is on the
+claims the app actually checks, the natural ones, where it is right
+78.7% of the times it commits. `VERIFIER_ANSWER=full` is the list
+verifier again, and `thorough.json` keeps it for the harness.
+
+### A larger reader (V3, running)
+
+`qwen3.5:9b`, thinking off, on the same train evidence with the list
+verifier (`thorough.json`), started 15:18; about three times the 3B's
+time a call on this CPU. Recorded here when it ends.
+
+### Found on the way
+
+A PDF is not a page. Two sources of four claims (the IPES-Food and Pew
+reports) were fetched as text and passed down the extraction cascade,
+and BeautifulSoup returned the PDF's bytes as the article: evidence
+"pages" of 167 and 24 million characters of `%PDF-1.5 ...`, ranked on
+their first 2,000 and searched for passages. The fetcher now refuses a
+response whose content type is a file, before reading its body, and a
+body that starts `%PDF-`; the claim keeps the search snippet
+(`scraper/fetcher.py`, `NotAPage`). The replays above still carry those
+two pages, the same for every entry.
+
 ## Where it runs
 
 The harness needs `inference/`, SearXNG and the LLM, like any analysis.

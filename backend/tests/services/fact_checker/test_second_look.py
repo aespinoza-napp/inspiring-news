@@ -5,6 +5,8 @@ scorer over the shared fakes; the model is a FakeLLMClient answering
 the planner first and the verifier second.
 """
 
+import pytest
+
 from src.config.thresholds import PipelineThresholds
 from src.models.fact_checker.evidence import Evidence, EvidenceOrigin, RejectedEvidence
 from src.models.fact_checker.fact_check import FactCheck, SecondLook, Verdict
@@ -32,6 +34,9 @@ from tests.services.fact_checker.fakes import (
     FakeSourceRepository,
     FakeVectorRetriever,
 )
+
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
 
 
 def page(url: str, title: str = "A report") -> Evidence:

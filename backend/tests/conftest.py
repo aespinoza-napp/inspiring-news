@@ -117,6 +117,21 @@ def pinned_settings(monkeypatch):
     pin_settings(monkeypatch)
 
 
+@pytest.fixture
+def list_verifier(monkeypatch):
+    """
+    The list verifier - one call judging every source - for the tests
+    written against it. It was the default until 2026-10-22, when one
+    source at a time (VERIFIER_ANSWER=per_source) replaced it by the
+    verifier experiment's rule (data/evaluation/experiments/verifier/).
+    These tests now name the verifier they test instead of reaching it
+    through the default: `pytestmark = pytest.mark.usefixtures("list_verifier")`.
+    Function-scoped like `pinned_settings`, and set up after it.
+    """
+
+    monkeypatch.setattr(live_settings, "VERIFIER_ANSWER", "full")
+
+
 def pin_settings(monkeypatch):
     """
     `pinned_settings`' body, callable from a fixture of wider scope with

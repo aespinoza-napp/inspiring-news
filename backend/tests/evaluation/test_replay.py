@@ -7,6 +7,8 @@ src/evaluation/replay.py; docs/decisions/evaluation.md §Replay.
 
 import json
 
+import pytest
+
 from src.evaluation.dataset import load_dataset
 from src.evaluation.replay import EVIDENCE, RecordingRetriever, ReplayRetriever, load_snapshot
 from src.evaluation.runner import HarnessRunner, RunConfig, latest_records
@@ -20,6 +22,9 @@ from tests.evaluation.support import (
     stub_llm,
     write_jsonl,
 )
+
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
 
 
 def two_rows(tmp_path):

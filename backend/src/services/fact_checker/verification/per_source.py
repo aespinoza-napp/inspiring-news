@@ -8,13 +8,23 @@ most of them explained as "the evidence does not mention ..."
 (data/evaluation/experiments/verifier/rule.md). Here each source is one
 short question - does it state the claim, state something that cannot be
 true with it, say nothing on it, or is it about something else - and the
-verdict follows from the answers by a rule a reader can check:
+verdict follows from the answers by a rule a reader can check - the
+side more outlets take:
 
-- some source states it and none states otherwise: TRUE;
-- sources state otherwise: FALSE when more outlets state otherwise than
-  state it, else TRUE, which the scorer then makes PARTIALLY_TRUE for the
-  contradicting source (ConfidenceScorer);
-- no source states it either way: UNVERIFIED.
+- more outlets state it than state otherwise: TRUE;
+- more state otherwise than state it: FALSE;
+- as many each way, or none either way: UNVERIFIED.
+
+The first rule (run d70e76cc6319, the same day) made any disagreement
+PARTIALLY_TRUE through the scorer: 18 of 69 train claims, 9 of them true
+ones carrying one stray "contradicts" among several "supports" - the 3B,
+asked about one source, says "contradicts" to a true claim about as often
+as "supports" to a false one. 39.1% against the list verifier's 44.9% on
+the same evidence. Counted by outlets, its own answers give 47.8% with
+half the confidently wrong verdicts (18 against 36). A tie is not
+settled: UNVERIFIED, not the TRUE a set of mostly true claims would
+reward. Chosen on the train half, after that run; the test half decides
+(data/evaluation/experiments/verifier/).
 
 A contradiction counts with or without its quote: the quote is checked
 (LLMVerifier._validate_quote) and kept only when it is really in the
@@ -123,7 +133,10 @@ def verdict_from(answers: list[SourceAnswer], evidence: list[Evidence]) -> tuple
     if len(contradicting) > len(supporting):
         return Verdict.FALSE, min(1.0, 0.5 + 0.5 * len(contradicting) / every), cited
 
-    return Verdict.TRUE, min(1.0, 0.5 + 0.5 * len(supporting) / every), cited
+    if len(supporting) > len(contradicting):
+        return Verdict.TRUE, min(1.0, 0.5 + 0.5 * len(supporting) / every), cited
+
+    return Verdict.UNVERIFIED, 0.0, cited
 
 
 _WORDS = {

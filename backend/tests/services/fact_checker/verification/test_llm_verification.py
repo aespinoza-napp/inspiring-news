@@ -1,3 +1,5 @@
+import pytest
+
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.verification.llm_verification import LLMVerifier
@@ -5,6 +7,9 @@ from src.services.llms import LLMUnavailableError
 
 from tests.factories import create_claim, create_evidence
 from tests.services.fact_checker.fakes import FakeLLMClient
+
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
 
 
 def test_verify_returns_normalized_result_on_valid_response():

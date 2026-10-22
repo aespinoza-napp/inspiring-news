@@ -1,3 +1,5 @@
+import pytest
+
 from src.config.thresholds import PipelineThresholds
 from src.models.fact_checker.evidence import EvidenceStance
 from src.models.fact_checker.fact_check import Verdict
@@ -8,6 +10,9 @@ from src.services.fact_checker.verification.llm_verification import (
 )
 
 from tests.factories import create_claim, create_evidence
+
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
 
 
 def test_zero_evidence_forces_unverified_even_if_llm_is_confident():

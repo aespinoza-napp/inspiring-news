@@ -51,6 +51,9 @@ from src.services.llms import LLMClient
 from tests.factories import create_claim, create_evidence
 from tests.services.fact_checker.fakes import FakeEvidenceRetriever, FakeRanker
 
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
+
 
 class BluffingModel:
     """

@@ -291,7 +291,9 @@ def test_each_profile_is_its_harness_preset():
     """
     The app's profile and the harness's preset file are the same run:
     `fast` is the contest's entry C, `fast_snippets` its entry D, and
-    `thorough.json` the pipeline as it was whatever the profile.
+    `thorough.json` the pipeline as it was whatever the profile - with
+    the list verifier, the default until the 22 Oct verifier experiment
+    made it one source at a time.
     """
 
     import json
@@ -311,4 +313,4 @@ def test_each_profile_is_its_harness_preset():
         ThresholdOverrides(**json.loads((presets / "thorough.json").read_text(encoding="utf-8")))
     )
 
-    assert thorough == PipelineThresholds()
+    assert thorough == PipelineThresholds(verifier_answer="full")

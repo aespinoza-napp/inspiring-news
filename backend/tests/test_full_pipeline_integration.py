@@ -66,6 +66,9 @@ from tests.conftest import pin_settings, skip_unless_inference
 from tests.services.fact_checker.fakes import FakeFetcher, FakeLLMClient, FakeSearxngClient
 from tests.test_invariants import ANALYZE_RESPONSE_SHAPE
 
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
+
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "seagrass_article.html"
 
 ARTICLE_URL = "https://www.coastal-herald.example/environment/sado-seagrass-meadow"
@@ -207,6 +210,10 @@ def run(tmp_path_factory):
     with pytest.MonkeyPatch.context() as monkeypatch:
 
         pin_settings(monkeypatch)
+
+        # Its canned answer is the list verifier's (conftest.list_verifier),
+        # and module scope is set up before any function-scoped pin.
+        monkeypatch.setattr(settings, "VERIFIER_ANSWER", "full")
 
         database = QdrantDatabase(path=str(tmp_path / "qdrant"))
 

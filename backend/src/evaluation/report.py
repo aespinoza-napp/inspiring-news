@@ -34,7 +34,7 @@ from src.evaluation.metrics import (
     SCORED,
 )
 from src.evaluation import attribution, effort, retrieval
-from src.evaluation.runner import CLOSED_BOOK, FULL, MANIFEST, ORACLE, RESULTS, RETRIEVAL, model_slug
+from src.evaluation.runner import CLOSED_BOOK, FULL, MANIFEST, ORACLE, REPLAY, RESULTS, RETRIEVAL, model_slug
 from src.evaluation.stats import median, percentile, rounded
 from src.evaluation.store import ResultsFile, read_json, write_json
 from src.evaluation.usage import cost, price_for, totals
@@ -550,6 +550,7 @@ def render(result: dict) -> str:
         f"# {dataset.get('stem', 'run')} · {run['model']}"
         + (" · the annotator's evidence (oracle)" if run.get("mode") == ORACLE else "")
         + (" · no evidence (closed book)" if run.get("mode") == CLOSED_BOOK else "")
+        + (" · replayed evidence" if run.get("mode") == REPLAY else "")
         + (f" · {run['label']}" if run.get("label") else ""),
         "",
         f"Run `{run['key']}` · provider `{run.get('provider')}` · harness v{run.get('harnessVersion')} · "
@@ -658,7 +659,7 @@ def render(result: dict) -> str:
         parts += effort.render_section(result["effort"])
 
     if result.get("responseTime"):
-        parts += _render_response_time(result["responseTime"])
+        parts += _render_response_time(result["responseTime"], replay=run.get("mode") == REPLAY)
 
     parts += _render_usage(result["usage"])
 
@@ -694,7 +695,7 @@ def _render_retrieval_only(result: dict) -> str:
     return "\n".join(parts).rstrip() + "\n"
 
 
-def _render_response_time(timing: dict) -> list[str]:
+def _render_response_time(timing: dict, *, replay: bool = False) -> list[str]:
 
     stages = timing["stages"]
 
@@ -703,7 +704,12 @@ def _render_response_time(timing: dict) -> list[str]:
         "",
         f"Seconds per stage over the {timing['claims']} scored claims, from the pipeline's own events. "
         "The model's span includes waiting for the LLM permit; the call latency under Cost is the answer "
-        "time alone. A response time compares only between runs made alone on the machine.",
+        "time alone. A response time compares only between runs made alone on the machine."
+        + (
+            " **A replay**: retrieval was not run (0 s), and the web search and page rows are the "
+            "replayed run's, said again with its events."
+            if replay else ""
+        ),
         "",
         _table(["Stage", "Claims", "Median", "p90", "Max", "Share of the time"], [
             [

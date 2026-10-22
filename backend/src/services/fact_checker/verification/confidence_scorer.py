@@ -141,8 +141,10 @@ class ConfidenceScorer:
         # Sources disagree about a claim the model called flatly true.
         # That is the ordinary shape of a real verification - the central
         # fact holds, some detail does not - and collapsing it into TRUE
-        # discards the only part worth reading.
-        elif verdict == Verdict.TRUE and contradicting:
+        # discards the only part worth reading. Not for the per-source
+        # verifier, whose TRUE already counted the contradicting outlets
+        # and found them fewer (per_source.verdict_from).
+        elif verdict == Verdict.TRUE and contradicting and thresholds.verifier_answer != "per_source":
             verdict = Verdict.PARTIALLY_TRUE
 
         # Corroborated by one outlet only. Not wrong, but not confirmed

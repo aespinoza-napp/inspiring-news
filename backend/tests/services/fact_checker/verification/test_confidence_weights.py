@@ -28,11 +28,17 @@ from src.services.fact_checker.verification.llm_verification import LLMVerificat
 
 from tests.factories import create_claim, create_evidence
 
+# Written against the list verifier, one call for every source (conftest.py).
+pytestmark = pytest.mark.usefixtures("list_verifier")
+
 # Explicit, so the golden values below do not move with a default.
 THRESHOLDS = PipelineThresholds(
     max_evidence_per_claim=5,
     min_independent_domains=2,
     min_evidence_for_verdict=1,
+    # The list verifier's scoring: a module constant is built at import,
+    # before conftest.list_verifier pins anything.
+    verifier_answer="full",
 )
 
 

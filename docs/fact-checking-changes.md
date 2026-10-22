@@ -29,12 +29,17 @@
   profiles cost about 17 points of accuracy on the train half (50.7%
   thorough against 33-34%), so the app stays thorough and the trade-off
   is one line in `backend/.env`.
-- **Where it stands on verdicts.** The 3B model is the limit: at chance
-  on the custom set's natural claims (kappa -0.013 on the test half), it
-  answers FALSE to true claims, and no speed change moved that. Claude,
-  checking the same ten claims by hand, got 7 right in 13 s each; every
-  pipeline setup got 2-3. The next large gain is a better reader - the
-  9B, a GPU, or a hosted model - not a faster or wider search.
+- **Where it stands on verdicts.** The 3B answered FALSE to about half
+  of the true claims, mostly because a detail was missing from its
+  sources, and no speed change moved that (Claude, checking ten claims by
+  hand: 7 right; every pipeline setup 2-3). On 22 Oct afternoon the
+  verifier was changed to ask about one source at a time and take the
+  side more outlets take (section 6): on the test half, on the same
+  evidence, natural claims 49.1 -> 67.3% and confidently wrong verdicts
+  47 -> 29%, at 44 s a claim instead of 63 - but claims with one altered
+  detail 60 -> 13%. A better reader (the 9B, a GPU, a hosted model) is
+  still the larger gain; the 9B's run on the same evidence is in
+  section 6.
 - **What is not settled.** 108 of the 139 gold labels are still the AI
   pass's, unchecked; every accuracy figure moves when they are.
 
@@ -148,3 +153,26 @@ untouched by any of this;
 then fit the pertinence gate and the confidence weights on the train half
 once the 108 AI labels are checked; then a "thorough" toggle on `/` (the
 per-run overrides it would send exist; no page sends them yet).
+
+## 6. Iterating on the verdict (2026-10-22, afternoon)
+
+The author's priority after the speed work: the fact-check itself. Every
+number here is on fixed evidence: a run keeps each claim's retrieval and
+`--replay` judges it again, because the same pipeline searched twice moved
+by 6-9 points. Rules written before each run:
+`backend/data/evaluation/experiments/verifier/rule.md`; the detail is
+`docs/decisions/evaluation.md`, "The verifier's FALSE".
+
+| Change | Where | What it did |
+|---|---|---|
+| Replay: a run keeps its evidence, another verifier judges it again | `evaluation/replay.py`, `cli run --replay` | Verifiers compared on identical sources; the 3B, replayed, gave 10 of 10 identical verdicts |
+| Stated rules: each verdict defined by what a source states, a `silent` stance, the scorer holding the verdict to the stances | `verifier_rules=stated`; `confidence_scorer.holds_to_stances` | Train -8.7 points [-17.4, 0.0]: the 3B's stances do not match its own verdicts, and the check removed right FALSEs as readily as wrong ones. Kept as an option, off |
+| One source at a time | `verifier_answer=per_source`; `verification/per_source.py` | One short call per source, the verdict the side more outlets take, a tie UNVERIFIED. Train 44.9 -> 47.8%, test 51.4 -> 55.7% (+4.3 [-8.6, +17.1]); right when it commits +13.9 [+0.3, +27.3]; confidently wrong 47 -> 29%; natural claims 49 -> 67%, altered ones 60 -> 13%. **The default since** |
+| A file is not a page | `scraper/fetcher.py`, `NotAPage` | A PDF's bytes had become a 167-million-character evidence page for two claims; refused before the body is read |
+
+**What to do next:** catch the altered detail without bringing back FALSE
+for true claims - the per-source prompt comparing the claim's figures,
+dates and names with the source's, one by one, or the larger reader on
+the per-source question; and the 9B's result on the same evidence
+(section 6 of the decision record) decides whether a GPU or hosted model
+is the next step.
