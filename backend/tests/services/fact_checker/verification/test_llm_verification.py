@@ -280,3 +280,108 @@ def test_a_bare_claim_gets_no_article_block():
     [(_, user_prompt)] = client.calls
 
     assert user_prompt.startswith("Claim:")
+
+
+# ----------------------------------------------------------------------
+# The compact answer (verifier_answer: compact, 2026-10-22)
+# ----------------------------------------------------------------------
+
+
+def _compact():
+
+    from src.config.thresholds import PipelineThresholds
+
+    return PipelineThresholds(verifier_answer="compact")
+
+
+def test_the_compact_answer_is_asked_for_with_its_own_short_prompt_and_cap():
+    """
+    The answer is most of a call on a CPU, so the compact one is asked
+    for in a prompt of its own and capped low: a loop stops sooner.
+    """
+
+    from src.services.fact_checker.verification.llm_verification import (
+        COMPACT_MAX_ANSWER_TOKENS,
+        COMPACT_SYSTEM_PROMPT,
+        SYSTEM_PROMPT,
+    )
+
+    client = FakeLLMClient(responses={"verdict": "TRUE", "confidence": 0.8, "stances": ["supports"], "cited": [0], "reason": "ok"})
+
+    LLMVerifier(client=client).verify(create_claim(), [create_evidence(domain="example.com")], thresholds=_compact())
+
+    system, user = client.calls[0]
+
+    assert system == COMPACT_SYSTEM_PROMPT
+    assert len(COMPACT_SYSTEM_PROMPT) < len(SYSTEM_PROMPT)
+    assert client.max_tokens == [COMPACT_MAX_ANSWER_TOKENS]
+    # The outlet, not the URL: a path is tokens judged on nothing.
+    assert "(example.com)" in user
+    assert "URL:" not in user
+
+
+def test_a_compact_answer_becomes_the_same_result_as_a_full_one():
+    """
+    `stances` in evidence order are the per-source assessments, `cited`
+    the citations, `reason` the explanation - so the scorer, the trace
+    and the reader see one shape whichever was asked.
+    """
+
+    evidence = [create_evidence(url="https://a.example/1"), create_evidence(url="https://b.example/2")]
+
+    client = FakeLLMClient(responses={
+        "verdict": "TRUE",
+        "confidence": 0.8,
+        "stances": ["supports", "unrelated"],
+        "cited": [0, 0, 7],
+        "reason": "Source 0 reports the figure.",
+    })
+
+    result = LLMVerifier(client=client).verify(create_claim(), evidence, thresholds=_compact())
+
+    assert result.verdict == Verdict.TRUE
+    assert result.explanation == "Source 0 reports the figure."
+    assert result.cited_evidence == [0]
+    assert [(item.index, item.stance.value, item.quote) for item in result.assessments] == [
+        (0, "supports", None),
+        (1, "unrelated", None),
+    ]
+
+
+def test_a_stance_that_is_not_one_is_dropped_not_guessed():
+
+    client = FakeLLMClient(responses={"verdict": "FALSE", "confidence": 0.6, "stances": ["refutes", "contradicts"], "cited": [1], "reason": "x"})
+
+    result = LLMVerifier(client=client).verify(
+        create_claim(), [create_evidence(), create_evidence()], thresholds=_compact()
+    )
+
+    assert [(item.index, item.stance.value) for item in result.assessments] == [(1, "contradicts")]
+
+
+def test_the_claims_time_left_reaches_the_client():
+
+    client = FakeLLMClient(responses={"verdict": "TRUE", "confidence": 0.8})
+
+    LLMVerifier(client=client).verify(create_claim(), [create_evidence()], timeout=9.5)
+    LLMVerifier(client=client).verify(create_claim(), [create_evidence()])
+
+    assert client.timeouts == [9.5, None]
+
+
+def test_the_call_record_rides_on_the_result_when_the_client_keeps_one():
+
+    class RecordingClient(FakeLLMClient):
+        def last_call(self):
+            return {"model": "m", "wait": 1.5, "seconds": 7.25, "promptTokens": 400, "completionTokens": 50}
+
+    result = LLMVerifier(client=RecordingClient(responses={"verdict": "TRUE", "confidence": 0.8})).verify(
+        create_claim(), [create_evidence()]
+    )
+
+    assert result.call == {"model": "m", "wait": 1.5, "seconds": 7.25, "promptTokens": 400, "completionTokens": 50}
+
+    # A client that keeps none (the shared fake): no record, no error.
+    assert LLMVerifier(client=FakeLLMClient(responses={"verdict": "TRUE"})).verify(
+        create_claim(), [create_evidence()]
+    ).call is None

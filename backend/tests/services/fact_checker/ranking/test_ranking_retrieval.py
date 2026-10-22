@@ -460,3 +460,37 @@ def test_the_article_subject_counts_against_a_source_that_lacks_it():
     ).kept
 
     assert in_context.lexical_score < alone.lexical_score
+
+
+def test_with_ranking_text_passages_the_ranker_embeds_what_the_verifier_reads():
+    """
+    `ranking_text: passages` (2026-10-22): the sentences about the claim,
+    within the verifier's budget, not the page's first 2,000 characters -
+    shorter to embed, and the gate judges what the model is shown.
+    """
+
+    class Recording(FakeEmbeddingService):
+        def __init__(self):
+            super().__init__()
+            self.texts = []
+
+        def encode_many(self, texts):
+            self.texts.extend(texts)
+            return super().encode_many(texts)
+
+    filler = "Unrelated sentence about the weather and the markets. " * 60
+    page = filler + "The glacier lost ice mass in Iceland last year. " + filler
+
+    embeddings = Recording()
+    ranker = EvidenceRanker(embeddings=embeddings, source_repository=FakeSourceRepository([]))
+
+    claim = create_claim(text="The glacier lost ice mass in Iceland")
+
+    ranker.rank(claim, [create_evidence(content=page)], no_gate(ranking_text="passages", verifier_excerpt_chars=300))
+    ranker.rank(claim, [create_evidence(content=page)], no_gate())
+
+    passages, head = embeddings.texts
+
+    assert "glacier lost ice mass" in passages
+    assert len(passages) <= 300
+    assert "glacier" not in head and len(head) == 2000

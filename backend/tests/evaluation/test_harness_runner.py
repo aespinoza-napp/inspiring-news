@@ -423,7 +423,12 @@ def test_a_run_with_every_query_kind_keeps_the_key_it_had_before_the_switch(tmp_
     # source's first 1,500 characters.
     thresholds = PipelineThresholds(verifier_excerpt="head", verifier_excerpt_chars=1500)
 
-    added_later = {"query_kinds", "verifier_excerpt", "verifier_excerpt_chars"}
+    added_later = {
+        "query_kinds", "verifier_excerpt", "verifier_excerpt_chars",
+        # The speed switches (2026-10-22), off: as every earlier run did.
+        "verifier_answer", "evidence_prerank", "ranking_text",
+        "fetch_evidence_pages", "claim_deadline_seconds",
+    }
 
     before = {name: value for name, value in thresholds.model_dump().items() if name not in added_later}
 
@@ -550,6 +555,11 @@ def test_each_session_records_the_environment_it_ran_in(repository, tmp_path, mo
     """
 
     from src.config.settings import settings
+
+    # The first session's value set here, not inherited from backend/.env:
+    # a machine whose .env already says 120 (production's CPU value, the
+    # dev desktop's since 2026-10-22) made the two sessions look the same.
+    monkeypatch.setattr(settings, "INFERENCE_TIMEOUT", 30.0)
 
     dataset = five_rows(tmp_path)
 
@@ -830,3 +840,37 @@ def test_an_oracle_run_reads_the_annotators_pages_and_never_searches(tmp_path):
 
     assert "the annotator's evidence (oracle)" in report
     assert "## Evidence" in report and "Reference link among candidates" not in report
+
+
+def test_a_run_with_the_speed_switches_off_keeps_its_key_and_the_fast_profile_is_another_run(tmp_path):
+    """
+    The speed switches (2026-10-22) enter the key only when on: every
+    run before them had them off and must resume; the fast profile is a
+    different run whatever else it shares.
+    """
+
+    from src.evaluation.runner import keyed_thresholds
+
+    off = PipelineThresholds()
+    fast = PipelineThresholds(
+        verifier_answer="compact",
+        evidence_prerank="lexical",
+        ranking_text="passages",
+        claim_deadline_seconds=30,
+    )
+    snippets = PipelineThresholds(fetch_evidence_pages=False)
+
+    switches = {"verifier_answer", "evidence_prerank", "ranking_text", "fetch_evidence_pages", "claim_deadline_seconds"}
+
+    assert switches.isdisjoint(keyed_thresholds(off))
+    assert {"verifier_answer", "evidence_prerank", "ranking_text", "claim_deadline_seconds"} <= set(keyed_thresholds(fast))
+    assert keyed_thresholds(snippets)["fetch_evidence_pages"] is False
+
+    dataset = five_rows(tmp_path)
+
+    keys = {
+        RunConfig(dataset=dataset, model="a", corpus="none", root=tmp_path, thresholds=thresholds).key
+        for thresholds in (off, fast, snippets)
+    }
+
+    assert len(keys) == 3

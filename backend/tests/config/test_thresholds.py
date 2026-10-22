@@ -251,3 +251,64 @@ def test_every_threshold_is_actually_overridable_end_to_end():
 
         assert getattr(resolved, name) == candidate, name
         assert resolved.overridden_from_defaults() == {name: candidate}, name
+
+
+# ----------------------------------------------------------------------
+# Profiles: one setting chooses a set of defaults (2026-10-22)
+# ----------------------------------------------------------------------
+
+
+def test_the_thorough_profile_is_every_default_as_it_was():
+
+    from src.config.thresholds import FACT_CHECK_PROFILES
+
+    assert settings.FACT_CHECK_PROFILE == "thorough"
+    assert FACT_CHECK_PROFILES["thorough"] == {}
+    assert PipelineThresholds().verifier_answer == settings.VERIFIER_ANSWER
+
+
+def test_a_profile_supplies_defaults_and_an_override_still_wins(monkeypatch):
+
+    monkeypatch.setattr(settings, "FACT_CHECK_PROFILE", "fast_snippets")
+
+    defaults = PipelineThresholds()
+
+    assert defaults.verifier_answer == "compact"
+    assert defaults.fetch_evidence_pages is False
+    assert defaults.query_kinds == ("anchor", "proposition")
+    assert defaults.claim_deadline_seconds == 30
+
+    # A field the profile does not name keeps its setting.
+    assert defaults.evidence_min_pertinence == settings.EVIDENCE_MIN_PERTINENCE
+
+    resolved = PipelineThresholds.resolve(ThresholdOverrides(fetch_evidence_pages=True))
+
+    assert resolved.fetch_evidence_pages is True
+    assert resolved.overridden_from_defaults() == {"fetch_evidence_pages": True}
+
+
+def test_each_profile_is_its_harness_preset():
+    """
+    The app's profile and the harness's preset file are the same run:
+    `fast` is the contest's entry C, `fast_snippets` its entry D, and
+    `thorough.json` the pipeline as it was whatever the profile.
+    """
+
+    import json
+    from pathlib import Path
+
+    from src.config.thresholds import FACT_CHECK_PROFILES
+
+    presets = Path(__file__).resolve().parents[2] / "data" / "evaluation" / "thresholds"
+
+    for name in ("fast", "fast_snippets"):
+        preset = PipelineThresholds.resolve(
+            ThresholdOverrides(**json.loads((presets / f"{name}.json").read_text(encoding="utf-8")))
+        )
+        assert preset == PipelineThresholds(**FACT_CHECK_PROFILES[name]), name
+
+    thorough = PipelineThresholds.resolve(
+        ThresholdOverrides(**json.loads((presets / "thorough.json").read_text(encoding="utf-8")))
+    )
+
+    assert thorough == PipelineThresholds()

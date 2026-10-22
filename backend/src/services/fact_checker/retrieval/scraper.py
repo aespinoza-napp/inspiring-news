@@ -120,7 +120,12 @@ class EvidenceScraper:
         # cache too, so no page leaks between them through PAGES.
         self.pages = pages or (PAGES if extractor is None else PageCache())
 
-    def enrich(self, evidence: list[Evidence]) -> list[Evidence]:
+    def enrich(
+        self,
+        evidence: list[Evidence],
+        wait: float | None = None,
+        timings: list[dict] | None = None,
+    ) -> list[Evidence]:
         """
         Fetches every page at once, and returns them **in input order**.
 
@@ -132,18 +137,44 @@ class EvidenceScraper:
         This was the pipeline's longest non-LLM step - five pages fetched
         one after another, each waiting on a stranger's server. One slow
         host held up the other four for no reason.
+
+        `wait`: seconds to wait for the pages, then go on without the
+        ones still loading - each keeps its search snippet, as a page
+        that would not open always has. Their fetches finish in the
+        background into the page cache. A claim with a deadline passes
+        what its retrieval has left (fact_checker/deadline.py).
+
+        `timings`, when given, receives one entry per page in input
+        order: seconds, and whether it gave its text (`page`), only its
+        snippet (`snippet`), came from the page cache or another claim's
+        fetch (`cached`), or was still loading at `wait` (`late`).
         """
 
-        return bounded_map(
-            self._enrich_one,
+        timed = bounded_map(
+            self._enrich_timed,
             evidence,
             max_workers=settings.SCRAPE_MAX_CONCURRENCY,
             thread_name_prefix="evidence-scrape",
+            timeout=wait,
+            late=None if wait is None else lambda item: (item, {
+                "url": item.url,
+                "seconds": round(wait, 3),
+                "outcome": "late",
+            }),
         )
 
-    def _enrich_one(self, item: Evidence) -> Evidence:
+        if timings is not None:
+            timings.extend(timing for _, timing in timed)
+
+        return [item for item, _ in timed]
+
+    def _enrich_timed(self, item: Evidence) -> tuple[Evidence, dict]:
+
+        started = time.perf_counter()
+        fetched = []
 
         def fetch() -> News | None:
+            fetched.append(True)
             # Held around the fetch only. SCRAPE_MAX_CONCURRENCY is the
             # process-wide ceiling: bounded_map's fan-out is per claim,
             # and several claims (and several articles) reach here at
@@ -159,13 +190,23 @@ class EvidenceScraper:
             news = self.pages.get_or_fetch(item.url, fetch)
         except Exception as exc:
             logger.warning("Failed to scrape evidence %s: %s", item.url, exc)
-            return item
+            news = None
 
-        if news is None:
-            return item
-
-        return item.model_copy(update={
+        enriched = item if news is None else item.model_copy(update={
             "content": news.content,
             "title": item.title or news.title or "",
             "published_at": item.published_at or news.published_at,
         })
+
+        if not fetched:
+            outcome = "cached"
+        elif news is None:
+            outcome = "snippet"
+        else:
+            outcome = "page"
+
+        return enriched, {
+            "url": item.url,
+            "seconds": round(time.perf_counter() - started, 3),
+            "outcome": outcome,
+        }

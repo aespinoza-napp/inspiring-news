@@ -1,7 +1,9 @@
 import { ClaimStep, ClaimTrace, JobTrace, TraceRejected, TraceSource } from "@/lib/liveTrace";
-import { QueryKind } from "@/lib/types";
 import { safeHref } from "@/lib/links";
 import { VerdictBadge } from "@/components/VerdictBadge";
+import { ArticleTiming, ClaimTimingPanel, QUERY_KIND_LABELS } from "@/components/TimingBreakdown";
+
+export { QUERY_KIND_LABELS };
 
 const STEP_LABELS: Record<ClaimStep, string> = {
   searching: "Searching the web…",
@@ -24,6 +26,8 @@ const percent = (value: number | null) =>
 export function LiveTrace({ trace }: { trace: JobTrace }) {
   return (
     <div className="trace">
+      <ArticleTiming timing={trace.timing} />
+
       {trace.skippedReason && (
         <p className="trace-note">
           Fact-check skipped — {trace.skippedReason.split(",").join(", ")}.
@@ -138,6 +142,8 @@ function ClaimTraceCard({ claim }: { claim: ClaimTrace }) {
         </details>
       )}
 
+      {done && <ClaimTimingPanel timing={claim.timing} />}
+
       {done && (
         <div className="trace-block">
           {claim.explanation && <p className="trace-explanation">{claim.explanation}</p>}
@@ -212,14 +218,6 @@ function FoundRow({ source }: { source: TraceSource }) {
     </li>
   );
 }
-
-// What each of a claim's queries is asking. Short enough to sit in a
-// chip, because the useful thing is telling them apart at a glance.
-export const QUERY_KIND_LABELS: Record<QueryKind, string> = {
-  anchor: "who & what",
-  proposition: "what it claims",
-  refutation: "counter-evidence",
-};
 
 
 function RatedRow({ source }: { source: TraceSource }) {

@@ -166,7 +166,11 @@ def test_the_202_answers_with_the_draft_busy(draft_store, monkeypatch):
     complete = rewriter.writer.complete
 
     def slow(*args, **kwargs):
-        release.wait(5)
+        # Released in the `finally` below, so the wait only ever lasts as
+        # long as the assertions take. At 5 s it failed once on 2026-10-22,
+        # the suite sharing the CPU with an evaluation run: the second
+        # request came after the writer had given up, and found it idle.
+        release.wait(60)
         return complete(*args, **kwargs)
 
     rewriter.writer.complete = slow

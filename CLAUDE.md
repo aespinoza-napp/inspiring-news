@@ -80,6 +80,8 @@ src.main:app --port 8001`.
 | The custom set's frozen train/test split; the second look and its tuning loop; run-to-run consistency | `docs/decisions/evaluation.md`, `backend/data/evaluation/split.json` |
 | What to run for an activity without running out of memory; one model in Ollama at a time | `scripts/stack.sh`, `docs/decisions/deployment.md` ("Models in memory") |
 | Which model verifies, writes and reviews, how each was chosen, and what each costs in time | `docs/decisions/evaluation.md` ("Choosing the models"), `scripts/try_reviewer_model.py` |
+| Every change ever made to fact-checking, by date, with a summary | `docs/fact-checking-changes.md` |
+| Where a claim's seconds go; the speed switches, the claim deadline, the 22 Oct contest | `docs/decisions/performance.md` ("The 20-second fact-check"), `backend/data/evaluation/experiments/speed/` |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
@@ -192,7 +194,16 @@ write them down than to have each be rediscovered.
 - **The dev LLM limits are wrong for a CPU.** `LLM_MAX_CONCURRENCY=2`
   and `LLM_TIMEOUT=30` assume the laptop's GPU; on a CPU they turned 3 of
   4 verdicts into "LLM provider was unreachable". The production file
-  overrides both. Running Ollama CPU-only locally needs the same.
+  overrides both. Running Ollama CPU-only locally needs the same. On
+  2026-10-22 the dev machine's `backend/.env` named `llama3.1` (the 8B)
+  as the verifier with these limits; it now has `llama3.2:3b`, 1 call,
+  180 s - check yours before reading any time or verdict from the app.
+- **The app may not run the thorough pipeline.** `FACT_CHECK_PROFILE` in
+  `backend/.env` (`thorough` | `fast` | `fast_snippets`) chooses the
+  defaults every run takes, the evaluation harness's included; the
+  harness warns when it is not `thorough`, and
+  `--thresholds data/evaluation/thresholds/thorough.json` runs the
+  pipeline as before. `docs/decisions/performance.md`.
 - **`SENTIMENT_MODEL` and `EMBEDDING_MODEL` in `backend/.env` are
   documentary.** The models load in `inference/`, from
   `inference/src/config.py`'s own defaults. Editing the backend values
@@ -258,6 +269,14 @@ Phase 1.
   healthcheck stopped sending a real search to every engine every 5
   seconds - likely a cause, not proven. `/metrics` counts empty and
   failed searches (`inspiring_web_searches_total`).
+- **A claim's time, measured on the dev desktop (2026-10-22, i9-10900,
+  no GPU):** 57 s at the median with the thorough defaults, 17.8 s with
+  the `fast` profile, 14.2 s with `fast_snippets`, on the first ten
+  train claims; every setup got 2-3 of 10 right, the 3B answering FALSE
+  to true claims in all of them (Claude, by hand: 7). On all 69 train
+  claims the fast profiles cost ~17 points (thorough 50.7%, fast 33.8%,
+  snippets 33.3%), so `backend/.env` stays `thorough`. The app shows every search's, page's
+  and model call's seconds (`TimingBreakdown`).
 - **The speedup is measured against a simulated network, not the live
   stack.** `scripts/bench_claim_concurrency.py` (2026-10-04): ×3.4 on one
   four-claim article with a fast model, ×1.16 with production's CPU LLM

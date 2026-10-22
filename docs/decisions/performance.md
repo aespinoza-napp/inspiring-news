@@ -261,6 +261,198 @@ correct, which is when the correction matters least. The first call
 (the scores, identical in both modes) took 266 s in one run and 133 s
 in the other: hence tokens, not seconds, as the measure here.
 
+## The 20-second fact-check (2026-10-22)
+
+The author asked for each claim checked in about 20 seconds, never past
+30, without paying for a hosted model, measured on the first ten claims
+of the custom set's train half and compared with Claude checking the same
+ten by hand. Measured on the desktop the work now runs on - **Intel
+i9-10900 (10 cores, 20 threads), UHD 630, 32 GB, no discrete GPU**,
+Ollama on the Windows host - which is two to three times faster than the
+laptop the sections above measured: the same verifier-shaped call (973
+prompt tokens, ~115 answer tokens) reads at 116-149 tokens a second and
+writes at 11-12: 19-22 s a call once the model is loaded (`bench_ollama.py`).
+
+### What was built
+
+1. **Every claim says where its seconds went, in the app.** Each query's
+   seconds, results and how it was answered (SearXNG, the DuckDuckGo
+   fallback, memory, another claim's identical request); the claim's
+   embedding, the search, the internal corpus and the pre-rank; each
+   page's seconds and outcome (read, snippet only, already read, too
+   slow); the ranking; the wait for the model and the model's call with
+   its tokens; the claim's total. Fields on the existing events
+   (`backend/CLAUDE.md`), drawn per article and per claim by
+   `TimingBreakdown` on `/live` and `/`. The harness record keeps
+   `search`, `pages`, `llmWait` and `llmCall`, and every report's
+   response-time table shows them.
+2. **Speed switches, per run** (`PipelineThresholds`; each default is the
+   old behaviour, so earlier runs keep their keys):
+   - `verifier_answer: compact` - a stance per source and a short reason,
+     no quotes (`COMPACT_SYSTEM_PROMPT`, 200-token cap). The stance stays
+     because the scorer needs it; the quote goes.
+   - `evidence_prerank: lexical` - the pages to fetch chosen by the
+     claim's terms alone, without embedding ~20 snippets.
+   - `ranking_text: passages` - the ranker and the pertinence gate judge
+     what the verifier will read, not 2,000 characters of each page.
+   - `fetch_evidence_pages: false` - snippets only.
+   - `claim_deadline_seconds` - the claim's budget (`deadline.py`):
+     pages waited for until half of it, the model given the rest
+     (permit wait included), out of time is "not checked", never a
+     verdict; no second look under a deadline.
+   Combined in `data/evaluation/thresholds/fast.json` (with two queries
+   instead of three, three sources of 400 characters) and
+   `fast_snippets.json`.
+3. **The app's own settings.** `backend/.env` (not in git) named
+   `llama3.1`, the 8B model, as the verifier: everything above was
+   measured on `llama3.2:3b`, the model chosen on 19 Oct, and the app was
+   not running it. It also had the GPU-sized limits (2 calls at once,
+   30 s), which turned verdicts into "unreachable" on a CPU on 1 Oct. Now
+   `llama3.2:3b`, one call at a time, 180 s, two claims at once.
+4. **Measured and not built: a thread-tuned verifier.** `bench_ollama.py`
+   at Ollama's default and at 6, 8, 10 and 16 threads, interleaved, twice:
+   no setting beat the default on this CPU (prompt 98-149 tok/s, answer
+   10.9-12.4 tok/s across all of them). The laptop's gain came from its
+   hybrid cores, which this desktop does not have. No Modelfile variant.
+
+### The contest
+
+The rule, written before any run: `backend/data/evaluation/experiments/speed/rule.md`.
+Four entries on the same ten claims (fact008-012, 015, 016, 020, 021, 036;
+all ten gold labels the annotator's), back to back, alone on the machine,
+two claims at once and one model call at a time as in production; and
+Claude, the same ten by hand, blind to the labels, timed.
+
+**Seconds a claim, median, and verdicts** (runs `7f1480f90bdc`,
+`e289da2f72bb`, `391bc7c6958e`, `c85d8d088ec4` in
+`runs/manual-train/llama3.2-3b/`, label `contest-2026-10-22`):
+
+| | A, baseline | B, compact answer | C, fast | D, fast on snippets | Claude, by hand |
+|---|---:|---:|---:|---:|---:|
+| **A claim, median** | **57.2** | **39.3** | **17.8** | **14.2** | **13.1** |
+| A claim, p90 / slowest | 69.2 / 70.9 | 45.8 / 58.5 | 21.0 / 25.0 | 16.2 / 21.7 | 16.9 / 26.4 |
+| Retrieval | 10.3 | 9.5 | 3.3 | 2.6 | - |
+| of which the web search | 2.1 | 2.0 | 1.1 | 1.1 | 1.1 searches |
+| of which the pages | 2.1 | 1.6 | 1.1 | none | none |
+| Ranking | 6.0 | 6.3 | 0.7 | 0.6 | - |
+| The model, with its wait | 38.9 | 20.1 | 10.0 | 9.8 | - |
+| of which waiting for the other claim's call | 8.8 | 1.8 | 2.3 | 2.0 | - |
+| of which the call itself | 28.2 | 19.4 | 7.9 | 6.9 | - |
+| Prompt / answer tokens a call | 1,308 / 131 | 1,092 / 74 | 660 / 52 | 521 / 58 | - |
+| **Right against the gold label** | **3 of 10** | **2** | **2** | **2** | **7 of 10** |
+| Not checked (out of time) | - | - | 0 | 0 | - |
+
+Where the seconds went, from A to C: the answer's format took the call
+from 28 to 19 s (B: half the tokens written); fewer and shorter sources
+from 19 to 8 s (C: half the prompt); the lexical pre-rank and the
+passage ranking took retrieval and ranking from 16 to 4 s (the ~20
+snippet embeddings and the 2,000-character pages were most of it). The
+deadline was never reached: the slowest claim of C took 25 s.
+
+**By the rule**, C and D qualify on speed (median 20 s or less, p90 30 or
+less), tie on verdicts (2 each), and D is faster: D wins. It is not worse
+than the baseline beyond one verdict (2 against 3) and no claim ran out of
+time, so it was to become the app's default, pending the whole train half
+- which overturned it (below).
+
+**What the verdicts say.** Ten claims cannot tell 2 from 3; what they show
+is the same failure in every entry: the 3B answers FALSE to true claims
+(A 7 FALSE of 10, B and C 8, D 6 and 2 UNVERIFIED), the lean measured on
+19 Oct (FALSE to 14 of 45 TRUE claims on the train half). Speed did not
+cause it and does not fix it. Claude, by hand, got all seven TRUE claims
+right and missed the other three the same way: it called TRUE a claim the
+annotator marked PARTIALLY_TRUE (fact009) and two marked UNVERIFIED
+(fact010, fact011) - in both of those its own note said a detail (the
+2028 date, the Calonge junction) could not be found, and the annotator's
+rule makes that UNVERIFIED. So the gap to Claude is the model's reading,
+not the search or the time: Claude read one search's results and its own
+knowledge in 13 s; the fast pipeline reads three snippets or passages in
+14-18 s and still says FALSE.
+
+| Claim | Gold | Claude | A | B | C | D |
+|---|---|---|---|---|---|---|
+| fact008 | TRUE | TRUE, 16 s | FALSE, 37 s | FALSE, 37 s | FALSE, 15 s | UNVERIFIED, 16 s |
+| fact009 | PARTIALLY_TRUE | TRUE, 14 s | FALSE, 66 s | FALSE, 58 s | FALSE, 25 s | FALSE, 22 s |
+| fact010 | UNVERIFIED | TRUE, 26 s (2 searches) | FALSE, 57 s | FALSE, 44 s | FALSE, 21 s | FALSE, 13 s |
+| fact011 | UNVERIFIED | TRUE, 14 s | FALSE, 58 s | FALSE, 42 s | FALSE, 19 s | FALSE, 12 s |
+| fact012 | TRUE | TRUE, 13 s | TRUE, 71 s | TRUE, 34 s | TRUE, 16 s | TRUE, 13 s |
+| fact015 | TRUE | TRUE, 12 s | FALSE, 69 s | FALSE, 41 s | FALSE, 19 s | FALSE, 15 s |
+| fact016 | TRUE | TRUE, 11 s | FALSE, 50 s | FALSE, 43 s | FALSE, 19 s | FALSE, 14 s |
+| fact020 | TRUE | TRUE, 11 s | FALSE, 51 s | FALSE, 38 s | FALSE, 15 s | UNVERIFIED, 14 s |
+| fact021 | TRUE | TRUE, 11 s | TRUE, 52 s | FALSE, 37 s | FALSE, 15 s | FALSE, 14 s |
+| fact036 | TRUE | TRUE, 13 s | TRUE, 58 s | TRUE, 30 s | TRUE, 17 s | TRUE, 15 s |
+
+Claude's side: Opus 5.5 in this Claude Code session, the claim, its
+language, its date and its article's URL only (no label, no reference
+link), the article's own site blocked from the search; one web search,
+a second only when the first left a detail open (fact010); timed with
+`date` around each claim, its own thinking included. Its sources are in
+`backend/data/evaluation/experiments/speed/claude.jsonl`. No paid API was
+used.
+
+### The whole train half (69 claims), as the rule requires
+
+The winner and the runner-up on all 69 train claims, the same day, each
+paired claim by claim against the 19 Oct run made alone on the CPU
+(`7bcd048954e5`: 42.0%, the thorough pipeline as it then was, page heads
+of 1,500 characters) with `cli report --compare`:
+
+| | D, fast on snippets (`318d19001832`) | C, fast (`02e03d1c6bb2`) |
+|---|---:|---:|
+| A claim, median / p90 / slowest | **14.2 / 17.0 / 21.2 s** | 16.7 / 24.1 / 30.2 s |
+| The whole half | 8 min 36 s | 11 min 17 s |
+| Retrieval, ranking, the model's call (median) | 2.2, 0.6, 7.0 s | 4.8, 0.8, 7.4 s |
+| Accuracy | 33.3% [21.7, 44.9] | 33.8% [23.5, 45.6] |
+| Paired against 19 Oct | -8.7 points [-23.2, +5.8] | -7.4 [-20.6, +5.9] |
+| Kappa (19 Oct: -0.022) | 0.070 [-0.040, 0.184] | 0.075 [-0.016, 0.168] |
+| Coverage (not UNVERIFIED) | 82.6% | 98.5% |
+| Not checked, out of time | 0 | 1 (fact165, at 30.2 s) |
+
+Retrieval and ranking alone, paired: D -8.6 s [-10.1, -7.3] and -4.5 s
+[-4.8, -4.1] a claim. C's slowest claim met the deadline and was reported
+"not checked", as designed: a page that took 13.7 s is C's tail, and why
+D, which reads none, never came near 30 s.
+
+Against 19 Oct both intervals include zero, but that comparison is three
+days, the web and a code version apart. **The thorough pipeline on the
+same 69 claims, the same day** (`340a36ac8972`, `--thresholds
+data/evaluation/thresholds/thorough.json`) settles it:
+
+| | Thorough, same day | D, paired | C, paired |
+|---|---:|---:|---:|
+| Accuracy | **50.7%** [39.1, 62.3] | 33.3%: **-17.4 points [-30.4, -4.3]** | 33.8%: **-16.2 [-27.9, -4.4]** |
+| Macro-F1 | 0.267 | 0.216 (-0.051 [-0.131, +0.034]) | 0.182 (-0.079 [-0.138, -0.023]) |
+| Kappa | 0.172 [0.016, 0.330] | 0.070 | 0.075 |
+| Coverage | 98.6% | 82.6% (-15.9 [-26.1, -7.2]) | 98.5% |
+| A claim, median / p90 | 61.4 / 85.3 s | 14.2 / 17.0 s | 16.7 / 24.1 s |
+
+(The thorough run shared the CPU with the test suite for part of its 37
+minutes, so its seconds are a little high; the clean figure is entry A's
+57.2 s. Its accuracy is the point.)
+
+**The decision, by the rule.** Both fast profiles are measurably less
+accurate than the thorough pipeline on the same claims the same day -
+intervals entirely below zero - so neither becomes the default: the app
+stays `thorough`, and `fast` / `fast_snippets` are one line in
+`backend/.env` away. Ten claims had not been able to show it (2 against
+3). It is a real trade-off and the author's to make: about 15 s a claim
+and never past 30, at some 17 points of accuracy, or about 60 s at 50.7%.
+
+Which of the profile's parts costs the points is not yet measured: the
+compact answer (no quotes to ground the stance), three sources instead of
+five, 400 characters instead of 700, two queries instead of three, or the
+lexical pre-rank. Entry B (the compact answer alone) on the 69 claims,
+then the profile with five sources at 700, would say - about 45 and 20
+minutes of runs.
+
+What none of this changes: on ten claims or on 69, the 3B's verdicts are
+near chance and lean FALSE, whatever it is given to read and however
+fast. Speed is now the cheap part; the reader is the limit (`evaluation.md`,
+"Choosing the models": the 9B on the same pages was right on 73% of the
+verdicts it committed to, against the 3B's 56%, at three times the time;
+by that ratio its call on the fast profile's prompt would be some 20 s on
+this desktop - an estimate, not measured).
+
 ## What was looked at and left alone
 
 - **Search concurrency** (`SEARXNG_MAX_CONCURRENCY=2`). Raising it is the

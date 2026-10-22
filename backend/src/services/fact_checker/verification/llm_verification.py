@@ -74,6 +74,41 @@ SYSTEM_PROMPT = (
     "- Never state a fact that is not present in the evidence."
 )
 
+# The `compact` answer (PipelineThresholds.verifier_answer): the verdict,
+# one stance per source and a short reason - no quotes, no per-source
+# objects. On a CPU the model writes 6-14 tokens a second, and the full
+# answer's median was ~145 tokens (328 the longest of 196): a third to a
+# half of every call was the model writing quotes. The stance per source
+# stays, because the scorer needs it (a citation of an "unrelated" source
+# does not count); the quote goes, and the reader shows the passage the
+# model read instead. The prompt is shorter too, and like the full one it
+# is the same for every call, so Ollama reads it once and keeps it.
+COMPACT_SYSTEM_PROMPT = (
+    "You are a rigorous fact-checker. You get a claim from a news article, "
+    "usually with the article's headline and opening, and numbered evidence "
+    "from the web. Judge the claim against that evidence only.\n\n"
+    "Respond with ONLY a JSON object:\n"
+    '{"verdict": "TRUE" | "PARTIALLY_TRUE" | "FALSE" | "MISLEADING" | "UNVERIFIED", '
+    '"confidence": <float 0-1>, '
+    '"stances": ["supports" | "contradicts" | "unrelated", ...], '
+    '"cited": [<int indices of the evidence you relied on>], '
+    '"reason": "<at most 20 words>"}\n\n'
+    "Rules:\n"
+    "- stances: one per evidence item, in the order given.\n"
+    "- Judge the claim about the article's subject. Evidence about a "
+    "different event or subject is \"unrelated\", even when it shares a "
+    "place, a date or a figure with the claim.\n"
+    "- PARTIALLY_TRUE: the central assertion holds but a detail (a figure, "
+    "a date, an attribution) does not match the evidence.\n"
+    "- MISLEADING: technically true but deceptive framing or missing "
+    "crucial context.\n"
+    "- If no evidence supports or contradicts the claim, answer UNVERIFIED."
+)
+
+# The compact answer is ~50 tokens; this only stops a loop sooner than
+# MAX_ANSWER_TOKENS would, since an answer cut here is not retried.
+COMPACT_MAX_ANSWER_TOKENS = 200
+
 
 def _is_index(value, evidence: list) -> bool:
     """
@@ -119,6 +154,11 @@ class LLMVerificationResult(BaseModel):
     # can tell "checked, no evidence" from "never asked".
     llm_unreachable: bool = False
 
+    # How the call went (LLMClient.last_call): the model, seconds waiting
+    # for the LLM permit, the call's own seconds, tokens. For the timing
+    # the live view shows; None when the client keeps no such record.
+    call: dict | None = None
+
 
 class LLMVerifier:
 
@@ -134,6 +174,7 @@ class LLMVerifier:
         *,
         thresholds: PipelineThresholds | None = None,
         language: str | None = None,
+        timeout: float | None = None,
     ) -> LLMVerificationResult:
         """
         `context` is the article the claim came from. Without it the
@@ -143,15 +184,26 @@ class LLMVerifier:
         the subject did not.
 
         `thresholds` says how much of each source the model is shown
-        (`verifier_excerpt`, `verifier_excerpt_chars`); `language` is the
-        claim's, for the stopwords the passages are chosen without.
+        (`verifier_excerpt`, `verifier_excerpt_chars`) and in which shape
+        it answers (`verifier_answer`); `language` is the claim's, for
+        the stopwords the passages are chosen without.
+
+        `timeout` is what the claim's deadline has left, permit wait
+        included (LLMClient.complete_json); None is no deadline.
         """
+
+        thresholds = thresholds or PipelineThresholds()
+
+        compact = thresholds.verifier_answer == "compact"
+
+        limits = {"timeout": timeout} if timeout is not None else {}
 
         try:
             result = self.client.complete_json(
-                SYSTEM_PROMPT,
+                COMPACT_SYSTEM_PROMPT if compact else SYSTEM_PROMPT,
                 self._build_prompt(claim, evidence, context, thresholds, language),
-                max_tokens=MAX_ANSWER_TOKENS,
+                max_tokens=COMPACT_MAX_ANSWER_TOKENS if compact else MAX_ANSWER_TOKENS,
+                **limits,
             )
         except LLMUnavailableError as exc:
             logger.warning("LLM unreachable while verifying claim: %s", exc)
@@ -160,9 +212,22 @@ class LLMVerifier:
                 confidence=0.0,
                 explanation="LLM provider was unreachable; verdict could not be produced.",
                 llm_unreachable=True,
+                call=self._last_call(),
             )
 
-        return self._normalize(result, evidence)
+        return self._normalize(result, evidence).model_copy(update={"call": self._last_call()})
+
+    def _last_call(self) -> dict | None:
+        """The client's record of the call just made, if it keeps one."""
+
+        last_call = getattr(self.client, "last_call", None)
+
+        if not callable(last_call):
+            return None
+
+        call = last_call()
+
+        return dict(call) if call else None
 
     def _build_prompt(
         self,
@@ -177,6 +242,14 @@ class LLMVerifier:
 
         if not evidence:
             block = "(no evidence retrieved)"
+        elif thresholds.verifier_answer == "compact":
+            # The outlet, not the URL: a URL is ~20 tokens of path the
+            # model reads at CPU speed for nothing it judges on.
+            excerpt = self._excerpter(claim, context, thresholds, language)
+            block = "\n\n".join(
+                f"[{i}] {item.title} ({item.domain or item.url})\n{excerpt(item.content or item.snippet)}"
+                for i, item in enumerate(evidence)
+            )
         else:
             excerpt = self._excerpter(claim, context, thresholds, language)
             block = "\n\n".join(
@@ -184,6 +257,9 @@ class LLMVerifier:
                 for i, item in enumerate(evidence)
             )
 
+        # The article block first: an article's claims share it, so after
+        # the first claim's call Ollama finds it already read, with the
+        # system prompt, and reads only the claim and its evidence.
         return f"{self._article_block(context)}Claim:\n{claim.text}\n\nEvidence:\n{block}"
 
     @staticmethod
@@ -252,12 +328,30 @@ class LLMVerifier:
         except (TypeError, ValueError):
             confidence = 0.0
 
+        # The compact answer names the same things more briefly: `reason`,
+        # `cited`, and `stances` as a list in evidence order. Either shape
+        # is read whatever was asked, since a small model mixes them.
+        stances = result.get("stances")
+
+        assessments = result.get("assessments")
+
+        if not isinstance(assessments, list) and isinstance(stances, list):
+            assessments = [
+                {"index": index, "stance": stance}
+                for index, stance in enumerate(stances)
+            ]
+
         return LLMVerificationResult(
             verdict=verdict,
             confidence=confidence,
-            explanation=str(result.get("explanation") or "No explanation provided.").strip(),
-            cited_evidence=self._citations(result.get("cited_evidence"), evidence),
-            assessments=self._assessments(result.get("assessments"), evidence),
+            explanation=str(
+                result.get("explanation") or result.get("reason") or "No explanation provided."
+            ).strip(),
+            cited_evidence=self._citations(
+                result["cited_evidence"] if "cited_evidence" in result else result.get("cited"),
+                evidence,
+            ),
+            assessments=self._assessments(assessments, evidence),
         )
 
     @staticmethod

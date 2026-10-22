@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
 from src.config.settings import settings
@@ -39,6 +39,38 @@ from src.config.settings import settings
 # planned (services/fact_checker/retrieval/query_builder.py, QueryKind -
 # held equal to it by a test; named here so config imports no service).
 SEARCH_QUERY_KINDS = ("anchor", "proposition", "refutation")
+
+
+# Named sets of per-run thresholds an environment can take as its defaults
+# with one setting, FACT_CHECK_PROFILE (docs/decisions/performance.md, "The
+# 20-second fact-check"). A field a caller sets still wins; a field neither
+# names falls back to its setting as always. `thorough` names nothing: the
+# defaults as they were. `fast` and `fast_snippets` are the contest's
+# entries C and D, held equal to data/evaluation/thresholds/fast.json and
+# fast_snippets.json by a test, so a profile and its harness preset cannot
+# drift apart.
+FACT_CHECK_PROFILES: dict[str, dict] = {
+    "thorough": {},
+    "fast": {
+        "verifier_answer": "compact",
+        "evidence_prerank": "lexical",
+        "ranking_text": "passages",
+        "query_kinds": ("anchor", "proposition"),
+        "max_evidence_per_claim": 3,
+        "verifier_excerpt_chars": 400,
+        "claim_deadline_seconds": 30,
+    },
+    "fast_snippets": {
+        "verifier_answer": "compact",
+        "evidence_prerank": "lexical",
+        "ranking_text": "passages",
+        "query_kinds": ("anchor", "proposition"),
+        "max_evidence_per_claim": 3,
+        "verifier_excerpt_chars": 400,
+        "claim_deadline_seconds": 30,
+        "fetch_evidence_pages": False,
+    },
+}
 
 
 def _query_kinds(value) -> tuple[str, ...]:
@@ -232,6 +264,23 @@ class PipelineThresholds(BaseModel):
     def _known_query_kinds(cls, value: tuple[str, ...]) -> tuple[str, ...]:
         return _query_kinds(value)
 
+    @model_validator(mode="before")
+    @classmethod
+    def _profile_defaults(cls, values):
+        """
+        The environment's profile (FACT_CHECK_PROFILE) fills every field it
+        names that the caller did not set. Read per instance, like every
+        other default here, so a test or a long-lived process sees a
+        changed setting.
+        """
+
+        profile = FACT_CHECK_PROFILES[settings.FACT_CHECK_PROFILE]
+
+        if not profile or not isinstance(values, dict):
+            return values
+
+        return {**profile, **values}
+
     # The second look: when a claim's first verdict is UNVERIFIED, or its
     # confidence is below `second_look_below_confidence`, search again
     # with follow-up queries written from what the first verdict said was
@@ -264,6 +313,37 @@ class PipelineThresholds(BaseModel):
         default_factory=lambda: settings.VERIFIER_EXCERPT_CHARS,
         ge=200,
         le=8000,
+    )
+
+    # The speed switches (settings.py has what each costs and saves).
+    # Per-run because each changes what a verdict rests on - fewer
+    # pages, chosen by words alone, judged on their passages, a shorter
+    # answer - and whether that is worth the seconds is measured on the
+    # tuning half, as the excerpt was: docs/decisions/performance.md.
+    verifier_answer: Literal["full", "compact"] = Field(
+        default_factory=lambda: settings.VERIFIER_ANSWER,
+    )
+
+    evidence_prerank: Literal["embedding", "lexical"] = Field(
+        default_factory=lambda: settings.EVIDENCE_PRERANK,
+    )
+
+    ranking_text: Literal["head", "passages"] = Field(
+        default_factory=lambda: settings.RANKING_TEXT,
+    )
+
+    fetch_evidence_pages: bool = Field(
+        default_factory=lambda: settings.FETCH_EVIDENCE_PAGES,
+    )
+
+    # A budget for one claim, not a ceiling on a shared service (those
+    # are settings, invariant 12): it can only make a claim give up
+    # sooner, never ask more of SearXNG, inference/ or the model than the
+    # settings' own timeouts allow. 0 is no deadline.
+    claim_deadline_seconds: int = Field(
+        default_factory=lambda: settings.CLAIM_DEADLINE_SECONDS,
+        ge=0,
+        le=600,
     )
 
     # ------------------------------------------------------------------
@@ -337,6 +417,11 @@ class ThresholdOverrides(BaseModel):
     query_kinds: Optional[tuple[str, ...]] = Field(None)
     verifier_excerpt: Optional[Literal["head", "passages"]] = Field(None)
     verifier_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
+    verifier_answer: Optional[Literal["full", "compact"]] = Field(None)
+    evidence_prerank: Optional[Literal["embedding", "lexical"]] = Field(None)
+    ranking_text: Optional[Literal["head", "passages"]] = Field(None)
+    fetch_evidence_pages: Optional[bool] = Field(None)
+    claim_deadline_seconds: Optional[int] = Field(None, ge=0, le=600)
 
     @field_validator("query_kinds")
     @classmethod

@@ -104,7 +104,7 @@ def test_claims_are_checked_concurrently(repository):
 
     class ObservingRetriever(FakeEvidenceRetriever):
 
-        def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None):
+        def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None, deadline=None):
 
             nonlocal in_flight, high_water
 
@@ -196,7 +196,7 @@ def test_the_report_does_not_reorder_itself_by_which_claim_finished_first(reposi
             self._first = None
             self._lock = threading.Lock()
 
-        def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None):
+        def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None, deadline=None):
 
             with self._lock:
                 if self._first is None:
@@ -251,7 +251,7 @@ def test_a_verdict_is_reported_before_the_other_claims_finish(repository):
 
     class UnevenRetriever(FakeEvidenceRetriever):
 
-        def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None):
+        def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None, deadline=None):
 
             if claim.text == claims[0].text:
                 slow_started.set()

@@ -125,3 +125,87 @@ def test_a_permit_is_released_when_the_work_raises():
     # Still acquirable: if the permit leaked, this blocks forever.
     with resource.permit():
         pass
+
+
+# ----------------------------------------------------------------------
+# A deadline (2026-10-22): stop waiting, keep the order
+# ----------------------------------------------------------------------
+
+
+def test_with_a_timeout_an_unfinished_item_is_replaced_in_its_own_place():
+    """
+    A claim with a deadline waits for its pages only so long. The page
+    still loading is replaced where it stood - its index is still the
+    number the model cites - and the others are not held up by it.
+    """
+
+    release = threading.Event()
+
+    def slow_for_the_second(value: int) -> str:
+        if value == 1:
+            release.wait(5)
+        return f"page {value}"
+
+    started = time.monotonic()
+
+    try:
+        results = bounded_map(
+            slow_for_the_second,
+            [0, 1, 2],
+            max_workers=3,
+            timeout=0.2,
+            late=lambda value: f"snippet {value}",
+        )
+    finally:
+        release.set()
+
+    assert results == ["page 0", "snippet 1", "page 2"]
+    assert time.monotonic() - started < 2
+
+
+def test_a_timeout_also_bounds_a_single_item():
+    """
+    The one-item shortcut runs the item in the caller's thread, which no
+    timeout can cut - so with a timeout there is no shortcut.
+    """
+
+    release = threading.Event()
+
+    try:
+        results = bounded_map(
+            lambda value: release.wait(5) or value,
+            [7],
+            max_workers=1,
+            timeout=0.1,
+            late=lambda value: None,
+        )
+    finally:
+        release.set()
+
+    assert results == [None]
+
+
+def test_a_timeout_without_a_stand_in_is_refused():
+
+    with pytest.raises(ValueError):
+        bounded_map(lambda value: value, [1, 2], max_workers=2, timeout=1.0)
+
+
+def test_a_permit_not_free_in_time_raises_rather_than_waiting():
+    """
+    A claim with seconds left would rather be "not checked" than queue
+    for the model past its deadline.
+    """
+
+    from src.services.concurrency import PermitTimeout
+
+    resource = BoundedResource("one", 1)
+
+    with resource.permit():
+        with pytest.raises(PermitTimeout):
+            with resource.permit(timeout=0.05):
+                pass
+
+    # And it was not left taken by the failed attempt.
+    with resource.permit(timeout=0.05):
+        pass

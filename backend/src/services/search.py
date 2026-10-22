@@ -70,6 +70,22 @@ class SearxngClient:
         # (query, language) -> the request already in flight for it
         self._inflight: dict[tuple, _InFlight] = {}
 
+        # How this thread's last `search` was answered, for the timing a
+        # claim reports per query (`last_route`). Per thread because each
+        # query of a claim runs in its own and asks right after its call.
+        self._route = threading.local()
+
+    def last_route(self) -> str | None:
+        """
+        How the last `search` on this thread was answered: `cache` (from
+        memory), `shared` (another claim's request for the same query),
+        `searxng`, `duckduckgo` (the fallback) or `failed`. A query that
+        took 0.0 s and one that took 4 s are both "a search"; this says
+        which one did the work.
+        """
+
+        return getattr(self._route, "value", None)
+
     def search(
         self,
         query: str,
@@ -105,6 +121,7 @@ class SearxngClient:
             cached = self._cache.get(key)
 
             if cached and time.monotonic() - cached[0] < self.CACHE_TTL_SECONDS:
+                self._route.value = "cache"
                 return cached[1][:limit]
 
             flight = self._inflight.get(key)
@@ -116,6 +133,8 @@ class SearxngClient:
         if not leader:
             flight.done.wait()
 
+            self._route.value = "failed" if flight.error else "shared"
+
             if flight.error:
                 raise flight.error
 
@@ -124,6 +143,7 @@ class SearxngClient:
         try:
             flight.results = self._fetch_or_fall_back(query, language)
         except SearchUnavailableError as exc:
+            self._route.value = "failed"
             flight.error = exc
             raise
         finally:
@@ -154,7 +174,9 @@ class SearxngClient:
         """
 
         try:
-            return self._fetch(query, language)
+            results = self._fetch(query, language)
+            self._route.value = "searxng"
+            return results
         except SearchUnavailableError as primary:
 
             if self.fallback is None:
@@ -162,6 +184,7 @@ class SearxngClient:
 
             try:
                 results = self.fallback.fetch(query, language)
+                self._route.value = "duckduckgo"
             except SearchUnavailableError as secondary:
                 raise SearchUnavailableError(
                     f"{primary}; fallback: {secondary}"

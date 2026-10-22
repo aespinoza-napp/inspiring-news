@@ -228,3 +228,93 @@ def test_a_hybrid_reasoning_model_is_told_not_to_think(monkeypatch):
 
     assert writer._client.chat.completions.calls[0]["extra_body"] == {"reasoning_effort": "none"}
     assert "extra_body" not in verifier._client.chat.completions.calls[0]
+
+
+# ----------------------------------------------------------------------
+# A claim's deadline, and what a call cost (2026-10-22)
+# ----------------------------------------------------------------------
+
+
+def test_a_timeout_is_sent_with_the_request_only_when_given():
+    """
+    The claim's deadline reaches the request itself, so the server is
+    left when time is up rather than after LLM_TIMEOUT.
+    """
+
+    client = make_client(['{"a": 1}', '{"b": 2}'])
+
+    client.complete_json("s", "u")
+    client.complete_json("s", "u", timeout=12.0)
+
+    calls = client._client.chat.completions.calls
+
+    assert "timeout" not in calls[0]
+    assert 1.0 <= calls[1]["timeout"] <= 12.0
+
+
+def test_a_model_busy_past_the_deadline_is_unavailable_not_a_verdict(monkeypatch):
+    """
+    Another claim's call holds the one permit for longer than this claim
+    has left: the claim is "not checked" (LLMUnavailableError), and the
+    model is never asked.
+    """
+
+    from src.services import llms
+    from src.services.concurrency import BoundedResource
+
+    resource = BoundedResource("llm", 1)
+    monkeypatch.setattr(llms, "LLM", resource)
+
+    client = make_client(['{"verdict": "TRUE"}'])
+
+    with resource.permit():
+        with pytest.raises(LLMUnavailableError, match="within"):
+            client.complete_json("s", "u", timeout=1.2)
+
+    assert client._client.chat.completions.calls == []
+    assert LLMClient.last_call()["wait"] >= 1.0
+
+
+def test_no_time_left_at_all_is_unavailable_without_asking():
+
+    client = make_client(['{"verdict": "TRUE"}'])
+
+    with pytest.raises(LLMUnavailableError):
+        client.complete_json("s", "u", timeout=0.2)
+
+    assert client._client.chat.completions.calls == []
+
+
+class TokenUsage:
+    def __init__(self, prompt_tokens, completion_tokens):
+        self.prompt_tokens = prompt_tokens
+        self.completion_tokens = completion_tokens
+
+
+def test_the_last_call_says_what_it_cost():
+    """
+    What the live view shows for a claim's model call: the queue, the
+    call's own seconds, and the tokens the server read and wrote.
+    """
+
+    client = make_client(['{"ok": true}'])
+
+    completions = client._client.chat.completions
+    create = completions.create
+
+    def create_with_usage(**kwargs):
+        completion = create(**kwargs)
+        completion.usage = TokenUsage(512, 48)
+        return completion
+
+    completions.create = create_with_usage
+
+    client.complete_json("s", "u")
+
+    call = LLMClient.last_call()
+
+    assert call["model"] == client.model
+    assert call["promptTokens"] == 512
+    assert call["completionTokens"] == 48
+    assert call["seconds"] >= 0.0
+    assert call["wait"] >= 0.0

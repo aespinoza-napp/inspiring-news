@@ -16,6 +16,7 @@ from src.services.fact_checker.terms import (
     contextualised_claim,
     coverage,
 )
+from src.services.fact_checker.verification import excerpts
 
 # How much of a source is read when judging it. Enough to cover a lead
 # and the paragraphs under it; past that a long page's tail dilutes both
@@ -94,7 +95,20 @@ class EvidenceRanker:
 
         anchors, content = claim_terms(claim, language, context)
 
-        texts = [self._judged_text(item) for item in evidence]
+        # `passages`: the sentences the verifier will read of each source
+        # (verification/excerpts.py), not its first 2,000 characters - a
+        # third of the text to embed at the default 700, and the gate then
+        # judges what the model is shown rather than the page's opening.
+        if thresholds.ranking_text == "passages":
+            budget = thresholds.verifier_excerpt_chars
+            texts = [
+                excerpts.head(self._full_text(item), budget)
+                if thresholds.verifier_excerpt == "head"
+                else excerpts.passages(self._full_text(item), budget, anchors, content)
+                for item in evidence
+            ]
+        else:
+            texts = [self._judged_text(item) for item in evidence]
 
         # One batched call, not one per source. This was the single
         # worst offender in the pipeline: `encode()` inside a list
@@ -168,7 +182,12 @@ class EvidenceRanker:
     @staticmethod
     def _judged_text(evidence: Evidence) -> str:
 
-        return (evidence.content or f"{evidence.title}. {evidence.snippet}")[:JUDGED_CHARS]
+        return EvidenceRanker._full_text(evidence)[:JUDGED_CHARS]
+
+    @staticmethod
+    def _full_text(evidence: Evidence) -> str:
+
+        return evidence.content or f"{evidence.title}. {evidence.snippet}"
 
     def _score(
         self,

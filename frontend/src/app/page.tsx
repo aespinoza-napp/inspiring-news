@@ -18,6 +18,7 @@ import { TopicPanel } from "@/components/TopicPanel";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { FlowSteps } from "@/components/FlowSteps";
 import { WriteArticleLink } from "@/components/drafts/WriteArticleLink";
+import { ArticleTiming, ClaimTimingPanel } from "@/components/TimingBreakdown";
 import { buildTrace, ClaimStep } from "@/lib/liveTrace";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
 import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
@@ -175,6 +176,12 @@ function JobCardView({
   }
 
   const partial = summarizeJob(job);
+
+  // Where the time went: the article's stages and, per claim, its
+  // searches, pages and model call - folded from the events like the
+  // Live screen's, matched to the finished claims by their text.
+  const trace = buildTrace(job.events);
+  const timingByClaim = new Map(trace.claims.map((claim) => [claim.claim, claim.timing]));
   const isFailed = job.status === "failed";
   const isRunning = job.status === "queued" || job.status === "running";
   const cached = job.result?.cached ?? false;
@@ -203,6 +210,8 @@ function JobCardView({
       ) : (
         <PhaseStepper events={job.events} status={job.status} />
       )}
+
+      {!cached && <ArticleTiming timing={trace.timing} />}
 
       {isFailed && (
         <div className="error-banner" role="alert">
@@ -347,6 +356,9 @@ function JobCardView({
               )}
               {claim.reachedStage && (
                 <StageTimeline reachedStage={claim.reachedStage} stageNote={claim.stageNote} />
+              )}
+              {!claim.step && timingByClaim.get(claim.text) && (
+                <ClaimTimingPanel timing={timingByClaim.get(claim.text)!} />
               )}
               {claim.rawVerdict && claim.rawVerdict !== claim.verdict && (
                 <p className="claims-note">

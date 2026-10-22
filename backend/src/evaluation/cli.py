@@ -103,6 +103,16 @@ def cmd_run(args: argparse.Namespace) -> int:
         # Three evidence conditions, one per run; the loop needs evidence.
         raise SystemExit("--closed-book takes none of --retrieval-only, --oracle or --loop")
 
+    # backend/.env may make the app fast (FACT_CHECK_PROFILE), and the
+    # harness reads the same file: say so, since a thesis run is meant to be
+    # the pipeline as the author chose it. The run key records the result.
+    if settings.FACT_CHECK_PROFILE != "thorough" and not args.thresholds:
+        logger.warning(
+            "FACT_CHECK_PROFILE=%s: this run takes that profile's thresholds as its defaults; "
+            "--thresholds data/evaluation/thresholds/thorough.json runs the pipeline as before.",
+            settings.FACT_CHECK_PROFILE,
+        )
+
     config = RunConfig(
         dataset=dataset,
         # No model is asked in a retrieval-only run; its directory says so.

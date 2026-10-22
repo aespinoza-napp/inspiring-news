@@ -138,6 +138,15 @@ def provider_of(base_url: str) -> str:
 # What the verifier read of each source before it was a threshold.
 _EXCERPT_BEFORE = {"verifier_excerpt": "head", "verifier_excerpt_chars": 1500}
 
+# What every run did before the speed switches existed (2026-10-22).
+_SPEED_BEFORE = {
+    "verifier_answer": "full",
+    "evidence_prerank": "embedding",
+    "ranking_text": "head",
+    "fetch_evidence_pages": True,
+    "claim_deadline_seconds": 0,
+}
+
 
 def keyed_thresholds(thresholds: PipelineThresholds) -> dict:
     """
@@ -146,7 +155,8 @@ def keyed_thresholds(thresholds: PipelineThresholds) -> dict:
     so they keep their keys and still resume: `query_kinds` (2026-10-20)
     when it is not all three, the only plan there was before; the
     verifier's excerpt (2026-10-21) when it is the first 1,500 characters
-    of each source, which every earlier run read.
+    of each source, which every earlier run read; the speed switches
+    (2026-10-22) when they are off.
     """
 
     dumped = thresholds.model_dump()
@@ -154,7 +164,7 @@ def keyed_thresholds(thresholds: PipelineThresholds) -> dict:
     if tuple(dumped.get("query_kinds") or ()) == SEARCH_QUERY_KINDS:
         dumped.pop("query_kinds")
 
-    for name, before in _EXCERPT_BEFORE.items():
+    for name, before in {**_EXCERPT_BEFORE, **_SPEED_BEFORE}.items():
         if dumped.get(name) == before:
             dumped.pop(name)
 

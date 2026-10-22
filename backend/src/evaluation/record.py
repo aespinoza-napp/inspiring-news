@@ -384,7 +384,37 @@ def latency_from(events: list[dict], timing: Timing) -> dict:
         else:
             latency[name] = None
 
+    # Inside those spans, what the events themselves measured (2026-10-22):
+    # the web search (every query, concurrently), the page fetches, and the
+    # model's span split into waiting for the permit and the call itself.
+    # None for a run from before they were measured, or a stage not run.
+    latency.update({key: None for key in _MEASURED})
+
+    for event in events:
+        for key, (phase, path) in _MEASURED.items():
+            if event["phase"] == phase and latency[key] is None:
+                latency[key] = _dig(event.get("data") or {}, path)
+
     return latency
+
+
+# Seconds an event carries in its data: key -> (phase, path into data).
+_MEASURED = {
+    "search": ("web_results", ("timings", "search")),
+    "pages": ("sources_scraped", ("seconds",)),
+    "llmWait": ("claim_checked", ("timings", "llmWait")),
+    "llmCall": ("claim_checked", ("timings", "llm")),
+}
+
+
+def _dig(data: dict, path: tuple[str, ...]) -> float | None:
+
+    for key in path:
+        if not isinstance(data, dict):
+            return None
+        data = data.get(key)
+
+    return data if isinstance(data, (int, float)) and not isinstance(data, bool) else None
 
 
 def jsonable(value):

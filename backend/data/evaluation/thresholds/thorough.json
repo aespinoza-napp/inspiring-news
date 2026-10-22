@@ -1,0 +1,1 @@
+{"verifier_answer": "full", "evidence_prerank": "embedding", "ranking_text": "head", "fetch_evidence_pages": true, "claim_deadline_seconds": 0, "query_kinds": ["anchor", "proposition", "refutation"], "max_evidence_per_claim": 5, "verifier_excerpt_chars": 700}

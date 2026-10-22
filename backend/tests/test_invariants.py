@@ -163,6 +163,10 @@ NON_THRESHOLD_SETTINGS = {
     # How the review asks its model for a correction: the shape of a
     # call, like the model it goes to - not a judgement a run makes.
     "REVIEW_CORRECTION",
+    # Which named set of thresholds the environment defaults to: chooses
+    # defaults rather than being one, read where they are defined
+    # (thresholds.py) and by the harness, to warn that a run is not thorough.
+    "FACT_CHECK_PROFILE",
     # How a model is served (thinking off for a hybrid reasoning model),
     # a property of the model, not of a run: infrastructure, like LLM_MODEL.
     "LLM_REASONING_EFFORT",

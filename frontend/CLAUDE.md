@@ -142,6 +142,19 @@ that way.
 `reliabilityKnown: false` is rendered as "unrated" — it is the default for
 an unrated domain, not a rating.
 
+## Where the time went
+
+`components/TimingBreakdown.tsx` (2026-10-22): an article's stages
+(fetch, enrich, admission, claim selection, fact-check, store) as one
+bar from the events' `at` times, and per checked claim a collapsible
+"Time" block - search, pages, ranking, waiting for the model, the model
+- with each query's seconds, results and route, each page's seconds and
+outcome, and the model's tokens. On `/live` (inside `LiveTrace`) and on
+`/` (each job card, claims matched to the fold by their text). The
+numbers come from `lib/liveTrace.ts`'s `timing` fields, which read the
+backend's event fields (`backend/CLAUDE.md`) and fall back to event
+timestamps, so a run from before they existed still shows its totals.
+
 ## The graph page
 
 Node colours are fixed per label in `lib/graphStyle.ts` (the `--series-*`

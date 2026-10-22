@@ -159,6 +159,7 @@ class FakeLLMClient:
         self.calls: list[tuple[str, str]] = []
         # What each call asked as its answer cap (the writer sets one).
         self.max_tokens: list[int | None] = []
+        self.timeouts: list[float | None] = []
 
     def complete_json(
         self,
@@ -166,9 +167,12 @@ class FakeLLMClient:
         user_prompt: str,
         max_retries: int = 1,
         max_tokens: int | None = None,
+        timeout: float | None = None,
     ):
         self.calls.append((system_prompt, user_prompt))
         self.max_tokens.append(max_tokens)
+        # What each call was given to answer in (a claim's deadline).
+        self.timeouts.append(timeout)
         result = (
             (self._responses.pop(0) if self._responses else None)
             if self._responses is not None
@@ -201,9 +205,11 @@ class FakeEvidenceRetriever:
         self.evidence_by_claim = evidence_by_claim or {}
         self.search_unavailable = search_unavailable
         self.calls = []
+        self.deadlines = []
 
-    def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None):
+    def retrieve(self, claim, thresholds=None, context=None, language=None, on_phase=None, deadline=None):
         self.calls.append((claim, thresholds, context, language))
+        self.deadlines.append(deadline)
         return RetrievalResult(
             kept=self.evidence_by_claim.get(claim.text, []),
             search_unavailable=self.search_unavailable,
@@ -230,8 +236,10 @@ class FakeVerifier:
 
     def __init__(self, result_by_claim: dict | None = None):
         self.result_by_claim = result_by_claim or {}
+        self.timeouts = []
 
-    def verify(self, claim, evidence, context=None, *, thresholds=None, language=None):
+    def verify(self, claim, evidence, context=None, *, thresholds=None, language=None, timeout=None):
+        self.timeouts.append(timeout)
         return self.result_by_claim[claim.text]
 
 
@@ -266,13 +274,19 @@ class FakeSearchProvider:
     def queries_for(self, claim, context=None, language=None):
         return [query.text for query in self.plan(claim, context, language)]
 
-    def search(self, claim, thresholds=None, context=None, language=None):
+    def search(self, claim, thresholds=None, context=None, language=None, timings=None):
         self.calls.append((claim, thresholds, context, language))
+        if timings is not None:
+            timings.append({
+                "kind": "anchor", "query": f"query for {claim.text}", "seconds": 0.0,
+                "results": None if self.unavailable else len(self.evidence),
+                "via": "fake", "error": "every query failed" if self.unavailable else None,
+            })
         if self.unavailable:
             raise SearchUnavailableError("every query failed")
         return list(self.evidence)
 
-    def search_queries(self, queries, thresholds=None, language=None):
+    def search_queries(self, queries, thresholds=None, language=None, timings=None):
         self.follow_up_queries.append([query.text for query in queries])
         if self.unavailable:
             raise SearchUnavailableError("every query failed")
@@ -307,9 +321,13 @@ class FakeEvidenceScraper:
 
     def __init__(self):
         self.enrich_calls = []
+        self.waits = []
 
-    def enrich(self, evidence):
+    def enrich(self, evidence, wait=None, timings=None):
         self.enrich_calls.append(evidence)
+        self.waits.append(wait)
+        if timings is not None:
+            timings.extend({"url": item.url, "seconds": 0.0, "outcome": "page"} for item in evidence)
         return [
             item.model_copy(update={"content": f"scraped:{item.url}"})
             for item in evidence

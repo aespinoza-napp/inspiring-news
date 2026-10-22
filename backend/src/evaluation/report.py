@@ -45,8 +45,14 @@ from src.evaluation.usage import cost, price_for, totals
 STAGES = (
     ("entities", "Entities of the claim"),
     ("retrieval", "Evidence retrieval"),
+    # Measured inside retrieval and the model's span since 2026-10-22;
+    # empty for a run from before.
+    ("search", "of which: the web search, every query"),
+    ("pages", "of which: the page fetches"),
     ("ranking", "Ranking"),
     ("llm", "The model's verdict (with its wait for a permit)"),
+    ("llmWait", "of which: waiting for the model (another claim's call)"),
+    ("llmCall", "of which: the model's call itself"),
     ("secondLook", "Second look, where taken"),
     ("total", "Whole claim"),
 )

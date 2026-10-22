@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 import time
 from logging import getLogger
 from typing import Any
@@ -9,11 +10,14 @@ from typing import Any
 from openai import APIConnectionError, APIError, APITimeoutError, OpenAI
 
 from src.config.settings import settings
-from src.services.concurrency import LLM
+from src.services.concurrency import LLM, PermitTimeout
 
 logger = getLogger(__name__)
 
 _JSON_BLOCK_PATTERN = re.compile(r"\{.*\}", re.DOTALL)
+
+# This thread's last complete_json, for LLMClient.last_call().
+_LAST_CALL = threading.local()
 
 
 class LLMUnavailableError(RuntimeError):
@@ -139,6 +143,7 @@ class LLMClient:
         user_prompt: str,
         max_retries: int = 1,
         max_tokens: int | None = None,
+        timeout: float | None = None,
     ) -> dict[str, Any] | None:
         """
         Returns None if the provider answered but the response can't be
@@ -151,6 +156,16 @@ class LLMClient:
         `max_tokens` caps the answer; None sends no cap, as every caller
         did before the writer (src/services/writer/) needed one. An answer
         cut at the cap is usually unfinished JSON, so it comes back None.
+
+        `timeout`: seconds for the whole call, waiting for the LLM permit
+        included, retries too; None is LLM_TIMEOUT per attempt, as before.
+        A claim with a deadline passes what it has left, and running out
+        is LLMUnavailableError - the claim is "not checked", never judged
+        on a half-written answer. Closing the request stops Ollama
+        generating, so the permit is not held past it.
+
+        How the call went (permit wait, the call's own seconds, tokens) is
+        kept for this thread in `last_call()`.
         """
 
         messages = [
@@ -164,7 +179,23 @@ class LLMClient:
 
         unreachable = False
 
+        ends_at = None if timeout is None else time.monotonic() + timeout
+
+        call = {"model": self.model, "wait": 0.0, "seconds": 0.0, "promptTokens": None, "completionTokens": None}
+        _LAST_CALL.value = call
+
         for attempt in range(max_retries + 1):
+
+            left = None if ends_at is None else ends_at - time.monotonic()
+
+            if left is not None and left < 1.0:
+                # Out of time. Before any answer that is "not checked";
+                # after one that was not JSON, it is that answer's failure.
+                if attempt == 0:
+                    unreachable = True
+                break
+
+            asked = time.perf_counter()
 
             try:
                 # Claims are verified concurrently now, so this is where
@@ -172,15 +203,35 @@ class LLMClient:
                 # answers concurrent requests by queueing them anyway -
                 # the permit makes that queue explicit and bounded
                 # instead of letting every claim hold a socket open.
-                with LLM.permit():
-                    response = self._client.chat.completions.create(
-                        model=self.model,
-                        messages=messages,
-                        response_format={"type": "json_object"},
-                        temperature=0.0,
-                        **limits,
-                        **self._extra,
+                with LLM.permit(timeout=left):
+
+                    started = time.perf_counter()
+                    call["wait"] = round(call["wait"] + started - asked, 3)
+
+                    per_request = (
+                        {"timeout": max(1.0, ends_at - time.monotonic())}
+                        if ends_at is not None
+                        else {}
                     )
+
+                    try:
+                        response = self._client.chat.completions.create(
+                            model=self.model,
+                            messages=messages,
+                            response_format={"type": "json_object"},
+                            temperature=0.0,
+                            **limits,
+                            **per_request,
+                            **self._extra,
+                        )
+                    finally:
+                        call["seconds"] = round(call["seconds"] + time.perf_counter() - started, 3)
+
+            except PermitTimeout as exc:
+                call["wait"] = round(call["wait"] + time.perf_counter() - asked, 3)
+                logger.warning("LLM call not started (attempt %d): %s", attempt, exc)
+                unreachable = True
+                break
             except (APIConnectionError, APITimeoutError, APIError) as exc:
                 logger.warning(
                     "LLM call failed (attempt %d): %s",
@@ -193,6 +244,10 @@ class LLMClient:
                 continue
 
             unreachable = False
+
+            usage = getattr(response, "usage", None)
+            call["promptTokens"] = getattr(usage, "prompt_tokens", None)
+            call["completionTokens"] = getattr(usage, "completion_tokens", None)
 
             if attempt == 0:
                 _warn_if_cut(self.model, len(system_prompt) + len(user_prompt), response)
@@ -235,9 +290,24 @@ class LLMClient:
         if unreachable:
             raise LLMUnavailableError(
                 f"{self.model} unreachable after {max_retries + 1} attempt(s)"
+                if ends_at is None or time.monotonic() < ends_at
+                else f"{self.model} did not answer within {timeout:.0f} s"
             )
 
         return None
+
+    @staticmethod
+    def last_call() -> dict | None:
+        """
+        The last `complete_json` on this thread: the model, seconds spent
+        waiting for the LLM permit (another claim's call), the call's own
+        seconds, and the tokens the server reported (None when it did not).
+        Per thread because each claim is checked in its own and asks right
+        after its call; a dict, not the response, so nothing holds on to
+        the answer.
+        """
+
+        return getattr(_LAST_CALL, "value", None)
 
     @staticmethod
     def _backoff_seconds(attempt: int) -> float:

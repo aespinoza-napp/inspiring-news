@@ -104,6 +104,28 @@ detection, where a silently empty result corrupts a decision).
   `fact_checker/progress.py::source_summary`, which never includes a
   scraped body — events are held in memory, polled every second and
   journalled.
+- **Every claim reports where its seconds went** (2026-10-22), as extra
+  fields on those same events, no new phase: `web_results.queryTimings`
+  (each query's seconds, results and how it was answered -
+  `SearxngClient.last_route`) and `.timings` (claim embedding, search,
+  internal corpus, pre-rank); `sources_scraped` each page's seconds and
+  outcome; `evidence_ranked.seconds`; `claim_checked.timings` (retrieval,
+  ranking, `llmWait` - queued behind another claim's call - `llm`, total),
+  `.llm` (model, tokens) and `.deadline`. The model call's record comes
+  from `LLMClient.last_call()`, per thread. The frontend's
+  `TimingBreakdown` draws them; the harness record keeps `search`, `pages`,
+  `llmWait` and `llmCall` in `latency`.
+- **A claim can have a deadline** (`claim_deadline_seconds`, 0 = none;
+  `fact_checker/deadline.py`): pages are waited for until half of it
+  (`bounded_map(timeout=, late=)` - late pages keep their snippet, input
+  order kept), the model gets the rest (`complete_json(timeout=)` covers
+  the permit wait too, `BoundedResource.permit(timeout=)`), and running out
+  is `llm_unreachable` ("not checked") with a stage note, never a verdict.
+  No second look under a deadline. The speed switches beside it -
+  `verifier_answer`, `evidence_prerank`, `ranking_text`,
+  `fetch_evidence_pages` - and the presets that combine them
+  (`data/evaluation/thresholds/fast.json`) are in
+  `docs/decisions/performance.md`, "The 20-second fact-check".
 - **Across claims those events interleave**, because the claims run at
   once. Two things make a client's life possible and both are
   load-bearing: `claims_selected` carries the whole claim set with

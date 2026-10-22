@@ -143,6 +143,11 @@ def pin_settings(monkeypatch):
         "EVIDENCE_RECENCY_HALF_LIFE_DAYS",
         "URL_GUARD_ENABLED", "URL_GUARD_ALLOWED_HOSTS", "STORAGE_API_KEY",
         "LAKE_ENABLED",
+        # Not a threshold but the choice of their defaults (thresholds.py,
+        # FACT_CHECK_PROFILES): left to .env, a dev machine running the app
+        # fast turned twelve tests red on 2026-10-22 - every one asserting
+        # the thorough pipeline's behaviour.
+        "FACT_CHECK_PROFILE",
     }
 
     for name in pinned:

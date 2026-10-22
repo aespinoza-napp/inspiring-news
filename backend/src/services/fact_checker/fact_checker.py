@@ -1,4 +1,5 @@
 import threading
+import time
 from logging import getLogger
 from typing import Callable, Optional
 
@@ -13,6 +14,7 @@ from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
 from src.services.concurrency import bounded_map
 from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelector
+from src.services.fact_checker.deadline import MIN_STAGE_SECONDS, Deadline
 from src.services.fact_checker.progress import source_summary
 from src.services.fact_checker.ranking.ranking_retrieval import EvidenceRanker
 from src.services.fact_checker.retrieval.evidence_retriever import EvidenceRetriever
@@ -266,6 +268,12 @@ class FactChecker:
         def phase(name: str, data: dict) -> None:
             report_phase(name, {"claim": claim.text, "claimIndex": claim_index, **data})
 
+        # The claim's own clock, from here to its verdict: what the live
+        # view shows as the time this claim took, stage by stage, and the
+        # budget `claim_deadline_seconds` holds it to (deadline.py).
+        deadline = Deadline(thresholds.claim_deadline_seconds)
+        clock: dict = {}
+
         # The four sub-stages below are the slowest in the whole pipeline -
         # a live SearXNG search, scraping the top hits, and one LLM call -
         # and they used to emit nothing until `claim_checked` at the very
@@ -273,7 +281,7 @@ class FactChecker:
         # updates spread over a minute of apparent silence. CLAUDE.md's
         # rule is per stage, not per method.
 
-        phase("retrieving_evidence", {})
+        phase("retrieving_evidence", {"deadline": deadline.seconds})
 
         retrieval = self.evidence_retriever.retrieve(
             claim,
@@ -283,7 +291,10 @@ class FactChecker:
             on_phase=lambda name, data: report_phase(
                 name, {"claimIndex": claim_index, **data}
             ),
+            deadline=deadline,
         )
+
+        clock["retrieval"] = round(deadline.elapsed(), 3)
 
         phase("evidence_retrieved", {
             "found": len(retrieval.kept),
@@ -304,13 +315,17 @@ class FactChecker:
             claim_embedding=retrieval.claim_embedding,
             rejected=retrieval.rejected,
             search_unavailable=retrieval.search_unavailable,
+            deadline=deadline,
+            clock=clock,
         )
 
         # A verdict in doubt gets a second, wider search before it is
-        # reported (second_look.py). Off unless the run asks for it.
-        trigger = needs_second_look(check, thresholds)
+        # reported (second_look.py). Off unless the run asks for it - and
+        # never past a deadline, which the first verdict already used.
+        trigger = None if deadline.active else needs_second_look(check, thresholds)
 
         if trigger:
+            first_done = deadline.elapsed()
             check = self.second_look(
                 claim,
                 check,
@@ -320,8 +335,11 @@ class FactChecker:
                 language=language,
                 trigger=trigger,
             )
+            clock["secondLook"] = round(deadline.elapsed() - first_done, 3)
 
         cited = set(check.cited_evidence_indices)
+
+        call = clock.pop("call", None) or {}
 
         phase("claim_checked", {
             "claim": check.claim,
@@ -337,6 +355,24 @@ class FactChecker:
                 source_summary(item, cited=index in cited)
                 for index, item in enumerate(check.evidence)
             ],
+            # Where this claim's seconds went. `llmWait` is the queue for
+            # the one model (another claim's call), `llm` the call itself;
+            # `total` is the claim's own clock, second look included.
+            "timings": {
+                **clock,
+                "llmWait": call.get("wait"),
+                "llm": call.get("seconds"),
+                "total": round(deadline.elapsed(), 3),
+            },
+            "llm": {
+                "model": call.get("model"),
+                "promptTokens": call.get("promptTokens"),
+                "completionTokens": call.get("completionTokens"),
+            } if call else None,
+            "deadline": {
+                "seconds": deadline.seconds,
+                "exceeded": deadline.exceeded(),
+            } if deadline.active else None,
         })
 
         return check
@@ -434,12 +470,22 @@ class FactChecker:
         claim_embedding=None,
         rejected: list[RejectedEvidence] | None = None,
         search_unavailable: bool = False,
+        deadline: Deadline | None = None,
+        clock: dict | None = None,
     ) -> FactCheck:
         """
         Rank, ask, recalibrate: everything after retrieval. One copy, so
         the first pass, a second look and a check against given pages
         cannot drift apart in what they consider verified.
+
+        `deadline` bounds the model's call by what the claim has left;
+        `clock`, when given, receives the ranking's seconds and the
+        model call's record (LLMClient.last_call) for `claim_checked`.
         """
+
+        clock = {} if clock is None else clock
+
+        started = time.perf_counter()
 
         ranking = self.ranker.rank(
             claim,
@@ -451,6 +497,8 @@ class FactChecker:
         )
         ranked = ranking.kept
 
+        clock["ranking"] = round(time.perf_counter() - started, 3)
+
         # The rating each source received: relevance and the four factors
         # behind it, including how much its reliability figure is a real
         # rating rather than the default, and whether it addresses the
@@ -458,7 +506,12 @@ class FactChecker:
         phase("evidence_ranked", {
             "sources": [source_summary(item) for item in ranked],
             "cut": self._rejected_summary(ranking.rejected),
+            "seconds": clock["ranking"],
         })
+
+        left = deadline.remaining() if deadline is not None else None
+
+        out_of_time = False
 
         if below_evidence_floor(ranked, thresholds):
 
@@ -473,12 +526,24 @@ class FactChecker:
                 explanation="",
             )
 
+        elif left is not None and left < MIN_STAGE_SECONDS:
+
+            # Out of time before the model could be asked: not checked,
+            # as if it were unreachable - never a verdict for lack of time.
+            out_of_time = True
+            llm_result = LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="LLM provider was unreachable; verdict could not be produced.",
+                llm_unreachable=True,
+            )
+
         else:
 
             # Ranking is embedding arithmetic over a handful of items, fast
             # enough not to deserve its own pair of events - but the LLM call
             # after it is the single longest step, so it gets one.
-            phase("verifying_claim", {"evidence": len(ranked)})
+            phase("verifying_claim", {"evidence": len(ranked), "timeLeft": left})
 
             llm_result = self.verifier.verify(
                 claim,
@@ -486,7 +551,13 @@ class FactChecker:
                 context=context,
                 thresholds=thresholds,
                 language=language,
+                **({"timeout": left} if left is not None else {}),
             )
+
+            out_of_time = llm_result.llm_unreachable and deadline is not None and deadline.exceeded()
+
+            if llm_result.call:
+                clock["call"] = llm_result.call
 
         check = self.confidence_scorer.score(claim, ranked, llm_result, thresholds)
 
@@ -506,6 +577,13 @@ class FactChecker:
         reached_stage, stage_note = self._trace(
             ranked, llm_result, check, thresholds, search_unavailable
         )
+
+        if out_of_time:
+            stage_note = (
+                f"The model did not answer within the claim's {deadline.seconds:.0f} s "
+                "deadline (claim_deadline_seconds); not checked, which says nothing "
+                "about the claim."
+            )
 
         return check.model_copy(update={
             "rejected_sources": (rejected or []) + ranking.rejected + not_cited,

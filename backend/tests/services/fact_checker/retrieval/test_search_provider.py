@@ -298,3 +298,29 @@ def test_one_query_failing_keeps_what_the_others_found():
     results = SearchProvider(client=client).search(create_claim(text="NASA discovered water on Mars."))
 
     assert [item.url for item in results] == ["https://example.com/a"]
+
+
+def test_each_query_reports_its_time_results_and_route_in_plan_order():
+    """
+    The live view's per-query search time: one entry per query, in the
+    order planned whatever order they finished in.
+    """
+
+    from src.services.fact_checker.retrieval.query_builder import PlannedQuery, QueryKind
+    from tests.services.fact_checker.fakes import FakeSearxngClient
+
+    client = FakeSearxngClient()
+    provider = SearchProvider(client=client)
+
+    timings = []
+
+    provider.search_queries(
+        [PlannedQuery("first query", QueryKind.ANCHOR), PlannedQuery("second query", QueryKind.PROPOSITION)],
+        timings=timings,
+    )
+
+    assert [(timing["kind"], timing["query"]) for timing in timings] == [
+        ("anchor", "first query"),
+        ("proposition", "second query"),
+    ]
+    assert all(timing["seconds"] >= 0 and timing["error"] is None for timing in timings)

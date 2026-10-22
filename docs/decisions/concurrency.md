@@ -77,6 +77,25 @@ single request and nothing else, and no pipeline code that fans out holds
 one. `bounded_map` deliberately takes no resource for this reason: the
 permit belongs inside `fn`, not around the pool.
 
+### Deadlines (2026-10-22)
+
+A claim may have `claim_deadline_seconds` (`fact_checker/deadline.py`,
+`performance.md`, "The 20-second fact-check"). Two primitives grew a
+timeout for it, and neither bends the rule above:
+
+- `BoundedResource.permit(timeout=)` raises `PermitTimeout` instead of
+  waiting past it. Only `LLMClient.complete_json(timeout=)` passes one: a
+  claim with seconds left would rather be "not checked" than queue behind
+  another claim's call past its deadline. Nothing is held while waiting.
+- `bounded_map(timeout=, late=)` stops *waiting* at the timeout and puts
+  `late(item)` where each unfinished item was, **still in input order**
+  (the evidence indices the model cites). It cannot stop the threads: a
+  page still loading finishes in the background, into the page cache, and
+  releases its `SCRAPE` permit when its own fetch timeout ends. So the
+  ceiling still holds; what the deadline buys is that the claim does not
+  wait for it. Its executor is shut down with `wait=False`, never as a
+  `with` block, whose exit would wait for exactly those threads.
+
 ## Ordering is not cosmetic
 
 `bounded_map` returns results in **input order**. The evidence list's

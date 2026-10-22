@@ -457,3 +457,36 @@ def test_a_caller_waiting_on_a_failed_request_gets_the_failure_too(monkeypatch):
 
     assert outcomes == ["unavailable", "unavailable"]
     assert client._inflight == {}
+
+
+def test_each_answer_says_how_it_was_obtained(monkeypatch):
+    """
+    `last_route`, read by the query's timing: a query answered from
+    memory took no time because nothing was asked, which the seconds
+    alone cannot say.
+    """
+
+    counting_get(monkeypatch, RESULTS)
+
+    client = SearxngClient(base_url="http://s")
+
+    client.search("the anchor", language="en")
+    assert client.last_route() == "searxng"
+
+    client.search("the anchor", language="en")
+    assert client.last_route() == "cache"
+
+
+def test_a_failed_answer_is_routed_as_failed(monkeypatch):
+
+    def broken(*args, **kwargs):
+        raise httpx.ConnectError("refused")
+
+    monkeypatch.setattr(httpx, "get", broken)
+
+    client = SearxngClient(base_url="http://s")
+
+    with pytest.raises(SearchUnavailableError):
+        client.search("anything")
+
+    assert client.last_route() == "failed"

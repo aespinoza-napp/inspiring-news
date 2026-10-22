@@ -343,3 +343,133 @@ def test_a_search_that_ran_and_found_nothing_is_not_unavailable():
 
     assert result.kept == []
     assert result.search_unavailable is False
+
+
+# ----------------------------------------------------------------------
+# The speed switches and the timings (2026-10-22)
+# ----------------------------------------------------------------------
+
+
+class CountingEmbeddings(FakeEmbeddingService):
+    """Counts the texts sent to be embedded in batches."""
+
+    def __init__(self):
+        super().__init__()
+        self.batched: list[list[str]] = []
+
+    def encode_many(self, texts):
+        self.batched.append(list(texts))
+        return super().encode_many(texts)
+
+
+def _web(*pairs):
+
+    return [
+        Evidence(url=f"https://{name}.com", title=title, snippet=snippet, origin=EvidenceOrigin.WEB, domain=f"{name}.com")
+        for name, title, snippet in pairs
+    ]
+
+
+def test_the_lexical_prerank_embeds_no_snippet_and_orders_by_the_claims_words():
+    """
+    `evidence_prerank: lexical` - the funnel picks the pages to fetch by
+    the claim's own words, without the batch of ~20 snippet embeddings
+    (6.5 s a claim on the CPU).
+    """
+
+    from src.config.thresholds import PipelineThresholds
+
+    embeddings = CountingEmbeddings()
+
+    retriever = EvidenceRetriever(
+        repository=None,
+        search_provider=FakeSearchProvider(_web(
+            ("off", "Weather today", "rain in the north"),
+            ("on", "Glacier retreat", "the glacier lost ice mass in Iceland"),
+        )),
+        scraper=FakeEvidenceScraper(),
+        vector_retriever=FakeVectorRetriever([]),
+        embeddings=embeddings,
+    )
+
+    events = []
+
+    retriever.retrieve(
+        create_claim(text="The glacier in Iceland lost ice mass"),
+        PipelineThresholds(evidence_prerank="lexical"),
+        on_phase=lambda phase, data: events.append((phase, data)),
+    )
+
+    assert embeddings.batched == []
+
+    found = dict(events)["web_results"]["results"]
+    assert found[0]["url"] == "https://on.com"
+
+
+def test_without_page_fetches_the_snippets_are_the_evidence():
+
+    from src.config.thresholds import PipelineThresholds
+
+    scraper = FakeEvidenceScraper()
+
+    retriever = EvidenceRetriever(
+        repository=None,
+        search_provider=FakeSearchProvider(_web(("a", "A", "one"), ("b", "B", "two"))),
+        scraper=scraper,
+        vector_retriever=FakeVectorRetriever([]),
+        embeddings=FakeEmbeddingService(),
+    )
+
+    events = []
+
+    result = retriever.retrieve(
+        create_claim(),
+        PipelineThresholds(fetch_evidence_pages=False),
+        on_phase=lambda phase, data: events.append((phase, data)),
+    )
+
+    assert scraper.enrich_calls == []
+    assert [item.content for item in result.kept] == [None, None]
+    assert [phase for phase, _ in events] == ["searching_web", "web_results"]
+
+
+def test_web_results_say_how_long_each_query_and_step_took():
+    """
+    What the live view shows as the time a claim's search took: every
+    query with its seconds, results and route, and each step apart.
+    """
+
+    retriever, _, _ = _retriever(_web(("a", "A", "one")))
+
+    events = []
+
+    retriever.retrieve(create_claim(text="target claim"), on_phase=lambda phase, data: events.append((phase, data)))
+
+    by_phase = dict(events)
+
+    timings = by_phase["web_results"]["timings"]
+    assert set(timings) == {"claimEmbedding", "search", "internal", "prerank"}
+    assert all(seconds >= 0 for seconds in timings.values())
+
+    [query] = by_phase["web_results"]["queryTimings"]
+    assert query["query"] == "query for target claim"
+    assert query["results"] == 1
+
+    [page] = by_phase["sources_scraped"]["sources"]
+    assert page["outcome"] == "page" and page["seconds"] == 0.0
+    assert by_phase["sources_scraped"]["seconds"] >= 0
+
+
+def test_the_pages_are_waited_for_only_until_retrievals_share_of_the_deadline():
+
+    from src.services.fact_checker.deadline import RETRIEVAL_SHARE, Deadline
+
+    retriever, _, _ = _retriever(_web(("a", "A", "one")))
+    scraper = retriever.scraper
+
+    retriever.retrieve(create_claim(), deadline=Deadline(30))
+    retriever.retrieve(create_claim())
+
+    first, second = scraper.waits
+    assert 0 < first <= 30 * RETRIEVAL_SHARE
+    assert second is None

@@ -784,3 +784,123 @@ def test_nothing_definitive_means_no_found_verdict():
     assert coverage["found_verdict"] is None
     assert (coverage["claims_unverified"], coverage["claims_not_checked"]) == (1, 1)
     assert FactChecker._coverage([])["found_verdict"] is None
+
+
+# ----------------------------------------------------------------------
+# A claim's clock and its deadline (2026-10-22)
+# ----------------------------------------------------------------------
+
+
+def _one_claim_checker(repository, llm_result, evidence=None):
+
+    claim = create_claim(text="A timed claim.", confidence=0.9)
+
+    embeddings = FakeEmbeddingService(vectors={claim.text: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})
+
+    retriever = FakeEvidenceRetriever({
+        claim.text: [create_evidence(url="https://a.com", relevance_score=0.9)] if evidence is None else evidence,
+    })
+    verifier = FakeVerifier({claim.text: llm_result})
+
+    checker = FactChecker(
+        repository,
+        claim_selector=ClaimSelector(embeddings=embeddings),
+        evidence_retriever=retriever,
+        ranker=FakeRanker(),
+        verifier=verifier,
+        confidence_scorer=ConfidenceScorer(),
+    )
+
+    return checker, claim, retriever, verifier
+
+
+def test_the_verdict_event_says_where_the_claims_time_went(repository):
+    """
+    What the live view shows per claim: retrieval, ranking, the wait
+    for the model and its call, and the claim's own total.
+    """
+
+    checker, claim, _, _ = _one_claim_checker(repository, LLMVerificationResult(
+        verdict=Verdict.TRUE,
+        confidence=0.9,
+        explanation="Confirmed.",
+        cited_evidence=[0],
+        call={"model": "m", "wait": 1.25, "seconds": 6.5, "promptTokens": 420, "completionTokens": 52},
+    ))
+
+    events = []
+
+    checker.run(create_article(claims=[claim]), on_phase=lambda phase, data: events.append((phase, data)))
+
+    by_phase = dict(events)
+    checked = by_phase["claim_checked"]
+
+    assert set(checked["timings"]) == {"retrieval", "ranking", "llmWait", "llm", "total"}
+    assert checked["timings"]["llmWait"] == 1.25
+    assert checked["timings"]["llm"] == 6.5
+    assert checked["timings"]["total"] >= checked["timings"]["retrieval"]
+    assert checked["llm"] == {"model": "m", "promptTokens": 420, "completionTokens": 52}
+    assert checked["deadline"] is None
+    assert by_phase["evidence_ranked"]["seconds"] >= 0
+
+
+def test_a_deadline_reaches_retrieval_and_bounds_the_model(repository):
+
+    checker, claim, retriever, verifier = _one_claim_checker(repository, LLMVerificationResult(
+        verdict=Verdict.TRUE, confidence=0.9, explanation="ok", cited_evidence=[0],
+    ))
+
+    events = []
+
+    checker.run(
+        create_article(claims=[claim]),
+        on_phase=lambda phase, data: events.append((phase, data)),
+        thresholds=PipelineThresholds(claim_deadline_seconds=30),
+    )
+
+    [deadline] = retriever.deadlines
+    assert deadline.seconds == 30
+
+    [timeout] = verifier.timeouts
+    assert 0 < timeout <= 30
+
+    assert dict(events)["claim_checked"]["deadline"] == {"seconds": 30, "exceeded": False}
+
+
+def test_without_a_deadline_the_model_is_not_hurried(repository):
+
+    checker, claim, _, verifier = _one_claim_checker(repository, LLMVerificationResult(
+        verdict=Verdict.TRUE, confidence=0.9, explanation="ok", cited_evidence=[0],
+    ))
+
+    checker.run(create_article(claims=[claim]))
+
+    assert verifier.timeouts == [None]
+
+
+def test_a_claim_out_of_time_is_not_checked_and_says_so(repository, monkeypatch):
+    """
+    The model never answered within the deadline: the claim is "not
+    checked" (llm_unreachable), counted apart from verdicts, and its note
+    says time ran out - never a verdict made up against the clock.
+    """
+
+    from src.services.fact_checker import deadline as deadline_module
+
+    checker, claim, _, _ = _one_claim_checker(repository, LLMVerificationResult(
+        verdict=Verdict.UNVERIFIED,
+        confidence=0.0,
+        explanation="LLM provider was unreachable; verdict could not be produced.",
+        llm_unreachable=True,
+    ))
+
+    # The clock reads past the deadline as soon as the claim starts.
+    monkeypatch.setattr(deadline_module.Deadline, "elapsed", lambda self: 31.0)
+
+    report = checker.run(create_article(claims=[claim]), thresholds=PipelineThresholds(claim_deadline_seconds=30))
+
+    [check] = report.claim_checks
+
+    assert check.llm_unreachable is True
+    assert "deadline" in check.stage_note
+    assert report.claims_not_checked == 1

@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 from urllib.parse import urlsplit
@@ -11,6 +12,7 @@ from src.repositories.vector_repository import VectorRepository
 from src.services.concurrency import bounded_map
 from src.services.embeddings.service import EmbeddingService
 from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.fact_checker.deadline import Deadline
 from src.services.fact_checker.progress import source_summary
 from src.services.search import SearchUnavailableError
 from src.services.fact_checker.terms import (
@@ -36,6 +38,11 @@ QUICK_LEXICAL_WEIGHT = settings.PERTINENCE_LEXICAL_WEIGHT
 
 def _noop(phase: str, data: dict) -> None:
     pass
+
+
+def _since(started: float) -> float:
+
+    return round(time.perf_counter() - started, 3)
 
 
 def _comparable(url: str) -> str:
@@ -93,13 +100,27 @@ class EvidenceRetriever:
         context: ArticleContext | None = None,
         language: str | None = None,
         on_phase: Optional[OnPhase] = None,
+        deadline: Deadline | None = None,
     ) -> RetrievalResult:
+        """
+        `deadline` is the claim's clock (fact_checker/deadline.py): the
+        pages are waited for only until retrieval's share of it is spent.
+
+        Every step's seconds go out with the events - each query's in
+        `web_results.queryTimings`, the claim's embedding, the search, the
+        internal corpus and the pre-rank in `web_results.timings`, each
+        page's in `sources_scraped` - so the live view can show where a
+        claim's search time went, query by query.
+        """
 
         thresholds = thresholds or PipelineThresholds()
 
         report = on_phase or _noop
 
         max_evidence = thresholds.max_evidence_per_claim
+
+        timings: dict[str, float] = {}
+        query_timings: list[dict] = []
 
         # Announced before the search runs, not after: the search is the
         # slow part, and this is what lets a second screen show what is
@@ -129,9 +150,13 @@ class EvidenceRetriever:
         # marathon's prize money; the same sentence prefixed with
         # "farmear aura" is not. The ranker reuses this vector, so the
         # pertinence gate judges the same contextualised claim.
+        started = time.perf_counter()
+
         claim_embedding = self.embeddings.encode(
             contextualised_claim(claim, context, language)
         )
+
+        timings["claimEmbedding"] = _since(started)
 
         search_unavailable = False
 
@@ -139,30 +164,41 @@ class EvidenceRetriever:
 
             nonlocal search_unavailable
 
+            started = time.perf_counter()
+
             try:
                 return self.search_provider.search(
                     claim,
                     thresholds,
                     context=context,
                     language=language,
+                    timings=query_timings,
                 )
             except SearchUnavailableError:
                 # Not fatal: the internal corpus is looked up regardless,
                 # and the claim is still checked against whatever it has.
                 search_unavailable = True
                 return []
+            finally:
+                timings["search"] = _since(started)
 
-        web_evidence, internal_evidence = bounded_map(
-            lambda fetch: fetch(),
-            [
-                search_web,
-                lambda: self.vector_retriever.retrieve(
+        def search_internal() -> list[Evidence]:
+
+            started = time.perf_counter()
+
+            try:
+                return self.vector_retriever.retrieve(
                     claim,
                     thresholds=thresholds,
                     exclude_url=context.url if context and context.url else None,
                     embedding=claim_embedding,
-                ),
-            ],
+                )
+            finally:
+                timings["internal"] = _since(started)
+
+        web_evidence, internal_evidence = bounded_map(
+            lambda fetch: fetch(),
+            [search_web, search_internal],
             max_workers=2,
             thread_name_prefix="evidence-source",
         )
@@ -179,6 +215,8 @@ class EvidenceRetriever:
                 "internalCount": 0,
                 "results": [],
                 "searchUnavailable": search_unavailable,
+                "timings": timings,
+                "queryTimings": query_timings,
             })
             return RetrievalResult(
                 kept=[],
@@ -188,9 +226,15 @@ class EvidenceRetriever:
                 search_unavailable=search_unavailable,
             )
 
-        scores = self._quick_scores(
-            claim, candidates, claim_embedding, language, context
+        started = time.perf_counter()
+
+        scores = (
+            self._lexical_scores(claim, candidates, language, context)
+            if thresholds.evidence_prerank == "lexical"
+            else self._quick_scores(claim, candidates, claim_embedding, language, context)
         )
+
+        timings["prerank"] = _since(started)
 
         prescored = sorted(
             candidates,
@@ -210,6 +254,10 @@ class EvidenceRetriever:
                 {**source_summary(evidence), "quickScore": scores[id(evidence)]}
                 for evidence in prescored
             ],
+            # Seconds per step and per query: what the live view shows
+            # as the time this claim's search took.
+            "timings": timings,
+            "queryTimings": query_timings,
         })
 
         web_ranked = [
@@ -223,23 +271,45 @@ class EvidenceRetriever:
         top_web = web_ranked[:max_evidence]
         cut_web = web_ranked[max_evidence:]
 
-        report("scraping_sources", {
-            "claim": claim.text,
-            "sources": [
-                {"url": evidence.url, "domain": evidence.domain}
-                for evidence in top_web
-            ],
-        })
+        if thresholds.fetch_evidence_pages:
 
-        scraped = self.scraper.enrich(top_web)
+            # How long the pages may take: what is left of retrieval's
+            # share of the claim's deadline, or as long as they take.
+            wait = deadline.retrieval_left() if deadline else None
 
-        report("sources_scraped", {
-            "claim": claim.text,
-            "sources": [
-                {"url": evidence.url, "scraped": bool(evidence.content)}
-                for evidence in scraped
-            ],
-        })
+            report("scraping_sources", {
+                "claim": claim.text,
+                "sources": [
+                    {"url": evidence.url, "domain": evidence.domain}
+                    for evidence in top_web
+                ],
+                "wait": None if wait is None else round(wait, 3),
+            })
+
+            started = time.perf_counter()
+            page_timings: list[dict] = []
+
+            scraped = self.scraper.enrich(top_web, wait=wait, timings=page_timings)
+
+            outcomes = {timing["url"]: timing for timing in page_timings}
+
+            report("sources_scraped", {
+                "claim": claim.text,
+                "sources": [
+                    {
+                        "url": evidence.url,
+                        "scraped": bool(evidence.content),
+                        "seconds": outcomes.get(evidence.url, {}).get("seconds"),
+                        "outcome": outcomes.get(evidence.url, {}).get("outcome"),
+                    }
+                    for evidence in scraped
+                ],
+                "seconds": _since(started),
+            })
+
+        else:
+            # Judged on their snippets alone: no page fetched or parsed.
+            scraped = top_web
 
         internal = [
             evidence
@@ -351,6 +421,32 @@ class EvidenceRetriever:
             kept.append(item)
 
         return kept, dropped
+
+    @staticmethod
+    def _lexical_scores(
+        claim: Claim,
+        candidates: list[Evidence],
+        language: str | None,
+        context: ArticleContext | None = None,
+    ) -> dict[int, float]:
+        """
+        The funnel's score from the claim's terms alone, no embedding
+        (`evidence_prerank: lexical`). The embedding pass cost ~6.5 s a
+        claim on the CPU to order ~20 snippets (performance.md), when the
+        pages it picks are judged again by the ranker, which embeds them
+        anyway. Fusion breaks ties: a page several queries agreed on goes
+        first among pages that cover the claim equally.
+        """
+
+        anchors, content = claim_terms(claim, language, context)
+
+        return {
+            id(evidence): (
+                coverage(f"{evidence.title}. {evidence.snippet}".strip(), anchors, content)
+                + 0.01 * (evidence.fusion_score or 0.0)
+            )
+            for evidence in candidates
+        }
 
     def _quick_scores(
         self,

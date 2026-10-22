@@ -40,7 +40,7 @@ the permit belongs inside `fn`, not around the pool.
 from __future__ import annotations
 
 import threading
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from contextlib import contextmanager
 from typing import Callable, Iterable, TypeVar
 
@@ -48,6 +48,14 @@ from src.config.settings import settings
 
 T = TypeVar("T")
 R = TypeVar("R")
+
+
+class PermitTimeout(TimeoutError):
+    """
+    A permit was not free within the time the caller had left. Raised
+    only when the caller passed a timeout: a claim with a deadline would
+    rather say "not checked" than queue past it.
+    """
 
 
 class BoundedResource:
@@ -67,13 +75,19 @@ class BoundedResource:
         self._semaphore = threading.Semaphore(limit) if limit > 0 else None
 
     @contextmanager
-    def permit(self):
+    def permit(self, timeout: float | None = None):
+        """
+        Held for the `with` block. `timeout` is how long to wait for it
+        before PermitTimeout; None waits as long as it takes, as every
+        caller did before claims had a deadline.
+        """
 
         if self._semaphore is None:
             yield
             return
 
-        self._semaphore.acquire()
+        if not self._semaphore.acquire(timeout=timeout):
+            raise PermitTimeout(f"no {self.name} permit within {timeout:.1f} s")
 
         try:
             yield
@@ -125,6 +139,8 @@ def bounded_map(
     items: Iterable[T],
     max_workers: int,
     thread_name_prefix: str = "pipeline",
+    timeout: float | None = None,
+    late: Callable[[T], R] | None = None,
 ) -> list[R]:
     """
     `fn` over `items`, concurrently, **results in input order**.
@@ -137,20 +153,53 @@ def bounded_map(
     Exceptions propagate, as they would from a list comprehension - the
     callers here already handle failure per item where a failure is
     expected (EvidenceScraper) rather than pushing it up.
+
+    `timeout`, with `late`: stop waiting after that many seconds, and put
+    `late(item)` in the place of every item not finished by then - still
+    in input order. The unfinished calls are not stopped (a thread cannot
+    be), they finish in the background and their results are dropped;
+    what they hold (a SCRAPE permit, a page fetch) ends with them. A claim
+    with a deadline uses this so one slow host cannot take the claim past
+    it (docs/decisions/performance.md, "The 20-second fact-check").
     """
 
     materialised = list(items)
 
+    if timeout is not None and late is None:
+        raise ValueError("bounded_map: a timeout needs `late`, what stands in for an unfinished item")
+
     # A pool for zero or one item is pure overhead, and - more usefully -
     # keeps the single-claim and single-source paths exercising plain
-    # synchronous code in tests.
-    if len(materialised) <= 1:
+    # synchronous code in tests. Not with a timeout: one slow item is
+    # exactly what it is for.
+    if len(materialised) <= 1 and timeout is None:
         return [fn(item) for item in materialised]
+
+    if not materialised:
+        return []
 
     workers = max(1, min(max_workers, len(materialised)))
 
-    with ThreadPoolExecutor(
+    if timeout is None:
+        with ThreadPoolExecutor(
+            max_workers=workers,
+            thread_name_prefix=thread_name_prefix,
+        ) as executor:
+            return list(executor.map(fn, materialised))
+
+    executor = ThreadPoolExecutor(
         max_workers=workers,
         thread_name_prefix=thread_name_prefix,
-    ) as executor:
-        return list(executor.map(fn, materialised))
+    )
+
+    try:
+        futures = [executor.submit(fn, item) for item in materialised]
+        wait(futures, timeout=max(0.0, timeout))
+        return [
+            future.result() if future.done() else late(item)
+            for future, item in zip(futures, materialised)
+        ]
+    finally:
+        # Not `with`: its exit waits for every thread, which is the wait
+        # the timeout is there to cut. Queued items never start.
+        executor.shutdown(wait=False, cancel_futures=True)

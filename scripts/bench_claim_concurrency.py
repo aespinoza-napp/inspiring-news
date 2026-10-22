@@ -323,7 +323,8 @@ class SelectAll:
         return ClaimSelectionResult(selected=list(claims))
 
 
-def sequential_map(fn, items, max_workers=1, thread_name_prefix="pipeline"):
+def sequential_map(fn, items, max_workers=1, thread_name_prefix="pipeline", timeout=None, late=None):
+    # In turn, so nothing is ever still running at a timeout: `late` unused.
     return [fn(item) for item in items]
 
 

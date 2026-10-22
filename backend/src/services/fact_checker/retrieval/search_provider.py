@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -72,6 +73,7 @@ class SearchProvider:
         thresholds: PipelineThresholds | None = None,
         context: ArticleContext | None = None,
         language: str | None = None,
+        timings: list[dict] | None = None,
     ) -> list[Evidence]:
         """
         Every query in the plan, run concurrently, fused into one ranked
@@ -87,17 +89,25 @@ class SearchProvider:
         Raises SearchUnavailableError only when *every* query failed.
         One that answered - even with nothing - means the search ran, and
         the hits the others found are still evidence.
+
+        `timings`, when given, receives one entry per query in plan
+        order: its kind and text, seconds, how many results, and how it
+        was answered (SearxngClient.last_route) - what the live view
+        shows as the time each search took.
         """
 
         kinds = (thresholds or PipelineThresholds()).query_kinds
 
-        return self.search_queries(self.plan(claim, context, language, kinds), thresholds, language)
+        return self.search_queries(
+            self.plan(claim, context, language, kinds), thresholds, language, timings=timings
+        )
 
     def search_queries(
         self,
         queries: list[PlannedQuery],
         thresholds: PipelineThresholds | None = None,
         language: str | None = None,
+        timings: list[dict] | None = None,
     ) -> list[Evidence]:
         """
         `search`, over queries the caller planned: a second look's
@@ -112,12 +122,17 @@ class SearchProvider:
         if not queries:
             return []
 
-        results = bounded_map(
-            lambda query: self._run_or_failure(query, candidates, language),
+        timed = bounded_map(
+            lambda query: self._timed(query, candidates, language),
             queries,
             max_workers=settings.QUERY_MAX_CONCURRENCY,
             thread_name_prefix="searxng-query",
         )
+
+        results = [result for result, _ in timed]
+
+        if timings is not None:
+            timings.extend(timing for _, timing in timed)
 
         failures = [result for result in results if isinstance(result, SearchUnavailableError)]
 
@@ -130,6 +145,33 @@ class SearchProvider:
         )
 
     ##########################################################
+
+    def _timed(
+        self,
+        query: PlannedQuery,
+        candidates: int,
+        language: str | None,
+    ) -> tuple[list[Evidence] | SearchUnavailableError, dict]:
+        """
+        `_run_or_failure`, and how long it took. Measured in the query's
+        own thread, so the seconds include waiting for a SearXNG permit
+        another claim held - which is part of what this query cost.
+        """
+
+        started = time.perf_counter()
+
+        result = self._run_or_failure(query, candidates, language)
+
+        last_route = getattr(self.client, "last_route", None)
+
+        return result, {
+            "kind": query.kind.value,
+            "query": query.text,
+            "seconds": round(time.perf_counter() - started, 3),
+            "results": None if isinstance(result, SearchUnavailableError) else len(result),
+            "via": last_route() if callable(last_route) else None,
+            "error": str(result) if isinstance(result, SearchUnavailableError) else None,
+        }
 
     def _run_or_failure(
         self,

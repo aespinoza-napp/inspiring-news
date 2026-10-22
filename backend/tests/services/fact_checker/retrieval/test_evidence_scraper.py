@@ -185,3 +185,56 @@ def test_scrapers_given_their_own_extractor_do_not_share_pages():
 
     assert first.enrich([create_evidence(url="https://example.com/a")])[0].content == "A body."
     assert second.enrich([create_evidence(url="https://example.com/a")])[0].content is None
+
+
+# ----------------------------------------------------------------------
+# Waiting only so long, and saying how long each page took (2026-10-22)
+# ----------------------------------------------------------------------
+
+
+def test_a_page_still_loading_at_the_wait_keeps_its_snippet_in_its_place():
+
+    import threading
+
+    release = threading.Event()
+
+    class SlowForB(FakeExtractorService):
+        def extract(self, source, url, thresholds=None, purpose="article"):
+            if url.endswith("/b"):
+                release.wait(5)
+            return News(source_id="web", url=url, title="T", content=f"body of {url}")
+
+    scraper = EvidenceScraper(extractor=SlowForB())
+
+    timings = []
+
+    try:
+        result = scraper.enrich(
+            [create_evidence(url="https://x.com/a"), create_evidence(url="https://x.com/b")],
+            wait=0.3,
+            timings=timings,
+        )
+    finally:
+        release.set()
+
+    assert [item.content for item in result] == ["body of https://x.com/a", None]
+    assert [timing["outcome"] for timing in timings] == ["page", "late"]
+
+
+def test_each_page_says_whether_it_was_fetched_or_already_known():
+
+    news = News(source_id="web", url="https://x.com/a", title="T", content="body")
+
+    scraper = EvidenceScraper(extractor=FakeExtractorService({
+        "https://x.com/a": news,
+        "https://x.com/missing": None,
+    }))
+
+    first, again = [], []
+
+    scraper.enrich([create_evidence(url="https://x.com/a"), create_evidence(url="https://x.com/missing")], timings=first)
+    scraper.enrich([create_evidence(url="https://x.com/a")], timings=again)
+
+    assert [timing["outcome"] for timing in first] == ["page", "snippet"]
+    assert [timing["outcome"] for timing in again] == ["cached"]
+    assert all(timing["seconds"] >= 0 for timing in first + again)

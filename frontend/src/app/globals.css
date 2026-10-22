@@ -4710,3 +4710,131 @@ button.button-link:hover:not(:disabled) {
 .discover-next button.button-link {
   margin-top: 0;
 }
+
+/* ---------- Where the time went (TimingBreakdown.tsx, 2026-10-22) ---------- */
+
+.timing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.timing-bar {
+  display: flex;
+  height: 0.7rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+/* A hairline between segments, so two neighbours never read as one. */
+.timing-seg + .timing-seg {
+  border-left: 2px solid var(--bg);
+}
+
+.timing-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.timing-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.timing-legend strong {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.timing-key {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 2px;
+}
+
+.timing-seg-fetch,
+.timing-seg-search {
+  background: var(--series-1);
+}
+
+.timing-seg-enrich,
+.timing-seg-ranking {
+  background: var(--series-3);
+}
+
+.timing-seg-admission {
+  background: var(--series-7);
+}
+
+.timing-seg-selection {
+  background: var(--series-5);
+}
+
+.timing-seg-factcheck,
+.timing-seg-llm {
+  background: var(--series-2);
+}
+
+.timing-seg-wait {
+  background: color-mix(in oklch, var(--series-2) 40%, var(--bg));
+}
+
+.timing-seg-store,
+.timing-seg-other {
+  background: var(--sentiment-neutral);
+}
+
+/* The article bar's second segment is pages for a claim: one hue per
+   meaning within a bar, the same meaning the same hue across bars. */
+.timing-claim .timing-seg-fetch {
+  background: var(--series-4);
+}
+
+.timing-table {
+  width: 100%;
+  margin-top: 0.6rem;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.timing-table caption {
+  text-align: left;
+  padding-bottom: 0.25rem;
+}
+
+.timing-table th,
+.timing-table td {
+  padding: 0.25rem 0.4rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  text-align: left;
+  vertical-align: top;
+}
+
+.timing-table th {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.timing-table code {
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.timing-num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timing-url {
+  overflow-wrap: anywhere;
+}

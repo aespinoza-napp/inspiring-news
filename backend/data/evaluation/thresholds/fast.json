@@ -1,0 +1,1 @@
+{"verifier_answer": "compact", "evidence_prerank": "lexical", "ranking_text": "passages", "query_kinds": ["anchor", "proposition"], "max_evidence_per_claim": 3, "verifier_excerpt_chars": 400, "claim_deadline_seconds": 30}

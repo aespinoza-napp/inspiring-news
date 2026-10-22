@@ -379,6 +379,44 @@ class Settings(BaseSettings):
     VERIFIER_EXCERPT: Literal["head", "passages"] = "passages"
     VERIFIER_EXCERPT_CHARS: int = 700
 
+    # The speed switches (2026-10-22, docs/decisions/performance.md, "The
+    # 20-second fact-check"). Each default is what every run did before
+    # it existed; `data/evaluation/thresholds/fast.json` turns them on.
+    #
+    # VERIFIER_ANSWER: `full` asks for a stance and a verbatim quote per
+    # source and one or two sentences (~145 answer tokens, the median);
+    # `compact` for a stance per source and a short reason, no quotes
+    # (~50). On a CPU the model writes 6-14 tokens a second, so the answer
+    # is most of a call.
+    VERIFIER_ANSWER: Literal["full", "compact"] = "full"
+    # EVIDENCE_PRERANK: what picks the pages worth fetching from ~20 search
+    # hits. `embedding` embeds every title and snippet with bge-m3 (6.5 s a
+    # claim on the CPU); `lexical` uses the claim's terms alone (no call).
+    EVIDENCE_PRERANK: Literal["embedding", "lexical"] = "embedding"
+    # RANKING_TEXT: what the ranker and the pertinence gate judge of each
+    # source. `head` is its first 2,000 characters; `passages` exactly what
+    # the verifier will read of it (VERIFIER_EXCERPT at VERIFIER_EXCERPT_CHARS):
+    # shorter to embed, and the gate then judges what the model reads.
+    RANKING_TEXT: Literal["head", "passages"] = "head"
+    # FETCH_EVIDENCE_PAGES: false judges search snippets alone, no page
+    # fetched or parsed.
+    FETCH_EVIDENCE_PAGES: bool = True
+    # FACT_CHECK_PROFILE: which named set of the switches below (and of the
+    # query plan, the sources and their excerpt) this environment's runs
+    # take as their defaults (config/thresholds.py, FACT_CHECK_PROFILES).
+    # `thorough` is every default as it was; `fast` and `fast_snippets` are
+    # the 2026-10-22 contest's entries C and D. One line in backend/.env
+    # makes the app fast; a request's own overrides still win, and the
+    # harness reads it too (it logs the profile, and the run key records
+    # the thresholds it produced).
+    FACT_CHECK_PROFILE: Literal["thorough", "fast", "fast_snippets"] = "thorough"
+    # CLAIM_DEADLINE_SECONDS: a claim's whole check, search to verdict,
+    # within this many seconds; 0 is no deadline. Pages not fetched by
+    # half of it keep their snippet, and a model that has not answered by
+    # the end leaves the claim "not checked" (llm_unreachable), never a
+    # verdict.
+    CLAIM_DEADLINE_SECONDS: int = 0
+
     # EvidenceRanker scoring weights (must sum to 1.0)
     #
     # RANKING_LEXICAL_WEIGHT is the newest of the four and the reason the
