@@ -1,4 +1,5 @@
 import re
+import time
 from logging import getLogger
 
 from pydantic import BaseModel, Field
@@ -9,7 +10,7 @@ from src.models.fact_checker.evidence import Evidence, EvidenceStance
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.terms import claim_terms
-from src.services.fact_checker.verification import excerpts
+from src.services.fact_checker.verification import excerpts, per_source
 from src.services.llms import LLMClient, LLMUnavailableError
 
 logger = getLogger(__name__)
@@ -109,6 +110,99 @@ COMPACT_SYSTEM_PROMPT = (
 # MAX_ANSWER_TOKENS would, since an answer cut here is not retried.
 COMPACT_MAX_ANSWER_TOKENS = 200
 
+# The `stated` rules (PipelineThresholds.verifier_rules). The prompts
+# above define neither TRUE nor FALSE and offer no stance for a source
+# that is on the subject but says nothing on the claim's point; on
+# 2026-10-22 the 3B answered FALSE to 21 of 45 true train claims, most
+# explained as "the evidence does not mention ...". These define each
+# verdict by what a source states, and add "silent"; the scorer then
+# holds the verdict to the stances (ConfidenceScorer).
+_STATED_STANCES = (
+    "- supports: the item states what the claim says.\n"
+    "- contradicts: the item states something that cannot be true at the "
+    "same time as the claim - another figure, date, person or outcome for "
+    "the same thing.\n"
+    "- silent: the item is about the claim's subject but does not say "
+    "whether the claim is true.\n"
+    "- unrelated: the item is about a different event, activity or subject, "
+    "even when it shares a place, a date or a figure with the claim.\n\n"
+)
+
+_STATED_VERDICTS = (
+    "Verdicts:\n"
+    "- TRUE: an item supports the claim - its point, and its figures, dates "
+    "and names.\n"
+    "- FALSE: an item contradicts the claim.\n"
+    "- PARTIALLY_TRUE: an item supports the central assertion and another "
+    "contradicts a detail (a figure, a date, an attribution).\n"
+    "- MISLEADING: technically true but deceptive framing or missing "
+    "crucial context.\n"
+    "- UNVERIFIED: no item supports or contradicts the claim.\n"
+    "- Silence is not contradiction: a detail the evidence does not mention "
+    "never makes a claim FALSE.\n\n"
+)
+
+STATED_SYSTEM_PROMPT = (
+    "You are a rigorous fact-checking assistant. You are given a claim "
+    "extracted from a news article, usually with the article's headline "
+    "and opening for context, and a numbered list of evidence "
+    "snippets gathered from the web and from previously verified "
+    "articles. Judge the claim against that evidence, source by source.\n\n"
+    "Respond with ONLY a JSON object with this exact shape:\n"
+    '{"verdict": "TRUE" | "PARTIALLY_TRUE" | "FALSE" | "MISLEADING" | "UNVERIFIED", '
+    '"confidence": <float 0-1>, '
+    '"explanation": "<one or two sentences>", '
+    '"cited_evidence": [<int indices of evidence items your verdict rests on>], '
+    '"assessments": [{"index": <int>, '
+    '"stance": "supports" | "contradicts" | "silent" | "unrelated", '
+    '"quote": "<text copied verbatim from that evidence item, or empty>"}]}\n\n'
+    "Stances, one assessment entry per evidence item you were shown:\n"
+    + _STATED_STANCES
+    + _STATED_VERDICTS
+    + "Rules:\n"
+    "- The claim means what it means inside its article. When the article "
+    "is given, judge the claim about the article's subject, even if the "
+    "sentence itself does not name it.\n"
+    "- A quote MUST be copied word for word from that evidence item. Do "
+    "not paraphrase, translate, correct or shorten it mid-sentence. If "
+    "nothing in the item is worth quoting, use an empty string.\n"
+    "- Never state a fact that is not present in the evidence."
+)
+
+COMPACT_STATED_SYSTEM_PROMPT = (
+    "You are a rigorous fact-checker. You get a claim from a news article, "
+    "usually with the article's headline and opening, and numbered evidence "
+    "from the web. Judge the claim against that evidence only.\n\n"
+    "Respond with ONLY a JSON object:\n"
+    '{"verdict": "TRUE" | "PARTIALLY_TRUE" | "FALSE" | "MISLEADING" | "UNVERIFIED", '
+    '"confidence": <float 0-1>, '
+    '"stances": ["supports" | "contradicts" | "silent" | "unrelated", ...], '
+    '"cited": [<int indices of the evidence your verdict rests on>], '
+    '"reason": "<at most 20 words>"}\n\n'
+    "Stances, one per evidence item, in the order given:\n"
+    + _STATED_STANCES
+    + _STATED_VERDICTS
+    + "- Judge the claim about the article's subject."
+)
+
+# A source's turn is skipped when the claim's deadline leaves less than
+# this for its call (fact_checker's MIN_STAGE_SECONDS, for one source).
+_MIN_CALL_SECONDS = 2.0
+
+
+def system_prompt(thresholds: PipelineThresholds) -> str:
+    """The instructions a run's verifier is sent, by its answer and rules."""
+
+    if thresholds.verifier_answer == "per_source":
+        return per_source.PER_SOURCE_SYSTEM_PROMPT
+
+    stated = thresholds.verifier_rules == "stated"
+
+    if thresholds.verifier_answer == "compact":
+        return COMPACT_STATED_SYSTEM_PROMPT if stated else COMPACT_SYSTEM_PROMPT
+
+    return STATED_SYSTEM_PROMPT if stated else SYSTEM_PROMPT
+
 
 def _is_index(value, evidence: list) -> bool:
     """
@@ -194,13 +288,16 @@ class LLMVerifier:
 
         thresholds = thresholds or PipelineThresholds()
 
+        if thresholds.verifier_answer == "per_source":
+            return self._verify_per_source(claim, evidence, context, thresholds, language, timeout)
+
         compact = thresholds.verifier_answer == "compact"
 
         limits = {"timeout": timeout} if timeout is not None else {}
 
         try:
             result = self.client.complete_json(
-                COMPACT_SYSTEM_PROMPT if compact else SYSTEM_PROMPT,
+                system_prompt(thresholds),
                 self._build_prompt(claim, evidence, context, thresholds, language),
                 max_tokens=COMPACT_MAX_ANSWER_TOKENS if compact else MAX_ANSWER_TOKENS,
                 **limits,
@@ -216,6 +313,109 @@ class LLMVerifier:
             )
 
         return self._normalize(result, evidence).model_copy(update={"call": self._last_call()})
+
+    def _verify_per_source(
+        self,
+        claim: Claim,
+        evidence: list[Evidence],
+        context: ArticleContext | None,
+        thresholds: PipelineThresholds,
+        language: str | None,
+        timeout: float | None,
+    ) -> LLMVerificationResult:
+        """
+        One call per source, then the verdict by per_source's rule. A
+        source whose call failed or came back unusable has no stance, as
+        the list verifier leaves a source without an assessment; only
+        when no call reached the model is the claim "not checked".
+        """
+
+        if not evidence:
+            return LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="No evidence to judge the claim against.",
+            )
+
+        excerpt = self._excerpter(claim, context, thresholds, language)
+        article = self._article_block(context)
+
+        ends_at = None if timeout is None else time.monotonic() + timeout
+
+        answers: list[per_source.SourceAnswer] = []
+
+        for index, item in enumerate(evidence):
+
+            limits = {}
+
+            if ends_at is not None:
+
+                left = ends_at - time.monotonic()
+
+                if left < _MIN_CALL_SECONDS:
+                    answers.append(per_source.SourceAnswer(index=index, unreachable=True))
+                    continue
+
+                limits["timeout"] = left
+
+            try:
+                answer = self.client.complete_json(
+                    per_source.PER_SOURCE_SYSTEM_PROMPT,
+                    per_source.prompt(article, claim.text, item, excerpt(item.content or item.snippet)),
+                    max_tokens=per_source.PER_SOURCE_MAX_ANSWER_TOKENS,
+                    **limits,
+                )
+            except LLMUnavailableError as exc:
+                logger.warning("LLM unreachable while judging source %s: %s", index, exc)
+                answers.append(per_source.SourceAnswer(index=index, call=self._last_call(), unreachable=True))
+                continue
+
+            stance = per_source.stance_of(answer)
+
+            answers.append(per_source.SourceAnswer(
+                index=index,
+                stance=stance,
+                quote=(
+                    self._validate_quote(answer.get("quote"), item)
+                    if stance in (EvidenceStance.SUPPORTS, EvidenceStance.CONTRADICTS)
+                    else None
+                ),
+                call=self._last_call(),
+            ))
+
+        call = per_source.merged_call(answers)
+
+        if all(answer.unreachable for answer in answers):
+            return LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="LLM provider was unreachable; verdict could not be produced.",
+                llm_unreachable=True,
+                call=call,
+            )
+
+        if all(answer.stance is None for answer in answers):
+            return LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation=INVALID_OUTPUT_EXPLANATION,
+                call=call,
+            )
+
+        verdict, confidence, cited = per_source.verdict_from(answers, evidence)
+
+        return LLMVerificationResult(
+            verdict=verdict,
+            confidence=confidence,
+            explanation=per_source.explanation(answers, evidence, language),
+            cited_evidence=cited,
+            assessments=[
+                EvidenceAssessment(index=answer.index, stance=answer.stance, quote=answer.quote)
+                for answer in answers
+                if answer.stance is not None
+            ],
+            call=call,
+        )
 
     def _last_call(self) -> dict | None:
         """The client's record of the call just made, if it keeps one."""

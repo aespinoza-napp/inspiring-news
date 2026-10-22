@@ -57,6 +57,7 @@ from src.evaluation.record import (
     error_record,
     jsonable,
 )
+from src.evaluation.replay import EVIDENCE, RecordingRetriever, ReplayRetriever, load_snapshot
 from src.evaluation.store import ResultsFile, read_json, write_json
 from src.evaluation.usage import UsageMeter, summarise, totals
 from src.services.concurrency import bounded_map
@@ -86,7 +87,12 @@ ORACLE = "oracle"
 # pipeline (closed_book.py): RQ2's first condition. Its own prompt, since
 # the pipeline never asks the model without evidence.
 CLOSED_BOOK = "closed_book"
-MODES = (FULL, RETRIEVAL, ORACLE, CLOSED_BOOK)
+# `replay` hands ranking, the model and the scorer the candidates another
+# run's retrieval found (replay.py), so two verifiers are compared on the
+# same sources: a search, different on every run, moved the same
+# pipeline's accuracy by 8.7 points on the same 69 claims.
+REPLAY = "replay"
+MODES = (FULL, RETRIEVAL, ORACLE, CLOSED_BOOK, REPLAY)
 
 # The "model" of a retrieval-only run: its directory and its records say
 # no model was asked.
@@ -145,6 +151,8 @@ _SPEED_BEFORE = {
     "ranking_text": "head",
     "fetch_evidence_pages": True,
     "claim_deadline_seconds": 0,
+    # What the verifier was told a verdict means, until 2026-10-22.
+    "verifier_rules": "original",
 }
 
 
@@ -156,7 +164,7 @@ def keyed_thresholds(thresholds: PipelineThresholds) -> dict:
     when it is not all three, the only plan there was before; the
     verifier's excerpt (2026-10-21) when it is the first 1,500 characters
     of each source, which every earlier run read; the speed switches
-    (2026-10-22) when they are off.
+    and the verifier's rules (2026-10-22) when they are as before.
     """
 
     dumped = thresholds.model_dump()
@@ -204,6 +212,7 @@ def run_key(
     label: str | None = None,
     loop: bool = False,
     reasoning_effort: str | None = None,
+    replay_of: str | None = None,
 ) -> str:
     """
     The mode, the label, the loop and the reasoning effort count only
@@ -235,6 +244,9 @@ def run_key(
 
     if reasoning_effort:
         keyed["reasoningEffort"] = reasoning_effort
+
+    if replay_of:
+        keyed["replayOf"] = replay_of
 
     return _digest(keyed)[:12]
 
@@ -315,6 +327,10 @@ class RunConfig:
     # own pages when it still disagrees. Keyed: its records hold more.
     loop: bool = False
 
+    # The run directory whose evidence a replay run reads (`--replay`).
+    # Its key is part of this run's: one replay per run replayed.
+    replay_of: Path | None = None
+
     @property
     def key(self) -> str:
 
@@ -324,6 +340,7 @@ class RunConfig:
             # The mapping LLMClient reads for the same model, so the key
             # says what every call was sent.
             reasoning_effort=settings.LLM_REASONING_EFFORT.get(self.model),
+            replay_of=Path(self.replay_of).name if self.replay_of else None,
         )
 
     @property
@@ -402,12 +419,16 @@ class HarnessRunner:
         on_record: Callable[[dict], None] | None = None,
         commit: str | None = None,
         closed_book=None,
+        recorder=None,
     ):
         self.config = config
         self.checker = checker
         self.claims = claims
         # A ClosedBookJudge for a closed-book run; None otherwise.
         self.closed_book = closed_book
+        # The checker's RecordingRetriever when this run keeps its
+        # evidence for a later replay (replay.py); None otherwise.
+        self.recorder = recorder
         self.meter = meter or UsageMeter()
         self.provider = provider
         self.max_workers = max_workers or settings.CLAIM_MAX_CONCURRENCY
@@ -417,6 +438,7 @@ class HarnessRunner:
 
         self.directory = config.directory
         self.results = ResultsFile(self.directory / RESULTS)
+        self.evidence = ResultsFile(self.directory / EVIDENCE)
 
         self._stop = threading.Event()
 
@@ -467,6 +489,9 @@ class HarnessRunner:
         self.directory.mkdir(parents=True, exist_ok=True)
 
         set_aside = self.results.set_aside() if fresh else None
+
+        if fresh:
+            self.evidence.set_aside()
 
         todo = self.pending(limit=limit, retry_unavailable=retry_unavailable)
 
@@ -574,6 +599,9 @@ class HarnessRunner:
 
                 entities = round(time.perf_counter() - started, 4)
 
+                if self.recorder is not None:
+                    self.recorder.begin()
+
                 if self.config.mode == ORACLE:
                     check, read = self.checker.check_against(
                         claim,
@@ -599,6 +627,8 @@ class HarnessRunner:
 
                 timing = self._timing(started_at, started, entities)
                 first_calls = len(calls)
+
+                self._keep_evidence(row)
 
                 loop = self._loop(row, claim, check) if self.config.loop else None
 
@@ -631,6 +661,14 @@ class HarnessRunner:
                 )
 
         return self._keep(record)
+
+    def _keep_evidence(self, row: DatasetRow) -> None:
+        """This claim's retrieval, for a later replay, when it was kept."""
+
+        entry = self.recorder.taken() if self.recorder is not None else None
+
+        if entry is not None:
+            self.evidence.append({"id": row.id, "claim": row.claim, **entry})
 
     def _keep(self, record: dict) -> str:
         """Append one finished record, count it for the session, report it."""
@@ -923,8 +961,8 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
     from src.services.claim_service import ClaimService
     from src.services.fact_checker.fact_checker import FactChecker
     from src.services.fact_checker.verification.llm_verification import (
-        SYSTEM_PROMPT,
         LLMVerifier,
+        system_prompt,
     )
     from src.services.llms import LLMClient
     from src.evaluation.usage import metered
@@ -953,6 +991,18 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
 
     checker = FactChecker(repository, verifier=verifier)
 
+    recorder = None
+
+    if config.mode == REPLAY:
+        checker.evidence_retriever = ReplayRetriever(
+            load_snapshot(config.replay_of), checker.evidence_retriever,
+        )
+    elif config.mode in (FULL, RETRIEVAL):
+        # Every run that searches keeps what it found, so any of them can
+        # be replayed under another verifier.
+        recorder = RecordingRetriever(checker.evidence_retriever)
+        checker.evidence_retriever = recorder
+
     claims = ClaimService(checker, entity_extractor=EntityExtractor())
 
     runner = HarnessRunner(
@@ -962,12 +1012,16 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
         meter=meter,
         provider=provider_of(settings.LLM_BASE_URL),
         closed_book=closed_book,
+        recorder=recorder,
         manifest_extra={
             "corpus": {"mode": config.corpus, "points": repository.count()},
+            "replayOf": str(config.replay_of) if config.replay_of else None,
             # The verifier's prompt is the pipeline's, not the harness's,
             # so it is recorded rather than keyed: the commit already
             # says which prompt ran, and this says it at a glance.
-            "verifierPromptSha256": hashlib.sha256(SYSTEM_PROMPT.encode("utf-8")).hexdigest(),
+            "verifierPromptSha256": hashlib.sha256(
+                system_prompt(config.thresholds).encode("utf-8")
+            ).hexdigest(),
         },
     )
 

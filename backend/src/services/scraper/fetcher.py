@@ -20,6 +20,35 @@ from src.services.scraper.url_guard import BlockedURL, UnresolvableHost, check_u
 
 USER_AGENT = "Mozilla/5.0 InspiringNewsBot/1.0"
 
+# Content types no parser here can read. A PDF decoded as text went down
+# the cascade on 2026-10-22 and BeautifulSoup returned its bytes as the
+# article: 167 million characters of "%PDF-1.5 ..." became an evidence
+# page for two train claims, ranked on its first 2,000 characters and
+# searched for passages to show the verifier. Refused before the body is
+# read, so a 50 MB report is not downloaded to be thrown away.
+NOT_PAGES = (
+    "application/pdf",
+    "application/octet-stream",
+    "application/zip",
+    "application/msword",
+    "application/vnd.",
+    "image/",
+    "audio/",
+    "video/",
+    "font/",
+)
+
+# A server that labels a PDF as HTML still sends a PDF.
+PDF_MAGIC = "%PDF-"
+
+
+class NotAPage(Exception):
+    """The URL answered with a file, not a page: nothing to extract."""
+
+    def __init__(self, url: str, status: int, what: str):
+        super().__init__(f"not a web page ({what}): {url}")
+        self.status = status
+
 
 @dataclass(frozen=True)
 class FetchedPage:
@@ -50,16 +79,34 @@ class Fetcher:
 
         for _ in range(self.MAX_REDIRECTS + 1):
 
+            # Streamed, so the headers can refuse a file before its body
+            # is read; a page's body is read whole by `.text` below.
             response = requests.get(
                 check_url(url),
                 timeout=self.TIMEOUT,
                 allow_redirects=False,
                 headers={"User-Agent": USER_AGENT},
+                stream=True,
             )
 
             if not response.is_redirect:
+
                 response.raise_for_status()
-                return FetchedPage(url=url, status=response.status_code, html=response.text)
+
+                kind = (response.headers.get("content-type") or "").split(";")[0].strip().lower()
+
+                if kind.startswith(NOT_PAGES):
+                    response.close()
+                    raise NotAPage(url, response.status_code, kind)
+
+                html = response.text
+
+                if html.lstrip()[:len(PDF_MAGIC)] == PDF_MAGIC:
+                    raise NotAPage(url, response.status_code, "a PDF")
+
+                return FetchedPage(url=url, status=response.status_code, html=html)
+
+            response.close()
 
             url = requests.compat.urljoin(url, response.headers["location"])
 
@@ -78,6 +125,10 @@ def classify(exc: Exception) -> tuple[Outcome, int | None, str]:
 
     if isinstance(exc, BlockedURL):
         return Outcome.BLOCKED, None, str(exc)
+
+    # Fetched, and nothing in it a parser could read as an article.
+    if isinstance(exc, NotAPage):
+        return Outcome.NO_CONTENT, exc.status, str(exc)
 
     if isinstance(exc, requests.HTTPError):
         status = exc.response.status_code if exc.response is not None else None

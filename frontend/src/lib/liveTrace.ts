@@ -232,7 +232,8 @@ function toSource(raw: Data): TraceSource {
     stance:
       raw.stance === "supports" ||
       raw.stance === "contradicts" ||
-      raw.stance === "unrelated"
+      raw.stance === "unrelated" ||
+      raw.stance === "silent"
         ? raw.stance
         : null,
     quote: asString(raw.quote),

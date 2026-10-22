@@ -33,6 +33,7 @@ const STANCE_LABELS: Record<EvidenceStance, string> = {
   supports: "Supports",
   contradicts: "Contradicts",
   unrelated: "Unrelated",
+  silent: "Silent on it",
 };
 
 /**

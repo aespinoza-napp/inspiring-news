@@ -234,7 +234,7 @@ const en: ReaderText = {
   languageName: { en: "English", es: "Spanish", ca: "Catalan" },
   unknownLanguage: "Unknown language",
   topic: {},
-  stance: { supports: "supports the claim", contradicts: "contradicts the claim", unrelated: "judged unrelated" },
+  stance: { supports: "supports the claim", contradicts: "contradicts the claim", unrelated: "judged unrelated", silent: "says nothing on the claim" },
   queryKind: { anchor: "who & what", proposition: "what it claims", refutation: "counter-evidence" },
 
   switchLabel: "Language of this page",
@@ -523,7 +523,7 @@ const es: ReaderText = {
     Fitness: "Actividad física",
     "Public Health": "Salud pública",
   },
-  stance: { supports: "respalda la afirmación", contradicts: "contradice la afirmación", unrelated: "considerada no relacionada" },
+  stance: { supports: "respalda la afirmación", contradicts: "contradice la afirmación", unrelated: "considerada no relacionada", silent: "no dice nada sobre la afirmación" },
   queryKind: { anchor: "quién y qué", proposition: "lo que afirma", refutation: "pruebas en contra" },
 
   switchLabel: "Idioma de esta página",
@@ -825,7 +825,7 @@ const ca: ReaderText = {
     Fitness: "Activitat física",
     "Public Health": "Salut pública",
   },
-  stance: { supports: "dona suport a l'afirmació", contradicts: "contradiu l'afirmació", unrelated: "considerada no relacionada" },
+  stance: { supports: "dona suport a l'afirmació", contradicts: "contradiu l'afirmació", unrelated: "considerada no relacionada", silent: "no diu res sobre l'afirmació" },
   queryKind: { anchor: "qui i què", proposition: "el que afirma", refutation: "proves en contra" },
 
   switchLabel: "Llengua d'aquesta pàgina",

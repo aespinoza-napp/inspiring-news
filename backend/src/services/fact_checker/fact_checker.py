@@ -23,6 +23,7 @@ from src.services.fact_checker.second_look import SecondLooker, needs_second_loo
 from src.services.fact_checker.verification.confidence_scorer import (
     ConfidenceScorer,
     below_evidence_floor,
+    holds_to_stances,
 )
 from src.services.fact_checker.verification.llm_verification import (
     LLMVerificationResult,
@@ -648,10 +649,17 @@ class FactChecker:
             # plenty.
             if check.verdict != Verdict.UNVERIFIED:
                 reason = "a cited source contradicts part of it"
-            elif llm_result.cited_evidence:
-                reason = "it cited only sources it judged unrelated to the claim"
-            else:
+            elif not llm_result.cited_evidence:
                 reason = "it cited no evidence"
+            elif holds_to_stances(thresholds) and llm_result.verdict == Verdict.FALSE:
+                # The stated rules (verifier_rules): no FALSE without a
+                # cited source that contradicts, no TRUE without one that
+                # supports (ConfidenceScorer).
+                reason = "no source it cited states otherwise"
+            elif holds_to_stances(thresholds) and ConfidenceScorer.cited_stances(llm_result):
+                reason = "no source it cited states it"
+            else:
+                reason = "it cited only sources it judged unrelated to the claim"
 
             return (
                 PipelineStage.CONFIDENCE_RECALIBRATION,

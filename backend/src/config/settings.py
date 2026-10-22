@@ -387,8 +387,20 @@ class Settings(BaseSettings):
     # source and one or two sentences (~145 answer tokens, the median);
     # `compact` for a stance per source and a short reason, no quotes
     # (~50). On a CPU the model writes 6-14 tokens a second, so the answer
-    # is most of a call.
-    VERIFIER_ANSWER: Literal["full", "compact"] = "full"
+    # is most of a call. `per_source` asks about one source at a time
+    # (does it state the claim, state otherwise, or say nothing on it?)
+    # with a stance and a quote, and the verdict follows from the stances
+    # by a written rule (verification/per_source.py).
+    VERIFIER_ANSWER: Literal["full", "compact", "per_source"] = "full"
+    # VERIFIER_RULES: `original` is the prompt every run had until
+    # 2026-10-22, which defines neither TRUE nor FALSE and has no stance
+    # for a source that is on the subject but silent on the claim's point;
+    # the 3B then answered FALSE to 21 of 45 true train claims, most of them
+    # explained as "the evidence does not mention ...". `stated` defines
+    # each verdict by what a source states, adds the "silent" stance, and
+    # the scorer holds the model to it: no FALSE without a cited source
+    # that contradicts, no TRUE without one that supports.
+    VERIFIER_RULES: Literal["original", "stated"] = "original"
     # EVIDENCE_PRERANK: what picks the pages worth fetching from ~20 search
     # hits. `embedding` embeds every title and snippet with bge-m3 (6.5 s a
     # claim on the CPU); `lexical` uses the claim's terms alone (no call).

@@ -428,6 +428,8 @@ def test_a_run_with_every_query_kind_keeps_the_key_it_had_before_the_switch(tmp_
         # The speed switches (2026-10-22), off: as every earlier run did.
         "verifier_answer", "evidence_prerank", "ranking_text",
         "fetch_evidence_pages", "claim_deadline_seconds",
+        # What a verdict means (2026-10-22), as every earlier run was told.
+        "verifier_rules",
     }
 
     before = {name: value for name, value in thresholds.model_dump().items() if name not in added_later}

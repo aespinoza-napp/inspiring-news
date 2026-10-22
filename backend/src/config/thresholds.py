@@ -320,8 +320,16 @@ class PipelineThresholds(BaseModel):
     # pages, chosen by words alone, judged on their passages, a shorter
     # answer - and whether that is worth the seconds is measured on the
     # tuning half, as the excerpt was: docs/decisions/performance.md.
-    verifier_answer: Literal["full", "compact"] = Field(
+    verifier_answer: Literal["full", "compact", "per_source"] = Field(
         default_factory=lambda: settings.VERIFIER_ANSWER,
+    )
+
+    # What the verifier is told a verdict means (settings.py has why).
+    # Per-run because it changes the verdicts themselves, and whether it
+    # judges better is measured by replaying one run's evidence
+    # (evaluation/replay.py).
+    verifier_rules: Literal["original", "stated"] = Field(
+        default_factory=lambda: settings.VERIFIER_RULES,
     )
 
     evidence_prerank: Literal["embedding", "lexical"] = Field(
@@ -417,7 +425,8 @@ class ThresholdOverrides(BaseModel):
     query_kinds: Optional[tuple[str, ...]] = Field(None)
     verifier_excerpt: Optional[Literal["head", "passages"]] = Field(None)
     verifier_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
-    verifier_answer: Optional[Literal["full", "compact"]] = Field(None)
+    verifier_answer: Optional[Literal["full", "compact", "per_source"]] = Field(None)
+    verifier_rules: Optional[Literal["original", "stated"]] = Field(None)
     evidence_prerank: Optional[Literal["embedding", "lexical"]] = Field(None)
     ranking_text: Optional[Literal["head", "passages"]] = Field(None)
     fetch_evidence_pages: Optional[bool] = Field(None)

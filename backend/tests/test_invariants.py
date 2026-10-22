@@ -555,6 +555,15 @@ PHASE_FORWARDING_FILES = {
     "services/fact_checker/fact_checker.py",
 }
 
+# Files that say again events the pipeline already said: the evaluation
+# harness's replay (evaluation/replay.py) keeps a claim's retrieval
+# events, names and all, and re-emits them when it replays that claim.
+# Every name it passes was a literal at the pipeline's own call site; it
+# must never name a phase of its own, which the test below holds it to.
+PHASE_REPLAYING_FILES = {
+    "evaluation/replay.py",
+}
+
 
 def test_every_on_phase_caller_passes_a_string_literal_phase():
     """
@@ -568,7 +577,7 @@ def test_every_on_phase_caller_passes_a_string_literal_phase():
 
     for path in PYTHON_FILES:
 
-        if relative(path) in PHASE_FORWARDING_FILES:
+        if relative(path) in PHASE_FORWARDING_FILES | PHASE_REPLAYING_FILES:
             continue
 
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -650,6 +659,33 @@ def test_a_phase_forwarding_file_still_names_its_own_phases():
         "A forwarded phase name must be a plain parameter, not a computed "
         "expression:\n  " + "\n  ".join(offenders)
     )
+
+
+def test_a_phase_replaying_file_names_no_phase_of_its_own():
+    """
+    The replay exemption covers saying recorded events again, nothing
+    else: a literal phase in a replaying file would be a stage the
+    pipeline never had, emitted only under replay.
+    """
+
+    for name in PHASE_REPLAYING_FILES:
+
+        path = SRC / name
+
+        assert path.exists(), f"{name} is exempted but does not exist"
+
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+
+        literals = [
+            node.lineno
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and (getattr(node.func, "id", None) or getattr(node.func, "attr", None)) in PHASE_EMITTERS
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+        ]
+
+        assert literals == [], f"{name} names phases of its own at lines {literals}"
 
 
 # ----------------------------------------------------------------------

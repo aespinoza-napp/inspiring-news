@@ -170,6 +170,7 @@ Changed from the design:
 backend/data/evaluation/runs/<dataset-stem>/<model-slug>/<key>/
     run.json        manifest
     results.jsonl   one line per claim, appended
+    evidence.jsonl  each claim's retrieval, for a replay (runs that search, since 2026-10-22)
     vector_db/      the corpus snapshot
 ```
 
@@ -227,6 +228,46 @@ stopped after claim k resumes without calling the checker for claims
 `check_claim` with `language='es'`; custom rows pass `articleUrl` as
 `context.url` and x-fact rows no context; every field above is filled
 by the real retriever, ranker, verifier and scorer over the shared fakes.
+
+## Replay: the same evidence, another verifier (2026-10-22)
+
+Two runs of the same pipeline over the same claims differ by their web
+search first of all: the thorough defaults scored 42.0% on the 69 train
+claims on 19 Oct and 50.7% on 22 Oct. A difference of that size between
+two verifiers, each with its own search, says nothing about either.
+
+So every run that searches (`full`, `retrieval`) keeps, per claim, what
+`EvidenceRetriever.retrieve` handed the rest of the pipeline:
+`evidence.jsonl` beside `results.jsonl`, one line per claim - the
+candidates with the page text the scraper read, what retrieval cut and
+why, the queries, whether search was unavailable, and the events the
+retriever said on the way. About 70 KB a claim; `runs/` is gitignored.
+
+`cli run --replay <run dir>` then answers `retrieve` from that file
+(`src/evaluation/replay.py`, `ReplayRetriever`) and runs everything
+after it for real: the ranker, the verifier, the scorer. The retriever's
+events are said again in order, so a replayed record has the replayed
+run's queries, candidates and retrieval figures, and its report's
+retrieval section is the same. What differs is the ranking's, the
+model's and the scorer's alone.
+
+- **Keyed** by the replayed run's key (`replayOf`) and `mode: replay`:
+  one replay run per run replayed, per thresholds and label.
+- **No search, ever.** A claim missing from the file is an error record;
+  a replay that quietly searched would compare two retrievals again.
+  `--loop` is refused (the second look searches).
+- **Not kept**: the claim's embedding. The ranker computes it again (one
+  call to `inference/`, the same vector).
+- **Read only.** The file is read without the resume logic's repair of a
+  torn last line, so a run still being written can be replayed safely.
+- The model is asked at temperature 0, so replaying a run under its own
+  thresholds measures how much the model itself varies on fixed evidence.
+
+The first use is the verifier's FALSE (`data/evaluation/experiments/verifier/`):
+the 3B answered FALSE to 21 of 45 true train claims, and two ways of
+asking it are compared there on one run's evidence.
+
+Proven by `backend/tests/evaluation/test_replay.py`.
 
 ## Cost, latency and tokens
 

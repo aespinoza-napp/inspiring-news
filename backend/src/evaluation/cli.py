@@ -15,6 +15,8 @@ The evaluation harness's one command.
     uv run python -m src.evaluation.cli consistency --run <test run> --run <recheck run>
     uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split train --oracle --model <m>
     uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split test --closed-book --model <m>
+    uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split train --replay <run dir> \
+        --thresholds <verifier.json> --label <strategy>
 
     uv run python -m src.evaluation.cli run --dataset <set> --retrieval-only --label <strategy>
     uv run python -m src.evaluation.cli retrieval --run <dir> --run <dir> ...
@@ -62,6 +64,7 @@ from src.evaluation.runner import (
     FULL,
     CLOSED_BOOK,
     ORACLE,
+    REPLAY,
     RETRIEVAL,
     RETRIEVAL_ONLY_MODEL,
     SNAPSHOT,
@@ -103,6 +106,11 @@ def cmd_run(args: argparse.Namespace) -> int:
         # Three evidence conditions, one per run; the loop needs evidence.
         raise SystemExit("--closed-book takes none of --retrieval-only, --oracle or --loop")
 
+    if args.replay and (args.retrieval_only or args.oracle or args.closed_book or args.loop):
+        # A replay is the searched evidence of another run; the loop's
+        # second look would search again.
+        raise SystemExit("--replay takes none of --retrieval-only, --oracle, --closed-book or --loop")
+
     # backend/.env may make the app fast (FACT_CHECK_PROFILE), and the
     # harness reads the same file: say so, since a thesis run is meant to be
     # the pipeline as the author chose it. The run key records the result.
@@ -124,10 +132,12 @@ def cmd_run(args: argparse.Namespace) -> int:
             RETRIEVAL if args.retrieval_only
             else ORACLE if args.oracle
             else CLOSED_BOOK if args.closed_book
+            else REPLAY if args.replay
             else FULL
         ),
         label=args.label,
         loop=args.loop,
+        replay_of=Path(args.replay) if args.replay else None,
     )
 
     runner, close = build_runner(config)
@@ -398,6 +408,13 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help="no evidence and no pipeline: the model judges each claim from the claim alone "
         "(RQ2's closed-book condition); keyed like --oracle",
+    )
+    run.add_argument(
+        "--replay",
+        metavar="RUN_DIR",
+        help="no search: each claim's candidates as RUN_DIR's retrieval found them (its "
+        "evidence.jsonl); ranking, the model and the scorer run again, so two verifiers "
+        "are compared on the same sources. Keyed by RUN_DIR's key",
     )
     run.add_argument(
         "--label",

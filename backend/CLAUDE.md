@@ -126,6 +126,17 @@ detection, where a silently empty result corrupts a decision).
   `fetch_evidence_pages` - and the presets that combine them
   (`data/evaluation/thresholds/fast.json`) are in
   `docs/decisions/performance.md`, "The 20-second fact-check".
+- **What a verdict means is a threshold too** (`verifier_rules`):
+  `original` is the prompt as it always was; `stated` defines each verdict
+  by what a source states, adds the `silent` stance (`EvidenceStance`),
+  and `ConfidenceScorer` turns a FALSE no cited source contradicts, or a
+  TRUE none supports, into UNVERIFIED (`holds_to_stances`).
+  `verifier_answer=per_source` asks one short question per source
+  (`verification/per_source.py`) and makes the verdict from the stances
+  by a written rule; its calls run on the claim's own thread, because the
+  harness meters calls by thread. Compare verifiers with
+  `cli run --replay <run>` (same evidence, `docs/decisions/evaluation.md`,
+  "Replay"), never with two searched runs.
 - **Across claims those events interleave**, because the claims run at
   once. Two things make a client's life possible and both are
   load-bearing: `claims_selected` carries the whole claim set with

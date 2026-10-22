@@ -10,6 +10,16 @@ from src.services.fact_checker.verification.llm_verification import LLMVerificat
 _DEFINITIVE = (Verdict.TRUE, Verdict.PARTIALLY_TRUE, Verdict.FALSE, Verdict.MISLEADING)
 
 
+def holds_to_stances(thresholds: PipelineThresholds) -> bool:
+    """
+    Whether a verdict must stand on what its cited sources state: the
+    `stated` rules, and the per-source verifier, whose verdict is made
+    from the stances (verification/per_source.py).
+    """
+
+    return thresholds.verifier_rules == "stated" or thresholds.verifier_answer == "per_source"
+
+
 def below_evidence_floor(evidence: list, thresholds: PipelineThresholds) -> bool:
     """
     Too little evidence to judge: the verdict is forced to UNVERIFIED and
@@ -105,10 +115,26 @@ class ConfidenceScorer:
 
         verdict = llm_result.verdict
 
+        cited_stances = self.cited_stances(llm_result)
+
         # A definitive verdict with zero citations, despite evidence being
         # available, is an ungrounded assertion - don't trust it. Citing
         # only sources the model itself judged unrelated is the same thing.
         if verdict in _DEFINITIVE and not grounded:
+            verdict = Verdict.UNVERIFIED
+            confidence = min(confidence, 0.4)
+
+        # The stated rules, held: a FALSE is a source stating otherwise, a
+        # TRUE a source stating it. Told so, the 3B still answered FALSE
+        # resting on sources it called silent; that is the very verdict
+        # the rules exist to stop, so it is not left to the prompt alone.
+        elif holds_to_stances(thresholds) and (
+            (verdict == Verdict.FALSE and EvidenceStance.CONTRADICTS not in cited_stances)
+            or (
+                verdict in (Verdict.TRUE, Verdict.PARTIALLY_TRUE)
+                and EvidenceStance.SUPPORTS not in cited_stances
+            )
+        ):
             verdict = Verdict.UNVERIFIED
             confidence = min(confidence, 0.4)
 
@@ -147,7 +173,8 @@ class ConfidenceScorer:
     def _grounded_citations(llm_result: LLMVerificationResult) -> list[int]:
         """
         The citations that stand on a source the model did not itself
-        call unrelated. Only an explicit "unrelated" removes one: a cited
+        call unrelated - or silent on the claim, which is no ground for a
+        verdict either. Only an explicit stance removes one: a cited
         source with no assessment at all - or a response with no
         assessments block, the degraded case above - keeps its citation.
         """
@@ -155,10 +182,22 @@ class ConfidenceScorer:
         unrelated = {
             assessment.index
             for assessment in llm_result.assessments
-            if assessment.stance == EvidenceStance.UNRELATED
+            if assessment.stance in (EvidenceStance.UNRELATED, EvidenceStance.SILENT)
         }
 
         return [index for index in llm_result.cited_evidence if index not in unrelated]
+
+    @classmethod
+    def cited_stances(cls, llm_result: LLMVerificationResult) -> set[EvidenceStance]:
+        """The stances of the sources a verdict is grounded on."""
+
+        by_index = {assessment.index: assessment.stance for assessment in llm_result.assessments}
+
+        return {
+            by_index[index]
+            for index in cls._grounded_citations(llm_result)
+            if index in by_index
+        }
 
     @staticmethod
     def _annotate(

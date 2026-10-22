@@ -23,6 +23,11 @@ class EvidenceStance(str, Enum):
     SUPPORTS = "supports"
     CONTRADICTS = "contradicts"
     UNRELATED = "unrelated"
+    # About the claim's subject, but says nothing on its point: neither
+    # support nor contradiction. Only the `stated` rules offer it
+    # (VERIFIER_RULES); without it, a source missing one detail of a
+    # claim had no stance but "contradicts" - and the claim became FALSE.
+    SILENT = "silent"
 
 
 class RejectedEvidence(BaseModel):

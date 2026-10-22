@@ -24,7 +24,8 @@ export type Verdict =
   | "UNVERIFIED";
 
 /** What one specific source says about a claim. */
-export type EvidenceStance = "supports" | "contradicts" | "unrelated";
+// "silent": on the claim's subject, says nothing on its point (VERIFIER_RULES=stated).
+export type EvidenceStance = "supports" | "contradicts" | "unrelated" | "silent";
 
 export type PipelineStage =
   | "admission_filter"

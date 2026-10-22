@@ -957,6 +957,7 @@ button:disabled {
 .stance-supports { color: var(--true); }
 .stance-contradicts { color: var(--false); }
 .stance-unrelated { color: var(--muted); }
+.stance-silent { color: var(--muted); }
 
 .source-detail {
   padding: 0.5rem 0 0.7rem;
