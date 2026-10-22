@@ -15,7 +15,7 @@
 | V2b, one source at a time, by majority | `a2b3a553f3c0` | 47.8% | +2.9 [-11.6, +17.4] | 18 | 6 | to the test half |
 | V3, `qwen3.5:9b`, list verifier (2 timed out) | `594130bf966f` | 50.7% | +4.5 [-10.4, +19.4] | 15 | 8 | better than B0 by the rule; ~90 s a call: the case for a faster endpoint |
 | V4, quote first (against V2b) | `7975364fe90b` | 47.8% | +0.0 [-13.0, +13.0] vs V2b | 25 | 11 | not adopted |
-| V5, the 9B one source at a time | running | | | | | |
+| V5, the 9B one source at a time | `854f7aa29f3a` | 52.2% | +7.2 [-5.8, +20.3] | 17 | 9 | meets the rule: to the test half |
 
 ## Test half (70 claims), replays of `66034c5fea72`
 

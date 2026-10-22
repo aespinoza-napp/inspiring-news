@@ -1446,6 +1446,30 @@ V2b (44.2% against 53.7%). By the rule it is better than B0; on this CPU
 it is not the app's default - it is the case for a GPU or a hosted
 endpoint, where its call would take seconds.
 
+### The 9B, one source at a time (V5)
+
+V3's reader asked V2b's per-source question (`854f7aa29f3a`): the two
+winners together. Train half, same evidence, against B0 and against V2b:
+
+| Train, 69 claims | B0, 3B list | V2b, 3B per source | V5, 9B per source |
+|---|---|---|---|
+| Accuracy | 44.9% | 47.8% | 52.2% |
+| V5 - other [95% CI] | +7.2 [-5.8, +20.3] | +4.3 [-8.7, +17.4] | |
+| Right when it commits | 46.3% | 61.7% | 66.7% |
+| Kappa against gold | 0.124 | 0.117 | 0.267 |
+| Confidently wrong | 36 | 18 | 17 |
+| FALSE to true claims | 24 of 45 | 6 | 9 |
+| Natural claims (54) | 35.2% | 53.7% | 44.4% |
+| Altered claims (15) | 80.0% | 26.7% | 80.0% |
+| A claim / one model call, median | 63 s / 27 s | 41 s / 4 s (a call per source) | 123 s / 14 s (a call per source) |
+
+It keeps what the 9B brought - altered claims caught as often as the
+list verifier caught them, few true claims called false, kappa doubled -
+with no timeout, and a claim in about two minutes against the list 9B's
+three. Its natural-claim accuracy is the 9B's, not V2b's: it leaves 18
+claims UNVERIFIED. It meets the rule on the train half, so it goes to
+the test half.
+
 ### Quote first (V4)
 
 V2b's per-source prompt with the quote asked before the stance and one

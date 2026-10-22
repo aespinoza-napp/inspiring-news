@@ -1,139 +1,102 @@
-Session of 21 October 2026. Final prompt, then the summary of what it produced.
+Session of 22 October 2026. Final prompt, then the summary of what it produced.
+(The 21 October session's summary is this file at commit 67a65c1.)
 
 FINAL PROMPT (verbatim)
 
-compare the structure of the actual pipeline and measure how it differs from the one provided by anthropic, the logic followed, provide the reason why it takes less time
+i need to go, so save all the results in the "last_chat.txt" and also save where it should be saved ythe results and close the remaining jobs
 
-(Asked which pipeline: "the logic claude uses in order to verify facts i would like to compare both".)
+(Before it: "commit and update the actual state fot the whole project to the artefact also update the parts
+of testing and i want to iterate to improve the fact-checking part it is the most crucial one right now".)
 
 SUMMARY
 
-Earlier in the session: the previous session's performance work was finished. Its last open
-item, the review's correction asked for as {find, replace} edits instead of the article
-written out again, was measured on a draft the writer really wrote (3,278 characters,
-qwen3.5:9b): 1,384 answer tokens against 838 for the rewrite, 522 s against 357 s, because
-a copy editor touches nearly every sentence and each edit copies its sentence twice.
-REVIEW_CORRECTION stays "rewrite"; the result is in docs/decisions/performance.md, section 7.
-./scripts/check.sh passed.
+Branch perf/fast-fact-check, five commits on main's 67a65c1, none pushed or merged:
+  3155479  Fact-check speed: timings in the app, fast profiles, a claim deadline (the morning's work)
+  d570ff7  Verifier: replay on fixed evidence, stated rules, one source at a time
+  d2ec95f  Verifier: one source at a time, by majority, is the default
+  a4f9435  Verifier experiment: the 9B on the same evidence; quote first, not adopted
+  (this commit) V5's train result and this file
+Full check at d2ec95f: 1,962 backend tests, 15 inference tests, frontend typecheck, the labeller's 43 - all pass.
+(test_container needs its own Qdrant folder while the app runs: QDRANT_PATH=<tmp> ./scripts/check.sh.)
 
-Then the comparison below.
+1. WHAT WAS WRONG. On the 69 train claims the thorough pipeline (3B, one call judging every source) answered
+   FALSE to 21-24 of the 45 true ones, each time marking one source "contradicts", mostly explained by absence
+   ("the evidence does not mention ..."). The evidence was usually there: for 17 of 29 true claims with a figure,
+   every figure was in the passage the model read. The prompt defined neither TRUE nor FALSE.
 
-How Claude verifies a fact, against how the pipeline does - and why Claude takes less time
------------------------------------------------------------------------------------------
+2. REPLAY. The same pipeline searched twice moved 5.8 points (50.7% and 44.9%, three hours apart). So every
+   searched run now keeps each claim's evidence (runs/<...>/evidence.jsonl) and `cli run --replay <run>` judges
+   it again without searching. Replayed, the 3B gave the same verdict 10 of 10 times: every difference below is
+   the verifier's own.
 
-2026-10-21. Claude (Opus 5.5, in Claude Code) verified 8 claims of the test half by hand,
-the way it labelled facts 52-138: one web search per claim, a second only when needed,
-its own knowledge, a verdict. Timed with `date` around each claim. The pipeline's side is
-the local rerun of run 2605a2c02380 (the same 8 claims, llama3.2:3b on the laptop's CPU,
-2026-10-20) and the whole 70-claim test run in Docker (reports/manual-test/llama3.2-3b/
-2605a2c02380/report.md). The gold labels of these 8 are the human annotator's, not Claude's.
+3. THE ENTRIES (rules written before each run: backend/data/evaluation/experiments/verifier/rule.md)
+   Train half, 69 claims, evidence of run 2a4d7dde37b2:
+     B0  3B, list verifier (baseline)          44.9%   conf. wrong 36   FALSE to true 24   altered caught 12/15
+     V1  3B, stated rules                      36.2%   (-8.7 [-17.4, 0.0])               not adopted
+     V2  3B, one source at a time, 1st rule    39.1%   (-5.8)                             not adopted
+     V2b 3B, one source at a time, majority    47.8%   conf. wrong 18   FALSE to true 6    altered 4/15
+     V3  9B (qwen3.5:9b), list verifier        50.7%   conf. wrong 15   FALSE to true 8    altered 11/15  ~90 s a call
+     V4  3B, per source, quote first           47.8%   = V2b but more FALSE to true (11)  not adopted, reverted
+     V5  9B, one source at a time, majority    52.2%   conf. wrong 17   FALSE to true 9    altered 12/15  ~2 min a claim
+         V5 vs B0: +7.2 [-5.8, +20.3]; right when it commits 66.7% vs 46.3% (+20.4 [+7.4, +33.7]); kappa 0.124 -> 0.267
+   Test half, 70 claims, evidence of run 66034c5fea72 (fresh thorough run, 51.4%):
+     V2b: 55.7% (+4.3 [-8.6, +17.1]); right when it commits 66.1% vs 52.2% (+13.9 [+0.3, +27.3]);
+          confidently wrong 47% -> 29%; natural claims 49.1% -> 67.3%; altered claims 60% -> 13%; 44 s vs 63 s a claim.
+   ADOPTED: V2b. VERIFIER_ANSWER=per_source is the code's default since d2ec95f; VERIFIER_ANSWER=full brings the
+   old verifier back; thorough.json keeps the old one for the harness. Its weakness: it rarely catches a claim
+   with one altered detail. The 9B fixes that (V3, V5) at 3-4x the time: the case for a GPU or hosted endpoint.
 
+4. ALSO FOUND AND FIXED. A PDF's raw bytes had become an evidence "page" (167 million characters) for two claims:
+   the fetcher now refuses files (scraper/fetcher.py, NotAPage). A figure check on supporting quotes was tried
+   offline and dropped (5 flags on false claims vs 3 on true ones).
 
-The two structures
-------------------
+5. ARTIFACT. https://claude.ai/artifact/WjaP27mv6dNVWnP4xpY5ZB (account adria.espinoza.gomez), version 2: the
+   verifier section, the testing track (1,962 tests; e2e does not run on Windows), the 21 Oct work as tasks.
+   It shows V3 and V5 as "running": they are not in it yet. Copy kept at
+   C:\Users\Adria Espinoza G\napp\inspiring-news-roadmap-2026-10-22.html (to republish to the old link
+   https://claude.ai/artifact/9CP4FAmRWxLL8w5LkoEcLP from the inspiringnews.mkt account).
 
-The pipeline, for every claim (docs/decisions/retrieval.md):
-  1. Entities of the claim, then 3 fixed queries from its terms: anchor, proposition, refutation.
-  2. SearXNG, two searches at a time: ~19 candidates.
-  3. Fetch 8 pages; parse each locally (trafilatura, BeautifulSoup).
-  4. Rank them with embeddings (bge-m3 in inference/), the pertinence gate, keep 5.
-  5. Cut each to the passages about the claim (700 characters).
-  6. One llama3.2:3b call, which must judge from those 5 excerpts only:
-     ~2,544 prompt and 252 answer tokens.
-  7. A second look (search again, ask again) if its confidence is low.
-  The same work for every claim, easy or hard.
+WHERE THE RESULTS ARE SAVED
 
-Claude, for each claim:
-  1. Read the claim; write one query from understanding it (it fixed "Bollardo II" to
-     "Bordalo II" before searching).
-  2. One web search. The search tool reads the results server-side: no pages fetched or
-     parsed on this machine.
-  3. Decide whether that is enough: it was for 7 of 8 (only fact003 needed a second search).
-  4. Judge with background knowledge as well as the sources (e.g. Spain's age of majority
-     was 21 until 1978, which makes "my mother signed my first contract" plausible for a
-     singer born in 1949).
+  The decision, every number and why     docs/decisions/evaluation.md, "Replay" and "The verifier's FALSE"
+  The rules and a results table          backend/data/evaluation/experiments/verifier/rule.md, results.md
+  Every change to fact-checking          docs/fact-checking-changes.md, section 6
+  The dated log                          docs/roadmap.md, "Oct 22, afternoon"
+  Reports (committed)                    backend/data/evaluation/reports/manual-train/<model>/<run>/report.md
+                                         backend/data/evaluation/reports/manual-test/<model>/<run>/report.md
+  Raw records and evidence (gitignored)  backend/data/evaluation/runs/manual-{train,test}/<model>/<run>/
+                                         results.jsonl, evidence.jsonl (the train snapshot is 701 MB: two PDFs)
+  Run ids: B0 2a4d7dde37b2, R0 9adb65e5ab94, V1 20c970d87114, V2 d70e76cc6319, V2b a2b3a553f3c0,
+           V4 7975364fe90b (llama3.2-3b); V3 594130bf966f, V5 854f7aa29f3a (qwen3.5-9b);
+           test: B0 66034c5fea72, V2b e7231c962477 (llama3.2-3b), V5 41d19370ddba (qwen3.5-9b, unfinished)
 
+WHAT IS LEFT, AND WHERE ITS RESULTS GO
 
-Measured on the same 8 claims
------------------------------
+  a) V5 on the test half was stopped at 8 of 70 claims (4 right) when the session ended. It resumes where it
+     stopped (a replay never searches: it needs only inference/ on 8001 and Ollama):
+       cd backend
+       LLM_REASONING_EFFORT='{"qwen3.5:9b": "none"}' uv run python -m src.evaluation.cli run \
+         --dataset data/evaluation/manual --split test --model qwen3.5:9b \
+         --replay data/evaluation/runs/manual-test/llama3.2-3b/66034c5fea72 \
+         --thresholds data/evaluation/thresholds/per_source.json --label verifier-2026-10-22-9b-per-source
+     (~70 min). Then its report, paired against the test baseline and against V2b:
+       uv run python -m src.evaluation.cli report --run data/evaluation/runs/manual-test/qwen3.5-9b/41d19370ddba \
+         --compare data/evaluation/runs/manual-test/llama3.2-3b/66034c5fea72
+     Put the result in: docs/decisions/evaluation.md ("The 9B, one source at a time (V5)": a test-half table like
+     V2b's), experiments/verifier/results.md (a V5 row in the test table), docs/fact-checking-changes.md section 6,
+     docs/roadmap.md, and the artifact's "Why the 3B said FALSE" section (V3 and V5 rows).
+     By the rule (rule.md) V5 is judged like V3: if it wins on the test half it is the recommendation for a GPU or
+     hosted endpoint; whether this CPU's app runs it (~2 min a claim, an article of four claims ~6-8 min) is the
+     author's call: set LLM_MODEL=qwen3.5:9b with VERIFIER_ANSWER=per_source and LLM_REASONING_EFFORT for it.
+  b) The adopted verifier misses altered details. Next ideas, each to be measured by replay on 2a4d7dde37b2 and
+     66034c5fea72 against V2b: the per-source question comparing figures, dates and names one by one; or the 9B.
+  c) Not done: the check.sh e2e target on Windows (npm/next names, os.killpg); pushing or merging the branch.
 
-  claim     gold             Claude        s  searches | pipeline         s
-  fact001*  MISLEADING       MISLEADING   20  1        | TRUE           396
-  fact002   PARTIALLY_TRUE   TRUE         14  1        | FALSE          473
-  fact003   TRUE             UNVERIFIED   21  2        | TRUE           473
-  fact004   TRUE             TRUE         10  1        | TRUE           489
-  fact005   TRUE             MISLEADING   17  1        | TRUE           224
-  fact006   TRUE             TRUE         11  1        | TRUE           499
-  fact007*  TRUE             TRUE         13  1        | TRUE           280
-  fact013   PARTIALLY_TRUE   TRUE         12  1        | TRUE           158
-  right     4 of 8           median 14 s, 1.1 searches | 5 of 8, median 434 s
+JOBS CLOSED AT THE END
 
-  * not fully blind: fact001's gold label had been seen earlier in the session; fact007
-    had a synthetic FALSE made from it, a hint that it is true.
-
-  The pipeline's 434 s is the CPU with four claims sharing one model. In the full Docker
-  run a claim's median was 151 s: search and fetch 14 s, ranking 6 s, the verdict 120 s
-  including the wait for the model's one permit, the call alone 59 s.
-
-
-Why Claude takes less time (largest first)
-------------------------------------------
-
-  1. Hardware. On the laptop's CPU the 3B model reads ~49 tokens a second and writes ~6,
-     so a verdict is 30-60 s. Claude runs on data-centre accelerators reading thousands
-     of tokens a second. This alone is most of the gap; no change to the pipeline's logic
-     closes it.
-  2. No queue. The pipeline allows one model call at a time on a CPU, so about half of
-     the 120 s verdict stage is waiting for the claim ahead. Claude's calls run in parallel.
-  3. Adaptive stopping. Claude: 1.1 searches, no page fetched. The pipeline always runs 3
-     queries, fetches 8 pages, ranks ~19 candidates and reads 5 excerpts, even when the
-     first result settles the claim (AEMET's summary for fact004).
-  4. Search and reading run on someone else's servers. A commercial index, read
-     server-side; the pipeline scrapes SearXNG (rate-limited, two at a time on purpose),
-     then downloads and parses pages on this machine.
-  5. Knowledge. A 3B model knows little, so everything must be in its prompt; Claude
-     caught the misspelt name and knew the 1970s age of majority without searching.
-
-
-What the accuracy says
-----------------------
-
-Faster did not mean more accurate here. Claude's misses were mostly a different rubric,
-not factual errors:
-  - fact005 is gold TRUE because a newspaper did report the study; Claude judged the
-    medical claim itself (the longevity research points to blood type B, not O).
-  - fact002 is gold PARTIALLY_TRUE because only weak sources back it; Claude found the
-    artist's own interview saying he went to the fine-arts school (without finishing).
-Eight claims cannot separate 4 from 5 either way.
-
-
-What the pipeline could take from this
---------------------------------------
-
-  - Stop early (code, cheap to try): run the anchor query first; do the refutation query
-    and the page fetches only when the snippets are not enough. Cuts most of the ~20 s of
-    search, fetch and ranking a claim; does not touch the model's time.
-  - Not worth copying on a CPU: letting the model write its own queries, as Claude does.
-    Each would be another 30-60 s model call.
-  - The real lever is still where the model runs: a GPU, or a hosted endpoint
-    (docs/decisions/performance.md, "Proposals").
-
-Caveat: Claude's timings are this session's wall-clock time, its own thinking included.
-
-
-Sources Claude read
--------------------
-
-  fact001  https://www.diarioestrategia.cl/texto-diario/mostrar/5993268/casi-tercio-menores-18-anos-espana-vivia-2025-bajo-umbral-pobreza-segun-fedea
-  fact002  https://www.dn.pt/artes/bordalo-ii-estou-a-criar-imagens-com-o-que-destroi-o-mundo-5655569.html
-  fact003  https://www.elespanol.com/corazon/bluper/20230517/paco-pastor-cantante-participa-pasapalabra-mayo-invitado/764423879_0.html
-           https://www.scenicrights.com/en/?p=22979
-  fact004  https://www.aemet.es/es/noticias/2026/09/resumen_verano2026
-  fact005  https://www.lanacion.com.ar/lifestyle/cuidado-cuerpo-belleza/las-personas-con-este-grupo-sanguineo-podrian-tener-un-envejecimiento-mas-lento-segun-un-estudio-nid03022025/
-           https://www.meteored.cl/noticias/ciencia/revelan-los-secretos-que-esconde-la-sangre-de-los-centenarios-cual-es-la-clave-para-vivir-100-anos.html
-  fact006  https://bmjgroup.com/?p=17815
-           https://www.euronews.com/2026/09/09/getting-those-steps-in-does-reduce-the-risk-of-early-death-but-it-is-also-the-pace-that-ma
-  fact007  https://www.usharbors.com/2026/09/first-ever-olive-ridley-sea-turtle-nested-in-california/
-           https://abcnews.com/Technology/wireStory/agency-sea-turtle-eggs-laid-california-beaches-us-136664710
-  fact013  https://www.newsbytesapp.com/news/science/prepare-for-ai-intelligence-explosion-warn-geoffrey-hinton-yoshua-bengio/story
-           https://cryptobriefing.com/ai-executives-urge-oversight-self-improving-ai/
+  Stopped: the V5 test-half run, the backend API (8000), the frontend dev server (3000), the inference server
+  (8001), the SearXNG container (docker-searxng-1). Ollama (the desktop app) was left running: it is the
+  machine's own service and unloads its model after five idle minutes.
+  To bring the stack back: docker compose --env-file ../backend/.env up -d searxng (from docker/);
+  cd inference && uv run uvicorn src.main:app --port 8001; cd backend && uv run uvicorn src.main:app --port 8000;
+  cd frontend && npm run dev.
