@@ -37,6 +37,14 @@ uv run uvicorn src.main:app --port 8001
   sentence-bounded chunks rather than truncated.
 - `POST /sentiment` - `{"text"}` → sentiment fields
 - `POST /embeddings` - `{"text"}` or `{"texts": [...]}` → a vector or list of vectors
+- `POST /decisions` - `{"checkpoint", "state" | "states", "questions"}` →
+  `{"answers"}` or `{"answersPerState": [...]}`: Laya's typed answers
+  (`choice`, `score`, `noul`). `checkpoint` is `english`,
+  `multilingual`, `typed-decisions`, or the name of a fine-tuned folder
+  in `checkpoints/` (gitignored; `scripts/laya_train_all.sh` writes
+  them); 404 for any other name. Loaded on first use, not at warm-up.
+  The questions are the backend's (`backend/src/config/decisions.py`);
+  `docs/decisions/laya.md`.
 - `GET /healthz` - 200 only once all three models are loaded; 503
   ("warming_up") until then. Every other route returns 503 the same way
   while warming up, rather than blocking on the model load.

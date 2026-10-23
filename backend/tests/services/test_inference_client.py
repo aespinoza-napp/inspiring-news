@@ -103,3 +103,51 @@ def test_encode_raises_inference_unavailable_on_a_timeout():
 
     with pytest.raises(InferenceUnavailable):
         _client(handler).encode("text")
+
+
+def test_decide_posts_the_checkpoint_state_and_questions():
+
+    import json as jsonlib
+
+    from src.config.decisions import SOURCE_STANCE
+
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["path"] = request.url.path
+        seen["body"] = jsonlib.loads(request.content)
+        return httpx.Response(200, json={"checkpoint": "source_stance",
+                                         "answers": {"stance": {"choice": "supports"}}})
+
+    answers = _client(handler).decide("source_stance", "claim and source", {"stance": SOURCE_STANCE})
+
+    assert answers == {"stance": {"choice": "supports"}}
+    assert seen["path"] == "/decisions"
+    assert seen["body"] == {"checkpoint": "source_stance", "state": "claim and source",
+                            "questions": {"stance": SOURCE_STANCE}}
+
+
+def test_decide_many_keeps_input_order_and_sends_nothing_for_no_states():
+
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        return httpx.Response(200, json={"checkpoint": "c", "answersPerState": [{"q": {"noul": 0.1}},
+                                                                                {"q": {"noul": 0.9}}]})
+
+    client = _client(handler)
+
+    assert client.decide_many("c", [], {"q": {}}) == []
+    assert calls == []
+    assert client.decide_many("c", ["a", "b"], {"q": {}}) == [{"q": {"noul": 0.1}}, {"q": {"noul": 0.9}}]
+
+
+@pytest.mark.parametrize("status", [404, 422, 503])
+def test_decide_raises_inference_unavailable_rather_than_answering(status):
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(status)
+
+    with pytest.raises(InferenceUnavailable):
+        _client(handler).decide("no_such_checkpoint", "x", {"q": {"type": "noul", "instructions": "?"}})

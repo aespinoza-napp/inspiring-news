@@ -1,5 +1,6 @@
 import secrets
 from logging import getLogger
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, Response
 from fastapi.responses import PlainTextResponse
@@ -225,6 +226,10 @@ class AISelectionRequest(BaseModel):
     # 0-10, the score a candidate needs to be picked
     # (src/services/selection/ai_selector.py DEFAULT_MIN_SCORE).
     minScore: float = Field(default=6.0, ge=0.0, le=10.0)
+    # "llm" (the default) or "laya": the fine-tuned Laya decision in
+    # inference/, not adopted as the default (src/services/selection/
+    # laya_selector.py, data/evaluation/experiments/laya/results.md).
+    scorer: Literal["llm", "laya"] = "llm"
 
 
 class QueueRoundRequest(BaseModel):
@@ -720,13 +725,14 @@ def start_ai_selection(request: AISelectionRequest, round_id: str = ROUND_ID):
     """
     The LLM scores every candidate from its title and summary and picks
     up to `limit`, in the background - poll GET /ingest/rounds/{id}. One
-    at a time: 409 while another runs.
+    at a time: 409 while another runs. `scorer: "laya"` scores with the
+    fine-tuned Laya decision instead (inference/, seconds, no LLM).
     """
 
     from src.services.selection.selection_service import InvalidSelection, RoundNotFound, SelectionBusy
 
     try:
-        return get_selection_service().start_ai_selection(round_id, request.limit, request.minScore)
+        return get_selection_service().start_ai_selection(round_id, request.limit, request.minScore, request.scorer)
     except RoundNotFound:
         raise HTTPException(status_code=404, detail="No such round.")
     except SelectionBusy:

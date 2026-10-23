@@ -137,3 +137,34 @@ class InferenceClient:
             raise InferenceUnavailable(f"Embedding request failed: {exc}") from exc
 
         return response.json()
+
+    def decide(self, checkpoint: str, state: str, questions: dict) -> dict[str, dict]:
+        """
+        Laya's typed answers to `questions` about `state`, from the named
+        checkpoint (a fine-tuned decision or a built-in one;
+        src/config/decisions.py, docs/decisions/laya.md). Raises
+        InferenceUnavailable on any failure, as sentiment and embeddings
+        do: a decision that silently came back empty would be read as an
+        answer.
+        """
+
+        return self._decide({"checkpoint": checkpoint, "state": state, "questions": questions})["answers"]
+
+    def decide_many(self, checkpoint: str, states: list[str], questions: dict) -> list[dict[str, dict]]:
+        """The same questions over many states in one request, in input order."""
+
+        if not states:
+            return []
+
+        return self._decide({"checkpoint": checkpoint, "states": states, "questions": questions})["answersPerState"]
+
+    def _decide(self, body: dict) -> dict:
+
+        try:
+            with INFERENCE.permit():
+                response = self._client.post("/decisions", json=body)
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise InferenceUnavailable(f"Decision request failed: {exc}") from exc
+
+        return response.json()

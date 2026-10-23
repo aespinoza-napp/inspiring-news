@@ -31,8 +31,10 @@ from datetime import datetime, timezone
 from logging import getLogger
 from typing import Callable
 
+from src.services.inference_client import InferenceUnavailable
 from src.services.llms import LLMUnavailableError
 from src.services.selection.ai_selector import DEFAULT_MIN_SCORE, AISelector
+from src.services.selection.laya_selector import LayaSelector
 from src.services.selection.rounds import SelectionRounds, selection_rounds as default_rounds
 
 logger = getLogger(__name__)
@@ -73,9 +75,12 @@ class SelectionService:
         ingestion,
         selector: AISelector | None = None,
         rounds: SelectionRounds | None = None,
+        laya_selector: LayaSelector | None = None,
     ):
         self.ingestion = ingestion
         self.selector = selector or AISelector()
+        # The `scorer: "laya"` option (laya_selector.py): not the default.
+        self.laya_selector = laya_selector or LayaSelector()
         self.rounds = rounds if rounds is not None else default_rounds
 
         self._lock = threading.Lock()
@@ -171,6 +176,7 @@ class SelectionService:
         round_id: str,
         limit: int = MAX_SELECTED,
         min_score: float = DEFAULT_MIN_SCORE,
+        scorer: str = "llm",
     ) -> dict:
 
         round_ = self.get(round_id)
@@ -190,29 +196,38 @@ class SelectionService:
             "startedAt": _now(),
             "limit": min(limit, MAX_SELECTED),
             "minScore": min_score,
+            "scorer": scorer,
         }
         self.rounds.save(round_)
 
         threading.Thread(
             target=self._run_ai_selection,
-            args=(round_id, min(limit, MAX_SELECTED), min_score),
+            args=(round_id, min(limit, MAX_SELECTED), min_score, scorer),
             name="ai-selection",
             daemon=True,
         ).start()
 
         return round_["aiSelection"]
 
-    def run_ai_selection(self, round_id: str, limit: int, min_score: float) -> dict:
-        """The selection itself, on the calling thread. The background thread's body; tests call it."""
+    def run_ai_selection(self, round_id: str, limit: int, min_score: float, scorer: str = "llm") -> dict:
+        """
+        The selection itself, on the calling thread. The background
+        thread's body; tests call it. `scorer` is "llm" (AISelector, the
+        default) or "laya" (LayaSelector).
+        """
 
         round_ = self.get(round_id)
         state = dict(round_.get("aiSelection") or {"startedAt": _now(), "limit": limit, "minScore": min_score})
+        state["scorer"] = scorer
+        selector = self.laya_selector if scorer == "laya" else self.selector
 
         try:
-            selection = self.selector.select(round_["candidates"], round_["groups"], limit, min_score)
+            selection = selector.select(round_["candidates"], round_["groups"], limit, min_score)
             state.update(status="done", **selection.to_dict())
         except LLMUnavailableError as exc:
             state.update(status="failed", error=f"The LLM could not be reached: {exc}")
+        except InferenceUnavailable as exc:
+            state.update(status="failed", error=f"Laya could not be reached in inference/: {exc}")
         except Exception as exc:
             logger.exception("AI selection failed for round %s", round_id)
             state.update(status="failed", error=str(exc))
@@ -223,10 +238,10 @@ class SelectionService:
 
         return state
 
-    def _run_ai_selection(self, round_id: str, limit: int, min_score: float) -> None:
+    def _run_ai_selection(self, round_id: str, limit: int, min_score: float, scorer: str) -> None:
 
         try:
-            self.run_ai_selection(round_id, limit, min_score)
+            self.run_ai_selection(round_id, limit, min_score, scorer)
         finally:
             with self._lock:
                 self._running = None

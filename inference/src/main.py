@@ -18,9 +18,12 @@ from logging import getLogger
 
 from fastapi import Depends, FastAPI, HTTPException
 
+from .decisions import UnknownCheckpoint, decision_models
 from .embeddings import embedding_model
 from .entities import entity_model
 from .models import (
+    DecisionRequest,
+    DecisionResponse,
     EmbeddingRequest,
     EmbeddingResponse,
     EntitiesRequest,
@@ -165,3 +168,33 @@ def embeddings(request: EmbeddingRequest):
         embedding=embedding_model.encode(request.text),
         dimension=embedding_model.dimension,
     )
+
+
+@app.post("/decisions", response_model=DecisionResponse)
+def decisions(request: DecisionRequest):
+    """
+    Laya's typed answers (src/decisions.py). Not behind require_warm: it
+    needs none of the three models above, and its checkpoint loads on the
+    first request that names it - that request waits for the load (~20 s
+    on a CPU), every later one does not.
+    """
+
+    try:
+        if request.states is not None:
+            results = decision_models.predict_many(request.checkpoint, request.states, request.questions)
+            return DecisionResponse(
+                checkpoint=request.checkpoint,
+                answersPerState=[result["answers"] for result in results],
+            )
+
+        result = decision_models.predict(request.checkpoint, request.state, request.questions)
+
+    except UnknownCheckpoint:
+        raise HTTPException(status_code=404, detail={"unknownCheckpoint": request.checkpoint})
+
+    except ValueError as error:
+        # Laya refuses a question it cannot read (no criteria, too many
+        # options, an unknown type) with a ValueError: the caller's fault.
+        raise HTTPException(status_code=422, detail={"invalidQuestion": str(error)})
+
+    return DecisionResponse(checkpoint=request.checkpoint, answers=result["answers"])

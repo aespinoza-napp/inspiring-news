@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from src.services.inference_client import InferenceUnavailable
 from src.services.llms import LLMUnavailableError
 from src.services.selection.ai_selector import AISelection, Scored
 from src.services.selection.rounds import SelectionRounds
@@ -178,6 +179,31 @@ def test_taking_the_ai_proposal_unchanged_is_recorded_as_the_ais(tmp_path):
     selection.run_ai_selection(round_["id"], limit=20, min_score=6.0)
 
     assert selection.queue(round_["id"], picks, Jobs())["selectedBy"] == "ai"
+
+
+def test_the_laya_scorer_is_used_only_when_asked_and_recorded(tmp_path):
+
+    llm, laya = FakeSelector(picks=["https://news.example/1"]), FakeSelector(picks=["https://news.example/2"])
+    selection = SelectionService(ingestion=FakeIngestion(), selector=llm, rounds=SelectionRounds(tmp_path), laya_selector=laya)
+    round_ = selection.create_round(["science"])
+
+    state = selection.run_ai_selection(round_["id"], limit=20, min_score=6.0, scorer="laya")
+
+    assert [pick["url"] for pick in state["picks"]] == ["https://news.example/2"]
+    assert state["scorer"] == "laya" and llm.calls == [] and len(laya.calls) == 1
+
+    assert selection.run_ai_selection(round_["id"], limit=20, min_score=6.0)["scorer"] == "llm"
+
+
+def test_an_unreachable_laya_is_a_failed_selection(tmp_path):
+
+    laya = FakeSelector(error=InferenceUnavailable("connection refused"))
+    selection = SelectionService(ingestion=FakeIngestion(), selector=FakeSelector(), rounds=SelectionRounds(tmp_path), laya_selector=laya)
+    round_ = selection.create_round(["science"])
+
+    state = selection.run_ai_selection(round_["id"], limit=20, min_score=6.0, scorer="laya")
+
+    assert state["status"] == "failed" and "Laya could not be reached" in state["error"]
 
 
 def test_an_unreachable_model_is_a_failed_selection_not_an_empty_one(tmp_path):

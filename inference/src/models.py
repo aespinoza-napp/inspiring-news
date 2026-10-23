@@ -76,3 +76,31 @@ class EmbeddingResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     modelsLoaded: dict[str, bool]
+
+
+class DecisionRequest(BaseModel):
+    # Laya (src/decisions.py). The checkpoint is a built-in name or a
+    # fine-tuned folder's name; the questions are Laya's typed questions,
+    # passed through as the backend wrote them. Exactly one of state and
+    # states: many states share the questions and one batched pass.
+    checkpoint: str
+    questions: dict[str, dict]
+    state: str | dict | list | None = None
+    states: list[str | dict | list] | None = None
+
+    @model_validator(mode="after")
+    def _exactly_one(self) -> "DecisionRequest":
+
+        if (self.state is None) == (self.states is None):
+            raise ValueError("Provide exactly one of 'state' or 'states'.")
+
+        if not self.questions:
+            raise ValueError("Ask at least one question.")
+
+        return self
+
+
+class DecisionResponse(BaseModel):
+    checkpoint: str
+    answers: dict[str, dict] | None = None
+    answersPerState: list[dict[str, dict]] | None = None

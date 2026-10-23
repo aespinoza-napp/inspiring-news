@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -44,6 +46,16 @@ class Settings(BaseSettings):
     # one at a time, as before. EMBEDDING_BATCH_SIZE caps the texts per batch.
     EMBEDDING_BATCH_TOKENS: int = 2048
     EMBEDDING_BATCH_SIZE: int = 64
+
+    # Laya (src/decisions.py, docs/decisions/laya.md). Fine-tuned
+    # checkpoints are folders here, one per decision, named as the backend
+    # asks for them; each is ~1.3 GB, so they are not in git. A request
+    # can only name a folder in it, never a path.
+    DECISION_CHECKPOINTS_DIR: str = str(Path(__file__).resolve().parents[1] / "checkpoints")
+    DECISION_DEVICE: str = "auto"
+    # ~1.3 GB each in memory; the backend asks for at most four.
+    DECISION_MAX_LOADED: int = 4
+    DECISION_BATCH_SIZE: int = 16
 
 
 settings = Settings()

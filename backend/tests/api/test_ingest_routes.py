@@ -141,8 +141,8 @@ class FakeSelection:
     def list(self, limit=20):
         return []
 
-    def start_ai_selection(self, round_id, limit, min_score):
-        self.calls.append(("ai", round_id, limit, min_score))
+    def start_ai_selection(self, round_id, limit, min_score, scorer="llm"):
+        self.calls.append(("ai", round_id, limit, min_score, scorer))
         return {"status": "running"}
 
     def queue(self, round_id, urls, start_job):
@@ -223,8 +223,12 @@ def test_the_ai_selection_starts_in_the_background(monkeypatch):
     response = client.post("/ingest/rounds/0123456789abcdef/ai-selection", json={"limit": 12, "minScore": 7})
 
     assert response.status_code == 202
-    assert selection.calls == [("ai", "0123456789abcdef", 12, 7.0)]
+    assert selection.calls == [("ai", "0123456789abcdef", 12, 7.0, "llm")]
     assert client.post("/ingest/rounds/0123456789abcdef/ai-selection", json={"limit": 21}).status_code == 422
+
+    client.post("/ingest/rounds/0123456789abcdef/ai-selection", json={"scorer": "laya"})
+    assert selection.calls[-1][-1] == "laya"
+    assert client.post("/ingest/rounds/0123456789abcdef/ai-selection", json={"scorer": "gpt"}).status_code == 422
 
 
 def test_a_queued_selection_becomes_ingestion_jobs(monkeypatch):
