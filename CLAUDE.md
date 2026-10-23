@@ -85,6 +85,7 @@ src.main:app --port 8001`.
 | Why the verifier asks one source at a time; comparing verifiers on one run's evidence (`--replay`) | `docs/decisions/evaluation.md` ("The verifier's FALSE", "Replay"), `backend/data/evaluation/experiments/verifier/` |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
+| Laya: typed decisions in `inference/` (`/decisions`), what was fine-tuned, what was adopted (nothing yet) | `docs/decisions/laya.md`, `backend/data/evaluation/experiments/laya/` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
 
 ## Invariants

@@ -1,0 +1,16 @@
+{
+  "decision": "checkable_claim",
+  "predictions": "/home/aespinoz/dev/napp/inspiring-news/backend/data/evaluation/experiments/laya/predictions/checkable_claim_finetuned.jsonl",
+  "n": 78,
+  "secondsMedian": 0.357,
+  "primary": {
+    "metric": "AUC, kept as a claim against skipped",
+    "comparator": 0.49,
+    "laya": 0.584,
+    "difference": 0.094,
+    "low": -0.102,
+    "high": 0.274,
+    "n": 78
+  },
+  "adopted": false
+}

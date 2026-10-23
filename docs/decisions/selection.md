@@ -528,6 +528,15 @@ failed every selection - the selection has its own limit,
 `AI_SELECTION_TIMEOUT` (240 s), infrastructure like `LLM_TIMEOUT`, and
 batches of ten with reasons of at most twelve words.
 
+**Without the LLM** (2026-10-23): `"scorer": "laya"` scores the
+round with a Laya model fine-tuned on the selection's labels
+(`laya_selector.py`, `docs/decisions/laya.md`). It takes under a second per
+round, where the LLM takes minutes. Its score is its level (0-2) × 5, so
+`minScore` means the same. On another day's 117 candidates it tied the 3B
+on "clearly positive" (0.805 against 0.782) and beat it on "worth offering
+at all" (+0.14). That is not the metric its rule named, so it is an
+option, not the default.
+
 ## What was left out
 
 - **No age limit on a candidate dated nowhere** - no feed time and no

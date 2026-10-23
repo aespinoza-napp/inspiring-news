@@ -1,0 +1,356 @@
+{
+  "n": 51,
+  "accuracy": {
+    "bge-m3": {
+      "right": 42,
+      "share": 0.824
+    },
+    "laya zero-shot": {
+      "right": 23,
+      "share": 0.451,
+      "vsBgeM3": {
+        "comparator": 0.824,
+        "laya": 0.451,
+        "difference": -0.373,
+        "low": -0.51,
+        "high": -0.216,
+        "n": 51
+      }
+    },
+    "laya fine-tuned": {
+      "right": 42,
+      "share": 0.824,
+      "vsBgeM3": {
+        "comparator": 0.824,
+        "laya": 0.824,
+        "difference": 0.0,
+        "low": -0.137,
+        "high": 0.137,
+        "n": 51
+      }
+    }
+  },
+  "perGroup": {
+    "bge-m3": {
+      "society": [
+        4,
+        8
+      ],
+      "science": [
+        12,
+        12
+      ],
+      "environment": [
+        11,
+        13
+      ],
+      "culture": [
+        3,
+        5
+      ],
+      "health": [
+        12,
+        13
+      ]
+    },
+    "laya zero-shot": {
+      "society": [
+        2,
+        8
+      ],
+      "science": [
+        12,
+        12
+      ],
+      "environment": [
+        1,
+        13
+      ],
+      "culture": [
+        2,
+        5
+      ],
+      "health": [
+        6,
+        13
+      ]
+    },
+    "laya fine-tuned": {
+      "society": [
+        4,
+        8
+      ],
+      "science": [
+        11,
+        12
+      ],
+      "environment": [
+        11,
+        13
+      ],
+      "culture": [
+        3,
+        5
+      ],
+      "health": [
+        13,
+        13
+      ]
+    }
+  },
+  "confusion": {
+    "bge-m3": {
+      "society": {
+        "society": 4,
+        "science": 1,
+        "environment": 1,
+        "culture": 1,
+        "health": 1
+      },
+      "science": {
+        "society": 0,
+        "science": 12,
+        "environment": 0,
+        "culture": 0,
+        "health": 0
+      },
+      "environment": {
+        "society": 0,
+        "science": 2,
+        "environment": 11,
+        "culture": 0,
+        "health": 0
+      },
+      "culture": {
+        "society": 0,
+        "science": 0,
+        "environment": 2,
+        "culture": 3,
+        "health": 0
+      },
+      "health": {
+        "society": 0,
+        "science": 1,
+        "environment": 0,
+        "culture": 0,
+        "health": 12
+      }
+    },
+    "laya zero-shot": {
+      "society": {
+        "society": 2,
+        "science": 3,
+        "environment": 1,
+        "culture": 2,
+        "health": 0
+      },
+      "science": {
+        "society": 0,
+        "science": 12,
+        "environment": 0,
+        "culture": 0,
+        "health": 0
+      },
+      "environment": {
+        "society": 1,
+        "science": 11,
+        "environment": 1,
+        "culture": 0,
+        "health": 0
+      },
+      "culture": {
+        "society": 1,
+        "science": 1,
+        "environment": 1,
+        "culture": 2,
+        "health": 0
+      },
+      "health": {
+        "society": 0,
+        "science": 7,
+        "environment": 0,
+        "culture": 0,
+        "health": 6
+      }
+    },
+    "laya fine-tuned": {
+      "society": {
+        "society": 4,
+        "science": 2,
+        "environment": 0,
+        "culture": 2,
+        "health": 0
+      },
+      "science": {
+        "society": 0,
+        "science": 11,
+        "environment": 1,
+        "culture": 0,
+        "health": 0
+      },
+      "environment": {
+        "society": 1,
+        "science": 1,
+        "environment": 11,
+        "culture": 0,
+        "health": 0
+      },
+      "culture": {
+        "society": 1,
+        "science": 0,
+        "environment": 1,
+        "culture": 3,
+        "health": 0
+      },
+      "health": {
+        "society": 0,
+        "science": 0,
+        "environment": 0,
+        "culture": 0,
+        "health": 13
+      }
+    }
+  },
+  "byLanguage": {
+    "bge-m3": {
+      "en": [
+        30,
+        37
+      ],
+      "es": [
+        12,
+        14
+      ]
+    },
+    "laya zero-shot": {
+      "en": [
+        14,
+        37
+      ],
+      "es": [
+        9,
+        14
+      ]
+    },
+    "laya fine-tuned": {
+      "en": [
+        28,
+        37
+      ],
+      "es": [
+        14,
+        14
+      ]
+    }
+  },
+  "agreement": {
+    "agree": 38,
+    "agreeAndRight": 36,
+    "bothRight": 36,
+    "onlyBgeM3": 6,
+    "onlyLaya": 6,
+    "neither": 3,
+    "mcnemarP": 1.0,
+    "eitherRight": 48,
+    "disagreements": [
+      {
+        "id": "https://reasonstobecheerful.world/nairobi-libraries-civic-hubs/",
+        "gold": "society",
+        "bge-m3": "society",
+        "laya fine-tuned": "culture",
+        "layaProbability": 0.7947
+      },
+      {
+        "id": "https://www.goodnewsnetwork.org/korean-drone-rescue-program-helps-mozambique-achieve-zero-fatalities-during-worst-flood-in-decades/",
+        "gold": "society",
+        "bge-m3": "society",
+        "laya fine-tuned": "science",
+        "layaProbability": 0.7999
+      },
+      {
+        "id": "https://e360.yale.edu/features/julian-aguon-interview",
+        "gold": "environment",
+        "bge-m3": "environment",
+        "laya fine-tuned": "society",
+        "layaProbability": 0.5277
+      },
+      {
+        "id": "https://www.nationalgeographic.com/animals/article/striped-mullet-fish-migration",
+        "gold": "environment",
+        "bge-m3": "environment",
+        "laya fine-tuned": "science",
+        "layaProbability": 0.533
+      },
+      {
+        "id": "https://news.mit.edu/2026/governor-healey-mit-president-kornbluth-kick-festivities-mit-future-fest",
+        "gold": "society",
+        "bge-m3": "environment",
+        "laya fine-tuned": "culture",
+        "layaProbability": 0.8662
+      },
+      {
+        "id": "https://news.mit.edu/2026/unmasking-zombie-cells-aging-tissue-ai-powered-barcode-0921",
+        "gold": "health",
+        "bge-m3": "science",
+        "laya fine-tuned": "health",
+        "layaProbability": 0.5666
+      },
+      {
+        "id": "https://theconversation.com/arctic-infrastructure-was-built-on-frozen-ground-drones-and-digital-twins-can-help-spot-the-permafrost-thaw-coming-292097",
+        "gold": "environment",
+        "bge-m3": "science",
+        "laya fine-tuned": "environment",
+        "layaProbability": 0.9193
+      },
+      {
+        "id": "https://www.goodnewsnetwork.org/flourishing-sycamore-gap-tree-has-ring-of-new-shoots-already-3-feet-tall/",
+        "gold": "environment",
+        "bge-m3": "science",
+        "laya fine-tuned": "environment",
+        "layaProbability": 0.5584
+      },
+      {
+        "id": "https://www.positive.news/environment/meet-the-14-year-old-uncovering-londons-lost-history/",
+        "gold": "culture",
+        "bge-m3": "environment",
+        "laya fine-tuned": "culture",
+        "layaProbability": 0.9149
+      },
+      {
+        "id": "https://www.smithsonianmag.com/smart-news/raised-in-apartheid-south-africa-2026-nobel-peace-prize-winner-navi-pillay-is-one-of-the-worlds-leading-human-rights-jurists-180989667/",
+        "gold": "culture",
+        "bge-m3": "culture",
+        "laya fine-tuned": "society",
+        "layaProbability": 0.8151
+      },
+      {
+        "id": "https://www.agenciasinc.es/Noticias/Los-espanoles-tendran-mas-vinculos-sociales-para-2050-pero-la-tecnologia-podria-acentuar-la-soledad",
+        "gold": "society",
+        "bge-m3": "health",
+        "laya fine-tuned": "society",
+        "layaProbability": 0.9093
+      },
+      {
+        "id": "https://e360.yale.edu/features/germany-us-climate-data",
+        "gold": "science",
+        "bge-m3": "science",
+        "laya fine-tuned": "environment",
+        "layaProbability": 0.5254
+      },
+      {
+        "id": "https://www.20minutos.es/andalucia/sevilla/andalucia-reduce-cerca-seis-puntos-abandono-escolar-temprano-con-proyectos-voluntariado-como-las-hadas-madrinas_7047054_0.html",
+        "gold": "society",
+        "bge-m3": "culture",
+        "laya fine-tuned": "society",
+        "layaProbability": 0.9067
+      }
+    ]
+  },
+  "combination": {
+    "0.5": 42,
+    "0.7": 43,
+    "0.8": 45,
+    "0.9": 46,
+    "0.95": 42
+  }
+}

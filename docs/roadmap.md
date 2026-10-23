@@ -724,6 +724,7 @@ wire format as the providers kept and add the least that is new.
 - [ ] 🟡 🎯 Compare verdict agreement vs. human-labeled ground truth set — **Oct 2: computed by every report**: accuracy, macro-F1, Cohen's kappa against gold (the labeller's own agreement statistic), the confusion matrix, with intervals. Left: running it on the joined custom set, `cli run --dataset data/evaluation/custom_en_es.jsonl --model <m>` then `cli report`.
 - [ ] 🧮 Re-tune `ConfidenceScorer` weights per best-performing model — needs real runs. The data: one `cli run` per candidate `CONFIDENCE_*` pair set in the environment (the run key includes the weights since Oct 2, so each is its own run), compared with `cli report --run B --compare A`.
 - [ ] 🏁 Select final default model(s) + document rationale — needs real runs: `cli table` over the verification runs and `cli writing report` over the writing runs are the evidence.
+- [ ] 🟡 🧠 Laya for the typed decisions (Oct 23) — a non-generative model in `inference/` (`POST /decisions`). Fine-tuned on the selection, topic and claim labels; none passed its rule. The selection's model is an option: `"scorer": "laya"`, a tie with the 3B in under a second. Left: D4, the source's stance taught by the 9B, once the Windows run folders are here (`docs/decisions/laya.md`).
 - [ ] 📄 Draft results section for the paper (model comparison data) — needs real runs; the numbers will come from the committed `data/evaluation/reports/` (`report.md`, `models.md`, `comparison.md`).
 
 ---
@@ -826,4 +827,5 @@ Real work that is in the repo but not in any sprint above, so the plan does not 
 - **`/sources` health check** — for every source YAML, disabled ones included: does discovery find links, and do two sample articles extract with a title, author and date (`POST /sources/check`)
 - **Source probe + scraper stats on `/scraper`** — every request counted per domain with why it failed, and a "Source health" panel that also asks SearXNG which engines answered
 - **Docker rebuilds that reuse their cache** (Oct 9) — a no-change rebuild took 291 s: the build cache sat at Docker Desktop's 20 GB cap and evicted the 2.7 GB dependency layer of one image whenever the other was rebuilt. The cap raised to 60 GB, and uv's download cache kept between builds (`docker/README.md`, "Slow rebuilds"). A rebuild after a code change: ~30 s.
+- **Laya decisions** (Oct 23) — typed questions answered by a fine-tuned non-generative model in `inference/`, its training script, and a paired test against each step it could replace (`docs/decisions/laya.md`)
 - **SSRF guard** on every server-side fetch, English and Spanish lexicons, and a set of invariants enforced as tests (`backend/tests/test_invariants.py`)

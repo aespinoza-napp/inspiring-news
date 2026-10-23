@@ -1,0 +1,16 @@
+{
+  "decision": "topic_group",
+  "predictions": "/home/aespinoz/dev/napp/inspiring-news/backend/data/evaluation/experiments/laya/predictions/topic_group_finetuned.jsonl",
+  "n": 51,
+  "secondsMedian": 0.346,
+  "primary": {
+    "metric": "group accuracy",
+    "comparator": 0.824,
+    "laya": 0.824,
+    "difference": 0.0,
+    "low": -0.137,
+    "high": 0.137,
+    "n": 51
+  },
+  "adopted": false
+}
