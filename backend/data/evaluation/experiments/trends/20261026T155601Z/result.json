@@ -1,0 +1,148 @@
+{
+ "rule": "data/evaluation/experiments/trends/rule.md",
+ "daysRun": 1,
+ "daysLabelled": 1,
+ "daysRemaining": 4,
+ "sameStoryBy": "title similarity",
+ "precision": {
+  "mean": 0.6,
+  "low": 0.6,
+  "high": 0.6,
+  "n": 1
+ },
+ "clearlyPositive": {
+  "mean": 0.25,
+  "low": 0.25,
+  "high": 0.25,
+  "n": 1
+ },
+ "newStories": 12,
+ "labelled": 20,
+ "pooled": {
+  "0": 8,
+  "1": 7,
+  "2": 5
+ },
+ "bySignal": {
+  "Google Trends · Spain": {
+   "labelled": 2,
+   "notWorth": 1,
+   "worth": 0,
+   "clearlyPositive": 1,
+   "notWorthShare": 0.5
+  },
+  "Google Trends · United States": {
+   "labelled": 2,
+   "notWorth": 2,
+   "worth": 0,
+   "clearlyPositive": 0,
+   "notWorthShare": 1.0
+  },
+  "Upworthy": {
+   "labelled": 6,
+   "notWorth": 4,
+   "worth": 2,
+   "clearlyPositive": 0,
+   "notWorthShare": 0.6667
+  },
+  "r/UpliftingNews · top of the day": {
+   "labelled": 10,
+   "notWorth": 1,
+   "worth": 5,
+   "clearlyPositive": 4,
+   "notWorthShare": 0.1
+  }
+ },
+ "days": [
+  {
+   "day": "2026-10-26",
+   "funnel": {
+    "trends": 53,
+    "articles": 92,
+    "passedLinkFilters": 64,
+    "keptByScreen": 40,
+    "offered": 39,
+    "shown": 20,
+    "chosen": 0,
+    "admitted": 0,
+    "published": 0
+   },
+   "labelled": 20,
+   "labelledBy": "Claude (AI), blind to scores, from to-label.json; not yet checked by the author",
+   "worthOffering": 12,
+   "clearlyPositive": 5,
+   "precision": 0.6,
+   "clearlyPositiveShare": 0.25,
+   "angles": {
+    "story": 10,
+    "possible": 1,
+    "none": 9
+   },
+   "private": 5,
+   "newStories": [
+    {
+     "url": "https://people.com/bystanders-save-pickleball-players-life-after-he-had-cardiac-arrest-12193629",
+     "title": "Group of Bystanders Hailed as Heroes After Saving Pickleball Player’s Life",
+     "hand": 1
+    },
+    {
+     "url": "https://whyy.org/articles/microplastics-treatment-technology-atlantic-city-new-jersey-princeton-alumni/",
+     "title": "Princeton alumni remove microplastics from Atlantic City wastewater",
+     "hand": 2
+    },
+    {
+     "url": "https://www.scmp.com/news/people-culture/trending-china/article/3372043/mum-good-chinese-woman-wakes-vegetative-daughter-law-after-17-years-care",
+     "title": "For 17 years, 68 year old Xuan Fengying cared for her daughter in law after a truck left her in a vegetative state. Now Xu can speak and walk again, telling the woman who never gave up on her, “Mum, good.”",
+     "hand": 1
+    },
+    {
+     "url": "https://www.upworthy.com/the-surprising-origin-of-the-hello-ma-baby-looney-tunes-song-and-why-we-started-saying-hello/",
+     "title": "The surprising origin of the ‘Hello! Ma Baby’ Looney Tunes song and why we started saying ‘hello’",
+     "hand": 1
+    },
+    {
+     "url": "https://www.upworthy.com/baby-orangutan-irene-becomes-the-face-of-wildlife-rescue-efforts-in-months-long-borneo-fires/",
+     "title": "Baby orangutan ‘Irene’ becomes the face of wildlife rescue efforts in months-long Borneo fires",
+     "hand": 1
+    },
+    {
+     "url": "https://www.independent.co.uk/news/world/americas/georgia-house-fire-14-save-b3072170.html",
+     "title": "A stranger’s wrong turn led him to the burning home of a Georgia couple who have fostered more than 500 children. He woke the father and helped get their 12 children out. All 14 family members survived, and their community has rallied to help them rebuild.",
+     "hand": 1
+    },
+    {
+     "url": "https://goodnewsdigest.app/stories/new-south-wales-approves-vast-park-to-protect-koalas-57c60cb3",
+     "title": "New South Wales approves vast park to protect koalas",
+     "hand": 2
+    },
+    {
+     "url": "https://www.autonocion.com/us/131-feet-solar-panels-fold-canal-anchor-chain/",
+     "title": "California is testing a foldable solar canopy stretching 131 feet over an irrigation canal 21 feet wide. It generates clean power and shades water to potentially reduce evaporation and weed growth; it is designed to fold back on rails so crews can clear the channel with an anchor chain.",
+     "hand": 2
+    },
+    {
+     "url": "https://www.yahoo.com/lifestyle/articles/georgia-mom-adopts-gas-station-135010059.html",
+     "title": "A regular customer at a Georgia gas station befriended its pregnant cashier and offered to adopt her baby after learning she couldn’t raise him. Now Nolan’s birth mother remains part of his life, and the two women have grown so close they’re like sisters.",
+     "hand": 1
+    },
+    {
+     "url": "https://www.lbc.co.uk/article/rough-sleeping-end-plan-andy-burnham-5HjdkQg_2/",
+     "title": "UK: Every rough sleepers to be given route off the streets by Christmas, Prime Minister Burnham vows",
+     "hand": 1
+    },
+    {
+     "url": "https://www.yahoo.com/news/science/articles/3-indigenous-tribes-michigan-bringing-192000555.html",
+     "title": "3 Indigenous Tribes In Michigan Are Bringing Back a Fish That Vanished from the State Nearly 90 Years Ago",
+     "hand": 2
+    },
+    {
+     "url": "https://www.gamesindustry.biz/pegi-begins-moving-existing-digital-only-games-with-loot-boxes-up-to-a-16-rating",
+     "title": "PEGI begins moving existing digital-only games with loot boxes up to a 16 rating",
+     "hand": 2
+    }
+   ],
+   "topicCandidates": 144
+  }
+ ],
+ "decisions": null
+}

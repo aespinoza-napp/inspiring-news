@@ -403,6 +403,60 @@ Health, AI policy in Science. Full topic marks at a fit of 0.03 instead of
 Re-run after changing `IMPACT`, `TOPIC_RANGE`, `GROUP_FIT` or the weights:
 the numbers are for those exact values.
 
+## topics24: a 24th topic for trends (2026-10-26, not adopted)
+
+`uv run python -m src.evaluation.experiments topics24`
+(`src/evaluation/trend_experiments.py`; needs `inference/`). The
+trending lens's T3 (`docs/decisions/trends.md`): would `internet_culture`
+("Internet Culture & Trends", in Culture, taking Entertainment's three
+viral keywords) do harm? The rule was written before the run
+(`data/evaluation/experiments/topics24/rule.md`): adopt if at most 2
+labelled not-worth-offering candidates come back in, at most 2 worth
+offering are newly left out, Culture's group-fit AUC falls by at most
+0.02, and at most 3 stories of other groups newly fit Culture.
+
+480 labelled candidates (117 of 6 Oct, 306 of 9 Oct, 57 of 13 Oct; labels
+276/138/66, Claude's), each embedded once under the 23 topics and the 24:
+
+| Check | Measured | Bound | Holds |
+|---|---|---|---|
+| Leak: back in, not worth offering | 1 | ≤ 2 | yes |
+| Loss: newly left out, worth offering | 0 | ≤ 2 | yes |
+| Fit: Culture group-fit AUC drop (0.9014 → 0.8785, 346 candidates) | 0.023 | ≤ 0.02 | **no** |
+| Pull: other groups' stories newly fitting Culture | 13 | ≤ 3 | **no** |
+
+**Not adopted.** The screen hardly moved (136 left out with 23 topics, 133
+with 24), but the topic pulls stories by their mention of a platform, not
+their subject: a new water-lily species found on Instagram, students who
+saved school lunch, a hospital dog, two election polls and a phone launch
+would newly fit a Culture round. Of the 23 whose nearest topic became
+`internet_culture`, most were about platforms and celebrities: Meta, a
+TikTok lawsuit, Zuckerberg, Celebrity Traitors, Shakira, a streamer's
+fine. The definition stays in the experiment module so the run can be
+repeated; `src/config/topics.py` keeps 23 topics. A narrower wording
+would need a rule of its own, written before it is measured.
+
+## trends: five trending rounds labelled blind (from 2026-10-26)
+
+`uv run python -m src.evaluation.experiments trends run` (once a day),
+then `trends report`. RQ1 with a second way in: does the trending lens
+find constructive stories the topic rounds do not? The rule
+(`data/evaluation/experiments/trends/rule.md`) was written before day 1.
+Each day it makes a trending round and the day's topic rounds over all
+five groups through the app's services, and writes the trending round's
+first twenty to label with no scores, in a shuffled order. The report
+gives precision of the first twenty, new stories (by link and by title
+similarity with `inference/` up), the first twenties by signal, and the
+funnel to chosen, admitted and published.
+
+| Day | Labelled by | Worth offering | Clearly positive | New stories | Private subject |
+|---|---|---|---|---|---|
+| 2026-10-26 | Claude, blind | 12 of 20 | 5 | 12 | 5 |
+
+r/UpliftingNews: 9 of its 10 worth offering; Upworthy 2 of 6; Google
+Trends 1 of 4. Four days to go; nothing is decided before the five
+(`docs/decisions/trends.md`, "Five trending rounds").
+
 ## Thresholds of the fact-check itself
 
 Those belong to the harness, not here: `cli run --thresholds f.json` runs

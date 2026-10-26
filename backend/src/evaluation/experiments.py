@@ -12,6 +12,8 @@ measures verdicts; these measure what decides which articles get one.
     uv run python -m src.evaluation.experiments topics [--backend http://127.0.0.1:8000]
     uv run python -m src.evaluation.experiments emphasis [--emphasis 0,0.3,0.6,1]
     uv run python -m src.evaluation.experiments sources [--backend http://127.0.0.1:8000] [--last]
+    uv run python -m src.evaluation.experiments topics24
+    uv run python -m src.evaluation.experiments trends run|report   (src/evaluation/trend_experiments.py)
 
 Each writes `result.json` and `report.md` to
 `data/evaluation/experiments/<name>/<UTC time>/` and prints the report.
@@ -1490,6 +1492,13 @@ def parser() -> argparse.ArgumentParser:
     sources.add_argument("--per-source", type=int, default=5)
     sources.add_argument("--last", action="store_true", help="the backend's last probe report instead of a new probe")
 
+    # The trending lens's (src/evaluation/trend_experiments.py).
+    commands.add_parser("topics24", help="the labelled candidates re-screened with 23 topics and with internet_culture")
+
+    trends = commands.add_parser("trends", help="a day's trending and topic rounds to label, or the labelled days' report")
+    trends.add_argument("action", choices=("run", "report"))
+    trends.add_argument("--force", action="store_true", help="run a day again (the rule allows one a day)")
+
     return root
 
 
@@ -1548,6 +1557,23 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit("The backend has no probe report yet: run without --last.")
         result = sources_experiment(probe, call("/scraper/freshness"))
         name, report = "sources", sources_report(result, load_history(EXPERIMENTS / "sources"))
+
+    elif args.command == "topics24":
+        from src.evaluation.trend_experiments import run_topics24
+
+        result, report = run_topics24()
+        name = "topics24"
+
+    elif args.command == "trends":
+        from src.evaluation.trend_experiments import run_trends_day, run_trends_report
+
+        if args.action == "run":
+            folder = run_trends_day(force=args.force)
+            print(f"The day's rounds are in {folder}. Label to-label.json into labels.json (rule.md), then `trends report`.")
+            return 0
+
+        result, report = run_trends_report()
+        name = "trends"
 
     else:
         gold = labelled_articles()

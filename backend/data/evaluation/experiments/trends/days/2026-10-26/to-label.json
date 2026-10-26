@@ -1,0 +1,206 @@
+{
+ "day": "2026-10-26",
+ "how": "Label each from what it shows, before looking at the round's scores: hand 0/1/2 (not worth offering / worth offering / clearly positive), angle story/possible/none, private true when its subject is a private person or a child in a video. rule.md.",
+ "items": [
+  {
+   "url": "https://www.yahoo.com/news/science/articles/3-indigenous-tribes-michigan-bringing-192000555.html",
+   "title": "3 Indigenous Tribes In Michigan Are Bringing Back a Fish That Vanished from the State Nearly 90 Years Ago",
+   "summary": null,
+   "outlet": "yahoo.com",
+   "language": "en",
+   "trend": "3 Indigenous Tribes In Michigan Are Bringing Back a Fish That Vanished from the State Nearly 90 Years Ago",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 1
+  },
+  {
+   "url": "https://www.upworthy.com/glen-campbell-picked-up-an-acoustic-guitar-and-tore-into-the-william-tell-overture/",
+   "title": "Glen Campbell picked up an acoustic guitar and tore into the ‘William Tell Overture’",
+   "summary": "In September of 1974, Glen Campbell performed an incredible acoustic guitar version of “The William Tell Overture” in New York City’s Central Park. The famously fast composition is difficult enough to play, but watching Campbell tear through it in a YouTube video shows just how talented a guitarist he was. According to Guitar World , legendary comedian and entertainer Bob Hope introduced Campbell…",
+   "outlet": "upworthy.com",
+   "language": "en",
+   "trend": "Glen Campbell picked up an acoustic guitar and tore into the ‘William Tell Overture’",
+   "signal": "Upworthy",
+   "n": 2
+  },
+  {
+   "url": "https://www.upworthy.com/3-magic-phrases-more-likable-ex1/",
+   "title": "Public speaking expert shares the 3 ‘magic’ phrases that instantly make you more likable",
+   "summary": "When we think of someone likable , we often imagine a person with a big personality who’s the life of the party. We conjure up images of social butterflies and people who keep everyone at the dinner party glued to their every word when they tell a story. The funny thing is, according to research, that’s not really the case . Studies show that the easiest way to make someone like you is to show…",
+   "outlet": "upworthy.com",
+   "language": "en",
+   "trend": "Public speaking expert shares the 3 ‘magic’ phrases that instantly make you more likable",
+   "signal": "Upworthy",
+   "n": 3
+  },
+  {
+   "url": "https://www.yahoo.com/lifestyle/articles/georgia-mom-adopts-gas-station-135010059.html",
+   "title": "A regular customer at a Georgia gas station befriended its pregnant cashier and offered to adopt her baby after learning she couldn’t raise him. Now Nolan’s birth mother remains part of his life, and the two women have grown so close they’re like sisters.",
+   "summary": null,
+   "outlet": "yahoo.com",
+   "language": "en",
+   "trend": "A regular customer at a Georgia gas station befriended its pregnant cashier and offered to adopt her baby after learning she couldn’t raise him. Now Nolan’s birth mother remains part of his life, and the two women have grown so close they’re like sisters.",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 4
+  },
+  {
+   "url": "https://www.gamesindustry.biz/pegi-begins-moving-existing-digital-only-games-with-loot-boxes-up-to-a-16-rating",
+   "title": "PEGI begins moving existing digital-only games with loot boxes up to a 16 rating",
+   "summary": null,
+   "outlet": "GamesIndustry.biz",
+   "language": "es",
+   "trend": "ea sports fc 27",
+   "signal": "Google Trends · Spain",
+   "n": 5
+  },
+  {
+   "url": "https://www.upworthy.com/the-surprising-origin-of-the-hello-ma-baby-looney-tunes-song-and-why-we-started-saying-hello/",
+   "title": "The surprising origin of the ‘Hello! Ma Baby’ Looney Tunes song and why we started saying ‘hello’",
+   "summary": "Nearly everything has an inspiration, and if you dig deep enough, it can feel like an endless rabbit hole. Or, in this case, a frog hole. If you’re a fan of Looney Tunes , surely you’ve seen and heard Michigan J. Frog and his fancy top hat. One of his most beloved song and dance numbers was “Hello! Ma Baby!” But the song’s history carries more weight than meets the eye. Author and unique history…",
+   "outlet": "upworthy.com",
+   "language": "en",
+   "trend": "The surprising origin of the ‘Hello! Ma Baby’ Looney Tunes song and why we started saying ‘hello’",
+   "signal": "Upworthy",
+   "n": 6
+  },
+  {
+   "url": "https://www.scmp.com/news/people-culture/trending-china/article/3372043/mum-good-chinese-woman-wakes-vegetative-daughter-law-after-17-years-care",
+   "title": "For 17 years, 68 year old Xuan Fengying cared for her daughter in law after a truck left her in a vegetative state. Now Xu can speak and walk again, telling the woman who never gave up on her, “Mum, good.”",
+   "summary": null,
+   "outlet": "scmp.com",
+   "language": "en",
+   "trend": "For 17 years, 68 year old Xuan Fengying cared for her daughter in law after a truck left her in a vegetative state. Now Xu can speak and walk again, telling the woman who never gave up on her, “Mum, good.”",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 7
+  },
+  {
+   "url": "https://goodnewsdigest.app/stories/new-south-wales-approves-vast-park-to-protect-koalas-57c60cb3",
+   "title": "New South Wales approves vast park to protect koalas",
+   "summary": null,
+   "outlet": "goodnewsdigest.app",
+   "language": "en",
+   "trend": "New South Wales approves vast park to protect koalas",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 8
+  },
+  {
+   "url": "https://www.autonocion.com/us/131-feet-solar-panels-fold-canal-anchor-chain/",
+   "title": "California is testing a foldable solar canopy stretching 131 feet over an irrigation canal 21 feet wide. It generates clean power and shades water to potentially reduce evaporation and weed growth; it is designed to fold back on rails so crews can clear the channel with an anchor chain.",
+   "summary": null,
+   "outlet": "autonocion.com",
+   "language": "en",
+   "trend": "California is testing a foldable solar canopy stretching 131 feet over an irrigation canal 21 feet wide. It generates clean power and shades water to potentially reduce evaporation and weed growth; it is designed to fold back on rails so crews can clear the channel with an anchor chain.",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 9
+  },
+  {
+   "url": "https://www.pbs.org/newshour/world/serbias-strongman-leader-vucic-concedes-defeat-to-student-led-movement-in-seismic-political-shift",
+   "title": "Serbia's strongman leader Vucic concedes defeat to student-led movement in seismic political shift",
+   "summary": null,
+   "outlet": "pbs.org",
+   "language": "en",
+   "trend": "Serbia's strongman leader Vucic concedes defeat to student-led movement in seismic political shift",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 10
+  },
+  {
+   "url": "https://people.com/bystanders-save-pickleball-players-life-after-he-had-cardiac-arrest-12193629",
+   "title": "Group of Bystanders Hailed as Heroes After Saving Pickleball Player’s Life",
+   "summary": null,
+   "outlet": "people.com",
+   "language": "en",
+   "trend": "Group of Bystanders Hailed as Heroes After Saving Pickleball Player’s Life",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 11
+  },
+  {
+   "url": "https://www.upworthy.com/musical-toddler-precisely-sings-pocketful-of-sunshine-ex1/",
+   "title": "Precocious toddler drums and sings ‘Pocketful of Sunshine’ with stunning precision",
+   "summary": "Most people can learn most things if they really put their minds to it, but there’s no question some humans are born with innate abilities that defy expectations and explanation. We call those people prodigies , and while toddlerhood might be too early to definitively use that label, a tiny tot with a stick, a shovel, and a song in his heart has people tossing around the term. When you see the…",
+   "outlet": "upworthy.com",
+   "language": "en",
+   "trend": "Precocious toddler drums and sings ‘Pocketful of Sunshine’ with stunning precision",
+   "signal": "Upworthy",
+   "n": 12
+  },
+  {
+   "url": "https://www.upworthy.com/tech-expert-one-message-convinces-teens-to-reconsider-screentime-ex1/",
+   "title": "Tech expert shares the one message that actually convinces teens to reconsider their screen time",
+   "summary": "In a 2023 TEDx Talk at Laguna Blanca School, Dino Ambrosi made a startling revelation that perfectly underlines the big question of the smartphone era: What is my time worth? Ambrosi is the founder of Project Reboot and an expert at guiding teens and young adults to develop more empowering relationships with technology. Assuming a life expectancy of 90 (an optimistic estimate, since U.S. life…",
+   "outlet": "upworthy.com",
+   "language": "en",
+   "trend": "Tech expert shares the one message that actually convinces teens to reconsider their screen time",
+   "signal": "Upworthy",
+   "n": 13
+  },
+  {
+   "url": "https://www.techpowerup.com/354110/geforce-unlocked-modders-boost-rtx-20-rtx-30-and-rtx-40-compute-performance-by-up-to-2x",
+   "title": "GeForce Unlocked: Modders Boost RTX 20, RTX 30, and RTX 40 Compute Performance by Up to 2x",
+   "summary": null,
+   "outlet": "TechPowerUp",
+   "language": "en",
+   "trend": "nvidia rtx gpu ai throttle hack",
+   "signal": "Google Trends · United States",
+   "n": 14
+  },
+  {
+   "url": "https://whyy.org/articles/microplastics-treatment-technology-atlantic-city-new-jersey-princeton-alumni/",
+   "title": "Princeton alumni remove microplastics from Atlantic City wastewater",
+   "summary": null,
+   "outlet": "whyy.org",
+   "language": "en",
+   "trend": "Princeton alumni remove microplastics from Atlantic City wastewater",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 15
+  },
+  {
+   "url": "https://www.lbc.co.uk/article/rough-sleeping-end-plan-andy-burnham-5HjdkQg_2/",
+   "title": "UK: Every rough sleepers to be given route off the streets by Christmas, Prime Minister Burnham vows",
+   "summary": null,
+   "outlet": "lbc.co.uk",
+   "language": "en",
+   "trend": "UK: Every rough sleepers to be given route off the streets by Christmas, Prime Minister Burnham vows",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 16
+  },
+  {
+   "url": "https://pagesix.com/2026/10/23/celebrity-news/christopher-lloyd-marks-88th-birthday-with-back-to-the-future-nod/",
+   "title": "Christopher Lloyd marks 88th birthday with perfect ‘Back to the Future’ nod",
+   "summary": null,
+   "outlet": "Page Six",
+   "language": "en",
+   "trend": "michael j fox",
+   "signal": "Google Trends · United States",
+   "n": 17
+  },
+  {
+   "url": "https://www.independent.co.uk/news/world/americas/georgia-house-fire-14-save-b3072170.html",
+   "title": "A stranger’s wrong turn led him to the burning home of a Georgia couple who have fostered more than 500 children. He woke the father and helped get their 12 children out. All 14 family members survived, and their community has rallied to help them rebuild.",
+   "summary": null,
+   "outlet": "independent.co.uk",
+   "language": "en",
+   "trend": "A stranger’s wrong turn led him to the burning home of a Georgia couple who have fostered more than 500 children. He woke the father and helped get their 12 children out. All 14 family members survived, and their community has rallied to help them rebuild.",
+   "signal": "r/UpliftingNews · top of the day",
+   "n": 18
+  },
+  {
+   "url": "https://www.upworthy.com/baby-orangutan-irene-becomes-the-face-of-wildlife-rescue-efforts-in-months-long-borneo-fires/",
+   "title": "Baby orangutan ‘Irene’ becomes the face of wildlife rescue efforts in months-long Borneo fires",
+   "summary": "A baby orangutan rescued in a Borneo forest is winning hearts and raising awareness of the devastating wildfires that have been plaguing Indonesia for months. The baby, Irene, “looked extremely stressed and very thin,” says wildlife veterinarian Dr. Karmele Llano Sanchez. “She may have gone for days without finding any food in this devastated forest.” Dr. Karmele is the CEO of YIARI, an…",
+   "outlet": "upworthy.com",
+   "language": "en",
+   "trend": "Baby orangutan ‘Irene’ becomes the face of wildlife rescue efforts in months-long Borneo fires",
+   "signal": "Upworthy",
+   "n": 19
+  },
+  {
+   "url": "https://www.caranddriver.com/es/formula-1/a74238874/adrian-newey-decidido-ganar-honda-f1-aston-martin-fernando-alonso-progresos/",
+   "title": "Adrian Newey, decidido a ganar con Honda F1 y Aston Martin junto a Fernando Alonso: \"Hay grandes progresos...\"",
+   "summary": null,
+   "outlet": "Car and Driver",
+   "language": "es",
+   "trend": "honda en fórmula 1",
+   "signal": "Google Trends · Spain",
+   "n": 20
+  }
+ ]
+}

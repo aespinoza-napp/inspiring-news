@@ -1,0 +1,366 @@
+{
+ "rule": "data/evaluation/experiments/topics24/rule.md",
+ "candidates": 480,
+ "bySet": {
+  "2026-10-06": 117,
+  "2026-10-09": 306,
+  "2026-10-13": 57
+ },
+ "labels": {
+  "0": 276,
+  "1": 138,
+  "2": 66
+ },
+ "leftOut": {
+  "before": 136,
+  "after": 133
+ },
+ "checks": {
+  "leak": {
+   "value": 1,
+   "bound": 2,
+   "holds": true
+  },
+  "loss": {
+   "value": 0,
+   "bound": 2,
+   "holds": true
+  },
+  "fit": {
+   "value": 0.0229,
+   "bound": 0.02,
+   "holds": false
+  },
+  "pull": {
+   "value": 13,
+   "bound": 3,
+   "holds": false
+  }
+ },
+ "adopt": false,
+ "groupFitAuc": {
+  "before": 0.9014,
+  "after": 0.8785,
+  "n": 346
+ },
+ "changedNearestTopic": 29,
+ "leaked": [
+  {
+   "url": "https://www.france24.com/en/tv-shows/french-connections/20261008-protest-culture-why-do-french-students-repeatedly-rise-up",
+   "title": "Protest culture why do french students repeatedly rise up",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOutAs": "labour",
+   "margin": 0.0206
+  }
+ ],
+ "lost": [],
+ "pulled": [
+  {
+   "url": "https://e360.yale.edu/digest/new-giant-waterlily-instagram",
+   "title": "Instagram Photo Reveals New Species of Giant Waterlily",
+   "hand": 1,
+   "set": "2026-10-09",
+   "belongsTo": [
+    "environment",
+    "science"
+   ],
+   "fitBefore": -0.0506,
+   "fitAfter": 0.003
+  },
+  {
+   "url": "https://edition.cnn.com/politics/president-donald-trump-47",
+   "title": "President donald trump",
+   "hand": 0,
+   "set": "2026-10-09",
+   "belongsTo": [],
+   "fitBefore": -0.0569,
+   "fitAfter": -0.0497
+  },
+  {
+   "url": "https://reasonstobecheerful.world/how-nyc-students-saved-school-lunch/",
+   "title": "How NYC Students Saved School Lunch",
+   "hand": 2,
+   "set": "2026-10-09",
+   "belongsTo": [
+    "society",
+    "health"
+   ],
+   "fitBefore": -0.0714,
+   "fitAfter": -0.0495
+  },
+  {
+   "url": "https://www.eldiario.es/illes-balears/sociedad/rock-perro-trabaja-hospital-ninos-pierdan-miedo-aguja_1_13568407.html",
+   "title": "Rock, el perro que 'trabaja' en el hospital para que los niños pierdan el miedo a la aguja",
+   "hand": 2,
+   "set": "2026-10-09",
+   "belongsTo": [
+    "health"
+   ],
+   "fitBefore": -0.0682,
+   "fitAfter": -0.0482
+  },
+  {
+   "url": "https://www.elmundo.es/espana/encuestas/2026/10/08/6ac7db79e9cf4af0188b4583.html",
+   "title": "El PSOE está a solo 0,5 puntos de verse sobrepasado por Compromís en la Comunidad Valenciana antes de las generales",
+   "hand": 0,
+   "set": "2026-10-09",
+   "belongsTo": [
+    "society"
+   ],
+   "fitBefore": -0.055,
+   "fitAfter": -0.0488
+  },
+  {
+   "url": "https://www.europapress.es/ciencia/laboratorio/noticia-sencilla-formula-matematica-predice-cuando-chatbots-ia-descontrolaran-20261008170103.html",
+   "title": "Noticia sencilla formula matematica predice cuando chatbots ia descontrolaran",
+   "hand": 1,
+   "set": "2026-10-09",
+   "belongsTo": [
+    "science"
+   ],
+   "fitBefore": -0.0826,
+   "fitAfter": -0.0496
+  },
+  {
+   "url": "https://www.infobae.com/salud/2026/10/09/como-aliviar-las-varices-con-habitos-simples-y-evitar-mayores-molestias/",
+   "title": "Como aliviar las varices con habitos simples y evitar mayores molestias",
+   "hand": 0,
+   "set": "2026-10-09",
+   "belongsTo": [
+    "health"
+   ],
+   "fitBefore": -0.0626,
+   "fitAfter": -0.0126
+  },
+  {
+   "url": "https://www.smithsonianmag.com/smart-news/flu-season-started-early-in-parts-of-the-us-and-experts-say-you-should-consider-getting-the-seasonal-jab-asap-heres-what-to-know-180989639/",
+   "title": "Flu Season Started Early in Parts of the U.S., and Experts Say You Should Consider Getting the Seasonal Jab ASAP. Here's What to Know",
+   "hand": 1,
+   "set": "2026-10-09",
+   "belongsTo": [
+    "health"
+   ],
+   "fitBefore": -0.0514,
+   "fitAfter": -0.0468
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03216-7",
+   "title": "Briefing Chat: Top researchers are being mislead by sham academic societies",
+   "hand": 0,
+   "set": "2026-10-13",
+   "belongsTo": [
+    "science"
+   ],
+   "fitBefore": -0.0534,
+   "fitAfter": 0.0036
+  },
+  {
+   "url": "https://www.elmundo.es/salud/2026/10/09/6ac898f6fdddffec1c8b457d.html",
+   "title": "Los interrogantes sobre la muerte de Daria Shipilova, la joven investigadora rusa que murió mientras estudiaba la bacteria de la peste: \"Tenía mucho miedo de contagiar a alguien\"",
+   "hand": 0,
+   "set": "2026-10-13",
+   "belongsTo": [
+    "health"
+   ],
+   "fitBefore": -0.0558,
+   "fitAfter": -0.0494
+  },
+  {
+   "url": "https://www.20minutos.es/tecnologia/moviles-dispositivos/llega-samsung-galaxy-a18-comparativa-galaxy-a17-movil-anterior_7045045_0.html",
+   "title": "Llega el Samsung Galaxy A18: ¿supera al Galaxy A17 o es mejor el móvil anterior?",
+   "hand": 0,
+   "set": "2026-10-13",
+   "belongsTo": [],
+   "fitBefore": -0.062,
+   "fitAfter": -0.0498
+  },
+  {
+   "url": "https://www.infobae.com/sociedad/2026/10/09/celulares-y-redes-sociales-en-menores-que-cambios-impulsa-meta-y-cuales-son-los-riesgos-del-uso-excesivo/",
+   "title": "Celulares y redes sociales en menores: qué cambios impulsa Meta y cuáles son los riesgos del uso excesivo",
+   "hand": 0,
+   "set": "2026-10-13",
+   "belongsTo": [
+    "society",
+    "health"
+   ],
+   "fitBefore": -0.051,
+   "fitAfter": 0.017
+  },
+  {
+   "url": "https://www.eldiario.es/comunitat-valenciana/generalitat-da-carpetazo-definitivo-macrovertedero-zarra-ampliamente-rechazado-vecinos_1_13575387.html",
+   "title": "La Generalitat da carpetazo definitivo al macrovertedero de Zarra, ampliamente rechazado por los vecinos",
+   "hand": 1,
+   "set": "2026-10-13",
+   "belongsTo": [
+    "environment",
+    "society"
+   ],
+   "fitBefore": -0.0527,
+   "fitAfter": -0.0211
+  }
+ ],
+ "nearestIsNewTopic": [
+  {
+   "url": "https://www.goodnewsnetwork.org/star-quarterback-wants-to-help-gen-z-handle-money-with-new-video-series-finance-with-fernando/",
+   "title": "Star Quarterback Wants to Help Gen Z Handle Money with New Video Series ‘Finance with Fernando’",
+   "hand": 1,
+   "set": "2026-10-06",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.lavanguardia.com/cultura/20261005/11651680/llegamos-6-manana-punado-fans-entera-cancelacion-estadi.html",
+   "title": "Un puñado de fans se entera de la cancelación del concierto de Oques Grasses en el Estadi",
+   "hand": 0,
+   "set": "2026-10-06",
+   "leftOut": null
+  },
+  {
+   "url": "https://theconversation.com/manchester-city-supporters-have-been-gaslit-what-happens-now-293249",
+   "title": "Manchester City supporters have been gaslit. What happens now?",
+   "hand": 0,
+   "set": "2026-10-06",
+   "leftOut": "labour"
+  },
+  {
+   "url": "https://e360.yale.edu/digest/new-giant-waterlily-instagram",
+   "title": "Instagram Photo Reveals New Species of Giant Waterlily",
+   "hand": 1,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://elpais.com/cultura/cine/2026-10-09/el-precio-de-la-red-colgados-de-las-redes-luego-pasa-lo-que-pasa.html",
+   "title": "‘El precio de la red’: colgados de las redes. Luego pasa lo que pasa",
+   "hand": 1,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://elpais.com/sociedad/2026-10-09/un-youtuber-espanol-residente-en-andorra-multado-con-750000-euros-por-la-rifa-de-un-coche-de-lujo.html",
+   "title": "Multa récord de 750.000 euros por la rifa que realizó TheGrefg de su coche de lujo sin tener los permisos necesarios",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOut": "service"
+  },
+  {
+   "url": "https://elpais.com/television/2026-10-09/shakira-protagoniza-la-entrevista-mas-breve-incomoda-y-extrana-de-la-revuelta.html",
+   "title": "Shakira protagoniza la entrevista más breve, incómoda y extraña de ‘La revuelta’",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOut": "celebrity"
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/ciencia/por-que-personas-razonables-pueden-equivocarse-cuando-siguen-al-grupo.html",
+   "title": "Por qué personas razonables pueden equivocarse al seguir la opinión del grupo",
+   "hand": 1,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/historia/la-leyenda-negra-de-los-tercios-como-la-imprenta-difundio-la-propaganda-contra.html",
+   "title": "Cómo la imprenta difundió la propaganda contra los tercios españoles y creó su leyenda negra",
+   "hand": 1,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://muyinteresante.okdiario.com/historia/por-que-gran-bretana-temio-una-invasion-alemana-de-irlanda-durante-la-segunda.html",
+   "title": "Por qué Gran Bretaña temía que la Alemania nazi invadiera Irlanda durante la Segunda Guerra Mundial",
+   "hand": 1,
+   "set": "2026-10-09",
+   "leftOut": "conflict"
+  },
+  {
+   "url": "https://news.mongabay.com/short-article/2026/10/an-instafamous-giant-water-lily-is-confirmed-as-a-new-species-and-critically-endangered/",
+   "title": "An Instafamous giant water lily is confirmed as a new species — and critically endangered",
+   "hand": 1,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://theconversation.com/brazil-election-authoritarian-right-gain-an-edge-fueled-by-voter-apathy-and-discontent-293655",
+   "title": "Brazil election: Authoritarian right gain an edge, fueled by voter apathy and discontent",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOut": "politics"
+  },
+  {
+   "url": "https://www.20minutos.es/tecnologia/aplicaciones/nueva-york-acusa-tiktok-pruebas-menores-seguridad-placebo_7047057_0.html",
+   "title": "Nueva York acusa a TikTok de incluir a menores en pruebas con herramientas de seguridad 'placebo'",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cm9dzl7wx2qyo?at_medium=RSS&at_campaign=rss",
+   "title": "Emotions run high at the round table as Celebrity Traitors banish two players",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOut": "celebrity"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cmy0r96xygx6o?at_medium=RSS&at_campaign=rss",
+   "title": "Firing squad execution of man who killed 13 soldiers to be livestreamed, Pentagon says",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOut": "conflict"
+  },
+  {
+   "url": "https://www.bbc.co.uk/news/articles/cq8rzjv8g7ejo?at_medium=RSS&at_campaign=rss",
+   "title": "Mark Zuckerberg has an image problem - so why is Meta's business booming?",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.france24.com/en/tv-shows/french-connections/20261008-protest-culture-why-do-french-students-repeatedly-rise-up",
+   "title": "Protest culture why do french students repeatedly rise up",
+   "hand": 0,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.goodnewsnetwork.org/strangers-showed-up-to-mans-destroyed-house-to-put-up-a-tarp-having-seen-his-televised-plea/",
+   "title": "Strangers Showed Up to Man’s Destroyed House to Put Up a Tarp Having Seen His Televised Plea",
+   "hand": 2,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.nationalgeographic.com/science/article/social-t-rex-tyrant-lizard-queen",
+   "title": "Social t rex tyrant lizard queen",
+   "hand": 1,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.smithsonianmag.com/science-nature/five-discoveries-that-changed-our-understanding-of-t-rex-forever-from-warm-blood-to-lips-180989634/",
+   "title": "Five Discoveries That Changed Our Understanding of T. Rex Forever, From Warm Blood to Lips",
+   "hand": 1,
+   "set": "2026-10-09",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.nature.com/articles/d41586-026-03216-7",
+   "title": "Briefing Chat: Top researchers are being mislead by sham academic societies",
+   "hand": 0,
+   "set": "2026-10-13",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.europapress.es/portaltic/ciberseguridad/noticia-nueva-york-acusa-tiktok-realizar-pruebas-secretas-seguridad-adolescentes-funcion-algo-refresh-20261009112407.html",
+   "title": "Nueva York acusa a TikTok de realizar pruebas secretas de seguridad con adolescentes con la función 'Algo Refresh'",
+   "hand": 0,
+   "set": "2026-10-13",
+   "leftOut": null
+  },
+  {
+   "url": "https://www.infobae.com/sociedad/2026/10/09/celulares-y-redes-sociales-en-menores-que-cambios-impulsa-meta-y-cuales-son-los-riesgos-del-uso-excesivo/",
+   "title": "Celulares y redes sociales en menores: qué cambios impulsa Meta y cuáles son los riesgos del uso excesivo",
+   "hand": 0,
+   "set": "2026-10-13",
+   "leftOut": null
+  }
+ ]
+}
