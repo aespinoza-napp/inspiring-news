@@ -99,6 +99,96 @@ These are in each prompt as "the goal rules":
 /goal Close the roadmap item "Integration test: full pipeline run". Today tests/test_real_pipeline_integration.py starts from a hand-built News (no extraction) and stops at claim selection (no retrieval, ranking, LLM or scoring). Add an end-to-end test of the real AnalysisService.analyze from a URL. Extraction reads a saved HTML fixture through a fake fetch (no network). Enrichment is real, over inference/ (require_inference: it skips without it). Admission is real, on a tmp_path Qdrant. The FactChecker is real (EvidenceRetriever, EvidenceRanker, LLMVerifier, ConfidenceScorer), with only the network clients faked from tests/services/fact_checker/fakes.py: SearXNG, the evidence-page fetch, and an LLM returning a canned JSON verdict. A new shared fake needs its contract entry. The lake and the AnalysisCache go to tmp_path (the cache otherwise defaults to the real data/cache), and the graph is off. Assert: each claim's on_phase events name every stage literal in order; a source the canned answer cites survives ranking; the verdict and cited indices match the canned answer; a claim with no evidence comes back UNVERIFIED without an LLM call; the article lands in all three lake layers; the response matches ANALYZE_RESPONSE_SHAPE. Then run it once with inference/ up and record the result in the roadmap. Follow the goal rules in docs/goals.md. Done when ./scripts/check.sh passes with inference/ reachable and the new test ran rather than skipped.
 ```
 
+## Trends (added 2026-10-26)
+
+Seven goals for the Trending lens: what goes viral, and the good news
+in it. The design and the 26 Oct measurements behind it are in the
+roadmap artifact's "Trends" section and `docs/decisions/trends.md`. 76 h
+on top of the 900-hour plan.
+
+Where they stand on 2026-10-26, all on `feature/trends`: **T1, T2, T4
+and T5 done**, each with its live run recorded in `trends.md`. **T3
+decided by its rule: not adopted.** **T6 at day 1 of 5**, labelled by
+Claude, blind; days 2-5 are the author's, one a day. **T7 written** for
+everything that exists, with days 2-5 as `\pending`; the thesis builds.
+The e2e target holds T5's "nothing from TikTok before the click", but
+the script still needs a POSIX machine. The same checks passed on
+Windows, run by hand. T5's live story (a draft and its review from T4's
+trial article) is recorded in `trends.md` too. `./scripts/check.sh` on
+the branch, on Windows: 2,074 backend tests, the 15 inference tests, the
+typecheck and the labeller's 43 pass. `test_container` failed once,
+while the live trial held `data/vector_db`, and passed on its own
+Qdrant folder (`QDRANT_PATH=<tmp>`). So T5's "including the e2e target"
+is met by hand, not yet by the target. The prompts below stay as the
+record of what was asked.
+
+```
+T1 Signals ── T2 Lens on /discover ── T3 internet_culture ── T6 Five rounds (RQ1)
+                                            │
+T4 Angle ── T5 Story and embed ─────────────┴── T7 Thesis section
+```
+
+T3 comes before T6 rather than after it, as the roadmap first had it:
+the rule is that all five rounds run on one version of the screen, and
+settling the new topic first keeps that true from the first round.
+
+Rules every trends goal follows, on top of the goal rules above:
+
+- **Free.** No paid API, service or key: public feeds, the project's own
+  SearXNG, `inference/` and the local Ollama models only. A route that
+  needs a card or an application is listed as not used, with why.
+- **TikTok is never scraped.** Its trend listing needs a signed session
+  and its terms forbid it. TikTok reaches the system as a hashtag or a
+  link a person types, and as oEmbed's player for a link already known.
+- Tests read saved feeds (`backend/tests/fixtures/trends/`), never the
+  live web. Live runs are T3's re-screen, T6's rounds and T4's trial.
+- Virality ranks what is looked at and never enters a verdict, a
+  confidence or a source's rating.
+- Work on `feature/trends` off `dev`; commit when the author says so;
+  never push.
+
+### T1 · Trend signals and a trend's card · 12h
+
+```
+/goal Build the trend signals. backend/data/trends/*.yaml, one file per signal (not source YAMLs: trends.google.com is one domain for every country, and one source per domain exists for reliability), loaded into a TrendSignal model: Google Trends' "Trending now" RSS for Spain and the US, r/UpliftingNews' top of the day, Upworthy and Know Your Meme. backend/src/services/trends/ (no __init__.py) reads them through the shared Fetcher (URL guard, timeout) into Trend records: name, signal, language, approximate searches ("2000+" -> 2000) or place in the feed, when it started, its articles (Google's attached news items; for Reddit the article a post links to, never the thread; a self-post has none) and, for each, title, outlet and link. A person's seed is a third kind: a hashtag becomes a trend searched through SearXNG's !news; a TikTok link is kept as the trend's video and its caption read through TikTok's oEmbed when it gives one. Searching a trend's name for more articles uses the SearxngClient with its DuckDuckGo fallback and fails soft (the trend keeps Google's articles and says the search failed). Tests on saved copies of the 26 Oct feeds in backend/tests/fixtures/trends/: ten Spanish trends with 30 articles, the traffic parsed, Reddit's self-post skipped and its 2016 link kept for the age filter to judge, a malformed feed reported and not raised, a seed hashtag and a seed TikTok link, a failed search noted. Follow the goal rules and the trends rules in docs/goals.md. Done when ./scripts/check.sh passes and docs/decisions/trends.md describes the signals as built.
+```
+
+### T2 · Trending as a lens on /discover · 16h
+
+```
+/goal Make Trending a way into /discover. POST /ingest/rounds takes `trending: true` with optional `signals`, `seed` and 0-3 groups (a round still needs groups when not trending; trending does not count towards the three). The candidates are each trend's articles, filtered as discovery filters links: article shape, off-mission sections and live pages, a new BETTING_DOMAINS list (FanDuel and Dimers came with the 26 Oct tennis trends; the section list has /tenis/ but not /tennis/), not already in the lake (comparable_url), each URL once, and no older than MAX_TREND_AGE, 72 hours, by the trend's time, the article's own or the date in its path. The mission screen runs on them unchanged and nothing is exempt. Ranking (selection/ranking.py): the story's 0.6 as today, split by topic emphasis only when groups were asked for (emphasis 0 otherwise, the existing no-topic path); the signal's record in this round's screen in place of the source's (0.25); virality in place of reliability (0.15), each trend's place among its signal's trends by searches or position, so every signal's top trend is 1; a seed is UNREAD. The weights still sum to 1 at every emphasis (a test) and are recorded with the round. The round keeps `lens: "trending"`, the trends with their counts, and each candidate's trend card. The AI selection is told when a round is trending, with one sentence more in its definition. frontend: a Trending button beside the groups on /discover, the signals to read, a field for a hashtag or TikTok link, the trend card on each candidate; npx tsc passes. docs/decisions/selection.md gets a "Trending" section. Follow the goal rules and the trends rules in docs/goals.md. Done when ./scripts/check.sh passes and a trending round over the saved 26 Oct feeds ranks Madrid's Metro line 10 reopening above the AP-7 lorry crash in a test.
+```
+
+### T3 · The internet_culture topic, if a re-screen holds · 6h
+
+```
+/goal Decide the internet_culture topic by measurement. Write the adoption rule first, in backend/data/evaluation/experiments/topics24/rule.md, before running anything. Add internet_culture ("Internet Culture & Trends", in Culture) to src/config/topics.py, taking Entertainment's three keywords added for the farmear aura article, with TOPIC_KEYWORDS_ES beside it and the labeller's copy of the groups kept equal (tests). Then re-screen every recorded candidate that has a title (the labelled rounds in backend/data/evaluation/experiments/{ranking,alignment,emphasis}/) with 23 and with 24 topics through a local inference/, and report in result.json and report.md: verdicts that change and in which direction, each newly kept candidate with its label, the ranking's AUC for worth offering before and after, and how many change group fit. Apply the rule. If it fails, take the topic out again and record why; either way docs/experiments.md and docs/decisions/trends.md say what was measured and decided. Follow the goal rules and the trends rules in docs/goals.md. Done when ./scripts/check.sh passes and the rule has been applied to a report.
+```
+
+### T6 · Five trend rounds labelled blind (RQ1) · 12h
+
+```
+/goal Measure the Trending lens for RQ1. Write the rule first in backend/data/evaluation/experiments/trends/rule.md: what is labelled (each trending round's first twenty: not worth offering, worth offering, clearly positive, and whether a source supports a constructive angle), against what (the same day's topic rounds over all five groups), what is reported (precision of the first twenty, the stories the topic rounds did not find, the funnel trends -> candidates -> kept by the screen -> chosen -> admitted -> published) and what would make the lens an option rather than a default. Add `experiments trends` to src/evaluation/experiments.py: it runs a day's trending round and topic rounds through the real services (inference/ for the screen; SearXNG when up, else Google's own articles only, recorded), writes the candidates to label without their scores, and later reads the labels and writes result.json and report.md. Tests on fixture rounds and labels. Then run day 1 of 5 and label it blind (the labels are Claude's until the author checks them, and say so). Days 2-5 are the author's, one a day, with the command written in the report. Follow the goal rules and the trends rules in docs/goals.md. Done when ./scripts/check.sh passes, the rule and day 1's report are committed to the branch's working tree, and the report says how many days remain.
+```
+
+### T4 · The positive angle, found and checked · 14h
+
+```
+/goal Find a constructive angle for a trend story only where sources support it. backend/src/services/trends/angles.py: the writer model (WRITER_LLM_MODEL, qwen3.5:4b) reads the analysed article's headline, lead and verdicts and the trend's card and proposes at most angle_max_proposals angles, each a question, a search query and one checkable claim; each claim goes through the fact-checker's own check_claim (the /verify-claim path) and the angle is kept only when the verdict is TRUE and its cited, supporting sources come from at least angle_min_domains domains. Never for an article the screen would call a disaster, a war or a death: the step reads the round's screen and refuses those. The minimums are WriterThresholds fields with settings defaults and overrides (invariants 1-2; test_invariants holds the pair). A trend ledger (lake/stats/trends/articles.json, attached by main.py like the sightings) remembers which article came from which trend when a trending round is queued, so a draft knows it. The kept angles and the ones refused, each with why, are recorded on the draft. Fakes for the LLM and the checker, with a contract entry if shared (invariant 10). Then one live trial on a real trend article with inference/, SearXNG and Ollama up, its time and outcome written into docs/decisions/trends.md. Follow the goal rules and the trends rules in docs/goals.md. Done when ./scripts/check.sh passes and the trial is recorded, whatever it found.
+```
+
+### T5 · Writing and publishing from a trend · 10h
+
+```
+/goal Write and publish a story from a trend. ArticleDraft gains `trend` (the card, the angles kept and refused, the video) mirrored in frontend/src/lib/drafts.ts; the kept angles' sources join the draft's sources with origin "angle" after the related news, and the writer is told the trend and each angle as an instruction it may follow only with those sources (CLOSED_WORLD_RULES unchanged). The review gains one deterministic check: when an angle was kept, the body cites at least one of its sources, and no sentence that states the angle's claim is uncited. The published snapshot carries the trend's name and the video (provider, id, link, title) through the publisher's allowlist; the reader's story page shows the video behind a click-to-load facade that names TikTok and its cookies, and loads https://www.tiktok.com/player/v1/<id> only after the click; no private person's or minor's details beyond the source. /drafts/[id] shows the trend and the angles. Tests for the check, the snapshot and the shape; npx tsc passes; ./scripts/check.sh e2e checks the facade loads nothing from TikTok before the click. Follow the goal rules and the trends rules in docs/goals.md. Done when ./scripts/check.sh passes, including the e2e target.
+```
+
+### T7 · The trends section in the thesis · 6h
+
+```
+/goal Put the Trending lens in the thesis. In docs/final_document/: the lens and its signals in candidate selection (chapters/04-proposed-method/04-candidate-selection.tex) and news acquisition (chapters/05-development/02-news-acquisition/), the angle in the writing flow (chapters/05-development/10-writing-flow.tex), the internet_culture decision where the topics are, and T6's design and day-1 numbers under RQ1 (chapters/07-results/02-rq1-finding.tex), each figure with the command that reproduces it and every number still to come marked the way the other placeholders are. Free tools only, and TikTok not scraped, said in one paragraph with why. The thesis compiles with no undefined reference. Follow the goal rules and the trends rules in docs/goals.md. Done when ./scripts/check.sh passes and the PDF builds.
+```
+
 ## Left to the author (prepared 2026-10-20)
 
 Five goals that need a person, or a model this machine does not yet
