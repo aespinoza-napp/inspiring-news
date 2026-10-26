@@ -494,6 +494,26 @@ per source, read again: a new round), the AI, the count, **Analyse** -
 stays in view while the list scrolls. Refresh used to be "New round" at
 the end of the list, then "Find articles" back up in step 2.
 
+## Trending: a way in, not a group (2026-10-26)
+
+A round can be **trending** (`trending: true`): its candidates are the
+articles behind what is spreading right now (Google's rising searches in
+Spain and the US, r/UpliftingNews' top of the day, Upworthy, Know Your
+Meme, and a hashtag or link a person typed) instead of the sources of
+some groups. The decision, the filters, the ranking with virality in
+reliability's place, and what the first live run showed are in
+`docs/decisions/trends.md`, "The lens".
+
+What it shares with a topic round: the mission screen, unchanged and
+exempting nothing; the ranking's story part and record (the signal's,
+not a source's); `SAME_STORY`; the AI selection, told the list is
+trending; the queue, which also notes each article's trend for the
+writing flow. What it does not: groups are optional and only order what
+fits them; nothing is read from the source YAMLs; articles may be a week
+old, not a month, and their trend must have started within 72 hours;
+betting sites go by domain (`BETTING_DOMAINS`, now part of `off_mission`
+for every discovery).
+
 ## The AI selection
 
 `POST /ingest/rounds/{id}/ai-selection` scores every candidate 0-10 for

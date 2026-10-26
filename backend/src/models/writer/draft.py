@@ -40,9 +40,11 @@ Busy = Literal["generating", "reviewing", "rewriting", "publishing"]
 RevisionReason = Literal["generated", "edited", "corrected", "rewritten", "restored"]
 
 # Where a source came from: the article the draft starts from, news the
-# writer found about the same story, or the evidence a claim of the
-# analysed article was checked against.
-SourceOrigin = Literal["analysed", "related", "evidence"]
+# writer found about the same story, the evidence a claim of the analysed
+# article was checked against, or - for a draft from a trend - a source
+# behind a constructive angle the fact-check confirmed
+# (src/services/trends/angles.py).
+SourceOrigin = Literal["analysed", "related", "evidence", "angle"]
 
 
 class CamelModel(BaseModel):
@@ -145,6 +147,67 @@ class DraftRevision(CamelModel):
     at: str
 
 
+class DraftAngle(CamelModel):
+    """
+    A constructive angle the writer model proposed for a story from a
+    trend, and what the fact-check made of it (docs/decisions/trends.md,
+    "The angle"). Kept only when its claim came back TRUE from supporting
+    sources of enough domains; a refused one stays here, with why.
+    """
+
+    question: str
+
+    # The one checkable sentence that would have to be true.
+    claim: str
+
+    query: str = ""
+
+    kept: bool = False
+
+    reason: str = ""
+
+    verdict: str | None = None
+
+    confidence: float | None = None
+
+    # The domains of the cited sources that support the claim.
+    domains: list[str] = Field(default_factory=list)
+
+    # Those sources, as they are in the draft's `sources` (origin "angle").
+    source_urls: list[str] = Field(default_factory=list)
+
+
+class DraftTrend(CamelModel):
+    """
+    The trend a draft's article was found through, from the trend ledger
+    (src/services/trends/ledger.py): its card, the angles looked for, and
+    the video a person gave with it.
+    """
+
+    id: str
+
+    name: str
+
+    signal: str = ""
+
+    signal_name: str = ""
+
+    traffic: int | None = None
+
+    started_at: str | None = None
+
+    link: str | None = None
+
+    # A TikTok video: provider, id, url, title, author. Shown on the
+    # published story only through TikTok's own player, after a click.
+    video: dict | None = None
+
+    angles: list[DraftAngle] = Field(default_factory=list)
+
+    # Why no angle was looked for, or what went wrong looking.
+    angle_note: str | None = None
+
+
 class PublishRecord(CamelModel):
     """One publication on one channel."""
 
@@ -202,6 +265,10 @@ class ArticleDraft(CamelModel):
     updated_at: str
 
     published: list[PublishRecord] = Field(default_factory=list)
+
+    # Set when the analysed article came from a trending round: the trend,
+    # and the constructive angles looked for. None for any other draft.
+    trend: DraftTrend | None = None
 
 
 class DraftSummary(CamelModel):

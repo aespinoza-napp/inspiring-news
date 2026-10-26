@@ -59,6 +59,24 @@ export interface PublishedStory {
   metadata: StoryMetadata;
   disclosure: StoryDisclosure;
   publishedAt: string;
+  /** A story from a trend: which, and the video a person gave with it. Absent before 2026-10-26. */
+  trend?: StoryTrend | null;
+}
+
+/** The TikTok video behind a trend, loaded only after the reader clicks (backend StoryVideo). */
+export interface StoryVideo {
+  provider: "tiktok";
+  /** Digits only: https://www.tiktok.com/player/v1/<id>. */
+  id: string;
+  url: string;
+  title: string | null;
+  author: string | null;
+}
+
+export interface StoryTrend {
+  name: string;
+  signalName: string;
+  video: StoryVideo | null;
 }
 
 export interface StoryCard {

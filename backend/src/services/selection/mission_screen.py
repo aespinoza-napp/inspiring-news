@@ -403,11 +403,17 @@ class MissionScreen:
         embedding_service: EmbeddingService | None = None,
         margin: float = MARGIN,
         margins: dict[str, float] | None = None,
+        topics: dict | None = None,
     ):
 
         self.embedding_service = embedding_service or EmbeddingService()
         self.margin = margin
         self.margins = MARGINS if margins is None else margins
+
+        # The topics a candidate is compared with: the configured ones,
+        # unless an experiment compares two sets (the 23 and the 24 of
+        # 2026-10-26, src/evaluation/trend_experiments.py).
+        self.topics = TOPICS if topics is None else topics
 
         # (topic ids, off-mission ids, one row per description, IMPACT
         # last), embedded on first use - the ingestion service that holds
@@ -488,10 +494,10 @@ class MissionScreen:
 
                 if self._labels is None:
 
-                    topic_ids = list(TOPICS)
+                    topic_ids = list(self.topics)
                     off_ids = list(OFF_MISSION)
 
-                    texts = [_describe(TOPICS[t].name, TOPICS[t].description, TOPICS[t].keywords) for t in topic_ids]
+                    texts = [_describe(self.topics[t].name, self.topics[t].description, self.topics[t].keywords) for t in topic_ids]
                     texts += [_describe(*OFF_MISSION[o]) for o in off_ids]
                     texts += [_describe(*IMPACT)]
 

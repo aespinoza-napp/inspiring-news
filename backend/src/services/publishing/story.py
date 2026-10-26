@@ -98,6 +98,66 @@ class StoryDisclosure(CamelModel):
     human_edited: bool = False
 
 
+class StoryVideo(CamelModel):
+    """
+    The TikTok video a person gave with the trend (docs/decisions/trends.md,
+    "The story"). The page shows it only through TikTok's own player, and
+    only after the reader clicks: the player sets TikTok's cookies.
+    """
+
+    provider: str = "tiktok"
+
+    # The player's id: https://www.tiktok.com/player/v1/<id>.
+    id: str
+
+    url: str
+
+    title: str | None = None
+
+    author: str | None = None
+
+
+class StoryTrend(CamelModel):
+    """That the story was found through a trend, and which one. Not its angles, searches or link."""
+
+    name: str
+
+    signal_name: str = ""
+
+    video: StoryVideo | None = None
+
+
+def story_trend(draft: ArticleDraft) -> StoryTrend | None:
+    """
+    The trend a reader may see, from the draft's: its name and signal, and
+    a TikTok video only with a numeric player id and a TikTok link - what
+    the page will load after a click is fixed here, not by the draft.
+    """
+
+    trend = draft.trend
+
+    if trend is None:
+        return None
+
+    video = None
+    given = trend.video or {}
+    url = str(given.get("url") or "")
+
+    if (
+        given.get("provider") == "tiktok"
+        and str(given.get("id") or "").isdigit()
+        and url.startswith(("https://www.tiktok.com/", "https://tiktok.com/", "https://m.tiktok.com/", "https://vm.tiktok.com/"))
+    ):
+        video = StoryVideo(
+            id=str(given["id"]),
+            url=url,
+            title=given.get("title") or None,
+            author=given.get("author") or None,
+        )
+
+    return StoryTrend(name=trend.name, signal_name=trend.signal_name, video=video)
+
+
 class StoryCard(CamelModel):
     """A row of the public list: no body, no sources."""
 
@@ -145,6 +205,9 @@ class PublishedStory(CamelModel):
     # (after an unpublish, an edit and a new approval) is a new text and
     # takes a new date.
     published_at: str
+
+    # A story from a trend: which, and the video a person gave with it.
+    trend: StoryTrend | None = None
 
     @classmethod
     def of(cls, draft: ArticleDraft, published_at: str) -> "PublishedStory":
@@ -199,6 +262,7 @@ class PublishedStory(CamelModel):
                 human_edited=any(revision.reason == "edited" for revision in chain),
             ),
             published_at=published_at,
+            trend=story_trend(draft),
         )
 
     def card(self) -> StoryCard:

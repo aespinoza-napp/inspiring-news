@@ -14,6 +14,7 @@ const ORIGIN_LABEL: Record<SourceOrigin, string> = {
   analysed: "Analysed article",
   related: "Related news",
   evidence: "Fact-check evidence",
+  angle: "Constructive angle, confirmed",
 };
 
 // NOT_CHECKED (our search or model failed) is none of these: VerdictBadge

@@ -84,6 +84,7 @@ src.main:app --port 8001`.
 | Where a claim's seconds go; the speed switches, the claim deadline, the 22 Oct contest | `docs/decisions/performance.md` ("The 20-second fact-check"), `backend/data/evaluation/experiments/speed/` |
 | Why the verifier asks one source at a time; comparing verifiers on one run's evidence (`--replay`) | `docs/decisions/evaluation.md` ("The verifier's FALSE", "Replay"), `backend/data/evaluation/experiments/verifier/` |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
+| Trending: the signals (Google Trends, r/UpliftingNews...), the lens on /discover, the checked positive angle, the TikTok embed; why TikTok is never scraped | `docs/decisions/trends.md` |
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
 
@@ -168,6 +169,13 @@ write them down than to have each be rediscovered.
   only when a run is scoped to some groups (`TOPIC_KEYWORDS_ES`, titles
   only); asked for every topic they are not pre-filtered at all
   (`docs/decisions/selection.md`, `docs/decisions/scraping.md`).
+- **TikTok is never read, and trends are free by rule.** Its trend listing
+  needs a signed session and its terms forbid scraping. The Trending lens
+  reads public feeds with no key (`backend/data/trends/`), and TikTok
+  reaches it only as a hashtag or link a person types, shown through
+  oEmbed's player after a click. Reddit and oEmbed limit readers without a
+  key: a signal or a caption can come back empty, and the round says so.
+  No paid API is used. `docs/decisions/trends.md`.
 - **The headless browser is optional and usually absent locally.**
   `playwright` is the `browser` extra; `./scripts/check.sh` never
   installs it, and without it (or without `playwright install chromium`)

@@ -21,6 +21,14 @@ analysis. A round puts a choice in between:
 Every step is written into the round (src/services/selection/rounds.py):
 who chose, what the AI had proposed, and how far the two agreed - the
 selection step's own measurements.
+
+A round can also be **trending** (src/services/trends/trending.py,
+docs/decisions/trends.md): its candidates are the articles behind what is
+spreading right now - Google's rising searches, r/UpliftingNews' top of
+the day, a hashtag a person typed - instead of the sources of some topic
+groups. From there it is the same round: the same choice, the same AI
+(told the list is trending), the same queue, and each queued article's
+trend noted for the writing flow (src/services/trends/ledger.py).
 """
 
 from __future__ import annotations
@@ -73,10 +81,18 @@ class SelectionService:
         ingestion,
         selector: AISelector | None = None,
         rounds: SelectionRounds | None = None,
+        trending=None,
+        ledger=None,
     ):
         self.ingestion = ingestion
         self.selector = selector or AISelector()
         self.rounds = rounds if rounds is not None else default_rounds
+
+        # The trending lens (TrendingDiscovery) and where queued trend
+        # articles are noted (TrendLedger); None where no trending round is
+        # ever made, as in most tests.
+        self.trending = trending
+        self.ledger = ledger
 
         self._lock = threading.Lock()
         self._running: str | None = None
@@ -92,16 +108,37 @@ class SelectionService:
         per_source: int = 3,
         listed: int = LISTED,
         topic_emphasis: float | None = None,
+        trending: bool = False,
+        signal_ids: list[str] | None = None,
+        seed: str | None = None,
+        search: bool = False,
     ) -> dict:
         """
         `topic_emphasis`, 0-1, is how much fitting `groups` weighs against
         positive impact in the order (ranking.py; None: the default) - the
         person's, for this round only, and recorded with it.
+
+        `trending`: the candidates are what is spreading right now - the
+        signals in `signal_ids` (None: all) and the person's `seed` - and
+        `groups`, which may then be empty, only order what fits them first.
+        `per_source` is then articles per trend.
         """
 
-        discovered = self.ingestion.discover_candidates(
-            groups, source_ids, per_source, topic_emphasis=topic_emphasis,
-        )
+        if trending:
+
+            if self.trending is None:
+                raise InvalidSelection("Trending rounds are not available here.")
+
+            discovered = self.trending.discover(
+                groups=groups, signal_ids=signal_ids, seed=seed,
+                per_trend=per_source, search=search, topic_emphasis=topic_emphasis,
+            )
+
+        else:
+
+            discovered = self.ingestion.discover_candidates(
+                groups, source_ids, per_source, topic_emphasis=topic_emphasis,
+            )
 
         # Best first already; `totals.candidates` keeps counting all found.
         found = discovered["candidates"]
@@ -209,7 +246,10 @@ class SelectionService:
         state = dict(round_.get("aiSelection") or {"startedAt": _now(), "limit": limit, "minScore": min_score})
 
         try:
-            selection = self.selector.select(round_["candidates"], round_["groups"], limit, min_score)
+            # Said only of a trending round, so a selector that predates
+            # the lens is called exactly as before.
+            told = {"trending": True} if round_.get("lens") == "trending" else {}
+            selection = self.selector.select(round_["candidates"], round_["groups"], limit, min_score, **told)
             state.update(status="done", **selection.to_dict())
         except LLMUnavailableError as exc:
             state.update(status="failed", error=f"The LLM could not be reached: {exc}")
@@ -275,6 +315,14 @@ class SelectionService:
 
         self.rounds.save(round_)
 
+        # A trend's article is analysed like any other; the draft written
+        # from it later needs to know its trend.
+        if self.ledger is not None:
+            cards = {candidate["url"]: candidate.get("trend") for candidate in round_["candidates"]}
+            for job in jobs:
+                if job.get("jobId") and cards.get(job["url"]):
+                    self.ledger.remember(job["url"], cards[job["url"]], round_id=round_id)
+
         return round_["queued"]
 
 
@@ -317,6 +365,7 @@ def _summary(round_: dict) -> dict:
     return {
         "id": round_["id"],
         "startedAt": round_.get("startedAt"),
+        "lens": round_.get("lens"),
         "groups": round_.get("groups"),
         "topicEmphasis": emphasis,
         "totals": round_.get("totals"),

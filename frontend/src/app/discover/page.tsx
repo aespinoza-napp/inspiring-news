@@ -11,11 +11,19 @@ import {
   CandidateRoundSummary,
   IngestSource,
   IngestSourcesResponse,
+  RoundTrend,
   ScoredCandidate,
   TopicGroup,
+  TrendCard,
+  TrendSignal,
 } from "@/lib/types";
 
 const PER_SOURCE_OPTIONS = [1, 2, 3, 5, 10];
+
+// The trending lens's defaults when the backend does not say (one older
+// than 2026-10-26): src/services/trends/trending.py.
+const FALLBACK_PER_TREND = 2;
+const FALLBACK_MAX_PER_TREND = 5;
 
 // Where the positive-impact-or-topic control starts when the backend does
 // not say (one older than 2026-10-13): its default then.
@@ -117,10 +125,53 @@ function RankLine({ rank, place }: { rank: CandidateRank; place: number | undefi
         <span title="The share of this source's newest articles the mission screen kept this round, smoothed">
           source {Math.round(rank.record * 100)}% on-mission
         </span>
-        {" · "}
-        <span title="The source's configured reliability rating, the one its pages get as evidence">
-          rated {rank.reliability.toFixed(2)}
-        </span>
+        {rank.virality !== undefined ? (
+          <>
+            {" · "}
+            <span title="How much its trend is spreading among its signal's trends this round: 100 for the signal's top trend">
+              trend {rank.virality === null ? "typed by you" : `spreading ${Math.round(rank.virality * 100)}`}
+            </span>
+          </>
+        ) : (
+          rank.reliability !== undefined && (
+            <>
+              {" · "}
+              <span title="The source's configured reliability rating, the one its pages get as evidence">
+                rated {rank.reliability.toFixed(2)}
+              </span>
+            </>
+          )
+        )}
+      </span>
+    </div>
+  );
+}
+
+function searches(traffic: number | null): string {
+  return traffic === null ? "" : ` · ${traffic.toLocaleString()}+ searches`;
+}
+
+// What a trending round's candidate explains: the trend's name, where it
+// was read, how far it is spreading, and the video a person gave with it.
+function TrendLine({ trend }: { trend: TrendCard }) {
+  const href = trend.link ? safeHref(trend.link) : null;
+  return (
+    <div className="candidate-trend">
+      <span className="trend-badge">Trending</span>{" "}
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" title="The trend itself">
+          {trend.name}
+        </a>
+      ) : (
+        trend.name
+      )}
+      <span className="stats-muted">
+        {" "}
+        · {trend.seed ? "typed by you" : trend.signalName}
+        {searches(trend.traffic)}
+        {trend.startedAt && ` · since ${when(trend.startedAt)}`}
+        {trend.positive && " · chosen as good news there"}
+        {trend.video && " · its TikTok video goes with the story"}
       </span>
     </div>
   );
@@ -230,6 +281,14 @@ export default function DiscoverPage() {
   const [perSource, setPerSource] = useState(3);
   const [emphasis, setEmphasis] = useState(FALLBACK_TOPIC_EMPHASIS);
 
+  // The trending lens (docs/decisions/trends.md): what is spreading right
+  // now instead of a group's sources. Groups then only order what fits them.
+  const [trending, setTrending] = useState(false);
+  const [signalsOff, setSignalsOff] = useState<Set<string>>(new Set());
+  const [seed, setSeed] = useState("");
+  const [searchTrends, setSearchTrends] = useState(false);
+  const [perTrend, setPerTrend] = useState(FALLBACK_PER_TREND);
+
   const [round, setRound] = useState<CandidateRound | null>(null);
   const [chosen, setChosen] = useState<Set<string>>(new Set());
   const [recent, setRecent] = useState<CandidateRoundSummary[]>([]);
@@ -244,6 +303,9 @@ export default function DiscoverPage() {
   const listed = catalogue?.listed ?? 20;
   const maxListed = catalogue?.maxListed ?? 40;
   const defaultEmphasis = catalogue?.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS;
+  const signals: TrendSignal[] = catalogue?.signals ?? [];
+  const signalsOn = signals.filter((signal) => !signalsOff.has(signal.id));
+  const maxPerTrend = catalogue?.trending?.maxPerTrend ?? FALLBACK_MAX_PER_TREND;
 
   const loadRecent = useCallback(async () => {
     try {
@@ -267,6 +329,7 @@ export default function DiscoverPage() {
         if (cancelled) return;
         setCatalogue(data);
         setEmphasis(data.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS);
+        setPerTrend(data.trending?.perTrend ?? FALLBACK_PER_TREND);
 
         const id = roundFromUrl();
         if (id) {
@@ -276,6 +339,7 @@ export default function DiscoverPage() {
           setGroups(saved.groups);
           setPerSource(saved.perSource);
           setEmphasis(emphasisOf(saved, data.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS));
+          restoreTrending(saved, data.signals ?? []);
           setChosen(new Set(saved.queued?.urls ?? []));
         }
       } catch (err) {
@@ -397,6 +461,42 @@ export default function DiscoverPage() {
       ? (round.candidates ?? []).filter((candidate) => !scores.has(candidate.url)).length
       : 0;
 
+  // A reopened round puts the lens back as it was read.
+  function restoreTrending(saved: CandidateRound, known: TrendSignal[]) {
+    const isTrending = saved.lens === "trending";
+    setTrending(isTrending);
+    if (!isTrending) return;
+    const read = new Set(saved.signals ?? []);
+    setSignalsOff(new Set(known.filter((signal) => !read.has(signal.id)).map((signal) => signal.id)));
+    setSeed(saved.seed ?? "");
+    setSearchTrends(Boolean(saved.search));
+    setPerTrend(saved.perTrend ?? FALLBACK_PER_TREND);
+  }
+
+  function toggleTrending() {
+    if (round) {
+      if (
+        chosen.size > 0 &&
+        !window.confirm(
+          `Search ${trending ? "the topics' sources" : "what is trending"} instead? The ${chosen.size} you ticked will be cleared; this round stays under Recent rounds.`
+        )
+      ) {
+        return;
+      }
+      startOver();
+    }
+    setTrending((current) => !current);
+  }
+
+  function toggleSignal(id: string) {
+    setSignalsOff((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   function toggleGroup(id: string) {
     // Other topics are another search. With a round on screen the only way
     // to read the feeds again was Refresh, which repeats the round's own
@@ -445,16 +545,31 @@ export default function DiscoverPage() {
     setBusy(again ? "refreshing" : "discovering");
     setError(null);
     try {
-      const created = await post<CandidateRound>("/api/ingest/rounds", {
-        groups: again?.groups ?? groups,
-        sources: again?.sources ?? included.map((source) => source.id),
-        perSource: again?.perSource ?? perSource,
-        listed,
-        // Left at the default, none is sent: the round then records that
-        // the default was used, whatever it is that day. Refresh takes the
-        // control as it stands, so moving it and refreshing re-ranks.
-        topicEmphasis: sameEmphasis(emphasis, defaultEmphasis) ? null : emphasis,
-      });
+      // Left at the default, none is sent: the round then records that
+      // the default was used, whatever it is that day. Refresh takes the
+      // control as it stands, so moving it and refreshing re-ranks.
+      const topicEmphasis = sameEmphasis(emphasis, defaultEmphasis) ? null : emphasis;
+      const created = await post<CandidateRound>(
+        "/api/ingest/rounds",
+        trending
+          ? {
+              trending: true,
+              groups: again?.groups ?? groups,
+              signals: signalsOn.map((signal) => signal.id),
+              seed: seed.trim() || null,
+              search: searchTrends,
+              perSource: again?.perSource ?? perTrend,
+              listed,
+              topicEmphasis,
+            }
+          : {
+              groups: again?.groups ?? groups,
+              sources: again?.sources ?? included.map((source) => source.id),
+              perSource: again?.perSource ?? perSource,
+              listed,
+              topicEmphasis,
+            }
+      );
       setRound(created);
       setChosen(new Set());
       writeRoundToUrl(created.id);
@@ -548,6 +663,7 @@ export default function DiscoverPage() {
       setGroups(saved.groups);
       setPerSource(saved.perSource);
       setEmphasis(emphasisOf(saved, defaultEmphasis));
+      restoreTrending(saved, signals);
       setChosen(
         new Set(saved.queued?.urls ?? (saved.aiSelection?.picks ?? []).map((pick) => pick.url))
       );
@@ -573,11 +689,12 @@ export default function DiscoverPage() {
       <h1>Discover</h1>
       <p className="subtitle">
         Pick up to {maxGroups} topics: only the sources that cover them are
-        read, and only for those topics. The articles found come best first,
-        by how squarely they fit those topics and how positive they read -
-        you say which counts more - and by their source; the {listed} best
-        shown, up to {maxListed} if you ask for more. Choose up to{" "}
-        {maxSelected} of them, yourself or from the AI&apos;s proposal, and
+        read, and only for those topics. Or pick Trending: what is spreading
+        right now, and the articles that explain it. The articles found come
+        best first, by how squarely they fit those topics and how positive
+        they read - you say which counts more - and by their source; the{" "}
+        {listed} best shown, up to {maxListed} if you ask for more. Choose up
+        to {maxSelected} of them, yourself or from the AI&apos;s proposal, and
         send them to analysis.
       </p>
 
@@ -611,15 +728,36 @@ export default function DiscoverPage() {
               </button>
             );
           })}
+          {signals.length > 0 && (
+            <button
+              type="button"
+              className={trending ? "topic-group topic-trending is-on" : "topic-group topic-trending"}
+              aria-pressed={trending}
+              disabled={locked || busy !== null}
+              onClick={toggleTrending}
+              title="What is spreading right now, and the articles that explain it"
+            >
+              <span className="topic-group-name">Trending</span>
+              <span className="topic-group-meta">{signals.length} signals</span>
+            </button>
+          )}
         </div>
         <p className="claims-note">
-          {groups.length === 0
-            ? `Choose 1 to ${maxGroups}.`
-            : `${groups.length} of ${maxGroups} · topics: ` +
-              (catalogue?.groups ?? [])
-                .filter((group) => groups.includes(group.id))
-                .flatMap((group) => group.topics.map((topic) => topic.name))
-                .join(", ")}
+          {trending
+            ? groups.length === 0
+              ? `Trending: what is spreading right now. Pick up to ${maxGroups} topics as well to list what fits them first.`
+              : `Trending, with what fits ${groups.length === 1 ? "this topic" : "these topics"} first · topics: ` +
+                (catalogue?.groups ?? [])
+                  .filter((group) => groups.includes(group.id))
+                  .flatMap((group) => group.topics.map((topic) => topic.name))
+                  .join(", ")
+            : groups.length === 0
+              ? `Choose 1 to ${maxGroups}.`
+              : `${groups.length} of ${maxGroups} · topics: ` +
+                (catalogue?.groups ?? [])
+                  .filter((group) => groups.includes(group.id))
+                  .flatMap((group) => group.topics.map((topic) => topic.name))
+                  .join(", ")}
         </p>
 
         {catalogue && (
@@ -640,9 +778,93 @@ export default function DiscoverPage() {
         )}
       </section>
 
+      {/* ---------------- 2 · What is trending ---------------- */}
+
+      {trending && !round && (
+        <section className="card discover-step">
+          <div className="section-label">2 · What is trending</div>
+          <p className="claims-note">
+            Public feeds of what people are searching for, voting up and sharing, read with no
+            key. TikTok itself is not read: its listing needs a signed-in session and its terms
+            forbid scraping. If you saw a trend there, type it below.
+          </p>
+          <div className="ingest-sources">
+            {signals.map((signal) => (
+              <label className="checkbox-label" key={signal.id}>
+                <input
+                  type="checkbox"
+                  checked={!signalsOff.has(signal.id)}
+                  onChange={() => toggleSignal(signal.id)}
+                />
+                {signal.name}
+                <span className="stats-muted">
+                  {" "}
+                  {signal.language}
+                  {signal.positive && " · good news by choice"}
+                </span>
+              </label>
+            ))}
+          </div>
+          <label className="trend-seed" htmlFor="trend-seed">
+            A trend you saw
+            <input
+              id="trend-seed"
+              type="text"
+              value={seed}
+              maxLength={300}
+              placeholder="#FarmearAura, a few words, a TikTok link or a news link"
+              onChange={(event) => setSeed(event.target.value)}
+            />
+          </label>
+          <p className="claims-note">
+            A hashtag or words are looked up in the news. A TikTok link is kept as the trend&apos;s
+            video, which a published story shows through TikTok&apos;s own player, only when a reader
+            clicks; the video page itself is never fetched.
+          </p>
+          <div className="ingest-controls">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={searchTrends}
+                onChange={(event) => setSearchTrends(event.target.checked)}
+              />
+              Also look each trend up in the news
+              <span className="stats-muted"> (slower: one search a trend)</span>
+            </label>
+            <label className="ingest-per-source">
+              Articles per trend
+              <select value={perTrend} onChange={(event) => setPerTrend(Number(event.target.value))}>
+                {Array.from({ length: maxPerTrend }, (_, index) => index + 1).map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={() => discover()}
+              disabled={busy !== null || (signalsOn.length === 0 && !seed.trim())}
+            >
+              {busy === "discovering" && <span className="spinner" aria-hidden="true" />}
+              {busy === "discovering"
+                ? "Reading what is trending…"
+                : seed.trim() && signalsOn.length === 0
+                  ? "Look your trend up"
+                  : `Find what is trending in ${signalsOn.length} ${signalsOn.length === 1 ? "signal" : "signals"}`}
+            </button>
+          </div>
+          <p className="claims-note">
+            Every trend&apos;s articles go through the same screen as any round: most of what is
+            trending is television, sport, celebrity and accidents, and is left out. Popularity
+            ranks what you see; it never decides what is true.
+          </p>
+        </section>
+      )}
+
       {/* ---------------- 2 · Sources ---------------- */}
 
-      {groups.length > 0 && !round && (
+      {!trending && groups.length > 0 && !round && (
         <section className="card discover-step">
           <div className="section-label">2 · Sources</div>
           <p className="claims-note">
@@ -694,14 +916,22 @@ export default function DiscoverPage() {
         <section className="card discover-step">
           <div className="section-label">3 · Choose up to {maxSelected}</div>
           <p className="claims-note">
-            {round.totals.candidates} new articles from {round.totals.sources} sources in{" "}
-            {round.groups.map(groupName).join(", ")}
+            {round.lens === "trending"
+              ? `${round.totals.candidates} new articles behind ${round.totals.trends ?? 0} trends from ${round.totals.sources} ${round.totals.sources === 1 ? "signal" : "signals"}` +
+                (round.groups.length ? `, ${round.groups.map(groupName).join(", ")} first` : "") +
+                ((round.totals.notArticles ?? 0) > 0
+                  ? ` · ${round.totals.notArticles} links that were not articles, or sport, crime or betting pages`
+                  : "")
+              : `${round.totals.candidates} new articles from ${round.totals.sources} sources in ${round.groups.map(groupName).join(", ")}`}
             {round.ranking &&
               (round.candidates.length < round.totals.candidates
                 ? ` · the best ${round.candidates.length} shown`
                 : " · all shown")}{" "}
             · {round.totals.alreadyStored} already analysed · {round.totals.deferred} more left for another round
-            {(round.totals.stale ?? 0) > 0 && ` · ${round.totals.stale} older than a month`}
+            {(round.totals.stale ?? 0) > 0 &&
+              (round.lens === "trending"
+                ? ` · ${round.totals.stale} from trends or articles too old to be trending`
+                : ` · ${round.totals.stale} older than a month`)}
             {(round.totals.sameStory ?? 0) > 0 &&
               ` · ${round.totals.sameStory} repeat a story another outlet tells, ranked last`}
             {round.totals.failed > 0 &&
@@ -715,15 +945,61 @@ export default function DiscoverPage() {
               {(round.ranking.weights.topic ?? 0) > 0 &&
                 ` how well it fits ${round.groups.map(groupName).join(", ")} (${percent(round.ranking.weights.topic)}),`}{" "}
               how near its title and summary come to positive impact rather than to anything
-              off-mission ({percent(round.ranking.weights.news)}), how much of its source&apos;s news
-              was on-mission this round ({percent(round.ranking.weights.record)}), and the source&apos;s
-              reliability rating ({percent(round.ranking.weights.reliability)}).
+              off-mission ({percent(round.ranking.weights.news)}),{" "}
+              {round.lens === "trending" ? (
+                <>
+                  how much of its signal&apos;s trends were on-mission this round (
+                  {percent(round.ranking.weights.record)}), and how far its trend is spreading among
+                  its signal&apos;s ({percent(round.ranking.weights.virality)}). Popularity orders the
+                  list; it never enters a verdict.
+                </>
+              ) : (
+                <>
+                  how much of its source&apos;s news was on-mission this round (
+                  {percent(round.ranking.weights.record)}), and the source&apos;s reliability rating (
+                  {percent(round.ranking.weights.reliability)}).
+                </>
+              )}
               {roundEmphasis &&
                 (roundEmphasis.applied !== null
                   ? ` Ordered at ${Math.round(roundEmphasis.applied * 100)}% topic relevance` +
                     (roundEmphasis.asked === null ? " (the default)." : ", as asked.")
                   : " No topic to weigh this round - nothing could be read for it - so its own reading and its source decide, whatever the topic setting.")}
             </p>
+          )}
+
+          {round.lens === "trending" && (round.trends ?? []).length > 0 && (
+            <details className="claims-note">
+              <summary>
+                {round.trends?.length} trends read
+                {round.seed ? `, with the one you typed (${round.seed})` : ""}: what became of each
+              </summary>
+              <ul className="screened-list">
+                {(round.trends ?? []).map((trend: RoundTrend) => {
+                  const href = trend.link ? safeHref(trend.link) : null;
+                  return (
+                    <li key={`${trend.signal}-${trend.id}`}>
+                      {href ? (
+                        <a href={href} target="_blank" rel="noopener noreferrer">
+                          {trend.name}
+                        </a>
+                      ) : (
+                        trend.name
+                      )}{" "}
+                      <span className="stats-muted">
+                        · {trend.seed ? "typed by you" : trend.signalName}
+                        {searches(trend.traffic)}
+                        {` · ${trend.articles} ${trend.articles === 1 ? "article" : "articles"}`}
+                        {trend.candidates > 0 && `, ${trend.candidates} offered`}
+                        {trend.screened > 0 && `, ${trend.screened} left out as off-mission`}
+                        {trend.stale && " · too old to be trending"}
+                        {trend.notes.map((note) => ` · ${note}`)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
           )}
 
           {round.screen?.status === "unavailable" && (
@@ -755,6 +1031,7 @@ export default function DiscoverPage() {
                       )}{" "}
                       <span className="stats-muted">
                         · {item.sourceName} · {OFF_MISSION[item.offMission] ?? item.offMission}
+                        {item.trend && ` · trending: ${item.trend}`}
                       </span>
                     </li>
                   );
@@ -839,8 +1116,9 @@ export default function DiscoverPage() {
 
           {round.candidates.length === 0 ? (
             <p className="claims-note">
-              Nothing new in these sources for these topics. Try another
-              topic, more articles per source, or later.
+              {round.lens === "trending"
+                ? "Nothing that is trending passed the screen, or everything was already analysed. Open the trends read above to see why, look a trend up yourself, or try later."
+                : "Nothing new in these sources for these topics. Try another topic, more articles per source, or later."}
             </p>
           ) : (
             <ul className="candidate-list">
@@ -896,6 +1174,7 @@ export default function DiscoverPage() {
                           </span>
                         )}
                       </div>
+                      {candidate.trend && <TrendLine trend={candidate.trend} />}
                       {candidate.summary && <p className="candidate-summary">{candidate.summary}</p>}
                       {candidate.rank && <RankLine rank={candidate.rank} place={places.get(candidate.url)} />}
                       {scored && (
@@ -992,6 +1271,8 @@ export default function DiscoverPage() {
                   <tr key={summary.id}>
                     <td>{when(summary.startedAt)}</td>
                     <td>
+                      {summary.lens === "trending" &&
+                        `Trending${(summary.groups ?? []).length ? " · " : ""}`}
                       {(summary.groups ?? []).map(groupName).join(", ")}
                       {typeof summary.topicEmphasis === "number" && (
                         <span className="stats-muted" title="How much topic relevance weighed against positive impact in its order">

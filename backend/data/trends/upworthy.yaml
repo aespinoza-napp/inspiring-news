@@ -1,0 +1,15 @@
+# Viral feel-good stories. On 2026-10-26 four of its newest six were advice
+# or lists and one a toddler's video: the mission screen's format rules and
+# the person decide. Its old feed path, /feeds/feed.rss, now redirects here.
+
+id: upworthy
+
+name: Upworthy
+
+kind: ranked_feed
+
+url: https://www.upworthy.com/feed/
+
+language: en
+
+positive: true

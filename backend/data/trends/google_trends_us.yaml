@@ -1,0 +1,16 @@
+# The United States' rising searches. On 2026-10-26: children's savings
+# accounts (twice), Walmart's stock, a crash, a winter forecast, a football
+# player, wrestling, the war in Ukraine, a TV series and a cloud stock -
+# none good news in itself.
+
+id: google_trends_us
+
+name: Google Trends · United States
+
+kind: google_trends
+
+url: https://trends.google.com/trending/rss?geo=US
+
+language: en
+
+country: US

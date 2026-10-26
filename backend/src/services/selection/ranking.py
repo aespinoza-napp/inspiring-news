@@ -318,6 +318,81 @@ def described(asked: float | None, applied: float | None) -> dict:
     }
 
 
+# ----------------------------------------------------------------------
+# A trending round (docs/decisions/trends.md, "The lens")
+# ----------------------------------------------------------------------
+#
+# The same score with one part changed. A trend's articles come from
+# outlets nobody rated - Spain's ten trends of 2026-10-26 linked 27 domains
+# - where reliability is RELIABILITY_RANGE's flat default and says nothing,
+# so its 0.15 goes to how much the trend is spreading. The record is the
+# signal's in this round's screen, not one outlet's: Google's trends keep
+# few, r/UpliftingNews most. Reasoned, not fitted: T6's labelled rounds
+# are what will fit them, as 2026-10-06's fitted the sources' weights.
+TREND_SOURCE_WEIGHTS = {"record": SOURCE_WEIGHTS["record"], "virality": SOURCE_WEIGHTS["reliability"]}
+
+
+def trend_weights(emphasis: float | None = None) -> dict[str, float]:
+    """
+    A trending round's four weights at a topic emphasis: the story's
+    STORY_WEIGHT split as in `weights`, the signal's record, and virality
+    in reliability's place. They sum to 1 at every emphasis.
+    """
+
+    story = weights(emphasis)
+
+    return {"news": story["news"], "topic": story["topic"], **TREND_SOURCE_WEIGHTS}
+
+
+def trend_rank(
+    reading: Reading | None,
+    standing: Standing,
+    fit: float | None = None,
+    virality: float | None = None,
+    emphasis: float | None = None,
+) -> dict:
+    """
+    A trend article's score and its parts, as the round records them.
+    `standing` is its signal's (record from this round's screen; its
+    reliability is not used). `virality` is in [0, 1], None for a trend a
+    person typed, which counts as UNREAD.
+    """
+
+    news = news_part(reading)
+    topic = topic_part(fit)
+    record = record_part(standing)
+    weighted = trend_weights(emphasis)
+
+    total = (
+        weighted["news"] * (UNREAD if news is None else news)
+        + weighted["topic"] * (UNREAD if topic is None else topic)
+        + weighted["record"] * record
+        + weighted["virality"] * (UNREAD if virality is None else virality)
+    )
+
+    return {
+        "score": round(total, 3),
+        "news": None if news is None else round(news, 3),
+        "topic": None if topic is None else round(topic, 3),
+        "record": round(record, 3),
+        "virality": None if virality is None else round(virality, 3),
+    }
+
+
+def described_trending(asked: float | None, applied: float | None) -> dict:
+    """`described`, for a trending round: its own weights, and the lens it was ranked under."""
+
+    used = trend_weights(WITHOUT_TOPIC if applied is None else applied)
+
+    return {
+        "lens": "trending",
+        "weights": {part: round(weight, 4) for part, weight in used.items()},
+        "topicEmphasis": {"asked": asked, "applied": applied, "default": DEFAULT_TOPIC_EMPHASIS},
+        "sameStory": SAME_STORY,
+        "groupFit": GROUP_FIT,
+    }
+
+
 def best_first(candidates: list[dict]) -> list[dict]:
     """By score; candidates scored alike keep their order."""
 

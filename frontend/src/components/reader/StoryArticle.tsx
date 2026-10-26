@@ -5,6 +5,7 @@ import { safeHref } from "@/lib/links";
 import { percent } from "@/lib/reader";
 import { ReaderLang, ReaderText, dateIn, languageNameIn, readerText, topicName, withLang } from "@/lib/readerText";
 import { PublishedStory, StoryFactCheck, StorySource, verdictOf } from "@/lib/stories";
+import { TikTokVideo } from "./TikTokVideo";
 import styles from "./StoryArticle.module.css";
 
 const READER_ID = /^[0-9a-f]{16}$/;
@@ -48,11 +49,14 @@ export function StoryArticle({ story, lang }: { story: PublishedStory; lang: Rea
             {t.startsFrom.after}
           </p>
         )}
+        {story.trend && <p>{t.trendFound(story.trend.name, story.trend.signalName)}</p>}
       </aside>
 
       <div className={styles.body} lang={story.language}>
         <ArticleBody body={story.content.body} />
       </div>
+
+      {story.trend?.video && <TikTokVideo video={story.trend.video} text={t.video} />}
 
       {story.sources.length > 0 && <Sources sources={story.sources} t={t} />}
 

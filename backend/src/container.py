@@ -93,6 +93,8 @@ _reader_index = None
 
 _selection_service = None
 
+_trend_service = None
+
 _draft_store = None
 
 _related_news_finder = None
@@ -307,10 +309,37 @@ def get_selection_service():
         with _lock:
             if _selection_service is None:
                 from src.services.selection.selection_service import SelectionService
+                from src.services.trends.ledger import trend_ledger
+                from src.services.trends.trending import TrendingDiscovery
 
-                _selection_service = SelectionService(ingestion=get_ingestion_service())
+                _selection_service = SelectionService(
+                    ingestion=get_ingestion_service(),
+                    trending=TrendingDiscovery(get_ingestion_service(), get_trend_service()),
+                    ledger=trend_ledger,
+                )
 
     return _selection_service
+
+
+def get_trend_service():
+    """
+    The trend signals (data/trends/*.yaml) and their reading
+    (src/services/trends/trend_service.py, docs/decisions/trends.md). Read
+    once, here, like the sources: adding a signal means restarting. Builds
+    no client until a round searches.
+    """
+
+    global _trend_service
+
+    if _trend_service is None:
+        with _lock:
+            if _trend_service is None:
+                from src.repositories.trend_signal_repository import TrendSignalRepository
+                from src.services.trends.trend_service import TrendService
+
+                _trend_service = TrendService(signals=TrendSignalRepository().list())
+
+    return _trend_service
 
 
 def get_source_check_service():
@@ -634,6 +663,8 @@ def get_draft_writer():
     if _draft_writer is None:
         with _lock:
             if _draft_writer is None:
+                from src.services.trends.angles import AngleFinder
+                from src.services.trends.ledger import trend_ledger
                 from src.services.writer.analysed_article import AnalysedArticles
                 from src.services.writer.draft_writer import DraftWriter
 
@@ -641,6 +672,10 @@ def get_draft_writer():
                     articles=AnalysedArticles(get_reader_index(), get_datalake_repository()),
                     related=get_related_news_finder(),
                     writer=get_article_writer(),
+                    # A draft from a trend: which trend, and its angles
+                    # (docs/decisions/trends.md). Nothing is built until one is.
+                    ledger=trend_ledger,
+                    angles=AngleFinder(),
                 )
 
     return _draft_writer

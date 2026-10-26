@@ -4465,6 +4465,48 @@ button.topic-group.is-on {
   color: var(--muted);
 }
 
+/* Trending sits beside the groups but is a way in, not a group
+   (docs/decisions/trends.md): a dashed edge says it is of another kind. */
+button.topic-group.topic-trending {
+  border-style: dashed;
+}
+
+button.topic-group.topic-trending.is-on {
+  border-style: solid;
+}
+
+.trend-seed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.trend-seed input {
+  font-weight: 400;
+  max-width: 36rem;
+}
+
+/* What a trending round's candidate explains (discover/page.tsx TrendLine). */
+.candidate-trend {
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.trend-badge {
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* Positive impact <-> topic relevance (discover/page.tsx EmphasisControl):
    one range between its two named ends, under the topic buttons it
    weighs. */

@@ -30,6 +30,12 @@ What it holds:
   verdict panel and the badge links to the guide, the guide, a story and
   a withdrawn story's real 404, the RSS feed and the sitemap (well-formed
   XML, absolute links), and an operator page still in English.
+- **A story from a trend loads nothing from TikTok until the reader
+  clicks** (docs/decisions/trends.md, "The story"): Chrome is told that
+  tiktok.com is a local port that only counts connections - http, https
+  or a preconnect alike. Rendered, the facade is there and nothing
+  connected; clicked (over the DevTools protocol), the player's iframe
+  appears and TikTok is connected to.
 
 Not in `./scripts/check.sh` (all): it builds the frontend (a minute) and
 needs Chrome, like `graph` needs Neo4j. Exits 1 when a check fails, 2
@@ -92,6 +98,8 @@ ARTICLE = {
          "notUsed": [], "notUsedTotal": 0},
     ],
 }
+VIDEO_ID = "6718335390845095173"
+
 STORY = {
     "id": STORY_ID, "sourceArticleId": ARTICLE_ID, "language": "ca",
     "content": {"title": "Les plaques solars arriben a les escoles", "subtitle": "Un pla", "body": "El pla [1]."},
@@ -100,6 +108,9 @@ STORY = {
     "factChecks": [], "metadata": {"slug": "x", "seoDescription": "", "keywords": [], "topic": "Energy", "tags": []},
     "disclosure": {"aiWritten": True, "models": ["writer"], "humanEdited": False},
     "publishedAt": "2026-10-15T10:00:00Z",
+    "trend": {"name": "farmear aura", "signalName": "Typed by a person", "video": {
+        "provider": "tiktok", "id": VIDEO_ID, "url": f"https://www.tiktok.com/@scout2015/video/{VIDEO_ID}",
+        "title": "Scramble up ur name", "author": "scout2015"}},
 }
 FEED = {"total": 1, "offset": 0, "limit": 20, "items": [CARD], "topics": [{"topic": "Energy", "count": 1}],
         "languages": [{"language": "es", "count": 1}], "lake": {"analysed": 3, "publishable": 1}}
@@ -224,15 +235,55 @@ def get(url: str, headers: dict | None = None) -> tuple[int, str]:
         return error.code, error.read().decode("utf-8", "replace")
 
 
-def dom(chrome: str, url: str, lang: str = "en") -> str:
+def dom(chrome: str, url: str, lang: str = "en", extra: list[str] | None = None) -> str:
     """The page after its scripts ran, as headless Chrome renders it."""
 
     result = subprocess.run(
         [chrome, "--headless=new", "--disable-gpu", "--no-sandbox", f"--lang={lang}",
-         "--virtual-time-budget=8000", "--dump-dom", url],
-        capture_output=True, text=True, timeout=90,
+         "--virtual-time-budget=8000", *(extra or []), "--dump-dom", url],
+        # The DOM is UTF-8 whatever the platform: on Windows text=True alone
+        # decoded it as cp1252 and failed on the first accented byte.
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90,
     )
     return result.stdout
+
+
+class Connections:
+    """
+    A port that accepts and counts connections and says nothing: what
+    "tiktok.com" resolves to in the trend checks (tiktok_rules). An https
+    request never gets past its handshake here, so it is the connection
+    that is counted, not a request.
+    """
+
+    def __init__(self):
+
+        self.count = 0
+        self._socket = socket.socket()
+        self._socket.bind(("127.0.0.1", 0))
+        self._socket.listen(16)
+        self.port = self._socket.getsockname()[1]
+        threading.Thread(target=self._accept, daemon=True).start()
+
+    def _accept(self):
+
+        while True:
+            try:
+                connection, _ = self._socket.accept()
+            except OSError:
+                return
+            self.count += 1
+            connection.close()
+
+    def reset(self) -> None:
+
+        self.count = 0
+
+
+def tiktok_rules(port: int) -> list[str]:
+    """Chrome flags that send every tiktok.com connection to `port` (a Connections)."""
+
+    return [f"--host-resolver-rules=MAP *.tiktok.com 127.0.0.1:{port},MAP tiktok.com 127.0.0.1:{port}"]
 
 
 class Browser:
@@ -242,7 +293,7 @@ class Browser:
     One page, attached in flat mode; events are read and dropped.
     """
 
-    def __init__(self, chrome: str, profile: str):
+    def __init__(self, chrome: str, profile: str, extra: list[str] | None = None):
 
         to_chrome_r, self._to_chrome = os.pipe()
         self._from_chrome, from_chrome_w = os.pipe()
@@ -253,7 +304,7 @@ class Browser:
 
         self.process = subprocess.Popen(
             [chrome, "--headless=new", "--disable-gpu", "--no-sandbox", "--remote-debugging-pipe",
-             f"--user-data-dir={profile}", "about:blank"],
+             f"--user-data-dir={profile}", *(extra or []), "about:blank"],
             preexec_fn=wire, close_fds=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         os.close(to_chrome_r)
@@ -383,6 +434,47 @@ def leave_while_polling(chrome: str, base: str, bulk: bool = False) -> tuple[boo
     return not after, f"{len(after)} poll(s) after leaving the page, {len(Stub.slow_polls)} in all"
 
 
+HYDRATED = (
+    "(() => { const b = document.querySelector('[data-testid=tiktok-load]');"
+    " return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')); })()"
+)
+
+
+def click_tiktok(chrome: str, base: str, tiktok: Connections) -> tuple[bool, str]:
+    """Open the trend's story, click the facade, and see the player's iframe appear and TikTok connected to."""
+
+    import tempfile
+
+    tiktok.reset()
+
+    with tempfile.TemporaryDirectory() as profile:
+
+        browser = Browser(chrome, profile, tiktok_rules(tiktok.port))
+
+        try:
+            browser.send("Page.navigate", {"url": f"{base}/reader/stories/{STORY_ID}"}, browser.session)
+            # The button is in the server's HTML before React hydrates it, and
+            # a click before that does nothing: wait for React's own key.
+            if not browser.until(HYDRATED):
+                return False, "the facade never appeared, or never came alive"
+            if browser.evaluate("!!document.querySelector('iframe')") or tiktok.count:
+                return False, "TikTok was loaded before the click"
+
+            browser.evaluate("document.querySelector('[data-testid=tiktok-load]').click()")
+            src = f"https://www.tiktok.com/player/v1/{VIDEO_ID}"
+            if not browser.until(f"document.querySelector('iframe')?.src === '{src}'", timeout=10):
+                return False, "no player iframe after the click"
+
+            deadline = time.monotonic() + 10
+            while not tiktok.count and time.monotonic() < deadline:
+                time.sleep(0.1)
+
+        finally:
+            browser.close()
+
+    return bool(tiktok.count), f"{tiktok.count} connection(s) to TikTok after the click"
+
+
 def main(argv=None) -> int:
 
     parser = argparse.ArgumentParser(description="End-to-end checks of the frontend.")
@@ -432,7 +524,7 @@ def main(argv=None) -> int:
             return 2
 
         checks = Checks()
-        run(checks, chrome, base)
+        run(checks, chrome, base, Connections())
 
     finally:
         try:
@@ -447,7 +539,7 @@ def main(argv=None) -> int:
     return 1 if checks.failed else 0
 
 
-def run(checks: Checks, chrome: str, base: str) -> None:
+def run(checks: Checks, chrome: str, base: str, tiktok: Connections) -> None:
 
     print("Job polling")
     first = json.loads(get(f"{base}/api/jobs/job1")[1])
@@ -500,6 +592,18 @@ def run(checks: Checks, chrome: str, base: str) -> None:
 
     page = dom(chrome, f"{base}/claim", lang="ca")
     checks.check("an operator page stays English", 'lang="en"' in page and "Claim Check" in page)
+
+    print("A story from a trend")
+    tiktok.reset()
+    page = dom(chrome, f"{base}/reader/stories/{STORY_ID}", extra=tiktok_rules(tiktok.port))
+    checks.check(
+        "the trend is named and the video waits behind a click",
+        "farmear aura" in page and 'data-testid="tiktok-load"' in page and "<iframe" not in page,
+    )
+    checks.check("nothing connects to TikTok before the click", not tiktok.count, f"{tiktok.count} connection(s)")
+
+    ok, detail = click_tiktok(chrome, base, tiktok)
+    checks.check("after the click, TikTok's player loads (and only then)", ok, detail)
 
 
 if __name__ == "__main__":

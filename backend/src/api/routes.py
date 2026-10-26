@@ -20,6 +20,7 @@ from src.container import (
     get_job_queue,
     get_source_probe,
     get_text_corrector,
+    get_trend_service,
     job_store,
 )
 from src.config.settings import settings
@@ -193,9 +194,21 @@ class IngestRequest(BaseModel):
         return self
 
 
+def _trending_groups(groups: list[str] | None) -> list[str]:
+    """
+    A trending round's groups: none is fine - the trends decide what is
+    found, and groups only order what fits them first - and otherwise
+    known ones, each once, at most MAX_GROUPS. Trending does not count
+    towards them.
+    """
+
+    return _known_groups(groups) if groups else []
+
+
 class RoundRequest(BaseModel):
-    # Required here: a round is the topic-scoped way in.
-    groups: list[str]
+    # Required for a topic round, the topic-scoped way in. A trending round
+    # takes none or up to three, to order what fits them first.
+    groups: list[str] | None = None
     # Further limited to these source ids; omitted means every enabled
     # source of the groups.
     sources: list[str] | None = None
@@ -213,10 +226,44 @@ class RoundRequest(BaseModel):
     # it orders what a person reads, it judges nothing an analysis does
     # (docs/decisions/selection.md, "Positive impact or the topic").
     topicEmphasis: float | None = Field(default=None, ge=0.0, le=1.0)
+    # A trending round (docs/decisions/trends.md): the candidates are the
+    # articles behind what is spreading right now, not a group's sources.
+    # `perSource` is then articles per trend, at most five.
+    trending: bool = False
+    # Trend signals to read (data/trends/*.yaml ids); omitted means every
+    # enabled one, [] none (a seed alone).
+    signals: list[str] | None = None
+    # A hashtag, a few words, a TikTok link or a news link a person saw
+    # trending. TikTok itself is never scraped (src/services/trends/seeds.py).
+    seed: str | None = Field(default=None, max_length=300)
+    # Also look each signal's trend up in the news (SearXNG; slower, and
+    # every query is one more for engines that rate-limit). A seed is
+    # always looked up.
+    search: bool = False
 
     @model_validator(mode="after")
     def _groups(self):
-        self.groups = _known_groups(self.groups)
+
+        if not self.trending:
+
+            if self.signals is not None or self.seed or self.search:
+                raise ValueError("signals, seed and search belong to a trending round (trending: true).")
+
+            if self.groups is None:
+                raise ValueError("Choose between 1 and 3 topic groups, or a trending round.")
+
+            self.groups = _known_groups(self.groups)
+
+            return self
+
+        from src.services.trends.trending import MAX_PER_TREND
+
+        if self.perSource > MAX_PER_TREND:
+            raise ValueError(f"At most {MAX_PER_TREND} articles per trend.")
+
+        self.seed = (self.seed or "").strip() or None
+        self.groups = _trending_groups(self.groups)
+
         return self
 
 
@@ -567,6 +614,7 @@ def ingestion_sources():
     from src.services.ingestion_service import MAX_GROUPS
     from src.services.selection.ranking import DEFAULT_TOPIC_EMPHASIS
     from src.services.selection.selection_service import LISTED, MAX_LISTED, MAX_SELECTED
+    from src.services.trends.trending import MAX_ARTICLE_AGE, MAX_PER_TREND, MAX_TREND_AGE, PER_TREND
 
     service = get_ingestion_service()
     sources = service.enabled_sources()
@@ -599,6 +647,24 @@ def ingestion_sources():
         # Where /discover's positive-impact-or-topic control starts: one
         # definition, the backend's.
         "topicEmphasis": DEFAULT_TOPIC_EMPHASIS,
+        # The trending lens: its signals and limits (docs/decisions/trends.md).
+        "signals": [
+            {
+                "id": signal.id,
+                "name": signal.name,
+                "kind": signal.kind,
+                "language": signal.language,
+                "country": signal.country,
+                "positive": signal.positive,
+            }
+            for signal in get_trend_service().enabled_signals()
+        ],
+        "trending": {
+            "perTrend": PER_TREND,
+            "maxPerTrend": MAX_PER_TREND,
+            "maxTrendAgeHours": int(MAX_TREND_AGE.total_seconds() // 3600),
+            "maxArticleAgeDays": MAX_ARTICLE_AGE.days,
+        },
         "lastRun": service.last_run,
     }
 
@@ -666,15 +732,37 @@ def create_round(request: RoundRequest):
     against positive impact in that order; the round records it.
     """
 
+    from src.services.selection.selection_service import InvalidSelection
+    from src.services.trends.seeds import SeedError
+
     unknown = _unknown_sources(request.sources)
 
     if unknown:
         raise HTTPException(status_code=422, detail=f"Unknown or disabled sources: {', '.join(unknown)}")
 
-    return get_selection_service().create_round(
-        request.groups, request.sources, request.perSource, request.listed,
-        topic_emphasis=request.topicEmphasis,
-    )
+    if not request.trending:
+        return get_selection_service().create_round(
+            request.groups, request.sources, request.perSource, request.listed,
+            topic_emphasis=request.topicEmphasis,
+        )
+
+    known_signals = {signal.id for signal in get_trend_service().enabled_signals()}
+    strangers = sorted(set(request.signals or []) - known_signals)
+
+    if strangers:
+        raise HTTPException(status_code=422, detail=f"Unknown or disabled trend signals: {', '.join(strangers)}")
+
+    if request.signals == [] and not request.seed:
+        raise HTTPException(status_code=422, detail="A trending round needs a signal to read or a seed to search for.")
+
+    try:
+        return get_selection_service().create_round(
+            request.groups, None, request.perSource, request.listed,
+            topic_emphasis=request.topicEmphasis,
+            trending=True, signal_ids=request.signals, seed=request.seed, search=request.search,
+        )
+    except (SeedError, InvalidSelection) as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
 
 
 @router.get("/ingest/rounds", dependencies=[Depends(require_storage_key)])

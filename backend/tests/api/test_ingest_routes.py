@@ -123,9 +123,12 @@ class FakeSelection:
         self.calls = []
         self.emphases = []
 
-    def create_round(self, groups, source_ids, per_source, listed=20, topic_emphasis=None):
-        self.calls.append(("create", groups, source_ids, per_source, listed))
+    def create_round(self, groups, source_ids, per_source, listed=20, topic_emphasis=None, **trending):
+        self.calls.append(("create", groups, source_ids, per_source, listed, *([trending] if trending else [])))
         self.emphases.append(topic_emphasis)
+        if trending.get("seed") == "#fyp":
+            from src.services.trends.seeds import SeedError
+            raise SeedError("There is nothing to search for.")
         return {"id": "0123456789abcdef", "candidates": []}
 
     def get(self, round_id):
@@ -248,3 +251,82 @@ def test_an_unknown_or_malformed_round_id(monkeypatch):
 
     assert client.get("/ingest/rounds/fedcba9876543210").status_code == 404
     assert client.get("/ingest/rounds/not-a-round").status_code == 422
+
+
+# ----------------------------------------------------------------------
+# Trending rounds (docs/decisions/trends.md)
+# ----------------------------------------------------------------------
+
+
+def test_a_trending_round_needs_no_group(monkeypatch):
+
+    selection, _ = use_selection(monkeypatch)
+
+    response = client.post("/ingest/rounds", json={"trending": True, "perSource": 2})
+
+    assert response.status_code == 200
+    assert selection.calls == [("create", [], None, 2, 20, {
+        "trending": True, "signal_ids": None, "seed": None, "search": False,
+    })]
+
+
+def test_a_trending_round_may_order_by_up_to_three_known_groups(monkeypatch):
+
+    selection, _ = use_selection(monkeypatch)
+
+    ok = client.post("/ingest/rounds", json={
+        "trending": True, "groups": ["culture"], "signals": ["google_trends_es"], "seed": "  #FarmearAura ",
+        "search": True, "topicEmphasis": 0.3,
+    })
+
+    assert ok.status_code == 200
+    assert selection.calls[-1] == ("create", ["culture"], None, 3, 20, {
+        "trending": True, "signal_ids": ["google_trends_es"], "seed": "#FarmearAura", "search": True,
+    })
+    assert selection.emphases[-1] == 0.3
+
+    assert client.post("/ingest/rounds", json={"trending": True, "groups": ["nope"]}).status_code == 422
+    assert client.post("/ingest/rounds", json={
+        "trending": True, "groups": ["culture", "science", "health", "society"],
+    }).status_code == 422
+
+
+def test_a_trending_rounds_signals_seed_and_size_are_checked(monkeypatch):
+
+    selection, _ = use_selection(monkeypatch)
+
+    # Signals that do not exist, or none and no seed: nothing to read.
+    assert client.post("/ingest/rounds", json={"trending": True, "signals": ["tiktok"]}).status_code == 422
+    assert client.post("/ingest/rounds", json={"trending": True, "signals": []}).status_code == 422
+    # At most five articles a trend.
+    assert client.post("/ingest/rounds", json={"trending": True, "perSource": 6}).status_code == 422
+    # A seed is a line, not an essay.
+    assert client.post("/ingest/rounds", json={"trending": True, "seed": "x" * 301}).status_code == 422
+
+    assert selection.calls == []
+
+    # A seed with nothing to search for comes back as the lens's own reason.
+    response = client.post("/ingest/rounds", json={"trending": True, "signals": [], "seed": "#fyp"})
+
+    assert response.status_code == 422
+    assert "nothing to search for" in response.json()["detail"]
+
+
+def test_signals_seed_and_search_belong_to_a_trending_round(monkeypatch):
+
+    selection, _ = use_selection(monkeypatch)
+
+    for extra in ({"signals": ["google_trends_es"]}, {"seed": "#x"}, {"search": True}):
+        assert client.post("/ingest/rounds", json={"groups": ["science"], **extra}).status_code == 422
+
+    assert selection.calls == []
+
+
+def test_the_catalogue_lists_the_trend_signals_and_the_lenss_limits(monkeypatch):
+
+    use_ingestion(monkeypatch)
+
+    body = client.get("/ingest/sources").json()
+
+    assert {signal["id"] for signal in body["signals"]} >= {"google_trends_es", "uplifting_news"}
+    assert body["trending"] == {"perTrend": 2, "maxPerTrend": 5, "maxTrendAgeHours": 72, "maxArticleAgeDays": 7}

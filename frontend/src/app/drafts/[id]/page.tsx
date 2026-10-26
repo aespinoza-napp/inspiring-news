@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { DraftEditor } from "@/components/drafts/DraftEditor";
 import { DraftReviewPanel } from "@/components/drafts/DraftReviewPanel";
+import { DraftTrendPanel } from "@/components/drafts/DraftTrendPanel";
 import { PublishPanel } from "@/components/drafts/PublishPanel";
 import { RewritePanel } from "@/components/drafts/RewritePanel";
 import { ArticleDraft, BUSY_LABEL, LANGUAGES, draftsApi } from "@/lib/drafts";
@@ -97,6 +98,8 @@ export default function DraftPage({ params }: { params: { id: string } }) {
           {draft.error ?? error}
         </div>
       )}
+
+      <DraftTrendPanel draft={draft} onChange={setDraft} />
 
       <DraftEditor draft={draft} onChange={setDraft} />
 

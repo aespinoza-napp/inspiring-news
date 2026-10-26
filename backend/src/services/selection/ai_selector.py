@@ -58,6 +58,17 @@ interviews, entertainment, personal advice, opinion, crime, conflict and disaste
 Judge only from the title and summary given; do not assume what they do not say. \
 Write each reason in English, in at most twelve words, whatever the article's language."""
 
+# Said once more for a trending round (docs/decisions/trends.md): what is
+# viral is mostly television, sport, celebrity and accidents - on
+# 2026-10-26 not one of Spain's and the US's twenty rising searches was good
+# news in itself - and popularity must not read as merit.
+TRENDING = """\
+These articles explain what is trending right now. Score the story, not its popularity. \
+A trend scores high only when the article reports a real positive change, or a \
+constructive story the article itself supports - a solution, a discovery, people helping \
+others. Entertainment, celebrity, sport, scandals, accidents and disasters stay low however \
+viral they are."""
+
 ANSWER_FORMAT = """\
 Reply with JSON only, one entry per article, using its number:
 {"scores": [{"i": 1, "score": 7, "reason": "..."}]}"""
@@ -130,12 +141,14 @@ class AISelector:
         groups: list[str],
         limit: int,
         min_score: float = DEFAULT_MIN_SCORE,
+        trending: bool = False,
     ) -> AISelection:
         """
         Every candidate scored, and the best `limit` of those reaching
         `min_score` picked. Raises LLMUnavailableError when the model
         could not be reached for any batch: a selection made from part of
-        the list would look like a judgement on all of it.
+        the list would look like a judgement on all of it. `trending`: the
+        list is a trending round's, and the model is told so (TRENDING).
         """
 
         started = time.perf_counter()
@@ -146,7 +159,7 @@ class AISelector:
         # matched to batch k's candidates. The LLM permit inside
         # complete_json is what bounds how many calls run at once.
         answers = bounded_map(
-            lambda batch: self._score_batch(batch, groups),
+            lambda batch: self._score_batch(batch, groups, trending),
             batches,
             max_workers=max(len(batches), 1),
             thread_name_prefix="ai-selection",
@@ -188,9 +201,11 @@ class AISelector:
             notes=notes,
         )
 
-    def _score_batch(self, batch: list[dict], groups: list[str]) -> dict | None:
+    def _score_batch(self, batch: list[dict], groups: list[str], trending: bool = False) -> dict | None:
 
-        return self.llm.complete_json(DEFINITION + "\n\n" + ANSWER_FORMAT, prompt(batch, groups))
+        system = DEFINITION + ("\n\n" + TRENDING if trending else "") + "\n\n" + ANSWER_FORMAT
+
+        return self.llm.complete_json(system, prompt(batch, groups))
 
 
 def prompt(batch: list[dict], groups: list[str]) -> str:
@@ -209,6 +224,12 @@ def prompt(batch: list[dict], groups: list[str]) -> str:
 
         if summary:
             lines.append(f"   {summary[:SUMMARY_CHARS]}")
+
+        # A trending round's article says which trend it explains.
+        trend = (candidate.get("trend") or {}).get("name")
+
+        if trend:
+            lines.append(f"   Trending: {trend}")
 
     return "\n".join(lines)
 

@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import logging
 import re
+from dataclasses import dataclass
 
 from src.config.thresholds import WriterThresholds
-from src.models.writer.draft import ArticleDraft, DraftContent, DraftFactCheck, DraftSource, Language
+from src.models.writer.draft import ArticleDraft, DraftContent, DraftFactCheck, DraftSource, DraftTrend, Language
 from src.services.reader.views import excerpt
 from src.services.scraper.article_stats import comparable_url
 from src.services.writer.analysed_article import AnalysedArticle, AnalysedArticles
@@ -85,11 +86,14 @@ def build_sources(
     related: list[DraftSource],
     thresholds: WriterThresholds,
     rated: RatedDomains | None = None,
+    angle: list[DraftSource] | None = None,
 ) -> list[DraftSource]:
     """
-    The analysed article first, then the related news, then the evidence
-    behind the fact-checks - each URL once. The body cites `[n]` into this
-    list, 1-based, so [1] is always the analysed article.
+    The analysed article first, then the related news, then - for a draft
+    from a trend - the sources behind its confirmed constructive angles,
+    then the evidence behind the fact-checks - each URL once. The body
+    cites `[n]` into this list, 1-based, so [1] is always the analysed
+    article.
 
     Evidence: only sources a verdict was actually based on (cited), taken
     one claim at a time in turn so every claim's evidence is represented
@@ -110,7 +114,7 @@ def build_sources(
 
     seen = {comparable_url(article.url)}
 
-    for source in related:
+    for source in list(related) + list(angle or []):
 
         key = comparable_url(source.url)
 
@@ -157,6 +161,15 @@ def build_sources(
     return sources + evidence
 
 
+@dataclass
+class _TrendMaterial:
+    """What a draft from a trend carries: the trend as the draft keeps it, and its angles' sources."""
+
+    draft: DraftTrend
+
+    sources: list[DraftSource]
+
+
 class DraftWriter:
 
     def __init__(
@@ -164,11 +177,20 @@ class DraftWriter:
         articles: AnalysedArticles,
         related: RelatedNewsFinder,
         writer: ArticleWriter,
+        ledger=None,
+        angles=None,
     ):
 
         self.articles = articles
         self.related = related
         self.writer = writer
+
+        # A draft from a trend (docs/decisions/trends.md): the ledger says
+        # which trend brought the article (services/trends/ledger.py), the
+        # angle step looks for a confirmed constructive angle
+        # (services/trends/angles.py). None: no draft is from a trend.
+        self.ledger = ledger
+        self.angles = angles
 
     def find_article(
         self,
@@ -218,6 +240,35 @@ class DraftWriter:
             wait=wait,
         )
 
+    def trend_of(self, article: AnalysedArticle, thresholds: WriterThresholds) -> "_TrendMaterial | None":
+        """
+        For an article a trending round brought: its trend, and the
+        constructive angles looked for and their sources. None otherwise -
+        and when no ledger or angle step is configured.
+        """
+
+        card = self.ledger.find(article.url) if self.ledger is not None else None
+
+        if not card:
+            return None
+
+        result = self.angles.find(article, card, thresholds) if self.angles is not None else None
+
+        draft = DraftTrend(
+            id=str(card.get("id") or ""),
+            name=str(card.get("name") or ""),
+            signal=str(card.get("signal") or ""),
+            signal_name=str(card.get("signalName") or ""),
+            traffic=card.get("traffic"),
+            started_at=card.get("startedAt"),
+            link=card.get("link"),
+            video=card.get("video"),
+            angles=result.angles if result else [],
+            angle_note=(result.note if result else "No angle step is configured."),
+        )
+
+        return _TrendMaterial(draft=draft, sources=result.sources if result else [])
+
     def generate(
         self,
         store: DraftStore,
@@ -244,19 +295,27 @@ class DraftWriter:
 
         fact_checks = build_fact_checks(article)
 
+        trend = self.trend_of(article, thresholds)
+
         sources = self.writer.fit(
             article,
-            build_sources(article, found.sources, thresholds, self.related.rated),
+            build_sources(
+                article, found.sources, thresholds, self.related.rated,
+                angle=trend.sources if trend else None,
+            ),
             fact_checks,
             draft.language,
             draft.instructions,
             notes,
             thresholds,
+            trend=trend.draft if trend else None,
         )
 
         def record_material(current: ArticleDraft) -> None:
             current.sources = sources
             current.fact_checks = fact_checks
+            if trend:
+                current.trend = trend.draft
 
         store.update(draft_id, record_material)
 
@@ -268,6 +327,7 @@ class DraftWriter:
             draft.instructions,
             notes,
             thresholds,
+            trend=trend.draft if trend else None,
         )
 
         # No field on the draft holds these yet (docs/decisions/writing.md,

@@ -515,6 +515,22 @@ class WriterThresholds(BaseModel):
         le=400000,
     )
 
+    # A draft from a trend: how many constructive angles the writer model
+    # may propose (0: none is looked for), and from how many domains a
+    # kept angle's supporting sources must come (src/services/trends/
+    # angles.py).
+    angle_max_proposals: int = Field(
+        default_factory=lambda: settings.WRITER_ANGLE_MAX_PROPOSALS,
+        ge=0,
+        le=5,
+    )
+
+    angle_min_domains: int = Field(
+        default_factory=lambda: settings.WRITER_ANGLE_MIN_DOMAINS,
+        ge=1,
+        le=5,
+    )
+
     @classmethod
     def resolve(
         cls,
@@ -544,6 +560,8 @@ class WriterThresholdOverrides(BaseModel):
     evidence_excerpt_chars: Optional[int] = Field(None, ge=100, le=4000)
     max_output_tokens: Optional[int] = Field(None, ge=256, le=16384)
     prompt_max_chars: Optional[int] = Field(None, ge=4000, le=400000)
+    angle_max_proposals: Optional[int] = Field(None, ge=0, le=5)
+    angle_min_domains: Optional[int] = Field(None, ge=1, le=5)
 
 
 class RewriteTargets(BaseModel):

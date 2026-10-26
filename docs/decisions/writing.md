@@ -1231,3 +1231,20 @@ holds no credential; there is no setting that turns either on.
   English.
 - `ArticleBody`'s `.article-body` has no global style; the story page
   styles it under its own CSS module.
+
+## A draft from a trend (2026-10-26)
+
+When the analysed article came from a trending round (the trend ledger,
+`src/services/trends/ledger.py`, says which), `DraftWriter.generate`
+looks for a constructive angle before writing
+(`src/services/trends/angles.py`). The writer model proposes at most
+three, the fact-checker's own `check_claim` judges each, and an angle is
+kept only when TRUE from two domains other than the article's outlet.
+The kept angles' sources join the draft's sources (origin `angle`, after
+the related news), and the writer is told the trend, never as evidence,
+and the angles it may take. `ArticleDraft.trend` keeps every angle, kept
+or refused, with why. The review adds one check (`apply_angle_check`),
+and the published snapshot gains the trend's name and the TikTok video a
+person gave, which the reader shows only after a click. All of it, and
+the first live trials, are in `docs/decisions/trends.md`, "The angle" and
+"The story".
