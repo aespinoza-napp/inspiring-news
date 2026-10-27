@@ -604,3 +604,45 @@ def test_the_backend_starts_without_waiting_for_neo4j(base, prod):
 
     for backend in (base["backend"], prod["services"]["backend"]):
         assert "neo4j" not in (backend.get("depends_on") or {})
+
+
+# ----------------------------------------------------------------------
+# The committed data the backend reads
+# ----------------------------------------------------------------------
+
+# Committed folders under backend/data the running backend never reads:
+# sample articles for the tests (CLAUDE.md, invariant 9).
+NOT_READ_BY_THE_SERVER = {"raw", "processed"}
+
+
+def _committed_data_folders() -> set[str]:
+
+    import subprocess
+
+    try:
+        listed = subprocess.run(
+            ["git", "ls-files", "backend/data"],
+            cwd=DOCKER.parent, capture_output=True, text=True, check=True,
+        ).stdout.split()
+    except (OSError, subprocess.CalledProcessError):
+        pytest.skip("needs a git checkout to know what backend/data commits")
+
+    return {path.split("/")[2] for path in listed if path.count("/") >= 3}
+
+
+def test_every_committed_data_folder_the_backend_reads_is_mounted(base):
+    """
+    .dockerignore keeps backend/data/ out of the image and the backend-data
+    volume shadows /app/data, so a committed folder the server reads exists
+    in the container only if compose mounts it. data/evaluation was not
+    mounted: in the Docker stack /evaluation showed 0 of 139 facts (found
+    2026-10-27). Read-only: the server only
+    reads them, and docker-compose.eval.yml mounts data/evaluation again,
+    writable, for the harness's runs - compose keys a mount by its path in
+    the container, so the later file's wins.
+    """
+
+    mounts = set(base["backend"]["volumes"])
+
+    for folder in sorted(_committed_data_folders() - NOT_READ_BY_THE_SERVER):
+        assert f"../backend/data/{folder}:/app/data/{folder}:ro" in mounts, folder
