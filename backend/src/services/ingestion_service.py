@@ -646,6 +646,11 @@ class IngestionService:
             logger.warning("Discovery failed for %s", source.id, exc_info=True)
             return DiscoveryResult(error=str(exc))
 
+    def stored_urls(self) -> set[str]:
+        """Every article already in the lake, by host and path: what no round offers again."""
+
+        return self._stored_urls()
+
     def _stored_urls(self) -> set[str]:
         """Every article URL already in the lake's raw layer."""
 

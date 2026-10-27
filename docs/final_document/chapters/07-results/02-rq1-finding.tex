@@ -137,3 +137,49 @@ name the environment.
 \pending{the other four days of discovery, for intervals; precision of
 the first twenty and the ranking's AUC on at least two rounds labelled
 by the author.}
+
+\paragraph{A second way in: what is trending.} The trending lens
+(Section~\ref{sec:design-selection}) asks RQ1 again from another side:
+does starting from what is spreading find constructive stories the
+topic rounds do not? A rule written before the first day fixes the
+protocol (\path{backend/data/evaluation/experiments/trends/rule.md}).
+On five days, a trending round over every signal is made beside the
+day's topic rounds over all five groups, and the trending round's first
+twenty are labelled from what a person sees, without their scores and in
+a shuffled order (\texttt{python -m src.evaluation.experiments trends
+run}, then \texttt{trends report}). Each is labelled worth offering or
+not and clearly positive or not, with whether a constructive angle is
+the story itself or only possible, and whether its subject is a private
+person. Day~1, 26~October~2026, labelled by the AI pass blind to the
+scores (Table~\ref{tab:trends-day1}): 12 of the first twenty were worth
+offering, 5 of them clearly positive, and \textbf{none of the 12 was
+offered by either topic round that day}, by link or by title similarity.
+They came almost all from r/UpliftingNews (9 of its 10), against 2 of
+Upworthy's 6 and 1 of Google Trends' 4. Five of the twenty had a private
+person or a child as their subject, which the rules on publishing such
+stories exist for.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{The trending round of 26~October~2026, first twenty places, by
+signal. Labels by the AI labelling pass, blind to the scores.}
+\label{tab:trends-day1}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Signal} & \textbf{Labelled} & \textbf{Not worth} & \textbf{Worth} & \textbf{Clearly positive} \\
+\midrule
+r/UpliftingNews (top of the day) & 10 & 1 & 5 & 4 \\
+Upworthy & 6 & 4 & 2 & 0 \\
+Google Trends, Spain & 2 & 1 & 0 & 1 \\
+Google Trends, United States & 2 & 2 & 0 & 0 \\
+\midrule
+\textbf{All} & \textbf{20} & \textbf{8} & \textbf{7} & \textbf{5} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\pending{days 2--5 of the trending rounds, one a day; the precision of
+the first twenty with an interval over the days; the new stories over
+five days against the rule's bound of ten; whether a signal is disabled
+by default; the funnel from chosen to published.}

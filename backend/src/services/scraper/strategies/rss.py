@@ -15,6 +15,7 @@ import feedparser
 from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import Fetcher
 from src.config.topic_url_patterns import (
+    BETTING_DOMAINS,
     INDEX_SEGMENTS,
     LIVE_COVERAGE,
     LIVE_COVERAGE_PATTERNS,
@@ -66,14 +67,28 @@ _SECTIONS = {
 
 
 def off_mission(url: str) -> bool:
-    """Filed under a section this publication never covers (OFF_MISSION_SECTIONS), or live coverage."""
+    """
+    Filed under a section this publication never covers
+    (OFF_MISSION_SECTIONS), live coverage, or a betting site's page
+    (BETTING_DOMAINS).
+    """
 
-    path = urlsplit(url.lower()).path
+    parts = urlsplit(url.lower())
+    path = parts.path
 
     return (
         any(marker in path for marker in OFF_MISSION_SECTIONS + LIVE_COVERAGE)
         or any(re.search(pattern, path) for pattern in LIVE_COVERAGE_PATTERNS)
+        or betting_site(parts.hostname or "")
     )
+
+
+def betting_site(host: str) -> bool:
+    """Whether a host is one of BETTING_DOMAINS or under one (sportsbook.fanduel.com)."""
+
+    host = host.lower().rstrip(".")
+
+    return any(host == domain or host.endswith("." + domain) for domain in BETTING_DOMAINS)
 
 
 def date_from_url(url: str) -> datetime | None:

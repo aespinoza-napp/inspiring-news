@@ -23,6 +23,9 @@ PUBLIC_FIELDS = {
     "metadata",
     "disclosure",
     "publishedAt",
+    # 2026-10-26: a story from a trend says which, and shows the TikTok
+    # video a person gave, behind a click (docs/decisions/trends.md).
+    "trend",
 }
 
 PRIVATE_FIELDS = {"instructions", "revisions", "review", "error", "busy", "status", "published", "excerpt"}
@@ -173,3 +176,63 @@ def test_a_card_has_no_body_and_no_sources():
     assert "sources" not in card
     assert card["title"] == "Seagrass meadows return to the bay"
     assert card["disclosure"]["aiWritten"] is True
+
+
+# ----------------------------------------------------------------------
+# A story from a trend (docs/decisions/trends.md, "The story")
+# ----------------------------------------------------------------------
+
+
+def a_draft_from_a_trend(video=None):
+
+    from src.models.writer.draft import DraftAngle, DraftTrend
+
+    draft = create_draft()
+    draft.trend = DraftTrend(
+        id="abc123",
+        name="farmear aura",
+        signal="seed",
+        signal_name="Typed by a person",
+        traffic=2000,
+        link="https://trends.google.com/trends/explore?q=farmear%20aura",
+        video=video,
+        angles=[DraftAngle(question="PRIVATE-QUESTION", claim="PRIVATE-CLAIM", kept=True, reason="PRIVATE-REASON")],
+        angle_note="PRIVATE-NOTE",
+    )
+
+    return draft
+
+
+def test_a_story_from_a_trend_says_which_and_shows_its_video():
+
+    video = {"provider": "tiktok", "id": "6718335390845095173", "url": "https://www.tiktok.com/@scout2015/video/6718335390845095173",
+             "title": "Scramble up ur name", "author": "Scout"}
+
+    story = PublishedStory.of(a_draft_from_a_trend(video), PUBLISHED_AT).model_dump(mode="json", by_alias=True)
+
+    assert story["trend"] == {
+        "name": "farmear aura",
+        "signalName": "Typed by a person",
+        "video": {"provider": "tiktok", "id": "6718335390845095173",
+                  "url": "https://www.tiktok.com/@scout2015/video/6718335390845095173",
+                  "title": "Scramble up ur name", "author": "Scout"},
+    }
+    # The angles, the searches and the link stay the newsroom's.
+    assert "PRIVATE-" not in json.dumps(story)
+    assert "traffic" not in story["trend"] and "angles" not in story["trend"] and "link" not in story["trend"]
+
+
+def test_a_video_that_is_not_a_tiktok_player_id_is_not_published():
+
+    for video in (
+        {"provider": "tiktok", "id": "javascript:alert(1)", "url": "https://www.tiktok.com/@a/video/1"},
+        {"provider": "tiktok", "id": "123", "url": "https://evil.example/video/123"},
+        {"provider": "youtube", "id": "123", "url": "https://www.tiktok.com/@a/video/123"},
+    ):
+        story = PublishedStory.of(a_draft_from_a_trend(video), PUBLISHED_AT)
+        assert story.trend.name == "farmear aura" and story.trend.video is None
+
+
+def test_a_story_no_trend_brought_has_none():
+
+    assert PublishedStory.of(create_draft(), PUBLISHED_AT).trend is None

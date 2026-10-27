@@ -310,6 +310,25 @@ def repointed(
     return moved
 
 
+def stating(body: str, claim: str, lexicon: Lexicon) -> list[str]:
+    """
+    The body's sentences that state `claim`, by the echo rule: sharing
+    ECHO_OVERLAP of its content terms, when it has ECHO_MIN_TERMS of them.
+    What the review holds a draft from a trend's confirmed angle to.
+    """
+
+    claim_terms = _terms(claim, lexicon.language)
+
+    if len(claim_terms) < ECHO_MIN_TERMS:
+        return []
+
+    return [
+        sentence
+        for sentence in body_sentences(body)
+        if len(claim_terms & _terms(sentence, lexicon.language)) / len(claim_terms) >= ECHO_OVERLAP
+    ]
+
+
 def check(
     body: str,
     source_count: int,

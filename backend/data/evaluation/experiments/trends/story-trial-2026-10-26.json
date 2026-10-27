@@ -1,0 +1,172 @@
+{
+ "draftId": "f6bfada52cd5d655",
+ "writtenSeconds": 355.5,
+ "reviewedSeconds": 289.4,
+ "writer": "writer",
+ "reviewer": "reviewer",
+ "title": "Princeton alumni deploy ultrahydrophobic filters to capture microplastics in Atlantic City wastewater",
+ "body": "Former Princeton University graduates have deployed a new filtration technology at the Atlantic County Utilities Authority's wastewater treatment plant to remove microplastics [1]. The system, developed by PolyGone Systems, was designed to prevent these contaminants from entering the Atlantic Ocean [1]. Plastics do not biodegrade but break down into smaller fragments known as microplastics that persist in the environment and accumulate in living organisms [1].\n\n## How the technology works\n\nThe technology replicates ultrahydrophobic plants found in wetlands, allowing microplastics to stick to it for removal [4]. This mechanism mimics natural processes where specific plant structures attract and capture contaminants [9]. The filter is made of thousands of silicone fibers that trap small particles due to their hydrophobic properties [14]. Microplastics adhere to the bristly brush-like structure while wastewater flows through [14].\n\n## Development and funding\n\nPolyGone Systems is a startup founded by Nathanial Banks and Yidian Liu, who are former Princeton graduates [4]. The company was established in 2021 and is based in Kearny, New Jersey [7]. Both founders are Forbes 30 under 30 fellows [11]. The startup raised $4 million in seed funding to expand its filtration capabilities [7]. This round included participation from Tech Council Ventures, FYRFLY Venture Partners, and Golden Seeds [8].\n\n## Implementation at Atlantic City\n\nThe installation at the Atlantic County Utilities Authority facility is believed to be the world's first permanent operation of its kind [12]. The project follows a two-year pilot program that began in 2024 [12]. Over the course of the next year, their filter pulled more than half a billion pieces of tiny plastic from ocean-bound wastewater at the Atlantic City facility [6]. There currently are no state or federal regulations that require the removal of microplastics in wastewater or drinking water [1].\n\n## Impact and future plans\n\nMicroplastics can leach into wastewater treatment plants after they're discharged by industrial facilities or collected from stormwater runoff [1]. Residents also contribute to pollution by washing clothes that contain microplastics [1]. The Atlantic County Utilities Authority said it is crucial to remove these contaminants before discharging them into the environment [4]. Wastewater treatment plants discharge their treated effluent into waterways like the Atlantic Ocean [1].\n\nYidian Liu, PolyGone's co-founder and chief operating officer, noted that the technology stands out for its sleek design influenced by their architecture background [2]. She compared the approach to how complex problems are solved with simple designs in products like the iPhone [2]. The founders say they have launched a similar system for a wastewater treatment plant in California [1]. They are also interested in scaling down the technology for residential uses [1].\n\nIn laboratory settings, PolyGone's technology has been able to remove more than 98% of microplastics [7]. There is no data yet for the commercial system, but the founders remain confident it will continue to remove a majority of microplastics [1]. The utility stated that if they do not remove plastic from wastewater, they are putting it back into the environment [1]. These particles have been detected in the human bloodstream and brain tissue, though specific harms are still under research [1].",
+ "sources": [
+  {
+   "n": 1,
+   "origin": "analysed",
+   "url": "https://whyy.org/articles/microplastics-treatment-technology-atlantic-city-new-jersey-princeton-alumni/"
+  },
+  {
+   "n": 2,
+   "origin": "related",
+   "url": "https://pressofatlanticcity.com/news/local/business/article_a821d0b5-fab8-4d37-a337-99aef8ea7831.html"
+  },
+  {
+   "n": 3,
+   "origin": "related",
+   "url": "https://www.newsbreak.com/whyy-513317/4965926310182-princeton-university-alumni-use-new-technology-to-treat-microplastics-at-atlantic-city-wastewater-plant"
+  },
+  {
+   "n": 4,
+   "origin": "related",
+   "url": "https://theoverheadwire.com/2026/10/princeton-university-alumni-use-new-technology-to-treat-microplastics-at-atlantic-city-wastewater-plant/"
+  },
+  {
+   "n": 5,
+   "origin": "related",
+   "url": "https://www.acua.com/Community-Hub/News/Press-Releases/2023/ACUA-to-Test-Microplastic-Filtration-System-at-its.aspx"
+  },
+  {
+   "n": 6,
+   "origin": "related",
+   "url": "https://gradschool.princeton.edu/news/2026/graduate-alums-start-company-works-princeton-materials-institute-combat-microplastics"
+  },
+  {
+   "n": 7,
+   "origin": "angle",
+   "url": "https://pulse2.com/polygone-systems-princeton-university-spinout-raises-4-million-seed-round-to-scale-microplastic-monitoring-and-removal/"
+  },
+  {
+   "n": 8,
+   "origin": "angle",
+   "url": "https://lifestyle.phenomena.org/story/510595/polygone-systems-raises-4m-seed-round-to-scale-microplastic-monitoring-and-removal/"
+  },
+  {
+   "n": 9,
+   "origin": "angle",
+   "url": "https://newspoken.com/word/ultrahydrophobic"
+  },
+  {
+   "n": 10,
+   "origin": "angle",
+   "url": "https://en.wikipedia.org/wiki/Ultrahydrophobicity"
+  },
+  {
+   "n": 11,
+   "origin": "evidence",
+   "url": "https://www.pppl.gov/events/2025/science-saturday-developing-systems-mitigating-aquatic-microplastic-pollution"
+  },
+  {
+   "n": 12,
+   "origin": "evidence",
+   "url": "https://shorelocalnews.com/acua-launches-permanent-systems-to-remove-microplastics-from-wastewater/"
+  },
+  {
+   "n": 13,
+   "origin": "evidence",
+   "url": "https://www.gaebler.com/Funded-Company-F8F2D1D4-A458-4CA0-B7F5-698CF0F95B28-PolyGone-Systems"
+  },
+  {
+   "n": 14,
+   "origin": "evidence",
+   "url": "https://paw.princeton.edu/article/alumni-developed-way-remove-microplastics-waterways"
+  },
+  {
+   "n": 15,
+   "origin": "evidence",
+   "url": "https://phys.org/news/2026-09-microplastics-law-california-plastic-policy.html"
+  },
+  {
+   "n": 16,
+   "origin": "evidence",
+   "url": "https://icorpsnortheasthub.org/news/2026/polygone-systems-raises-4m-seed-round-scale-microplastic-monitoring-and-removal"
+  }
+ ],
+ "angleSourcesCited": [
+  7,
+  8,
+  9
+ ],
+ "angleIssues": [
+  "States a confirmed angle's claim but cites [1], not its sources [4][7][8]: “Former Princeton University graduates have deployed a new filtration technology at the Atlantic County Utilities Authority's wastewater treatment plant to remov…”",
+  "States a confirmed angle's claim but cites [4], not its sources [9][10]: “The technology replicates ultrahydrophobic plants found in wetlands, allowing microplastics to stick to it for removal [4].”"
+ ],
+ "metrics": {
+  "title": 95.0,
+  "subtitle": 88.0,
+  "grammar": 98.0,
+  "factConsistency": 92.0,
+  "coverageVerification": 51.8,
+  "seo": 90.0,
+  "readability": 36.4,
+  "hallucinationIndex": 85.0,
+  "style": 96.0
+ },
+ "trend": {
+  "id": "689cb30218cd",
+  "name": "Princeton alumni remove microplastics from Atlantic City wastewater",
+  "signal": "uplifting_news",
+  "signalName": "r/UpliftingNews · top of the day",
+  "traffic": null,
+  "startedAt": "2026-10-26T10:19:35+00:00",
+  "link": "https://www.reddit.com/r/UpliftingNews/comments/1xfsxlx/princeton_alumni_remove_microplastics_from/",
+  "video": null,
+  "angles": [
+   {
+    "question": "How did Princeton alumni develop a technology to remove microplastics from wastewater?",
+    "claim": "Former Princeton University graduates founded PolyGone Systems and designed a new treatment method for the Atlantic County Utilities Authority.",
+    "query": "Princeton alumni PolyGone Systems microplastics Atlantic City wastewater",
+    "kept": true,
+    "reason": "TRUE at 81%, supported by 3 domains: lifestyle.phenomena.org, pulse2.com, theoverheadwire.com.",
+    "verdict": "TRUE",
+    "confidence": 0.809715985880609,
+    "domains": [
+     "lifestyle.phenomena.org",
+     "pulse2.com",
+     "theoverheadwire.com"
+    ],
+    "sourceUrls": [
+     "https://theoverheadwire.com/2026/10/princeton-university-alumni-use-new-technology-to-treat-microplastics-at-atlantic-city-wastewater-plant/",
+     "https://pulse2.com/polygone-systems-princeton-university-spinout-raises-4-million-seed-round-to-scale-microplastic-monitoring-and-removal/",
+     "https://lifestyle.phenomena.org/story/510595/polygone-systems-raises-4m-seed-round-to-scale-microplastic-monitoring-and-removal/"
+    ]
+   },
+   {
+    "question": "What specific mechanism does the new technology use to capture microplastics from water?",
+    "claim": "The technology replicates ultrahydrophobic plants found in wetlands, allowing microplastics to stick to it for removal.",
+    "query": "PolyGone Systems ultrahydrophobic plants microplastic removal mechanism",
+    "kept": true,
+    "reason": "TRUE at 65%, supported by 2 domains: en.wikipedia.org, newspoken.com.",
+    "verdict": "TRUE",
+    "confidence": 0.6546741308435395,
+    "domains": [
+     "en.wikipedia.org",
+     "newspoken.com"
+    ],
+    "sourceUrls": [
+     "https://newspoken.com/word/ultrahydrophobic",
+     "https://en.wikipedia.org/wiki/Ultrahydrophobicity"
+    ]
+   },
+   {
+    "question": "What is the expected environmental impact of removing microplastics from Atlantic City wastewater?",
+    "claim": "The initiative aims to divert microplastics from entering the ocean, thereby protecting marine life and humans.",
+    "query": "Atlantic County Utilities Authority microplastic removal marine life protection",
+    "kept": false,
+    "reason": "The fact-check found it FALSE, not TRUE.",
+    "verdict": "FALSE",
+    "confidence": 0.5691518445767926,
+    "domains": [],
+    "sourceUrls": []
+   }
+  ],
+  "angleNote": null
+ },
+ "note": "The angle trial article, drafted 26 Oct with writer=qwen3.5:4b and reviewer=qwen3.5:9b set for the trial only; the angle step was searched again inside the draft, so trend.angles differ from angle-trial-2026-10-26.json. scratchpad story_trial.py, through get_draft_writer() and get_draft_reviewer()."
+}

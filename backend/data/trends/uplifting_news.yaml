@@ -1,0 +1,20 @@
+# r/UpliftingNews, its top posts of the day: good news that is already
+# spreading, each post a link to a news article. On 2026-10-26 its front
+# page linked 24 articles from 20 domains, about 20 of them positive -
+# and an election result and a police story, which is why it is screened.
+# About half were about private people, some of them children
+# (docs/decisions/trends.md, "People who went viral").
+# Read as public RSS, no key. Reddit limits unauthenticated readers: a
+# second request minutes later came back empty on 2026-10-26.
+
+id: uplifting_news
+
+name: r/UpliftingNews · top of the day
+
+kind: ranked_feed
+
+url: https://www.reddit.com/r/UpliftingNews/top/.rss?t=day
+
+language: en
+
+positive: true

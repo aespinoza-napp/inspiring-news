@@ -83,6 +83,34 @@ one per article. A pick still goes through admission and the whole
 pipeline: the selection decides what to spend analyses on, and replaces
 no check.
 
+\paragraph{The trending lens.} A round can also start from what is
+spreading rather than from a topic group. Its candidates are the
+articles behind the rising searches of Google Trends in Spain and the
+United States, the day's most voted posts of r/UpliftingNews, and two
+viral outlets' feeds (Section~\ref{sec:dev-trend-signals}). A trend is
+treated as a question --- why is everyone talking about this? --- whose
+answer is in the news that explains it, so the system never analyses
+the trend itself, only its articles. Trending is a way in, not a sixth
+group: virality says how a story travels, not what it is about, and a
+viral rescue of an animal is still a Nature story. Its articles pass
+the same link filters (with betting sites added, since a tennis trend
+came with two bookmakers' odds pages), a 72-hour limit on the trend and
+a week on its articles, and the unchanged mission screen. Then, at most
+two articles a trend, they are ranked by the same score with two parts
+changed:
+\[
+  s = 0.6\cdot\textit{impact} \;+\; 0.25\cdot\textit{record}_{\text{signal}}
+      \;+\; 0.15\cdot\textit{virality},
+\]
+where the record is the signal's in the round's screen rather than an
+outlet's, and \textit{virality} --- the trend's place among its own
+signal's trends, by searches or by votes --- takes the place of
+reliability, which is a flat default for the unrated outlets trends
+bring. Groups, when picked, still split the story's share by the topic
+emphasis. The AI selection is told the list is trending and to score
+the story, not its popularity. \textbf{Virality orders what is looked
+at and never enters a verdict, a confidence or a source's rating.}
+
 \paragraph{The choice.} The editor keeps or changes the proposal and
 sends at most twenty. The backend, not the page, records whether the
 choice was the person's, the model's or both, and how many of the

@@ -12,6 +12,7 @@ from src.services.log_format import configure_logging
 from src.services.scraper.request_stats import request_stats
 from src.services.scraper.sightings import sightings
 from src.services.selection.rounds import selection_rounds
+from src.services.trends.ledger import trend_ledger
 
 # Python's root logger defaults to WARNING, so plain logger.info() calls
 # (e.g. src/services/job_runner.py's per-phase timing) would silently
@@ -43,6 +44,10 @@ async def lifespan(app: FastAPI):
         # Every candidate round: what was found, what the AI proposed,
         # what was sent to analysis (src/services/selection/rounds.py).
         selection_rounds.attach(settings.LAKE_PATH / "stats" / "selection")
+
+        # Which queued article came from which trend, for the writing flow
+        # (src/services/trends/ledger.py).
+        trend_ledger.attach(settings.LAKE_PATH / "stats" / "trends" / "articles.json")
 
     yield
 

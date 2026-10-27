@@ -14,7 +14,9 @@ export type DraftBusy = "generating" | "reviewing" | "rewriting" | "publishing";
 // (POST /drafts/{id}/restore); its `model` is the one that wrote that text.
 export type RevisionReason = "generated" | "edited" | "corrected" | "rewritten" | "restored";
 
-export type SourceOrigin = "analysed" | "related" | "evidence";
+// "angle": a source behind a constructive angle the fact-check confirmed,
+// for a draft from a trend (docs/decisions/trends.md).
+export type SourceOrigin = "analysed" | "related" | "evidence" | "angle";
 
 export interface DraftSource {
   url: string;
@@ -71,6 +73,37 @@ export interface PublishRecord {
   url: string | null;
 }
 
+/** A constructive angle proposed for a draft from a trend, and what the fact-check made of it. */
+export interface DraftAngle {
+  question: string;
+  /** The one checkable sentence that would have to be true. */
+  claim: string;
+  query: string;
+  kept: boolean;
+  reason: string;
+  verdict: string | null;
+  confidence: number | null;
+  domains: string[];
+  /** Its supporting sources, as they are in the draft's `sources` (origin "angle"). */
+  sourceUrls: string[];
+}
+
+/** The trend a draft's article was found through (backend DraftTrend). */
+export interface DraftTrend {
+  id: string;
+  name: string;
+  signal: string;
+  signalName: string;
+  traffic: number | null;
+  startedAt: string | null;
+  link: string | null;
+  /** A TikTok video a person gave: provider, id, url, title, author. */
+  video: { provider: string; id: string | null; url: string; title: string | null; author: string | null } | null;
+  angles: DraftAngle[];
+  /** Why no angle was looked for, or what went wrong looking. */
+  angleNote: string | null;
+}
+
 export interface ArticleDraft {
   id: string;
   sourceArticleId: string;
@@ -89,6 +122,8 @@ export interface ArticleDraft {
   createdAt: string;
   updatedAt: string;
   published: PublishRecord[];
+  /** Set when the analysed article came from a trending round. */
+  trend?: DraftTrend | null;
 }
 
 export interface DraftSummary {

@@ -190,7 +190,14 @@ export interface ReaderText {
   publishedOn: (date: string) => string;
   moreNews: string;
   sourcesTitle: string;
-  origin: Record<"analysed" | "related" | "evidence", string>;
+  origin: Record<"analysed" | "related" | "evidence" | "angle", string>;
+  /**
+   * A story found through what is trending (docs/decisions/trends.md): which
+   * trend, and that popularity proves nothing.
+   */
+  trendFound: (name: string, signal: string) => string;
+  /** The TikTok video a person gave with the trend: loaded only after a click. */
+  video: { title: string; notice: string; load: string; open: string; frameTitle: string };
   checkedTitle: string;
   checkedIntro: string;
   restsOn: string;
@@ -427,7 +434,21 @@ const en: ReaderText = {
   publishedOn: (date) => `Published ${date}.`,
   moreNews: "More checked news and our articles",
   sourcesTitle: "Sources",
-  origin: { analysed: "The article we checked", related: "Related coverage", evidence: "Evidence behind a fact-check" },
+  origin: {
+    analysed: "The article we checked",
+    related: "Related coverage",
+    evidence: "Evidence behind a fact-check",
+    angle: "Behind a constructive angle we checked",
+  },
+  trendFound: (name, signal) =>
+    `We found this story through what is trending: “${name}”${signal ? ` (${signal})` : ""}. Being popular proves nothing: what the article states rests on the sources below.`,
+  video: {
+    title: "The video behind the trend",
+    notice: "This video is on TikTok. Loading it connects your browser to TikTok, which may set cookies and track your visit.",
+    load: "Load the TikTok video",
+    open: "Open it on TikTok instead",
+    frameTitle: "TikTok video",
+  },
   checkedTitle: "What was checked",
   checkedIntro: "The claims of the article we started from, as our fact-checker judged them.",
   restsOn: "Rests on ",
@@ -721,7 +742,21 @@ const es: ReaderText = {
   publishedOn: (date) => `Publicado el ${date}.`,
   moreNews: "Más noticias verificadas y nuestros artículos",
   sourcesTitle: "Fuentes",
-  origin: { analysed: "El artículo que verificamos", related: "Cobertura relacionada", evidence: "Prueba de una verificación" },
+  origin: {
+    analysed: "El artículo que verificamos",
+    related: "Cobertura relacionada",
+    evidence: "Prueba de una verificación",
+    angle: "Detrás de un enfoque constructivo que verificamos",
+  },
+  trendFound: (name, signal) =>
+    `Encontramos esta historia a través de lo que es tendencia: «${name}»${signal ? ` (${signal})` : ""}. Que sea popular no prueba nada: lo que afirma el artículo se apoya en las fuentes de abajo.`,
+  video: {
+    title: "El vídeo detrás de la tendencia",
+    notice: "Este vídeo está en TikTok. Cargarlo conecta tu navegador con TikTok, que puede instalar cookies y seguir tu visita.",
+    load: "Cargar el vídeo de TikTok",
+    open: "Abrirlo en TikTok",
+    frameTitle: "Vídeo de TikTok",
+  },
   checkedTitle: "Qué se verificó",
   checkedIntro: "Las afirmaciones del artículo del que partimos, tal como las juzgó nuestro verificador.",
   restsOn: "Se apoya en ",
@@ -1023,7 +1058,21 @@ const ca: ReaderText = {
   publishedOn: (date) => `Publicat el ${date}.`,
   moreNews: "Més notícies verificades i els nostres articles",
   sourcesTitle: "Fonts",
-  origin: { analysed: "L'article que vam verificar", related: "Cobertura relacionada", evidence: "Prova d'una verificació" },
+  origin: {
+    analysed: "L'article que vam verificar",
+    related: "Cobertura relacionada",
+    evidence: "Prova d'una verificació",
+    angle: "Darrere d'un enfocament constructiu que vam verificar",
+  },
+  trendFound: (name, signal) =>
+    `Vam trobar aquesta història a través del que és tendència: «${name}»${signal ? ` (${signal})` : ""}. Que sigui popular no prova res: el que afirma l'article es basa en les fonts de sota.`,
+  video: {
+    title: "El vídeo darrere de la tendència",
+    notice: "Aquest vídeo és a TikTok. Carregar-lo connecta el teu navegador amb TikTok, que pot instal·lar galetes i seguir la teva visita.",
+    load: "Carrega el vídeo de TikTok",
+    open: "Obre'l a TikTok",
+    frameTitle: "Vídeo de TikTok",
+  },
   checkedTitle: "Què es va verificar",
   checkedIntro: "Les afirmacions de l'article del qual vam partir, tal com les va jutjar el nostre verificador.",
   restsOn: "Es recolza en ",

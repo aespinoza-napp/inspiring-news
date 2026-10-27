@@ -1,0 +1,131 @@
+{
+ "url": "https://whyy.org/articles/microplastics-treatment-technology-atlantic-city-new-jersey-princeton-alumni/",
+ "trend": {
+  "id": "689cb30218cd",
+  "name": "Princeton alumni remove microplastics from Atlantic City wastewater",
+  "signal": "uplifting_news",
+  "signalName": "r/UpliftingNews · top of the day",
+  "position": 13,
+  "traffic": null,
+  "startedAt": "2026-10-26T10:19:35+00:00",
+  "link": "https://www.reddit.com/r/UpliftingNews/comments/1xfsxlx/princeton_alumni_remove_microplastics_from/",
+  "video": null,
+  "seed": false,
+  "positive": true
+ },
+ "writerModel": "writer",
+ "verifierModel": "llama3.2:3b",
+ "analysisSeconds": 162.5,
+ "analysis": {
+  "title": "Princeton alumni remove microplastics from Atlantic City wastewater",
+  "validationPassed": null,
+  "overallVerdict": "UNVERIFIED",
+  "claims": [
+   {
+    "text": "The Atlantic City wastewater treatment facility said the new initiative aims to divert microplastics from the ocean, protecting marine life and humans.",
+    "verdict": "UNVERIFIED",
+    "confidence": 0.1683816143189252
+   },
+   {
+    "text": "However, the Atlantic County Utilities Authority said it’s crucial to remove the contaminants from wastewater before being discharged into the environment.",
+    "verdict": "TRUE",
+    "confidence": 0.9315239596959397
+   },
+   {
+    "text": "Liu, PolyGone’s co-founder and chief operating officer, said the technology also stands out for its sleek design, which she credits to their background as architecture students.",
+    "verdict": "TRUE",
+    "confidence": 0.9354980832366515
+   },
+   {
+    "text": "The technology designed by PolyGone Systems, a startup founded by Nathanial Banks and Yidian Liu, replicates ultrahydrophobic plants found in wetlands that microplastics easily stick to so the contaminant can be removed from water.",
+    "verdict": "TRUE",
+    "confidence": 0.8545786357459663
+   },
+   {
+    "text": "PolyGone’s founders say the technology has been able to remove more than 98% of microplastics in the control lab environment.",
+    "verdict": null,
+    "confidence": 0.8
+   },
+   {
+    "text": "Liu and Banks have launched a similar system for a wastewater treatment plant in California, and say they’re also interested in scaling down their technology for residential uses.",
+    "verdict": null,
+    "confidence": 0.5
+   },
+   {
+    "text": "These particles have been detected in the human bloodstream, brain tissue and other organs, and some researchers say exposure could increase the risk of heart attack or stroke.",
+    "verdict": null,
+    "confidence": 0.5
+   },
+   {
+    "text": "The utility said the installation, which is fully funded by a federal grant, is the first of its kind in the world.",
+    "verdict": null,
+    "confidence": 0.5
+   }
+  ]
+ },
+ "publishable": true,
+ "angleSeconds": 130.9,
+ "angles": [
+  {
+   "question": "How did Princeton alumni develop a technology to remove microplastics from wastewater?",
+   "claim": "Former Princeton University graduates founded PolyGone Systems and designed a new treatment method for the Atlantic County Utilities Authority.",
+   "query": "Princeton alumni PolyGone Systems microplastics Atlantic City wastewater",
+   "kept": true,
+   "reason": "TRUE at 92%, supported by 4 domains: lifestyle.phenomena.org, pulse2.com, theoverheadwire.com, wjrz.com.",
+   "verdict": "TRUE",
+   "confidence": 0.9239382674574086,
+   "domains": [
+    "lifestyle.phenomena.org",
+    "pulse2.com",
+    "theoverheadwire.com",
+    "wjrz.com"
+   ],
+   "sourceUrls": [
+    "https://theoverheadwire.com/2026/10/princeton-university-alumni-use-new-technology-to-treat-microplastics-at-atlantic-city-wastewater-plant/",
+    "https://pulse2.com/polygone-systems-princeton-university-spinout-raises-4-million-seed-round-to-scale-microplastic-monitoring-and-removal/",
+    "https://wjrz.com/2025/12/15/polygone-systems-acua-win-nj-award-for-microplastic-removal-project/",
+    "https://lifestyle.phenomena.org/story/510595/polygone-systems-raises-4m-seed-round-to-scale-microplastic-monitoring-and-removal/"
+   ]
+  },
+  {
+   "question": "What specific mechanism does the new technology use to capture microplastics from water?",
+   "claim": "The technology replicates ultrahydrophobic plants found in wetlands, allowing microplastics to stick to it for removal.",
+   "query": "PolyGone Systems ultrahydrophobic plants microplastic removal mechanism",
+   "kept": true,
+   "reason": "TRUE at 65%, supported by 2 domains: en.wikipedia.org, newspoken.com.",
+   "verdict": "TRUE",
+   "confidence": 0.6545715427543425,
+   "domains": [
+    "en.wikipedia.org",
+    "newspoken.com"
+   ],
+   "sourceUrls": [
+    "https://newspoken.com/word/ultrahydrophobic",
+    "https://en.wikipedia.org/wiki/Ultrahydrophobicity"
+   ]
+  },
+  {
+   "question": "What is the expected environmental impact of removing microplastics from Atlantic City wastewater?",
+   "claim": "The initiative aims to divert microplastics from entering the ocean, thereby protecting marine life and humans.",
+   "query": "Atlantic County Utilities Authority microplastic removal marine life protection",
+   "kept": false,
+   "reason": "TRUE, but supported by 1 domain other than the article's own outlet; 2 are needed.",
+   "verdict": "TRUE",
+   "confidence": 0.5687258741237967,
+   "domains": [
+    "oceanblueproject.org"
+   ],
+   "sourceUrls": []
+  }
+ ],
+ "angleSources": [
+  "https://theoverheadwire.com/2026/10/princeton-university-alumni-use-new-technology-to-treat-microplastics-at-atlantic-city-wastewater-plant/",
+  "https://pulse2.com/polygone-systems-princeton-university-spinout-raises-4-million-seed-round-to-scale-microplastic-monitoring-and-removal/",
+  "https://wjrz.com/2025/12/15/polygone-systems-acua-win-nj-award-for-microplastic-removal-project/",
+  "https://lifestyle.phenomena.org/story/510595/polygone-systems-raises-4m-seed-round-to-scale-microplastic-monitoring-and-removal/",
+  "https://newspoken.com/word/ultrahydrophobic",
+  "https://en.wikipedia.org/wiki/Ultrahydrophobicity"
+ ],
+ "note": null,
+ "model": "writer"
+}

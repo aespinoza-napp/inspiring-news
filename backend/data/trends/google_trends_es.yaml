@@ -1,0 +1,18 @@
+# Spain's rising searches, ten at a time, each with its approximate
+# searches and three news articles Google attaches to it. On 2026-10-26 at
+# 07:10: a TV talent show, a bullfighter's party, two tennis matches and a
+# basketball player, a lorry crash on the AP-7, warships off Ceuta, a TV
+# presenter, Madrid's Metro line 10 reopening and Netflix's La Regenta.
+# What a TikTok trend becomes once people search for it.
+
+id: google_trends_es
+
+name: Google Trends · Spain
+
+kind: google_trends
+
+url: https://trends.google.com/trending/rss?geo=ES
+
+language: es
+
+country: ES

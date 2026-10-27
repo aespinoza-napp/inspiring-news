@@ -1,0 +1,25 @@
+{
+ "day": "2026-10-26",
+ "trendingRound": "23549914a4ab403c",
+ "topicRounds": [
+  "31817a5169c54ccd",
+  "d1ed781f865f4614"
+ ],
+ "rule": "data/evaluation/experiments/trends/rule.md",
+ "settings": {
+  "perTrend": 2,
+  "perSource": 3,
+  "search": false,
+  "dayGroups": [
+   [
+    "society",
+    "science",
+    "environment"
+   ],
+   [
+    "culture",
+    "health"
+   ]
+  ]
+ }
+}

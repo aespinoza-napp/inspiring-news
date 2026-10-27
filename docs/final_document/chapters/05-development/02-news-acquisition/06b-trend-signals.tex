@@ -1,0 +1,71 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: News Acquisition
+%   Subsection: Trend Signals
+% Included from chapters/05-development/02-news-acquisition/news-acquisition.tex
+% Source: docs/decisions/trends.md; backend/src/services/trends/;
+% backend/data/trends/; the feeds saved on 2026-10-26 in
+% backend/tests/fixtures/trends/.
+% ============================================================
+
+\subsection{Trend Signals}
+\label{sec:dev-trend-signals}
+
+The trending lens (Section~\ref{sec:design-selection}) reads
+\emph{signals}: public feeds that say what is spreading right now. A
+signal is not a news source. A source is read for its articles and
+rated, by domain, as evidence; a signal is never evidence, and Google
+Trends is one domain for every country. Signals therefore have their own
+folder of declarations, one per signal, and their own reader
+(\path{backend/src/services/trends/}).
+
+\paragraph{The signals.} Google Trends' ``Trending now'' feed for Spain
+and for the United States gives the country's ten rising searches, each
+with its approximate searches and three news articles about it; a trend
+is the search, and its articles are Google's. The day's top posts of
+r/UpliftingNews give good news that is already spreading: a trend is a
+post, and its article is the page it was submitted with, never the
+discussion thread. Upworthy and Know Your Meme are read as ordinary feeds
+whose order is the signal. The feeds are read concurrently through the
+same fetcher as every page (Section~\ref{sec:dev-scraping}): the URL
+guard, a timeout, redirects checked hop by hop. Each read is counted on
+the scraper's page, and a signal that cannot be read is reported with
+the reason, never raised. Google's feed is parsed with the standard
+library's XML parser, because the general feed parser keeps only the
+last of a repeated namespaced element and would drop two of each trend's
+three articles.
+
+\paragraph{A person's seed.} A person may type a trend: a hashtag, a few
+words, a news link or a TikTok link. Hashtags become words to search for
+in the news (\texttt{\#FarmearAura} becomes ``Farmear Aura''; reach tags
+such as \texttt{\#fyp} are dropped). A news link is the trend's first
+article. A TikTok link becomes the trend's video. Its caption is read once
+through TikTok's oEmbed, which is public and needs no key, and the video
+page itself is never fetched.
+
+\paragraph{Free, and TikTok not scraped.} Every piece of the trends work
+is free by rule: public feeds read without a key, the project's own
+search engine, and the local models. TikTok is not a signal. On
+26~October 2026 its advertisers' trend listing redirected to a page built
+in the browser, whose data endpoint answered ``no permission'' without a
+signed-in session. Its terms forbid scraping. Its research interface and
+the European Union's Digital Services Act Article~40 portal for vetted
+researchers are applications measured in months; one published request
+for TikTok data through the portal was refused in February 2026. Paid
+scrapers would cost money and break the same terms. TikTok therefore
+reaches the system as its echo --- the searches and the news a trend
+causes --- and as what a person types. Reddit and oEmbed both limit
+readers without a key, and on the same day a second request to each came
+back empty or refused. The readers treat that as a signal with no trends,
+said in the round.
+
+\paragraph{What the signals gave.} On the feeds saved that morning,
+Spain's ten trends were a TV talent show, a bullfighter's party, two
+tennis matches and a basketball player, a lorry crash, warships off
+Ceuta, a television presenter, Madrid's Metro line~10 reopening and a
+Netflix adaptation of \emph{La Regenta}: none good news in itself.
+r/UpliftingNews linked 24 articles from 20 domains, about 20 of them
+positive. A live round over every signal that afternoon read 53 trends
+and 92 articles and offered 39 candidates in 13.4~s; the measurement of
+what those candidates are worth is under RQ1
+(Section~\ref{sec:results-rq1}).

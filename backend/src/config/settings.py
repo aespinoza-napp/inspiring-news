@@ -338,6 +338,13 @@ class Settings(BaseSettings):
     # Ollama with none set evaluated 30,000 characters as 2,050 tokens and
     # said nothing (measured 2026-10-15; docs/decisions/writing.md).
     WRITER_PROMPT_MAX_CHARS: int = 30000
+    # A draft from a trend may take a constructive angle, found and checked
+    # (src/services/trends/angles.py, docs/decisions/trends.md, "The
+    # angle"): how many the writer model may propose, and from how many
+    # domains a kept angle's supporting sources must come. Two, as for
+    # corroboration elsewhere: one outlet saying a good thing is a claim.
+    WRITER_ANGLE_MAX_PROPOSALS: int = 3
+    WRITER_ANGLE_MIN_DOMAINS: int = 2
 
     # Claim selection
     CLAIM_DEDUP_THRESHOLD: float = 0.92

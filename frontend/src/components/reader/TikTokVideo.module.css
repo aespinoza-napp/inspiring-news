@@ -1,0 +1,46 @@
+/* The video behind a trend (TikTokVideo.tsx): a quiet card until the
+   reader asks for the player, then the player at TikTok's own 9:16. */
+.video {
+  margin: 1.5rem 0;
+  padding: 0;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.what {
+  color: var(--muted);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.facade {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  max-width: 26rem;
+  padding: 1rem 1.1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 0.88rem;
+}
+
+.facade p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.player {
+  display: block;
+  width: 100%;
+  max-width: 325px;
+  aspect-ratio: 9 / 16;
+  border: 0;
+  border-radius: var(--radius);
+}

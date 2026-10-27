@@ -1,0 +1,57 @@
+/* The trend a draft came from, and its angles (DraftTrendPanel.tsx). */
+
+.panel h2 {
+  margin-bottom: 0.5rem;
+}
+
+.trend {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.note {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+}
+
+.angles {
+  margin: 0.8rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.angles li {
+  margin: 0.6rem 0;
+}
+
+.claim {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+}
+
+.badge {
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kept .badge {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.refused .badge {
+  color: var(--muted);
+}

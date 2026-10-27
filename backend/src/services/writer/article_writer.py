@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from src.config.thresholds import WriterThresholds
-from src.models.writer.draft import DraftContent, DraftFactCheck, DraftMetadata, DraftSource
+from src.models.writer.draft import DraftContent, DraftFactCheck, DraftMetadata, DraftSource, DraftTrend
 from src.services.llms import LLMUnavailableError
 from src.services.reader.views import excerpt
 from src.services.writer.analysed_article import AnalysedArticle
@@ -47,6 +47,9 @@ ORIGIN_LABELS = {
     "analysed": "the analysed article",
     "related": "related news",
     "evidence": "evidence behind a fact-check",
+    # A draft from a trend: a source behind a constructive angle the
+    # fact-check confirmed (src/services/trends/angles.py).
+    "angle": "a source behind a confirmed constructive angle",
 }
 
 # What each verdict allows the writer to say. NOT_CHECKED is our outage
@@ -186,6 +189,7 @@ def user_prompt(
     language: str,
     instructions: str,
     notes: list[str],
+    trend: DraftTrend | None = None,
 ) -> str:
     """Everything the writer is given, numbered as the draft will cite it."""
 
@@ -203,6 +207,9 @@ def user_prompt(
     if article.topic:
         parts.append(f"Its topic: {article.topic}.")
 
+    if trend is not None:
+        parts += [""] + trend_lines(trend, sources)
+
     parts += ["", "FACT-CHECKS of claims in the analysed article [1]:"]
 
     parts += fact_check_lines(fact_checks, sources) or ["(none: no claim of it was checked)"]
@@ -219,6 +226,43 @@ def user_prompt(
     parts.append(f"Now write the article in {language_name(language)}, as JSON.")
 
     return "\n".join(parts)
+
+
+def trend_lines(trend: DraftTrend, sources: list[DraftSource]) -> list[str]:
+    """
+    A draft from a trend (docs/decisions/trends.md): the trend, never as
+    evidence, and the constructive angles the fact-check confirmed, each
+    with its sources as [n]. The writer may take one or none; the closed
+    world's rules are the same for an angle as for anything else.
+    """
+
+    lines = [
+        f'THE TREND: this story was found through what is trending, "{trend.name}" '
+        f"({trend.signal_name or trend.signal or 'a trend signal'}). Popularity proves nothing: never use it "
+        "as evidence, and say the story is trending only if a source says so.",
+    ]
+
+    position = {source.url: index for index, source in enumerate(sources, start=1)}
+
+    kept = [angle for angle in trend.angles if angle.kept]
+
+    if not kept:
+        lines.append(
+            "No constructive angle was confirmed for it: write the story as its sources tell it, "
+            "and add no bright side they do not support."
+        )
+        return lines
+
+    lines.append(
+        "CONFIRMED CONSTRUCTIVE ANGLES (the fact-check found each TRUE from the sources named). You may "
+        "take one if it fits the story, stating it only as those sources do and citing them, or none:"
+    )
+
+    for number, angle in enumerate(kept, start=1):
+        cited = "".join(f"[{position[url]}]" for url in angle.source_urls if url in position)
+        lines.append(f'{number}. {angle.question} - "{angle.claim}"' + (f" Its sources: {cited}." if cited else ""))
+
+    return lines
 
 
 def source_lines(sources: list[DraftSource]) -> list[str]:
@@ -398,6 +442,7 @@ class ArticleWriter:
         instructions: str,
         notes: list[str],
         thresholds: WriterThresholds | None = None,
+        trend: DraftTrend | None = None,
     ) -> list[DraftSource]:
         """
         The sources, their excerpts shortened so the whole prompt stays
@@ -412,7 +457,7 @@ class ArticleWriter:
         thresholds = thresholds or WriterThresholds()
 
         def size(candidates: list[DraftSource]) -> int:
-            return len(SYSTEM_PROMPT) + len(user_prompt(article, candidates, fact_checks, language, instructions, notes))
+            return len(SYSTEM_PROMPT) + len(user_prompt(article, candidates, fact_checks, language, instructions, notes, trend))
 
         return fit_excerpts(sources, size, thresholds.prompt_max_chars)
 
@@ -454,11 +499,12 @@ class ArticleWriter:
         instructions: str,
         notes: list[str] | None = None,
         thresholds: WriterThresholds | None = None,
+        trend: DraftTrend | None = None,
     ) -> WrittenArticle:
 
         thresholds = thresholds or WriterThresholds()
 
-        prompt = user_prompt(article, sources, fact_checks, language, instructions, notes or [])
+        prompt = user_prompt(article, sources, fact_checks, language, instructions, notes or [], trend)
 
         logger.info(
             "Writing %s in %s with %s: %d sources, %d fact-checks, %d prompt characters",

@@ -337,6 +337,44 @@ OFF_MISSION_SECTIONS = (
     "/commentisfree/",
 )
 
+# Betting sites, by domain: their pages are odds and picks whatever the
+# path says. On 2026-10-26 Google Trends attached FanDuel's and Dimers'
+# odds pages to a tennis trend (".../tennis/atp-vienna-2026/...") - and the
+# sections above have /tenis/ but not /tennis/, and a sportsbook says what
+# it is in its domain, not its path. Matched on the host and its parents
+# (sportsbook.fanduel.com is fanduel.com).
+BETTING_DOMAINS = (
+    "fanduel.com",
+    "draftkings.com",
+    "dimers.com",
+    "betmgm.com",
+    "bet365.com",
+    "bet365.es",
+    "williamhill.com",
+    "williamhill.es",
+    "betfair.com",
+    "betfair.es",
+    "bwin.com",
+    "bwin.es",
+    "betway.com",
+    "betway.es",
+    "888sport.com",
+    "888sport.es",
+    "codere.es",
+    "sportium.es",
+    "luckia.es",
+    "pokerstars.com",
+    "pokerstars.es",
+    "oddschecker.com",
+    "oddsshark.com",
+    "covers.com",
+    "actionnetwork.com",
+    "pickswise.com",
+    "bettingpros.com",
+    "sportsbookreview.com",
+    "vegasinsider.com",
+)
+
 # Live coverage, wherever it is filed: a stream of updates on breaking
 # news, not an article - El País's election night and France 24's student
 # protests were Science and Society candidates on 2026-10-06. Matched

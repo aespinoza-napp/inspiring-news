@@ -338,6 +338,7 @@ class DraftReviewer:
         found = grounding.check(content.body, len(draft.sources), draft.fact_checks, lexicon)
         apply_grounding(metrics, found, len(draft.sources))
         apply_headline_checks(metrics, content)
+        apply_angle_check(metrics, draft, lexicon)
 
         review = DraftReview(
             metrics={key: metrics[key] for key in METRIC_ORDER},
@@ -638,6 +639,59 @@ def apply_headline_checks(metrics: dict[str, CorrectionMetric], content: DraftCo
         subtitle_issues.append("The subtitle carries a citation marker; citations belong in the body.")
 
     metrics["subtitle"] = _bind(metrics["subtitle"], subtitle_issues, ceiling, "the draft has no subtitle.")
+
+
+def apply_angle_check(metrics: dict[str, CorrectionMetric], draft: ArticleDraft, lexicon: Lexicon) -> None:
+    """
+    A draft from a trend with a confirmed constructive angle
+    (docs/decisions/trends.md, "The story"). A sentence that states the
+    angle's claim must cite one of the angle's own sources - the ones the
+    fact-check found it TRUE from - and the review says so when it cites
+    another or none. When no angle source is cited at all, it notes that
+    no angle was taken. Issues only, no ceiling: an uncited sentence is
+    already capped by the grounding check, and taking no angle is the
+    writer's choice, not a fault.
+    """
+
+    kept = [angle for angle in (draft.trend.angles if draft.trend else []) if angle.kept]
+
+    if not kept:
+        return
+
+    number = {source.url: index for index, source in enumerate(draft.sources, start=1)}
+    angle_numbers = {index for index, source in enumerate(draft.sources, start=1) if source.origin == "angle"}
+
+    def listed(numbers: set[int]) -> str:
+        return "".join(f"[{n}]" for n in sorted(numbers)) or "none"
+
+    consistency: list[str] = []
+
+    for angle in kept:
+
+        own = {number[url] for url in angle.source_urls if url in number}
+
+        for sentence in grounding.stating(draft.content.body, angle.claim, lexicon):
+
+            cited = set(grounding.citations(sentence))
+
+            if not cited:
+                consistency.append(
+                    f"States a confirmed angle's claim and cites nothing; its sources are {listed(own)}: "
+                    f"{grounding.quote(sentence)}"
+                )
+            elif own and not cited & own:
+                consistency.append(
+                    f"States a confirmed angle's claim but cites {listed(cited)}, not its sources {listed(own)}: "
+                    f"{grounding.quote(sentence)}"
+                )
+
+    metrics["factConsistency"] = _bind(metrics["factConsistency"], consistency)
+
+    if angle_numbers and not set(grounding.citations(draft.content.body)) & angle_numbers:
+        metrics["coverageVerification"] = _bind(metrics["coverageVerification"], [
+            f"The draft takes none of the confirmed constructive angles (sources {listed(angle_numbers)}): "
+            "it may read less constructive than its sources allow."
+        ])
 
 
 # ----------------------------------------------------------------------

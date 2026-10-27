@@ -1,0 +1,126 @@
+{
+ "day": "2026-10-26",
+ "labelledBy": "Claude (AI), blind to scores, from to-label.json; not yet checked by the author",
+ "labels": {
+  "https://www.yahoo.com/news/science/articles/3-indigenous-tribes-michigan-bringing-192000555.html": {
+   "hand": 2,
+   "angle": "story",
+   "private": false,
+   "why": "a fish that vanished 90 years ago brought back by three tribes"
+  },
+  "https://www.upworthy.com/glen-campbell-picked-up-an-acoustic-guitar-and-tore-into-the-william-tell-overture/": {
+   "hand": 0,
+   "angle": "none",
+   "private": false,
+   "why": "a 1974 performance resurfacing on YouTube: nothing changed"
+  },
+  "https://www.upworthy.com/3-magic-phrases-more-likable-ex1/": {
+   "hand": 0,
+   "angle": "none",
+   "private": false,
+   "why": "personal advice"
+  },
+  "https://www.yahoo.com/lifestyle/articles/georgia-mom-adopts-gas-station-135010059.html": {
+   "hand": 1,
+   "angle": "story",
+   "private": true,
+   "why": "a stranger adopts a cashier's baby: kindness between private people, a child named"
+  },
+  "https://www.gamesindustry.biz/pegi-begins-moving-existing-digital-only-games-with-loot-boxes-up-to-a-16-rating": {
+   "hand": 2,
+   "angle": "story",
+   "private": false,
+   "why": "PEGI rates loot-box games 16+: a rule that keeps gambling mechanics from children"
+  },
+  "https://www.upworthy.com/the-surprising-origin-of-the-hello-ma-baby-looney-tunes-song-and-why-we-started-saying-hello/": {
+   "hand": 1,
+   "angle": "none",
+   "private": false,
+   "why": "the history of a song: plain culture"
+  },
+  "https://www.scmp.com/news/people-culture/trending-china/article/3372043/mum-good-chinese-woman-wakes-vegetative-daughter-law-after-17-years-care": {
+   "hand": 1,
+   "angle": "story",
+   "private": true,
+   "why": "a woman's 17 years of care and her daughter-in-law's recovery: private people"
+  },
+  "https://goodnewsdigest.app/stories/new-south-wales-approves-vast-park-to-protect-koalas-57c60cb3": {
+   "hand": 2,
+   "angle": "story",
+   "private": false,
+   "why": "a vast park approved to protect koalas"
+  },
+  "https://www.autonocion.com/us/131-feet-solar-panels-fold-canal-anchor-chain/": {
+   "hand": 2,
+   "angle": "story",
+   "private": false,
+   "why": "a solar canopy over a canal generating power and saving water"
+  },
+  "https://www.pbs.org/newshour/world/serbias-strongman-leader-vucic-concedes-defeat-to-student-led-movement-in-seismic-political-shift": {
+   "hand": 0,
+   "angle": "none",
+   "private": false,
+   "why": "an election result: politics"
+  },
+  "https://people.com/bystanders-save-pickleball-players-life-after-he-had-cardiac-arrest-12193629": {
+   "hand": 1,
+   "angle": "story",
+   "private": true,
+   "why": "bystanders saved a man's life with CPR: private people"
+  },
+  "https://www.upworthy.com/musical-toddler-precisely-sings-pocketful-of-sunshine-ex1/": {
+   "hand": 0,
+   "angle": "none",
+   "private": true,
+   "why": "a toddler's performance video: entertainment, a child"
+  },
+  "https://www.upworthy.com/tech-expert-one-message-convinces-teens-to-reconsider-screentime-ex1/": {
+   "hand": 0,
+   "angle": "none",
+   "private": false,
+   "why": "advice on teenagers' screen time"
+  },
+  "https://www.techpowerup.com/354110/geforce-unlocked-modders-boost-rtx-20-rtx-30-and-rtx-40-compute-performance-by-up-to-2x": {
+   "hand": 0,
+   "angle": "none",
+   "private": false,
+   "why": "a hardware hack: product news"
+  },
+  "https://whyy.org/articles/microplastics-treatment-technology-atlantic-city-new-jersey-princeton-alumni/": {
+   "hand": 2,
+   "angle": "story",
+   "private": false,
+   "why": "a technology that removes microplastics from a city's wastewater"
+  },
+  "https://www.lbc.co.uk/article/rough-sleeping-end-plan-andy-burnham-5HjdkQg_2/": {
+   "hand": 1,
+   "angle": "possible",
+   "private": false,
+   "why": "a government pledge on rough sleeping: a promise, not yet a change"
+  },
+  "https://pagesix.com/2026/10/23/celebrity-news/christopher-lloyd-marks-88th-birthday-with-back-to-the-future-nod/": {
+   "hand": 0,
+   "angle": "none",
+   "private": false,
+   "why": "an actor's birthday: celebrity"
+  },
+  "https://www.independent.co.uk/news/world/americas/georgia-house-fire-14-save-b3072170.html": {
+   "hand": 1,
+   "angle": "story",
+   "private": true,
+   "why": "a stranger saved a foster family from a fire: private people, children"
+  },
+  "https://www.upworthy.com/baby-orangutan-irene-becomes-the-face-of-wildlife-rescue-efforts-in-months-long-borneo-fires/": {
+   "hand": 1,
+   "angle": "story",
+   "private": false,
+   "why": "a rescued orangutan as the face of rescue efforts during wildfires"
+  },
+  "https://www.caranddriver.com/es/formula-1/a74238874/adrian-newey-decidido-ganar-honda-f1-aston-martin-fernando-alonso-progresos/": {
+   "hand": 0,
+   "angle": "none",
+   "private": false,
+   "why": "Formula 1: sport"
+  }
+ }
+}

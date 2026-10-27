@@ -1,0 +1,13 @@
+# What a meme or a trend means and where it came from. Rarely the story
+# itself: on 2026-10-26 two memes explained, an influencer's cheating
+# scandal, an anniversary and two goats hired to clear a lot in Japan.
+
+id: know_your_meme
+
+name: Know Your Meme
+
+kind: ranked_feed
+
+url: https://knowyourmeme.com/newsfeed.rss
+
+language: en

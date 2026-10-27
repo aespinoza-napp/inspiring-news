@@ -578,7 +578,71 @@ export interface IngestSourcesResponse {
    * older than 2026-10-13.
    */
   topicEmphasis?: number;
+  /** The trend signals a trending round reads (backend data/trends/*.yaml). Absent before 2026-10-26. */
+  signals?: TrendSignal[];
+  /** The trending lens's limits (backend src/services/trends/trending.py). */
+  trending?: TrendingLimits;
   lastRun: IngestReport | null;
+}
+
+/** A public feed that says what is spreading right now (docs/decisions/trends.md). */
+export interface TrendSignal {
+  id: string;
+  name: string;
+  kind: "google_trends" | "ranked_feed";
+  language: string;
+  country: string | null;
+  /** Its items are chosen for being good news (r/UpliftingNews, Upworthy). The screen still reads them. */
+  positive: boolean;
+}
+
+export interface TrendingLimits {
+  perTrend: number;
+  maxPerTrend: number;
+  maxTrendAgeHours: number;
+  maxArticleAgeDays: number;
+}
+
+/** A TikTok video a person gave with a seed: shown only through TikTok's own player, after a click. */
+export interface TrendVideo {
+  provider: "tiktok";
+  /** The player's id; null for a short link oEmbed did not resolve. */
+  id: string | null;
+  url: string;
+  title: string | null;
+  author: string | null;
+}
+
+/** What a trending round's candidate carries of the trend it explains (backend Trend.card). */
+export interface TrendCard {
+  id: string;
+  name: string;
+  signal: string;
+  signalName: string;
+  /** Its place in the signal's feed, 1 first. */
+  position: number;
+  /** Google's approximate searches; null elsewhere. */
+  traffic: number | null;
+  startedAt: string | null;
+  /** Where the trend itself can be seen: Google's explore page, a Reddit thread, the outlet's page. */
+  link: string | null;
+  video: TrendVideo | null;
+  /** Typed by a person rather than read from a signal. */
+  seed: boolean;
+  positive: boolean;
+}
+
+/** A trend in a trending round, with what became of its articles. */
+export interface RoundTrend extends TrendCard {
+  language: string | null;
+  /** Its place among its own signal's trends, 0-1; null for a seed. */
+  virality: number | null;
+  articles: number;
+  candidates: number;
+  screened: number;
+  /** Started rising longer ago than the lens's limit. */
+  stale: boolean;
+  notes: string[];
 }
 
 /**
@@ -640,8 +704,10 @@ export interface CandidateRank {
   topic?: number | null;
   /** 0-1: the share of the source's newest items the mission screen kept this round, smoothed. */
   record: number;
-  /** The source's configured reliability rating, as is. */
-  reliability: number;
+  /** The source's configured reliability rating, as is. Absent in a trending round. */
+  reliability?: number;
+  /** A trending round's in reliability's place: the trend's place among its signal's, 0-1; null for a seed. */
+  virality?: number | null;
 }
 
 /** One article a round found, before anything about it is fetched. */
@@ -653,7 +719,8 @@ export interface Candidate {
   groups: string[];
   /** The feed's title, or one made from the URL's slug (`titleFrom: "url"`). */
   title: string | null;
-  titleFrom: "feed" | "url";
+  /** In a trending round: the signal's title, or a news search's. */
+  titleFrom: "feed" | "url" | "signal" | "search";
   summary: string | null;
   publishedAt: string | null;
   method: string | null;
@@ -664,6 +731,8 @@ export interface Candidate {
   sameStoryAs?: string;
   /** Nearer a topic of this other group than of the round's: placed after the candidates that fit. */
   otherGroup?: string;
+  /** In a trending round: the trend this article explains. */
+  trend?: TrendCard;
 }
 
 export interface CandidateSourceRow {
@@ -681,6 +750,10 @@ export interface CandidateSourceRow {
   screened?: number;
   /** Dropped as older than the discovery age limit. */
   stale?: number;
+  /** In a trending round, a signal's row: its trends, items skipped, and links that were not articles. */
+  trends?: number;
+  skipped?: number;
+  notArticles?: number;
   error: string | null;
 }
 
@@ -699,6 +772,8 @@ export interface ScreenedCandidate {
   /** How much nearer that is than the nearest topic; null when the headline decided (obituary, not an article). */
   margin: number | null;
   nearestTopic: string | null;
+  /** In a trending round: the trend it came from. */
+  trend?: string;
 }
 
 export interface MissionScreenState {
@@ -749,6 +824,14 @@ export interface QueuedSelection {
 export interface CandidateRound {
   id: string;
   startedAt: string;
+  /** "trending": its candidates are the articles behind what is spreading (docs/decisions/trends.md). */
+  lens?: "trending";
+  /** A trending round's signals read, the seed typed and whether trends were searched for. */
+  signals?: string[];
+  seed?: string | null;
+  search?: boolean;
+  perTrend?: number;
+  trends?: RoundTrend[];
   groups: string[];
   topics: string[];
   perSource: number;
@@ -773,6 +856,9 @@ export interface CandidateRound {
     failed: number;
     /** The same story again, ranked after every distinct one. */
     sameStory?: number;
+    /** A trending round's trends, and its links that were not articles. */
+    trends?: number;
+    notArticles?: number;
   };
   aiSelection: AISelectionState | null;
   queued: QueuedSelection | null;
@@ -782,6 +868,7 @@ export interface CandidateRound {
 export interface CandidateRoundSummary {
   id: string;
   startedAt: string | null;
+  lens?: "trending" | null;
   groups: string[] | null;
   /** The topic emphasis the round was ranked at; null with no topic to weigh or before 2026-10-13. */
   topicEmphasis?: number | null;
