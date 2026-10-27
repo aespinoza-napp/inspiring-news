@@ -6,6 +6,8 @@ stand-in agent; one test asks the real multilingual checkpoint, as the
 rest of this suite asks the real models (its first run downloads ~650 MB).
 """
 
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -145,7 +147,9 @@ def test_the_least_recently_used_checkpoint_is_unloaded(fake_laya, tmp_path):
     models.predict("c", "x", STANCE)        # so b goes
 
     assert models.loaded() == ["a", "c"]
-    assert [path.rsplit("/", 1)[-1] for path in fake_laya] == ["a", "b", "c"]
+    # Path(...).name, not a split on "/": on Windows the folders are
+    # handed to laya.load with backslashes.
+    assert [Path(path).name for path in fake_laya] == ["a", "b", "c"]
 
 
 def test_the_real_multilingual_checkpoint_answers_in_shape():
