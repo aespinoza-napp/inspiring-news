@@ -190,6 +190,12 @@ services:
       # domain lost its reliability rating. Read-only, from the host, so a
       # YAML edit needs a restart rather than a rebuild.
       - ../backend/data/sources:/app/data/sources:ro
+      # The same for the evaluation records, committed under data/ and only
+      # read by the server. Without them (until 2026-10-27) /evaluation
+      # showed 0 of 139 facts. The eval layer mounts data/evaluation again,
+      # writable, for the harness.
+      # tests/test_deployment_config.py fails for a committed folder left out.
+      - ../backend/data/evaluation:/app/data/evaluation:ro
       # model-cache moved to the `inference` service above - the
       # transformer models live there now, not here.
     depends_on:
