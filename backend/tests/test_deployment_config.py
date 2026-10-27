@@ -635,8 +635,10 @@ def test_every_committed_data_folder_the_backend_reads_is_mounted(base):
     .dockerignore keeps backend/data/ out of the image and the backend-data
     volume shadows /app/data, so a committed folder the server reads exists
     in the container only if compose mounts it. data/evaluation was not
-    mounted: in the Docker stack /evaluation showed 0 of 139 facts (found
-    2026-10-27). Read-only: the server only
+    mounted: in the Docker stack /evaluation showed 0 of 139 facts. Nor was
+    data/trends (26 Oct): the Trending lens had no signals and a trending
+    round came back empty without saying why (both found 2026-10-27).
+    Read-only: the server only
     reads them, and docker-compose.eval.yml mounts data/evaluation again,
     writable, for the harness's runs - compose keys a mount by its path in
     the container, so the later file's wins.
