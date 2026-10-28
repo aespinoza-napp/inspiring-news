@@ -1,102 +1,108 @@
-Session of 22 October 2026. Final prompt, then the summary of what it produced.
-(The 21 October session's summary is this file at commit 67a65c1.)
+Session of 28 October 2026. Final prompt, then the summary of what it produced.
+(The 22 October session's summary is this file at commit b20df41.)
 
 FINAL PROMPT (verbatim)
 
-i need to go, so save all the results in the "last_chat.txt" and also save where it should be saved ythe results and close the remaining jobs
+save the summary in the last chat
 
-(Before it: "commit and update the actual state fot the whole project to the artefact also update the parts
-of testing and i want to iterate to improve the fact-checking part it is the most crucial one right now".)
+(Before it, in order: a `git pull` failing with "There is no tracking information for the current branch";
+"fill and join and audit the project" - fill = the thesis placeholders, audit = a written audit plus fixes;
+"do you think this project is scalable?"; "how much time takes to execute each of the different processes,
+from scrapping, to publish".)
 
 SUMMARY
 
-Branch perf/fast-fact-check, five commits on main's 67a65c1, none pushed or merged:
-  3155479  Fact-check speed: timings in the app, fast profiles, a claim deadline (the morning's work)
-  d570ff7  Verifier: replay on fixed evidence, stated rules, one source at a time
-  d2ec95f  Verifier: one source at a time, by majority, is the default
-  a4f9435  Verifier experiment: the 9B on the same evidence; quote first, not adopted
-  (this commit) V5's train result and this file
-Full check at d2ec95f: 1,962 backend tests, 15 inference tests, frontend typecheck, the labeller's 43 - all pass.
-(test_container needs its own Qdrant folder while the app runs: QDRANT_PATH=<tmp> ./scripts/check.sh.)
+Branch feature/trends, fast-forwarded to dev (839e856), then two commits; 7 ahead of origin, none pushed:
+  a7b718c  Thesis: the 22 Oct results written in, eight placeholders filled
+  97250bf  Audit of 28 Oct; the custom set joined; e2e says it needs POSIX
+Full check after both: backend 2,073 passed, 22 skipped, 3 xfailed; inference 23; frontend typecheck;
+labeller - all pass. `slow` skipped (no inference/), `graph` and `gcp` not run (Docker stopped), `e2e` cannot
+run on Windows.
 
-1. WHAT WAS WRONG. On the 69 train claims the thorough pipeline (3B, one call judging every source) answered
-   FALSE to 21-24 of the 45 true ones, each time marking one source "contradicts", mostly explained by absence
-   ("the evidence does not mention ..."). The evidence was usually there: for 17 of 29 true claims with a figure,
-   every figure was in the passage the model read. The prompt defined neither TRUE nor FALSE.
+1. GIT PULL. feature/trends had no upstream: set to origin/feature/trends.
 
-2. REPLAY. The same pipeline searched twice moved 5.8 points (50.7% and 44.9%, three hours apart). So every
-   searched run now keeps each claim's evidence (runs/<...>/evidence.jsonl) and `cli run --replay <run>` judges
-   it again without searching. Replayed, the 3B gave the same verdict 10 of 10 times: every difference below is
-   the verifier's own.
+2. THESIS (docs/final_document, 157 pages, 0 undefined references; built out of tree). Written from the reports:
+   - 06/07-experimental-setup: the split (frozen 19 Oct, 69 train / 70 test, 28/31 articles, ties by SHA-256).
+   - 07/03-rq2-verifying: the 22 Oct test-half run 66034c5fea72, 51.4% [40.0, 62.9], kappa 0.14; paired with
+     the oracle -2.9 [-17.1, +11.4]; "Where the errors come from" (trace rule: 32 of 34 reasoning; reference
+     rule: 26 of 33 retrieval); "The verifier's FALSE" and table tab:per-source (list vs per-source).
+   - 07/05-rq4-system: coverage / right when it commits / usable / confidently wrong - list verifier
+     98.6 / 52.2 / 30.0 / 47.1%, per-source 84.3 / 66.1 / 44.3 / 28.6%; the 22 Oct times.
+   - 07/07-pre-verdict-stages: time per stage, "A twenty-second claim".
+   - 07/06 model comparison: the 9B on the pipeline's own evidence (V3, V5); writing models' progress.
+   - 07/08-discussion: "On constructive news the limit is the reader".
+   - 09/01-rq-answers: RQ2 and RQ4 updated.
+   - 04/06/05-llm-verification: "One source at a time".
+   28 placeholders left (docs/audit-2026-10-28.md section 5 says what each waits for).
 
-3. THE ENTRIES (rules written before each run: backend/data/evaluation/experiments/verifier/rule.md)
-   Train half, 69 claims, evidence of run 2a4d7dde37b2:
-     B0  3B, list verifier (baseline)          44.9%   conf. wrong 36   FALSE to true 24   altered caught 12/15
-     V1  3B, stated rules                      36.2%   (-8.7 [-17.4, 0.0])               not adopted
-     V2  3B, one source at a time, 1st rule    39.1%   (-5.8)                             not adopted
-     V2b 3B, one source at a time, majority    47.8%   conf. wrong 18   FALSE to true 6    altered 4/15
-     V3  9B (qwen3.5:9b), list verifier        50.7%   conf. wrong 15   FALSE to true 8    altered 11/15  ~90 s a call
-     V4  3B, per source, quote first           47.8%   = V2b but more FALSE to true (11)  not adopted, reverted
-     V5  9B, one source at a time, majority    52.2%   conf. wrong 17   FALSE to true 9    altered 12/15  ~2 min a claim
-         V5 vs B0: +7.2 [-5.8, +20.3]; right when it commits 66.7% vs 46.3% (+20.4 [+7.4, +33.7]); kappa 0.124 -> 0.267
-   Test half, 70 claims, evidence of run 66034c5fea72 (fresh thorough run, 51.4%):
-     V2b: 55.7% (+4.3 [-8.6, +17.1]); right when it commits 66.1% vs 52.2% (+13.9 [+0.3, +27.3]);
-          confidently wrong 47% -> 29%; natural claims 49.1% -> 67.3%; altered claims 60% -> 13%; 44 s vs 63 s a claim.
-   ADOPTED: V2b. VERIFIER_ANSWER=per_source is the code's default since d2ec95f; VERIFIER_ANSWER=full brings the
-   old verifier back; thorough.json keeps the old one for the harness. Its weakness: it rarely catches a claim
-   with one altered detail. The 9B fixes that (V3, V5) at 3-4x the time: the case for a GPU or hosted endpoint.
+3. JOIN. `python labeller/app.py join` -> backend/data/evaluation/custom_en_es.jsonl, 139 facts (70 test,
+   69 train). Derived from manual/: re-run join after the review of the AI labels (nothing checks it is current).
 
-4. ALSO FOUND AND FIXED. A PDF's raw bytes had become an evidence "page" (167 million characters) for two claims:
-   the fetcher now refuses files (scraper/fetcher.py, NotAPage). A figure check on supporting quotes was tried
-   offline and dropped (5 flags on false claims vs 3 on true ones).
+4. AUDIT. docs/audit-2026-10-28.md: the 16 Oct findings checked one by one, eight new ones (N1-N8):
+   N1 Laya is not in the thesis; N2 run records split between laptop and desktop; N3 V5 test half at 8/70;
+   N4 writing benchmark at 1 and 15 of 36; N5 scheduled measurements slipped; N6 which verifier is the RQ2
+   headline (decide after U1); N7 the angle's own-outlet check counts bbc.com / bbc.co.uk as two outlets;
+   N8 custom_en_es.jsonl not checked against manual/.
+   Fixed: scripts/e2e.py exits 2 on Windows with the reason (Chrome's DevTools pipe on fds 3 and 4) instead of
+   a FileNotFoundError traceback. CLAUDE.md: 23 topics; the accuracy caveat now says no label is reviewed.
 
-5. ARTIFACT. https://claude.ai/artifact/WjaP27mv6dNVWnP4xpY5ZB (account adria.espinoza.gomez), version 2: the
-   verifier section, the testing track (1,962 tests; e2e does not run on Windows), the 21 Oct work as tasks.
-   It shows V3 and V5 as "running": they are not in it yet. Copy kept at
-   C:\Users\Adria Espinoza G\napp\inspiring-news-roadmap-2026-10-22.html (to republish to the old link
-   https://claude.ai/artifact/9CP4FAmRWxLL8w5LkoEcLP from the inspiringnews.mkt account).
+5. SCALABILITY (answered in chat, nothing changed). It scales as one machine, not as several: the embedded
+   Qdrant (QDRANT_PATH), the in-memory JobStore, the lake on the local filesystem and the per-process
+   semaphores in src/services/concurrency.py all assume one backend process. On CPU the single LLM slot is
+   the ceiling long before any of those: a GPU or a hosted endpoint is the first step, then Qdrant as a
+   server, a shared job store and object storage for the lake.
+
+6. TIME, FROM SCRAPING TO PUBLISHING (answered in chat; CPU only, one LLM call at a time; laptop 20-21 Oct,
+   i9-10900 desktop from 22 Oct, which is 2-3x faster per call - orders of magnitude, not one benchmark):
+     Discovery round (1-2 groups, 9-31 sources)    10-18 s; with screening and ranking ~1 min
+     Trending lens instead                         13 s for 39 candidates (26 Oct)
+     AI selection                                  ~70 s for 117 candidates (3B); Laya < 1 s
+     Analysis of one article (4-6 claims)          ~3 min (184 s, 4 claims, production; 162 s, 6 claims)
+       fetch 1 s; enrichment 8-26 s; admission + claim selection ~3.5 s; search and pages 15-30 s;
+       ranking 5-8 s a claim; the verifier 30-65 s a claim, one at a time; graph write 4 s
+       one claim: 57-63 s thorough list verifier, 44 s per-source (default), 14-18 s fast profiles
+     Positive angles (trending only)               ~44 s an angle, 131 s for three
+     Draft (related news, angles, qwen3.5:4b)      ~6 min (355 s); the writing call 3-3.5 min
+     Review, nine metrics (qwen3.5:9b)             ~3.5-5 min (200-289 s)
+     Rewrite round                                 a write plus a review again: minutes
+     Approve, publish                              a state change, not timed
+   One published story: ~15 min of machine time, ~90% of it model calls. Twenty analyses: ~1 h.
+   Not measured: the person's time (choosing, reading verdicts, editing), admission time alone, the model swap
+   between 3B / 4B / 9B in production, an end-to-end ingestion round.
+   Sources: docs/decisions/performance.md, writing.md, selection.md, trends.md,
+   backend/data/evaluation/experiments/discovery/20261020T122152Z/result.json.
 
 WHERE THE RESULTS ARE SAVED
 
-  The decision, every number and why     docs/decisions/evaluation.md, "Replay" and "The verifier's FALSE"
-  The rules and a results table          backend/data/evaluation/experiments/verifier/rule.md, results.md
-  Every change to fact-checking          docs/fact-checking-changes.md, section 6
-  The dated log                          docs/roadmap.md, "Oct 22, afternoon"
-  Reports (committed)                    backend/data/evaluation/reports/manual-train/<model>/<run>/report.md
-                                         backend/data/evaluation/reports/manual-test/<model>/<run>/report.md
-  Raw records and evidence (gitignored)  backend/data/evaluation/runs/manual-{train,test}/<model>/<run>/
-                                         results.jsonl, evidence.jsonl (the train snapshot is 701 MB: two PDFs)
-  Run ids: B0 2a4d7dde37b2, R0 9adb65e5ab94, V1 20c970d87114, V2 d70e76cc6319, V2b a2b3a553f3c0,
-           V4 7975364fe90b (llama3.2-3b); V3 594130bf966f, V5 854f7aa29f3a (qwen3.5-9b);
-           test: B0 66034c5fea72, V2b e7231c962477 (llama3.2-3b), V5 41d19370ddba (qwen3.5-9b, unfinished)
+  The audit, next steps, placeholders     docs/audit-2026-10-28.md
+  The dated log                           docs/roadmap.md, "Oct 28"
+  The thesis                              docs/final_document/chapters/ (commit a7b718c)
+  The joined custom set                   backend/data/evaluation/custom_en_es.jsonl
+  The timing and scalability answers      this file only (sections 5 and 6)
 
-WHAT IS LEFT, AND WHERE ITS RESULTS GO
+WHAT IS LEFT (in order, from the audit)
 
-  a) V5 on the test half was stopped at 8 of 70 claims (4 right) when the session ended. It resumes where it
-     stopped (a replay never searches: it needs only inference/ on 8001 and Ollama):
+  a) U1: check the 108 AI labels and re-label the 14 blind (due 30 Oct), then `join` again. Every custom-set
+     figure in the thesis waits on it.
+  b) Copy runs/manual-test/ between the laptop and the desktop (N2), then judge the 603 pooled pages (U2).
+  c) V5 on the test half (N3), stopped at 8 of 70 on 22 Oct. It resumes where it stopped (a replay never
+     searches: it needs only inference/ on 8001 and Ollama):
        cd backend
        LLM_REASONING_EFFORT='{"qwen3.5:9b": "none"}' uv run python -m src.evaluation.cli run \
          --dataset data/evaluation/manual --split test --model qwen3.5:9b \
          --replay data/evaluation/runs/manual-test/llama3.2-3b/66034c5fea72 \
          --thresholds data/evaluation/thresholds/per_source.json --label verifier-2026-10-22-9b-per-source
-     (~70 min). Then its report, paired against the test baseline and against V2b:
+     Then the report:
        uv run python -m src.evaluation.cli report --run data/evaluation/runs/manual-test/qwen3.5-9b/41d19370ddba \
          --compare data/evaluation/runs/manual-test/llama3.2-3b/66034c5fea72
-     Put the result in: docs/decisions/evaluation.md ("The 9B, one source at a time (V5)": a test-half table like
-     V2b's), experiments/verifier/results.md (a V5 row in the test table), docs/fact-checking-changes.md section 6,
-     docs/roadmap.md, and the artifact's "Why the 3B said FALSE" section (V3 and V5 rows).
-     By the rule (rule.md) V5 is judged like V3: if it wins on the test half it is the recommendation for a GPU or
-     hosted endpoint; whether this CPU's app runs it (~2 min a claim, an article of four claims ~6-8 min) is the
-     author's call: set LLM_MODEL=qwen3.5:9b with VERIFIER_ANSWER=per_source and LLM_REASONING_EFFORT for it.
-  b) The adopted verifier misses altered details. Next ideas, each to be measured by replay on 2a4d7dde37b2 and
-     66034c5fea72 against V2b: the per-source question comparing figures, dates and names one by one; or the 9B.
-  c) Not done: the check.sh e2e target on Windows (npm/next names, os.killpg); pushing or merging the branch.
+     Results go to docs/decisions/evaluation.md ("The 9B, one source at a time (V5)"),
+     experiments/verifier/results.md, docs/fact-checking-changes.md section 6, docs/roadmap.md and the thesis
+     (07/06 model comparison). Judged by experiments/verifier/rule.md, like V3.
+  d) The writing benchmark's 4B and 9B runs (N4).
+  e) The trending days 2-5 and discovery days 2-5, one a day, labelled by the author; the source probe weekly.
+  f) Laya into thesis section 7.7 (N1). Read and rewrite the drafted results text (T7).
+  g) Not done: pushing feature/trends; the roadmap artifact (9CP4, v44 of 27 Oct) does not have this session.
 
-JOBS CLOSED AT THE END
+JOBS
 
-  Stopped: the V5 test-half run, the backend API (8000), the frontend dev server (3000), the inference server
-  (8001), the SearXNG container (docker-searxng-1). Ollama (the desktop app) was left running: it is the
-  machine's own service and unloads its model after five idle minutes.
-  To bring the stack back: docker compose --env-file ../backend/.env up -d searxng (from docker/);
-  cd inference && uv run uvicorn src.main:app --port 8001; cd backend && uv run uvicorn src.main:app --port 8000;
-  cd frontend && npm run dev.
+  No server or run was started by this session; nothing is left running. Docker Desktop was stopped throughout.
