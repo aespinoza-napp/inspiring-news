@@ -3,7 +3,8 @@
 %   Section: The Fact-Checking Pipeline
 %     Subsection: Verification with a Language Model
 % Included from chapters/04-proposed-method/06-fact-checking-pipeline/fact-checking-pipeline.tex
-% Source: docs/arquitectura-tecnica.md 2.4.5; verification/.
+% Source: docs/arquitectura-tecnica.md 2.4.5; verification/
+% (per_source.py for the one-source-at-a-time rule).
 % ============================================================
 
 \subsection{Verification with a Language Model}
@@ -40,6 +41,20 @@ than none. The model is served locally by default
 (\texttt{llama3.2:3b}, a 3-billion-parameter model chosen for its
 footprint, not by a benchmark), and any OpenAI-compatible provider can
 take its place by configuration.
+
+\paragraph{One source at a time.} Since 22~October the default asks
+the model about each ranked source separately, in a short call: whether
+that source supports the claim, contradicts it, is silent on its point
+or is about something else, with the verbatim passage. The verdict then
+follows a written rule rather than the model's judgement. Outlets are
+counted, not pages --- five copies of one wire story are one source ---
+and the side more outlets take wins; a tie is \texttt{UNVERIFIED}, and
+so is a set of sources none of which takes a side. The confidence grows
+with the share of outlets that agree, and the explanation is built from
+the stances and their checked quotes, so that it cannot tell a different
+story from them. This form never answers \texttt{PARTIALLY\_TRUE} or
+\texttt{MISLEADING}. It was adopted on the results of
+Section~\ref{sec:results-rq2}; the single call above remains a setting.
 
 If the model cannot be reached after its retries, the claim is marked
 \texttt{llmUnreachable} and reported apart from the verdicts, as a

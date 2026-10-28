@@ -2,7 +2,7 @@
 % Chapter 9: Conclusions
 %   Section: Answers to the Research Questions
 % Included from chapters/09-conclusions/conclusions.tex
-% Provisional answers as of 19 October 2026, from what was measured;
+% Provisional answers as of 28 October 2026, from what was measured;
 % each pending block names the measurement that will settle it.
 % ============================================================
 
@@ -23,8 +23,7 @@ labelling pass and on one or two days of feeds.
 \pending{settle with the author's own labels on at least two rounds and
 discovery on five days.}
 
-\paragraph{RQ2 --- Verifying.} \emph{Not yet with the 3B model, on the
-only data measured.} On X-Fact the pipeline reached 29.7\% accuracy
+\paragraph{RQ2 --- Verifying.} \emph{Not yet with the 3B model.} On X-Fact the pipeline reached 29.7\% accuracy
 [18.8, 40.6] on the stratified pilot and 19.4\% [13.3, 25.5] on the
 Spanish test split, with a $\kappa$ against gold indistinguishable from
 zero; retrieved evidence added 10.9 points [3.1, 20.3] over the model
@@ -39,9 +38,20 @@ calling 18 of 46 supported claims false. A second, wider search for
 verdicts in doubt, tuned on the other half, changed nothing on the
 test half; the tuning loop placed most errors in the 3B model's
 reasoning rather than in the search. The same claims run twice gave the
-same verdict 13 times in 14.
-\pending{the closed-book and oracle conditions on the test half, after the
-annotator's review of the AI-proposed labels.}
+same verdict 13 times in 14. The three evidence conditions place the
+gap: on the test half the model alone scored 34.3\%, on the annotator's
+pages 54.3\% (+20.0 points [5.7, 34.3]), and with its own search, two
+days later, 51.4\% --- indistinguishable from the annotator's pages
+($-2.9$ [$-17.1$, $+11.4$]). The search recovers most of what evidence
+is worth to this model; the reading is the limit. Asking the model about
+one source at a time, the default since 22~October, cut its
+\texttt{FALSE} answers to true claims from 17 of 46 to 2 and raised
+selective accuracy from 52.2\% to 66.1\% (+13.9 [0.3, 27.3]), but it
+caught 2 of 15 altered claims instead of 9. A 9B model catches them and
+rarely calls a true claim false, at two to three times the time on a
+processor.
+\pending{settle on the annotator's reviewed labels: 35 of the 55 natural
+test claims carry the AI pass's label.}
 
 \paragraph{RQ3 --- Person and model.} \emph{Not yet measured.} The
 comparisons are designed and their data are being produced: 108 labels
@@ -57,8 +67,12 @@ annotator; and the annotator's self-agreement as the ceiling.}
 needed at every step.} The system takes on the reading of the sources
 and a first ordering of what it finds; about two in three of the claims
 it proposes are checkable (precision 0.64 [0.57, 0.70], lower in
-Spanish); and its verdicts, on the only data measured, are not yet
-reliable enough to be used without checking.
-\pending{coverage, selective accuracy and the share of verdicts usable
-without re-checking on the custom set, and time per fact against time
-per claim.}
+Spanish); and its verdicts are not yet reliable enough to be used
+without checking. On the custom test half, asked one source at a time,
+it commits to 84.3\% of the claims and is right on 66.1\% of those:
+44.3\% [32.9, 55.7] of its verdicts would be usable without re-checking,
+and 28.6\% [18.6, 38.6] are confidently wrong. A claim takes about 45
+to 60~s on a desktop processor, or 14--18~s at some 17 points less
+accuracy.
+\pending{the same on the reviewed labels, and time per fact from the
+labelling tool against time per claim.}

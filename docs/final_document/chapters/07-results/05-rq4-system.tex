@@ -5,7 +5,9 @@
 % Sources: backend/data/evaluation/queue/ (claim selector precision,
 % recomputed 2026-10-16: 136 labelled, 78 skipped; bootstrap 10,000,
 % seed 2026); the X-Fact reports; docs/decisions/deployment.md and
-% selection.md (time per article and per round).
+% selection.md (time per article and per round); the "Journalist
+% effort" sections of reports/manual-test/llama3.2-3b/{66034c5fea72,
+% e7231c962477}/; docs/decisions/performance.md (2026-10-22).
 % ============================================================
 
 \section{RQ4 --- How Much of the Work the System Takes On}
@@ -38,15 +40,30 @@ definitive verdict for 95.3\% of claims (its coverage) and was right on
 when it answers it is mostly wrong. On that evidence the 3B verifier
 cannot take over verification on political claims; whether it can on
 constructive news, and what share of its verdicts would be usable
-without re-checking, is the custom-set measurement of RQ2.
-\pending{coverage, selective accuracy, the share usable without
-re-checking and the confidently-wrong share on the custom test split.}
+without re-checking, is the custom-set measurement of RQ2. On the test
+half the answer depends on how the verifier is asked
+(Table~\ref{tab:per-source}). Shown every source at once, it commits to
+98.6\% of the claims and is right on 52.2\% of those; 30.0\% [20.0,
+41.4] of its verdicts would be usable without re-checking --- right,
+definitive, citing a source with a stance, and free of the leak flags
+--- and 47.1\% [35.7, 58.6] are confidently wrong. Asked about one
+source at a time, the default since 22~October, it commits to 84.3\%
+and is right on 66.1\%: 44.3\% [32.9, 55.7] usable, 28.6\% [18.6, 38.6]
+confidently wrong. Even the better form leaves more than one verdict in
+four confidently wrong: the system can propose a verdict and the source
+to read, not replace the reading.
+\pending{the same four figures on the reviewed labels: 35 of the 55
+natural test claims carry the AI pass's label.}
 
 \paragraph{Time.} A claim took 36.5~s at the median on the development
 laptop in the pilot (90th percentile 59.9~s), of which 14.8~s
 retrieval, 8.6~s ranking and a 5.6~s model call; on the CPU-only
 production stack a four-claim article took 184~s, with the model 180 of
-those seconds. A round of discovery takes about a minute; the AI
+those seconds. On the desktop processor the work moved to on
+22~October, a test claim took 63~s at the median with the list verifier
+and 44~s one source at a time; two faster profiles took 14--18~s a
+claim, at some 17 points less accuracy on the tuning half
+(Section~\ref{sec:results-pre-verdict}). A round of discovery takes about a minute; the AI
 selection about 70~s for 117 candidates with the 3B model. Against
 these, the time a person spends is not yet measured: the labelling
 tool does not record time per fact.
@@ -59,7 +76,9 @@ two fifths of the links and orders them so that the first twenty
 places hold few stories not worth offering, on AI labels
 (Section~\ref{sec:results-rq1}). Choosing claims: about two in three of
 its proposals are checkable. Verifying: not yet at a quality a
-journalist could rely on with the 3B model, on the only data measured.
+journalist could rely on with the 3B model --- at best 44\% of its
+verdicts on the custom test half usable without re-checking, on labels
+not yet reviewed.
 At every step a person is still needed for the judgement the system is
 weakest at --- hard news against constructive news on the same topic,
 opinion against fact in Spanish, and whether a verdict can be trusted.

@@ -3,7 +3,8 @@
 %   Section: Model Comparison
 %     Subsection: Verification Models
 % Included from chapters/07-results/06-model-comparison/model-comparison.tex
-% Source: docs/decisions/evaluation.md, "Choosing the models" (2026-10-19);
+% Source: docs/decisions/evaluation.md, "Choosing the models" (2026-10-19)
+% and "The verifier's FALSE" (V3, V5; 2026-10-22);
 % reports/manual-train/{llama3.2-3b,qwen3.5-4b,qwen3.5-9b}/.
 % ============================================================
 
@@ -55,17 +56,37 @@ larger diagram the claim never mentioned. \texttt{qwen3.5:9b}, on the same pages
 claims \texttt{UNVERIFIED} and answered \texttt{FALSE} to 6 true ones,
 where the baseline did to 14, so the verdicts it committed to were right
 72.9\% of the time against 55.6\% ($+17.4$, $[+2.7, +32.0]$), at three
-times the model's time. Its own search was not run. By the rule
-written before the runs --- accuracy, then speed --- the baseline
+times the model's time. Its own search was not run that day. By the
+rule written before the runs --- accuracy, then speed --- the baseline
 remains the verifier. The rule leaves one decision open: if a wrong
 verdict costs more than an honest \texttt{UNVERIFIED}, as a
 fact-checker's purpose suggests, the 9B model is the better verifier,
-and its run with its own search is the one that would settle it.
+and a run on the pipeline's own evidence is the one that would settle
+it.
+
+\paragraph{The 9B model on the pipeline's own evidence.} On
+22~October the 9B model read the pages the pipeline's own search had
+found for the tuning half, replayed, so that it differs from the
+baseline by its reading alone. With the list verifier it was right on
+50.7\% of the 67 claims both models answered, against 46.3\% ($+4.5$,
+$[-10.4, +19.4]$), and on 67.4\% of the verdicts it committed to,
+against 47.7\% ($+19.7$, $[+4.1, +35.6]$); $\kappa$ doubled, 0.282
+against 0.141. It is the first reader that both rarely calls a true
+claim false (8 times, against the baseline's 24) and still catches most
+altered claims (73\%). It costs time --- a call of 90~s at the median,
+and two claims that timed out at 180~s --- and coverage: it leaves about
+a third of the claims \texttt{UNVERIFIED}. Asked about one source at a
+time (Section~\ref{sec:results-rq2}) it kept those gains with no
+timeout: 52.2\%, $+7.2$ $[-5.8, +20.3]$ against the baseline, $\kappa$
+0.267, 80\% of the altered claims caught, at about two minutes a claim.
+Its run on the test half was stopped at 8 of 70 claims. On this
+processor the 9B model is not the default; it is the case for a
+graphics card or a hosted endpoint, where its call would take seconds.
 
 \paragraph{What retrieval costs.} The same comparison measures RQ2's
 second gap on the train half: the baseline on the annotator's pages
 against its own search, $+10.1$ points ($[-2.9, +24.6]$), macro-$F_1$
 $+0.142$ ($[+0.002, +0.257]$). Even on those pages it answers
 \texttt{FALSE} to 14 of 45 true claims: the lean the tuning loop found
-is the model's. The test half's three conditions are left
-(Table~\ref{tab:priorities}, P0.5).
+is the model's. The test half's three conditions are reported under
+RQ2 (Section~\ref{sec:results-rq2}).

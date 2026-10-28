@@ -58,9 +58,15 @@ live run the health endpoint and the source probe's search check are
 read and recorded, because a run's verdicts mean nothing if the search
 engines refused it.
 
-\paragraph{The split.} Before any run on the custom set, the set is to
-be split once, stratified by label and language, into about one third
-for tuning and two thirds for testing (Table~\ref{tab:priorities}, P0):
-every threshold is tuned on the tuning part only, and every reported
-number comes from the test part. \pending{the frozen split: its date,
-its seed and its counts by label and language.}
+\paragraph{The split.} Before any run on the custom set, the set was
+split once (Table~\ref{tab:priorities}, P0): every threshold and prompt
+is chosen on the tuning part only, and every reported number comes from
+the test part. The plan's third for tuning became a half
+(Subsection~\ref{subsec:custom-split}). Frozen on 19~October~2026:
+69 claims from 28 articles for tuning, 70 from 31 for testing,
+stratified by verdict within language and by topic group, with an
+article's claims and a synthetic claim's source kept on one side
+(Table~\ref{tab:custom-split}). The draw has no random seed: ties are
+broken by the SHA-256 of a group's first identifier, so running it again
+gives the same halves, and \path{backend/data/evaluation/split.json}
+records each claim's side.

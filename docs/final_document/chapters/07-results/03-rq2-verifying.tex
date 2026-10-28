@@ -3,8 +3,12 @@
 %   Section: RQ2 --- Verifying
 % Included from chapters/07-results/results.tex
 % Sources: the X-Fact reports in backend/data/evaluation/reports/;
-% docs/decisions/evaluation.md (Pilot; First ablation, 2026-10-20);
-% backend/data/evaluation/reports/manual-test/retrieval.md.
+% docs/decisions/evaluation.md (Pilot; First ablation, 2026-10-20;
+% The verifier's FALSE, 2026-10-22);
+% backend/data/evaluation/reports/manual-test/retrieval.md;
+% reports/manual-test/llama3.2-3b/{66034c5fea72,e7231c962477}/. The full
+% run against the oracle was paired with metrics.paired_bootstrap over
+% the oracle report's wrong-verdict ids (2026-10-28).
 % ============================================================
 
 \section{RQ2 --- Verifying the Claims}
@@ -173,9 +177,83 @@ and answered \texttt{FALSE} to 40 of 70; on the annotator's pages,
 52.7\%. Paired over the same claims the annotator's evidence is worth
 20.0 points [5.7, 34.3]: 22 claims only the oracle got right, 8 only the
 closed-book model. How much of that the pipeline's own search recovers
-is the third condition, the full run made again the same day, which had
-not finished when this was written.
+is the third condition. The full run made again that day did not
+finish; a fresh one on 22~October (\texttt{66034c5fea72}), its verifier
+reading the passages about the claim rather than each page's opening
+since 21~October, scored 51.4\% [40.0, 62.9], $\kappa = 0.14$. Paired
+over the same claims against the oracle it is 2.9 points lower
+[$-17.1$, $+11.4$]: 14 claims only the oracle got right, 12 only the
+search. Two days and that change to the reader separate the two runs,
+and the closed-book run cannot be paired with it (its per-claim records
+stayed on another machine), but the order is plain: on this half the
+search recovers most of what the annotator's pages are worth to this
+model, and what is left is the model's reading.
+
+\paragraph{Where the errors come from.} The same run gives each of its
+34 wrong verdicts the stage that made it
+(Subsection~\ref{subsec:harness-attribution}). By the trace alone, 32
+are reasoning errors and 2 aggregation errors: the model had ranked
+evidence and answered wrongly on it. By the reference rule, 26 of the
+33 it can judge are retrieval errors --- the annotator's link was not
+ranked --- 5 reasoning and 2 aggregation. The two rules disagree on 26
+claims, the pattern of the X-Fact pilot: the search finds pages other
+than the annotator's, and the model misreads the pages it finds.
+
+\paragraph{The verifier's \texttt{FALSE}.} That run answered
+\texttt{FALSE} to 17 of the 46 \texttt{TRUE} claims, and the tuning
+half showed why. Each such answer marked one source as contradicting the
+claim and left the rest without a stance, and most explained themselves
+by absence (``the evidence does not mention\ldots''), where the right
+ones named the other value. It is not mainly the search: of the 29 true
+tuning claims that carry a figure, 22 had a ranked source holding every
+figure, and the model answered \texttt{FALSE} to 12 of those. Variants
+of the verifier were then compared on fixed evidence, each a
+\emph{replay} of one searched run's pages, after the baseline replayed
+on ten claims gave the same verdicts, stances and explanations ten times
+in ten: at temperature zero the 3B model is deterministic, and every
+difference is the variant's. The rule, written before the runs, asked of
+a variant at least the baseline's accuracy and fewer confidently wrong
+verdicts, on both halves. Stated verdict definitions and a quote asked
+before the stance did not meet it. One variant did: the verifier asks
+about \emph{one source at a time} --- supports, contradicts, silent or
+unrelated, with a quote --- and the side more outlets take wins, a tie
+being \texttt{UNVERIFIED} (Table~\ref{tab:per-source}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Test half, same evidence & \textbf{All sources at once} & \textbf{One at a time} & \textbf{B $-$ A [95\% CI]} \\
+\midrule
+Accuracy                  & 51.4\% & 55.7\% & $+4.3$ [$-8.6$, $+17.1$] \\
+Right when it commits     & 52.2\% & 66.1\% & $+13.9$ [$+0.3$, $+27.3$] \\
+Coverage (not \texttt{UNVERIFIED}) & 98.6\% & 84.3\% & $-14.3$ [$-24.3$, $-5.7$] \\
+$\kappa$ against gold     & 0.143 & 0.055 & $-0.088$ [$-0.268$, $+0.088$] \\
+Confidently wrong         & 33 & 20 & \\
+\texttt{FALSE} to true claims & 17 of 46 & 2 of 46 & \\
+Synthetic \texttt{FALSE} caught & 9 of 15 & 2 of 15 & \\
+Natural claims (55)       & 49.1\% & 67.3\% & \\
+A claim, median           & 63~s & 44~s & \\
+\bottomrule
+\end{tabular}
+\caption[The verifier, one source at a time]{The list verifier against
+the per-source verifier on the test half, the second replaying the
+first's evidence (\texttt{66034c5fea72}, \texttt{e7231c962477}). Paired
+95\% bootstrap intervals over claims.}
+\label{tab:per-source}
+\end{table}
+
+It stopped calling true claims false and stopped catching most claims
+with one altered detail: asked whether a source states a claim, the 3B
+model answers ``supports'' when the story is the same and one figure is
+not. On the tuning half the same trade held (natural claims 35.2\% to
+53.7\%, altered ones 80.0\% to 26.7\%). On the natural claims of the
+test half, the claims the application actually checks, it is right
+78.7\% of the times it commits. It has been the default since
+22~October; every other result in this section is the list verifier's,
+which remains a setting.
 \pending{The pooled precision, recall and reciprocal rank of the three
-variants once the 603 pages are judged; the full run on the test half
-beside the other two conditions; stage attribution under both rules; all after the
+retrieval variants once the 603 pages are judged; the closed-book run
+made again beside a full run, for a paired difference; all after the
 annotator's review of the AI-proposed labels.}
