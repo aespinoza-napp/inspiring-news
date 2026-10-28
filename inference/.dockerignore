@@ -11,6 +11,12 @@
 # than in HF_HOME (/models, a named volume - see docker-compose.yml).
 models/
 
+# Laya's fine-tuned checkpoints (scripts/laya_train_all.sh), ~1.3 GB
+# each. Mounted read-only by docker-compose.yml instead: baked in, three
+# of them made a 4.07 GB build context and a 9.83 GB image, and the
+# export ran the disk out of space (2026-10-28).
+checkpoints/
+
 __pycache__/
 *.py[codz]
 .pytest_cache/

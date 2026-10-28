@@ -97,6 +97,10 @@ services:
       # Moved from `backend` below - the transformer models now live
       # here, not in the API/orchestration container.
       - model-cache:/models
+      # POST /decisions reads Laya's fine-tuned checkpoints from here
+      # (DECISION_CHECKPOINTS_DIR). Kept out of the image by
+      # inference/.dockerignore; retraining one needs no rebuild.
+      - ../inference/checkpoints:/app/checkpoints:ro
     # Measured with `docker stats`, warm and idle: 3.58GiB resident with
     # all three models loaded (BAAI/bge-m3 dominates at ~2.2GB). 4g put
     # that at 89% of the cap before serving a single request, so 6g -
