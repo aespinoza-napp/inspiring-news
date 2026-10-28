@@ -191,7 +191,7 @@ write them down than to have each be rediscovered.
   sync rebuilds. `docs/decisions/graph.md`. `motor` (MongoDB) is an
   unused dependency.
 - **`TopicPrediction.probability` carries no signal.** It is a softmax
-  over raw cosine similarities across ~22 topics, so it comes back
+  over raw cosine similarities across 23 topics, so it comes back
   near-uniform (0.049 top vs 0.044 bottom). Use `confidence`.
 - **The containers run full analyses; Google Cloud has never been
   applied.** Since 2026-10-01 a whole analysis has run inside the dev
@@ -266,9 +266,12 @@ Phase 1.
   source names its articles by query string.
 - **Only the 37 configured domains have a real reliability rating**; every
   other domain gets the default and is flagged `reliability_known: false`.
-- **The LLM's accuracy has never been measured** against labelled data — and
-  the pertinence gate's default threshold is reasoned, not fitted, for the
-  same reason (`docs/decisions/retrieval.md`).
+- **The LLM's accuracy is measured only on labels nobody has reviewed.**
+  X-Fact's pilot (29.7%) and the custom set's test half (51-56%) are
+  measured, but 108 of the custom set's 139 labels are the AI pass's
+  (`[AI label:` in the note) and none is reviewed yet; read no custom-set
+  number as final. The pertinence gate's default threshold is still
+  reasoned, not fitted (`docs/decisions/retrieval.md`).
 - **Nothing measures whether a source is on-point about the *right*
   subject.** The pertinence gate is embedding and term arithmetic: it
   catches a page about something else, not a page about the same subject

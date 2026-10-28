@@ -28,9 +28,11 @@ independently of this file.
   war, crime, sport, shopping, roundups...), moved out of the set on
   2026-10-14 by the mission screen's own categories; labelled, kept, and
   read by nothing. The rule and every decision: `excluded/README.md`.
-- **`custom_en_es.jsonl`** - those files joined, once the set is
-  finished (`python labeller/app.py join`). Derived: the per-fact files
-  are the source.
+- **`custom_en_es.jsonl`** - those files joined (`python labeller/app.py
+  join`). Derived: the per-fact files are the source. First joined
+  2026-10-28, before the review of the AI labels: re-run `join` after
+  any edit, or it describes an older set (nothing checks that it is
+  current). The harness reads `manual/` directly as well.
 
 Regenerate either x-fact file with `scripts/prepare_xfact_eval.py` (full set) and the
 inline script in its module docstring history / this README's git blame

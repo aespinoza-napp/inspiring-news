@@ -38,8 +38,9 @@ What it holds:
   appears and TikTok is connected to.
 
 Not in `./scripts/check.sh` (all): it builds the frontend (a minute) and
-needs Chrome, like `graph` needs Neo4j. Exits 1 when a check fails, 2
-when Chrome is missing or the server never answers.
+needs Chrome, like `graph` needs Neo4j, and a POSIX system. Exits 1
+when a check fails, 2 when Chrome is missing, the server never answers
+or it is run on Windows.
 """
 
 from __future__ import annotations
@@ -480,6 +481,15 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="End-to-end checks of the frontend.")
     parser.add_argument("--no-build", action="store_true", help="use the existing .next build")
     args = parser.parse_args(argv)
+
+    # Chrome's DevTools pipe is handed over as file descriptors 3 and 4
+    # (preexec_fn and dup2, in Browser), and the server is stopped by its
+    # process group: neither exists on Windows. Run here, the script died
+    # on `npm` (npm.cmd) with a bare FileNotFoundError (2026-10-28).
+    if os.name == "nt":
+        print("The e2e checks need Linux or macOS (Chrome's DevTools pipe on fds 3 and 4): "
+              "run them in WSL or on a POSIX machine.", file=sys.stderr)
+        return 2
 
     chrome = find_chrome()
     if chrome is None:
