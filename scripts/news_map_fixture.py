@@ -16,7 +16,10 @@ Names, as GLiNER types them: real places (cities and countries), and
 fictional companies, people and brands - the preview must not put a real
 person or company in a story nobody wrote. Each story names one to four,
 most often a place; within each kind a few are named often and most
-rarely (Zipf), so the network has hubs as real news does. Stories arrive
+rarely (Zipf), so the network has hubs as real news does. Each name has
+home topics (places several, a company or a person one or two), and a
+story names someone from its own topic AFFINITY of the time and anyone
+otherwise: names cluster round what they are about, with exceptions. Stories arrive
 about STORIES_PER_DAY a day, back from today, as the newsroom publishes.
 """
 
@@ -54,9 +57,15 @@ PEOPLE = ("Ana Ruiz", "Kofi Mensah", "Mei Tanaka", "Lucas Ferreira", "Amara Dial
 BRANDS = ("EcoPack", "SunBottle", "AquaPure", "GreenBike", "LeafPhone", "SolarKit", "ReFill", "NovaShoe",
           "CleanAir One", "TerraBrick")
 
-# (GLiNER type, names, how often a story names one of them).
-KINDS = (("city", CITIES, 0.55), ("country", COUNTRIES, 0.2), ("company", COMPANIES, 0.4),
-         ("person", PEOPLE, 0.35), ("product", BRANDS, 0.15))
+# (GLiNER type, names, how often a story names one of them, how many home
+# topics each name has: places are named across topics, a company or a
+# person mostly in one or two, a brand in one).
+KINDS = (("city", CITIES, 0.55, (2, 5)), ("country", COUNTRIES, 0.2, (3, 7)), ("company", COMPANIES, 0.4, (1, 3)),
+         ("person", PEOPLE, 0.35, (1, 3)), ("product", BRANDS, 0.15, (1, 2)))
+
+# How often a story names someone from its own topic rather than anyone:
+# real names cluster around what they are about, with exceptions.
+AFFINITY = 0.8
 
 WORDS = ("community", "garden", "river", "school", "volunteers", "solar", "library", "clinic", "forest",
          "students", "rescue", "museum", "wetland", "reef", "village", "market", "bridge", "festival")
@@ -68,11 +77,20 @@ def fixture(count: int, seed: int = 1) -> dict:
     keys = list(anchors())
     weights = rng.dirichlet(np.ones(len(keys)) * 0.8)
     directions = {k: rng.standard_normal((40, 1024)) for k in keys}
+    # Each name's home topics, drawn once; per kind and topic, the names at
+    # home there with their popularity.
     pools = []
-    for kind, names, chance in KINDS:
+    for kind, names, chance, (fewest, most) in KINDS:
         rank = np.arange(1, len(names) + 1)
         popularity = 1 / rank ** 1.1
-        pools.append((kind, names, chance, popularity / popularity.sum()))
+        popularity = popularity / popularity.sum()
+        homes = [set(rng.choice(len(keys), size=int(rng.integers(fewest, most)), replace=False)) for _ in names]
+        at_home = {}
+        for topic in range(len(keys)):
+            local = [j for j, home in enumerate(homes) if topic in home]
+            if local:
+                at_home[topic] = (local, popularity[local] / popularity[local].sum())
+        pools.append((kind, names, chance, popularity, at_home))
 
     entities: list[dict] = []
     entity_ref: dict[str, int] = {}
@@ -108,7 +126,16 @@ def fixture(count: int, seed: int = 1) -> dict:
         columns["src"].append(int(rng.integers(32)))
         columns["g"].append(GROUP_ORDER.index(placed.group))
         columns["t"].append([keys.index(t) for t in placed.topics])
-        named = [ref(kind, names[rng.choice(len(names), p=popularity)]) for kind, names, chance, popularity in pools if rng.random() < chance]
+        main = keys.index(key)
+        named = []
+        for kind, names, chance, popularity, at_home in pools:
+            if rng.random() >= chance:
+                continue
+            if main in at_home and rng.random() < AFFINITY:
+                local, local_popularity = at_home[main]
+                named.append(ref(kind, names[local[rng.choice(len(local), p=local_popularity)]]))
+            else:
+                named.append(ref(kind, names[rng.choice(len(names), p=popularity)]))
         columns["e"].append(sorted(set(named))[:5])
         columns["v"].append("TRUE" if rng.random() < 0.7 else "UNVERIFIED")
         columns["x"].append(round(placed.x, 4))

@@ -16,11 +16,28 @@ const WEEK_DAYS = 7;
 const MAX_NODES = 300;
 const LABELLED_NODES = 14;
 
-// The crown: its rings' radius (map units, just inside the disc's rim),
-// the lowest ring's height and the step between rings (world units).
-const CROWN_RADIUS = 0.82;
-const CROWN_HEIGHT = 2.6;
-const CROWN_STEP = 0.9;
+// A name whose stories are this much about one topic floats over it;
+// below, over the centre. And how far names of one topic scatter (map
+// units: under the 0.287 between two topics' anchors).
+const BROAD_SHARE = 0.2;
+const NAME_SCATTER = 0.11;
+
+// Three numbers in [0, 1) from a name's key: the same scatter on every
+// visit, for every reader (FNV-1a, then two more mixes).
+function scatter(key: string): [number, number, number] {
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  const next = () => {
+    h ^= h >>> 15;
+    h = Math.imul(h, 2246822519);
+    h ^= h >>> 13;
+    return (h >>> 0) / 4294967296;
+  };
+  return [next(), next(), next()];
+}
 
 const READER_BASE = import.meta.env.PUBLIC_READER_BASE ?? "";
 const LOCAL_INTERESTS = "inspiring-news:interests";
@@ -116,38 +133,58 @@ export function start(): void {
     const stories = new Map<number, number[]>();
     data.entitiesOf.forEach((refs, i) => refs.forEach((ref) => (stories.get(ref) ?? stories.set(ref, []).get(ref)!).push(i)));
 
-    // Names form a crown of rings above the galaxy, one ring per kind.
-    // Not each name at the mean of its stories: a name in every section
-    // (Barcelona, a big company) has its mean at the centre, and on
-    // 29 Oct every hub piled up there, labels on labels. A name sits over
-    // the side its stories lean towards, spaced evenly round its ring so
-    // none overlap, and its threads fall to its stories.
-    const leaning: { node: NetworkNode; angle: number }[] = [];
+    // A name floats over the topic its stories are about: above its main
+    // topic's cluster, pulled towards its second as far as that one's share
+    // allows, at a height that grows with its stories, scattered a little
+    // (fixed by its key) so names of one topic do not sit on each other.
+    // A name no topic dominates floats over the centre, higher: it
+    // connects everywhere. Not a ring round the rim, which said nothing
+    // about what a name is related to (the author, 29 Oct); and not the
+    // mean of its stories' places, which put every broad name at the
+    // centre, one on another.
+    const anchors = data.topics.map((topic) => ({ x: topic.x, y: topic.y }));
+    allNodes = [];
     stories.forEach((named, ref) => {
       const entity = data.entities[ref];
       const kind = entity ? kindOf(entity.t) : null;
       if (!kind || named.length < 2) return;
-      let x = 0;
-      let y = 0;
-      for (const i of named) {
-        x += data.positions[i * 3];
-        y += data.positions[i * 3 + 1];
-      }
-      leaning.push({ node: { key: entity.k, name: entity.n, kind, x: 0, y: 0, z: 0, stories: named }, angle: Math.atan2(y, x) });
-    });
-    leaning.sort((a, b) => b.node.stories.length - a.node.stories.length);
-    const kept = leaning.slice(0, MAX_NODES);
 
-    allNodes = [];
-    KINDS.forEach((kind, k) => {
-      const ring = kept.filter((l) => l.node.kind === kind.key).sort((a, b) => a.angle - b.angle);
-      const height = CROWN_HEIGHT + k * CROWN_STEP;
-      ring.forEach((l, i) => {
-        const angle = (ring[0]?.angle ?? 0) + (i * Math.PI * 2) / ring.length;
-        allNodes.push({ ...l.node, x: Math.cos(angle) * CROWN_RADIUS, y: Math.sin(angle) * CROWN_RADIUS, z: height });
-      });
+      const byTopic = new Map<number, number>();
+      for (const i of named) {
+        const main = data.topicsOf[i]?.[0];
+        if (main !== undefined) byTopic.set(main, (byTopic.get(main) ?? 0) + 1);
+      }
+      const ranked = Array.from(byTopic.entries()).sort((a, b) => b[1] - a[1]);
+      const [r1, r2, r3] = scatter(entity.k);
+      const lift = 1.1 + 0.45 * Math.log2(named.length) + 0.5 * r3;
+      let x: number;
+      let y: number;
+      let z = lift;
+
+      if (ranked.length && ranked[0][1] / named.length >= BROAD_SHARE) {
+        const first = anchors[ranked[0][0]];
+        x = first.x;
+        y = first.y;
+        if (ranked[1]) {
+          const second = anchors[ranked[1][0]];
+          const pull = 0.5 * (ranked[1][1] / (ranked[0][1] + ranked[1][1]));
+          x += (second.x - first.x) * pull;
+          y += (second.y - first.y) * pull;
+        }
+        const angle = r1 * Math.PI * 2;
+        x += Math.cos(angle) * NAME_SCATTER * Math.sqrt(r2);
+        y += Math.sin(angle) * NAME_SCATTER * Math.sqrt(r2);
+      } else {
+        const angle = r1 * Math.PI * 2;
+        x = Math.cos(angle) * (0.12 + 0.2 * r2);
+        y = Math.sin(angle) * (0.12 + 0.2 * r2);
+        z = lift + 1.2;
+      }
+
+      allNodes.push({ key: entity.k, name: entity.n, kind, x, y, z, stories: named });
     });
     allNodes.sort((a, b) => b.stories.length - a.stories.length);
+    allNodes = allNodes.slice(0, MAX_NODES);
     makeConnectionsLegend();
     applyNetwork();
   }

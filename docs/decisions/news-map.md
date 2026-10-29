@@ -621,11 +621,22 @@ instead of "today", since the newsroom will publish 30-60 stories a day.
   most 300, is a diamond in its kind's colour (places cyan, companies
   violet, people lavender, brands lime, none of them a section's colour),
   with a thread down to each story that names it.
-  - **A crown of rings above the galaxy, one per kind.** Not each name at
-    the mean of its stories: a name in every section has its mean at the
-    centre, and on 29 Oct every hub piled up there, labels on labels. A
-    name sits over the side its stories lean towards, spaced evenly
-    round its ring.
+  - **Over the topic it is about.** A name floats above its main topic's
+    cluster (the topic of most of its stories), pulled towards its second
+    topic as far as that one's share allows, with a height that grows
+    with its stories and a small scatter fixed by its key, so names of one
+    topic do not sit on each other. A name no topic has a fifth of floats
+    over the centre, higher: it connects everywhere. Two layouts came
+    first. Each name at the mean of its stories piled every broad name at
+    the centre, labels on labels. Then a crown of rings round the rim,
+    one per kind, which the author found said nothing about what a name
+    is related to.
+  - **In the synthetic data, names have home topics**: places several,
+    a company or a person one or two, a brand one. A story names someone
+    from its own topic 80% of the time and anyone otherwise, so names
+    cluster round what they are about, with the exceptions real news
+    has. At 3,000 stories, Nadia Rahman's were 93% Community & Social
+    Impact and Barcelona's 49% Sustainability.
   - **The light divided.** Thousands of threads added together summed to
     a white ball with bloom over it. Threads are blended, not added, and
     each one's light is shared across its name's stories. With a name in
