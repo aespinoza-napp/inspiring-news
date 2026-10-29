@@ -542,3 +542,63 @@ The model benchmark was running (load average 14-16 on 14 threads):
 | Gzip at level 4, ETag and 304 | kept; the proxy's gzip was this goal's finding |
 | Decoding in a Web Worker | **not adopted**: warm first paint is 373 ms at 10k and 499 ms at 50k, parse included, so there is nothing to win yet |
 | Loading by day, today first | **not adopted**, for the same reason: 1.77 MB at 50k arrives inside budget |
+
+## The universe: the map as its own 3D app (2026-10-29)
+
+Asked for by the author after seeing `/map`: keep the distribution, but
+make it feel like a metaverse. That means 3D, in motion, and a separate
+app with an interface of its own; they suggested Astro. Built as
+`universe/`, beside `frontend/`.
+
+- **Astro 7 for the shell, three.js for the space.** Astro builds a
+  static site: one page, its interface and one script. Astro does not
+  make anything look futuristic. The 3D does: glow (bloom), depth,
+  motion, and glass panels over deep space. Astro 7.3.8 (8 Oct; 7.x since
+  June) and three.js 0.186.1, both MIT, pinned.
+- **The same distribution, in depth.** x and y are the map's, exactly:
+  layout 2 adds `z` and moves nothing. Two seeds had followed the layout
+  version, the projection's basis and the offset of a story with no
+  vector. Both are fixed now (tests). `z` is a third direction of the
+  story's meaning, at right angles to the two that give x and y,
+  squashed like them into ±0.12. A topic is a 3D cloud, the disc a
+  galaxy, and depth still depends on the story alone.
+- **Motion.**
+  - Always: the galaxy turns slowly (it stops while you steer it and
+    resumes 8 s after), and stars twinkle and drift, each with a phase
+    taken from its id.
+  - When something changes (a section, Today, For you, a name): every
+    star eases towards its new brightness and height. In focus it rises
+    and glows, more the fewer they are (Today's 180 among 5,000 were
+    faint at the universe's brightness). The rest sink and fade.
+  - Between places: the camera flies, and a story's connections are
+    arcs with light flowing along them.
+  - All of it stops for a reader whose system asks for reduced motion,
+    or who presses M.
+- **Everything is drawn in one call**: the stars are a single `Points`
+  with its own shader (additive, soft core and halo) and bloom over it.
+  Picking is three.js's raycaster at most every other frame. Labels are
+  HTML placed each frame: sections always; topics once the camera is
+  near, and only those of the section in focus.
+- **The interface**, glass panels over the scene:
+  - The top bar: search (names and words as you type, meaning on
+    Enter), Universe / Today / For you, and the account.
+  - The section legend, with each section's count, the whole view,
+    motion on or off, and a list.
+  - The story panel: section, verdict, topics to follow, names,
+    connected stories.
+  - A status line, and keys (`/` to search, H the whole view, M motion,
+    L the list, Esc to close).
+  - The list is the way in for a screen reader, as on `/map`. On a
+    phone the camera moves back until the galaxy fits, and the legend
+    becomes a row of chips.
+- **The same backend.** It reads `/map/*` and `/account/*` from its own
+  origin, under `/api/`. `scripts/preview_universe.py` serves the
+  build that way, with the e2e stub behind it. Not `astro dev`: with no
+  terminal, Astro 7 started it as a background daemon a script could not
+  hold. In production Caddy will do the same: serve `universe/dist`,
+  and send `/api/map` and `/api/account` to the backend.
+  - *Not done yet*: that Caddy site, its test, and e2e checks for the
+    universe. Today `./scripts/check.sh universe` (part of `all`)
+    typechecks it, and it was looked at in screenshots on the Intel GPU:
+    the whole galaxy, a flight to Science, a selected story, Today, and
+    a phone.

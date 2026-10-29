@@ -39,7 +39,7 @@ def fixture(count: int, seed: int = 1) -> dict:
     directions = {k: rng.standard_normal((40, 1024)) for k in keys}
     people = max(1, count // 4)
 
-    columns = {name: [] for name in ("id", "title", "lang", "day", "src", "g", "t", "e", "v", "x", "y", "approx")}
+    columns = {name: [] for name in ("id", "title", "lang", "day", "src", "g", "t", "e", "v", "x", "y", "z", "approx")}
     entities = [{"k": f"person:person {i}", "n": f"Person {i}", "t": "person"} for i in range(people)]
 
     for i in range(count):
@@ -65,6 +65,7 @@ def fixture(count: int, seed: int = 1) -> dict:
         columns["v"].append("TRUE" if rng.random() < 0.7 else "UNVERIFIED")
         columns["x"].append(round(placed.x, 4))
         columns["y"].append(round(placed.y, 4))
+        columns["z"].append(round(placed.z, 4))
         columns["approx"].append(None)
 
     return {

@@ -41,6 +41,10 @@ src.main:app --port 8001`.
   nothing about topics, thresholds or scoring. See `inference/README.md`.
 - `frontend/` — Next.js 14 (App Router + TypeScript) UI. See
   `frontend/CLAUDE.md`.
+- `universe/` — the readers' 3D news universe, a separate Astro + three.js
+  app over the backend's `/map` and `/account` routes
+  (`docs/decisions/news-map.md`, "The universe";
+  `python scripts/preview_universe.py` to look at it).
 - `docker/` — compose (Neo4j, SearXNG, inference, backend) and the three
   Dockerfiles; `docker-compose.prod.yml` (+ Ollama, + the frontend) and
   `docker-compose.gcp.yml` (+ Caddy: `/healthz`, and the site over HTTPS

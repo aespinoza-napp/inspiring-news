@@ -176,3 +176,34 @@ def test_the_groups_go_clockwise_from_the_top_in_their_declared_order():
     assert GROUP_ORDER == tuple(TOPIC_GROUPS)
     assert group_angle(GROUP_ORDER[0]) == pytest.approx(math.pi / 2)
     assert group_angle(GROUP_ORDER[1]) < group_angle(GROUP_ORDER[0])
+
+
+def test_depth_is_stable_bounded_and_leaves_x_and_y_as_they_were():
+    """Layout 2 adds z; x and y must be exactly layout 1's (the basis seed no longer follows the version)."""
+
+    topics = [{"topic": "Space", "confidence": 0.6}]
+    first = place("d", topics, unit(11))
+
+    assert place("d", topics, unit(11)).z == first.z
+    assert abs(first.z) < layout.DEPTH
+    assert layout.BASIS_SEED == 20261030
+
+    # The depth axis is at right angles to the plane: moving a vector
+    # along it changes z and leaves x and y.
+    axis = layout._depth_axis(1024)
+    moved = np.asarray(unit(11)) + 0.5 * axis
+    there = place("d", topics, list(moved))
+    assert there.z != first.z
+    assert np.allclose(layout._basis(1024).T @ axis, 0, atol=1e-9)
+
+
+# Read from layout 1's code (git stash) on 29 Oct.
+LAYOUT_ONE_SPACE = (0.6367, 0.6673)
+
+
+def test_layout_one_positions_are_unchanged():
+    """A position recorded under layout 1 (29 Oct, before z) is still where it was."""
+
+    placed = place("0000000000000001", [{"topic": "Space", "confidence": 0.6}], unit(1))
+
+    assert (round(placed.x, 4), round(placed.y, 4)) == LAYOUT_ONE_SPACE

@@ -1,0 +1,19 @@
+{
+  "name": "inspiring-news-universe",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "astro": "7.3.8",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "0.186.0",
+    "typescript": "5.5.4"
+  }
+}

@@ -82,6 +82,8 @@ class MapArticle:
     approximate: str | None
     sort_at: float
     vector: np.ndarray | None
+    # Depth in the 3D universe (layout version 2).
+    z: float = 0.0
 
 
 def _proper_name(name: str) -> bool:
@@ -211,6 +213,7 @@ def build_article(entry, exploitation: dict, processed: dict | None, names, coun
         evidence=evidence,
         x=placement.x,
         y=placement.y,
+        z=placement.z,
         approximate=placement.approximate,
         sort_at=entry.sort_at,
         vector=vector,
@@ -449,7 +452,7 @@ class MapIndex:
 
         columns: dict[str, list] = {
             "id": [], "title": [], "lang": [], "day": [], "src": [], "g": [],
-            "t": [], "e": [], "v": [], "x": [], "y": [], "approx": [],
+            "t": [], "e": [], "v": [], "x": [], "y": [], "z": [], "approx": [],
         }
 
         for article in articles:
@@ -464,6 +467,7 @@ class MapIndex:
             columns["v"].append(article.verdict)
             columns["x"].append(round(article.x, 4))
             columns["y"].append(round(article.y, 4))
+            columns["z"].append(round(article.z, 4))
             columns["approx"].append(article.approximate)
 
         return {

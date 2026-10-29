@@ -17,6 +17,7 @@
 #   ./scripts/check.sh backend    backend only
 #   ./scripts/check.sh inference  inference only - real models, no mocks
 #   ./scripts/check.sh frontend   frontend only
+#   ./scripts/check.sh universe   the News Universe app (universe/): typecheck
 #   ./scripts/check.sh labeller   the fact labeller - stdlib only, no venv
 #   ./scripts/check.sh slow       the slow model-stack tests, only
 #   ./scripts/check.sh graph      the graph against a real Neo4j - fails,
@@ -122,6 +123,17 @@ run_frontend() {
   fi
 }
 
+# The readers' 3D app, a separate Astro project (docs/decisions/news-map.md,
+# "The universe"): typechecked from its own directory, like the frontend.
+run_universe() {
+  step "Universe typecheck"
+  if (cd "$ROOT/universe" && npx astro sync >/dev/null && npx tsc --noEmit); then
+    pass "universe typecheck"
+  else
+    fail "universe typecheck"
+  fi
+}
+
 # Builds the frontend and needs Chrome, so not part of `all` (like graph,
 # which needs Neo4j). Standard library only, like the labeller.
 run_e2e() {
@@ -152,11 +164,12 @@ case "$TARGET" in
   backend)   run_backend ;;
   inference) run_inference ;;
   frontend)  run_frontend ;;
+  universe)  run_universe ;;
   labeller)  run_labeller ;;
   e2e)       run_e2e ;;
-  all)       run_backend; run_inference; run_frontend; run_labeller ;;
+  all)       run_backend; run_inference; run_frontend; run_universe; run_labeller ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller | e2e" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | universe | labeller | e2e" >&2
     exit 2
     ;;
 esac

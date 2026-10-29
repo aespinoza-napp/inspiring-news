@@ -1,0 +1,98 @@
+---
+// The News Universe: every checked story as a star in a 3D galaxy of
+// sections and topics (docs/decisions/news-map.md, "The universe").
+import "../styles/universe.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>The News Universe</title>
+    <meta name="description" content="Every checked, positive story as a star: sections, topics and the names that join them, in three dimensions." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="space" aria-hidden="true"></div>
+    <div id="labels" aria-hidden="true"></div>
+
+    <div id="loading" class="loading" role="status">
+      <div class="loading-orbit"><span></span><span></span><span></span></div>
+      <p>Entering the universe…</p>
+    </div>
+
+    <header class="hud top">
+      <a class="brand" href="/" aria-label="The News Universe, home">
+        <span class="brand-mark"></span>
+        <span class="brand-name">News <strong>Universe</strong></span>
+      </a>
+
+      <div class="search" role="search">
+        <label for="search-input" class="visually-hidden">Search stories and names</label>
+        <input id="search-input" type="search" autocomplete="off" maxlength="200" placeholder="Search a name, a place, a topic…  ( / )"
+          role="combobox" aria-expanded="false" aria-controls="search-results" />
+        <ul id="search-results" class="search-results" role="listbox" hidden></ul>
+      </div>
+
+      <nav class="modes" aria-label="What to show">
+        <button type="button" data-mode="universe" aria-pressed="true">Universe</button>
+        <button type="button" data-mode="today" aria-pressed="false">Today</button>
+        <button type="button" data-mode="foryou" aria-pressed="false">For you</button>
+      </nav>
+
+      <button type="button" id="account-button" class="ghost">Sign in</button>
+    </header>
+
+    <aside class="hud legend" aria-label="Sections">
+      <p class="hud-label">Sections</p>
+      <ul id="legend"></ul>
+      <div class="legend-tools">
+        <button type="button" id="home-button" class="ghost" title="The whole universe (H)">⌂ Whole view</button>
+        <button type="button" id="motion-button" class="ghost" aria-pressed="true" title="Motion on or off (M)">◐ Motion</button>
+        <button type="button" id="list-button" class="ghost" title="Every story shown, as a list (L)">☰ List</button>
+      </div>
+    </aside>
+
+    <aside id="panel" class="hud panel" aria-label="The selected story" hidden></aside>
+
+    <div id="tooltip" class="hud tooltip" hidden></div>
+
+    <footer class="hud status">
+      <span id="status" aria-live="polite">—</span>
+      <span class="hint">Drag to turn · scroll to zoom · click a star</span>
+    </footer>
+
+    <div id="list-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="list-title" hidden>
+      <div class="overlay-card wide">
+        <button type="button" class="close" data-close aria-label="Close">×</button>
+        <h2 id="list-title">The stories shown</h2>
+        <ol id="list"></ol>
+      </div>
+    </div>
+
+    <div id="chooser-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="chooser-title" hidden>
+      <div class="overlay-card wide">
+        <button type="button" class="close" data-close aria-label="Close">×</button>
+        <h2 id="chooser-title">What would you like to read about?</h2>
+        <p class="muted">Choose at least three: whole sections, or topics in them. They are kept in your account, or in this browser if you are not signed in.</p>
+        <div id="chooser"></div>
+        <button type="button" id="chooser-done" class="primary" disabled>Show my stories</button>
+      </div>
+    </div>
+
+    <div id="account-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="account-title" hidden>
+      <div class="overlay-card">
+        <button type="button" class="close" data-close aria-label="Close">×</button>
+        <h2 id="account-title">Your account</h2>
+        <div id="account"></div>
+      </div>
+    </div>
+
+    <script>
+      import { start } from "../scripts/ui";
+      start();
+    </script>
+  </body>
+</html>

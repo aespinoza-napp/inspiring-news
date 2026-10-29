@@ -36,7 +36,9 @@ import numpy as np
 
 from src.config.topics import GROUP_OF, TOPIC_GROUP_NAMES, TOPIC_GROUPS, TOPICS
 
-LAYOUT_VERSION = 1
+# 2 (29 Oct): a depth, `z`, for the 3D universe (universe/). x and y are
+# exactly as in 1: the basis seed no longer follows the version.
+LAYOUT_VERSION = 2
 
 # The circle is cut into one slot per topic, plus GROUP_GAP slots of
 # empty space after each group, so the sections read as sections. A
@@ -82,8 +84,16 @@ SPREAD = 2.0
 # beyond the outer clusters' reach (0.88 + 0.075 + 0.045).
 RIM_RADIUS = 1.08
 
-# The basis the embedding is projected on: fixed by the version.
-BASIS_SEED = 20261029 + LAYOUT_VERSION
+# The basis the embedding is projected on. Fixed: it was 20261029 +
+# LAYOUT_VERSION while the version was 1, and stays that value so x and y
+# never move again when the version changes for something else.
+BASIS_SEED = 20261030
+
+# How far a story sits above or below the disc: a cluster's thickness in
+# the 3D universe, from a third direction of the embedding, at right
+# angles to the two that give x and y. Thinner than the clusters are wide,
+# so the whole reads as a galaxy seen from any side.
+DEPTH = 0.12
 
 GROUP_ORDER: tuple[str, ...] = tuple(TOPIC_GROUPS)
 
@@ -112,6 +122,8 @@ class Placement:
     # only, a deterministic offset), "no_topic" (on the rim). None when
     # placed in full.
     approximate: str | None = None
+    # Above or below the disc (LAYOUT_VERSION 2): the 3D universe's depth.
+    z: float = 0.0
 
 
 def topic_key(name_or_key: str | None) -> str | None:
@@ -218,12 +230,41 @@ def frame() -> dict:
 
 @lru_cache(maxsize=4)
 def _basis(dimension: int) -> np.ndarray:
-    """An orthonormal (dimension x 2) basis, the same for every call with this version."""
+    """An orthonormal (dimension x 2) basis, the same for every call."""
 
     rng = np.random.default_rng(BASIS_SEED + dimension)
     q, _ = np.linalg.qr(rng.standard_normal((dimension, 2)))
 
     return q
+
+
+@lru_cache(maxsize=4)
+def _depth_axis(dimension: int) -> np.ndarray:
+    """A unit direction at right angles to _basis's two: the depth."""
+
+    rng = np.random.default_rng(BASIS_SEED + dimension + 1)
+    v = rng.standard_normal(dimension)
+    plane = _basis(dimension)
+    v -= plane @ (plane.T @ v)
+
+    return v / np.linalg.norm(v)
+
+
+def embedding_depth(vector) -> float | None:
+    """The story's depth: its unit vector on _depth_axis, scaled and squashed like x and y."""
+
+    if vector is None:
+        return None
+
+    v = np.asarray(vector, dtype=np.float64).ravel()
+    norm = float(np.linalg.norm(v))
+
+    if v.size < 3 or norm == 0.0 or not math.isfinite(norm):
+        return None
+
+    z = float((v / norm) @ _depth_axis(v.size)) * math.sqrt(v.size)
+
+    return DEPTH * math.tanh(z / SPREAD)
 
 
 def _squash(z: np.ndarray, radius: float) -> tuple[float, float]:
@@ -267,7 +308,9 @@ def embedding_offset(vector) -> tuple[float, float] | None:
 def _hash_offset(seed: str, radius: float) -> tuple[float, float]:
     """A deterministic offset for an article with no vector, so such articles do not stack."""
 
-    digest = hashlib.sha256(f"{LAYOUT_VERSION}:{seed}".encode()).digest()
+    # "1:", layout 1's prefix, fixed for the same reason as BASIS_SEED: a
+    # new version must not move a story that has no vector.
+    digest = hashlib.sha256(f"1:{seed}".encode()).digest()
     angle = int.from_bytes(digest[:4], "big") / 2**32 * 2 * math.pi
     distance = math.sqrt(int.from_bytes(digest[4:8], "big") / 2**32) * radius
 
@@ -325,6 +368,7 @@ def place(article_id: str, topics, vector=None, primary: str | None = None) -> P
             group=None,
             topics=(),
             approximate="no_topic",
+            z=_hash_offset(f"z:{article_id}", DEPTH)[0],
         )
 
     table = anchors()
@@ -352,10 +396,12 @@ def place(article_id: str, topics, vector=None, primary: str | None = None) -> P
     y = main.y + pull_y
 
     offset = embedding_offset(vector)
+    depth = embedding_depth(vector)
     approximate = None
 
     if offset is None:
         offset = _hash_offset(article_id, CLUSTER_RADIUS)
+        depth = _hash_offset(f"z:{article_id}", DEPTH)[0]
         approximate = "no_vector"
 
     return Placement(
@@ -364,4 +410,5 @@ def place(article_id: str, topics, vector=None, primary: str | None = None) -> P
         group=GROUP_OF.get(main_key),
         topics=tuple(key for key, _ in ranked),
         approximate=approximate,
+        z=depth if depth is not None else 0.0,
     )
