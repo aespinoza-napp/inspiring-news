@@ -166,7 +166,10 @@ write them down than to have each be rediscovered.
   read from CNN's news sitemap and WHO's news API (`news_sitemap_url`,
   `json_feed`; `docs/decisions/scraping.md`). EFE (403) and Reuters (401) refused every request from
   2026-09-23 to 2026-10-06 and are disabled (`enabled: false`): still
-  rated as evidence, never ingested. Spanish feeds are keyword-filtered
+  rated as evidence, never ingested. So is France 24 Español since
+  2026-10-29 (a live feed no group's keywords match), and RTVE, whose
+  feed stopped in June 2022, is listed for Culture only, the one group
+  its section pages answer. Spanish feeds are keyword-filtered
   only when a run is scoped to some groups (`TOPIC_KEYWORDS_ES`, titles
   only); asked for every topic they are not pre-filtered at all
   (`docs/decisions/selection.md`, `docs/decisions/scraping.md`).

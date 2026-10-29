@@ -1,3 +1,13 @@
+# Disabled 2026-10-29: it never answered a grouped round. Its feed is
+# live (24 items that morning, 9 that look like articles) but no title
+# matched any group's Spanish keywords - international politics - and its
+# section pages gave nothing for society or health, its two groups: 0
+# candidates in the Health and Society rounds of 29 Oct. The probe of
+# 20 Oct read its sections under /en/, not /es/.
+# Rated, not ingested: the reliability map (EvidenceRanker) reads every
+# YAML, enabled or not, so France 24 pages found as evidence keep their
+# rating. Re-enable with a feed or sections a group's keywords match.
+
 id: france24_es
 
 name: France 24 Español
@@ -16,7 +26,7 @@ source_type: news
 
 reliability_index: 0.88
 
-enabled: true
+enabled: false
 
 requires_javascript: false
 

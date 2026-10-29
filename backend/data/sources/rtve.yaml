@@ -1,3 +1,10 @@
+# Culture only since 2026-10-29. Its feed (temas_noticias.xml) answers
+# but has not moved since 10 June 2022, so every item is stale; what
+# reaches a round comes from its section pages, and only Culture's give
+# anything: 29 links that day, 0 for society, science or health (19
+# candidates in the Culture round of 20 Oct, 0 in Society's of 29 Oct).
+# Still rated for evidence in every group, as any YAML is.
+
 id: rtve
 
 name: RTVE Noticias
@@ -28,8 +35,6 @@ tags:
   - culture
 
 groups:
-  - society
-  - science
   - culture
 
 metadata:
