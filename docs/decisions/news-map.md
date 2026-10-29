@@ -656,3 +656,29 @@ instead of "today", since the newsroom will publish 30-60 stories a day.
 - **The preview answers links and search itself** from the synthetic map
   (`scripts/preview_universe.py`, `Local`), as the backend would. The stub
   knew one story's links and one canned search.
+
+### A sunlit island, not a galaxy (2026-10-29)
+
+The author liked the interface but not the lights, and wanted it closer
+to health, environment and good news, keeping the metaverse. So:
+
+- **Daylight.** A soft sky, the page's own gradient behind a transparent
+  canvas, and a light haze for fog. No bloom, no stars. A few round
+  motes of pollen drift up.
+- **A floating island** under the galaxy: a pale platform with a soft
+  edge, each section a faintly tinted region, and a polar floor grid.
+  That grid is what keeps it a metaverse.
+- **Stories are soft shaded spheres**, lit from the upper left like seeds
+  or berries in the sun, blended rather than added. The palette comes
+  from nature and good news: Society coral, Science sky, Environment
+  leaf, Culture sunflower, Health mint. Stories in focus grow larger and
+  a touch warmer, not brighter; they breathe gently instead of
+  twinkling.
+- **Names** are solid diamonds with a white edge, in deeper colours that
+  read on the light island. Their threads are quieter, like vines.
+- **Light glass panels** with dark text and a green accent.
+- **Two bugs found in the screenshots.** The section tints were mirrored
+  (Society's lay under Environment): laid flat, a circle's angle already
+  agrees with the map's. And every custom shader wrote three.js's linear
+  colours as they were, so the sky blue came out navy. Each now ends in
+  `colorspace_fragment`.

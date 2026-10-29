@@ -1,21 +1,22 @@
-/* The News Universe: glass over deep space. System fonts only (the
-   project uses no third-party fonts); the futurism is in the spacing,
-   the light and the motion. */
+/* The News Universe: light glass over a sunlit floating island (the
+   author, 29 Oct: closer to health, environment and good news, fewer
+   lights, still a metaverse). System fonts only: the project uses no
+   third-party fonts. */
 
 :root {
-  --space: #04050d;
-  --ink: #e8ecff;
-  --muted: #9aa3c7;
-  --line: rgba(120, 150, 255, 0.22);
-  --glass: rgba(14, 18, 40, 0.58);
-  --glass-strong: rgba(14, 18, 40, 0.86);
-  --accent: #7cc4ff;
-  --accent-2: #b48cff;
-  --glow: 0 0 24px rgba(124, 196, 255, 0.25);
+  --sky: linear-gradient(180deg, #d6ecfb 0%, #e8f5ef 50%, #fbf4e3 100%);
+  --ink: #17302a;
+  --muted: #587069;
+  --line: rgba(23, 48, 42, 0.13);
+  --glass: rgba(255, 255, 255, 0.68);
+  --glass-strong: rgba(255, 255, 255, 0.94);
+  --accent: #1f8f63;
+  --accent-2: #2f74b5;
+  --glow: 0 10px 32px rgba(29, 74, 58, 0.12);
   --radius: 14px;
   --font: ui-sans-serif, "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * {
@@ -27,7 +28,7 @@ body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--space);
+  background: var(--sky);
   color: var(--ink);
   font-family: var(--font);
   font-size: 15px;
@@ -57,7 +58,7 @@ button {
 }
 
 .error {
-  color: #ff8a8a;
+  color: #b3261e;
 }
 
 #space {
@@ -89,14 +90,15 @@ button {
   font-weight: 700;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--tint);
-  text-shadow: 0 0 14px var(--tint);
+  color: color-mix(in oklch, var(--tint) 75%, #000);
+  text-shadow: 0 0 6px #fff, 0 0 2px #fff;
 }
 
 .space-label.topic {
   font-size: 0.72rem;
   letter-spacing: 0.08em;
-  color: rgba(220, 228, 255, 0.85);
+  color: #2f4d44;
+  text-shadow: 0 0 4px #fff;
   padding: 0.1rem 0.4rem;
   border-left: 1px solid var(--line);
 }
@@ -146,8 +148,8 @@ button {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff 0 18%, transparent 20%), conic-gradient(from 0deg, #3d9bff, #22e0a0, #ffc21a, #ff6fb5, #ff7a45, #3d9bff);
-  box-shadow: 0 0 16px rgba(124, 196, 255, 0.7);
+  background: radial-gradient(circle, #fff 0 22%, transparent 24%), conic-gradient(from 0deg, #f2765a, #3d93d6, #43a447, #e8a41c, #1fae9c, #f2765a);
+  box-shadow: 0 2px 8px rgba(29, 74, 58, 0.25);
   animation: spin 14s linear infinite;
 }
 
@@ -168,7 +170,7 @@ button {
   padding: 0.55rem 0.9rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(4, 6, 20, 0.6);
+  background: rgba(255, 255, 255, 0.88);
   color: var(--ink);
   font: inherit;
   outline: none;
@@ -177,7 +179,7 @@ button {
 
 .search input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124, 196, 255, 0.18);
+  box-shadow: 0 0 0 3px rgba(31, 143, 99, 0.18);
 }
 
 .search-results {
@@ -204,7 +206,7 @@ button {
 
 .search-results li:hover,
 .search-results li.active {
-  background: rgba(124, 196, 255, 0.12);
+  background: rgba(31, 143, 99, 0.1);
 }
 
 .search-results li.note {
@@ -251,9 +253,9 @@ button {
 }
 
 .modes button[aria-pressed="true"] {
-  background: linear-gradient(120deg, rgba(124, 196, 255, 0.25), rgba(180, 140, 255, 0.25));
+  background: rgba(31, 143, 99, 0.13);
   color: var(--ink);
-  box-shadow: inset 0 0 0 1px rgba(124, 196, 255, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(31, 143, 99, 0.35);
 }
 
 .ghost {
@@ -271,8 +273,8 @@ button {
 .primary {
   padding: 0.55rem 1.1rem;
   border-radius: 999px;
-  background: linear-gradient(120deg, #3d9bff, #b48cff);
-  color: #050716;
+  background: linear-gradient(120deg, #2aa877, #3d93d6);
+  color: #fff;
   font-weight: 700;
 }
 
@@ -304,7 +306,7 @@ button {
   height: 10px;
   transform: rotate(45deg) scale(0.85);
   border: 1.5px solid var(--tint);
-  box-shadow: 0 0 8px var(--tint);
+  background: color-mix(in oklch, var(--tint) 30%, #fff);
 }
 
 #kinds li button[aria-pressed="false"] {
@@ -338,8 +340,8 @@ button {
   font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: 0.06em;
-  color: var(--tint);
-  text-shadow: 0 0 10px var(--tint), 0 0 2px #000;
+  color: color-mix(in oklch, var(--tint) 85%, #000);
+  text-shadow: 0 0 5px #fff, 0 0 2px #fff;
 }
 
 .legend li button {
@@ -356,7 +358,7 @@ button {
 
 .legend li button:hover,
 .legend li button[aria-pressed="true"] {
-  background: rgba(124, 196, 255, 0.1);
+  background: rgba(31, 143, 99, 0.08);
 }
 
 .legend .dot {
@@ -364,7 +366,7 @@ button {
   height: 10px;
   border-radius: 50%;
   background: var(--tint);
-  box-shadow: 0 0 10px var(--tint);
+  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.15);
 }
 
 .legend .count {
@@ -425,17 +427,17 @@ button {
 }
 
 .v-true {
-  color: #3dffb0;
+  color: #1f8a4c;
 }
 
 .v-partially_true {
-  color: #c8f04a;
+  color: #6d7c1c;
 }
 
 .v-unverified,
 .v-none,
 .v-not_checked {
-  color: #9aa3c7;
+  color: #63766f;
 }
 
 .chips {
@@ -522,8 +524,8 @@ button {
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(2, 3, 10, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(214, 233, 226, 0.55);
+  backdrop-filter: blur(6px);
 }
 
 .overlay[hidden] {
@@ -584,7 +586,7 @@ button {
   padding: 0.5rem 0.7rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(4, 6, 20, 0.6);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--ink);
   font: inherit;
 }
@@ -604,7 +606,7 @@ button {
   place-items: center;
   align-content: center;
   gap: 1.2rem;
-  background: var(--space);
+  background: var(--sky);
   color: var(--muted);
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -626,16 +628,15 @@ button {
 
 .loading-orbit span {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: #7cc4ff;
-  box-shadow: 0 0 14px #7cc4ff;
+  background: #43a447;
 }
 
 .loading-orbit span:nth-child(1) { top: 0; left: 27px; }
-.loading-orbit span:nth-child(2) { bottom: 6px; left: 4px; background: #ff6fb5; box-shadow: 0 0 14px #ff6fb5; }
-.loading-orbit span:nth-child(3) { bottom: 6px; right: 4px; background: #22e0a0; box-shadow: 0 0 14px #22e0a0; }
+.loading-orbit span:nth-child(2) { bottom: 6px; left: 4px; background: #1fae9c; }
+.loading-orbit span:nth-child(3) { bottom: 6px; right: 4px; background: #e8a41c; }
 
 @keyframes spin {
   to { transform: rotate(360deg); }

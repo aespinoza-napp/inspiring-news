@@ -2,7 +2,14 @@
 // sections and 23 topics as the newsroom map lays them out (x and y on
 // the disc), each story's depth (z) from a third direction of its meaning,
 // so a topic is a cloud and the whole a galaxy. One draw call for every
-// star; bloom for the glow; nothing moves a star's place but the view.
+// story; nothing moves a story's place but the view.
+//
+// The look (29 Oct, the author: "more related to health, environment,
+// positiveness ... I do not enjoy a lot the lights, but keep the
+// metaverse"): daylight, not deep space. The disc is a floating island
+// with a holographic floor grid, each section a tinted region of it;
+// stories are soft shaded spheres in a natural palette; names hang above
+// on thin threads like vines; pollen drifts up. No bloom, no stars.
 //
 // Motion: the galaxy turns slowly, stars twinkle and drift a little, and
 // a change of view (a section, Today, For you, a search) eases each star
@@ -11,10 +18,6 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
-import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
 import { NO_GROUP, type Universe } from "./data";
 
@@ -23,10 +26,16 @@ import { NO_GROUP, type Universe } from "./data";
 const R = 10;
 const DEPTH_SCALE = 1.6;
 
-// Each section's colour: neon versions of the newsroom's series 1-5, so a
-// section is the same hue on both sites.
-export const GROUP_COLORS = ["#3d9bff", "#ff7a45", "#22e0a0", "#ffc21a", "#ff6fb5"];
-const NO_GROUP_COLOR = "#8a90a6";
+// Each section's colour, from nature and good news rather than neon:
+// Society coral, Science sky, Environment leaf, Culture sunflower,
+// Health mint - each readable on the light island.
+export const GROUP_COLORS = ["#f2765a", "#3d93d6", "#43a447", "#e8a41c", "#1fae9c"];
+const NO_GROUP_COLOR = "#8d9a96";
+
+// The island's own colours and the sky's haze.
+const ISLAND = "#f7fbf6";
+const GRID = "#7fa99a";
+const HAZE = "#e4f1ee";
 
 const POINT_VERTEX = /* glsl */ `
 attribute vec3 color;
@@ -46,22 +55,30 @@ void main() {
   p += uMotion * 0.035 * vec3(sin(uTime * 0.31 + phase * 6.3), sin(uTime * 0.23 + phase * 9.1), cos(uTime * 0.27 + phase * 4.7));
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
-  float twinkle = 1.0 + uMotion * 0.28 * sin(uTime * 1.9 + phase * 40.0);
+  float twinkle = 1.0 + uMotion * 0.1 * sin(uTime * 0.9 + phase * 40.0);
   gl_PointSize = min(size * (0.45 + 0.9 * emphasis) * twinkle * uPixelRatio * uSizeScale / -mv.z, 48.0 * uPixelRatio);
-  // Above 1, a story in focus: brighter, so bloom makes it glow.
-  vColor = color * (1.0 + 0.7 * max(emphasis - 1.0, 0.0));
-  vAlpha = mix(0.07, 1.0, min(emphasis, 1.0));
+  // Above 1, a story in focus: a touch warmer and larger, not brighter.
+  vColor = mix(color, vec3(1.0, 0.97, 0.9), 0.12 * max(emphasis - 1.0, 0.0));
+  vAlpha = mix(0.1, 1.0, min(emphasis, 1.0));
 }`;
 
+// A soft sphere lit from the upper left, like a seed or a berry in sun.
+// Every shader here ends in three.js's colorspace_fragment: its colours
+// are linear (THREE.Color converts hex), and written as they were they
+// came out darker - the Science sky blue as navy (29 Oct).
 const POINT_FRAGMENT = /* glsl */ `
 varying vec3 vColor;
 varying float vAlpha;
 void main() {
-  float d = length(gl_PointCoord - 0.5);
-  if (d > 0.5) discard;
-  float halo = smoothstep(0.5, 0.0, d);
-  float core = smoothstep(0.18, 0.0, d);
-  gl_FragColor = vec4(vColor * (0.55 + 1.6 * core), halo * vAlpha);
+  vec2 c = (gl_PointCoord - 0.5) * 2.0;
+  float r2 = dot(c, c);
+  if (r2 > 1.0) discard;
+  vec3 n = vec3(c.x, -c.y, sqrt(1.0 - r2));
+  float light = max(dot(n, normalize(vec3(-0.45, 0.6, 0.65))), 0.0);
+  float highlight = pow(light, 18.0);
+  vec3 shaded = vColor * (0.7 + 0.4 * light) + vec3(0.25) * highlight;
+  gl_FragColor = vec4(shaded, vAlpha * smoothstep(1.0, 0.82, r2));
+  #include <colorspace_fragment>
 }`;
 
 // A link from the selected story: light flowing along a raised arc.
@@ -79,23 +96,24 @@ uniform vec3 uColor;
 uniform float uMotion;
 varying float vAlong;
 void main() {
-  float pulse = pow(fract(vAlong * 2.5 - uTime * 0.45 * uMotion), 6.0);
-  gl_FragColor = vec4(uColor, 0.25 + 0.75 * pulse);
+  float pulse = pow(fract(vAlong * 2.5 - uTime * 0.35 * uMotion), 4.0);
+  gl_FragColor = vec4(uColor, 0.35 + 0.55 * pulse);
+  #include <colorspace_fragment>
 }`;
 
 // The kinds of name drawn above the galaxy, from GLiNER's types, each a
 // colour none of the five sections uses, and a diamond, not a star.
 export const KINDS = [
-  { key: "place", label: "Places", one: "Place", color: "#5ef2ff", types: ["city", "country", "location"] },
-  { key: "company", label: "Companies", one: "Company", color: "#b28cff", types: ["company", "organization"] },
-  { key: "person", label: "People", one: "Person", color: "#d6d0ff", types: ["person"] },
-  { key: "brand", label: "Brands", one: "Brand", color: "#c8ff5e", types: ["product"] },
+  { key: "place", label: "Places", one: "Place", color: "#2f6aa8", types: ["city", "country", "location"] },
+  { key: "company", label: "Companies", one: "Company", color: "#7650c8", types: ["company", "organization"] },
+  { key: "person", label: "People", one: "Person", color: "#c04a86", types: ["person"] },
+  { key: "brand", label: "Brands", one: "Brand", color: "#6f8a1c", types: ["product"] },
 ] as const;
 
 export type KindKey = (typeof KINDS)[number]["key"];
 
 // How visible the threads are when no name is in focus.
-const EDGE_OPACITY = 0.07;
+const EDGE_OPACITY = 0.05;
 
 export function kindOf(type: string): KindKey | null {
   return KINDS.find((kind) => (kind.types as readonly string[]).includes(type))?.key ?? null;
@@ -134,15 +152,16 @@ void main() {
   vColor = color;
 }`;
 
-// A diamond with a bright rim: a name, not a story.
+// A solid diamond with a white edge: a name, not a story.
 const NODE_FRAGMENT = /* glsl */ `
 varying vec3 vColor;
 void main() {
   vec2 c = abs(gl_PointCoord - 0.5);
   float d = c.x + c.y;
   if (d > 0.5) discard;
-  float rim = smoothstep(0.32, 0.5, d);
-  gl_FragColor = vec4(vColor * (0.5 + 1.4 * rim), 0.35 + 0.65 * rim);
+  float edge = smoothstep(0.36, 0.44, d);
+  gl_FragColor = vec4(mix(vColor, vec3(1.0), edge * 0.85), 0.95);
+  #include <colorspace_fragment>
 }`;
 
 // A thread from a name down to a story: bright at the name, fading towards the galaxy.
@@ -163,6 +182,7 @@ varying vec3 vColor;
 varying float vStrength;
 void main() {
   gl_FragColor = vec4(vColor, uOpacity * vStrength);
+  #include <colorspace_fragment>
 }`;
 
 function easeInOut(t: number): number {
@@ -174,8 +194,7 @@ export class UniverseScene {
   readonly camera: THREE.PerspectiveCamera;
   readonly controls: OrbitControls;
   private readonly scene = new THREE.Scene();
-  private readonly composer: EffectComposer;
-  private readonly bloom: UnrealBloomPass;
+  private pollen: THREE.Points | null = null;
   private readonly clock = new THREE.Clock();
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointer = new THREE.Vector2();
@@ -212,13 +231,14 @@ export class UniverseScene {
   constructor(private readonly host: HTMLElement, private readonly events: SceneEvents) {
     this.motion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    // Transparent: the sky is the page's own gradient (universe.css).
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+    this.renderer.setClearColor(0x000000, 0);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(host.clientWidth, host.clientHeight);
     host.appendChild(this.renderer.domElement);
 
-    this.scene.background = new THREE.Color("#04050d");
-    this.scene.fog = new THREE.FogExp2("#04050d", 0.018);
+    this.scene.fog = new THREE.FogExp2(HAZE, 0.012);
 
     this.camera = new THREE.PerspectiveCamera(55, host.clientWidth / host.clientHeight, 0.05, 400);
     this.camera.position.copy(this.homePosition());
@@ -240,19 +260,12 @@ export class UniverseScene {
       resume = window.setTimeout(() => (this.controls.autoRotate = this.motion), 8000);
     });
 
-    this.composer = new EffectComposer(this.renderer);
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(host.clientWidth, host.clientHeight), 0.95, 0.55, 0.08);
-    this.composer.addPass(this.bloom);
-    this.composer.addPass(new OutputPass());
+    this.addPollen();
 
-    this.addStarfield();
-
-    // The selected story's ring: dimmer than white, so bloom does not blow
-    // it out, and kept the same size on screen whatever the distance.
+    // The selected story's ring, the same size on screen whatever the distance.
     this.marker = new THREE.Mesh(
-      new THREE.RingGeometry(0.85, 1, 64),
-      new THREE.MeshBasicMaterial({ color: "#9fc8ff", transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }),
+      new THREE.RingGeometry(0.82, 1, 64),
+      new THREE.MeshBasicMaterial({ color: "#1d3b33", transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false }),
     );
     this.marker.visible = false;
     this.scene.add(this.marker);
@@ -293,19 +306,75 @@ export class UniverseScene {
     return new THREE.Vector3(x * R, z * R * DEPTH_SCALE, -y * R);
   }
 
-  private addStarfield(): void {
-    const count = 2500;
+  // Pollen: a few soft motes drifting up through the air over the island.
+  private addPollen(): void {
+    const count = 420;
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      const r = 60 + Math.random() * 140;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      positions.set([r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta)], i * 3);
+      const r = Math.sqrt(Math.random()) * 16;
+      const a = Math.random() * Math.PI * 2;
+      positions.set([Math.cos(a) * r, -1 + Math.random() * 10, Math.sin(a) * r], i * 3);
     }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const stars = new THREE.Points(geometry, new THREE.PointsMaterial({ color: "#7d86b8", size: 0.35, sizeAttenuation: true, transparent: true, opacity: 0.55, fog: false }));
-    this.scene.add(stars);
+    // A soft round mote: a plain point material draws squares.
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 32;
+    const context = canvas.getContext("2d")!;
+    const glow = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+    glow.addColorStop(0, "rgba(255,255,255,1)");
+    glow.addColorStop(0.45, "rgba(255,255,255,0.75)");
+    glow.addColorStop(1, "rgba(255,255,255,0)");
+    context.fillStyle = glow;
+    context.fillRect(0, 0, 32, 32);
+    this.pollen = new THREE.Points(
+      geometry,
+      new THREE.PointsMaterial({ color: "#f1cf63", map: new THREE.CanvasTexture(canvas), size: 0.12, sizeAttenuation: true, transparent: true, opacity: 0.75, depthWrite: false }),
+    );
+    this.scene.add(this.pollen);
+  }
+
+  // The floating island: a pale platform with a soft edge, each section a
+  // tinted region of it, and a holographic floor grid - the metaverse
+  // without the night.
+  private addIsland(data: Universe): void {
+    const island = new THREE.Group();
+    const radius = 1.16 * R;
+    const ground = new THREE.Mesh(
+      new THREE.CircleGeometry(radius, 128),
+      new THREE.MeshBasicMaterial({ color: ISLAND, transparent: true, opacity: 0.82, depthWrite: false }),
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.55;
+    island.add(ground);
+
+    const edge = new THREE.Mesh(
+      new THREE.CylinderGeometry(radius, radius * 0.94, 0.5, 128, 1, true),
+      new THREE.MeshBasicMaterial({ color: "#cfe3da", transparent: true, opacity: 0.7, side: THREE.DoubleSide, depthWrite: false }),
+    );
+    edge.position.y = -0.8;
+    island.add(edge);
+
+    data.groups.forEach((group, i) => {
+      // Laid flat (rotation.x = -90°), a circle's angle runs from +x
+      // towards -z, and the map's y is -z in the world: the angles agree.
+      // Mirrored, as first written, Society's tint lay under Environment.
+      const sector = new THREE.Mesh(
+        new THREE.CircleGeometry(radius * 0.99, 48, group.angle - group.span / 2, group.span),
+        new THREE.MeshBasicMaterial({ color: GROUP_COLORS[i], transparent: true, opacity: 0.1, depthWrite: false }),
+      );
+      sector.rotation.x = -Math.PI / 2;
+      sector.position.y = -0.53;
+      island.add(sector);
+    });
+
+    const grid = new THREE.PolarGridHelper(radius, 24, 10, 128, GRID, GRID);
+    (grid.material as THREE.Material).transparent = true;
+    (grid.material as THREE.Material).opacity = 0.22;
+    grid.position.y = -0.52;
+    island.add(grid);
+
+    this.scene.add(island);
   }
 
   // The holographic guides: the two rings the topics sit on, and a faint
@@ -317,7 +386,7 @@ export class UniverseScene {
         const a = (i / 160) * Math.PI * 2;
         return this.world(Math.cos(a) * radius, Math.sin(a) * radius);
       });
-      const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: "#3a4a8a", transparent: true, opacity }));
+      const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: "#5d8f80", transparent: true, opacity }));
       guides.add(line);
     };
     ring(0.6, 0.35);
@@ -334,7 +403,7 @@ export class UniverseScene {
       const edge = (start + end) / 2;
       const line = new THREE.Line(
         new THREE.BufferGeometry().setFromPoints([this.world(Math.cos(edge) * 0.3, Math.sin(edge) * 0.3), this.world(Math.cos(edge) * 1.05, Math.sin(edge) * 1.05)]),
-        new THREE.LineBasicMaterial({ color: "#2a3570", transparent: true, opacity: 0.4 }),
+        new THREE.LineBasicMaterial({ color: "#5d8f80", transparent: true, opacity: 0.35 }),
       );
       guides.add(line);
     });
@@ -344,6 +413,7 @@ export class UniverseScene {
 
   setData(data: Universe): void {
     this.data = data;
+    this.addIsland(data);
     this.addGuides(data);
 
     const n = data.count;
@@ -386,11 +456,11 @@ export class UniverseScene {
         uTime: { value: 0 },
         uMotion: { value: this.motion ? 1 : 0 },
         uPixelRatio: { value: this.renderer.getPixelRatio() },
-        uSizeScale: { value: 9 },
+        uSizeScale: { value: 12 },
       },
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
     });
 
     this.points = new THREE.Points(geometry, this.material);
@@ -436,7 +506,7 @@ export class UniverseScene {
   }
 
   // Raised arcs of flowing light from one story to others (map points).
-  setLinks(from: number, to: { x: number; y: number; z?: number }[], color = "#9fd4ff"): void {
+  setLinks(from: number, to: { x: number; y: number; z?: number }[], color = "#1d6b52"): void {
     if (this.links) {
       this.scene.remove(this.links);
       this.links.geometry.dispose();
@@ -470,7 +540,7 @@ export class UniverseScene {
       uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(color) }, uMotion: { value: this.motion ? 1 : 0 } },
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
     });
     this.links = new THREE.LineSegments(geometry, this.linkMaterial);
     this.scene.add(this.links);
@@ -607,7 +677,7 @@ export class UniverseScene {
       uniforms: { uPixelRatio: { value: this.renderer.getPixelRatio() }, uTime: { value: 0 }, uMotion: { value: this.motion ? 1 : 0 } },
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
     });
     this.nodePoints = new THREE.Points(nodeGeometry, this.nodeMaterial);
     this.scene.add(this.nodePoints);
@@ -717,7 +787,6 @@ export class UniverseScene {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
-    this.composer.setSize(width, height);
   }
 
   onFrame: (() => void) | null = null;
@@ -776,7 +845,18 @@ export class UniverseScene {
     }
 
     this.controls.update(dt);
-    this.composer.render();
+    if (this.pollen) {
+      const at = this.pollen.geometry.getAttribute("position") as THREE.BufferAttribute;
+      if (this.motion) {
+        for (let i = 0; i < at.count; i++) {
+          let y = at.getY(i) + dt * 0.25;
+          if (y > 9) y = -1;
+          at.setY(i, y);
+        }
+        at.needsUpdate = true;
+      }
+    }
+    this.renderer.render(this.scene, this.camera);
     this.onFrame?.();
   }
 }
