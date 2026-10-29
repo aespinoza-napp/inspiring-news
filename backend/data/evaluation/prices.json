@@ -20,5 +20,26 @@
     "currency": "USD",
     "source": "Fill in from https://groq.com/pricing on the day of the run.",
     "asOf": null
+  },
+  "api.groq.com/openai/gpt-oss-120b": {
+    "inputPerMTok": 0.15,
+    "outputPerMTok": 0.6,
+    "currency": "USD",
+    "source": "Groq's model table (Developer plan) as pasted by the author from the provider's pricing on the day of the run.",
+    "asOf": "2026-10-29"
+  },
+  "api.groq.com/openai/gpt-oss-20b": {
+    "inputPerMTok": 0.075,
+    "outputPerMTok": 0.3,
+    "currency": "USD",
+    "source": "Groq's model table (Developer plan) as pasted by the author from the provider's pricing on the day of the run.",
+    "asOf": "2026-10-29"
+  },
+  "api.groq.com/qwen/qwen3.8-27b": {
+    "inputPerMTok": 0.8,
+    "outputPerMTok": 4.0,
+    "currency": "USD",
+    "source": "Groq's model table (Developer plan) as pasted by the author from the provider's pricing on the day of the run.",
+    "asOf": "2026-10-29"
   }
 }

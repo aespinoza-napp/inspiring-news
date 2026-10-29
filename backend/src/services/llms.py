@@ -7,7 +7,7 @@ import time
 from logging import getLogger
 from typing import Any
 
-from openai import APIConnectionError, APIError, APITimeoutError, OpenAI
+from openai import APIConnectionError, APIError, APITimeoutError, OpenAI, RateLimitError
 
 from src.config.settings import settings
 from src.services.concurrency import LLM, PermitTimeout
@@ -15,6 +15,15 @@ from src.services.concurrency import LLM, PermitTimeout
 logger = getLogger(__name__)
 
 _JSON_BLOCK_PATTERN = re.compile(r"\{.*\}", re.DOTALL)
+
+# A hosted provider's 429 says when to ask again (`retry-after`); Groq's
+# free plan allows 8,000 tokens a minute per model, a claim's per-source
+# calls ~3,500 (2026-10-29), so two claims at once meet it every minute.
+# Waited out, not counted as a failure: a refused call is a source never
+# weighed, a verdict the limit made rather than the model. A wait longer
+# than this is a daily cap, not a minute's - failing then is the answer.
+RATE_LIMIT_MAX_WAIT_SECONDS = 60.0
+RATE_LIMIT_MAX_WAITS = 10
 
 # This thread's last complete_json, for LLMClient.last_call().
 _LAST_CALL = threading.local()
@@ -126,6 +135,9 @@ class LLMClient:
         effort = settings.LLM_REASONING_EFFORT.get(self.model)
         self._extra = {"extra_body": {"reasoning_effort": effort}} if effort else {}
 
+        # Room for the reasoning on top of every cap (LLM_REASONING_TOKENS).
+        self._reasoning_tokens = settings.LLM_REASONING_TOKENS.get(self.model, 0)
+
         self._client = client or OpenAI(
             base_url=base_url or settings.LLM_BASE_URL,
             api_key=api_key or settings.LLM_API_KEY.get_secret_value(),
@@ -175,7 +187,7 @@ class LLMClient:
 
         # Only sent when asked for, so every existing call is the request
         # it always was.
-        limits = {"max_tokens": max_tokens} if max_tokens is not None else {}
+        limits = {"max_tokens": max_tokens + self._reasoning_tokens} if max_tokens is not None else {}
 
         unreachable = False
 
@@ -196,36 +208,53 @@ class LLMClient:
                 break
 
             asked = time.perf_counter()
+            rate_limited = 0
 
             try:
-                # Claims are verified concurrently now, so this is where
-                # several of them meet. A local Ollama serving one model
-                # answers concurrent requests by queueing them anyway -
-                # the permit makes that queue explicit and bounded
-                # instead of letting every claim hold a socket open.
-                with LLM.permit(timeout=left):
-
-                    started = time.perf_counter()
-                    call["wait"] = round(call["wait"] + started - asked, 3)
-
-                    per_request = (
-                        {"timeout": max(1.0, ends_at - time.monotonic())}
-                        if ends_at is not None
-                        else {}
-                    )
-
+                while True:
                     try:
-                        response = self._client.chat.completions.create(
-                            model=self.model,
-                            messages=messages,
-                            response_format={"type": "json_object"},
-                            temperature=0.0,
-                            **limits,
-                            **per_request,
-                            **self._extra,
-                        )
-                    finally:
-                        call["seconds"] = round(call["seconds"] + time.perf_counter() - started, 3)
+                        # Claims are verified concurrently now, so this is where
+                        # several of them meet. A local Ollama serving one model
+                        # answers concurrent requests by queueing them anyway -
+                        # the permit makes that queue explicit and bounded
+                        # instead of letting every claim hold a socket open.
+                        with LLM.permit(timeout=left):
+
+                            started = time.perf_counter()
+                            call["wait"] = round(call["wait"] + started - asked, 3)
+
+                            per_request = (
+                                {"timeout": max(1.0, ends_at - time.monotonic())}
+                                if ends_at is not None
+                                else {}
+                            )
+
+                            try:
+                                response = self._client.chat.completions.create(
+                                    model=self.model,
+                                    messages=messages,
+                                    response_format={"type": "json_object"},
+                                    temperature=0.0,
+                                    **limits,
+                                    **per_request,
+                                    **self._extra,
+                                )
+                            finally:
+                                call["seconds"] = round(call["seconds"] + time.perf_counter() - started, 3)
+                        break
+                    except RateLimitError as exc:
+                        # Outside the permit: the wait is the provider's,
+                        # and holding the permit through it would stall
+                        # every other claim's call behind this one.
+                        wait = self._rate_limit_wait(exc, ends_at)
+                        rate_limited += 1
+                        if wait is None or rate_limited > RATE_LIMIT_MAX_WAITS:
+                            raise
+                        logger.warning("LLM rate-limited; asking again in %.1f s", wait)
+                        time.sleep(wait)
+                        call["wait"] = round(call["wait"] + wait, 3)
+                        asked = time.perf_counter()
+                        left = None if ends_at is None else ends_at - time.monotonic()
 
             except PermitTimeout as exc:
                 call["wait"] = round(call["wait"] + time.perf_counter() - asked, 3)
@@ -320,3 +349,24 @@ class LLMClient:
         """
 
         return min(settings.LLM_RETRY_BACKOFF_SECONDS * (2 ** attempt), 5.0)
+
+    @staticmethod
+    def _rate_limit_wait(exc: RateLimitError, ends_at: float | None) -> float | None:
+        """
+        Seconds a 429 asks to wait (`retry-after`), or None to fail as
+        before: no header, a wait past RATE_LIMIT_MAX_WAIT_SECONDS (a
+        daily cap), or one past the call's own deadline.
+        """
+
+        try:
+            wait = float(exc.response.headers.get("retry-after", ""))
+        except (AttributeError, ValueError):
+            return None
+
+        if wait < 0 or wait > RATE_LIMIT_MAX_WAIT_SECONDS:
+            return None
+
+        if ends_at is not None and time.monotonic() + wait >= ends_at - 1.0:
+            return None
+
+        return wait

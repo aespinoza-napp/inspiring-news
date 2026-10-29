@@ -794,6 +794,25 @@ def test_a_model_told_not_to_think_is_another_run(tmp_path, monkeypatch):
     assert RunConfig(dataset=dataset, model="other", corpus="none", root=tmp_path).key == other
 
 
+def test_room_for_reasoning_is_part_of_the_run_key(tmp_path, monkeypatch):
+    """
+    The same reasoning model with its answers cut at the cap and with room
+    above it are two runs: resuming one into the other would mix empty
+    answers with real ones. A model not named keeps its key.
+    """
+
+    from src.config.settings import settings
+
+    dataset = five_rows(tmp_path)
+    before = RunConfig(dataset=dataset, model="m", corpus="none", root=tmp_path).key
+    other = RunConfig(dataset=dataset, model="other", corpus="none", root=tmp_path).key
+
+    monkeypatch.setattr(settings, "LLM_REASONING_TOKENS", {"m": 2048})
+
+    assert RunConfig(dataset=dataset, model="m", corpus="none", root=tmp_path).key != before
+    assert RunConfig(dataset=dataset, model="other", corpus="none", root=tmp_path).key == other
+
+
 def test_an_oracle_run_reads_the_annotators_pages_and_never_searches(tmp_path):
     """
     `run --oracle`: each claim judged on its own reference links, web

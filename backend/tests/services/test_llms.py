@@ -1,5 +1,6 @@
+import httpx
 import pytest
-from openai import APIConnectionError
+from openai import APIConnectionError, RateLimitError
 
 from src.services.llms import LLMClient, LLMUnavailableError
 
@@ -228,6 +229,77 @@ def test_a_hybrid_reasoning_model_is_told_not_to_think(monkeypatch):
 
     assert writer._client.chat.completions.calls[0]["extra_body"] == {"reasoning_effort": "none"}
     assert "extra_body" not in verifier._client.chat.completions.calls[0]
+
+
+def rate_limited(retry_after: str | None) -> RateLimitError:
+    headers = {"retry-after": retry_after} if retry_after is not None else {}
+    response = httpx.Response(
+        429, headers=headers, request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+    )
+    return RateLimitError("Rate limit reached", response=response, body=None)
+
+
+def test_a_rate_limit_is_waited_out_rather_than_lost(monkeypatch):
+    """
+    Groq's free plan answers 429 past 8,000 tokens a minute, with
+    retry-after. Counted as a failure, each was a source the verifier
+    never weighed; waited out, the call answers and no retry is spent.
+    """
+
+    slept = []
+    monkeypatch.setattr("src.services.llms.time.sleep", slept.append)
+
+    client = make_client([rate_limited("2.5"), rate_limited("1"), '{"verdict": "TRUE"}'])
+
+    assert client.complete_json("system", "user", max_retries=0) == {"verdict": "TRUE"}
+    assert slept == [2.5, 1.0]
+    assert client.last_call()["wait"] >= 3.5
+
+
+def test_a_rate_limit_that_is_a_daily_cap_or_says_nothing_still_fails(monkeypatch):
+    """
+    A wait of an hour is the day's requests used up, and a 429 without
+    retry-after gives nothing to wait for: both fail as any API error
+    did, rather than hold a claim for an hour.
+    """
+
+    monkeypatch.setattr("src.services.llms.time.sleep", lambda seconds: None)
+
+    for answer in (rate_limited("3600"), rate_limited(None)):
+        client = make_client([answer])
+
+        with pytest.raises(LLMUnavailableError):
+            client.complete_json("system", "user", max_retries=0)
+
+        assert len(client._client.chat.completions.calls) == 1
+
+
+def test_a_reasoning_model_gets_room_for_its_reasoning_above_the_cap(monkeypatch):
+    """
+    gpt-oss reasons before every answer, and its reasoning counts against
+    max_tokens: at the per-source verifier's 160 it came back empty 9
+    times in 20 (2026-10-29). LLM_REASONING_TOKENS adds to the cap for
+    the models it names; any other model's cap, and an uncapped call,
+    are what they were.
+    """
+
+    from src.config.settings import settings
+
+    monkeypatch.setattr(settings, "LLM_REASONING_TOKENS", {"openai/gpt-oss-20b": 2048})
+
+    reasoner = LLMClient(
+        model="openai/gpt-oss-20b",
+        client=FakeOpenAIClient(['{"stance": "supports"}', '{"stance": "supports"}']),
+    )
+    verifier = LLMClient(model="llama3.2:3b", client=FakeOpenAIClient(['{"stance": "supports"}']))
+
+    reasoner.complete_json("system", "user", max_tokens=160)
+    reasoner.complete_json("system", "user")
+    verifier.complete_json("system", "user", max_tokens=160)
+
+    assert reasoner._client.chat.completions.calls[0]["max_tokens"] == 160 + 2048
+    assert "max_tokens" not in reasoner._client.chat.completions.calls[1]
+    assert verifier._client.chat.completions.calls[0]["max_tokens"] == 160
 
 
 # ----------------------------------------------------------------------

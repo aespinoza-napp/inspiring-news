@@ -170,6 +170,9 @@ NON_THRESHOLD_SETTINGS = {
     # How a model is served (thinking off for a hybrid reasoning model),
     # a property of the model, not of a run: infrastructure, like LLM_MODEL.
     "LLM_REASONING_EFFORT",
+    # Room for a reasoning model's thinking on top of an answer cap: the
+    # same standing.
+    "LLM_REASONING_TOKENS",
     "INFERENCE_URL", "INFERENCE_TIMEOUT",
     # How many finished jobs stay in memory beside the journal (JobStore).
     "JOB_STORE_KEEP_FINISHED",

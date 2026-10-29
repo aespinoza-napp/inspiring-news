@@ -305,6 +305,14 @@ class Settings(BaseSettings):
     # Qwen3's /no_think soft switch, so the request is the only way.
     # A model not named here gets nothing, as before.
     LLM_REASONING_EFFORT: dict[str, str] = {}
+    # Per model, tokens added to every answer cap (`max_tokens`) for a
+    # model that reasons before it answers and cannot be told not to:
+    # its reasoning counts against the cap. Measured 2026-10-29 on Groq's
+    # openai/gpt-oss-20b at reasoning_effort "low": 9 of 20 per-source
+    # calls came back json_validate_failed with an empty answer, the 160
+    # tokens spent thinking. The cap is there to stop a loop, not to bound
+    # the reasoning. A model not named here gets the cap as it is.
+    LLM_REASONING_TOKENS: dict[str, int] = {}
     # Base delay before complete_json's retry after a connection/timeout
     # failure, doubled each attempt and capped at 5s.
     LLM_RETRY_BACKOFF_SECONDS: float = 0.5

@@ -178,3 +178,19 @@ dates and names with the source's, one by one, or the larger reader on
 the per-source question; and the 9B's result on the same evidence
 (section 6 of the decision record) decides whether a GPU or hosted model
 is the next step.
+
+## 7. Every pulled model, and a hosted one (2026-10-29)
+
+The author's request: benchmark the models this laptop has pulled, per
+role, and Groq's hosted ones against them on the verdicts. The lists, and
+why each other model is left out, were agreed before any result was read
+(`scripts/bench_models.sh`, `scripts/bench_groq.sh`). The verifiers
+replay one searched `llama3.2:3b` run (`cc053417c0cb`, 47.8% on train,
+63 of 69 claims with evidence), so only the reading differs.
+
+| Change | Where | What it did |
+|---|---|---|
+| The benchmark, one model at a time, as "-bench" copies (10 threads, 16k context) | `scripts/bench_models.sh` | Verifier screen on 20 train claims, writer in en/es/ca, reviewer on the planted defects and the seeded drafts. Not in parallel: on the 165U the answer is bound by memory bandwidth and 15 W, so two models at once each take about twice as long and every recorded time is the other's waiting too |
+| Groq's verifiers on the same evidence | `scripts/bench_groq.sh` | `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3.8-27b`; the two Llama models answer `model_not_found` on this key |
+| Room above the answer cap for a model that reasons first | `LLM_REASONING_TOKENS`; `llms.py` | gpt-oss's reasoning counts against `max_tokens`: at the per-source 160 it came back `json_validate_failed`, empty, 20 calls in 20 at Groq's default and 9 in 20 at `low`; with 2,048 above the cap, 0 in 15. In the run key, like the effort |
+| A rate limit waited out, not lost | `llms.py`, `RateLimitError` | Groq's free plan allows 8,000 tokens a minute per model; a 429 counted as a failure was a source never weighed. Now its `retry-after` is waited out outside the LLM permit, up to 60 s and 10 times a call; a longer wait (a daily cap) or none fails as before. Ollama never answers 429, so local runs are unchanged |

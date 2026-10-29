@@ -213,6 +213,7 @@ def run_key(
     loop: bool = False,
     reasoning_effort: str | None = None,
     replay_of: str | None = None,
+    reasoning_tokens: int | None = None,
 ) -> str:
     """
     The mode, the label, the loop and the reasoning effort count only
@@ -244,6 +245,10 @@ def run_key(
 
     if reasoning_effort:
         keyed["reasoningEffort"] = reasoning_effort
+
+    # A cap that cut the answer and one that let it through are two runs.
+    if reasoning_tokens:
+        keyed["reasoningTokens"] = reasoning_tokens
 
     if replay_of:
         keyed["replayOf"] = replay_of
@@ -341,6 +346,7 @@ class RunConfig:
             # says what every call was sent.
             reasoning_effort=settings.LLM_REASONING_EFFORT.get(self.model),
             replay_of=Path(self.replay_of).name if self.replay_of else None,
+            reasoning_tokens=settings.LLM_REASONING_TOKENS.get(self.model),
         )
 
     @property
@@ -819,6 +825,7 @@ class HarnessRunner:
             "LLM_BASE_URL": without_credentials(settings.LLM_BASE_URL),
             "LLM_TIMEOUT": settings.LLM_TIMEOUT,
             "LLM_REASONING_EFFORT": settings.LLM_REASONING_EFFORT.get(self.config.model),
+            "LLM_REASONING_TOKENS": settings.LLM_REASONING_TOKENS.get(self.config.model),
             "SEARXNG_URL": settings.SEARXNG_URL,
             "INFERENCE_URL": settings.INFERENCE_URL,
             "INFERENCE_TIMEOUT": settings.INFERENCE_TIMEOUT,
