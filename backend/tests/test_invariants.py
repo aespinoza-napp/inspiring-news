@@ -148,6 +148,9 @@ def test_every_weight_belongs_to_a_group_that_sums_to_one():
 # above - not per-run tunables.
 NON_THRESHOLD_SETTINGS = {
     "CACHE_PATH", "LAKE_PATH", "LAKE_ENABLED", "QDRANT_PATH",
+    # Reader accounts: where they are kept, the cookie's Secure flag and
+    # how many password hashes run at once - deployment, not a run.
+    "USERS_DB_PATH", "ACCOUNT_COOKIE_SECURE", "ACCOUNT_HASH_CONCURRENCY",
     "STORAGE_PATH", "RAW_PATH", "PROCESSED_PATH", "EMBEDDINGS_PATH",
     "FACT_CHECK_PATH", "GRAPH_PATH",
     "EMBEDDING_MODEL", "EMBEDDING_DIMENSION", "SENTIMENT_MODEL",

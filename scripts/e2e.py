@@ -735,6 +735,14 @@ def run(checks: Checks, chrome: str, base: str, tiktok: Connections) -> None:
     counts = [int(n) for n in re.findall(r"· (\d+)</span></h2>", page)]
     checks.check("the sections' counts add up to the day's total", sum(counts) == 1 and "1 story on this day" in page, f"sections {counts}")
 
+    print("Reader accounts")
+    page = dom(chrome, f"{base}/account")
+    checks.check("signed out, the account page offers both forms and says what it keeps",
+                 "Create an account" in page and "What an account keeps" in page and "argon2id" in page)
+    before = len(Stub.paths)
+    status, _ = get(f"{base}/api/account/users")
+    checks.check("the account proxy forwards only its own routes", status == 404 and len(Stub.paths) == before, f"got {status}")
+
     width, text = page_width(chrome, f"{base}/map")
     checks.check("the map fits a 375 px screen", width <= 375 and "2 of 2 articles" in text, f"laid out {width} px wide")
 

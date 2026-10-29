@@ -314,3 +314,67 @@ Checked by e2e: a day lists its stories by section; an empty day (5 Oct)
 falls back to the latest day before it and says so; the sections'
 counts add up to the day's total. `lib/today.ts` holds the logic. There
 is no frontend test runner, so the e2e checks are its tests.
+
+## Accounts (N5, 2026-10-29)
+
+`backend/src/services/accounts/` (`store.py`, `service.py`) and
+`src/api/account_routes.py`. `/account` on the frontend, through
+`app/api/account/[...path]`, which forwards seven routes with one method
+each, and only the session cookie. Open on the backend like `/reader`: a
+reader has no key, so the session is the capability.
+
+**Where.** One SQLite file, `settings.USERS_DB_PATH` (`data/users.db`,
+on the backend's volume and in its snapshots). Standard library, WAL,
+foreign keys on, numbered migrations. Not the lake, and not Neo4j:
+`POST /graph/sync` rebuilds the graph from the lake, so a reader's rows
+there would be wiped or would make sync protect them. A test reads the
+accounts code's imports and fails on anything that reaches the lake, the
+graph, the journal or `/metrics`.
+
+**What is kept**: the username (lower case, unique), an email only if
+given, an argon2id hash of the password, and per session the sha256 of
+its token, its CSRF token, when it began and when it was last used. N6
+adds what a reader follows. Export (`GET /account/export`, a JSON file)
+returns all of it but the secrets. Delete (`POST /account/delete`, with
+the password) removes every row of every table that names the user.
+Both read the tables from the schema, so a table a later migration adds
+is covered without being listed.
+
+### Threat model
+
+| Threat | What stops it |
+|---|---|
+| The database is copied | Passwords as argon2id (64 MiB, 3 passes); session tokens as sha256, so a copy opens no session; no email unless given |
+| A password guessed online | 5 failures in 15 minutes per username **and** per client, then a 429 with `Retry-After`. 10 characters minimum |
+| Whether a username exists, read from the timing | An unknown name is checked against a dummy hash: the same argon2 work and the same message as a wrong password (a test counts the hashes) |
+| Hashing as a denial of service (64 MiB each) | At most `ACCOUNT_HASH_CONCURRENCY` (2) at once; registrations limited to 5 an hour per client |
+| A forged state change from another site | Signed in: the session's CSRF token in `X-CSRF-Token`, compared in constant time. Signing in or registering: `X-Requested-With` must be set, which a cross-site form cannot do, and the backend allows no CORS. The cookie is `SameSite=Lax` besides |
+| The session cookie stolen by a script | `HttpOnly`: page scripts cannot read it (checked in Chrome) |
+| The cookie sent in clear | `Secure`, unless `ACCOUNT_COOKIE_SECURE` is turned off for plain-HTTP development |
+| A session left open | Ends after 30 idle days, at sign-out, and at a password change (every other session) |
+| A shared cache keeping someone's answer | `Cache-Control: no-store` on every `/account` answer, errors included (a route class: an error raised in a dependency is a new response) |
+| A password in a log | Never logged; a test runs the flow and searches the logs and the database file for it; the real flow's backend log had it 0 times |
+| One visitor's limit spent by another | "Per client" is the first `X-Forwarded-For` address, which Caddy sets from the connection |
+
+**Not covered, on purpose:**
+
+- No email confirmation or password reset by mail: no free mail service
+  is configured, and the page says so. A forgotten password is a new
+  account.
+- No account lockout beyond the rate limit: a lock would let a stranger
+  shut anyone out.
+- The limits are in memory and per process. A restart forgets them,
+  which gives an attacker at most one more window.
+
+**Checked in a real browser on 29 Oct**: the worktree's backend with a
+scratch database, the built frontend in front of it, and Chrome. Register
+answered 201. The cookie arrived as `in_session` with `HttpOnly`,
+`Secure` and `SameSite=Lax`, and `document.cookie` did not show it. The
+reader was still signed in after a reload. Sign-out without the token
+was 403 and with it 204, then `/me` was 401. The proxy answered 404 to
+`/api/account/users`. Chrome kept the `Secure` cookie over
+`http://127.0.0.1`.
+
+**On the dependency**: `argon2-cffi` 25.1.0 (June 2025). It brings cffi
+and pycparser, whose newest release (3.12) was a week old. `[tool.uv]`
+constrains pycparser to 3.0 (January 2026).

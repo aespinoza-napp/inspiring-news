@@ -92,6 +92,7 @@ _labelling_batch = None
 _reader_index = None
 _map_index = None
 _map_search = None
+_account_service = None
 
 _selection_service = None
 
@@ -564,6 +565,27 @@ def get_map_search():
                 _map_search = MapSearch(get_map_index(), embed=lambda text: EmbeddingService().encode(text))
 
     return _map_search
+
+
+def get_account_service():
+    """
+    Backs /account/*: reader accounts (src/services/accounts/). A
+    singleton because it holds the sign-in limits and the hashing ceiling;
+    the accounts themselves are in their own SQLite file
+    (settings.USERS_DB_PATH), never the lake or the graph.
+    """
+
+    global _account_service
+
+    if _account_service is None:
+        with _lock:
+            if _account_service is None:
+                from src.services.accounts.service import AccountService
+                from src.services.accounts.store import AccountStore
+
+                _account_service = AccountService(AccountStore(settings.USERS_DB_PATH))
+
+    return _account_service
 
 
 def get_draft_store():

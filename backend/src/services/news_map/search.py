@@ -30,7 +30,7 @@ import re
 import threading
 import time
 import unicodedata
-from collections import OrderedDict, deque
+from collections import OrderedDict
 from dataclasses import dataclass
 from logging import getLogger
 from typing import Callable
@@ -40,6 +40,7 @@ import numpy as np
 from src.config.topics import TOPIC_KEYWORDS_ES, TOPICS
 from src.services.inference_client import InferenceUnavailable
 from src.services.news_map.layout import anchors
+from src.services.rate_limit import RateLimited, RateLimiter
 
 logger = getLogger(__name__)
 
@@ -88,48 +89,6 @@ def similarity(a: str, b: str) -> float:
     x, y = trigrams(a), trigrams(b)
 
     return len(x & y) / len(x | y) if x and y else 0.0
-
-
-class RateLimited(Exception):
-
-    def __init__(self, retry_after: float):
-        super().__init__(f"too many searches; retry in {retry_after:.0f} s")
-        self.retry_after = retry_after
-
-
-class RateLimiter:
-    """At most `limit` calls per `window` seconds per key; memory bounded by `max_keys`."""
-
-    def __init__(self, limit: int, window: float = 60.0, max_keys: int = 10_000, clock: Callable[[], float] = time.monotonic):
-
-        self.limit = limit
-        self.window = window
-        self.max_keys = max_keys
-        self.clock = clock
-        self._calls: OrderedDict[str, deque] = OrderedDict()
-        self._lock = threading.Lock()
-
-    def check(self, key: str) -> None:
-        """Counts the call, or raises RateLimited with when to come back."""
-
-        now = self.clock()
-
-        with self._lock:
-
-            calls = self._calls.pop(key, None) or deque()
-
-            while calls and calls[0] <= now - self.window:
-                calls.popleft()
-
-            if len(calls) >= self.limit:
-                self._calls[key] = calls
-                raise RateLimited(max(1.0, calls[0] + self.window - now))
-
-            calls.append(now)
-            self._calls[key] = calls
-
-            while len(self._calls) > self.max_keys:
-                self._calls.popitem(last=False)
 
 
 def _topic_terms() -> list[tuple[str, str, bool]]:

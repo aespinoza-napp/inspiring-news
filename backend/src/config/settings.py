@@ -81,6 +81,19 @@ class Settings(BaseSettings):
     # Qdrant settings
     QDRANT_PATH: Path = Path("data/vector_db")
 
+    # Reader accounts (src/services/accounts/): their own SQLite file, never
+    # the lake or the graph, which sync rebuilds (docs/decisions/news-map.md,
+    # "Accounts").
+    USERS_DB_PATH: Path = Path("data/users.db")
+    # The session cookie's Secure flag: on everywhere there is HTTPS. Off
+    # only for plain-HTTP development on another host than localhost.
+    ACCOUNT_COOKIE_SECURE: bool = True
+    # How many argon2id hashes (64 MiB, three passes each) may run at
+    # once: a login or a registration waits for one rather than letting
+    # a burst of them take the machine's memory. A concurrency ceiling,
+    # so a setting and never a threshold (CLAUDE.md, invariant 12).
+    ACCOUNT_HASH_CONCURRENCY: int = 2
+
     # Still load-bearing: VectorRepository sizes the Qdrant collection
     # from this, independent of which embedding model actually produces
     # the vectors (see backend/tests/services/test_embeddings.py's

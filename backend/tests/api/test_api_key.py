@@ -67,6 +67,17 @@ OPEN_ENDPOINTS = {
     # (embedding the query in inference/) is limited per client
     # (src/services/news_map/search.py).
     ("GET", "/map/search"),
+    # Reader accounts: a reader has no key. The session cookie is the
+    # capability; without one these give only the chance to make an
+    # account or sign in, both limited per client, and the state changes
+    # check a CSRF token (src/api/account_routes.py).
+    ("POST", "/account/register"),
+    ("POST", "/account/login"),
+    ("GET", "/account/me"),
+    ("POST", "/account/logout"),
+    ("POST", "/account/password"),
+    ("GET", "/account/export"),
+    ("POST", "/account/delete"),
 }
 
 # What was open until 2026-10-02, with a body each would accept: the

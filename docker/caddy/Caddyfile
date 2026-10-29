@@ -29,8 +29,11 @@
 	# the password below.
 	# The readers' news map and the day's news (docs/decisions/news-map.md)
 	# are the same kind of page: their one proxy, /api/map/*, forwards only
-	# the backend's four /map routes, open by design like /reader's.
-	@reader path /reader /reader/* /api/reader/* /map /map/* /today /api/map/* /_next/static/* /favicon.ico
+	# the backend's four /map routes, open by design like /reader's. A
+	# reader's account is too (/account): its proxy forwards only the seven
+	# account routes, whose capability is the session cookie, not the
+	# password (src/api/account_routes.py).
+	@reader path /reader /reader/* /api/reader/* /map /map/* /today /api/map/* /account /api/account/* /_next/static/* /favicon.ico
 	handle @reader {
 		reverse_proxy frontend:3000
 	}

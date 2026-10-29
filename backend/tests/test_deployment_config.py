@@ -297,7 +297,8 @@ def test_only_the_reader_view_is_served_without_the_password():
     matcher = re.search(r"^\s*@reader\s+path\s+(.+)$", code, flags=re.MULTILINE)
     assert matcher, "the @reader matcher is gone"
     assert matcher.group(1).split() == [
-        "/reader", "/reader/*", "/api/reader/*", "/map", "/map/*", "/today", "/api/map/*", "/_next/static/*", "/favicon.ico",
+        "/reader", "/reader/*", "/api/reader/*", "/map", "/map/*", "/today", "/api/map/*",
+        "/account", "/api/account/*", "/_next/static/*", "/favicon.ico",
     ]
 
     reader = dict(caddy_handles())["@reader"]
@@ -327,11 +328,17 @@ def test_only_the_reader_view_is_served_without_the_password():
     )
     assert map_proxies == ["api/map/[...path]"]
     allowlist = (FRONTEND / "src" / "app" / "api" / "map" / "[...path]" / "route.ts").read_text(encoding="utf-8")
+
+    # The account proxy forwards seven routes, each with its one method,
+    # and only the session cookie.
+    account = (FRONTEND / "src" / "app" / "api" / "account" / "[...path]" / "route.ts").read_text(encoding="utf-8")
+    assert re.search(r"const ROUTES: Record<string, \"GET\" \| \"POST\"> = \{(.*?)\};", account, re.S).group(1).count(":") == 7
+    assert 'const SESSION_COOKIE = "in_session";' in account
     assert 'path === "articles" || path === "entities" || path === "search" || ARTICLE_LINKS.test(path)' in allowlist
 
     nav = (FRONTEND / "src" / "components" / "NavLinks.tsx").read_text(encoding="utf-8")
     assert "prefetch={onPublicPage" in nav
-    assert 'const PUBLIC = ["/reader", "/map", "/today"];' in nav
+    assert 'const PUBLIC = ["/reader", "/map", "/today", "/account"];' in nav
 
 
 def test_everything_else_at_the_door_is_a_404():
