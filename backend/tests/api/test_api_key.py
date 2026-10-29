@@ -56,6 +56,13 @@ OPEN_ENDPOINTS = {
     # anyone (src/api/publish_routes.py, "Public").
     ("GET", "/reader/stories"),
     ("GET", "/reader/stories/{story_id}"),
+    # The readers' news map: the same published articles as /reader, as
+    # points - title, outlet, day, topics, entities, verdict and place -
+    # and their related articles; no body, lineage or scraped page
+    # (src/services/news_map/index.py; src/api/map_routes.py).
+    ("GET", "/map/articles"),
+    ("GET", "/map/entities"),
+    ("GET", "/map/articles/{article_id}/links"),
 }
 
 # What was open until 2026-10-02, with a body each would accept: the

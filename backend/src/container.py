@@ -90,6 +90,7 @@ _graph_reader = None
 _labelling_batch = None
 
 _reader_index = None
+_map_index = None
 
 _selection_service = None
 
@@ -510,6 +511,37 @@ def get_reader_index():
                 )
 
     return _reader_index
+
+
+def get_map_index():
+    """
+    Backs /map/*: the news map's view of the published articles
+    (src/services/news_map/index.py). Built on the reader's index, so
+    which articles are published is decided in one place, and a singleton
+    for the same reason: it is a cache of each record's place and links.
+    Source countries are read once, here, for the zone a naive
+    publication time is in.
+    """
+
+    global _map_index
+
+    if _map_index is None:
+        with _lock:
+            if _map_index is None:
+                from src.repositories.source_repository import SourceRepository
+                from src.services.news_map.index import MapIndex
+                from src.services.reader.views import SourceNames
+
+                sources = SourceRepository().list()
+
+                _map_index = MapIndex(
+                    get_datalake_repository(),
+                    get_reader_index(),
+                    SourceNames(sources),
+                    {source.id: source.country for source in sources},
+                )
+
+    return _map_index
 
 
 def get_draft_store():

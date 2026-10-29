@@ -120,10 +120,17 @@ def publish(
     validation_passed: bool = True,
     source_id: str = "bbc",
     author: str | None = "A. Reporter",
+    topics: list[tuple[str, float]] | None = None,
+    entities: dict[str, list[str]] | None = None,
+    embedding: list[float] | None = None,
+    body: str = BODY,
 ):
     """
     One analysed article, written into all three layers. Returns what
-    persist_all returned (record ids, run id, publishable).
+    persist_all returned (record ids, run id, publishable). `topics` as
+    (display name, confidence) pairs replaces the default two; the news
+    map's tests set them, with entities and the embedding, since that is
+    what places an article (src/services/news_map/).
     """
 
     article_id = uuid4().hex
@@ -137,7 +144,7 @@ def publish(
         title=title,
         author=author,
         published_at=published_at,
-        content=BODY,
+        content=body,
     )
 
     article = create_article(
@@ -145,13 +152,15 @@ def publish(
         url=url,
         source_id=source_id,
         title=title,
-        body=BODY,
+        body=body,
         language=language,
         published_at=published_at,
         topics=[
-            TopicPrediction(topic=topic, confidence=0.6, probability=0.05),
-            TopicPrediction(topic="Community", confidence=0.4, probability=0.04),
+            TopicPrediction(topic=name, confidence=confidence, probability=0.05)
+            for name, confidence in (topics or [(topic, 0.6), ("Community", 0.4)])
         ],
+        **({"entities": entities} if entities is not None else {}),
+        **({"embedding": embedding} if embedding is not None else {}),
     )
 
     report = make_report(

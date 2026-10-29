@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.api import draft_routes, publish_routes, review_routes, rewrite_routes
+from src.api import draft_routes, map_routes, publish_routes, review_routes, rewrite_routes
 from src.api.routes import router
 from src.config.settings import settings
 from src.container import job_store
@@ -61,6 +61,9 @@ app.include_router(draft_routes.router)
 app.include_router(review_routes.router)
 app.include_router(rewrite_routes.router)
 app.include_router(publish_routes.router)
+
+# The readers' news map (docs/goals.md, "News map"): open, like /reader.
+app.include_router(map_routes.router)
 
 logger = logging.getLogger(__name__)
 
