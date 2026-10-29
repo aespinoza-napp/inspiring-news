@@ -19,7 +19,8 @@
 #   CORRECTOR_LLM_BASE   as WRITER_LLM_BASE, for the reviewer: a review
 #                        reads the draft and up to 14,000 characters of its
 #                        sources, past 4k tokens as surely as a draft does
-#                        (2026-10-19: qwen3.5:9b recommended as reviewer)
+#                        (2026-10-19: qwen3.5:9b recommended as reviewer;
+#                        2026-10-29: gemma4:e4b, evaluation.md)
 #   OLLAMA_NUM_THREAD    threads for those two variants; unset is Ollama's
 #                        own choice. On the dev laptop's hybrid CPU that
 #                        choice spread onto two low-power cores, and 10

@@ -1,0 +1,126 @@
+{
+  "model": "gemma4:e4b-bench",
+  "results": [
+    {
+      "language": "en",
+      "seconds": 264.7,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1753,
+        "completionTokens": 701,
+        "latency": 264.0013
+      },
+      "perCall": [
+        185.8,
+        78.2
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 45.0,
+        "subtitle": 0.0,
+        "grammar": 95.0,
+        "factConsistency": 60.0,
+        "seo": 50.0,
+        "hallucinationIndex": 50.0,
+        "style": 70.0
+      },
+      "found": {
+        "spelling: it's for its": false,
+        "figure: 3 million where [1] says 1.2": false,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: The title 'Seagrass' is too generic and does not clearly communicate the constructive nature of the story or the main subject (the restoration success).",
+        "subtitle: The draft is missing a subtitle, which is required to add context and serve as a good search snippet.",
+        "factConsistency: The sentence 'The bay is now completely free of plastic pollution' is factually incorrect, as the fact-checks determined this claim to be FALSE [1].",
+        "seo: The body lacks descriptive subheadings beyond the single, generic '## Who made it possible', which limits searchability.",
+        "hallucinationIndex: The statement 'The bay is now completely free of plastic pollution' is not supported by the sources and was judged FALSE by the fact-checkers.",
+        "style: The tone is slightly too simplistic and lacks the precise, sober news register required; it reads more like a brief update than a constructive news piece."
+      ],
+      "final": {
+        "title": 45.0,
+        "subtitle": 0.0,
+        "grammar": 95.0,
+        "factConsistency": 60.0,
+        "coverageVerification": 38.9,
+        "seo": 50.0,
+        "readability": 74.4,
+        "hallucinationIndex": 50.0,
+        "style": 70.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "Seagrass Restoration Boosts Marine Life in Barceloneta Bay",
+        "subtitle": "Ten years of replanting have successfully expanded the seagrass meadow, supporting increased juvenile fish populations.",
+        "body": "Ten years of replanting efforts off Barceloneta beach have successfully restored the seagrass meadow. The restored area now covers 4.2 hectares, doubling the size from 2015 [1].\n\nDivers observed a 30% increase in juvenile fish between 2020 and 2025 [2].\n\n## Project Funding and Community Involvement\n\nThe city council provided funding for the project, totaling 3 million euros [1]. Volunteers were responsible for the majority of the planting work."
+      },
+      "correctionAnswer": {
+        "title": "Seagrass Restoration Boosts Marine Life in Barceloneta Bay",
+        "subtitle": "Ten years of replanting have successfully expanded the seagrass meadow, supporting increased juvenile fish populations.",
+        "body": "Ten years of replanting efforts off Barceloneta beach have successfully restored the seagrass meadow. The restored area now covers 4.2 hectares, doubling the size from 2015 [1].\n\nDivers observed a 30% increase in juvenile fish between 2020 and 2025 [2].\n\n## Project Funding and Community Involvement\n\nThe city council provided funding for the project, totaling 3 million euros [1]. Volunteers were responsible for the majority of the planting work."
+      },
+      "skippedEdits": []
+    },
+    {
+      "language": "ca",
+      "seconds": 195.3,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1691,
+        "completionTokens": 682,
+        "latency": 195.2378
+      },
+      "perCall": [
+        136.7,
+        58.6
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 85.0,
+        "subtitle": 75.0,
+        "grammar": 95.0,
+        "factConsistency": 70.0,
+        "seo": 70.0,
+        "hallucinationIndex": 60.0,
+        "style": 80.0
+      },
+      "found": {
+        "spelling: esta for està": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "factConsistency: The sentence 'La badia ja esta completament lliure de contaminació per plàstics' is factually incorrect as the fact-check determined that 'The bay is now completely free of plastic pollution' is FALSE.",
+        "hallucinationIndex: The statement 'La badia ja esta completament lliure de contaminació per plàstics' is not supported by the sources and is contradicted by the fact-checks."
+      ],
+      "final": {
+        "title": 85.0,
+        "subtitle": 75.0,
+        "grammar": 95.0,
+        "factConsistency": 70.0,
+        "coverageVerification": 39.4,
+        "seo": 70.0,
+        "readability": 85.9,
+        "hallucinationIndex": 60.0,
+        "style": 80.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "Restauració de posidònia a la Barceloneta: un projecte de millora ambiental",
+        "subtitle": "Deu anys de replantació han augmentat la praderia marina i han influït en la biodiversitat local.",
+        "body": "Davant la platja de la Barceloneta, deu anys de replantació han permetre el retorn de la posidònia. La praderia restaurada ocupa ara 4,2 hectàrees, el doble que en 2015 [1].\n\nEls bussejadors han observat un augment del 30% en peixos joves durant el 2025 en comparació amb el 2020 [2].\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris han participat en la major part de la plantació."
+      },
+      "correctionAnswer": {
+        "title": "Restauració de posidònia a la Barceloneta: un projecte de millora ambiental",
+        "subtitle": "Deu anys de replantació han augmentat la praderia marina i han influït en la biodiversitat local.",
+        "body": "Davant la platja de la Barceloneta, deu anys de replantació han permetre el retorn de la posidònia. La praderia restaurada ocupa ara 4,2 hectàrees, el doble que en 2015 [1].\n\nEls bussejadors han observat un augment del 30% en peixos joves durant el 2025 en comparació amb el 2020 [2].\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris han participat en la major part de la plantació."
+      },
+      "skippedEdits": []
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "model": "qwen3.5:9b-bench",
+  "results": [
+    {
+      "language": "en",
+      "seconds": 281.6,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 2003,
+        "completionTokens": 1014,
+        "latency": 280.9345
+      },
+      "perCall": [
+        196.9,
+        84.0
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 85.0,
+        "subtitle": 0.0,
+        "grammar": 95.0,
+        "factConsistency": 40.0,
+        "seo": 60.0,
+        "hallucinationIndex": 20.0,
+        "style": 75.0
+      },
+      "found": {
+        "spelling: it's for its": true,
+        "figure: 3 million where [1] says 1.2": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: Too generic: 'Seagrass' does not specify the location or the story's core news value.",
+        "title: Does not follow instruction for clarity and specificity.",
+        "subtitle: Missing entirely: The draft explicitly states 'SUBTITLE: (none)', failing the requirement for a standfirst.",
+        "grammar: Minor error: 'twice it's 2015 area' should be 'twice its 2015 area'.",
+        "factConsistency: Major contradiction: The draft claims 'The bay is now completely free of plastic pollution', but Source [1] states 'Plastic waste remains a problem' and Fact-Checks mark this as FALSE.",
+        "factConsistency: Inaccurate funding figure: The draft cites '3 million euros' while Source [1] specifies '1.2 million euros'.",
+        "factConsistency: Minor inconsistency: The draft says 'twice it's 2015 area' (using 'it's') instead of 'its', though this is grammatical rather than factual.",
+        "seo: Weak headline: 'Seagrass' is not a strong keyword phrase for SEO.",
+        "seo: Lack of structure: The body is extremely short with no opportunity for descriptive subheadings.",
+        "hallucinationIndex: Unsupported claim: 'completely free of plastic pollution' is stated as fact but Source [1] says 'Plastic waste remains a problem'.",
+        "hallucinationIndex: Incorrect figure: '3 million euros' is stated, but Source [1] only supports '1.2 million euros'.",
+        "hallucinationIndex: Grammar error treated as hallucination risk: 'it's' implies possession of time ('its') which changes the meaning.",
+        "style: Tone issue: The false claim about being 'completely free' of pollution undermines the 'sober' and 'accurate' requirement.",
+        "style: Missing element: Lack of a subtitle reduces the professional news format."
+      ],
+      "final": {
+        "title": 85.0,
+        "subtitle": 0.0,
+        "grammar": 95.0,
+        "factConsistency": 40.0,
+        "coverageVerification": 38.9,
+        "seo": 60.0,
+        "readability": 74.4,
+        "hallucinationIndex": 20.0,
+        "style": 75.0
+      },
+      "proposal": "not offered: it has figures the draft does not: 1",
+      "corrected": null,
+      "correctionAnswer": {
+        "title": "Seagrass Restoration in Barceloneta Bay Shows Growth After Decade",
+        "subtitle": "Ten years of replanting have restored a seagrass meadow to over four hectares, though plastic waste remains a challenge for the bay.",
+        "body": "Off Barceloneta beach, ten years of replanting efforts have helped restore a seagrass meadow. The restored area now covers 4.2 hectares, which is twice its 2015 size [1].\n\nDivers counted 30% more juvenile fish in 2025 compared to 2020 [2]. However, plastic waste remains a problem in the bay.\n\n## Who made it possible\n\nThe city council funded the project with 1.2 million euros [1], and volunteers performed most of the planting work."
+      },
+      "skippedEdits": []
+    },
+    {
+      "language": "ca",
+      "seconds": 249.9,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1971,
+        "completionTokens": 951,
+        "latency": 249.9128
+      },
+      "perCall": [
+        172.6,
+        77.3
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 85.0,
+        "subtitle": 60.0,
+        "grammar": 95.0,
+        "factConsistency": 20.0,
+        "seo": 80.0,
+        "hallucinationIndex": 40.0,
+        "style": 75.0
+      },
+      "found": {
+        "spelling: esta for està": true,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: The title is slightly under the recommended 50-70 character range (49 characters), though acceptable.",
+        "subtitle: The subtitle claims the bay is 'completament lliure de contaminació per plàstics' (completely free of plastic contamination). Source [1] explicitly states 'Plastic waste remains a problem in the bay'. Fact-checks mark this claim as FALSE. This is a critical failure in factConsistency and hallucinationIndex.",
+        "subtitle: Length is appropriate (approx 130 chars).",
+        "factConsistency: Subtitle claims: 'La badia ja esta completament lliure de contaminació per plàstics.' Source [1] says: 'Plastic waste remains a problem in the bay'. Fact-check verdict: FALSE. This is a serious error.",
+        "factConsistency: Body sentence 2 cites [2] for fish stats (correct) but the same paragraph contains the false plastic claim which has no supporting source and contradicts fact-checks.",
+        "seo: The body is very short (only 3 paragraphs), lacking descriptive subheadings for a 'long body' as per standard SEO best practices, though the text itself is concise.",
+        "hallucinationIndex: Subtitle: 'La badia ja esta completament lliure de contaminació per plàstics.' -> No source supports this. Source [1] says the opposite.",
+        "hallucinationIndex: The draft presents a false claim as an established fact without citation.",
+        "style: The article violates the core principle of reporting accurately without hype by including a demonstrably false claim about plastic pollution in the subtitle."
+      ],
+      "final": {
+        "title": 85.0,
+        "subtitle": 60.0,
+        "grammar": 95.0,
+        "factConsistency": 20.0,
+        "coverageVerification": 39.4,
+        "seo": 80.0,
+        "readability": 85.9,
+        "hallucinationIndex": 40.0,
+        "style": 75.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "La posidònia torna a la Barceloneta després de deu anys",
+        "subtitle": "Deu anys de replantació han duplicat la praderia, tot i que els residus plàstics segueixen sent un problema a la badia.",
+        "body": "Davant la platja de la Barceloneta, deu anys de treball han fet tornar la posidònia. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\nEls bussejadors van comptar un 30% més de peixos joves el 2025 que el 2020 [2]. No obstant això, els residus plàstics segueixen sent un problema a la badia.\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris van fer la major part de la plantació."
+      },
+      "correctionAnswer": {
+        "title": "La posidònia torna a la Barceloneta després de deu anys",
+        "subtitle": "Deu anys de replantació han duplicat la praderia, tot i que els residus plàstics segueixen sent un problema a la badia.",
+        "body": "Davant la platja de la Barceloneta, deu anys de treball han fet tornar la posidònia. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\nEls bussejadors van comptar un 30% més de peixos joves el 2025 que el 2020 [2]. No obstant això, els residus plàstics segueixen sent un problema a la badia.\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris van fer la major part de la plantació."
+      },
+      "skippedEdits": []
+    }
+  ]
+}

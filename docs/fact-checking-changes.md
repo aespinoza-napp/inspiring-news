@@ -194,3 +194,10 @@ replay one searched `llama3.2:3b` run (`cc053417c0cb`, 47.8% on train,
 | Groq's verifiers on the same evidence | `scripts/bench_groq.sh` | `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3.8-27b`; the two Llama models answer `model_not_found` on this key |
 | Room above the answer cap for a model that reasons first | `LLM_REASONING_TOKENS`; `llms.py` | gpt-oss's reasoning counts against `max_tokens`: at the per-source 160 it came back `json_validate_failed`, empty, 20 calls in 20 at Groq's default and 9 in 20 at `low`; with 2,048 above the cap, 0 in 15. In the run key, like the effort |
 | A rate limit waited out, not lost | `llms.py`, `RateLimitError` | Groq's free plan allows 8,000 tokens a minute per model; a 429 counted as a failure was a source never weighed. Now its `retry-after` is waited out outside the LLM permit, up to 60 s and 10 times a call; a longer wait (a daily cap) or none fails as before. Ollama never answers 429, so local runs are unchanged |
+
+**Result for the verifier: `llama3.2:3b` stays.** On the first 20 train
+claims none of `granite3.3:8b` (+5.0 [-10.0, +20.0]), `gemma4:e4b`
+(-10.0) or `qwen3.5:9b` (-20.0) gains with an interval above zero, so
+the faster model is kept (7.2 s a model call; granite 19.9). Granite is
+the one to run on all 69 (coverage 95%, kappa +0.27 [+0.01, +0.49]).
+Groq's run was not made. `data/evaluation/experiments/models/results.md`.

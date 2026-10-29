@@ -735,6 +735,17 @@ CPU, 6.2 GB loaded (6.7 GB at the 16k context a long draft needs, so
 serve it from a Modelfile like the writer's), and with one model in
 memory a write-then-review swaps models once.
 
+**Replaced on 2026-10-29: the reviewer is `gemma4:e4b`**
+(`CORRECTOR_LLM_BASE`). The benchmark of every pulled model
+(`docs/decisions/evaluation.md`, "The benchmark of 29 October"): on the
+writing benchmark's 36 texts `qwen3.5:9b` gave 2 unusable answers, 94%
+format compliance against the 95% gate; `gemma4:e4b` 100%, with the
+same detection (95%). On the seeded drafts it found 3 of the 5 planted
+defects where the 9B found all 5 - it missed it's/its and the changed
+figure - and offered both corrections. Same 6.6 GB loaded, so the
+memory cap and the one-model swap are unchanged. The writer stays
+`qwen3.5:4b`.
+
 ### Gaps in the contract
 
 - `DraftReview` has nowhere to say **why** `corrected` is null - an

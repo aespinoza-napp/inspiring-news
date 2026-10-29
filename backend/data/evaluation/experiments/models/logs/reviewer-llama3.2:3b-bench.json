@@ -1,0 +1,114 @@
+{
+  "model": "llama3.2:3b-bench",
+  "results": [
+    {
+      "language": "en",
+      "seconds": 45.1,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1551,
+        "completionTokens": 241,
+        "latency": 44.6906
+      },
+      "perCall": [
+        28.9,
+        15.8
+      ],
+      "error": null,
+      "parsed": 4,
+      "of": 7,
+      "scores": {
+        "title": 80.0,
+        "subtitle": 90.0,
+        "grammar": 95.0,
+        "factConsistency": 90.0,
+        "seo": 0.0,
+        "hallucinationIndex": 0.0,
+        "style": 0.0
+      },
+      "found": {
+        "spelling: it's for its": false,
+        "figure: 3 million where [1] says 1.2": false,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "factConsistency: The article states the bay is completely free of plastic pollution, but the fact-checks judged this claim FALSE."
+      ],
+      "final": {
+        "title": 80.0,
+        "subtitle": 20.0,
+        "grammar": 95.0,
+        "factConsistency": 90.0,
+        "coverageVerification": 38.9,
+        "seo": 0.0,
+        "readability": 74.4,
+        "hallucinationIndex": 0.0,
+        "style": 0.0
+      },
+      "proposal": "not offered: no body",
+      "corrected": null,
+      "correctionAnswer": {
+        "title": "Seagrass Replanting Project in Barcelona Bay",
+        "subtitle": "Ten years of restoration efforts pay off with significant increase in marine life and reduction in plastic pollution",
+        "body": 10
+      },
+      "skippedEdits": []
+    },
+    {
+      "language": "ca",
+      "seconds": 57.6,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1645,
+        "completionTokens": 542,
+        "latency": 57.6177
+      },
+      "perCall": [
+        33.8,
+        23.9
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 80.0,
+        "subtitle": 90.0,
+        "grammar": 100.0,
+        "factConsistency": 90.0,
+        "seo": 70.0,
+        "hallucinationIndex": 0.0,
+        "style": 90.0
+      },
+      "found": {
+        "spelling: esta for està": false,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "factConsistency: The bay is not completely free of plastic pollution, according to the fact-checks.",
+        "seo: The main keyword could be more prominent in the title and subtitle.",
+        "style: The tone could be more precise and objective."
+      ],
+      "final": {
+        "title": 80.0,
+        "subtitle": 90.0,
+        "grammar": 100.0,
+        "factConsistency": 90.0,
+        "coverageVerification": 39.4,
+        "seo": 70.0,
+        "readability": 85.9,
+        "hallucinationIndex": 0.0,
+        "style": 90.0
+      },
+      "proposal": "not offered: it no longer cites [1, 2]",
+      "corrected": null,
+      "correctionAnswer": {
+        "title": "La posidònia restaurada a la Barceloneta: un èxit de la replantació",
+        "subtitle": "Després de 10 anys de treball, la praderia de la Barceloneta és un exemple de recuperació ambiental",
+        "body": "La praderia de la Barceloneta, que ocupava 2 hectàrees el 2015, ara és de 4,2 hectàrees, gràcies a 10 anys de replantació. A més, els bussejadors han registrat un 30% més de peixos joves el 2025 que el 2020. Això és possible gràcies a la cooperació entre l'Ajuntament i els voluntaris, que han invertit 1,2 milions d'euros en el projecte. Així, la badia de la Barceloneta és un exemple de recuperació ambiental."
+      },
+      "skippedEdits": []
+    }
+  ]
+}

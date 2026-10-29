@@ -1303,6 +1303,40 @@ model, two claims at once. The first `llama3.2:3b` runs (133 s a claim)
 shared the CPU with the test run; their times are each other's waiting
 too and are not quoted as the model's.
 
+### The benchmark of 29 October: every pulled model per role
+
+`scripts/bench_models.sh all`, one model at a time as `-bench` copies
+(10 threads, 16k context, thinking off), by the rules above, written
+before the runs. Tables, runs and logs:
+`data/evaluation/experiments/models/results.md`.
+
+- **Verifier: `llama3.2:3b` stays.** On the first 20 train claims,
+  replaying one searched 3B run (`cc053417c0cb`), no candidate's
+  accuracy gain excludes zero: `granite3.3:8b` +5.0 [-10.0, +20.0],
+  `gemma4:e4b` -10.0, `qwen3.5:9b` -20.0 [-45.0, 0.0]. So the faster
+  model is kept: 7.2 s a model call against granite's 19.9. Granite is
+  the only one worth the full 69: coverage 95% against 80%, kappa 0.26
+  against -0.01 (+0.27 [+0.01, +0.49]). The 9B, better than the 3B on
+  22 October with the list verifier (V3), is the worst one here, but on
+  20 claims, against another baseline, so the two do not contradict.
+- **Writer: `qwen3.5:4b` stays.** One draft in each language: the
+  fastest (149-224 s) and the best cited (0, 3 and 0 sentences without
+  a citation), with all metadata. `qwen3.5:9b` is half as fast;
+  `qwen3:8b` the slowest and the least cited (up to 11 sentences);
+  `gemma4:e4b` lost its Spanish draft (unreachable) and its Catalan
+  metadata.
+- **Reviewer: `gemma4:e4b` replaces `qwen3.5:9b`.** The gate decides it:
+  the 9B's format compliance is 94% (34 of 36 answers usable), below
+  95%, so it fails before its detection is read. `gemma4:e4b` passes
+  (100%) with the 9B's detection, 95% [90, 100], +15 points [+7, +23]
+  over `llama3.2:3b`; `granite3.3:8b` (+3) and `phi4-mini` (-3) are no
+  different from the 3B. On the seeded drafts gemma found 3 of 5 planted
+  defects (the 9B 5 of 5) and offered both corrections (the 9B one);
+  it missed the English spelling error and the changed figure, the
+  defect a reviewer is most needed for. Same size loaded (6.6 GB), ~20%
+  faster a text. The 9B's two unusable answers out of 36 are what the
+  gate is for; if the gate is relaxed, the 9B is the better reader.
+
 ## The verifier's FALSE (2026-10-22)
 
 The author's priority after the speed work: the fact-check itself.

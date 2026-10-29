@@ -1,0 +1,126 @@
+{
+  "model": "granite3.3:8b-bench",
+  "results": [
+    {
+      "language": "en",
+      "seconds": 221.5,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1827,
+        "completionTokens": 649,
+        "latency": 221.0927
+      },
+      "perCall": [
+        143.3,
+        77.8
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 80.0,
+        "subtitle": 0.0,
+        "grammar": 100.0,
+        "factConsistency": 60.0,
+        "seo": 60.0,
+        "hallucinationIndex": 80.0,
+        "style": 90.0
+      },
+      "found": {
+        "spelling: it's for its": false,
+        "figure: 3 million where [1] says 1.2": false,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: Could include 'seagrass' for better SEO.",
+        "subtitle: No subtitle provided.",
+        "factConsistency: The statement 'the bay is now completely free of plastic pollution' contradicts the fact-check verdict.",
+        "seo: Missing clear SEO-optimized headline with 'seagrass' and location.",
+        "hallucinationIndex: Repeats the unverified claim about plastic pollution.",
+        "style: Could elaborate more on the positive impacts for a more engaging narrative."
+      ],
+      "final": {
+        "title": 80.0,
+        "subtitle": 0.0,
+        "grammar": 100.0,
+        "factConsistency": 60.0,
+        "coverageVerification": 38.9,
+        "seo": 60.0,
+        "readability": 74.4,
+        "hallucinationIndex": 80.0,
+        "style": 90.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "Seagrass Replanting in Barceloneta Bay: A Success Story",
+        "subtitle": "Ten years of effort have restored a 4.2-hectare seagrass meadow, boosting juvenile fish populations and eliminating plastic pollution.",
+        "body": "Off Barceloneta beach, a decade of replanting has successfully restored a 4.2-hectare seagrass meadow, double its size from 2015 [1]. Divers observed a 30% increase in juvenile fish in 2025 compared to 2020 [2]. The city council allocated 3 million euros for the project, with volunteers doing most of the planting [1]. This initiative has not only revitalized marine life but also eradicated plastic pollution in the bay."
+      },
+      "correctionAnswer": {
+        "title": "Seagrass Replanting in Barceloneta Bay: A Success Story",
+        "subtitle": "Ten years of effort have restored a 4.2-hectare seagrass meadow, boosting juvenile fish populations and eliminating plastic pollution.",
+        "body": "Off Barceloneta beach, a decade of replanting has successfully restored a 4.2-hectare seagrass meadow, double its size from 2015 [1]. Divers observed a 30% increase in juvenile fish in 2025 compared to 2020 [2]. The city council allocated 3 million euros for the project, with volunteers doing most of the planting [1]. This initiative has not only revitalized marine life but also eradicated plastic pollution in the bay."
+      },
+      "skippedEdits": []
+    },
+    {
+      "language": "ca",
+      "seconds": 291.8,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1910,
+        "completionTokens": 1071,
+        "latency": 291.7859
+      },
+      "perCall": [
+        130.6,
+        161.2
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 90.0,
+        "subtitle": 80.0,
+        "grammar": 95.0,
+        "factConsistency": 85.0,
+        "seo": 70.0,
+        "hallucinationIndex": 80.0,
+        "style": 90.0
+      },
+      "found": {
+        "spelling: esta for està": false,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: Could include 'Barceloneta' earlier for better SEO.",
+        "subtitle: Could be more concise.",
+        "grammar: 'Deu' should be 'Dos' in 'Deu anys de replantació' for consistency with English numbering.",
+        "factConsistency: Claim about the bay being 'completely lliure de contaminació per plàstics' is misleading as fact-checks show it's FALSE.",
+        "seo: Could benefit from more descriptive subheadings for better online readability.",
+        "hallucinationIndex: Plastic pollution claim needs correction based on fact-checks."
+      ],
+      "final": {
+        "title": 90.0,
+        "subtitle": 80.0,
+        "grammar": 95.0,
+        "factConsistency": 85.0,
+        "coverageVerification": 39.4,
+        "seo": 70.0,
+        "readability": 85.9,
+        "hallucinationIndex": 80.0,
+        "style": 90.0
+      },
+      "proposal": "not offered: it is 303% of the draft's length: something was added",
+      "corrected": null,
+      "correctionAnswer": {
+        "title": "Posidònia torna a la Barceloneta: 10 anys de replantació",
+        "subtitle": "La praderia de posidònia a la Barceloneta s'ha duplicat en superfície",
+        "body": "Davant la platja de la Barceloneta, deu anys de replantació han fet tornar la posidònia. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\nEl projecte, finançat per l'Ajuntament amb 1,2 milions d'euros [1], ha vist un augment del 30% en la població de peixos joves des del 2020 [2]. Els voluntaris han jugat un paper crucial en la plantació.\n\n## El retorn de la posidònia\n\nLa posidònia, una planta marina clau per a la salut dels ecosistemes marins, havia disminuït significativament a la zona de la Barceloneta. Ara, gràcies a la dedicació de l'Ajuntament i dels voluntaris, la praderia de posidònia s'ha duplicat en superfície.\n\n## Impacte en la fauna marina\n\nEl projecte ha tende a un impacte positiu en la fauna marina local. Els bussejadors han observat un 30% més de peixos joves el 2025 en comparació amb el 2020 [2].\n\n## Un entorn més net\n\nA més de la recuperació de la posidònia, la badia de la Barceloneta també ha vist una reducció significativa de la contaminació per plàstics, contribuint a un entorn marí més net i salutable.\n\n## La col·laboració clau\n\nL'Ajuntament de Barcelona ha finançat el projecte amb 1,2 milions d'euros [1], mentre que els voluntaris han estat els responsables de la major part de la plantació.\n\n### Referències\n[1] Ajuntament de Barcelona. (Ano). Títol de la font.\n[2] Nom del bussejador o institució. (Ano). Títol de la font."
+      },
+      "skippedEdits": []
+    }
+  ]
+}

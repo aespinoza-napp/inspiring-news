@@ -1,0 +1,297 @@
+{
+  "dataset": {
+    "path": "data/evaluation/manual",
+    "stem": "manual-train",
+    "sha256": "b261d136c66223f70f791fd59e17871f058511d5be2c143e0e03e4819f69e941",
+    "rows": 69,
+    "kinds": [
+      "custom"
+    ]
+  },
+  "bootstrap": {
+    "seed": 2026,
+    "resamples": 10000
+  },
+  "runs": [
+    {
+      "model": "llama3.2:3b-bench",
+      "provider": "localhost:11434",
+      "key": "cc053417c0cb",
+      "records": 69,
+      "outcomes": {
+        "error": 0,
+        "searchUnavailable": 6,
+        "llmUnreachable": 0,
+        "scored": 63
+      },
+      "invalidOutput": 0,
+      "n": 63,
+      "accuracy": 0.5238095238095238,
+      "macroF1": 0.2791743478017988,
+      "coverage": 0.8253968253968254,
+      "selectiveAccuracy": 0.6153846153846154,
+      "kappa": 0.09914204003813158,
+      "ci": {
+        "accuracy": {
+          "low": 0.3968253968253968,
+          "high": 0.6507936507936508,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.19241416542559284,
+          "high": 0.37129741479925304,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.7301587301587301,
+          "high": 0.9206349206349206,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.48,
+          "high": 0.7455681818181802,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": -0.08117492181678052,
+          "high": 0.28782980187121626,
+          "undefinedResamples": 0
+        }
+      },
+      "usage": {
+        "units": 69,
+        "llmCalls": 304,
+        "failedCalls": 2,
+        "unitsWithoutCalls": 6,
+        "promptTokens": 131075,
+        "completionTokens": 10433,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2080.6,
+        "completionTokensPerUnit": 165.6,
+        "llmSeconds": 2961.13,
+        "callLatency": {
+          "median": 7.234,
+          "p90": 19.529,
+          "max": 38.594
+        },
+        "unitLatency": {
+          "median": 93.292,
+          "p90": 138.375,
+          "total": 6400.8
+        },
+        "completionTokensPerSecond": 3.6,
+        "cost": null
+      }
+    },
+    {
+      "model": "qwen3.5:9b-bench",
+      "provider": "localhost:11434",
+      "key": "b9f985189177",
+      "records": 20,
+      "outcomes": {
+        "error": 0,
+        "searchUnavailable": 0,
+        "llmUnreachable": 0,
+        "scored": 20
+      },
+      "invalidOutput": 0,
+      "n": 20,
+      "accuracy": 0.35,
+      "macroF1": 0.24057971014492754,
+      "coverage": 0.65,
+      "selectiveAccuracy": 0.46153846153846156,
+      "kappa": -0.0038610038610038646,
+      "ci": {
+        "accuracy": {
+          "low": 0.15,
+          "high": 0.55,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.09999999999999999,
+          "high": 0.38814814814814813,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.45,
+          "high": 0.85,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.1875,
+          "high": 0.7333333333333333,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": -0.22137404580152664,
+          "high": 0.21741254779776215,
+          "undefinedResamples": 0
+        }
+      },
+      "usage": {
+        "units": 20,
+        "llmCalls": 95,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 41105,
+        "completionTokens": 2644,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2055.2,
+        "completionTokensPerUnit": 132.2,
+        "llmSeconds": 2985.48,
+        "callLatency": {
+          "median": 28.231,
+          "p90": 45.52,
+          "max": 97.598
+        },
+        "unitLatency": {
+          "median": 254.912,
+          "p90": 472.109,
+          "total": 5939.24
+        },
+        "completionTokensPerSecond": 0.9,
+        "cost": null
+      }
+    },
+    {
+      "model": "granite3.3:8b-bench",
+      "provider": "localhost:11434",
+      "key": "91d96d61a714",
+      "records": 20,
+      "outcomes": {
+        "error": 0,
+        "searchUnavailable": 0,
+        "llmUnreachable": 0,
+        "scored": 20
+      },
+      "invalidOutput": 0,
+      "n": 20,
+      "accuracy": 0.6,
+      "macroF1": 0.4382716049382716,
+      "coverage": 0.95,
+      "selectiveAccuracy": 0.5789473684210527,
+      "kappa": 0.26267281105990775,
+      "ci": {
+        "accuracy": {
+          "low": 0.4,
+          "high": 0.8,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.2298850574712644,
+          "high": 0.6190476190476191,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.85,
+          "high": 1.0,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.35294117647058826,
+          "high": 0.7894736842105263,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": 0.02439024390243905,
+          "high": 0.5199999999999999,
+          "undefinedResamples": 0
+        }
+      },
+      "usage": {
+        "units": 20,
+        "llmCalls": 95,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 46579,
+        "completionTokens": 4835,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2328.9,
+        "completionTokensPerUnit": 241.8,
+        "llmSeconds": 2324.0,
+        "callLatency": {
+          "median": 19.922,
+          "p90": 40.21,
+          "max": 145.907
+        },
+        "unitLatency": {
+          "median": 226.721,
+          "p90": 354.17,
+          "total": 4641.38
+        },
+        "completionTokensPerSecond": 2.1,
+        "cost": null
+      }
+    },
+    {
+      "model": "gemma4:e4b-bench",
+      "provider": "localhost:11434",
+      "key": "62b4e6620665",
+      "records": 20,
+      "outcomes": {
+        "error": 0,
+        "searchUnavailable": 0,
+        "llmUnreachable": 0,
+        "scored": 20
+      },
+      "invalidOutput": 0,
+      "n": 20,
+      "accuracy": 0.45,
+      "macroF1": 0.34848484848484845,
+      "coverage": 0.55,
+      "selectiveAccuracy": 0.5454545454545454,
+      "kappa": 0.17910447761194032,
+      "ci": {
+        "accuracy": {
+          "low": 0.25,
+          "high": 0.65,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.16540277461330102,
+          "high": 0.4988344988344989,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.35,
+          "high": 0.75,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.23076923076923078,
+          "high": 0.8333333333333334,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": -0.024135001544639777,
+          "high": 0.4238683127572017,
+          "undefinedResamples": 0
+        }
+      },
+      "usage": {
+        "units": 20,
+        "llmCalls": 95,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 40520,
+        "completionTokens": 2541,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2026.0,
+        "completionTokensPerUnit": 127.0,
+        "llmSeconds": 2185.36,
+        "callLatency": {
+          "median": 18.505,
+          "p90": 39.716,
+          "max": 73.849
+        },
+        "unitLatency": {
+          "median": 203.876,
+          "p90": 308.141,
+          "total": 4368.04
+        },
+        "completionTokensPerSecond": 1.2,
+        "cost": null
+      }
+    }
+  ]
+}

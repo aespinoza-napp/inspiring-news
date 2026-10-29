@@ -1,0 +1,125 @@
+{
+  "model": "phi4-mini:bench",
+  "results": [
+    {
+      "language": "en",
+      "seconds": 81.5,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1526,
+        "completionTokens": 450,
+        "latency": 81.1422
+      },
+      "perCall": [
+        53.5,
+        27.6
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 80.0,
+        "subtitle": 0.0,
+        "grammar": 100.0,
+        "factConsistency": 85.0,
+        "seo": 75.0,
+        "hallucinationIndex": 90.0,
+        "style": 90.0
+      },
+      "found": {
+        "spelling: it's for its": false,
+        "figure: 3 million where [1] says 1.2": false,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "title: The bay is not completely free of plastic pollution.",
+        "subtitle: Missing subtitle.",
+        "factConsistency: The bay is not completely free of plastic pollution.",
+        "hallucinationIndex: The bay is not completely free of plastic pollution.",
+        "style: The bay is not completely free of plastic pollution."
+      ],
+      "final": {
+        "title": 80.0,
+        "subtitle": 0.0,
+        "grammar": 100.0,
+        "factConsistency": 85.0,
+        "coverageVerification": 38.9,
+        "seo": 75.0,
+        "readability": 74.4,
+        "hallucinationIndex": 90.0,
+        "style": 90.0
+      },
+      "proposal": "not offered: it no longer cites [2]",
+      "corrected": null,
+      "correctionAnswer": {
+        "title": "Seagrass Restoration in Barcelona",
+        "subtitle": "Ten Years of Efforts Bring Back the Bay's Seagrass",
+        "body": "Off Barceloneta beach, ten years of replanting have brought the seagrass back. The restored meadow now covers 4.2 hectares, twice its 2015 area [1].",
+        "factConsistency": "The bay is not completely free of plastic pollution.",
+        "hallucinationIndex": "The bay is not completely free of plastic pollution.",
+        "style": "The bay is not completely free of plastic pollution."
+      },
+      "skippedEdits": []
+    },
+    {
+      "language": "ca",
+      "seconds": 73.2,
+      "usage": {
+        "calls": 2,
+        "failedCalls": 0,
+        "promptTokens": 1548,
+        "completionTokens": 416,
+        "latency": 73.1376
+      },
+      "perCall": [
+        37.8,
+        35.4
+      ],
+      "error": null,
+      "parsed": 7,
+      "of": 7,
+      "scores": {
+        "title": 85.0,
+        "subtitle": 75.0,
+        "grammar": 100.0,
+        "factConsistency": 80.0,
+        "seo": 70.0,
+        "hallucinationIndex": 90.0,
+        "style": 95.0
+      },
+      "found": {
+        "spelling: esta for està": false,
+        "the claim judged FALSE, stated": true
+      },
+      "issues": [
+        "factConsistency: The bay is now completely free of plastic pollution. (FALSE)",
+        "seo: The bay is now completely free of plastic pollution. (FALSE)",
+        "hallucinationIndex: The bay is now completely free of plastic pollution. (FALSE)"
+      ],
+      "final": {
+        "title": 85.0,
+        "subtitle": 75.0,
+        "grammar": 100.0,
+        "factConsistency": 80.0,
+        "coverageVerification": 39.4,
+        "seo": 70.0,
+        "readability": 85.9,
+        "hallucinationIndex": 90.0,
+        "style": 95.0
+      },
+      "proposal": "offered",
+      "corrected": {
+        "title": "Posidònia Barceloneta: 4,2 hectàrees de praderia en deu anys",
+        "subtitle": "Replantació amb el suport de l'Ajuntament i voluntaris",
+        "body": "Davant la platja de la Barceloneta, deu anys de replantació han fet tornar la posidònia. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\nEls bussejadors van comptar un 30% més de peixos joves el 2025 que el 2020 [2].\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris van fer la major part de la plantació."
+      },
+      "correctionAnswer": {
+        "title": "Posidònia Barceloneta: 4,2 hectàrees de praderia en deu anys",
+        "subtitle": "Replantació amb el suport de l'Ajuntament i voluntaris",
+        "body": "Davant la platja de la Barceloneta, deu anys de replantació han fet tornar la posidònia. La praderia restaurada ja ocupa 4,2 hectàrees, el doble que el 2015 [1].\n\nEls bussejadors van comptar un 30% més de peixos joves el 2025 que el 2020 [2].\n\n## Qui ho ha fet possible\n\nL'Ajuntament va finançar el projecte amb 1,2 milions d'euros [1], i els voluntaris van fer la major part de la plantació."
+      },
+      "skippedEdits": []
+    }
+  ]
+}
