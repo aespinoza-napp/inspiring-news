@@ -117,3 +117,51 @@ def test_the_map_is_open_even_when_the_storage_key_is_set(monkeypatch, tmp_path)
 
     assert client.get("/map/articles").status_code == 200
     assert client.get("/map/entities").status_code == 200
+
+
+def use_search(monkeypatch, index: MapIndex):
+    from src.services.news_map.search import MapSearch
+
+    search = MapSearch(index)
+    monkeypatch.setattr(map_routes, "get_map_search", lambda: search)
+    return search
+
+
+def test_search_answers_by_name_and_word_and_says_meaning_was_skipped(monkeypatch, tmp_path):
+
+    index = use_index(monkeypatch, tmp_path)
+    use_search(monkeypatch, index)
+    put(index, "one")
+
+    body = client.get("/map/search", params={"q": "volunteers", "semantic": "false"}).json()
+
+    assert body["semantic"] == "skipped"
+    assert body["results"][0]["kind"] == "article"
+
+
+def test_a_search_past_200_characters_is_422(monkeypatch, tmp_path):
+
+    index = use_index(monkeypatch, tmp_path)
+    use_search(monkeypatch, index)
+
+    assert client.get("/map/search", params={"q": "x" * 201}).status_code == 422
+
+
+def test_too_many_searches_is_a_429_with_retry_after_per_visitor(monkeypatch, tmp_path):
+
+    index = use_index(monkeypatch, tmp_path)
+    search = use_search(monkeypatch, index)
+    search.semantic_limit.limit = 2
+
+    one = {"X-Forwarded-For": "203.0.113.7, 10.0.0.2"}
+    other = {"X-Forwarded-For": "198.51.100.1"}
+
+    assert client.get("/map/search", params={"q": "a"}, headers=one).status_code == 200
+    assert client.get("/map/search", params={"q": "b"}, headers=one).status_code == 200
+
+    refused = client.get("/map/search", params={"q": "c"}, headers=one)
+    assert refused.status_code == 429
+    assert int(refused.headers["retry-after"]) >= 1
+
+    # Behind the same proxy, another visitor still gets through.
+    assert client.get("/map/search", params={"q": "c"}, headers=other).status_code == 200

@@ -30,6 +30,7 @@ from src.models.storage.lineage import DataLayer, build_record_id
 from src.services.graph.graph_writer import claim_id, entity_key
 from src.services.news_map.days import publication_day, zone_of
 from src.services.news_map.layout import GROUP_ORDER, LAYOUT_VERSION, anchors, frame, place, topic_key
+from src.services.news_map.search import SearchContext
 from src.services.reader.views import card
 
 logger = getLogger(__name__)
@@ -243,6 +244,10 @@ class MapIndex:
         # same filter give the same bytes.
         self._payloads: dict[str, bytes] = {}
 
+        # Every vector as a unit row, for search by meaning (search.py).
+        self._matrix: np.ndarray | None = None
+        self._matrix_ids: list[str] = []
+
     # ------------------------------------------------------------------
     # Keeping in step
     # ------------------------------------------------------------------
@@ -328,6 +333,22 @@ class MapIndex:
         }
         self._payloads = {}
 
+        with_vectors = [a for a in articles if a.vector is not None and a.vector.size]
+        sizes = {a.vector.size for a in with_vectors}
+
+        if with_vectors and len(sizes) == 1:
+            matrix = np.vstack([a.vector for a in with_vectors]).astype(np.float32)
+            norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            self._matrix = matrix / norms
+            self._matrix_ids = [a.id for a in with_vectors]
+        else:
+            # None at all, or two embedding sizes (a model change half
+            # way through the lake): meaning is not searched until one
+            # size is left, rather than compared across models.
+            self._matrix = None
+            self._matrix_ids = []
+
     # ------------------------------------------------------------------
     # Queries
     # ------------------------------------------------------------------
@@ -347,6 +368,20 @@ class MapIndex:
 
         with self._lock:
             return self._by_id.get(article_id)
+
+    def search_context(self):
+        """What one search reads, taken together under the lock (search.py)."""
+
+        self.refresh()
+
+        with self._lock:
+            return SearchContext(
+                version=hashlib.sha256(json.dumps(list(self._version or ())).encode()).hexdigest()[:16],
+                articles=list(self._articles),
+                entity_rows=[(self._entities[key], sorted(ids)) for key, ids in self._mentions.items()],
+                matrix=self._matrix,
+                matrix_ids=list(self._matrix_ids),
+            )
 
     def etag(self, *parts: str) -> str:
 

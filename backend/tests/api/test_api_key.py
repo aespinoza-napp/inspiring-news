@@ -63,6 +63,10 @@ OPEN_ENDPOINTS = {
     ("GET", "/map/articles"),
     ("GET", "/map/entities"),
     ("GET", "/map/articles/{article_id}/links"),
+    # Searching those same articles and their names. The part that costs
+    # (embedding the query in inference/) is limited per client
+    # (src/services/news_map/search.py).
+    ("GET", "/map/search"),
 }
 
 # What was open until 2026-10-02, with a body each would accept: the

@@ -20,6 +20,14 @@ const GROUPS = [
     ],
   },
   {
+    // The readers' app (docs/decisions/news-map.md): public, like the reader.
+    label: "Readers",
+    links: [
+      { href: "/map", label: "Map" },
+      { href: "/today", label: "Today" },
+    ],
+  },
+  {
     label: "Lab",
     links: [
       { href: "/claim", label: "Claim Check" },
@@ -35,7 +43,7 @@ const GROUPS = [
 
 // The pages served without the site password (docker/caddy/Caddyfile,
 // @reader). Everything else answers a public visitor with 401.
-const PUBLIC = "/reader";
+const PUBLIC = ["/reader", "/map", "/today"];
 
 function isActive(pathname: string, href: string): boolean {
   // "/" would match every page by prefix; it is active only on itself.
@@ -46,7 +54,7 @@ function isActive(pathname: string, href: string): boolean {
 
 export function NavLinks() {
   const pathname = usePathname();
-  const onPublicPage = pathname === PUBLIC || pathname.startsWith(`${PUBLIC}/`);
+  const onPublicPage = PUBLIC.some((page) => isActive(pathname, page));
 
   return (
     <nav className="nav-groups">
@@ -65,7 +73,7 @@ export function NavLinks() {
                 // public reader that is a request per link a visitor's browser
                 // cannot pass the password for - a 401 each, and possibly a
                 // password prompt nobody asked for. A click still navigates.
-                prefetch={onPublicPage && link.href !== PUBLIC ? false : undefined}
+                prefetch={onPublicPage && !PUBLIC.includes(link.href) ? false : undefined}
                 className={active ? "nav-link is-active" : "nav-link"}
                 aria-current={active ? "page" : undefined}
               >

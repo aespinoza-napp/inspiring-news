@@ -69,6 +69,15 @@ CLUSTER_RADIUS = 0.075
 TIE_MARGIN = 0.05
 MAX_PULL = 0.045
 
+# How the projected embedding is squashed into the cluster: tanh(|z| /
+# SPREAD) of the radius. Measured on 29 Oct on the 139 hand-labelled
+# claims embedded by bge-m3: |z| has a median of 0.98 and a p90 of 1.67,
+# and within one topic a spread of 0.47-0.83. The first squash, r * z /
+# sqrt(1 + |z|^2), put half of every cluster in its outer 30% - rings,
+# and crescents where a topic leans one way (seen at 3,000 articles). At
+# SPREAD 2 the median point sits at 0.46 of the radius.
+SPREAD = 2.0
+
 # Where an article no topic places goes: a ring just outside the disc,
 # beyond the outer clusters' reach (0.88 + 0.075 + 0.045).
 RIM_RADIUS = 1.08
@@ -218,14 +227,14 @@ def _basis(dimension: int) -> np.ndarray:
 
 
 def _squash(z: np.ndarray, radius: float) -> tuple[float, float]:
-    """A 2D offset of any size into one shorter than `radius`."""
+    """A 2D offset of any size into one shorter than `radius`, nearly linear for a typical one."""
 
     length = float(np.hypot(z[0], z[1]))
 
     if length == 0.0:
         return 0.0, 0.0
 
-    scale = radius / math.sqrt(1.0 + length * length)
+    scale = radius * math.tanh(length / SPREAD) / length
 
     return float(z[0] * scale), float(z[1] * scale)
 
@@ -235,7 +244,8 @@ def embedding_offset(vector) -> tuple[float, float] | None:
     The article's own place within its cluster: its unit vector projected
     on the fixed basis. A unit vector's projection on a random unit
     direction has a spread of ~1/sqrt(dimension), so it is scaled by
-    sqrt(dimension) to ~N(0, 1) and squashed into CLUSTER_RADIUS. Two
+    sqrt(dimension) to ~N(0, 1) (0.78 a side on real claims) and squashed
+    into CLUSTER_RADIUS (SPREAD). Two
     similar articles have nearby projections and sit side by side.
     """
 

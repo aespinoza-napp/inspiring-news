@@ -18,9 +18,10 @@ from __future__ import annotations
 import gzip
 import re
 
-from fastapi import APIRouter, Header, HTTPException, Path, Query, Response
+from fastapi import APIRouter, Header, HTTPException, Path, Query, Request, Response
 
-from src.container import get_map_index
+from src.container import get_map_index, get_map_search
+from src.services.news_map.search import MAX_QUERY, RateLimited
 
 router = APIRouter(prefix="/map")
 
@@ -96,3 +97,42 @@ def map_article_links(
         raise HTTPException(status_code=404, detail="No published article with this id.")
 
     return links
+
+
+def client_of(request: Request) -> str:
+    """
+    Who is searching, for the per-client limit. Every request reaches the
+    backend from the frontend's server, so the address is the first in
+    X-Forwarded-For: Caddy sets it from the connection (it ignores a
+    client's own unless told to trust a proxy) and the map's proxy passes
+    it on. Without it, as on localhost, the connection's own address.
+    """
+
+    forwarded = request.headers.get("x-forwarded-for", "")
+    first = forwarded.split(",")[0].strip()
+
+    return first or (request.client.host if request.client else "unknown")
+
+
+@router.get("/search")
+def map_search(
+    request: Request,
+    q: str = Query(default="", max_length=MAX_QUERY),
+    semantic: bool = Query(default=True),
+):
+    """
+    Articles and names for a query, each with why it matched: the name, a
+    similar name, in the title, about a topic, or close in meaning.
+    `semantic=false` is the type-ahead: names and words only, no
+    embedding. `semantic` in the answer says whether meaning was used,
+    skipped, or unavailable (inference/ down).
+    """
+
+    try:
+        return get_map_search().search(q, client_of(request), semantic=semantic)
+    except RateLimited as limited:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many searches from here; try again shortly.",
+            headers={"Retry-After": str(int(limited.retry_after + 0.999))},
+        )

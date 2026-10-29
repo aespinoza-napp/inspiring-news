@@ -91,6 +91,7 @@ _labelling_batch = None
 
 _reader_index = None
 _map_index = None
+_map_search = None
 
 _selection_service = None
 
@@ -542,6 +543,27 @@ def get_map_index():
                 )
 
     return _map_index
+
+
+def get_map_search():
+    """
+    Backs /map/search (src/services/news_map/search.py). A singleton
+    because it holds the per-client limits and the cache: one per request
+    would limit nothing. Meaning is embedded through the same
+    EmbeddingService as the pipeline, so it shares inference/'s permit.
+    """
+
+    global _map_search
+
+    if _map_search is None:
+        with _lock:
+            if _map_search is None:
+                from src.services.embeddings.service import EmbeddingService
+                from src.services.news_map.search import MapSearch
+
+                _map_search = MapSearch(get_map_index(), embed=lambda text: EmbeddingService().encode(text))
+
+    return _map_search
 
 
 def get_draft_store():

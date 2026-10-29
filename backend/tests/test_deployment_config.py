@@ -297,7 +297,7 @@ def test_only_the_reader_view_is_served_without_the_password():
     matcher = re.search(r"^\s*@reader\s+path\s+(.+)$", code, flags=re.MULTILINE)
     assert matcher, "the @reader matcher is gone"
     assert matcher.group(1).split() == [
-        "/reader", "/reader/*", "/api/reader/*", "/_next/static/*", "/favicon.ico",
+        "/reader", "/reader/*", "/api/reader/*", "/map", "/map/*", "/today", "/api/map/*", "/_next/static/*", "/favicon.ico",
     ]
 
     reader = dict(caddy_handles())["@reader"]
@@ -319,8 +319,19 @@ def test_only_the_reader_view_is_served_without_the_password():
     # reads the backend from the server and has no proxy of its own.
     assert proxies == ["api/reader/articles", "api/reader/articles/[id]", "api/reader/stories"]
 
+    # The news map's one proxy, which forwards only /map's four routes
+    # (open on the backend: test_api_key.py::OPEN_ENDPOINTS).
+    map_proxies = sorted(
+        path.parent.relative_to(FRONTEND / "src" / "app").as_posix()
+        for path in (FRONTEND / "src" / "app" / "api" / "map").rglob("route.ts")
+    )
+    assert map_proxies == ["api/map/[...path]"]
+    allowlist = (FRONTEND / "src" / "app" / "api" / "map" / "[...path]" / "route.ts").read_text(encoding="utf-8")
+    assert 'path === "articles" || path === "entities" || path === "search" || ARTICLE_LINKS.test(path)' in allowlist
+
     nav = (FRONTEND / "src" / "components" / "NavLinks.tsx").read_text(encoding="utf-8")
     assert "prefetch={onPublicPage" in nav
+    assert 'const PUBLIC = ["/reader", "/map", "/today"];' in nav
 
 
 def test_everything_else_at_the_door_is_a_404():
