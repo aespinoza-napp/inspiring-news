@@ -3,9 +3,24 @@
 // account), wired to the backend's /map and /account routes.
 
 import { account, api, madridToday, NO_GROUP, type Interest, type Links, type SearchResult, type Universe } from "./data";
-import { GROUP_COLORS, UniverseScene } from "./scene";
+import { GROUP_COLORS, KINDS, kindOf, UniverseScene, type KindKey, type NetworkNode } from "./scene";
 
-type Mode = "universe" | "today" | "foryou";
+// Not "today": at the 30-60 stories a day the newsroom publishes, one day
+// is too few stars to read as a picture (the author, 29 Oct).
+type Mode = "universe" | "week" | "foryou";
+
+const WEEK_DAYS = 7;
+
+// The names drawn above the galaxy: in two stories at least, the most
+// named first, at most this many, and the biggest labelled in space.
+const MAX_NODES = 300;
+const LABELLED_NODES = 14;
+
+// The crown: its rings' radius (map units, just inside the disc's rim),
+// the lowest ring's height and the step between rings (world units).
+const CROWN_RADIUS = 0.82;
+const CROWN_HEIGHT = 2.6;
+const CROWN_STEP = 0.9;
 
 const READER_BASE = import.meta.env.PUBLIC_READER_BASE ?? "";
 const LOCAL_INTERESTS = "inspiring-news:interests";
@@ -58,6 +73,8 @@ export function start(): void {
     scene = new UniverseScene($("#space"), {
       hover: (index, screen) => showTooltip(index, screen),
       select: (index) => select(index),
+      hoverNode: (node, screen) => showNodeTooltip(node, screen),
+      selectNode: (node) => selectNode(node),
     });
   } catch (error) {
     $("#loading").innerHTML = `<p>This browser could not start WebGL, so the universe cannot be drawn. <a href="${READER_BASE}/reader">Read the stories</a> instead.</p>`;
@@ -87,7 +104,151 @@ export function start(): void {
     }
   }
 
+  // ---- the network of names ---------------------------------------------
+
+  let allNodes: NetworkNode[] = [];
+  let nodes: NetworkNode[] = [];
+  const kindsOn = new Set<KindKey>(KINDS.map((k) => k.key));
+  let networkOn = true;
+  let nodeLabels: { element: HTMLElement; node: number }[] = [];
+
+  function buildNetwork(data: Universe): void {
+    const stories = new Map<number, number[]>();
+    data.entitiesOf.forEach((refs, i) => refs.forEach((ref) => (stories.get(ref) ?? stories.set(ref, []).get(ref)!).push(i)));
+
+    // Names form a crown of rings above the galaxy, one ring per kind.
+    // Not each name at the mean of its stories: a name in every section
+    // (Barcelona, a big company) has its mean at the centre, and on
+    // 29 Oct every hub piled up there, labels on labels. A name sits over
+    // the side its stories lean towards, spaced evenly round its ring so
+    // none overlap, and its threads fall to its stories.
+    const leaning: { node: NetworkNode; angle: number }[] = [];
+    stories.forEach((named, ref) => {
+      const entity = data.entities[ref];
+      const kind = entity ? kindOf(entity.t) : null;
+      if (!kind || named.length < 2) return;
+      let x = 0;
+      let y = 0;
+      for (const i of named) {
+        x += data.positions[i * 3];
+        y += data.positions[i * 3 + 1];
+      }
+      leaning.push({ node: { key: entity.k, name: entity.n, kind, x: 0, y: 0, z: 0, stories: named }, angle: Math.atan2(y, x) });
+    });
+    leaning.sort((a, b) => b.node.stories.length - a.node.stories.length);
+    const kept = leaning.slice(0, MAX_NODES);
+
+    allNodes = [];
+    KINDS.forEach((kind, k) => {
+      const ring = kept.filter((l) => l.node.kind === kind.key).sort((a, b) => a.angle - b.angle);
+      const height = CROWN_HEIGHT + k * CROWN_STEP;
+      ring.forEach((l, i) => {
+        const angle = (ring[0]?.angle ?? 0) + (i * Math.PI * 2) / ring.length;
+        allNodes.push({ ...l.node, x: Math.cos(angle) * CROWN_RADIUS, y: Math.sin(angle) * CROWN_RADIUS, z: height });
+      });
+    });
+    allNodes.sort((a, b) => b.stories.length - a.stories.length);
+    makeConnectionsLegend();
+    applyNetwork();
+  }
+
+  function applyNetwork(): void {
+    nodes = allNodes.filter((n) => kindsOn.has(n.kind));
+    scene.setNetwork(nodes);
+    scene.setNetworkVisible(networkOn);
+    const host = $("#labels");
+    nodeLabels.forEach((l) => l.element.remove());
+    nodeLabels = nodes.slice(0, LABELLED_NODES).map((node, i) => {
+      const element = document.createElement("div");
+      element.className = "space-label node";
+      element.style.setProperty("--tint", KINDS.find((k) => k.key === node.kind)!.color);
+      element.textContent = node.name;
+      // A label is easier to hit than a diamond.
+      element.addEventListener("click", () => selectNode(i));
+      host.appendChild(element);
+      return { element, node: i };
+    });
+  }
+
+  function makeConnectionsLegend(): void {
+    const list = $("#kinds");
+    list.innerHTML = "";
+    for (const kind of KINDS) {
+      const count = allNodes.filter((n) => n.kind === kind.key).length;
+      const item = document.createElement("li");
+      item.innerHTML = `<button type="button" aria-pressed="true"><span class="diamond" style="--tint:${kind.color}"></span>${kind.label}<span class="count">${count}</span></button>`;
+      item.querySelector("button")!.addEventListener("click", (event) => {
+        const button = event.currentTarget as HTMLButtonElement;
+        if (kindsOn.has(kind.key)) kindsOn.delete(kind.key);
+        else kindsOn.add(kind.key);
+        button.setAttribute("aria-pressed", String(kindsOn.has(kind.key)));
+        applyNetwork();
+      });
+      list.appendChild(item);
+    }
+  }
+
+  const networkButton = $("#network-button");
+  networkButton.addEventListener("click", () => {
+    networkOn = !networkOn;
+    networkButton.setAttribute("aria-pressed", String(networkOn));
+    networkButton.textContent = networkOn ? "on" : "off";
+    scene.setNetworkVisible(networkOn);
+  });
+
+  function showNodeTooltip(node: number, screen: { x: number; y: number } | null): void {
+    const tip = $("#tooltip");
+    const n = nodes[node];
+    if (node < 0 || !screen || !n) {
+      tip.hidden = true;
+      return;
+    }
+    const kind = KINDS.find((k) => k.key === n.kind)!;
+    tip.innerHTML = `<strong>${escape(n.name)}</strong><span>${kind.one} · named in ${n.stories.length} stories</span>`;
+    tip.style.left = `${Math.min(screen.x + 16, window.innerWidth - 320)}px`;
+    tip.style.top = `${screen.y + 16}px`;
+    tip.hidden = false;
+  }
+
+  function selectNode(node: number): void {
+    const data = state.data;
+    const n = nodes[node];
+    if (!data || !n) return;
+    state.selected = -1;
+    scene.mark(-1);
+    scene.setLinks(-1, []);
+    state.strong = new Set(n.stories);
+    state.section = null;
+    refresh();
+    status(state.strong, `named ${n.name}`);
+    scene.highlightNode(node);
+    scene.flyToNode(node);
+
+    const kind = KINDS.find((k) => k.key === n.kind)!;
+    const newest = [...n.stories].sort((a, b) => (data.days[b] ?? "").localeCompare(data.days[a] ?? "")).slice(0, 40);
+    const panel = $("#panel");
+    panel.hidden = false;
+    panel.innerHTML = `
+      <button type="button" class="close" aria-label="Close">×</button>
+      <p class="hud-label" style="color:${kind.color}">${kind.one}</p>
+      <h2>${escape(n.name)}</h2>
+      <p class="muted">Named in ${n.stories.length} stories${n.stories.length > newest.length ? `; the ${newest.length} newest` : ""}:</p>
+      <ol class="related">${newest.map((i) => `<li><button type="button" class="link" data-story="${data.ids[i]}">${escape(data.titles[i])}</button><span class="muted"> · ${escape(data.sources[data.sourceOf[i]])}${data.days[i] ? ` · ${data.days[i]}` : ""}</span></li>`).join("")}</ol>`;
+    panel.querySelector(".close")!.addEventListener("click", () => {
+      panel.hidden = true;
+      scene.highlightNode(-1);
+      state.strong = null;
+      refresh();
+    });
+    panel.querySelectorAll<HTMLButtonElement>("[data-story]").forEach((b) => b.addEventListener("click", () => void select(data.indexOf.get(b.dataset.story!)!)));
+  }
+
   scene.onFrame = () => {
+    for (const label of nodeLabels) {
+      const p = networkOn ? scene.projectNode(label.node) : null;
+      label.element.style.opacity = p ? "1" : "0";
+      if (p) label.element.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -140%)`;
+    }
     for (const label of labels) {
       const p = scene.project(label.x, label.y, label.z);
       // Topics only when the camera is near enough for them to be apart,
@@ -108,11 +269,12 @@ export function start(): void {
       scene.setData(data);
       makeLabels(data);
       makeLegend(data);
+      buildNetwork(data);
       $("#loading").classList.add("gone");
       setTimeout(() => $("#loading").remove(), 1200);
       const shared = new URLSearchParams(window.location.search);
       const mode = shared.get("mode") as Mode | null;
-      if (mode === "today" || mode === "foryou") setMode(mode);
+      if (mode === "week" || mode === "foryou") setMode(mode);
       else refresh();
       const story = shared.get("story");
       if (story && data.indexOf.has(story)) select(data.indexOf.get(story)!);
@@ -141,8 +303,8 @@ export function start(): void {
   function status(strong: Set<number> | null, note = ""): void {
     const data = state.data!;
     const shown = strong ? strong.size : data.count;
-    const mode = { universe: "", today: "today", foryou: "for you" }[state.mode];
-    const where = state.section !== null ? data.groups[state.section].name : mode ? "" : "the whole universe";
+    const mode = { universe: "", week: "the last week", foryou: "for you" }[state.mode];
+    const where = state.section !== null ? data.groups[state.section].name : mode || note ? "" : "the whole universe";
     const parts = [`${shown.toLocaleString()} of ${data.count.toLocaleString()} stories`, mode, where, note].filter(Boolean);
     $("#status").textContent = parts.join(" · ");
   }
@@ -163,14 +325,26 @@ export function start(): void {
       return;
     }
 
-    if (mode === "today") {
+    if (mode === "week") {
+      // The seven days to today, Madrid's; with nothing in them, the
+      // seven days to the newest story, and the status says so.
       const days = Array.from(new Set(data.days.filter((d): d is string => Boolean(d)))).sort().reverse();
       const today = madridToday();
-      const day = days.includes(today) ? today : days.find((d) => d < today) ?? days[0];
+      const recent = (end: string) => {
+        const start = new Date(`${end}T12:00:00Z`);
+        start.setUTCDate(start.getUTCDate() - (WEEK_DAYS - 1));
+        return start.toISOString().slice(0, 10);
+      };
+      let end = today;
+      if (!days.some((d) => d <= end && d >= recent(end))) end = days[0] ?? today;
+      const start = recent(end);
       state.strong = new Set<number>();
-      for (let i = 0; i < data.count; i++) if (data.days[i] === day) state.strong.add(i);
+      for (let i = 0; i < data.count; i++) {
+        const day = data.days[i];
+        if (day && day >= start && day <= end) state.strong.add(i);
+      }
       refresh();
-      if (day && day !== today) status(state.strong, `nothing yet today: showing ${day}`);
+      status(state.strong, end === today ? `${start} to today` : `nothing this week: ${start} to ${end}`);
       return;
     }
 

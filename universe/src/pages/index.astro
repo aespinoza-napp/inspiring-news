@@ -38,7 +38,7 @@ import "../styles/universe.css";
 
       <nav class="modes" aria-label="What to show">
         <button type="button" data-mode="universe" aria-pressed="true">Universe</button>
-        <button type="button" data-mode="today" aria-pressed="false">Today</button>
+        <button type="button" data-mode="week" aria-pressed="false">Last week</button>
         <button type="button" data-mode="foryou" aria-pressed="false">For you</button>
       </nav>
 
@@ -48,6 +48,11 @@ import "../styles/universe.css";
     <aside class="hud legend" aria-label="Sections">
       <p class="hud-label">Sections</p>
       <ul id="legend"></ul>
+      <p class="hud-label connections-label">
+        Connections
+        <button type="button" id="network-button" class="switch" aria-pressed="true" title="Show or hide the names and their threads">on</button>
+      </p>
+      <ul id="kinds"></ul>
       <div class="legend-tools">
         <button type="button" id="home-button" class="ghost" title="The whole universe (H)">⌂ Whole view</button>
         <button type="button" id="motion-button" class="ghost" aria-pressed="true" title="Motion on or off (M)">◐ Motion</button>

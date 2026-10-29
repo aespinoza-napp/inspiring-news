@@ -602,3 +602,46 @@ app with an interface of its own; they suggested Astro. Built as
     typechecks it, and it was looked at in screenshots on the Intel GPU:
     the whole galaxy, a flight to Science, a selected story, Today, and
     a phone.
+
+### Interconnections, and the last week (2026-10-29)
+
+Asked for by the author: show the interconnections now, with simple
+synthetic names (places, companies, people, brands); and "last week"
+instead of "today", since the newsroom will publish 30-60 stories a day.
+
+- **The synthetic names** (`scripts/news_map_fixture.py`): real cities
+  and countries, and *fictional* companies, people and brands. The
+  preview must not put a real person or company in a story nobody wrote.
+  Each story names one to four, a place most often. Within a kind the
+  popularity is Zipf, so there are hubs, as real news has: at 2,000
+  stories Barcelona was in 301, Solaris Grid in 261. Stories arrive about
+  45 a day, back from today.
+- **The network** (`universe/`, built from the map's own payload, with
+  nothing new from the backend): every name in two stories or more, at
+  most 300, is a diamond in its kind's colour (places cyan, companies
+  violet, people lavender, brands lime, none of them a section's colour),
+  with a thread down to each story that names it.
+  - **A crown of rings above the galaxy, one per kind.** Not each name at
+    the mean of its stories: a name in every section has its mean at the
+    centre, and on 29 Oct every hub piled up there, labels on labels. A
+    name sits over the side its stories lean towards, spaced evenly
+    round its ring.
+  - **The light divided.** Thousands of threads added together summed to
+    a white ball with bloom over it. Threads are blended, not added, and
+    each one's light is shared across its name's stories. With a name in
+    focus, its threads are brightest where they reach a story and fade
+    towards the name: added at full light, 543 threads burned the name
+    white.
+  - Hover a name for its card. Click it, or its label (the 14 biggest are
+    labelled), to fly to it, light its threads, raise its stories, and
+    list the newest 40 in the panel.
+  - Each kind toggles in the legend, and the whole network switches off
+    ("Connections").
+- **Last week**: the seven days to today, Madrid's. When there is nothing
+  in them, it shows the seven days to the newest story, and the status
+  line says which. At 30-60 a day, that is 200-400 stories, enough to
+  read as a picture; one day was not. The newsroom's `/today` on the
+  frontend is unchanged.
+- **The preview answers links and search itself** from the synthetic map
+  (`scripts/preview_universe.py`, `Local`), as the backend would. The stub
+  knew one story's links and one canned search.

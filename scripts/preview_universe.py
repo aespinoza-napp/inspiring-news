@@ -7,8 +7,11 @@ layout (scripts/news_map_fixture.py), depth included.
 
     python scripts/preview_universe.py [--count 5000] [--port 4321] [--build]
 
-Then open http://127.0.0.1:4321/. Ctrl-C stops it. Search and For you
-answer the stub's canned results; accounts need the real backend.
+Then open http://127.0.0.1:4321/. Ctrl-C stops it. A story's links and
+the search are answered here from the synthetic map, as the backend
+answers them (shared names weigh 2 over how many stories name them, a
+shared topic 0.3; names, then words in titles); For you answers the
+stub's canned result; accounts need the real backend.
 
 Not `astro dev`: Astro 7 started it as a background daemon when there was
 no terminal (29 Oct), so a script could not hold it. A static build and
@@ -35,12 +38,105 @@ ROOT = Path(__file__).resolve().parent.parent
 UNIVERSE = ROOT / "universe"
 
 
-def handler_for(backend: str):
+def fold(text: str) -> str:
+    import unicodedata
+
+    plain = "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
+    return " ".join(plain.casefold().split())
+
+
+class Local:
+    """What the stub cannot answer for a synthetic map: links and search."""
+
+    def __init__(self, document: dict):
+
+        self.document = document
+        a = document["articles"]
+        self.index = {article_id: i for i, article_id in enumerate(a["id"])}
+        self.naming: dict[int, list[int]] = {}
+        for i, refs in enumerate(a["e"]):
+            for ref in refs:
+                self.naming.setdefault(ref, []).append(i)
+
+    def links(self, article_id: str) -> dict | None:
+
+        d, a = self.document, self.document["articles"]
+        i = self.index.get(article_id)
+        if i is None:
+            return None
+        reasons: dict[int, list[dict]] = {}
+        for ref in a["e"][i]:
+            stories = self.naming[ref]
+            for j in stories:
+                if j != i:
+                    reasons.setdefault(j, []).append({"kind": "entity", "via": d["entities"][ref]["n"], "weight": round(2 / len(stories), 4)})
+        for t in a["t"][i]:
+            for j, others in enumerate(a["t"]):
+                if j != i and t in others and len(reasons.get(j, [])) < 3:
+                    reasons.setdefault(j, []).append({"kind": "topic", "via": d["topics"][t]["name"], "weight": 0.3})
+        ranked = sorted(reasons.items(), key=lambda item: -sum(r["weight"] for r in item[1]))[:10]
+        return {
+            "id": article_id, "title": a["title"][i], "x": a["x"][i], "y": a["y"][i],
+            "topics": [{"key": d["topics"][t]["key"], "name": d["topics"][t]["name"], "confidence": 0.5} for t in a["t"][i]],
+            "entities": [{"key": d["entities"][r]["k"], "name": d["entities"][r]["n"], "type": d["entities"][r]["t"], "articles": len(self.naming[r])} for r in a["e"][i]],
+            "related": [{"id": a["id"][j], "title": a["title"][j], "x": a["x"][j], "y": a["y"][j],
+                         "score": round(sum(r["weight"] for r in why), 4), "via": why} for j, why in ranked],
+        }
+
+    def search(self, query: str) -> dict:
+
+        d, a = self.document, self.document["articles"]
+        q = fold(query)
+        results = []
+        for ref, entity in enumerate(d["entities"]):
+            name = fold(entity["n"])
+            if q and (name.startswith(q) or f" {q}" in f" {name}"):
+                stories = self.naming.get(ref, [])
+                if stories:
+                    results.append({"kind": "entity", "key": entity["k"], "name": entity["n"], "type": entity["t"], "articles": len(stories),
+                                    "x": sum(a["x"][j] for j in stories) / len(stories), "y": sum(a["y"][j] for j in stories) / len(stories),
+                                    "reason": "the name"})
+        results = sorted(results, key=lambda r: -r["articles"])[:5]
+        tokens = q.split()
+        for i, title in enumerate(a["title"]):
+            words = fold(title).split()
+            if tokens and all(any(w.startswith(t) for w in words) for t in tokens):
+                results.append({"kind": "article", "id": a["id"][i], "title": title, "x": a["x"][i], "y": a["y"][i], "reason": "in the title"})
+                if len(results) >= 15:
+                    break
+        return {"query": query, "results": results, "semantic": "skipped"}
+
+
+def handler_for(backend: str, local: Local | None = None):
 
     class Universe(SimpleHTTPRequestHandler):
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(UNIVERSE / "dist"), **kwargs)
+
+        def _local(self) -> bool:
+            if local is None:
+                return False
+            from urllib.parse import parse_qs, urlsplit
+
+            parts = urlsplit(self.path)
+            answer = None
+            if parts.path.startswith("/api/map/articles/") and parts.path.endswith("/links"):
+                answer = local.links(parts.path.split("/")[4])
+                if answer is None:
+                    self.send_error(404)
+                    return True
+            elif parts.path == "/api/map/search":
+                answer = local.search(parse_qs(parts.query).get("q", [""])[0])
+            if answer is None:
+                return False
+            payload = json.dumps(answer).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+            return True
 
         def _proxy(self, method: str) -> bool:
             for prefix, target in (("/api/map", "/map"), ("/api/account", "/account")):
@@ -65,7 +161,7 @@ def handler_for(backend: str):
             return False
 
         def do_GET(self):
-            if not self._proxy("GET"):
+            if not self._local() and not self._proxy("GET"):
                 super().do_GET()
 
         def do_POST(self):
@@ -101,7 +197,7 @@ def main(argv=None) -> int:
     stub = ThreadingHTTPServer(("127.0.0.1", 0), e2e.Stub)
     threading.Thread(target=stub.serve_forever, daemon=True).start()
 
-    site = ThreadingHTTPServer(("127.0.0.1", args.port), handler_for(f"http://127.0.0.1:{stub.server_address[1]}"))
+    site = ThreadingHTTPServer(("127.0.0.1", args.port), handler_for(f"http://127.0.0.1:{stub.server_address[1]}", Local(e2e.MAP)))
     print(f"\nOpen http://127.0.0.1:{args.port}/  Ctrl-C stops it.")
 
     try:

@@ -299,6 +299,49 @@ button {
   list-style: none;
 }
 
+.legend .diamond {
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg) scale(0.85);
+  border: 1.5px solid var(--tint);
+  box-shadow: 0 0 8px var(--tint);
+}
+
+#kinds li button[aria-pressed="false"] {
+  opacity: 0.4;
+}
+
+.connections-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.switch {
+  padding: 0.1rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.switch[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.space-label.node {
+  pointer-events: auto;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--tint);
+  text-shadow: 0 0 10px var(--tint), 0 0 2px #000;
+}
+
 .legend li button {
   display: flex;
   align-items: center;

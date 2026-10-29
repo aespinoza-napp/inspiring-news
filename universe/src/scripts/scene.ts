@@ -83,10 +83,87 @@ void main() {
   gl_FragColor = vec4(uColor, 0.25 + 0.75 * pulse);
 }`;
 
+// The kinds of name drawn above the galaxy, from GLiNER's types, each a
+// colour none of the five sections uses, and a diamond, not a star.
+export const KINDS = [
+  { key: "place", label: "Places", one: "Place", color: "#5ef2ff", types: ["city", "country", "location"] },
+  { key: "company", label: "Companies", one: "Company", color: "#b28cff", types: ["company", "organization"] },
+  { key: "person", label: "People", one: "Person", color: "#d6d0ff", types: ["person"] },
+  { key: "brand", label: "Brands", one: "Brand", color: "#c8ff5e", types: ["product"] },
+] as const;
+
+export type KindKey = (typeof KINDS)[number]["key"];
+
+// How visible the threads are when no name is in focus.
+const EDGE_OPACITY = 0.07;
+
+export function kindOf(type: string): KindKey | null {
+  return KINDS.find((kind) => (kind.types as readonly string[]).includes(type))?.key ?? null;
+}
+
+// A name in the network: where it floats (map units; z its height above
+// the disc), and which stories name it.
+export interface NetworkNode {
+  key: string;
+  name: string;
+  kind: KindKey;
+  x: number;
+  y: number;
+  z: number;
+  stories: number[];
+}
+
 export interface SceneEvents {
   hover(index: number, screen: { x: number; y: number } | null): void;
   select(index: number): void;
+  hoverNode(node: number, screen: { x: number; y: number } | null): void;
+  selectNode(node: number): void;
 }
+
+const NODE_VERTEX = /* glsl */ `
+attribute vec3 color;
+attribute float size;
+uniform float uPixelRatio;
+uniform float uTime;
+uniform float uMotion;
+varying vec3 vColor;
+void main() {
+  vec4 mv = modelViewMatrix * vec4(position + uMotion * vec3(0.0, 0.06 * sin(uTime * 0.6 + position.x), 0.0), 1.0);
+  gl_Position = projectionMatrix * mv;
+  gl_PointSize = min(size * uPixelRatio * 26.0 / -mv.z, 64.0 * uPixelRatio);
+  vColor = color;
+}`;
+
+// A diamond with a bright rim: a name, not a story.
+const NODE_FRAGMENT = /* glsl */ `
+varying vec3 vColor;
+void main() {
+  vec2 c = abs(gl_PointCoord - 0.5);
+  float d = c.x + c.y;
+  if (d > 0.5) discard;
+  float rim = smoothstep(0.32, 0.5, d);
+  gl_FragColor = vec4(vColor * (0.5 + 1.4 * rim), 0.35 + 0.65 * rim);
+}`;
+
+// A thread from a name down to a story: bright at the name, fading towards the galaxy.
+const EDGE_VERTEX = /* glsl */ `
+attribute vec3 color;
+attribute float strength;
+varying vec3 vColor;
+varying float vStrength;
+void main() {
+  vColor = color;
+  vStrength = strength;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`;
+
+const EDGE_FRAGMENT = /* glsl */ `
+uniform float uOpacity;
+varying vec3 vColor;
+varying float vStrength;
+void main() {
+  gl_FragColor = vec4(vColor, uOpacity * vStrength);
+}`;
 
 function easeInOut(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -108,6 +185,16 @@ export class UniverseScene {
   private linkMaterial: THREE.ShaderMaterial | null = null;
   private marker: THREE.Mesh;
   private data: Universe | null = null;
+
+  // The network of names: their diamonds, every thread, and the bright
+  // threads of the name in focus.
+  private nodes: NetworkNode[] = [];
+  private nodePoints: THREE.Points | null = null;
+  private edges: THREE.LineSegments | null = null;
+  private highlight: THREE.LineSegments | null = null;
+  private nodeMaterial: THREE.ShaderMaterial | null = null;
+  private edgeMaterial: THREE.ShaderMaterial | null = null;
+  private hoverNode = -1;
 
   // Per star, what it shows now and what it is easing towards.
   private emphasis = new Float32Array(0);
@@ -180,13 +267,19 @@ export class UniverseScene {
     });
     this.renderer.domElement.addEventListener("pointerleave", () => {
       this.hoverIndex = -1;
+      this.hoverNode = -1;
       this.events.hover(-1, null);
+      this.events.hoverNode(-1, null);
     });
 
     let down = { x: 0, y: 0 };
     this.renderer.domElement.addEventListener("pointerdown", (event) => (down = { x: event.clientX, y: event.clientY }));
     this.renderer.domElement.addEventListener("pointerup", (event) => {
-      if (Math.hypot(event.clientX - down.x, event.clientY - down.y) < 5) this.events.select(this.pick());
+      if (Math.hypot(event.clientX - down.x, event.clientY - down.y) < 5) {
+        const under = this.pick();
+        if (under.node >= 0) this.events.selectNode(under.node);
+        else this.events.select(under.story);
+      }
     });
 
     this.renderer.setAnimationLoop(() => this.tick());
@@ -426,6 +519,7 @@ export class UniverseScene {
     this.motion = on;
     this.controls.autoRotate = on;
     if (this.material) this.material.uniforms.uMotion.value = on ? 1 : 0;
+    if (this.nodeMaterial) this.nodeMaterial.uniforms.uMotion.value = on ? 1 : 0;
     if (this.linkMaterial) this.linkMaterial.uniforms.uMotion.value = on ? 1 : 0;
   }
 
@@ -448,13 +542,173 @@ export class UniverseScene {
 
   // ---- each frame ------------------------------------------------------------
 
-  private pick(): number {
-    if (!this.points) return -1;
+  // What is under the pointer: a name (it floats nearer) or a story.
+  private pick(): { story: number; node: number } {
     this.raycaster.setFromCamera(this.pointer, this.camera);
-    this.raycaster.params.Points = { threshold: 0.012 * this.camera.position.distanceTo(this.controls.target) + 0.02 };
+    const reach = 0.012 * this.camera.position.distanceTo(this.controls.target) + 0.02;
+    if (this.nodePoints?.visible) {
+      this.raycaster.params.Points = { threshold: reach * 2.2 };
+      const node = this.raycaster.intersectObject(this.nodePoints)[0];
+      if (node?.index !== undefined) return { story: -1, node: node.index };
+    }
+    if (!this.points) return { story: -1, node: -1 };
+    this.raycaster.params.Points = { threshold: reach };
     const hits = this.raycaster.intersectObject(this.points);
     const hit = hits.find((h) => h.index !== undefined && this.emphasisTarget[h.index] > 0.5);
-    return hit?.index ?? -1;
+    return { story: hit?.index ?? -1, node: -1 };
+  }
+
+  // ---- the network of names ---------------------------------------------------
+
+  setNetwork(nodes: NetworkNode[]): void {
+    for (const object of [this.nodePoints, this.edges, this.highlight]) {
+      if (object) {
+        this.scene.remove(object);
+        object.geometry.dispose();
+      }
+    }
+    this.nodePoints = this.edges = this.highlight = null;
+    this.nodes = nodes;
+    if (!this.data || nodes.length === 0) return;
+
+    const colors = Object.fromEntries(KINDS.map((k) => [k.key, new THREE.Color(k.color)]));
+    const positions = new Float32Array(nodes.length * 3);
+    const nodeColors = new Float32Array(nodes.length * 3);
+    const sizes = new Float32Array(nodes.length);
+    const edgePositions: number[] = [];
+    const edgeColors: number[] = [];
+    const strength: number[] = [];
+
+    nodes.forEach((node, n) => {
+      const at = this.world(node.x, node.y, 0);
+      at.y = node.z;
+      positions.set([at.x, at.y, at.z], n * 3);
+      const color = colors[node.kind];
+      nodeColors.set([color.r, color.g, color.b], n * 3);
+      sizes[n] = 0.7 + Math.sqrt(node.stories.length) * 0.12;
+      // A thread's light divided across its name's stories: on 29 Oct,
+      // 7,500 threads at one brightness added up to a white ball.
+      const share = Math.min(1, 2.5 / Math.sqrt(node.stories.length));
+      for (const story of node.stories) {
+        const s = this.world(this.data!.positions[story * 3], this.data!.positions[story * 3 + 1], this.data!.positions[story * 3 + 2]);
+        edgePositions.push(at.x, at.y, at.z, s.x, s.y, s.z);
+        edgeColors.push(color.r, color.g, color.b, color.r, color.g, color.b);
+        strength.push(share, share * 0.12);
+      }
+    });
+
+    const nodeGeometry = new THREE.BufferGeometry();
+    nodeGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    nodeGeometry.setAttribute("color", new THREE.BufferAttribute(nodeColors, 3));
+    nodeGeometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+    this.nodeMaterial ??= new THREE.ShaderMaterial({
+      vertexShader: NODE_VERTEX,
+      fragmentShader: NODE_FRAGMENT,
+      uniforms: { uPixelRatio: { value: this.renderer.getPixelRatio() }, uTime: { value: 0 }, uMotion: { value: this.motion ? 1 : 0 } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    this.nodePoints = new THREE.Points(nodeGeometry, this.nodeMaterial);
+    this.scene.add(this.nodePoints);
+
+    const edgeGeometry = new THREE.BufferGeometry();
+    edgeGeometry.setAttribute("position", new THREE.Float32BufferAttribute(edgePositions, 3));
+    edgeGeometry.setAttribute("color", new THREE.Float32BufferAttribute(edgeColors, 3));
+    edgeGeometry.setAttribute("strength", new THREE.Float32BufferAttribute(strength, 1));
+    // Normal blending, faint: added together, thousands of threads summed
+    // to white and bloom spread it over the galaxy (29 Oct). Blended, an
+    // overlap stays its kind's colour. The name in focus is drawn bright,
+    // added (highlightNode).
+    this.edgeMaterial ??= new THREE.ShaderMaterial({
+      vertexShader: EDGE_VERTEX,
+      fragmentShader: EDGE_FRAGMENT,
+      uniforms: { uOpacity: { value: EDGE_OPACITY } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+    });
+    this.edges = new THREE.LineSegments(edgeGeometry, this.edgeMaterial);
+    this.scene.add(this.edges);
+  }
+
+  // The threads of one name, bright; -1 for none. The rest dim meanwhile.
+  highlightNode(node: number): void {
+    if (this.highlight) {
+      this.scene.remove(this.highlight);
+      this.highlight.geometry.dispose();
+      this.highlight = null;
+    }
+    if (this.edgeMaterial) this.edgeMaterial.uniforms.uOpacity.value = node >= 0 ? EDGE_OPACITY / 3 : EDGE_OPACITY;
+    if (node < 0 || !this.data || !this.nodes[node]) return;
+
+    const n = this.nodes[node];
+    const at = this.world(n.x, n.y, 0);
+    at.y = n.z;
+    const color = new THREE.Color(KINDS.find((k) => k.key === n.kind)!.color);
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const strength: number[] = [];
+    for (const story of n.stories) {
+      const s = this.position(story);
+      positions.push(at.x, at.y, at.z, s.x, s.y, s.z);
+      colors.push(color.r, color.g, color.b, color.r, color.g, color.b);
+      // Brightest where it reaches a story, fading towards the name: the
+      // reader looks for the stories, and hundreds of threads meeting at
+      // full light burned the name white (29 Oct).
+      strength.push(0.15, 1);
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setAttribute("strength", new THREE.Float32BufferAttribute(strength, 1));
+    const material = new THREE.ShaderMaterial({
+      vertexShader: EDGE_VERTEX,
+      fragmentShader: EDGE_FRAGMENT,
+      // Bright, but divided like the faint threads and blended, not added:
+      // Barcelona's 744 added at full brightness blew the view out, and
+      // even divided they burned white where they meet (29 Oct).
+      uniforms: { uOpacity: { value: Math.min(0.8, 8 / Math.sqrt(n.stories.length)) } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+    });
+    this.highlight = new THREE.LineSegments(geometry, material);
+    this.scene.add(this.highlight);
+  }
+
+  setNetworkVisible(visible: boolean): void {
+    if (this.nodePoints) this.nodePoints.visible = visible;
+    if (this.edges) this.edges.visible = visible;
+    if (this.highlight) this.highlight.visible = visible;
+  }
+
+  // Where a name floats, on screen.
+  projectNode(node: number): { x: number; y: number; distance: number } | null {
+    const n = this.nodes[node];
+    if (!n) return null;
+    const p = this.world(n.x, n.y, 0);
+    p.y = n.z;
+    const distance = p.distanceTo(this.camera.position);
+    p.project(this.camera);
+    if (p.z > 1) return null;
+    return { x: (p.x * 0.5 + 0.5) * this.host.clientWidth, y: (-p.y * 0.5 + 0.5) * this.host.clientHeight, distance };
+  }
+
+  flyToNode(node: number): void {
+    const n = this.nodes[node];
+    if (!n) return;
+    const target = this.world(n.x, n.y, 0);
+    target.y = n.z * 0.6;
+    const direction = this.camera.position.clone().sub(this.controls.target).normalize();
+    this.flight = {
+      from: this.camera.position.clone(),
+      to: target.clone().add(direction.multiplyScalar(11)),
+      fromTarget: this.controls.target.clone(),
+      toTarget: target,
+      start: performance.now(),
+      duration: this.motion ? 1400 : 0,
+    };
   }
 
   private resize(): void {
@@ -497,6 +751,7 @@ export class UniverseScene {
     }
 
     if (this.material) this.material.uniforms.uTime.value = time;
+    if (this.nodeMaterial) this.nodeMaterial.uniforms.uTime.value = time;
     if (this.linkMaterial) this.linkMaterial.uniforms.uTime.value = time;
     if (this.marker.visible) {
       this.marker.lookAt(this.camera.position);
@@ -507,11 +762,16 @@ export class UniverseScene {
     // Hover, at most every other frame: the raycast is a pass over every star.
     if (this.pointerDirty && this.frame++ % 2 === 0) {
       this.pointerDirty = false;
-      const index = this.pick();
-      if (index !== this.hoverIndex) {
-        this.hoverIndex = index;
-        const box = this.renderer.domElement.getBoundingClientRect();
-        this.events.hover(index, index >= 0 ? { x: ((this.pointer.x + 1) / 2) * box.width, y: ((1 - this.pointer.y) / 2) * box.height } : null);
+      const under = this.pick();
+      const box = this.renderer.domElement.getBoundingClientRect();
+      const screen = { x: ((this.pointer.x + 1) / 2) * box.width, y: ((1 - this.pointer.y) / 2) * box.height };
+      if (under.node !== this.hoverNode) {
+        this.hoverNode = under.node;
+        this.events.hoverNode(under.node, under.node >= 0 ? screen : null);
+      }
+      if (under.story !== this.hoverIndex) {
+        this.hoverIndex = under.story;
+        this.events.hover(under.story, under.story >= 0 ? screen : null);
       }
     }
 
