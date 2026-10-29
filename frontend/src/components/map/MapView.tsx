@@ -6,7 +6,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArticlePanel } from "@/components/map/ArticlePanel";
 import { MapSearch } from "@/components/map/MapSearch";
 import { NewsMap, type NewsMapHandle } from "@/components/map/NewsMap";
+import { useAccount } from "@/lib/account";
 import { NO_GROUP, type MapData, type MapEntitiesDocument, type MapLinks } from "@/lib/newsMap";
+import { useReaderLists, type ReaderLists } from "@/lib/readerLists";
 import styles from "./MapPage.module.css";
 
 export interface MapFilters {
@@ -36,6 +38,9 @@ interface Props {
   // Shown above the toolbar: a page's own controls (search, day).
   header?: React.ReactNode;
   label: string;
+  // A page that already holds the reader's lists (/for-you) passes them,
+  // so they are loaded once.
+  lists?: ReaderLists;
 }
 
 // Whether article i passes the filters.
@@ -68,7 +73,11 @@ function writeUrl(filters: MapFilters, selected: string | null, list: boolean): 
 
 // The map, its filters, the selected article's panel and the list view:
 // what /map, /today and /for-you share.
-export function MapView({ data, entities, emphasis = null, header, label }: Props) {
+export function MapView({ data, entities, emphasis = null, header, label, lists: given }: Props) {
+  const account = useAccount();
+  const own = useReaderLists(Boolean(account.user), account.csrf, !account.loading);
+  const lists = given ?? own;
+
   const map = useRef<NewsMapHandle>(null);
   const [filters, setFilters] = useState<MapFilters>(NO_FILTERS);
   const [selected, setSelected] = useState(-1);
@@ -148,6 +157,33 @@ export function MapView({ data, entities, emphasis = null, header, label }: Prop
       ...links.entities.flatMap((e) => (entityPoints.has(e.key) ? [entityPoints.get(e.key)!] : [])),
     ];
   }, [links, entities]);
+
+  // The reader's own connections, dashed, where both ends are on the map.
+  const personal = useMemo(() => {
+    const points = new Map(entities.map((e) => [e.k, e]));
+    const segments: number[] = [];
+    for (const c of lists.connections) {
+      const from = data.indexOf.get(c.from);
+      if (from === undefined) continue;
+      let to: { x: number; y: number } | undefined;
+      if (c.toKind === "article") {
+        const i = data.indexOf.get(c.to);
+        if (i !== undefined) to = { x: data.positions[i * 2], y: data.positions[i * 2 + 1] };
+      } else {
+        to = points.get(c.to);
+      }
+      if (to) segments.push(data.positions[from * 2], data.positions[from * 2 + 1], to.x, to.y);
+    }
+    return new Float32Array(segments);
+  }, [data, entities, lists.connections]);
+
+  const nameOf = useCallback((kind: "article" | "entity", key: string) => {
+    if (kind === "article") {
+      const i = data.indexOf.get(key);
+      return i !== undefined ? data.titles[i] : lists.saved.find((s) => s.id === key)?.title ?? "a story no longer on the map";
+    }
+    return entities.find((e) => e.k === key)?.n ?? data.entities.find((e) => e.k === key)?.n ?? key.split(":").slice(1).join(":");
+  }, [data, entities, lists.saved]);
 
   const selectId = useCallback((id: string) => {
     const index = data.indexOf.get(id);
@@ -259,6 +295,7 @@ export function MapView({ data, entities, emphasis = null, header, label }: Prop
               alpha={alpha}
               selected={selected}
               links={lines}
+              personal={personal}
               onSelect={setSelected}
               onEntity={focusEntity}
               label={label}
@@ -269,6 +306,8 @@ export function MapView({ data, entities, emphasis = null, header, label }: Prop
                 index={selected}
                 links={links}
                 error={linksError}
+                lists={lists}
+                nameOf={nameOf}
                 onSelect={selectId}
                 onEntity={focusEntity}
                 onClose={() => setSelected(-1)}

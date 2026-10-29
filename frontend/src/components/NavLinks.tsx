@@ -25,6 +25,7 @@ const GROUPS = [
     links: [
       { href: "/map", label: "Map" },
       { href: "/today", label: "Today" },
+      { href: "/for-you", label: "For you" },
       { href: "/account", label: "Account" },
     ],
   },
@@ -44,7 +45,7 @@ const GROUPS = [
 
 // The pages served without the site password (docker/caddy/Caddyfile,
 // @reader). Everything else answers a public visitor with 401.
-const PUBLIC = ["/reader", "/map", "/today", "/account"];
+const PUBLIC = ["/reader", "/map", "/today", "/for-you", "/account"];
 
 function isActive(pathname: string, href: string): boolean {
   // "/" would match every page by prefix; it is active only on itself.

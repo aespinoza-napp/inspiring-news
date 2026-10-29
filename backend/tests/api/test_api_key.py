@@ -78,6 +78,24 @@ OPEN_ENDPOINTS = {
     ("POST", "/account/password"),
     ("GET", "/account/export"),
     ("POST", "/account/delete"),
+    # What a reader follows, saves and connects: the same standing, signed
+    # in only, every change with the CSRF token (N6).
+    ("GET", "/account/interests"),
+    ("POST", "/account/interests/set"),
+    ("POST", "/account/interests/follow"),
+    ("POST", "/account/interests/unfollow"),
+    ("GET", "/account/saved"),
+    ("POST", "/account/saved/add"),
+    ("POST", "/account/saved/remove"),
+    ("GET", "/account/connections"),
+    ("POST", "/account/connections/add"),
+    ("POST", "/account/connections/remove"),
+    # For you: ranks the published stories for the profile it is sent and
+    # stores nothing; limited per visitor. Its account side, what a reader
+    # hid and lowered, is signed in like the rest of /account (N7).
+    ("POST", "/map/for-you"),
+    ("GET", "/account/feed"),
+    ("POST", "/account/not-interested"),
 }
 
 # What was open until 2026-10-02, with a body each would accept: the

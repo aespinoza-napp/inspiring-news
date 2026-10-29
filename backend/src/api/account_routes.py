@@ -31,7 +31,8 @@ from pydantic import BaseModel, Field
 
 from src.api.map_routes import client_of
 from src.config.settings import settings
-from src.container import get_account_service
+from src.container import get_account_service, get_reader_data
+from src.services.accounts.reader_data import MAX_NOTE
 from src.services.accounts.service import (
     MAX_PASSWORD,
     SESSION_IDLE_DAYS,
@@ -232,3 +233,110 @@ def delete(body: Confirmation, session: Session = Depends(checked_session)):
     response = Response(status_code=204)
     _clear_cookie(response)
     return response
+
+
+# ---------------------------------------------------------------------
+# What a reader follows, saves and connects (N6;
+# src/services/accounts/reader_data.py). Signed in only; every change
+# carries the CSRF token.
+# ---------------------------------------------------------------------
+
+
+class Interest(BaseModel):
+    kind: str = Field(max_length=16)
+    key: str = Field(max_length=200)
+
+
+class Interests(BaseModel):
+    items: list[Interest] = Field(max_length=200)
+
+
+class SavedStory(BaseModel):
+    articleId: str = Field(max_length=16)
+
+
+class NewConnection(BaseModel):
+    fromArticle: str = Field(max_length=16)
+    toKind: str = Field(max_length=16)
+    to: str = Field(max_length=200)
+    note: str = Field(default="", max_length=MAX_NOTE)
+
+
+class ConnectionId(BaseModel):
+    id: int
+
+
+def _reader_call(action):
+    try:
+        return action()
+    except AccountError as error:
+        raise HTTPException(status_code=422, detail=str(error))
+
+
+@router.get("/interests")
+def interests(session: Session = Depends(current_session)):
+    return {"items": get_reader_data().interests(session)}
+
+
+@router.post("/interests/set")
+def set_interests(body: Interests, session: Session = Depends(checked_session)):
+    """The whole set at once: the first-visit choice, or choices made signed out, brought in."""
+
+    return {"items": _reader_call(lambda: get_reader_data().replace_interests(session, [i.model_dump() for i in body.items]))}
+
+
+@router.post("/interests/follow")
+def follow(body: Interest, session: Session = Depends(checked_session)):
+    return {"items": _reader_call(lambda: get_reader_data().follow(session, body.kind, body.key))}
+
+
+@router.post("/interests/unfollow")
+def unfollow(body: Interest, session: Session = Depends(checked_session)):
+    return {"items": get_reader_data().unfollow(session, body.kind, body.key)}
+
+
+@router.get("/saved")
+def saved(session: Session = Depends(current_session)):
+    return {"items": get_reader_data().saved(session)}
+
+
+@router.post("/saved/add")
+def save(body: SavedStory, session: Session = Depends(checked_session)):
+    return {"items": _reader_call(lambda: get_reader_data().save(session, body.articleId))}
+
+
+@router.post("/saved/remove")
+def unsave(body: SavedStory, session: Session = Depends(checked_session)):
+    return {"items": get_reader_data().unsave(session, body.articleId)}
+
+
+@router.get("/connections")
+def connections(session: Session = Depends(current_session)):
+    return {"items": get_reader_data().connections(session)}
+
+
+@router.post("/connections/add")
+def connect(body: NewConnection, session: Session = Depends(checked_session)):
+    return {"items": _reader_call(lambda: get_reader_data().connect(session, body.fromArticle, body.toKind, body.to, body.note))}
+
+
+@router.post("/connections/remove")
+def disconnect(body: ConnectionId, session: Session = Depends(checked_session)):
+    return {"items": get_reader_data().disconnect(session, body.id)}
+
+
+class NotInterested(BaseModel):
+    articleId: str = Field(max_length=16)
+    part: str = Field(max_length=16)
+
+
+@router.get("/feed")
+def feed(session: Session = Depends(current_session)):
+    """What For you leaves out and lowers for this reader (N7)."""
+
+    return get_reader_data().feed(session)
+
+
+@router.post("/not-interested")
+def not_interested(body: NotInterested, session: Session = Depends(checked_session)):
+    return _reader_call(lambda: get_reader_data().not_interested(session, body.articleId, body.part))

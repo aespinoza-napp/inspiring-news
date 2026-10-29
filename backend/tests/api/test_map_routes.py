@@ -165,3 +165,20 @@ def test_too_many_searches_is_a_429_with_retry_after_per_visitor(monkeypatch, tm
 
     # Behind the same proxy, another visitor still gets through.
     assert client.get("/map/search", params={"q": "c"}, headers=other).status_code == 200
+
+
+def test_for_you_ranks_what_it_is_sent_and_is_limited_per_visitor(monkeypatch, tmp_path):
+
+    index = use_index(monkeypatch, tmp_path)
+    put(index, "one")
+    put(index, "two", topic="space", seed=1)
+    monkeypatch.setattr(map_routes, "_for_you_limit", map_routes.RateLimiter(2))
+
+    body = {"interests": [{"kind": "topic", "key": "space"}]}
+    first = client.post("/map/for-you", json=body, headers={"X-Forwarded-For": "203.0.113.9"})
+
+    assert first.status_code == 200
+    assert first.json()["items"][0]["reasons"][0].startswith("you follow")
+    assert client.post("/map/for-you", json=body, headers={"X-Forwarded-For": "203.0.113.9"}).status_code == 200
+    assert client.post("/map/for-you", json=body, headers={"X-Forwarded-For": "203.0.113.9"}).status_code == 429
+    assert client.post("/map/for-you", json={"interests": [{"kind": "topic", "key": "x"}] * 201}).status_code == 422

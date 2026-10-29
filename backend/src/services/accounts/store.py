@@ -43,6 +43,52 @@ MIGRATIONS: list[str] = [
     );
     CREATE INDEX sessions_by_user ON sessions(user_id);
     """,
+    # 2. What a reader follows and saves, and the connections they draw (N6).
+    """
+    CREATE TABLE interests (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        -- 'group', 'topic' or 'entity'; key as the map names it.
+        kind TEXT NOT NULL,
+        key TEXT NOT NULL,
+        label TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, kind, key)
+    );
+    CREATE TABLE saved (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        article_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, article_id)
+    );
+    CREATE TABLE connections (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        from_article TEXT NOT NULL,
+        -- 'article' or 'entity'.
+        to_kind TEXT NOT NULL,
+        to_key TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL
+    );
+    CREATE INDEX connections_by_user ON connections(user_id);
+    """,
+    # 3. "Not interested" (N7): the stories hidden, and how far each part
+    # of For you's score is lowered for this reader.
+    """
+    CREATE TABLE hidden (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        article_id TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, article_id)
+    );
+    CREATE TABLE feed_factors (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        part TEXT NOT NULL,
+        factor REAL NOT NULL,
+        PRIMARY KEY (user_id, part)
+    );
+    """,
 ]
 
 

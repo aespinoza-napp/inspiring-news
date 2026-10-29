@@ -64,6 +64,32 @@ precision mediump float;
 uniform vec4 color;
 void main() { gl_FragColor = color; }`;
 
+// A reader's own connections, dashed: drawn for them only, so they read
+// as theirs and not as the map's. Distance along the segment, in screen
+// pixels, decides each fragment's dash.
+const DASHED_VERTEX = `
+precision mediump float;
+attribute vec2 position;
+attribute float along;
+uniform vec2 centre;
+uniform float scale;
+uniform vec2 viewport;
+varying float vPixels;
+void main() {
+  vec2 p = (position - centre) * scale;
+  gl_Position = vec4(p.x * 2.0 / viewport.x, p.y * 2.0 / viewport.y, 0.0, 1.0);
+  vPixels = along * scale;
+}`;
+
+const DASHED_FRAGMENT = `
+precision mediump float;
+uniform vec4 color;
+varying float vPixels;
+void main() {
+  if (mod(vPixels, 12.0) > 7.0) discard;
+  gl_FragColor = color;
+}`;
+
 interface Uniforms {
   centre: [number, number];
   scale: number;
@@ -81,6 +107,11 @@ export class MapRenderer {
   private readonly regl: Regl;
   private readonly drawPoints: DrawCommand;
   private readonly drawLines: DrawCommand;
+  private readonly drawDashed: DrawCommand;
+  private readonly dashedBuffer: Buffer;
+  private readonly alongBuffer: Buffer;
+  private dashedCount = 0;
+  private dashedColor: [number, number, number, number] = [0.15, 0.39, 0.92, 0.9];
   private readonly positionBuffer: Buffer;
   private readonly colorBuffer: Buffer;
   private readonly alphaBuffer: Buffer;
@@ -105,6 +136,8 @@ export class MapRenderer {
     this.colorBuffer = this.regl.buffer({ usage: "static", type: "float", length: 0 });
     this.alphaBuffer = this.regl.buffer({ usage: "dynamic", type: "float", length: 0 });
     this.lineBuffer = this.regl.buffer({ usage: "dynamic", type: "float", length: 0 });
+    this.dashedBuffer = this.regl.buffer({ usage: "dynamic", type: "float", length: 0 });
+    this.alongBuffer = this.regl.buffer({ usage: "dynamic", type: "float", length: 0 });
 
     const blend = {
       enable: true,
@@ -146,6 +179,22 @@ export class MapRenderer {
       primitive: "lines",
       count: () => this.lineCount,
     });
+
+    this.drawDashed = this.regl({
+      vert: DASHED_VERTEX,
+      frag: DASHED_FRAGMENT,
+      attributes: { position: this.dashedBuffer, along: this.alongBuffer },
+      uniforms: {
+        centre: this.regl.prop<Uniforms, "centre">("centre"),
+        scale: this.regl.prop<Uniforms, "scale">("scale"),
+        viewport: this.regl.prop<Uniforms, "viewport">("viewport"),
+        color: () => this.dashedColor,
+      },
+      blend,
+      depth: { enable: false },
+      primitive: "lines",
+      count: () => this.dashedCount,
+    });
   }
 
   setData(data: MapData, colors: [number, number, number][]): void {
@@ -176,6 +225,19 @@ export class MapRenderer {
     if (color) this.lineColor = color;
   }
 
+  // A reader's own connections, x0, y0, x1, y1, ..., drawn dashed.
+  setDashed(segments: Float32Array, color?: [number, number, number, number]): void {
+    const along = new Float32Array(segments.length / 2);
+    for (let i = 0; i < segments.length; i += 4) {
+      along[i / 2] = 0;
+      along[i / 2 + 1] = Math.hypot(segments[i + 2] - segments[i], segments[i + 3] - segments[i + 1]);
+    }
+    this.dashedBuffer({ data: segments, usage: "dynamic" });
+    this.alongBuffer({ data: along, usage: "dynamic" });
+    this.dashedCount = segments.length / 2;
+    if (color) this.dashedColor = color;
+  }
+
   setBackground(color: [number, number, number, number]): void {
     this.background = color;
   }
@@ -204,6 +266,7 @@ export class MapRenderer {
     };
 
     if (this.lineCount > 0) this.drawLines(uniforms);
+    if (this.dashedCount > 0) this.drawDashed(uniforms);
     if (this.count > 0) this.drawPoints(uniforms);
 
     if (measure) this.regl._gl.finish();

@@ -16,6 +16,20 @@ const ROUTES: Record<string, "GET" | "POST"> = {
   delete: "POST",
   me: "GET",
   export: "GET",
+  // What a reader follows, saves and connects (N6).
+  interests: "GET",
+  "interests/set": "POST",
+  "interests/follow": "POST",
+  "interests/unfollow": "POST",
+  saved: "GET",
+  "saved/add": "POST",
+  "saved/remove": "POST",
+  connections: "GET",
+  "connections/add": "POST",
+  "connections/remove": "POST",
+  // For you's "not interested" (N7).
+  feed: "GET",
+  "not-interested": "POST",
 };
 
 // The session cookie, and no other: whatever else the browser holds for

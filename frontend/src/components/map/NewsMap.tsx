@@ -29,6 +29,8 @@ interface Props {
   selected: number;
   // The selected article's links, as map points to draw lines to.
   links: { x: number; y: number }[];
+  // The reader's own connections, as segments in map units: dashed.
+  personal?: Float32Array;
   onSelect(index: number): void;
   onEntity?(key: string): void;
   label: string;
@@ -47,6 +49,16 @@ const ENTITY_ZOOM = 3;
 const MAX_ENTITY_LABELS = 30;
 
 const HOVER_PIXELS = 8;
+
+// Read by scripts/bench_news_map.py (N8's budget): a mark when the first
+// frame with stories is drawn, and each hover pick's milliseconds, kept
+// only when the measuring page has set window.__newsMapPerf.
+declare global {
+  interface Window {
+    __newsMapPerf?: { picks: number[] };
+  }
+}
+const FIRST_FRAME = "news-map:first-frame";
 const CLICK_SLOP = 4;
 
 function baseScale(width: number, height: number): number {
@@ -54,7 +66,7 @@ function baseScale(width: number, height: number): number {
 }
 
 export const NewsMap = forwardRef<NewsMapHandle, Props>(function NewsMap(
-  { data, entities, alpha, selected, links, onSelect, onEntity, label },
+  { data, entities, alpha, selected, links, personal, onSelect, onEntity, label },
   ref,
 ) {
   const frame = useRef<HTMLDivElement>(null);
@@ -134,12 +146,18 @@ export const NewsMap = forwardRef<NewsMapHandle, Props>(function NewsMap(
     }
   }, [data, selected, toScreen]);
 
+  const firstFrame = useRef(false);
+
   const draw = useCallback(() => {
     scheduled.current = 0;
     if (!renderer.current) return;
     renderer.current.draw(camera.current);
     placeLabels();
-  }, [placeLabels]);
+    if (!firstFrame.current && data.count > 0) {
+      firstFrame.current = true;
+      performance.mark(FIRST_FRAME);
+    }
+  }, [placeLabels, data]);
 
   const schedule = useCallback(() => {
     if (!scheduled.current) scheduled.current = requestAnimationFrame(draw);
@@ -218,6 +236,13 @@ export const NewsMap = forwardRef<NewsMapHandle, Props>(function NewsMap(
     schedule();
   }, [data, links, selected, schedule]);
 
+  useEffect(() => {
+    if (!renderer.current) return;
+    const accent = parseColor(getComputedStyle(frame.current!).getPropertyValue("--accent")) ?? [0.15, 0.39, 0.92];
+    renderer.current.setDashed(personal ?? new Float32Array(0), [accent[0], accent[1], accent[2], 0.9]);
+    schedule();
+  }, [personal, schedule]);
+
   // ---- camera ----------------------------------------------------------
 
   const animateTo = useCallback((target: Camera) => {
@@ -274,9 +299,12 @@ export const NewsMap = forwardRef<NewsMapHandle, Props>(function NewsMap(
 
   const pick = useCallback((sx: number, sy: number): number => {
     if (!grid.current) return -1;
+    const started = performance.now();
     const p = toMap(sx, sy);
     const visible = alphaRef.current;
-    return grid.current.nearest(p.x, p.y, HOVER_PIXELS / camera.current.k, (i) => visible[i] > 0.5);
+    const found = grid.current.nearest(p.x, p.y, HOVER_PIXELS / camera.current.k, (i) => visible[i] > 0.5);
+    window.__newsMapPerf?.picks.push(performance.now() - started);
+    return found;
   }, [toMap]);
 
   const onPointerDown = (event: React.PointerEvent) => {

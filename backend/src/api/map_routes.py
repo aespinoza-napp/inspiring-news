@@ -19,9 +19,12 @@ import gzip
 import re
 
 from fastapi import APIRouter, Header, HTTPException, Path, Query, Request, Response
+from pydantic import BaseModel, Field
 
 from src.container import get_map_index, get_map_search
-from src.services.news_map.search import MAX_QUERY, RateLimited
+from src.services.news_map.for_you import ReaderProfile, rank
+from src.services.news_map.search import MAX_QUERY
+from src.services.rate_limit import RateLimited, RateLimiter
 
 router = APIRouter(prefix="/map")
 
@@ -136,3 +139,45 @@ def map_search(
             detail="Too many searches from here; try again shortly.",
             headers={"Retry-After": str(int(limited.retry_after + 0.999))},
         )
+
+
+# Per visitor: a ranking is a pass over every published story and one
+# product with their vectors - cheap, but a public route all the same.
+FOR_YOU_PER_MINUTE = 60
+
+_for_you_limit = RateLimiter(FOR_YOU_PER_MINUTE)
+
+
+class FollowedItem(BaseModel):
+    kind: str = Field(max_length=16)
+    key: str = Field(max_length=200)
+
+
+class ForYouRequest(BaseModel):
+    interests: list[FollowedItem] = Field(default_factory=list, max_length=200)
+    saved: list[str] = Field(default_factory=list, max_length=1000)
+    hidden: list[str] = Field(default_factory=list, max_length=1000)
+    factors: dict[str, float] = Field(default_factory=dict, max_length=8)
+    limit: int = Field(default=20, ge=1, le=50)
+
+
+@router.post("/for-you")
+def map_for_you(body: ForYouRequest, request: Request):
+    """
+    The published stories that fit a reader's interests, each with the
+    parts of its score and why it is there (src/services/news_map/for_you.py).
+    Stores nothing: what the reader follows comes with the request, from
+    their account or, signed out, their browser.
+    """
+
+    try:
+        _for_you_limit.check(client_of(request))
+    except RateLimited as limited:
+        raise HTTPException(status_code=429, detail="Too many requests from here; try again shortly.",
+                            headers={"Retry-After": str(int(limited.retry_after + 0.999))})
+
+    profile = ReaderProfile.of(
+        [item.model_dump() for item in body.interests], body.saved, body.hidden, body.factors,
+    )
+
+    return rank(get_map_index().search_context(), profile, body.limit)

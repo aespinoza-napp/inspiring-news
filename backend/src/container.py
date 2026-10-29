@@ -93,6 +93,7 @@ _reader_index = None
 _map_index = None
 _map_search = None
 _account_service = None
+_reader_data = None
 
 _selection_service = None
 
@@ -586,6 +587,25 @@ def get_account_service():
                 _account_service = AccountService(AccountStore(settings.USERS_DB_PATH))
 
     return _account_service
+
+
+def get_reader_data():
+    """
+    Backs /account/interests, /saved and /connections: what a reader
+    follows, saves and connects (src/services/accounts/reader_data.py), in
+    the accounts' own database, checked against the published map.
+    """
+
+    global _reader_data
+
+    if _reader_data is None:
+        with _lock:
+            if _reader_data is None:
+                from src.services.accounts.reader_data import ReaderData
+
+                _reader_data = ReaderData(get_account_service().store, get_map_index())
+
+    return _reader_data
 
 
 def get_draft_store():

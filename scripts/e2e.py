@@ -169,6 +169,12 @@ MAP_LINKS = {"id": ARTICLE_ID, "title": "Las renovables superan al carbón", "x"
              "related": [{"id": "00000000000000aa", "title": "Volunteers plant 40,000 trees", "x": 0, "y": 0,
                           "score": 1.3, "via": [{"kind": "entity", "via": "Ada Lovelace", "weight": 1.0}]}]}
 
+MAP_FOR_YOU = {"weights": {"topic": 0.35, "entity": 0.25, "nearness": 0.2, "freshness": 0.2}, "coldStart": False,
+               "considered": 2, "items": [{
+                   "id": ARTICLE_ID, "title": "Las renovables superan al carbón", "source": "El País", "day": "2026-10-01",
+                   "verdict": "TRUE", "x": 0, "y": 0, "score": 0.42, "mainPart": "topic",
+                   "parts": {"topic": 0.35, "entity": 0.0, "nearness": 0.0, "freshness": 0.07},
+                   "reasons": ["you follow Energy"]}]}
 MAP_SEARCH = {"query": "renovables", "semantic": "used", "results": [
     {"kind": "article", "id": ARTICLE_ID, "title": "Las renovables superan al carbón", "x": 0, "y": 0,
      "reason": "in the title"}]}
@@ -199,6 +205,9 @@ class Stub(BaseHTTPRequestHandler):
 
         if path == "/analyze/jobs/batch":
             return self._json(202, {"jobs": [{"url": "https://example.org/a", "jobId": "slow2", "reused": False}]})
+
+        if path == "/map/for-you":
+            return self._json(200, MAP_FOR_YOU)
 
         return self._json(404, {"detail": "Not found"})
 
@@ -495,6 +504,28 @@ def page_width(chrome: str, url: str, width: int = 375) -> tuple[int, str]:
             browser.close()
 
 
+def for_you_with_interests(chrome: str, base: str) -> tuple[bool, str]:
+    """A signed-out reader who chose before: their interests in localStorage, their stories ranked."""
+
+    import tempfile
+
+    chosen = json.dumps([{"kind": "topic", "key": "energy", "label": "Energy"},
+                         {"kind": "group", "key": "science", "label": "Science"},
+                         {"kind": "group", "key": "health", "label": "Health"}])
+
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
+        browser = Browser(chrome, profile)
+        try:
+            browser.send("Page.navigate", {"url": f"{base}/for-you"}, browser.session)
+            browser.until("document.readyState === 'complete'")
+            browser.evaluate(f"localStorage.setItem('inspiring-news:interests', {json.dumps(chosen)})")
+            browser.send("Page.reload", {}, browser.session)
+            shown = browser.until("document.body.innerText.includes('Because you follow Energy')", timeout=30)
+            return shown, "" if shown else browser.evaluate("document.body.innerText.slice(0, 300)")
+        finally:
+            browser.close()
+
+
 def leave_while_polling(chrome: str, base: str, bulk: bool = False) -> tuple[bool, str]:
     """Start a job, leave the page while its first poll is held, count the polls after."""
 
@@ -734,6 +765,12 @@ def run(checks: Checks, chrome: str, base: str, tiktok: Connections) -> None:
     )
     counts = [int(n) for n in re.findall(r"· (\d+)</span></h2>", page)]
     checks.check("the sections' counts add up to the day's total", sum(counts) == 1 and "1 story on this day" in page, f"sections {counts}")
+
+    print("For you")
+    page = dom(chrome, f"{base}/for-you")
+    checks.check("on a first visit, For you asks what to follow", "Choose at least 3" in page and "Show my stories" in page)
+    ok, detail = for_you_with_interests(chrome, base)
+    checks.check("with interests kept in the browser, the stories come with their reasons", ok, detail)
 
     print("Reader accounts")
     page = dom(chrome, f"{base}/account")

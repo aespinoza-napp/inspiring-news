@@ -362,6 +362,14 @@ class MapIndex:
 
         return [article for article in articles if day is None or article.day == day]
 
+    def entity(self, key: str) -> Entity | None:
+        """A name some published article mentions, by the graph's key."""
+
+        self.refresh()
+
+        with self._lock:
+            return self._entities.get(key)
+
     def get(self, article_id: str) -> MapArticle | None:
 
         self.refresh()
@@ -406,7 +414,9 @@ class MapIndex:
 
         if cached is None:
             body = json.dumps(build(), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-            cached = gzip.compress(body, compresslevel=6, mtime=0)
+            # Level 4, not 6: on 10k stories, 21 ms against 185 ms for an
+            # output 6% larger (254 KB against 239 KB), measured 29 Oct.
+            cached = gzip.compress(body, compresslevel=4, mtime=0)
 
             with self._lock:
                 self._payloads[tag] = cached

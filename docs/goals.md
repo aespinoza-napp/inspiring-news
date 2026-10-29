@@ -249,6 +249,24 @@ interests, and accounts so a reader can keep interests and make
 connections of their own. The rendering has to stay fast as the cloud
 grows. Nine goals, about 96 h on top of the plan.
 
+Where they stand on 2026-10-29, on `feature/news-map`: **N1-N7 done**,
+each checked as its "Done when" asks (`./scripts/check.sh` and its e2e
+target, which first ran on this machine that day after a fix to
+`e2e.py`'s DevTools pipe). **N8 measured but not settled**: first paint,
+payload and picking are inside budget, but the frames were measured
+under the model benchmark's load and need an idle run. **N9 written but
+the thesis not built**: there is no LaTeX here. Deviations, each with
+its reason in `docs/decisions/news-map.md`:
+
+- N1 places an article by its main topic, not a weighted mean.
+- N4 builds the day's cards from the map's fields, not `ReaderCard`.
+- N7's diversity cap is split (7 of 10 from a followed topic, 3 from
+  any other), because the goal's two sentences contradicted each other.
+- N8's budget runs in its own script rather than in e2e, and counts
+  dropped frames rather than comparing a p95 with exactly 16.7 ms.
+
+The prompts below stay as the record of what was asked.
+
 What it starts from, read on 29 Oct:
 - **Data.** The public reader routes (`GET /reader/articles[/{id}]`),
   which are open on purpose and only ever show publishable articles.

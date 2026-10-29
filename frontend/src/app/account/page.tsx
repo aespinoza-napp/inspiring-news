@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { accountCall, useAccount, type AccountUser } from "@/lib/account";
+import { readLocalInterests, useReaderLists, writeLocalInterests, type ReaderLists } from "@/lib/readerLists";
 import styles from "@/components/map/MapPage.module.css";
 
 type Mode = "signin" | "register";
@@ -102,7 +103,105 @@ function SignedOut({ refresh }: { refresh(): Promise<void> }) {
   );
 }
 
+// Choices made before signing in, kept in this browser: offered once, kept
+// or let go, then cleared here.
+function ImportLocal({ lists }: { lists: ReaderLists }) {
+  const [local, setLocal] = useState(() => (typeof window === "undefined" ? [] : readLocalInterests()));
+
+  if (!lists.ready || local.length === 0) return null;
+
+  return (
+    <div className="claims-note" role="status">
+      <p>
+        Before signing in you chose {local.length} {local.length === 1 ? "interest" : "interests"} on this browser:{" "}
+        {local.map((i) => i.label).join(", ")}.
+      </p>
+      <div className={styles.toolbar}>
+        <button
+          type="button"
+          onClick={async () => {
+            const merged = [...lists.interests, ...local.filter((l) => !lists.interests.some((i) => i.kind === l.kind && i.key === l.key))];
+            await lists.setInterests(merged);
+            writeLocalInterests([]);
+            setLocal([]);
+          }}
+        >
+          Keep them in my account
+        </button>
+        <button
+          type="button"
+          className="button-secondary"
+          onClick={() => {
+            writeLocalInterests([]);
+            setLocal([]);
+          }}
+        >
+          Let them go
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function YourLists({ lists }: { lists: ReaderLists }) {
+  if (!lists.ready) return null;
+
+  return (
+    <>
+      <h2 className="section-label">What you follow</h2>
+      {lists.interests.length === 0 ? (
+        <p className={styles.muted}>
+          Nothing yet. <Link href="/for-you">Choose some interests</Link>.
+        </p>
+      ) : (
+        <div className="chip-row">
+          {lists.interests.map((i) => (
+            <button key={`${i.kind}:${i.key}`} type="button" className={`chip ${styles.chipButton}`} onClick={() => void lists.unfollow(i)} title="Stop following">
+              {i.label} ×
+            </button>
+          ))}
+        </div>
+      )}
+
+      <h2 className="section-label">Saved stories</h2>
+      {lists.saved.length === 0 ? (
+        <p className={styles.muted}>None yet: save a story from its panel on the map.</p>
+      ) : (
+        <ul className={styles.related}>
+          {lists.saved.map((s) => (
+            <li key={s.id}>
+              <Link href={`/reader/${s.id}`}>{s.title}</Link>{" "}
+              <button type="button" className={styles.linkButton} onClick={() => void lists.unsave(s.id)}>
+                remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h2 className="section-label">Your connections</h2>
+      {lists.connections.length === 0 ? (
+        <p className={styles.muted}>None yet: connect a story to another, or to a name, from its panel on the map.</p>
+      ) : (
+        <ul className={styles.related}>
+          {lists.connections.map((c) => (
+            <li key={c.id}>
+              <Link href={`/map?a=${c.from}`}>a story</Link> → {c.toKind === "article" ? <Link href={`/map?a=${c.to}`}>a story</Link> : c.to.split(":").slice(1).join(":")}
+              {c.note && <span className={styles.muted}> · {c.note}</span>}{" "}
+              <button type="button" className={styles.linkButton} onClick={() => void lists.disconnect(c.id)}>
+                remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {lists.error && <p className="error-banner">{lists.error}</p>}
+    </>
+  );
+}
+
 function SignedIn({ user, csrf, refresh }: { user: AccountUser; csrf: string | null; refresh(): Promise<void> }) {
+  const lists = useReaderLists(true, csrf, true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [current, setCurrent] = useState("");
@@ -137,6 +236,9 @@ function SignedIn({ user, csrf, refresh }: { user: AccountUser; csrf: string | n
 
       {message && <p className="claims-note" role="status">{message}</p>}
       {error && <p className="error-banner" role="alert">{error}</p>}
+
+      <ImportLocal lists={lists} />
+      <YourLists lists={lists} />
 
       <h2 className="section-label">Change the password</h2>
       <form
