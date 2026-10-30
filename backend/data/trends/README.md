@@ -13,7 +13,8 @@ kind: google_trends           # google_trends | ranked_feed
 url: https://trends.google.com/trending/rss?geo=ES
 language: es                  # one with a lexicon: en or es
 country: ES                   # optional, Google's geo
-positive: false               # its items are chosen for being good news
+positive: false               # its items are chosen for being good news (never read by the Devastating edition)
+devastating: false            # its items lean to bad news: read only by the Devastating edition
 enabled: true
 ```
 

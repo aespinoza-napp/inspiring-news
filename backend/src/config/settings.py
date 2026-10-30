@@ -61,6 +61,13 @@ class Settings(BaseSettings):
     NEO4J_USER: str = "neo4j"
     NEO4J_PASSWORD: SecretStr
 
+    # The Devastating edition's graph: a second Neo4j, never the positive
+    # one (docs/decisions/editions.md, "The two graphs"). Community
+    # Edition holds one user database, so the separation is a second
+    # instance, with the same user and password. Empty: that edition's
+    # analyses are written into no graph at all.
+    NEO4J_DEVASTATING_URI: str = ""
+
     # Whether a finished analysis is also written into the Neo4j graph
     # (src/services/graph/). A side effect like the lake, and fail-soft
     # like it: Neo4j being down costs one short connection timeout per
@@ -233,6 +240,11 @@ class Settings(BaseSettings):
     # article outright, on top of costing it score. See
     # PositiveImpactScorer.score.
     POSITIVE_IMPACT_HARD_FAIL_ENABLED: bool = False
+
+    # The Devastating edition's tone gate (DevastationScorer): the least
+    # devastation a story needs to be checked in that edition. Reasoned,
+    # not fitted - no devastating story has been labelled yet.
+    DEVASTATION_MIN_SCORE: float = 0.25
 
     # Similarity threshold for duplicate detection
     DUPLICATE_THRESHOLD: float = 0.90

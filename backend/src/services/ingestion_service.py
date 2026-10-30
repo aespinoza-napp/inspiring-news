@@ -51,7 +51,8 @@ from logging import getLogger
 from typing import Callable
 from urllib.parse import urlsplit
 
-from src.config.topics import TOPIC_GROUPS, TOPICS
+from src.config.editions import groups_of, known_edition, topics_of
+from src.config.topics import TOPICS
 from src.models.core.source import NewsSource
 from src.models.storage.lineage import DataLayer
 from src.services.concurrency import bounded_map
@@ -97,15 +98,20 @@ def _fits(reading: Reading | None, topics: list[str]) -> bool:
     return fit is None or fit >= ranking.GROUP_FIT
 
 
-def topics_for(groups: list[str] | None) -> list[str]:
-    """The topic keys of `groups`, in TOPICS order; every topic when no group is given."""
+def topics_for(groups: list[str] | None, edition: str = "positive") -> list[str]:
+    """
+    The topic keys of `groups`, in the edition's topic order; every topic
+    of the edition when no group is given (src/config/editions.py).
+    """
+
+    topics = topics_of(edition)
 
     if not groups:
-        return list(TOPICS)
+        return list(topics)
 
-    wanted = {topic for group in groups for topic in TOPIC_GROUPS[group]}
+    wanted = {topic for group in groups for topic in groups_of(edition)[group]}
 
-    return [topic for topic in TOPICS if topic in wanted]
+    return [topic for topic in topics if topic in wanted]
 
 
 def title_from_url(url: str) -> str | None:
@@ -217,7 +223,9 @@ class IngestionService:
         self.sightings = sightings if sightings is not None else default_sightings
 
         # None: nothing is screened (the tests' default); the app passes one.
+        # The positive edition's; screen_for makes the other's from it.
         self.screen = screen
+        self._screens: dict[str, MissionScreen] = {}
 
         self.last_run: dict | None = None
 
@@ -228,17 +236,43 @@ class IngestionService:
             key=lambda source: source.id,
         )
 
+    def screen_for(self, edition: str = "positive") -> MissionScreen | None:
+        """
+        The mission screen of `edition`: the positive one as configured,
+        the Devastating one made from it on first use (same embedding
+        service) - None when nothing is screened at all.
+        """
+
+        if self.screen is None or known_edition(edition) == "positive":
+            return self.screen
+
+        if edition not in self._screens:
+            self._screens[edition] = self.screen.sibling(edition)
+
+        return self._screens[edition]
+
     def sources_for(
         self,
         groups: list[str] | None = None,
         source_ids: list[str] | None = None,
+        edition: str = "positive",
     ) -> list[NewsSource]:
-        """The enabled sources covering any of `groups`, further limited to `source_ids` when given."""
+        """
+        The enabled sources of `edition` covering any of `groups` - every
+        one of the edition's when none is given - further limited to
+        `source_ids` when given. A source is an edition's when it names
+        some of that edition's groups (NewsSource.groups_in): a source
+        read only for the Devastating edition is never offered to the
+        positive one, nor NASA to the Devastating one.
+        """
+
+        edition = known_edition(edition)
 
         return [
             source
             for source in self.enabled_sources()
-            if (not groups or set(source.groups) & set(groups))
+            if source.in_edition(edition)
+            and (not groups or set(source.groups_in(edition)) & set(groups))
             and (source_ids is None or source.id in source_ids)
         ]
 
@@ -353,6 +387,7 @@ class IngestionService:
         source_ids: list[str] | None = None,
         per_source: int = 3,
         topic_emphasis: float | None = None,
+        edition: str = "positive",
     ) -> dict:
         """
         Discovery without queueing: up to `per_source` new articles from
@@ -368,6 +403,9 @@ class IngestionService:
         this call only - this service is one instance shared by every
         request. With no topic signal it does not apply, and the round
         says so (`ranking.topicEmphasis.applied: None`).
+
+        `edition` (src/config/editions.py) chooses the groups' topics, the
+        sources read and the mission screen, for this call only.
         """
 
         started = datetime.now(timezone.utc)
@@ -376,8 +414,11 @@ class IngestionService:
         # after a round's worth of other people's servers.
         ranking.weights(topic_emphasis)
 
-        sources = self.sources_for(groups, source_ids)
-        topics = topics_for(groups)
+        edition = known_edition(edition)
+        devastating = edition == "devastating"
+
+        sources = self.sources_for(groups, source_ids, edition)
+        topics = topics_for(groups, edition)
 
         known = self._stored_urls()
 
@@ -423,7 +464,7 @@ class IngestionService:
                 seen_at=started,
             )
 
-        picked, screen = self._pick(sources, discovered, fresh_by_source, per_source, topics if groups else None)
+        picked, screen = self._pick(sources, discovered, fresh_by_source, per_source, topics if groups else None, edition)
 
         fits: dict[str, float] = {}
         nearest: dict[str, str] = {}
@@ -436,7 +477,7 @@ class IngestionService:
 
             standing = ranking.Standing(
                 reliability=source.reliability_index,
-                positive_editorial=source.positive_editorial,
+                positive_editorial=source.positive_editorial and not devastating,
                 judged=choice.judged,
                 kept=choice.judged - len(choice.screened),
             )
@@ -460,7 +501,7 @@ class IngestionService:
                     "source": source.id,
                     "sourceName": source.name,
                     "language": source.language,
-                    "groups": [group for group in source.groups if not groups or group in groups],
+                    "groups": [group for group in source.groups_in(edition) if not groups or group in groups],
                     "title": feed_title or title_from_url(url),
                     "titleFrom": "feed" if feed_title else "url",
                     "summary": details.get("summary"),
@@ -513,6 +554,7 @@ class IngestionService:
 
         return {
             "startedAt": started.isoformat(timespec="seconds"),
+            "edition": edition,
             "groups": list(groups or []),
             "topics": topics,
             "perSource": per_source,
@@ -546,6 +588,7 @@ class IngestionService:
         fresh_by_source: list[list[str]],
         per_source: int,
         topics: list[str] | None = None,
+        edition: str = "positive",
     ) -> tuple[list[_Picked], dict]:
         """
         Each source's share: the mission screen over the first
@@ -559,11 +602,13 @@ class IngestionService:
         nothing was left out or read, and the round says so).
         """
 
+        screener = self.screen_for(edition)
+
         # A positive outlet's too: the screen leaves out its roundups and
         # promotions (mission_screen.FORMATS), and its slots go to what
         # follows them.
         pools = [
-            fresh[: per_source * SCREEN_DEPTH] if self.screen is not None else []
+            fresh[: per_source * SCREEN_DEPTH] if screener is not None else []
             for fresh in fresh_by_source
         ]
 
@@ -577,12 +622,17 @@ class IngestionService:
             for url in pool
         ]
 
-        state = {"status": "off" if self.screen is None else "ok", "margin": MARGIN, "margins": MARGINS, "error": None}
+        state = {
+            "status": "off" if screener is None else "ok",
+            "margin": MARGIN,
+            "margins": getattr(screener, "margins", MARGINS),
+            "error": None,
+        }
         verdicts, readings = {}, {}
 
         if titled:
             try:
-                assessments = self.screen.assess(
+                assessments = screener.assess(
                     [candidate for _, _, candidate in titled],
                     exempt=[exempt for _, exempt, _ in titled],
                 )

@@ -22,6 +22,7 @@ def test_the_list_has_no_bodies(draft_store):
             "id": draft.id,
             "sourceArticleId": draft.source_article_id,
             "language": "en",
+            "edition": "positive",
             "title": draft.content.title,
             "status": "draft",
             "busy": None,

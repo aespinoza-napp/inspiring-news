@@ -83,9 +83,10 @@ _source_probe: SourceProbe | None = None
 
 _source_check_service = None
 
-_graph_client = None
-_graph_writer = None
-_graph_reader = None
+# One per edition (docs/decisions/editions.md): two graphs, two databases.
+_graph_clients: dict = {}
+_graph_writers: dict = {}
+_graph_readers: dict = {}
 
 _labelling_batch = None
 
@@ -235,6 +236,7 @@ def get_analysis_service() -> AnalysisService:
                     enrichment_pipeline=get_enrichment_pipeline(),
                     lake=get_datalake_repository() if settings.LAKE_ENABLED else None,
                     graph=get_graph_writer() if settings.GRAPH_ENABLED else None,
+                    devastating_graph=get_graph_writer("devastating") if settings.GRAPH_ENABLED else None,
                 )
 
     return _analysis_service
@@ -388,64 +390,86 @@ def get_source_probe() -> SourceProbe:
     return _source_probe
 
 
-def get_graph_client():
+def graph_uri(edition: str = "positive") -> str:
     """
-    One Neo4j driver per process - it owns a connection pool. Building it
-    does not connect (the first session does), so this is safe with Neo4j
-    down; the imports are local for the same reason as the source probe's.
+    Where `edition`'s graph is: NEO4J_URI, or for the Devastating edition
+    its own instance (NEO4J_DEVASTATING_URI) - empty when it has none.
     """
 
-    global _graph_client
+    return settings.NEO4J_DEVASTATING_URI if edition == "devastating" else settings.NEO4J_URI
 
-    if _graph_client is None:
+
+def get_graph_client(edition: str = "positive"):
+    """
+    One Neo4j driver per process and edition - each owns a connection
+    pool, and the two editions' graphs are two databases
+    (docs/decisions/editions.md). Building it does not connect (the first
+    session does), so this is safe with Neo4j down; the imports are local
+    for the same reason as the source probe's. None for an edition with
+    no graph configured.
+    """
+
+    if edition not in _graph_clients:
         with _lock:
-            if _graph_client is None:
+            if edition not in _graph_clients:
+                uri = graph_uri(edition)
+
+                if not uri:
+                    return None
+
                 from src.database.neo4j_client import GraphClient
 
-                _graph_client = GraphClient(
-                    uri=settings.NEO4J_URI,
+                _graph_clients[edition] = GraphClient(
+                    uri=uri,
                     user=settings.NEO4J_USER,
                     password=settings.NEO4J_PASSWORD.get_secret_value(),
                 )
 
-    return _graph_client
+    return _graph_clients[edition]
 
 
-def get_graph_writer():
+def get_graph_writer(edition: str = "positive"):
     """
-    Writes each finished analysis into the graph (AnalysisService's
-    `graph`), and backs POST /graph/sync. The source YAMLs are read once,
-    here, like ingestion's.
+    Writes each finished analysis into its edition's graph
+    (AnalysisService's `graph` and `devastating_graph`), and backs POST
+    /graph/sync. The source YAMLs are read once, here, like ingestion's.
+    None for an edition with no graph configured.
     """
 
-    global _graph_writer
-
-    if _graph_writer is None:
+    if edition not in _graph_writers:
         with _lock:
-            if _graph_writer is None:
+            if edition not in _graph_writers:
+                client = get_graph_client(edition)
+
+                if client is None:
+                    return None
+
                 from src.repositories.source_repository import SourceRepository
                 from src.services.graph.graph_writer import GraphWriter
 
-                _graph_writer = GraphWriter(
-                    get_graph_client(),
+                _graph_writers[edition] = GraphWriter(
+                    client,
                     sources=SourceRepository().list(),
                 )
 
-    return _graph_writer
+    return _graph_writers[edition]
 
 
-def get_graph_reader():
+def get_graph_reader(edition: str = "positive"):
 
-    global _graph_reader
-
-    if _graph_reader is None:
+    if edition not in _graph_readers:
         with _lock:
-            if _graph_reader is None:
+            if edition not in _graph_readers:
+                client = get_graph_client(edition)
+
+                if client is None:
+                    return None
+
                 from src.services.graph.graph_reader import GraphReader
 
-                _graph_reader = GraphReader(get_graph_client())
+                _graph_readers[edition] = GraphReader(client)
 
-    return _graph_reader
+    return _graph_readers[edition]
 
 
 def get_labelling_batch():

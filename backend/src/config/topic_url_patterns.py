@@ -296,6 +296,12 @@ TOPIC_SECTION_PATTERNS_ES = {
 # industry leaving fossil fuels (0.34 against 0.28). Each entry is a whole
 # path segment, so the fitness sections "/sports-health/" and
 # "/deporte-y-salud/" do not match.
+# The crime sections among OFF_MISSION_SECTIONS: off mission for the
+# positive edition, the subject of the Devastating one (rss.off_mission).
+CRIME_SECTIONS = (
+    "/sucesos/",
+)
+
 OFF_MISSION_SECTIONS = (
     "/sport/",
     "/sports/",

@@ -16,6 +16,7 @@ from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import Fetcher
 from src.config.topic_url_patterns import (
     BETTING_DOMAINS,
+    CRIME_SECTIONS,
     INDEX_SEGMENTS,
     LIVE_COVERAGE,
     LIVE_COVERAGE_PATTERNS,
@@ -25,7 +26,8 @@ from src.config.topic_url_patterns import (
     TOPIC_SECTION_PATTERNS_ES,
     TOPIC_URL_PATTERNS,
 )
-from src.config.topics import TOPIC_GROUPS, TOPIC_KEYWORDS_ES, TOPICS
+from src.config.editions import ALL_TOPIC_KEYWORDS_ES, ALL_TOPICS, edition_of_topic, groups_of
+from src.config.topics import TOPICS
 from .base import DiscoveryStrategy
 
 
@@ -66,21 +68,38 @@ _SECTIONS = {
 }
 
 
-def off_mission(url: str) -> bool:
+def off_mission(url: str, edition: str = "positive") -> bool:
     """
     Filed under a section this publication never covers
     (OFF_MISSION_SECTIONS), live coverage, or a betting site's page
-    (BETTING_DOMAINS).
+    (BETTING_DOMAINS). In the Devastating edition the crime sections
+    (CRIME_SECTIONS) are its subject, not off it.
     """
 
     parts = urlsplit(url.lower())
     path = parts.path
 
+    sections = (
+        tuple(section for section in OFF_MISSION_SECTIONS if section not in CRIME_SECTIONS)
+        if edition == "devastating"
+        else OFF_MISSION_SECTIONS
+    )
+
     return (
-        any(marker in path for marker in OFF_MISSION_SECTIONS + LIVE_COVERAGE)
+        any(marker in path for marker in sections + LIVE_COVERAGE)
         or any(re.search(pattern, path) for pattern in LIVE_COVERAGE_PATTERNS)
         or betting_site(parts.hostname or "")
     )
+
+
+def edition_of_topics(topics) -> str:
+    """
+    The edition a run's topic ids belong to: discovery is handed topic ids,
+    not an edition, and the two editions' ids are distinct
+    (src/config/editions.py).
+    """
+
+    return "devastating" if any(edition_of_topic(topic) == "devastating" for topic in topics or ()) else "positive"
 
 
 def betting_site(host: str) -> bool:
@@ -163,10 +182,24 @@ def _not_an_article(path: str) -> bool:
     )
 
 
-def _headline_slug(path: str) -> bool:
-    """A slug of MIN_SLUG_WORDS words or more."""
+# A last path segment that is only an article id: DW's ".../varios-
+# petroleros-arden-en-ormuz/a-79803780", RTVE's ".../17174859.shtml".
+ID_SEGMENT = re.compile(r"^[a-z]?-?\d{5,}(\.s?html?)?$")
 
-    slug = re.sub(r"\.html?$", "", path.rstrip("/").rsplit("/", 1)[-1])
+
+def _headline_slug(path: str) -> bool:
+    """
+    A slug of MIN_SLUG_WORDS words or more - in the last segment, or in
+    the one before it when the last is only an id (ID_SEGMENT): DW
+    Español's every article was dropped as not one on 2026-10-30.
+    """
+
+    segments = [segment for segment in path.rstrip("/").split("/") if segment]
+
+    if len(segments) >= 2 and ID_SEGMENT.match(segments[-1].lower()):
+        segments = segments[:-1]
+
+    slug = re.sub(r"\.html?$", "", segments[-1]) if segments else ""
 
     return len([word for word in re.split(r"[-_]", slug) if word]) >= MIN_SLUG_WORDS
 
@@ -302,6 +335,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
 
         keywords = self._keywords_for(normalized_topics)
         url_patterns = self._url_patterns_for(normalized_topics)
+        edition = edition_of_topics(normalized_topics)
         by_topic = self._filters_by_topic(source) and not covers_only(source, normalized_topics)
 
         spanish = (
@@ -317,7 +351,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
             if not link:
                 continue
 
-            if not self._is_article(link) or off_mission(link):
+            if not self._is_article(link) or off_mission(link, edition):
                 continue
 
             filed = filed_under(link)
@@ -396,8 +430,8 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         return {
             keyword
             for topic in topics
-            if topic in TOPICS
-            for keyword in TOPICS[topic].keywords
+            if topic in ALL_TOPICS
+            for keyword in ALL_TOPICS[topic].keywords
         }
 
     def _url_patterns_for(self, topics: set[str]) -> set[str]:
@@ -569,15 +603,20 @@ def covers_only(source: NewsSource, topics: set[str]) -> bool:
     round. Asked for everything, nothing changes: the keywords still run.
     """
 
-    if not source.groups or not _narrowed(topics):
+    # The edition's groups and theirs: Human Rights Watch names only
+    # Devastating ones, and its items need no keyword to belong either.
+    edition = edition_of_topics(topics)
+    groups = source.groups_in(edition)
+
+    if not groups or not _narrowed(topics):
         return False
 
-    return all(set(TOPIC_GROUPS[group]) <= topics for group in source.groups)
+    return all(set(groups_of(edition)[group]) <= topics for group in groups)
 
 
 def _spanish_keywords_for(topics: set[str]) -> set[str]:
 
-    return {keyword for topic in topics for keyword in TOPIC_KEYWORDS_ES.get(topic, ())}
+    return {keyword for topic in topics for keyword in ALL_TOPIC_KEYWORDS_ES.get(topic, ())}
 
 
 _NOT_WORD = re.compile(r"[^\w]+")

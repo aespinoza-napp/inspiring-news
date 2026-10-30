@@ -63,6 +63,7 @@ class AnalysisService:
         lake: DataLakeRepository | None = None,
         admission: AdmissionFilter | None = None,
         graph: GraphWriter | None = None,
+        devastating_graph: GraphWriter | None = None,
     ):
         self.fact_checker = fact_checker
         self.extractor = extractor or ExtractorService()
@@ -87,6 +88,10 @@ class AnalysisService:
         # process, into a Neo4j every test would otherwise share with the
         # developer's own graph. None switches the graph write off.
         self.graph = graph
+
+        # The Devastating edition's graph, a database of its own; None:
+        # that edition's analyses are written into no graph.
+        self.devastating_graph = devastating_graph
 
     def analyze(
         self,
@@ -206,7 +211,7 @@ class AnalysisService:
             run, raw, processed, article, report, report_phase
         )
 
-        self._store_graph(run, article, report, report_phase)
+        self._store_graph(run, article, report, report_phase, thresholds.edition)
 
         return {
             "url": url,
@@ -270,11 +275,22 @@ class AnalysisService:
         if not admission.passed:
             return self._rejected(article, admission)
 
-        report = self.fact_checker.run(
-            article,
-            on_phase=report_phase,
-            thresholds=thresholds,
-        )
+        # The Devastating edition is not fact-checked: the person running it
+        # asked, on 2026-10-30, to publish its stories as their outlets
+        # report them (docs/decisions/editions.md). An admitted article goes
+        # straight to storage - no claim selection, search or model - and
+        # is stored as checked by nobody: no verdicts, every claim
+        # unselected, UNVERIFIED overall, so the reader says "Not checked"
+        # rather than anything a check would.
+        if thresholds.edition == "devastating":
+            report_phase("fact_check_skipped", {"reason": "edition", "edition": thresholds.edition})
+            report = self._unchecked(article)
+        else:
+            report = self.fact_checker.run(
+                article,
+                on_phase=report_phase,
+                thresholds=thresholds,
+            )
 
         # Only now, after its own claims were checked: stored earlier, the
         # article would be found as internal evidence for itself.
@@ -287,6 +303,19 @@ class AnalysisService:
             "impact_score": admission.impact_score,
             "impact_reasons": admission.impact_reasons,
         })
+
+    @staticmethod
+    def _unchecked(article: EnrichedArticle) -> FactCheckReport:
+        """An admitted article no one checked: publishable, with no verdict of ours on any claim."""
+
+        return FactCheckReport(
+            article_id=article.id,
+            validation_passed=True,
+            claims_total=len(article.claims or []),
+            claims_selected=0,
+            overall_verdict=Verdict.UNVERIFIED,
+            overall_confidence=0.0,
+        )
 
     @staticmethod
     def _rejected(article: EnrichedArticle, admission: AdmissionResult) -> FactCheckReport:
@@ -476,10 +505,13 @@ class AnalysisService:
         article: EnrichedArticle,
         report: FactCheckReport,
         report_phase: OnPhase,
+        edition: str = "positive",
     ) -> None:
         """
         The article, its entities, topics, claims, verdicts and evidence,
-        into Neo4j (src/services/graph/). Last, after the lake: the lake is
+        into Neo4j (src/services/graph/) - its edition's graph: a
+        Devastating analysis goes into that edition's own database or
+        none, never the positive one (docs/decisions/editions.md). Last, after the lake: the lake is
         the record, the graph is a view of it that GraphSync can rebuild -
         so a Neo4j outage is reported and skipped, never fatal, and never
         in the way of the lake write.
@@ -488,13 +520,15 @@ class AnalysisService:
         are about is real, and `admitted: false` on the node says the rest.
         """
 
-        if self.graph is None:
+        graph = self.devastating_graph if edition == "devastating" else self.graph
+
+        if graph is None:
             return
 
         report_phase("graph_storing", {})
 
         try:
-            summary = self.graph.write_analysis(
+            summary = graph.write_analysis(
                 article,
                 report,
                 run_id=run.run_id if run else None,

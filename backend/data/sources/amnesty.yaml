@@ -1,0 +1,39 @@
+# A source of the Devastating edition only (docs/decisions/editions.md):
+# no positive `groups`, so the positive edition never reads it.
+# Human rights abuses, persecution and political prisoners; an advocate, like
+# Human Rights Watch.
+# Feed checked live on 2026-10-30. Its reliability rating is a first
+# estimate by Claude on that day, not yet reviewed by a person.
+
+id: amnesty
+
+name: Amnesty International
+
+base_url: https://www.amnesty.org
+
+rss_url: https://www.amnesty.org/en/feed/
+
+language: en
+
+country: INT
+
+source_type: news
+
+reliability_index: 0.87
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - human rights
+
+devastating_groups:
+  - violence
+  - hate
+  - abuse_of_power
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss

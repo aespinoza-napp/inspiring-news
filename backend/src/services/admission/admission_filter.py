@@ -4,6 +4,7 @@ from typing import Callable, Optional
 from src.config.thresholds import PipelineThresholds
 from src.models.core.enriched_article import EnrichedArticle
 from src.repositories.vector_repository import VectorRepository
+from src.services.admission.devastation import DevastationScorer
 from src.services.admission.duplicate_detector import DuplicateDetector
 from src.services.admission.positive_impact import PositiveImpactScorer
 from src.services.admission.topic_filter import TopicFilter
@@ -30,6 +31,12 @@ class AdmissionResult:
 
     impact_reasons: list[str] = field(default_factory=list)
 
+    # Which tone `positive_ok` and `impact_score` measured: the run's
+    # edition (src/config/editions.py). The field keeps its old name -
+    # the report, the cache and the frontend read it - and means "of the
+    # tone this edition asks for".
+    edition: str = "positive"
+
     @property
     def reason(self) -> str | None:
         """
@@ -46,7 +53,7 @@ class AdmissionResult:
             reasons.append("topic_not_relevant")
 
         if not self.positive_ok:
-            reasons.append("not_positive_impact")
+            reasons.append("not_devastating" if self.edition == "devastating" else "not_positive_impact")
 
         if self.duplicate:
             reasons.append("duplicate_article")
@@ -57,7 +64,8 @@ class AdmissionResult:
 class AdmissionFilter:
     """
     Decides whether an enriched article is worth fact-checking at all:
-    on topic, of positive impact, and not already stored.
+    on topic, of the tone its edition asks for (positive impact, or
+    devastation - src/config/editions.py), and not already stored.
 
     A module of its own, run before the fact-checker rather than inside
     it. The three checks judge an *article* - its topics, its tone, its
@@ -78,11 +86,14 @@ class AdmissionFilter:
         topic_filter: TopicFilter | None = None,
         impact_scorer: PositiveImpactScorer | None = None,
         duplicate_detector: DuplicateDetector | None = None,
+        devastation_scorer: DevastationScorer | None = None,
     ):
 
         self.topic_filter = topic_filter or TopicFilter()
 
         self.impact_scorer = impact_scorer or PositiveImpactScorer()
+
+        self.devastation_scorer = devastation_scorer or DevastationScorer()
 
         self.duplicate_detector = duplicate_detector or DuplicateDetector(repository)
 
@@ -101,7 +112,14 @@ class AdmissionFilter:
 
         topic_ok = self.topic_filter.accepts(article, thresholds)
 
-        impact = self.impact_scorer.score(
+        # The tone the run's edition asks for: hope, or harm.
+        scorer = (
+            self.devastation_scorer
+            if thresholds.edition == "devastating"
+            else self.impact_scorer
+        )
+
+        impact = scorer.score(
             article.sentiment,
             article.quality,
             thresholds,
@@ -120,6 +138,7 @@ class AdmissionFilter:
             duplicate=duplicate.duplicate,
             impact_score=impact.score,
             impact_reasons=impact.reasons,
+            edition=thresholds.edition,
         )
 
         report_phase("validated", {
@@ -129,6 +148,7 @@ class AdmissionFilter:
             "passed": result.passed,
             "impactScore": result.impact_score,
             "impactReasons": result.impact_reasons,
+            "edition": result.edition,
         })
 
         if not result.passed:

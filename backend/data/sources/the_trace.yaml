@@ -1,0 +1,38 @@
+# A source of the Devastating edition only (docs/decisions/editions.md):
+# no positive `groups`, so the positive edition never reads it.
+# Gun violence in the United States: mass shootings, and gun suicides, which are
+# most of its deaths (the Despair group).
+# Feed checked live on 2026-10-30. Its reliability rating is a first
+# estimate by Claude on that day, not yet reviewed by a person.
+
+id: the_trace
+
+name: The Trace
+
+base_url: https://www.thetrace.org
+
+rss_url: https://www.thetrace.org/feed/
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.85
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - gun violence
+
+devastating_groups:
+  - violence
+  - despair
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss

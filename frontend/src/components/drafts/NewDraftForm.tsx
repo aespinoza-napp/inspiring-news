@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { useEdition } from "@/lib/edition";
 import { ArticleDraft, DraftLanguage, LANGUAGES, draftsApi } from "@/lib/drafts";
 import { ReaderCard, ReaderFeed, readableDate } from "@/lib/reader";
 import styles from "./NewDraftForm.module.css";
@@ -47,6 +48,10 @@ export function NewDraftForm({
   const [language, setLanguage] = useState<DraftLanguage>("ca");
   const [instructions, setInstructions] = useState("");
 
+  // The header's edition: the articles offered are its own, and the
+  // draft is written in its voice (backend article_writer.newsroom).
+  const { edition, ready: editionReady } = useEdition();
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,9 +59,11 @@ export function NewDraftForm({
   const [fromHeadline, setFromHeadline] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!editionReady) return;
+
     let cancelled = false;
 
-    fetch(`/api/reader/articles?limit=${RECENT}`, { cache: "no-store" })
+    fetch(`/api/reader/articles?limit=${RECENT}&edition=${edition}`, { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data?.detail ?? data?.error ?? `Request failed (${response.status}).`);
@@ -65,9 +72,17 @@ export function NewDraftForm({
       .then((feed) => {
         if (cancelled) return;
         setArticles(feed.items);
-        // Nothing chosen yet: the newest published article, or the URL
-        // field when there is none to choose.
-        setChoice((current) => current || feed.items[0]?.id || BY_URL);
+        // Nothing chosen yet - or an article of the other edition's, from
+        // before the switch moved: the newest published article, or the
+        // URL field when there is none to choose.
+        setChoice((current) => {
+          const stale =
+            current &&
+            current !== BY_URL &&
+            current !== initialArticleId &&
+            !feed.items.some((item) => item.id === current);
+          return (stale ? "" : current) || feed.items[0]?.id || BY_URL;
+        });
       })
       .catch((exc) => {
         if (cancelled) return;
@@ -78,7 +93,7 @@ export function NewDraftForm({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [edition, editionReady, initialArticleId]);
 
   const fromListed = !!initialArticleId && !!articles?.some((article) => article.id === initialArticleId);
 
@@ -118,6 +133,7 @@ export function NewDraftForm({
           ...(byUrl ? { articleUrl: url.trim() } : { articleId: choice }),
           language,
           instructions,
+          edition,
         },
       });
 

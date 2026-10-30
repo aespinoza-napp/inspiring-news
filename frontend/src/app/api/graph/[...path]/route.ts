@@ -67,7 +67,12 @@ export async function POST(
 
   const body = await request.text();
 
-  return relay(`${BACKEND_URL}/graph/${path}`, {
+  // Which edition's graph (two databases, docs/decisions/editions.md);
+  // only a known edition is forwarded.
+  const edition = request.nextUrl.searchParams.get("edition");
+  const query = edition === "devastating" || edition === "positive" ? `?edition=${edition}` : "";
+
+  return relay(`${BACKEND_URL}/graph/${path}${query}`, {
     method: "POST",
     headers: headers(true),
     body: body || "{}",

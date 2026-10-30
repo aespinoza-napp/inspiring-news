@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, HttpUrl, field_validator
 
-from src.config.topics import TOPIC_GROUPS
+from src.config.topics import DEVASTATING_TOPIC_GROUPS, TOPIC_GROUPS
 
 
 class SourceType(str, Enum):
@@ -93,6 +93,15 @@ class NewsSource(BaseModel):
     # were; these are the ones the code reads.
     groups: list[str] = Field(default_factory=list)
 
+    # The Devastating edition's groups (src/config/topics.py
+    # DEVASTATING_TOPIC_GROUPS) this source is worth reading for
+    # (docs/decisions/editions.md). A source belongs to an edition by
+    # naming some of its groups: one with only `groups` is never read for
+    # the Devastating edition - NASA, Nature and Mongabay were, when that
+    # edition read every general outlet - and one with only these (Human
+    # Rights Watch, ReliefWeb) never for the positive one.
+    devastating_groups: list[str] = Field(default_factory=list)
+
     # A group -> the section paths that cover it on this site, for the
     # topic-page step to read instead of guessing them from topic names.
     # Smithsonian's Environment candidates all came from a guessed /food/
@@ -117,6 +126,38 @@ class NewsSource(BaseModel):
         cls._known_groups(list(sections))
 
         return sections
+
+    @field_validator("devastating_groups")
+    @classmethod
+    def _known_devastating_groups(cls, groups: list[str]) -> list[str]:
+
+        unknown = sorted(set(groups) - set(DEVASTATING_TOPIC_GROUPS))
+
+        if unknown:
+            raise ValueError(
+                f"unknown Devastating group(s) {', '.join(unknown)}; "
+                f"expected some of {', '.join(DEVASTATING_TOPIC_GROUPS)}"
+            )
+
+        return groups
+
+    def groups_in(self, edition: str = "positive") -> list[str]:
+        """The groups this source is read for in `edition`."""
+
+        return self.devastating_groups if edition == "devastating" else self.groups
+
+    def in_edition(self, edition: str = "positive") -> bool:
+        """
+        Whether `edition` reads this source at all: the Devastating one
+        only a source naming some of its groups; the positive one every
+        source but those naming only Devastating groups - a source with
+        no group at all is read when no group is asked for, as always.
+        """
+
+        if edition == "devastating":
+            return bool(self.devastating_groups)
+
+        return bool(self.groups) or not self.devastating_groups
 
     @field_validator("groups")
     @classmethod

@@ -155,3 +155,33 @@ def test_labelling_batch_is_behind_the_storage_key(monkeypatch):
 
     assert client.get("/labelling/batch").status_code == 401
     assert client.post("/labelling/batch", json={}).status_code == 401
+
+
+# ----------------------------------------------------------------------
+# Two editions, two graphs (docs/decisions/editions.md)
+# ----------------------------------------------------------------------
+
+
+def test_the_devastating_edition_reads_its_own_graph(monkeypatch):
+
+    positive, devastating = RecordingGraphClient(), RecordingGraphClient()
+    devastating.down = True
+
+    def reader(edition="positive"):
+        return GraphReader(devastating if edition == "devastating" else positive)
+
+    monkeypatch.setattr(routes, "get_graph_reader", reader)
+
+    # Only the Devastating database is down: the edition chose it.
+    assert client.get("/graph/schema", params={"edition": "devastating"}).status_code == 503
+    assert client.get("/graph/schema").status_code == 200
+
+
+def test_a_devastating_graph_not_configured_is_a_503_that_says_so(monkeypatch):
+
+    monkeypatch.setattr(routes, "get_graph_reader", lambda edition="positive": None if edition == "devastating" else GraphReader(RecordingGraphClient()))
+
+    response = client.get("/graph/schema", params={"edition": "devastating"})
+
+    assert response.status_code == 503
+    assert "NEO4J_DEVASTATING_URI" in response.json()["detail"]

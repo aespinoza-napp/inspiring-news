@@ -58,7 +58,18 @@ class TrendSignal(BaseModel):
     # r/UpliftingNews also carried an election result and a police story.
     positive: bool = False
 
+    # Its items lean to bad news (r/worldnews): read only by the
+    # Devastating edition (src/config/editions.py), as a `positive` one is
+    # read only by the positive edition. Neither: both read it - Google's
+    # rising searches are whatever people search.
+    devastating: bool = False
+
     enabled: bool = True
+
+    def belongs_to(self, edition: str) -> bool:
+        """Whether a round of `edition` reads this signal."""
+
+        return not self.devastating if edition == "positive" else not self.positive
 
     @field_validator("language")
     @classmethod

@@ -59,6 +59,7 @@ def test_every_configured_signal_loads_once_and_is_free_to_read():
 
     assert {s.id for s in signals} == {
         "google_trends_es", "google_trends_us", "uplifting_news", "upworthy", "know_your_meme",
+        "world_news",
     }
     assert len({s.id for s in signals}) == len(signals)
 
@@ -66,6 +67,25 @@ def test_every_configured_signal_loads_once_and_is_free_to_read():
     for configured in signals:
         assert str(configured.url).startswith("https://")
         assert "key=" not in str(configured.url).lower()
+
+
+def test_each_edition_reads_its_own_signals_and_the_neutral_ones():
+    """
+    The uplifting feeds are never read for the Devastating edition, nor
+    r/worldnews for the positive one; Google's rising searches by both
+    (docs/decisions/editions.md).
+    """
+
+    signals = {s.id: s for s in TrendSignalRepository(str(BACKEND / "data" / "trends")).list()}
+
+    assert signals["world_news"].belongs_to("devastating")
+    assert not signals["world_news"].belongs_to("positive")
+
+    assert signals["uplifting_news"].belongs_to("positive")
+    assert not signals["uplifting_news"].belongs_to("devastating")
+
+    assert signals["google_trends_es"].belongs_to("positive")
+    assert signals["google_trends_es"].belongs_to("devastating")
 
 
 def test_tiktok_is_not_a_signal():

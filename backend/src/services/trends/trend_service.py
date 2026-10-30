@@ -112,25 +112,30 @@ class TrendService:
 
         return [signal for signal in self.signals if signal.enabled]
 
-    def signals_for(self, signal_ids: list[str] | None = None) -> list[TrendSignal]:
-        """The enabled signals, limited to `signal_ids` when given, in their configured order."""
+    def signals_for(self, signal_ids: list[str] | None = None, edition: str | None = None) -> list[TrendSignal]:
+        """
+        The enabled signals, limited to `signal_ids` when given, in their
+        configured order - and to `edition`'s when one is given
+        (TrendSignal.belongs_to).
+        """
 
         return [
             signal
             for signal in self.enabled_signals()
-            if signal_ids is None or signal.id in signal_ids
+            if (signal_ids is None or signal.id in signal_ids)
+            and (edition is None or signal.belongs_to(edition))
         ]
 
     # ------------------------------------------------------------------
     # The signals
     # ------------------------------------------------------------------
 
-    def read(self, signal_ids: list[str] | None = None) -> list[SignalRead]:
+    def read(self, signal_ids: list[str] | None = None, edition: str | None = None) -> list[SignalRead]:
         """Every signal asked for, read at once; results in the signals' order (bounded_map)."""
 
         return bounded_map(
             self._read_one,
-            self.signals_for(signal_ids),
+            self.signals_for(signal_ids, edition),
             max_workers=READ_CONCURRENCY,
             thread_name_prefix="trends",
         )

@@ -63,6 +63,22 @@ loopback first and fail to reach uvicorn's IPv4-only default.
 | `/graph` | The Neo4j graph, three tabs (`?tab=schema|explore|related`). **Schema**: the declared labels and relationships drawn with live counts (`components/graph/SchemaDiagram.tsx`, hand-placed), click one for its properties and a "query these" jump. **Explore**: a read-only Cypher console with presets from the backend, `$params` as inputs, results as a table or a node-link canvas (`GraphCanvas.tsx`, over the dependency-free `lib/forceLayout.ts`); click a node for its properties, expand its neighbours in place. **Related articles** (`?article=<url>`): what connects one article to the others, with each weight shown. A Sync button (`POST /api/graph/sync`) and a link to Neo4j Browser. All through `app/api/graph/[...path]/route.ts`, which forwards **only** the six known paths - a catch-all that forwarded anything would be an open proxy with the storage key attached |
 | `/evaluation` | What the evaluation has produced, read from `backend/data/evaluation/` on every refresh (`GET /api/evaluation`, behind the storage key). The hand-labelled set against its 150-fact target, the verdict × topic-group balance (`components/evaluation/BalanceMatrix.tsx`), its make-up by language, claim type, evidence tier and annotator (AI-labelled facts apart until a person checks them), the claim selector's precision per daily batch and per skip reason, the harness's model runs with 95% intervals, the median seconds a claim took (`responseTime`, else the older `usage.unitLatency`; the 90th percentile in its title) and the confusion matrix (`RunsPanel.tsx` reads `metrics.json` defensively: an unknown key shows "–"), and every fact, filterable. Charts use one hue; verdict colours only on the badges. Shapes in `lib/evaluation.ts`, not `types.ts` |
 
+**The edition** (`docs/decisions/editions.md`): the header's Positive /
+Devastating switch (`components/EditionSwitch.tsx`) sets `lib/edition.tsx`'s
+context, kept in localStorage and on `<html data-edition>` (globals.css
+turns the accent crimson). `/discover` asks for that edition's catalogue
+and makes rounds in it (a round opened by link switches the page to its
+own), `/` sends `thresholds.edition` with the edition at submit time,
+`/drafts` lists and writes that edition's drafts, `/reader` filters its
+feed, and `/graph` shows, queries and syncs that edition's own Neo4j
+(`?edition=` through the graph proxy, its Browser link on 7475 for the
+Devastating one). Wait for `ready` before reading it: until then it is only
+the default. On `/discover`, "Articles per source" starts at 1
+(`DEFAULT_PER_SOURCE`) and goes back to 1 when the edition changes; a
+reopened round shows its own. The switch's buttons reset the global
+`button` rule's `margin-top` and fill - inheriting them put both options
+on the pill's floor.
+
 `lib/types.ts` mirrors the backend's response shapes exactly — keep it in
 sync when a backend response changes.
 

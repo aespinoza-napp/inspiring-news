@@ -17,6 +17,14 @@ class FakeIngestion:
     def enabled_sources(self):
         return [build_source(id="bbc", name="BBC"), build_source(id="nasa", name="NASA")]
 
+    def sources_for(self, groups=None, source_ids=None, edition="positive"):
+        if edition == "devastating":
+            return [
+                build_source(id="bbc", name="BBC", devastating_groups=["violence", "hate", "despair", "catastrophe", "abuse_of_power"]),
+                build_source(id="hrw", name="Human Rights Watch", devastating_groups=["violence", "hate", "abuse_of_power"]),
+            ]
+        return self.enabled_sources()
+
     def run(self, start_job, source_ids=None, per_source=3, groups=None):
         self.calls.append((source_ids, per_source) if groups is None else (source_ids, per_source, groups))
         job_id, _ = start_job("https://bbc.com/a")
@@ -334,3 +342,63 @@ def test_the_catalogue_lists_the_trend_signals_and_the_lenss_limits(monkeypatch)
 
     assert {signal["id"] for signal in body["signals"]} >= {"google_trends_es", "uplifting_news"}
     assert body["trending"] == {"perTrend": 2, "maxPerTrend": 5, "maxTrendAgeHours": 72, "maxArticleAgeDays": 7}
+
+
+# ----------------------------------------------------------------------
+# The editions (docs/decisions/editions.md)
+# ----------------------------------------------------------------------
+
+
+def test_the_catalogue_offers_the_devastating_editions_own_groups(monkeypatch):
+
+    use_ingestion(monkeypatch)
+
+    body = client.get("/ingest/sources", params={"edition": "devastating"}).json()
+
+    assert body["edition"] == "devastating"
+    assert [group["id"] for group in body["groups"]] == ["violence", "hate", "despair", "catastrophe", "abuse_of_power"]
+    assert body["groups"][0]["topics"][0] == {"id": "terrorism", "name": "Terrorism"}
+    # Counted by the groups each source names for this edition.
+    assert {group["id"]: group["sources"] for group in body["groups"]} == {
+        "violence": 2, "hate": 2, "despair": 1, "catastrophe": 1, "abuse_of_power": 2,
+    }
+    assert [source["id"] for source in body["sources"]] == ["bbc", "hrw"]
+    assert "uplifting_news" not in {signal["id"] for signal in body["signals"]}
+
+    assert client.get("/ingest/sources", params={"edition": "cheerful"}).status_code == 422
+
+
+def test_a_round_takes_only_its_editions_groups(monkeypatch):
+
+    selection, _ = use_selection(monkeypatch)
+
+    assert client.post("/ingest/rounds", json={"groups": ["science"], "edition": "devastating"}).status_code == 422
+    assert client.post("/ingest/rounds", json={"groups": ["violence"]}).status_code == 422
+    assert selection.calls == []
+
+    response = client.post("/ingest/rounds", json={"groups": ["violence", "hate"], "edition": "devastating"})
+
+    assert response.status_code == 200
+    assert selection.calls == [("create", ["violence", "hate"], None, 3, 20, {"edition": "devastating"})]
+
+
+def test_a_rounds_picks_are_analysed_in_the_rounds_edition(monkeypatch):
+    """Whatever the request says: a Devastating round's picks judged by the positive gate would all be turned away."""
+
+    selection, _ = use_selection(monkeypatch)
+    selection.get = lambda round_id: {"id": round_id, "edition": "devastating"}
+
+    editions = []
+    monkeypatch.setattr(
+        routes,
+        "_start_job",
+        lambda url, force, thresholds, purpose="article": editions.append(thresholds.edition) or ("job-1", False),
+    )
+
+    response = client.post(
+        "/ingest/rounds/0123456789abcdef/queue",
+        json={"urls": ["https://bbc.com/a"], "thresholds": {"edition": "positive"}},
+    )
+
+    assert response.status_code == 200
+    assert editions == ["devastating"]

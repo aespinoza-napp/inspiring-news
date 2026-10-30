@@ -105,3 +105,30 @@ def test_an_unreadable_lake_record_is_reported_not_fatal(tmp_path):
 
     assert report["articles"] == 1
     assert report["errors"][0]["item"] == "broken"
+
+
+# ----------------------------------------------------------------------
+# Two editions, two graphs (docs/decisions/editions.md)
+# ----------------------------------------------------------------------
+
+
+def _devastating(record):
+    record["lineage"]["threshold_overrides"] = {"edition": "devastating"}
+    return record
+
+
+def test_each_graph_is_synced_with_its_own_editions_records_only(tmp_path):
+
+    (tmp_path / "fact001.json").write_text(json.dumps(fact("fact001")), encoding="utf-8")
+
+    lake = FakeLake([
+        processed("https://example.com/hopeful", datetime(2026, 10, 1)),
+        _devastating(processed("https://example.com/massacre", datetime(2026, 10, 2))),
+    ])
+
+    positive = GraphSync(GraphWriter(RecordingGraphClient()), lake=lake, facts_path=tmp_path).run()
+    devastating = GraphSync(GraphWriter(RecordingGraphClient()), lake=lake, facts_path=tmp_path, edition="devastating").run()
+
+    assert (positive["articles"], positive["facts"]) == (1, 1)
+    # The labelled facts are the positive edition's evaluation.
+    assert (devastating["articles"], devastating["facts"]) == (1, 0)

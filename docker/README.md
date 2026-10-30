@@ -104,11 +104,28 @@ if you add another host-pointing URL to `.env`, it needs the same treatment:
 |---|---|
 | `SEARXNG_URL=http://localhost:8080` | `http://searxng:8080` — compose service DNS name |
 | `NEO4J_URI=bolt://localhost:7687` | `bolt://neo4j:7687` — compose service DNS name |
+| `NEO4J_DEVASTATING_URI=bolt://localhost:7688` | `bolt://neo4j-devastating:7687` — the Devastating edition's own graph (`docs/decisions/editions.md`) |
 | `LLM_BASE_URL=http://localhost:11434/v1` | `http://host.docker.internal:11434/v1` — Ollama runs on the *host*, not in compose. The `extra_hosts: host-gateway` entry makes that name resolve on plain Linux/WSL engines too, not just Docker Desktop |
+
+**On Linux, Ollama must listen beyond `127.0.0.1`.** Its systemd service binds `127.0.0.1:11434` by
+default, which the container cannot reach through the host gateway: on 2026-10-30 every model call
+from the backend container failed (`/healthz`: `llm: ConnectError`; a draft: "The writing model ...
+could not be reached"). Bind it to every interface, and keep port 11434 closed to the network in the
+firewall:
+
+```bash
+sudo mkdir -p /etc/systemd/system/ollama.service.d
+printf '[Service]\nEnvironment="OLLAMA_HOST=0.0.0.0:11434"\n' | sudo tee /etc/systemd/system/ollama.service.d/listen.conf
+sudo systemctl daemon-reload && sudo systemctl restart ollama
+```
+
+The writer and the reviewer are Ollama models of their own, `writer` (qwen3.5:4b) and `reviewer`
+(gemma4:e4b) at a 16k context, built from two-line Modelfiles (`backend/.env-example`); until they are
+created and named in `WRITER_LLM_MODEL` / `CORRECTOR_LLM_MODEL`, drafts fall back to `LLM_MODEL`.
 
 ## Volumes
 
-Three named volumes, all deliberate:
+Four named volumes, all deliberate:
 
 - `backend-data` → `/app/data`: the local Qdrant collection, the analysis cache, and the three-layer
   lake (`raw`/`processed`/`exploitation`). Without it every `docker compose down` throws away the
@@ -119,8 +136,11 @@ Three named volumes, all deliberate:
 - `neo4j-data` → `/data`: the graph. It used to be the image's anonymous volume, so a recreated
   container silently started an empty database. The graph can always be rebuilt from the lake and the
   labelled facts (`POST /graph/sync`), but that should be a choice.
+- `neo4j-devastating-data` → `/data` of `neo4j-devastating`: the Devastating edition's graph, a second
+  Neo4j (Community holds one user database; `docs/decisions/editions.md`). Browser on 7475, Bolt on 7688.
+  Rebuilt the same way, with `POST /graph/sync?edition=devastating`.
 
-`docker compose down -v` deletes all three — including the lake.
+`docker compose down -v` deletes all four — including the lake.
 
 ## Neo4j credentials
 

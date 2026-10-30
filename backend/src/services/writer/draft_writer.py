@@ -20,6 +20,7 @@ import logging
 import re
 from dataclasses import dataclass
 
+from src.config.topics import DEVASTATING_TOPICS
 from src.config.thresholds import WriterThresholds
 from src.models.writer.draft import ArticleDraft, DraftContent, DraftFactCheck, DraftSource, DraftTrend, Language
 from src.services.reader.views import excerpt
@@ -32,6 +33,18 @@ from src.services.writer.related_news import RatedDomains, RelatedNewsFinder
 logger = logging.getLogger(__name__)
 
 _SPACE = re.compile(r"\s+")
+
+
+def edition_of_article(article: AnalysedArticle) -> str:
+    """
+    The edition an analysed article was analysed in: its topic is one of
+    that edition's labels (the classifier reads only the run's edition's,
+    src/config/editions.py). No topic: the positive edition, as before.
+    """
+
+    devastating = {topic.name for topic in DEVASTATING_TOPICS.values()}
+
+    return "devastating" if article.topic in devastating else "positive"
 
 
 def window(content: str | None, anchor: str | None, limit: int) -> str:
@@ -201,10 +214,17 @@ class DraftWriter:
         return self.articles.find(article_id=article_id, article_url=article_url)
 
     @staticmethod
-    def new_draft(article: AnalysedArticle, language: Language, instructions: str) -> ArticleDraft:
+    def new_draft(
+        article: AnalysedArticle,
+        language: Language,
+        instructions: str,
+        edition: str | None = None,
+    ) -> ArticleDraft:
         """
         A draft before anything is written: the analysed article's
         headline as a placeholder title, so the list says what it is.
+        `edition` None: the edition the article was analysed in, told by
+        its topic label (edition_of_article).
         """
 
         stamp = now()
@@ -213,6 +233,7 @@ class DraftWriter:
             id=new_draft_id(),
             source_article_id=article.id,
             language=language,
+            edition=edition or edition_of_article(article),
             instructions=instructions,
             content=DraftContent(title=article.headline),
             created_at=stamp,
@@ -295,7 +316,9 @@ class DraftWriter:
 
         fact_checks = build_fact_checks(article)
 
-        trend = self.trend_of(article, thresholds)
+        # The trend step looks for *constructive* angles to a trend: not the
+        # Devastating edition's question, so its drafts go without.
+        trend = self.trend_of(article, thresholds) if draft.edition == "positive" else None
 
         sources = self.writer.fit(
             article,
@@ -309,6 +332,7 @@ class DraftWriter:
             notes,
             thresholds,
             trend=trend.draft if trend else None,
+            edition=draft.edition,
         )
 
         def record_material(current: ArticleDraft) -> None:
@@ -328,6 +352,7 @@ class DraftWriter:
             notes,
             thresholds,
             trend=trend.draft if trend else None,
+            edition=draft.edition,
         )
 
         # No field on the draft holds these yet (docs/decisions/writing.md,

@@ -24,6 +24,7 @@ from src.container import (
     get_trend_service,
     job_store,
 )
+from src.config.editions import DEFAULT_EDITION, Edition
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
 from src.models.core.job import JobStatus
@@ -156,25 +157,38 @@ class EnrichRequest(BaseModel):
         return self
 
 
-def _known_groups(groups: list[str] | None) -> list[str] | None:
-    """Topic groups as asked for: known ones only, each once, at most MAX_GROUPS."""
+def _known_groups(groups: list[str] | None, edition: str = "positive") -> list[str] | None:
+    """
+    Topic groups as asked for: the edition's known ones only
+    (src/config/editions.py), each once, at most MAX_GROUPS.
+    """
 
-    from src.config.topics import TOPIC_GROUPS
+    from src.config.editions import groups_of
     from src.services.ingestion_service import MAX_GROUPS
 
     if groups is None:
         return None
 
+    known = groups_of(edition)
     groups = list(dict.fromkeys(groups))
-    unknown = sorted(set(groups) - set(TOPIC_GROUPS))
+    unknown = sorted(set(groups) - set(known))
 
     if unknown:
-        raise ValueError(f"Unknown topic group(s): {', '.join(unknown)}. Expected some of {', '.join(TOPIC_GROUPS)}.")
+        raise ValueError(f"Unknown topic group(s): {', '.join(unknown)}. Expected some of {', '.join(known)}.")
 
     if not 1 <= len(groups) <= MAX_GROUPS:
         raise ValueError(f"Choose between 1 and {MAX_GROUPS} topic groups.")
 
     return groups
+
+
+def _told(edition: str) -> dict:
+    """
+    `edition` as a keyword, said only of the Devastating edition, so a
+    service that predates the editions is called exactly as before.
+    """
+
+    return {"edition": edition} if edition != DEFAULT_EDITION else {}
 
 
 class IngestRequest(BaseModel):
@@ -195,7 +209,7 @@ class IngestRequest(BaseModel):
         return self
 
 
-def _trending_groups(groups: list[str] | None) -> list[str]:
+def _trending_groups(groups: list[str] | None, edition: str = "positive") -> list[str]:
     """
     A trending round's groups: none is fine - the trends decide what is
     found, and groups only order what fits them first - and otherwise
@@ -203,7 +217,7 @@ def _trending_groups(groups: list[str] | None) -> list[str]:
     towards them.
     """
 
-    return _known_groups(groups) if groups else []
+    return _known_groups(groups, edition) if groups else []
 
 
 class RoundRequest(BaseModel):
@@ -241,6 +255,11 @@ class RoundRequest(BaseModel):
     # every query is one more for engines that rate-limit). A seed is
     # always looked up.
     search: bool = False
+    # Which edition the round is for (src/config/editions.py,
+    # docs/decisions/editions.md): its groups, sources, screen, AI
+    # question - and the edition every article queued from it is analysed
+    # in. Recorded with the round.
+    edition: Edition = DEFAULT_EDITION
 
     @model_validator(mode="after")
     def _groups(self):
@@ -253,7 +272,7 @@ class RoundRequest(BaseModel):
             if self.groups is None:
                 raise ValueError("Choose between 1 and 3 topic groups, or a trending round.")
 
-            self.groups = _known_groups(self.groups)
+            self.groups = _known_groups(self.groups, self.edition)
 
             return self
 
@@ -263,7 +282,7 @@ class RoundRequest(BaseModel):
             raise ValueError(f"At most {MAX_PER_TREND} articles per trend.")
 
         self.seed = (self.seed or "").strip() or None
-        self.groups = _trending_groups(self.groups)
+        self.groups = _trending_groups(self.groups, self.edition)
 
         return self
 
@@ -612,19 +631,28 @@ def enrich(request: EnrichRequest):
 
 
 @router.get("/ingest/sources", dependencies=[Depends(require_storage_key)])
-def ingestion_sources():
-    """The enabled configured sources, and the report of the last run."""
+def ingestion_sources(edition: Edition = Query(default=DEFAULT_EDITION)):
+    """
+    The enabled configured sources, and the report of the last run; the
+    groups, sources and signals are `edition`'s (src/config/editions.py).
+    """
 
-    from src.config.topics import TOPIC_GROUP_NAMES, TOPIC_GROUPS, TOPICS
+    from src.config.editions import EDITION_NAMES, EDITIONS, group_names_of, groups_of, topics_of
     from src.services.ingestion_service import MAX_GROUPS
     from src.services.selection.ranking import DEFAULT_TOPIC_EMPHASIS
     from src.services.selection.selection_service import LISTED, MAX_LISTED, MAX_SELECTED
     from src.services.trends.trending import MAX_ARTICLE_AGE, MAX_PER_TREND, MAX_TREND_AGE, PER_TREND
 
     service = get_ingestion_service()
-    sources = service.enabled_sources()
+    devastating = edition == "devastating"
+    # The edition's own sources: one read only for the other edition is
+    # not offered (NewsSource.groups_in).
+    sources = service.sources_for(edition=edition)
+    topics_by_id = topics_of(edition)
 
     return {
+        "edition": edition,
+        "editions": [{"id": known, "name": EDITION_NAMES[known]} for known in EDITIONS],
         "sources": [
             {
                 "id": source.id,
@@ -632,18 +660,18 @@ def ingestion_sources():
                 "language": source.language,
                 "rssUrl": str(source.rss_url) if source.rss_url else None,
                 "requiresJavascript": source.requires_javascript,
-                "groups": source.groups,
+                "groups": source.groups_in(edition),
             }
             for source in sources
         ],
         "groups": [
             {
                 "id": group,
-                "name": TOPIC_GROUP_NAMES[group],
-                "topics": [{"id": topic, "name": TOPICS[topic].name} for topic in topics],
-                "sources": sum(1 for source in sources if group in source.groups),
+                "name": group_names_of(edition)[group],
+                "topics": [{"id": topic, "name": topics_by_id[topic].name} for topic in topics],
+                "sources": sum(1 for source in sources if group in source.groups_in(edition)),
             }
-            for group, topics in TOPIC_GROUPS.items()
+            for group, topics in groups_of(edition).items()
         ],
         "maxGroups": MAX_GROUPS,
         "maxSelected": MAX_SELECTED,
@@ -661,8 +689,9 @@ def ingestion_sources():
                 "language": signal.language,
                 "country": signal.country,
                 "positive": signal.positive,
+                "devastating": signal.devastating,
             }
-            for signal in get_trend_service().enabled_signals()
+            for signal in get_trend_service().signals_for(edition=edition)
         ],
         "trending": {
             "perTrend": PER_TREND,
@@ -749,9 +778,10 @@ def create_round(request: RoundRequest):
         return get_selection_service().create_round(
             request.groups, request.sources, request.perSource, request.listed,
             topic_emphasis=request.topicEmphasis,
+            **_told(request.edition),
         )
 
-    known_signals = {signal.id for signal in get_trend_service().enabled_signals()}
+    known_signals = {signal.id for signal in get_trend_service().signals_for(edition=request.edition)}
     strangers = sorted(set(request.signals or []) - known_signals)
 
     if strangers:
@@ -765,6 +795,7 @@ def create_round(request: RoundRequest):
             request.groups, None, request.perSource, request.listed,
             topic_emphasis=request.topicEmphasis,
             trending=True, signal_ids=request.signals, seed=request.seed, search=request.search,
+            **_told(request.edition),
         )
     except (SeedError, InvalidSelection) as exc:
         raise HTTPException(status_code=422, detail=str(exc))
@@ -837,9 +868,18 @@ def queue_round(request: QueueRoundRequest, round_id: str = ROUND_ID):
     chose them and how far that matched the AI's proposal.
     """
 
-    from src.services.selection.selection_service import InvalidSelection, RoundNotFound
+    from src.services.selection.selection_service import InvalidSelection, RoundNotFound, edition_of
 
-    thresholds = PipelineThresholds.resolve(request.thresholds)
+    # Analysed in the round's edition, whatever the request says: a
+    # Devastating round's picks judged by the positive gate would all be
+    # turned away, and the reverse.
+    try:
+        edition = edition_of(get_selection_service().get(round_id))
+    except RoundNotFound:
+        raise HTTPException(status_code=404, detail="No such round.")
+
+    overrides = (request.thresholds or ThresholdOverrides()).model_copy(update={"edition": edition})
+    thresholds = PipelineThresholds.resolve(overrides)
 
     try:
         return get_selection_service().queue(
@@ -1008,6 +1048,7 @@ def reader_articles(
     language: str | None = Query(default=None, max_length=8),
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=20, ge=1, le=50),
+    edition: Edition | None = Query(default=None),
 ):
     """
     The feed: one entry per published article (its newest run), newest
@@ -1022,6 +1063,9 @@ def reader_articles(
         language=language,
         offset=offset,
         limit=limit,
+        # Said only when asked, so a reader index that predates the
+        # editions is called exactly as before.
+        **({"edition": edition} if edition else {}),
     )
 
 
@@ -1103,12 +1147,46 @@ class GraphQueryRequest(BaseModel):
     params: dict = Field(default_factory=dict)
 
 
-def _graph_call(call):
+def _edition_args(edition: str) -> tuple:
+    """
+    The edition as an argument for the graph getters, said only of the
+    Devastating one - so a getter that predates the editions (and the
+    tests' fakes) is called exactly as before.
+    """
+
+    return ("devastating",) if edition == "devastating" else ()
+
+
+def _graph(getter, edition: str):
+    """
+    The edition's reader or writer: two graphs, two databases
+    (docs/decisions/editions.md). 503 when the Devastating edition has no
+    graph configured.
+    """
+
+    found = getter(*_edition_args(edition))
+
+    if found is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "The Devastating edition has no graph configured: set NEO4J_DEVASTATING_URI "
+                "and start it with: cd docker && docker compose --env-file ../backend/.env up -d neo4j-devastating"
+            ),
+        )
+
+    return found
+
+
+def _graph_call(call, edition: str = "positive"):
 
     from neo4j.exceptions import ClientError, Neo4jError
 
+    from src.container import graph_uri
     from src.database.neo4j_client import GraphUnavailable
     from src.services.graph.graph_reader import QueryRejected
+
+    service = "neo4j-devastating" if edition == "devastating" else "neo4j"
 
     try:
         return call()
@@ -1116,8 +1194,8 @@ def _graph_call(call):
         raise HTTPException(
             status_code=503,
             detail=(
-                f"Neo4j is not reachable at {settings.NEO4J_URI}: {exc}. "
-                "Start it with: cd docker && docker compose --env-file ../backend/.env up -d neo4j"
+                f"Neo4j is not reachable at {graph_uri(edition)}: {exc}. "
+                f"Start it with: cd docker && docker compose --env-file ../backend/.env up -d {service}"
             ),
         )
     except QueryRejected as exc:
@@ -1130,11 +1208,17 @@ def _graph_call(call):
         raise HTTPException(status_code=502, detail=exc.message or str(exc))
 
 
+# Every graph route takes `edition` (src/config/editions.py): the two
+# editions' graphs are two databases, and a person on the Devastating
+# edition sees, queries and syncs only that one.
+EDITION_QUERY = Query(default=DEFAULT_EDITION)
+
+
 @router.get("/graph/schema", dependencies=[Depends(require_storage_key)])
-def graph_schema():
+def graph_schema(edition: Edition = EDITION_QUERY):
     """The declared schema, and what the database actually holds."""
 
-    return _graph_call(lambda: get_graph_reader().schema())
+    return _graph_call(lambda: _graph(get_graph_reader, edition).schema(), edition)
 
 
 @router.get("/graph/presets", dependencies=[Depends(require_storage_key)])
@@ -1147,29 +1231,31 @@ def graph_presets():
 
 
 @router.post("/graph/query", dependencies=[Depends(require_storage_key)])
-def graph_query(request: GraphQueryRequest):
+def graph_query(request: GraphQueryRequest, edition: Edition = EDITION_QUERY):
     """
     Run one Cypher query, read-only (enforced by Neo4j), 10 s and 500 rows
     at most. Returns the rows and, separately, every node and
     relationship in them for drawing.
     """
 
-    return _graph_call(lambda: get_graph_reader().query(request.cypher, request.params))
+    return _graph_call(lambda: _graph(get_graph_reader, edition).query(request.cypher, request.params), edition)
 
 
 @router.get("/graph/articles", dependencies=[Depends(require_storage_key)])
 def graph_articles(
     search: str | None = Query(default=None, max_length=200),
     limit: int = Query(default=50, ge=1, le=200),
+    edition: Edition = EDITION_QUERY,
 ):
 
-    return {"articles": _graph_call(lambda: get_graph_reader().articles(search, limit))}
+    return {"articles": _graph_call(lambda: _graph(get_graph_reader, edition).articles(search, limit), edition)}
 
 
 @router.get("/graph/related", dependencies=[Depends(require_storage_key)])
 def graph_related(
     url: str = Query(max_length=2048),
     limit: int = Query(default=10, ge=1, le=50),
+    edition: Edition = EDITION_QUERY,
 ):
     """
     Articles related to this one through the graph: a shared claim, a
@@ -1178,22 +1264,26 @@ def graph_related(
     shared.
     """
 
-    return _graph_call(lambda: get_graph_reader().related_articles(url, limit))
+    return _graph_call(lambda: _graph(get_graph_reader, edition).related_articles(url, limit), edition)
 
 
 @router.post("/graph/sync", dependencies=[Depends(require_storage_key)])
-def graph_sync():
+def graph_sync(edition: Edition = EDITION_QUERY):
     """
     Backfill: configured sources, the hand-labelled facts and the lake's
-    verified records, into the graph. Idempotent - see graph_sync.py.
+    verified records, into the edition's graph - each record into its own
+    edition's only. Idempotent - see graph_sync.py.
     """
 
     from src.services.graph.graph_sync import GraphSync
 
+    writer = _graph(get_graph_writer, edition)
+
     return _graph_call(lambda: GraphSync(
-        get_graph_writer(),
+        writer,
         lake=get_datalake_repository() if settings.LAKE_ENABLED else None,
-    ).run())
+        **({"edition": edition} if edition != DEFAULT_EDITION else {}),
+    ).run(), edition)
 
 
 # ---------------------------------------------------------------------

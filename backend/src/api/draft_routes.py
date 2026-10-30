@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import Field, model_validator
 
 from src.api.routes import require_storage_key
+from src.config.editions import Edition
 from src.config.thresholds import WriterThresholdOverrides, WriterThresholds
 from src.container import get_draft_store, get_draft_writer
 from src.models.writer.draft import ArticleDraft, CamelModel, DraftContent, DraftSummary, Language
@@ -44,6 +45,10 @@ class NewDraftRequest(CamelModel):
     language: Language
 
     instructions: str = Field("", max_length=MAX_INSTRUCTIONS_CHARS)
+
+    # The edition to write for (src/config/editions.py): its voice. None,
+    # the edition the article was analysed in.
+    edition: Edition | None = None
 
     # Per-draft overrides, snake_case like /analyze's (WriterThresholds).
     thresholds: WriterThresholdOverrides | None = None
@@ -120,7 +125,7 @@ def create_draft(request: NewDraftRequest):
 
     store = get_draft_store()
 
-    draft = store.save(writer.new_draft(article, request.language, request.instructions.strip()))
+    draft = store.save(writer.new_draft(article, request.language, request.instructions.strip(), request.edition))
 
     try:
         return dump(writer.start(store, draft.id, article, thresholds))

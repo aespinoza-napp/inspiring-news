@@ -1126,3 +1126,78 @@ def test_a_cache_hit_is_not_written_into_the_graph_again():
     service.analyze("https://example.com/a")
 
     assert len(graph.written) == 1
+
+
+# ----------------------------------------------------------------------
+# The Devastating edition is not fact-checked (docs/decisions/editions.md)
+# ----------------------------------------------------------------------
+
+
+def test_a_devastating_article_is_admitted_and_published_without_a_fact_check():
+
+    from src.config.thresholds import PipelineThresholds
+    from src.repositories.datalake_repository import DataLakeRepository
+
+    article = create_article(claims=[create_claim(), create_claim()])
+    admission = FakeAdmission(admitted())
+    service = make_service(make_news(), article, report=None, admission=admission)
+
+    phases = []
+    result = service.analyze(
+        "https://example.com/a",
+        on_phase=lambda phase, data: phases.append(phase),
+        thresholds=PipelineThresholds(edition="devastating"),
+    )
+
+    service.fact_checker.run.assert_not_called()
+    assert "fact_check_skipped" in phases
+    assert "selecting_claims" not in phases
+
+    # Remembered, so the next copy is caught as a duplicate.
+    assert admission.remembered == [article]
+
+    assert result["validity"]["isValid"]
+    assert result["factCheck"]["claimsTotal"] == 2
+    assert result["factCheck"]["claimsChecked"] == 0
+    assert result["factCheck"]["overallVerdict"] == Verdict.UNVERIFIED
+
+    # Published: no verdict of ours blocks it.
+    assert DataLakeRepository._is_publishable(service._unchecked(article))
+
+
+def test_a_positive_article_is_still_fact_checked():
+
+    from src.config.thresholds import PipelineThresholds
+
+    report = FactCheckReport(article_id="a", validation_passed=True, overall_verdict=Verdict.TRUE)
+    service = make_service(make_news(), create_article(), report, admission=FakeAdmission(admitted()))
+
+    service.analyze("https://example.com/a", thresholds=PipelineThresholds())
+
+    service.fact_checker.run.assert_called_once()
+
+
+def test_a_devastating_analysis_goes_into_its_own_graph_and_never_the_positive_one():
+
+    from src.config.thresholds import PipelineThresholds
+
+    def service(devastating_graph):
+        made = make_service(make_news(), create_article(), report=None, admission=FakeAdmission(admitted()))
+        made.graph = Mock()
+        made.devastating_graph = devastating_graph
+        return made
+
+    own = Mock()
+    with_graph = service(own)
+    with_graph.analyze("https://example.com/a", thresholds=PipelineThresholds(edition="devastating"))
+
+    own.write_analysis.assert_called_once()
+    with_graph.graph.write_analysis.assert_not_called()
+
+    # None configured: no graph at all, not the positive one.
+    without = service(None)
+    phases = []
+    without.analyze("https://example.com/b", on_phase=lambda phase, data: phases.append(phase), thresholds=PipelineThresholds(edition="devastating"))
+
+    without.graph.write_analysis.assert_not_called()
+    assert "graph_storing" not in phases

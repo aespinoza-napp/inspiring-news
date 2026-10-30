@@ -200,4 +200,14 @@ claims none of `granite3.3:8b` (+5.0 [-10.0, +20.0]), `gemma4:e4b`
 (-10.0) or `qwen3.5:9b` (-20.0) gains with an interval above zero, so
 the faster model is kept (7.2 s a model call; granite 19.9). Granite is
 the one to run on all 69 (coverage 95%, kappa +0.27 [+0.01, +0.49]).
-Groq's run was not made. `data/evaluation/experiments/models/results.md`.
+Groq's run was not made then; a 5-claim smoke run was, on 2026-10-30
+(section 8). `data/evaluation/experiments/models/results.md`.
+
+## 8. Two editions, and Groq tried (2026-10-30)
+
+| Change | Where | What it did |
+|---|---|---|
+| The Devastating edition is not fact-checked | `AnalysisService._check`, phase `fact_check_skipped` | At the request of the person running it: an admitted article of that edition is stored and published with no claim selection, search or model call. Its report carries no verdict of ours (UNVERIFIED, no claim selected), so the reader shows it as **Not checked**. The positive edition is checked exactly as before. `docs/decisions/editions.md` |
+| A run's lineage records any threshold, not numbers only | `lineage.ThresholdValue` | `threshold_overrides` was `int \| float`, so a string override (`edition`) failed to start the lake record: no Devastating run was stored, published or writable. A string switch such as `verifier_answer`, or `query_kinds`, overridden per run would have failed the same way |
+| Groq's three verifiers, a 5-claim smoke run | `scripts/bench_groq.sh "" 5` | Replays of `cc053417c0cb`, like the local candidates. Every call answered (13 rate limits waited out, none lost). On the 5 claims all models share: `qwen/qwen3.8-27b` 4 of 5 at 1.3 s a claim's model time, as `gemma4:e4b` (4, 118 s); both gpt-oss 3 (FALSE on an UNVERIFIED claim), the 3B 3 at 46 s. Five claims decide nothing; the 20-claim screen is next |
+

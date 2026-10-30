@@ -34,6 +34,13 @@ services:
     # graph sync or a heavy console query either.
     mem_limit: 1536m
 
+  # The Devastating edition's graph, closed and capped like `neo4j`.
+  neo4j-devastating:
+    ports: !reset []
+    restart: unless-stopped
+    logging: *logging
+    mem_limit: 1536m
+
   searxng:
     ports: !reset []
     restart: unless-stopped

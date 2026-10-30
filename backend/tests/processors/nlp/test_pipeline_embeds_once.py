@@ -31,7 +31,7 @@ class _RecordingClassifier:
     def __init__(self):
         self.embeddings = []
 
-    def process(self, text, threshold=None, embedding=None):
+    def process(self, text, threshold=None, embedding=None, edition="positive"):
         self.embeddings.append(embedding)
         return []
 

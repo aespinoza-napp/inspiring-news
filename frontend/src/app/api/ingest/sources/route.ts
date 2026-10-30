@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // 127.0.0.1, not "localhost" - see app/api/analyze/route.ts for why.
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
@@ -16,7 +16,14 @@ function headers(json: boolean): HeadersInit {
   };
 }
 
-export async function GET() {
+// The editions the backend knows (src/config/editions.py); anything else
+// is not forwarded.
+const EDITIONS = new Set(["positive", "devastating"]);
+
+export async function GET(request: NextRequest) {
+  const edition = request.nextUrl.searchParams.get("edition");
+  const query = edition && EDITIONS.has(edition) ? `?edition=${edition}` : "";
+
   let response: Response;
 
   try {
@@ -24,7 +31,7 @@ export async function GET() {
     // Next.js caches server-side GET fetches by default - it would show
     // the first report forever (the same incident as
     // app/api/jobs/[jobId]/route.ts).
-    response = await fetch(`${BACKEND_URL}/ingest/sources`, {
+    response = await fetch(`${BACKEND_URL}/ingest/sources${query}`, {
       cache: "no-store",
       headers: headers(false),
     });

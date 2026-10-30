@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 
 from src.config.settings import settings
-from src.config.topics import TOPICS
+from src.config.editions import topics_of
 from src.models.nlp.topic_prediction import TopicKeyword, TopicPrediction
 from src.services.embeddings.service import EmbeddingService
 
@@ -15,9 +15,10 @@ from .base import BaseProcessor
 
 class TopicClassifier(BaseProcessor):
 
+    # edition -> topic_id -> vector
     _topic_embeddings = None
 
-    # topic_id -> [(keyword, vector), ...]
+    # edition -> topic_id -> [(keyword, vector), ...]
     _keyword_embeddings = None
 
     def __init__(
@@ -37,7 +38,20 @@ class TopicClassifier(BaseProcessor):
             else settings.TOPIC_CLASSIFIER_THRESHOLD
         )
 
-        if TopicClassifier._topic_embeddings is None:
+        # The positive edition's labels are embedded at construction, as
+        # they always were; the devastating edition's on its first run
+        # (_labels), so a process that never runs one never pays for it.
+        self._labels("positive")
+
+    def _labels(self, edition: str) -> tuple[dict, dict]:
+        """
+        The edition's topic vectors and keyword vectors, embedded once per
+        process per edition (src/config/editions.py).
+        """
+
+        topics = topics_of(edition)
+
+        if edition not in (TopicClassifier._topic_embeddings or {}):
 
             # Built aside and assigned at the end. Assigning the empty dict
             # first left the class holding a half-filled cache whenever the
@@ -45,7 +59,7 @@ class TopicClassifier(BaseProcessor):
             # then skipped this block and classified against fewer topics.
             topic_embeddings = {}
 
-            for topic_id, topic in TOPICS.items():
+            for topic_id, topic in topics.items():
 
                 topic_text = f"""
                 {topic.name}
@@ -60,16 +74,21 @@ class TopicClassifier(BaseProcessor):
                     self.embedding_service.encode(topic_text)
                 )
 
-            TopicClassifier._topic_embeddings = topic_embeddings
+            # A new dict rather than a key added to the old one: another
+            # request's thread may be reading it.
+            TopicClassifier._topic_embeddings = {
+                **(TopicClassifier._topic_embeddings or {}),
+                edition: topic_embeddings,
+            }
 
-        if TopicClassifier._keyword_embeddings is None:
+        if edition not in (TopicClassifier._keyword_embeddings or {}):
 
             # One batched call for every keyword of every topic, once per
             # process - scoring an article against them afterwards is
             # arithmetic only.
             terms = [
                 (topic_id, keyword)
-                for topic_id, topic in TOPICS.items()
+                for topic_id, topic in topics.items()
                 for keyword in topic.keywords
             ]
 
@@ -77,20 +96,32 @@ class TopicClassifier(BaseProcessor):
                 [keyword for _, keyword in terms]
             )
 
-            keyword_embeddings: dict = {topic_id: [] for topic_id in TOPICS}
+            keyword_embeddings: dict = {topic_id: [] for topic_id in topics}
 
             for (topic_id, keyword), vector in zip(terms, vectors):
                 keyword_embeddings[topic_id].append((keyword, vector))
 
-            TopicClassifier._keyword_embeddings = keyword_embeddings
+            TopicClassifier._keyword_embeddings = {
+                **(TopicClassifier._keyword_embeddings or {}),
+                edition: keyword_embeddings,
+            }
+
+        return (
+            TopicClassifier._topic_embeddings[edition],
+            TopicClassifier._keyword_embeddings[edition],
+        )
 
     def process(
         self,
         text: str,
         threshold: float | None = None,
         embedding=None,
+        edition: str = "positive",
     ) -> List[TopicPrediction]:
         """
+        `edition` chooses the labels (src/config/editions.py): TOPICS, or
+        the Devastating edition's own.
+
         `embedding` is the text's vector when the caller already has it.
         The enrichment pipeline does - it embeds the article for storage -
         and encoding the same whole article again here doubled the most
@@ -100,6 +131,9 @@ class TopicClassifier(BaseProcessor):
 
         minimum = threshold if threshold is not None else self.threshold
 
+        topics = topics_of(edition)
+        topic_embeddings, keyword_embeddings = self._labels(edition)
+
         article_embedding = (
             embedding if embedding is not None
             else self.embedding_service.encode(text)
@@ -107,7 +141,7 @@ class TopicClassifier(BaseProcessor):
 
         similarities = []
 
-        for topic_id, topic_embedding in self._topic_embeddings.items():
+        for topic_id, topic_embedding in topic_embeddings.items():
 
             similarity = float(
                 np.dot(
@@ -150,11 +184,11 @@ class TopicClassifier(BaseProcessor):
                 # caller instead of "Fact Checking"/"Mental Health" - the
                 # display name every other Topic field (description,
                 # keywords) already exists for, just never read here.
-                topic=TOPICS[topic_id].name,
+                topic=topics[topic_id].name,
                 confidence=round(confidence, 4),
                 probability=round(float(probability), 4),
                 keywords=self._score_keywords(
-                    topic_id, article_embedding, text
+                    keyword_embeddings[topic_id], article_embedding, text
                 ),
             )
 
@@ -165,7 +199,7 @@ class TopicClassifier(BaseProcessor):
 
     def _score_keywords(
         self,
-        topic_id: str,
+        keywords: list,
         article_embedding,
         text: str,
     ) -> List[TopicKeyword]:
@@ -189,7 +223,7 @@ class TopicClassifier(BaseProcessor):
                     )
                 ),
             )
-            for keyword, vector in self._keyword_embeddings[topic_id]
+            for keyword, vector in keywords
         ]
 
         scored.sort(key=lambda item: item.score, reverse=True)

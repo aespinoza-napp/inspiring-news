@@ -86,7 +86,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from src.config.topics import GROUP_OF
+from src.config.editions import ALL_GROUP_OF as GROUP_OF
 from src.services.selection.mission_screen import Reading
 
 # How much each part counts. Whatever the emphasis they sum to 1, so a

@@ -38,6 +38,15 @@ logger = getLogger(__name__)
 MANUAL_FACTS_PATH = Path("data/evaluation/manual")
 
 
+def record_edition(record: ProcessedRecord) -> str:
+    """
+    The edition a lake record was analysed in: recorded in its lineage
+    since the editions (a positive run records none - it is the default).
+    """
+
+    return str(record.lineage.threshold_overrides.get("edition") or "positive")
+
+
 class GraphSync:
 
     def __init__(
@@ -45,8 +54,14 @@ class GraphSync:
         writer: GraphWriter,
         lake: DataLakeRepository | None = None,
         facts_path: Path | None = None,
+        edition: str = "positive",
     ):
         self.writer = writer
+
+        # Which edition's graph this is (docs/decisions/editions.md): only
+        # that edition's lake records go into it, and the labelled facts -
+        # the positive edition's evaluation - only into the positive one.
+        self.edition = edition
         self.lake = lake
         self.facts_path = Path(facts_path) if facts_path else MANUAL_FACTS_PATH
 
@@ -60,7 +75,7 @@ class GraphSync:
 
         facts = 0
 
-        for path in sorted(self.facts_path.glob("fact*.json")):
+        for path in sorted(self.facts_path.glob("fact*.json")) if self.edition == "positive" else []:
             try:
                 fact = json.loads(path.read_text(encoding="utf-8"))
                 self.writer.write_labelled_fact(fact)
@@ -116,6 +131,10 @@ class GraphSync:
             # Enriched but never verified (a run that died mid-check): no
             # report to take claims and verdicts from.
             if record.fact_check is None:
+                continue
+
+            # The other edition's: it belongs in the other graph.
+            if record_edition(record) != self.edition:
                 continue
 
             # The newest run per URL, which is what the live write would

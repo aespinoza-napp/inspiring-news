@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConsoleRequest, QueryConsole } from "@/components/graph/QueryConsole";
 import { RelatedArticles } from "@/components/graph/RelatedArticles";
 import { relKey, SchemaDiagram, SchemaSelection } from "@/components/graph/SchemaDiagram";
+import { editionName, useEdition } from "@/lib/edition";
 import { LABEL_COLOR } from "@/lib/graphStyle";
 import {
   GraphArticle,
@@ -25,6 +26,11 @@ const TABS: { id: Tab; label: string }[] = [
 // docker-compose.yml's 7474 mapping.
 const NEO4J_BROWSER_URL = process.env.NEXT_PUBLIC_NEO4J_BROWSER_URL ?? "http://localhost:7474";
 
+// The Devastating edition's graph is a second Neo4j (docker-compose.yml's
+// neo4j-devastating, its browser on 7475).
+const NEO4J_DEVASTATING_BROWSER_URL =
+  process.env.NEXT_PUBLIC_NEO4J_DEVASTATING_BROWSER_URL ?? "http://localhost:7475";
+
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(path, { cache: "no-store" });
   const data = await response.json();
@@ -33,6 +39,11 @@ async function getJson<T>(path: string): Promise<T> {
 }
 
 export default function GraphPage() {
+  // The header's edition: which of the two graphs this page shows, queries
+  // and syncs. Everything below is that database's alone.
+  const { edition, ready } = useEdition();
+  const scoped = (path: string) => `${path}${path.includes("?") ? "&" : "?"}edition=${edition}`;
+
   const [schema, setSchema] = useState<GraphSchema | null>(null);
   const [presets, setPresets] = useState<GraphPreset[]>([]);
   const [articles, setArticles] = useState<GraphArticle[]>([]);
@@ -48,8 +59,12 @@ export default function GraphPage() {
   const [syncReport, setSyncReport] = useState<GraphSyncReport | null>(null);
 
   const load = useCallback(async () => {
+    if (!ready) return;
+
     setLoading(true);
     setError(null);
+    setSchema(null);
+    setArticles([]);
 
     // Presets need no database, so the console's starting points show
     // even while Neo4j is down; the other two say why they are empty.
@@ -62,8 +77,8 @@ export default function GraphPage() {
 
     try {
       const [schemaData, articleData] = await Promise.all([
-        getJson<GraphSchema>("/api/graph/schema"),
-        getJson<{ articles: GraphArticle[] }>("/api/graph/articles?limit=200"),
+        getJson<GraphSchema>(scoped("/api/graph/schema")),
+        getJson<{ articles: GraphArticle[] }>(scoped("/api/graph/articles?limit=200")),
       ]);
       setSchema(schemaData);
       setArticles(articleData.articles);
@@ -72,7 +87,17 @@ export default function GraphPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+    // `scoped` is a function of `edition`, which is listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [edition, ready]);
+
+  // A switch of edition is another database: what was picked in the other
+  // one means nothing here.
+  useEffect(() => {
+    setSelection(null);
+    setSyncReport(null);
+    setRelatedUrl(null);
+  }, [edition]);
 
   useEffect(() => {
     load();
@@ -104,7 +129,7 @@ export default function GraphPage() {
     setSyncing(true);
     setError(null);
     try {
-      const response = await fetch("/api/graph/sync", { method: "POST" });
+      const response = await fetch(scoped("/api/graph/sync"), { method: "POST" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail ?? data.error ?? `Sync failed (${response.status})`);
       setSyncReport(data as GraphSyncReport);
@@ -141,11 +166,21 @@ export default function GraphPage() {
 
   return (
     <>
-      <h1>Graph</h1>
+      <h1>Graph{edition === "devastating" ? " · Devastating" : ""}</h1>
       <p className="subtitle">
-        Every analysed article in Neo4j, with the entities and topics it is about, the claims it
-        makes, their verdicts, and the sources those verdicts rest on. Hand-labelled facts from the
-        labeller land here too, next to the pipeline&apos;s verdict for the same claim.
+        {edition === "devastating" ? (
+          <>
+            {editionName(edition)}&apos;s own graph - a separate Neo4j database, never mixed with
+            Inspiring News&apos;s: every article analysed for this edition, with the entities and
+            topics it is about and the claims it makes. Not fact-checked, so no verdicts.
+          </>
+        ) : (
+          <>
+            Every analysed article in Neo4j, with the entities and topics it is about, the claims it
+            makes, their verdicts, and the sources those verdicts rest on. Hand-labelled facts from the
+            labeller land here too, next to the pipeline&apos;s verdict for the same claim.
+          </>
+        )}
       </p>
 
       <div className="stats-toolbar graph-toolbar">
@@ -167,7 +202,7 @@ export default function GraphPage() {
             ))}
         </div>
         <div className="graph-toolbar-actions">
-          <a className="graph-browser-link" href={NEO4J_BROWSER_URL} target="_blank" rel="noreferrer">
+          <a className="graph-browser-link" href={edition === "devastating" ? NEO4J_DEVASTATING_BROWSER_URL : NEO4J_BROWSER_URL} target="_blank" rel="noreferrer">
             Open Neo4j Browser ↗
           </a>
           <button type="button" className="graph-secondary" onClick={load} disabled={loading}>

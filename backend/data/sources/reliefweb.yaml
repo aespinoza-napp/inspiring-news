@@ -1,0 +1,40 @@
+# A source of the Devastating edition only (docs/decisions/editions.md):
+# no positive `groups`, so the positive edition never reads it.
+# The UN's humanitarian updates: disasters, famine, epidemics and the toll of
+# conflicts, with figures from agencies on the ground. Many items are reports
+# rather than stories; the screen and the person choose.
+# Feed checked live on 2026-10-30. Its reliability rating is a first
+# estimate by Claude on that day, not yet reviewed by a person.
+
+id: reliefweb
+
+name: ReliefWeb (UN OCHA)
+
+base_url: https://reliefweb.int
+
+rss_url: https://reliefweb.int/updates/rss.xml
+
+language: en
+
+country: INT
+
+source_type: government
+
+reliability_index: 0.93
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - humanitarian
+  - disasters
+
+devastating_groups:
+  - catastrophe
+  - violence
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss

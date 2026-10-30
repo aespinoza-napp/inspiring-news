@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { VerdictBadge } from "@/components/VerdictBadge";
+import { useEdition } from "@/lib/edition";
 import { safeHref, truncate } from "@/lib/graphStyle";
 import { GraphArticle, RelatedArticle, RelatedArticles as Related, Verdict } from "@/lib/types";
 
@@ -33,6 +34,8 @@ export function RelatedArticles({
   onPick: (url: string) => void;
   onShowGraph: (url: string) => void;
 }) {
+  // The edition's graph: two databases (docs/decisions/editions.md).
+  const { edition } = useEdition();
   const [search, setSearch] = useState("");
   const [matches, setMatches] = useState<GraphArticle[]>(articles);
   const [related, setRelated] = useState<Related | null>(null);
@@ -54,7 +57,7 @@ export function RelatedArticles({
     const timer = setTimeout(async () => {
       try {
         const response = await fetch(
-          `/api/graph/articles?limit=50&search=${encodeURIComponent(search.trim())}`
+          `/api/graph/articles?limit=50&edition=${edition}&search=${encodeURIComponent(search.trim())}`
         );
         const data = await response.json();
         if (!cancelled && response.ok) setMatches(data.articles);
@@ -67,7 +70,7 @@ export function RelatedArticles({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [search, articles]);
+  }, [search, articles, edition]);
 
   useEffect(() => {
     if (!url) {
@@ -80,7 +83,7 @@ export function RelatedArticles({
     setLoading(true);
     setError(null);
 
-    fetch(`/api/graph/related?limit=15&url=${encodeURIComponent(url)}`)
+    fetch(`/api/graph/related?limit=15&edition=${edition}&url=${encodeURIComponent(url)}`)
       .then(async (response) => {
         const data = await response.json();
         if (cancelled) return;
@@ -93,7 +96,7 @@ export function RelatedArticles({
     return () => {
       cancelled = true;
     };
-  }, [url]);
+  }, [url, edition]);
 
   const top = related?.related[0]?.score ?? 1;
 

@@ -31,6 +31,13 @@ groups:
   - health
   - environment
 
+# The Devastating edition's groups (docs/decisions/editions.md).
+devastating_groups:
+  - violence
+  - hate
+  - catastrophe
+  - abuse_of_power
+
 metadata:
   extractor: trafilatura
   discovery:

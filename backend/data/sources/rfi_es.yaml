@@ -1,0 +1,39 @@
+# A source of the Devastating edition only (docs/decisions/editions.md):
+# no positive `groups`, so the positive edition never reads it.
+# France's public international radio in Spanish: world news, Latin America
+# and Africa more than the Spanish front pages.
+# Feed checked live on 2026-10-30. Its reliability rating is a first
+# estimate by Claude on that day, not yet reviewed by a person.
+
+id: rfi_es
+
+name: RFI Español
+
+base_url: https://www.rfi.fr
+
+rss_url: https://www.rfi.fr/es/rss
+
+language: es
+
+country: FR
+
+source_type: news
+
+reliability_index: 0.88
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - world
+
+devastating_groups:
+  - violence
+  - catastrophe
+  - abuse_of_power
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss

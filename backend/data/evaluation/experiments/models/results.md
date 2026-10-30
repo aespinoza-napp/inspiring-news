@@ -55,5 +55,31 @@ claim judged FALSE stated as fact.
   replayed.
 - `gemma4:e4b`'s Spanish draft: unreachable after 156 s, one attempt.
 - One baseline call: Ollama 500, "token repeat limit reached".
-- Groq (`scripts/bench_groq.sh`) was not run; two 3-claim smoke runs
-  from 11:04 are under `runs/manual-train/` and are not results.
+- Groq (`scripts/bench_groq.sh`) was not run that day; two 3-claim smoke
+  runs from 11:04 are under `runs/manual-train/` and are not results.
+
+## Groq, 2026-10-30: a 5-claim smoke run
+
+`scripts/bench_groq.sh "" 5`: the first 5 train claims, replays of
+`cc053417c0cb` like every verifier above, on the free plan (one call at a
+time; 13 rate limits waited out, no call lost, no error). Beside them,
+the local candidates' answers on the same 5 claims, from their 20-claim
+runs. Not a result: one claim is 20 points.
+
+| Model | Where | Run | Right of 5 | Model s a claim (median) |
+|---|---|---|---|---|
+| `qwen/qwen3.8-27b` | Groq | `3dd99b7f3805` | **4** | **1.3** |
+| `gemma4:e4b` | local | `62b4e6620665` | **4** | 118.2 |
+| `openai/gpt-oss-120b` | Groq | `5c4b196910a4` | 3 | 3.0 |
+| `openai/gpt-oss-20b` | Groq | `1c27e9536da1` | 3 | 2.5 |
+| `llama3.2:3b` | local | `cc053417c0cb` | 3 | 45.7 |
+| `granite3.3:8b` | local | `91d96d61a714` | 3 | 157.9 |
+| `qwen3.5:9b` | local | `b9f985189177` | 2 | 160.8 |
+
+Every model got the two TRUE claims (fact008, fact012) and none the
+PARTIALLY_TRUE one (fact009: FALSE from all six candidates, TRUE from the
+3B). fact010 (UNVERIFIED) separates them: both gpt-oss answered FALSE,
+confidently wrong; qwen3.8-27b, gemma4, granite and the 3B held back.
+fact011 (UNVERIFIED): the 3B said TRUE; gemma4 and the three Groq models
+were right. Next: the same 20 claims as the table above, so the Groq rows
+pair with the local ones (~35 min on the free plan's rate limit).

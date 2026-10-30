@@ -2,6 +2,7 @@
 // backend/src/models/writer/draft.py exactly - keep the two in step, as
 // lib/types.ts is kept with the analysis responses.
 
+import type { Edition } from "@/lib/edition";
 import { CorrectionMetric } from "@/lib/types";
 
 export type DraftLanguage = "ca" | "es" | "en";
@@ -108,6 +109,8 @@ export interface ArticleDraft {
   id: string;
   sourceArticleId: string;
   language: DraftLanguage;
+  /** The voice it is written in (backend src/config/editions.py); absent on older drafts (positive). */
+  edition?: Edition;
   instructions: string;
   content: DraftContent;
   sources: DraftSource[];
@@ -130,6 +133,7 @@ export interface DraftSummary {
   id: string;
   sourceArticleId: string;
   language: DraftLanguage;
+  edition?: Edition;
   title: string;
   status: DraftStatus;
   busy: DraftBusy | null;

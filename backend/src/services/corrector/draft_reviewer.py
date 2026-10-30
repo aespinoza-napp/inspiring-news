@@ -50,6 +50,7 @@ from src.models.nlp.quality import Quality
 from src.models.writer.draft import ArticleDraft, DraftContent, DraftReview
 from src.processors.nlp.quality import QualityAnalyzer
 from src.processors.nlp.sentiment import SentimentAnalyzer
+from src.services.admission.devastation import DevastationScorer
 from src.services.admission.positive_impact import PositiveImpactScorer
 from src.services.corrector import draft_language, grounding
 from src.services.corrector.text_corrector import UNAVAILABLE_SUMMARY, normalize_metric
@@ -173,17 +174,89 @@ REVIEW_SYSTEM_PROMPT = (
 )
 
 
-def correction_system_prompt(language: str) -> str:
+# The Devastating edition's editors (src/config/editions.py,
+# docs/decisions/editions.md). The review asked every draft for
+# "Inspiring's voice. Constructive and hopeful", so it scored the
+# edition's sardonic narrator as a fault - and the rewrite stage, which
+# fixes what the review found, turned it back into Inspiring's voice. The
+# rest of each prompt - the dimensions, the grounding, the rules - is the
+# same text, so the edition changes the judgement of voice and nothing
+# that holds a fact to its source.
+REVIEW_PUBLICATION = {
+    "positive": (
+        "You are the senior editor of Inspiring, a news publication that reports "
+        "constructive, solutions-focused, positive-impact stories accurately and "
+        "without hype."
+    ),
+    "devastating": (
+        "You are the senior editor of Devastating News, a publication of the news "
+        "that is really bad for humanity, told by a sardonic, openly narcissistic "
+        "star columnist - and reported accurately, every fact from its source."
+    ),
+}
 
-    name = draft_language.language_name(language)
+REVIEW_STYLE = {
+    "positive": (
+        "- style: Inspiring's voice. Constructive and hopeful but sober; a precise "
+        "news register; active voice; no sensationalism, promotional tone or "
+        "moralising; follows the editor's instructions."
+    ),
+    "devastating": (
+        "- style: Devastating News' voice. Ironic, sardonic and self-important: the "
+        "narrator's vanity is the joke, and it is on the narrator, the powerful, "
+        "institutions and hypocrisy - NEVER on victims, the dead, the bereaved, or "
+        "anyone for their race, religion, origin, sex, sexuality or disability "
+        "(irony aimed at them is a serious fault). The irony stays in asides; facts "
+        "are stated plainly and never exaggerated. Where people disagree, each side "
+        "is set out fairly. A story about suicide or self-harm drops the persona "
+        "entirely and is written plainly, with no method or place described. A "
+        "hopeful, constructive or upbeat tone is NOT this voice. Follows the "
+        "editor's instructions."
+    ),
+}
+
+
+def review_system_prompt(edition: str = "positive") -> str:
+    """The review's instructions, judging voice by the draft's edition."""
+
+    if edition not in REVIEW_PUBLICATION:
+        edition = "positive"
 
     return (
+        REVIEW_SYSTEM_PROMPT
+        .replace(REVIEW_PUBLICATION["positive"], REVIEW_PUBLICATION[edition], 1)
+        .replace(REVIEW_STYLE["positive"], REVIEW_STYLE[edition], 1)
+    )
+
+
+COPY_EDITOR = {
+    "positive": (
         "You are the copy editor of Inspiring, a news publication of "
-        "constructive, positive-impact stories. Propose a corrected version of "
+        "constructive, positive-impact stories. ",
+        "a sober, constructive news register, active voice, no hype",
+    ),
+    "devastating": (
+        "You are the copy editor of Devastating News, a publication of the news "
+        "that is really bad for humanity, written by a sardonic, narcissistic "
+        "columnist. ",
+        "keep the columnist's ironic, self-important voice - never make it "
+        "hopeful or constructive - with the irony never aimed at victims, and "
+        "plain, careful prose wherever the story concerns suicide or self-harm; "
+        "active voice",
+    ),
+}
+
+
+def correction_system_prompt(language: str, edition: str = "positive") -> str:
+
+    name = draft_language.language_name(language)
+    editor, style = COPY_EDITOR.get(edition, COPY_EDITOR["positive"])
+
+    return (
+        editor + "Propose a corrected version of "
         "a draft article.\n\n"
         "Fix grammar, spelling and punctuation. Make it easier to read (shorter "
-        "sentences, plain words) and improve the style (a sober, constructive "
-        "news register, active voice, no hype). Improve the title and the "
+        f"sentences, plain words) and improve the style ({style}). Improve the title and the "
         "subtitle: clear, specific and accurate to the body; the title about "
         "50-70 characters with the main subject near the start; the subtitle "
         "one or two sentences. Make it work on the web: the main keyword in the "
@@ -205,7 +278,7 @@ def correction_system_prompt(language: str) -> str:
     )
 
 
-def edits_system_prompt(language: str) -> str:
+def edits_system_prompt(language: str, edition: str = "positive") -> str:
     """
     The same copy editor and the same rules, answering with the changes
     instead of the whole article: the body is the long part of a
@@ -214,7 +287,7 @@ def edits_system_prompt(language: str) -> str:
     (`apply_edits`) and the result checked as any proposal is.
     """
 
-    rewrite = correction_system_prompt(language)
+    rewrite = correction_system_prompt(language, edition)
     rules = rewrite[: rewrite.index("Respond with ONLY")]
 
     return (
@@ -274,11 +347,14 @@ class DraftReviewer:
         quality_analyzer: QualityAnalyzer | None = None,
         impact_scorer: PositiveImpactScorer | None = None,
         correction: str = "rewrite",
+        devastation_scorer: DevastationScorer | None = None,
     ):
         self.llm = llm or LLMClient()
         self.sentiment_analyzer = sentiment_analyzer or SentimentAnalyzer()
         self.quality_analyzer = quality_analyzer or QualityAnalyzer()
         self.impact_scorer = impact_scorer or PositiveImpactScorer()
+        # The Devastating edition's coverage: its own admission gate.
+        self.devastation_scorer = devastation_scorer or DevastationScorer()
         # How the correction is asked for: the article written out again
         # (`rewrite`), or the changes to it (`edits`). REVIEW_CORRECTION.
         self.correction = correction
@@ -327,10 +403,10 @@ class DraftReviewer:
         # the rewrite loop would read as a failing metric.
         reading_ease = draft_language.readability(body, language, lexicon, self.quality_analyzer)
         metrics["readability"] = self._readability(content.body, language, reading_ease)
-        metrics["coverageVerification"] = self._coverage(whole, language, lexicon, reading_ease)
+        metrics["coverageVerification"] = self._coverage(whole, language, lexicon, reading_ease, draft.edition)
 
         # Raises LLMUnavailableError when the model was never reached.
-        answer = self.llm.complete_json(REVIEW_SYSTEM_PROMPT, review_prompt(draft))
+        answer = self.llm.complete_json(review_system_prompt(draft.edition), review_prompt(draft))
 
         for key in REVIEW_LLM_KEYS:
             metrics[key] = normalize_metric(answer, key)
@@ -375,10 +451,19 @@ class DraftReviewer:
             ],
         )
 
-    def _coverage(self, text: str, language: str, lexicon: Lexicon, reading_ease: float) -> CorrectionMetric:
+    def _coverage(
+        self,
+        text: str,
+        language: str,
+        lexicon: Lexicon,
+        reading_ease: float,
+        edition: str = "positive",
+    ) -> CorrectionMetric:
         """
-        How well the draft fits Inspiring's mission: the admission
-        filter's positive-impact score, as /correct computes it.
+        How well the draft fits its edition's mission: the admission
+        filter's positive-impact score, as /correct computes it - or, for
+        a Devastating draft, the devastation score that edition's
+        admission asks for.
 
         QualityAnalyzer's metrics are called one by one with the lexicon
         object, not through `process(language=...)`: that resolves the
@@ -401,12 +486,19 @@ class DraftReviewer:
             novelty=0.5,
         )
 
-        result = self.impact_scorer.score(sentiment, quality)
+        devastating = edition == "devastating"
 
+        result = (
+            self.devastation_scorer.score(sentiment, quality)
+            if devastating
+            else self.impact_scorer.score(sentiment, quality)
+        )
+
+        criteria = "Devastating News' criteria" if devastating else "Inspiring's positive-impact criteria"
         summary = (
-            "Aligns well with Inspiring's positive-impact criteria."
+            f"Aligns well with {criteria}."
             if result.passed
-            else "Does not fully align with Inspiring's positive-impact criteria."
+            else f"Does not fully align with {criteria}."
         )
 
         if language == "ca":
@@ -432,7 +524,7 @@ class DraftReviewer:
 
         try:
             answer = self.llm.complete_json(
-                (edits_system_prompt if edits else correction_system_prompt)(draft.language),
+                (edits_system_prompt if edits else correction_system_prompt)(draft.language, draft.edition),
                 correction_prompt(draft, metrics),
             )
         except LLMUnavailableError as exc:

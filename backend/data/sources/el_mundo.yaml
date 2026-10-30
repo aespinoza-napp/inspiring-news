@@ -32,6 +32,14 @@ groups:
   - science
   - health
 
+# The Devastating edition's groups (docs/decisions/editions.md).
+devastating_groups:
+  - violence
+  - hate
+  - despair
+  - catastrophe
+  - abuse_of_power
+
 metadata:
   extractor: trafilatura
   discovery:

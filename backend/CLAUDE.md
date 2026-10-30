@@ -192,6 +192,16 @@ English rather than raising. See `docs/decisions/incidents.md`.
 All of these accept per-run `thresholds` overrides —
 `docs/decisions/thresholds.md`.
 
+**The edition** (`positive` | `devastating`, `src/config/editions.py`,
+`docs/decisions/editions.md`) travels per call: `thresholds.edition` on an
+analysis (labels, tone gate, and no fact-check in the Devastating one),
+`edition` on `POST /ingest/rounds` (recorded; its queue analyses every pick
+in it), `?edition=` on `GET /ingest/sources`, `GET /reader/articles` and
+every `/graph/*` route (two Neo4j databases), and `edition` on `POST
+/drafts` (else the article's, told by its topic label; the writer's, the
+review's and the rewrite's voice). A source is an edition's by naming its
+groups (`groups` / `devastating_groups`, `NewsSource.in_edition`).
+
 ## Storage
 
 Three layers under `settings.LAKE_PATH`, one write per stage as that

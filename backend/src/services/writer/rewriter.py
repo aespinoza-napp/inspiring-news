@@ -52,8 +52,9 @@ from src.services.corrector.draft_reviewer import (
 from src.services.corrector.text_corrector import UNAVAILABLE_SUMMARY
 from src.services.writer.article_writer import (
     CLOSED_WORLD_RULES,
-    NEWSROOM,
     ArticleWriter,
+    newsroom,
+    with_safe_messaging,
     fact_check_lines,
     fit_excerpts,
     language_name,
@@ -91,9 +92,14 @@ MAX_GUIDANCE_ISSUES = 40
 
 Standing = Literal["met", "below", "unscored"]
 
-REWRITE_SYSTEM_PROMPT = (
-    NEWSROOM
-    + "\n\nAn editor reviewed an article written under the rules below and found it short of what "
+def rewrite_system_prompt(edition: str = "positive") -> str:
+    """The rewrite stage's system prompt, in the draft's edition's voice (article_writer.newsroom)."""
+
+    return newsroom(edition) + REWRITE_RULES
+
+
+REWRITE_RULES = (
+    "\n\nAn editor reviewed an article written under the rules below and found it short of what "
     "the newsroom expects. You rewrite it: the same story, from the same numbered sources and "
     "fact-checks, fixing what the review found.\n\n"
     + CLOSED_WORLD_RULES
@@ -115,6 +121,9 @@ Answer with JSON only, in this shape - every key filled:
 "body": "A first paragraph, every sentence ending with its source [1].\\n\\n## A subheading\\n\\nMore, \
 from two sources [2][3]."}"""
 )
+
+# The positive edition's, as it always was.
+REWRITE_SYSTEM_PROMPT = rewrite_system_prompt("positive")
 
 
 class RewriteRejected(RuntimeError):
@@ -376,9 +385,10 @@ class DraftRewriter:
         thresholds = thresholds or WriterThresholds()
 
         review = draft.review
+        system = rewrite_system_prompt(draft.edition)
 
         def size(candidates) -> int:
-            return len(REWRITE_SYSTEM_PROMPT) + len(rewrite_prompt(draft, review, targets, instructions, candidates))
+            return len(system) + len(rewrite_prompt(draft, review, targets, instructions, candidates))
 
         # Never drops a source, unlike the writer's fit: the numbering is
         # the draft's, and the article cites every one of them.
@@ -392,10 +402,10 @@ class DraftRewriter:
             draft.language,
             self.model,
             len(below_target(review, targets)),
-            len(REWRITE_SYSTEM_PROMPT) + len(prompt),
+            len(system) + len(prompt),
         )
 
-        answer = self.writer.complete(REWRITE_SYSTEM_PROMPT, prompt, thresholds.max_output_tokens)
+        answer = self.writer.complete(system, prompt, thresholds.max_output_tokens)
 
         return self.read(answer, draft, thresholds)
 
@@ -437,7 +447,11 @@ class DraftRewriter:
             texts=known + [draft.content.title, draft.content.subtitle, draft.content.body],
         )
 
-        rewritten = DraftContent(title=title, subtitle=one_line(content.subtitle), body=checked.body)
+        rewritten = DraftContent(
+            title=title,
+            subtitle=one_line(content.subtitle),
+            body=with_safe_messaging(checked.body, draft.language, draft.edition, title, draft.content.body),
+        )
 
         if not rewritten.title or not rewritten.body.strip():
             raise RewriteRejected("The rewrite was not kept: it came back with no title or no body.")

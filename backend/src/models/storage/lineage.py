@@ -6,6 +6,12 @@ from uuid import NAMESPACE_URL, uuid5
 from pydantic import BaseModel, Field
 
 
+
+# A recorded threshold: bool before int, or a switch's True is stored as 1;
+# a string for the editions and the verifier's switches; a list for
+# query_kinds.
+ThresholdValue = bool | int | float | str | list[str]
+
 class DataLayer(str, Enum):
     """
     The three storage layers every analysed article passes through.
@@ -85,7 +91,12 @@ class Lineage(BaseModel):
     # anchor_claims_max would otherwise be coerced to 2.0 in the
     # stored record, quietly changing an integer setting's type in the
     # one place whose job is to record faithfully what a run used.
-    threshold_overrides: dict[str, int | float] = Field(default_factory=dict)
+    # And not numbers only (ThresholdValue): with `int | float` every
+    # Devastating run failed to start its lake record on 2026-10-30 -
+    # `edition` is a string - so none was stored, published or writable,
+    # and any overridden switch (verifier_answer, query_kinds) would have
+    # done the same.
+    threshold_overrides: dict[str, ThresholdValue] = Field(default_factory=dict)
 
     # Named versions of the components that shaped this record, e.g.
     # {"embedding_model": "...", "llm_model": "...", "sentiment_model": "..."}.
@@ -111,6 +122,6 @@ class RunContext(BaseModel):
 
     code_revision: Optional[str] = None
 
-    threshold_overrides: dict[str, int | float] = Field(default_factory=dict)
+    threshold_overrides: dict[str, ThresholdValue] = Field(default_factory=dict)
 
     components: dict[str, str] = Field(default_factory=dict)

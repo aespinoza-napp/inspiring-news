@@ -24,6 +24,7 @@ export const CURRENT_PHASE_LABELS: Record<string, string> = {
   validating: "Checking topic & positivity…",
   validated: "Validation complete",
   skipped: "Fact-check skipped — article did not pass validation",
+  fact_check_skipped: "Not fact-checked — the Devastating edition publishes as reported",
   selecting_claims: "Selecting claims to verify…",
   claims_selected: "Claims selected",
   retrieving_evidence: "Searching for evidence…",
@@ -67,7 +68,9 @@ export function PhaseStepper({
   const isQueuedOrRunning = status === "queued" || status === "running";
   const isFailed = status === "failed";
   const isDone = status === "done";
-  const isSkipped = has("skipped");
+  // Rejected by admission, or admitted in the Devastating edition, which
+  // is not fact-checked (backend AnalysisService._check).
+  const isSkipped = has("skipped") || has("fact_check_skipped");
 
   const claimsSelectedEvent = events.find(
     (event) => event.phase === "claims_selected"

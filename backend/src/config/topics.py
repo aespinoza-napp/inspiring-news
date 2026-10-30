@@ -373,3 +373,193 @@ TOPIC_KEYWORDS_ES = {
     "fitness": ["ejercicio", "actividad fisica", "caminar", "entrenamiento", "gimnasio"],
     "public_health": ["salud publica", "epidemi", "prevencion", "sanidad", "oms ", "sanitari", "vacunacion", "pandemia"],
 }
+
+
+# ==========================
+# The Devastating edition
+# ==========================
+#
+# The other edition (src/config/editions.py, docs/decisions/editions.md):
+# the news that is bad for humanity, with labels of its own. Separate
+# dicts, not more entries in TOPICS, for two reasons: the positive
+# classifier, the labeller's copy of the five groups and the evaluation's
+# balance over them must not change, and a positive run must never label
+# an article "Terrorism" - nor a devastating one "Inspirational Stories".
+# Topic ids are distinct from TOPICS' so one lookup (editions.ALL_TOPICS)
+# can find either edition's keywords for discovery's feed filter.
+DEVASTATING_TOPICS = {
+
+    # ==========================
+    # Violence
+    # ==========================
+
+    "terrorism": Topic(
+        name="Terrorism",
+        description="Terrorist attacks, bombings, suicide bombers, extremist and jihadist groups, hostage-taking and attacks on civilians.",
+        keywords=[
+            "terrorism", "terrorist attack", "bombing", "suicide bomber",
+            "extremist", "jihadist", "hostages", "car bomb", "terror",
+            "militants", "explosion", "attack"
+        ],
+    ),
+
+    "mass_killings": Topic(
+        name="Mass Killings",
+        description="Mass shootings, massacres, multiple homicides, serial killers, genocide and killings of many people at once.",
+        keywords=[
+            "mass shooting", "massacre", "gunman", "killed",
+            "multiple homicide", "serial killer", "genocide", "death toll",
+            "kills", "shooting", "stabbing", "murder", "dead"
+        ],
+    ),
+
+    "war": Topic(
+        name="War & Armed Conflict",
+        description="Wars, invasions, airstrikes, shelling, drone attacks, civilian casualties, war crimes and refugees fleeing fighting.",
+        keywords=[
+            "war", "airstrike", "shelling", "invasion", "drone attack",
+            "civilian casualties", "war crimes", "ceasefire collapse",
+            "strike", "missile", "troops", "offensive", "fighting", "drone"
+        ],
+    ),
+
+    # ==========================
+    # Hate
+    # ==========================
+
+    "racism": Topic(
+        name="Racism",
+        description="Racism, racial discrimination, racist attacks and abuse, xenophobia, segregation and racial profiling by police or institutions.",
+        keywords=[
+            "racism", "racist", "racial discrimination", "xenophobia",
+            "racial profiling", "segregation", "racial slur", "discrimination",
+            "migrants", "white supremacist"
+        ],
+    ),
+
+    "hate_crimes": Topic(
+        name="Hate Crimes",
+        description="Hate crimes and attacks on people for their religion, origin, sexuality or gender: antisemitism, islamophobia, homophobic and transphobic violence.",
+        keywords=[
+            "hate crime", "antisemitism", "islamophobia", "homophobic attack",
+            "transphobic", "hate speech", "persecution", "hate", "antisemitic",
+            "anti-Muslim"
+        ],
+    ),
+
+    # ==========================
+    # Despair
+    # ==========================
+
+    "suicide": Topic(
+        name="Suicide & Self-harm",
+        description="Suicide, suicide rates, self-harm and mental-health crises that end in death. Reported under safe-messaging guidelines.",
+        keywords=[
+            "suicide", "suicide rate", "self-harm", "took their own life",
+            "mental health crisis", "suicides", "despair"
+        ],
+    ),
+
+    "addiction": Topic(
+        name="Addiction & Overdoses",
+        description="Drug overdoses, the opioid and fentanyl crises, addiction deaths and drug cartels' violence.",
+        keywords=[
+            "overdose", "opioid crisis", "fentanyl", "addiction",
+            "drug cartel", "drug deaths", "overdoses", "cartel", "gang",
+            "drug trafficking"
+        ],
+    ),
+
+    # ==========================
+    # Catastrophe
+    # ==========================
+
+    "disasters": Topic(
+        name="Disasters",
+        description="Deadly natural and man-made disasters: earthquakes, floods, wildfires, hurricanes, building collapses, shipwrecks and industrial accidents.",
+        keywords=[
+            "earthquake", "flood", "wildfire", "hurricane",
+            "collapse", "shipwreck", "explosion", "victims", "floods",
+            "storm", "typhoon", "crash", "disaster", "fire"
+        ],
+    ),
+
+    "famine": Topic(
+        name="Famine & Epidemics",
+        description="Famine, starvation, malnutrition, humanitarian catastrophes, deadly outbreaks and epidemics overwhelming health systems.",
+        keywords=[
+            "famine", "starvation", "malnutrition", "humanitarian catastrophe",
+            "outbreak", "epidemic", "cholera", "hunger", "humanitarian crisis",
+            "drought"
+        ],
+    ),
+
+    # ==========================
+    # Abuse of power
+    # ==========================
+
+    "corruption": Topic(
+        name="Corruption",
+        description="Corruption, bribery, embezzlement of public money, fraud by officials and companies, and cover-ups.",
+        keywords=[
+            "corruption", "bribery", "embezzlement", "fraud",
+            "cover-up", "kickbacks", "money laundering", "corrupt",
+            "scandal", "indicted"
+        ],
+    ),
+
+    "human_rights": Topic(
+        name="Human Rights Abuses",
+        description="Torture, forced labour, human trafficking, child abuse, repression of protesters, political prisoners and enforced disappearances.",
+        keywords=[
+            "torture", "human trafficking", "forced labour", "child abuse",
+            "repression", "political prisoners", "disappeared", "detained",
+            "crackdown", "abuses", "executed"
+        ],
+    ),
+}
+
+DEVASTATING_TOPIC_GROUPS = {
+    "violence": ["terrorism", "mass_killings", "war"],
+    "hate": ["racism", "hate_crimes"],
+    "despair": ["suicide", "addiction"],
+    "catastrophe": ["disasters", "famine"],
+    "abuse_of_power": ["corruption", "human_rights"],
+}
+
+DEVASTATING_TOPIC_GROUP_NAMES = {
+    "violence": "Violence",
+    "hate": "Hate",
+    "despair": "Despair",
+    "catastrophe": "Catastrophe",
+    "abuse_of_power": "Abuse of Power",
+}
+
+DEVASTATING_GROUP_OF = {
+    topic: group
+    for group, topics in DEVASTATING_TOPIC_GROUPS.items()
+    for topic in topics
+}
+
+# The Spanish feed filter's words for the devastating topics, written like
+# TOPIC_KEYWORDS_ES: accent-free word starts, a trailing space for a
+# whole word. Not "ataque" alone (a footballer's attack, a heart attack)
+# nor "crisis" (every economic headline).
+DEVASTATING_TOPIC_KEYWORDS_ES = {
+    # Measured 2026-10-30 on a live Violence and Hate round: with the first
+    # lists DW Español, ABC, El Mundo and Europa Press offered nothing -
+    # "Nos han matado" and "arden en Ormuz" matched no word. Hence the
+    # verbs ("mata", "muere"), "ataque" and "violencia". Not "crisis",
+    # still: every economic headline.
+    "terrorism": ["terroris", "atentado", "yihadis", "explosivo", "rehenes", "coche bomba", "extremista", "ataque", "bomba", "milicia", "secuestr"],
+    "mass_killings": ["masacre", "matanza", "tiroteo", "asesin", "homicidio", "genocidio", "muertos", "muerto ", "mata ", "matan ", "matado", "muere", "mueren", "fallec", "apunal", "violencia", "victima"],
+    "war": ["guerra", "bombarde", "ofensiva", "misil", "invasion", "crimenes de guerra", "dron", "victimas civiles", "ejercito", "tropas", "conflicto armado", "combate", "arden"],
+    "racism": ["racismo", "racista", "xenofob", "discriminacion", "perfil racial", "segregacion", "migrantes", "inmigrantes"],
+    "hate_crimes": ["delito de odio", "delitos de odio", "antisemit", "islamofob", "homofob", "transfob", "discurso de odio", "odio", "agresion", "persecucion"],
+    "suicide": ["suicid", "autolesi", "se quito la vida", "salud mental", "acoso escolar"],
+    "addiction": ["sobredosis", "opioide", "fentanilo", "adiccion", "cartel", "narcotrafic", "narco", "droga", "banda", "pandilla"],
+    "disasters": ["terremoto", "inundacion", "incendio", "huracan", "derrumbe", "naufragio", "explosion", "dana ", "tormenta", "temporal", "accidente", "tragedia", "catastrofe", "sismo"],
+    "famine": ["hambruna", "desnutricion", "hambre ", "catastrofe humanitaria", "brote", "epidemia", "colera", "crisis humanitaria", "sequia", "refugiad"],
+    "corruption": ["corrupcion", "corrupto", "soborno", "malversacion", "fraude", "blanqueo", "comisiones ilegales", "imputad", "escandalo", "investigado", "detenido"],
+    "human_rights": ["tortura", "trata de personas", "trabajo forzoso", "abuso infantil", "abusos", "represion", "presos politicos", "desaparecid", "derechos humanos", "detencion", "ejecutad", "carcel"],
+}

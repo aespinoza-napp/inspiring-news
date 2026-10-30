@@ -33,6 +33,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
+from src.config.editions import DEFAULT_EDITION, Edition
 from src.config.settings import settings
 
 # The questions a claim's first search asks, in the order they are
@@ -162,6 +163,21 @@ class PipelineThresholds(BaseModel):
     # article outright, rather than only costing it score.
     positive_impact_hard_fail_enabled: bool = Field(
         default_factory=lambda: settings.POSITIVE_IMPACT_HARD_FAIL_ENABLED,
+    )
+
+    # Which edition the run is for (src/config/editions.py): the topic
+    # labels the classifier reads, and which tone admission asks for. A
+    # per-run choice with no setting behind it - a process serves both.
+    # Part of the analysis cache's key like every field here, so a story
+    # analysed for one edition is never served to the other.
+    edition: Edition = Field(default=DEFAULT_EDITION)
+
+    # The Devastating edition's tone gate: the least devastation
+    # (DevastationScorer) a story needs to be checked in that edition.
+    devastation_min_score: float = Field(
+        default_factory=lambda: settings.DEVASTATION_MIN_SCORE,
+        ge=0.0,
+        le=1.0,
     )
 
     # At/above this similarity to a stored article, it is a duplicate.
@@ -409,6 +425,8 @@ class ThresholdOverrides(BaseModel):
     topic_min_confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
     positive_impact_min_score: Optional[float] = Field(None, ge=0.0, le=1.0)
     positive_impact_hard_fail_enabled: Optional[bool] = Field(None)
+    edition: Optional[Edition] = Field(None)
+    devastation_min_score: Optional[float] = Field(None, ge=0.0, le=1.0)
     duplicate_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     relatedness_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
 

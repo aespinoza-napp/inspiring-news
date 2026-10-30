@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { FlowSteps } from "@/components/FlowSteps";
 import { NewDraftForm } from "@/components/drafts/NewDraftForm";
 import { DraftSummary, LANGUAGES, draftsApi } from "@/lib/drafts";
+import { editionOf, useEdition } from "@/lib/edition";
 
 const READER_ID = /^[0-9a-f]{16}$/;
 
@@ -19,7 +20,11 @@ const READER_ID = /^[0-9a-f]{16}$/;
  * again from the same article.
  */
 export default function DraftsPage({ searchParams }: { searchParams: { url?: string; from?: string } }) {
-  const [drafts, setDrafts] = useState<DraftSummary[] | null>(null);
+  const [allDrafts, setDrafts] = useState<DraftSummary[] | null>(null);
+
+  // Only the header's edition's drafts: each is written in its voice.
+  const { edition } = useEdition();
+  const drafts = allDrafts && allDrafts.filter((draft) => editionOf(draft) === edition);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

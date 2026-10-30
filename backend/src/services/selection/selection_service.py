@@ -117,8 +117,13 @@ class SelectionService:
         signal_ids: list[str] | None = None,
         seed: str | None = None,
         search: bool = False,
+        edition: str = "positive",
     ) -> dict:
         """
+        `edition` (src/config/editions.py) is the round's for good: its
+        groups, sources, screen and AI question, and the edition every
+        article queued from it is analysed in.
+
         `topic_emphasis`, 0-1, is how much fitting `groups` weighs against
         positive impact in the order (ranking.py; None: the default) - the
         person's, for this round only, and recorded with it.
@@ -129,6 +134,10 @@ class SelectionService:
         `per_source` is then articles per trend.
         """
 
+        # Said only of a Devastating round, so a discovery that predates
+        # the editions is called exactly as before (like `trending` below).
+        told = {"edition": edition} if edition != "positive" else {}
+
         if trending:
 
             if self.trending is None:
@@ -137,12 +146,14 @@ class SelectionService:
             discovered = self.trending.discover(
                 groups=groups, signal_ids=signal_ids, seed=seed,
                 per_trend=per_source, search=search, topic_emphasis=topic_emphasis,
+                **told,
             )
 
         else:
 
             discovered = self.ingestion.discover_candidates(
                 groups, source_ids, per_source, topic_emphasis=topic_emphasis,
+                **told,
             )
 
         # Best first already; `totals.candidates` keeps counting all found.
@@ -152,6 +163,7 @@ class SelectionService:
         round_ = {
             "id": uuid.uuid4().hex[:16],
             **discovered,
+            "edition": edition,
             "candidates": found[:listed],
             "reserve": found[listed:],
             "aiSelection": None,
@@ -221,6 +233,12 @@ class SelectionService:
         if not round_["candidates"]:
             raise InvalidSelection("This round found no candidates to choose from.")
 
+        # Laya was fine-tuned on positive-impact picks: asked about the
+        # Devastating edition's candidates it would answer the wrong
+        # question with confidence.
+        if scorer == "laya" and edition_of(round_) == "devastating":
+            raise InvalidSelection("Laya scores positive impact only; use the LLM for a Devastating round.")
+
         with self._lock:
 
             if self._running is not None:
@@ -263,6 +281,11 @@ class SelectionService:
             # the lens is called exactly as before - and only to the LLM:
             # Laya is a classifier, with no prompt to tell it anything.
             told = {"trending": True} if round_.get("lens") == "trending" and scorer != "laya" else {}
+
+            # Likewise said only of a Devastating round.
+            if edition_of(round_) == "devastating" and scorer != "laya":
+                told["edition"] = "devastating"
+
             selection = selector.select(round_["candidates"], round_["groups"], limit, min_score, **told)
             state.update(status="done", **selection.to_dict())
         except LLMUnavailableError as exc:
@@ -382,6 +405,7 @@ def _summary(round_: dict) -> dict:
         "id": round_["id"],
         "startedAt": round_.get("startedAt"),
         "lens": round_.get("lens"),
+        "edition": edition_of(round_),
         "groups": round_.get("groups"),
         "topicEmphasis": emphasis,
         "totals": round_.get("totals"),
@@ -390,6 +414,12 @@ def _summary(round_: dict) -> dict:
         "queued": len(queued.get("urls") or []),
         "selectedBy": queued.get("selectedBy"),
     }
+
+
+def edition_of(round_: dict) -> str:
+    """A round's edition; rounds from before the editions were all positive."""
+
+    return round_.get("edition") or "positive"
 
 
 def _now() -> str:

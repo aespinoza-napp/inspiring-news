@@ -4881,3 +4881,102 @@ button.button-link:hover:not(:disabled) {
 .timing-url {
   overflow-wrap: anywhere;
 }
+
+/* ---------------------------------------------------------------------
+   The edition (lib/edition.tsx, components/EditionSwitch.tsx): the header
+   choice between Positive and Devastating, and the accent that says which
+   one every page is in. Crimson for Devastating, measured for the text
+   that sits on it: white on #b91c1c is 6.5:1, #121212 on #f87171 is 7:1.
+   --------------------------------------------------------------------- */
+
+:root[data-edition="devastating"] {
+  --accent: #b91c1c;
+  --accent-fg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-edition="devastating"] {
+    --accent: #f87171;
+    --accent-fg: #121212;
+  }
+}
+
+/* The brand on the left and the switch at the right of the header's first
+   row; the navigation wraps onto its own row below (it never fitted beside
+   the brand anyway). */
+.edition-switch {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.edition-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+  background: var(--surface);
+}
+
+/* Reset what every <button> gets from the rule at the top of this file:
+   its margin-top: 1rem pushed both options to the pill's floor, and its
+   accent fill and press offset belong to action buttons, not a choice. */
+.edition-option {
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 150ms var(--ease), color 150ms var(--ease);
+}
+
+.edition-option:hover:not(.is-active) {
+  color: var(--fg);
+  opacity: 1;
+}
+
+.edition-option:active:not(:disabled) {
+  transform: none;
+}
+
+.edition-option.is-active {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.edition-option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.edition-note {
+  border-left: 3px solid var(--accent);
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* On a phone the brand and the switch still share the first row. */
+@media (max-width: 480px) {
+  .edition-option {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .edition-switch .brand {
+    font-size: 0.95rem;
+  }
+}

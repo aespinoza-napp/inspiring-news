@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from logging import getLogger
 
+from src.config.topics import DEVASTATING_TOPICS
 from src.models.storage.lineage import DataLayer, build_record_id
 from src.services.reader.views import SourceNames, article_view, card, reader_id
 
@@ -98,6 +99,15 @@ def _timestamp(value) -> float:
         return 0.0
 
 
+_DEVASTATING_NAMES = {topic.name.casefold() for topic in DEVASTATING_TOPICS.values()}
+
+
+def edition_of_topic_name(name: str | None) -> str:
+    """An article's edition from its primary topic's name; no topic is the positive edition's."""
+
+    return "devastating" if (name or "").casefold() in _DEVASTATING_NAMES else "positive"
+
+
 def _same(left: str | None, right: str) -> bool:
 
     return (left or "").casefold() == right.casefold()
@@ -143,12 +153,22 @@ class ReaderIndex:
         language: str | None = None,
         offset: int = 0,
         limit: int = DEFAULT_PAGE,
+        edition: str | None = None,
     ) -> dict:
+        """
+        `edition` (src/config/editions.py) keeps only that edition's
+        articles - told by their topic label, which is one of the
+        edition's own - so neither edition's readers see the other's.
+        None: both, as before the editions.
+        """
 
         with self._lock:
             self._refresh()
             published = list(self._feed)
             analysed = len(self._latest)
+
+        if edition is not None:
+            published = [entry for entry in published if edition_of_topic_name(entry.topic) == edition]
 
         in_language = [
             entry for entry in published if not language or _same(entry.language, language)

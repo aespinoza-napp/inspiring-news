@@ -20,6 +20,7 @@ import { FlowSteps } from "@/components/FlowSteps";
 import { WriteArticleLink } from "@/components/drafts/WriteArticleLink";
 import { ArticleTiming, ClaimTimingPanel } from "@/components/TimingBreakdown";
 import { buildTrace, ClaimStep } from "@/lib/liveTrace";
+import { Edition, editionName, useEdition } from "@/lib/edition";
 import { useAnalysisJob } from "@/lib/useAnalysisJob";
 import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
 
@@ -28,6 +29,11 @@ export default function AnalyzerPage() {
   const [forceRefresh, setForceRefresh] = useState(false);
   const [bulkMode, setBulkMode] = useState(false);
   const [urls, setUrls] = useState<string[]>([]);
+
+  // The edition the header shows when Analyse is pressed: the jobs on the
+  // page keep it, so flipping the switch afterwards does not re-run them.
+  const { edition } = useEdition();
+  const [runEdition, setRunEdition] = useState<Edition>("positive");
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -39,6 +45,7 @@ export default function AnalyzerPage() {
 
     if (parsed.length === 0) return;
 
+    setRunEdition(edition);
     setUrls(parsed);
   }
 
@@ -49,7 +56,9 @@ export default function AnalyzerPage() {
       <h1>News Analyzer</h1>
       <p className="subtitle">
         Paste one or more article URLs (one per line) to run them through the
-        full pipeline: scraping, enrichment, validation and fact-checking.
+        full pipeline: scraping, enrichment, validation and fact-checking - for{" "}
+        {editionName(edition)}, the edition chosen in the header: its topic labels, and{" "}
+        {edition === "devastating" ? "how devastating" : "how positive"} a story must be to be checked.
         Progress updates every second as each phase completes. To find
         articles by topic instead, start from <Link href="/discover">Discover</Link>.
       </p>
@@ -89,21 +98,36 @@ export default function AnalyzerPage() {
 
       {bulkMode ? (
         <BulkResults
-          key={`${urls.join("\n")}:${forceRefresh}`}
+          key={`${urls.join("\n")}:${forceRefresh}:${runEdition}`}
           urls={urls}
           forceRefresh={forceRefresh}
+          edition={runEdition}
         />
       ) : (
         urls.map((url) => (
-          <JobCard key={`${url}:${forceRefresh}`} url={url} forceRefresh={forceRefresh} />
+          <JobCard
+            key={`${url}:${forceRefresh}:${runEdition}`}
+            url={url}
+            forceRefresh={forceRefresh}
+            edition={runEdition}
+          />
         ))
       )}
     </>
   );
 }
 
-function BulkResults({ urls, forceRefresh }: { urls: string[]; forceRefresh: boolean }) {
-  const { jobsByUrl, error } = useBatchAnalysisJobs(urls, forceRefresh);
+function BulkResults({
+  urls,
+  forceRefresh,
+  edition,
+}: {
+  urls: string[];
+  forceRefresh: boolean;
+  edition: Edition;
+}) {
+  // A new object each render is fine: the hook keys on its JSON.
+  const { jobsByUrl, error } = useBatchAnalysisJobs(urls, forceRefresh, { edition });
 
   if (urls.length === 0) return null;
 
@@ -131,26 +155,29 @@ function BulkResults({ urls, forceRefresh }: { urls: string[]; forceRefresh: boo
       </div>
 
       {urls.map((url, index) => (
-        <JobCardView key={`${url}:${index}`} url={url} job={jobs[index]} error={null} />
+        <JobCardView key={`${url}:${index}`} url={url} job={jobs[index]} error={null} edition={edition} />
       ))}
     </>
   );
 }
 
-function JobCard({ url, forceRefresh }: { url: string; forceRefresh: boolean }) {
-  const { job, error } = useAnalysisJob(url, forceRefresh);
+function JobCard({ url, forceRefresh, edition }: { url: string; forceRefresh: boolean; edition: Edition }) {
+  const { job, error } = useAnalysisJob(url, forceRefresh, { edition });
 
-  return <JobCardView url={url} job={job} error={error} />;
+  return <JobCardView url={url} job={job} error={error} edition={edition} />;
 }
 
 function JobCardView({
   url,
   job,
   error,
+  edition,
 }: {
   url: string;
   job: AnalysisJob | null;
   error: string | null;
+  /** The edition the job was asked for; the result's own wins once it is in. */
+  edition: Edition;
 }) {
   if (error) {
     return (
@@ -189,6 +216,7 @@ function JobCardView({
     (a, b) => b.confidence - a.confidence
   );
   const validity = job.result?.validity;
+  const runEdition: Edition = job.result?.thresholds?.edition ?? edition;
   const checkedCount = partial.claims.filter((claim) => !claim.step).length;
   const claimsChecked = job.result?.factCheck?.claimsChecked ?? 0;
   const showUncheckedNote =

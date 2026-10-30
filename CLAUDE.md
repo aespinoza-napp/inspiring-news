@@ -88,6 +88,7 @@ src.main:app --port 8001`.
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
 | Laya: typed decisions in `inference/` (`/decisions`), what was fine-tuned, what was adopted (nothing yet) | `docs/decisions/laya.md`, `backend/data/evaluation/experiments/laya/` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
+| The two editions (Positive / Devastating): what the switch changes, its sources, and why the Devastating one is not fact-checked | `docs/decisions/editions.md`, `backend/src/config/editions.py` |
 
 ## Invariants
 
@@ -225,6 +226,20 @@ write them down than to have each be rediscovered.
   rarely catches a changed figure. Every report before 22 Oct afternoon,
   and `thorough.json`, is the list verifier. Never compare two verifiers
   across two searched runs: replay one (`cli run --replay`).
+- **The Devastating edition is not fact-checked, by request.** Since
+  2026-10-30 an admitted article of that edition is stored and published
+  with no claim selection, search or model (`fact_check_skipped`); its
+  reader page says **Not checked**. Its stories rest on its sources
+  (`devastating_groups` in the YAMLs), and the writer still states only
+  what those articles say. Its analyses go into a second Neo4j
+  (`NEO4J_DEVASTATING_URI`), never the positive graph.
+  `docs/decisions/editions.md`.
+- **The Docker backend cannot reach a host Ollama bound to 127.0.0.1.**
+  On Linux the systemd service binds only localhost; the container's model
+  calls then all fail (`/healthz`: `llm: ConnectError`). `docker/README.md`
+  has the drop-in that binds 0.0.0.0. Drafts also need the `writer` and
+  `reviewer` models created and named in `backend/.env`, or they fall
+  back to `llama3.2:3b`.
 - **`SENTIMENT_MODEL` and `EMBEDDING_MODEL` in `backend/.env` are
   documentary.** The models load in `inference/`, from
   `inference/src/config.py`'s own defaults. Editing the backend values

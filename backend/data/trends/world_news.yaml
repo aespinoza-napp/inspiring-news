@@ -1,0 +1,18 @@
+# r/worldnews, its top posts of the day: the world's news as a large
+# community ranks it, which leans to wars, attacks, disasters and abuses
+# of power - the Devastating edition's signal (docs/decisions/editions.md),
+# never read by the positive edition. Each post links a news article.
+# Read as public RSS, no key, like r/UpliftingNews and with the same
+# limit: Reddit can answer an unauthenticated reader with nothing.
+
+id: world_news
+
+name: r/worldnews · top of the day
+
+kind: ranked_feed
+
+url: https://www.reddit.com/r/worldnews/top/.rss?t=day
+
+language: en
+
+devastating: true

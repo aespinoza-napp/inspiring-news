@@ -230,6 +230,9 @@ class LabellingBatch:
                 source
                 for source in self.sources
                 if source.enabled
+                # The positive edition's sources: the labelled set is its
+                # (docs/decisions/editions.md).
+                and source.in_edition("positive")
                 and (not request.languages or source.language in request.languages)
             ),
             key=lambda source: source.id,

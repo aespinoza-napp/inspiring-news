@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LanguageSwitch } from "@/components/reader/LanguageSwitch";
 import { ReaderCard } from "@/components/reader/ReaderCard";
 import { StoryList } from "@/components/reader/StoryList";
+import { Edition, useEdition } from "@/lib/edition";
 import { ReaderFeed } from "@/lib/reader";
 import { ReaderText, languageNameIn, readerText, topicName, withLang } from "@/lib/readerText";
 import { useReaderLang } from "@/lib/useReaderLang";
@@ -65,12 +66,31 @@ export default function ReaderPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // The header's edition: each edition's readers see only its articles
+  // (backend reader index, `edition`). A topic of the other edition's is
+  // dropped when the switch moves - it would match nothing.
+  const { edition, ready } = useEdition();
+  const lastEdition = useRef<Edition | null>(null);
+
   useEffect(() => {
     setQuery(readQuery());
   }, []);
 
   useEffect(() => {
-    if (!query) return;
+    if (!ready) return;
+    if (lastEdition.current && lastEdition.current !== edition) {
+      setQuery((current) => {
+        if (!current) return current;
+        const next = { ...current, topic: null, page: 0 };
+        writeQuery(next);
+        return next;
+      });
+    }
+    lastEdition.current = edition;
+  }, [edition, ready]);
+
+  useEffect(() => {
+    if (!query || !ready) return;
 
     let cancelled = false;
 
@@ -80,6 +100,7 @@ export default function ReaderPage() {
     });
     if (query.topic) search.set("topic", query.topic);
     if (query.language) search.set("language", query.language);
+    search.set("edition", edition);
 
     setLoading(true);
 
@@ -104,7 +125,7 @@ export default function ReaderPage() {
     };
     // Not on `lang`: it only words an error, and a new language is no
     // reason to fetch the feed again.
-  }, [query]);
+  }, [query, edition, ready]);
 
   function update(next: FeedQuery) {
     setQuery(next);

@@ -5,7 +5,7 @@ const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
 
 // Only these are forwarded: the backend validates them, and anything
 // else on the query string has no business reaching it.
-const FORWARDED = ["topic", "language", "offset", "limit"];
+const FORWARDED = ["topic", "language", "offset", "limit", "edition"];
 
 // The backend leaves the /reader routes open on purpose: it is what this page
 // shows anyone. The key is still sent when this server has one, so the

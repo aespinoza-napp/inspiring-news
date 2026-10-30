@@ -17,10 +17,23 @@ def sources() -> list[NewsSource]:
 
 
 def test_every_enabled_source_names_at_least_one_group():
+    """A positive group, or a Devastating one for a source of that edition only (docs/decisions/editions.md)."""
 
-    missing = [source.id for source in sources() if source.enabled and not source.groups]
+    missing = [
+        source.id
+        for source in sources()
+        if source.enabled and not source.groups and not source.devastating_groups
+    ]
 
     assert missing == []
+
+
+@pytest.mark.parametrize("group", ["violence", "hate", "despair", "catastrophe", "abuse_of_power"])
+def test_every_devastating_group_has_an_english_and_a_spanish_source(group):
+
+    languages = {source.language for source in sources() if source.enabled and group in source.devastating_groups}
+
+    assert {"en", "es"} <= languages
 
 
 @pytest.mark.parametrize("group", list(TOPIC_GROUPS))

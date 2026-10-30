@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from logging import getLogger
 
 from src.config.settings import settings
-from src.config.topics import TOPIC_GROUP_NAMES
+from src.config.editions import group_names_of
 from src.services.concurrency import bounded_map
 from src.services.llms import LLMClient
 
@@ -57,6 +57,30 @@ interviews, entertainment, personal advice, opinion, crime, conflict and disaste
 
 Judge only from the title and summary given; do not assume what they do not say. \
 Write each reason in English, in at most twelve words, whatever the article's language."""
+
+# The Devastating edition's question (docs/decisions/editions.md). Still a
+# story backed by something checkable: the edition's articles are about
+# real people and are fact-checked like any other. A story people really
+# argue over - who is to blame, what should be done - scores higher, since
+# the writer lays the sides out; outrage with nothing behind it does not.
+DEVASTATING_DEFINITION = """\
+You choose stories for Devastating News, a publication of the news that is really bad for humanity.
+
+Score each article from 0 to 10 for devastating impact. High: it reports real harm to many \
+people - terrorism, mass killings, war, racism and hate crimes, suicide and overdose crises, \
+disasters, famine, corruption, human rights abuses - backed by something checkable (official \
+figures, named sources, court records). A little higher when the public genuinely disputes \
+it: who is to blame or what should be done. Low: good news, sports, celebrity gossip, \
+lifestyle, personal advice, markets, rumours and outrage with nothing checkable behind it, \
+and anything outside the chosen topics.
+
+Judge only from the title and summary given; do not assume what they do not say. \
+Write each reason in English, in at most twelve words, whatever the article's language."""
+
+DEVASTATING_TRENDING = """\
+These articles explain what is trending right now. Score the story, not its popularity. \
+A trend scores high only when the article reports real harm to people backed by something \
+checkable. Entertainment, celebrity scandals, sport and memes stay low however viral they are."""
 
 # Said once more for a trending round (docs/decisions/trends.md): what is
 # viral is mostly television, sport, celebrity and accidents - on
@@ -142,6 +166,7 @@ class AISelector:
         limit: int,
         min_score: float = DEFAULT_MIN_SCORE,
         trending: bool = False,
+        edition: str = "positive",
     ) -> AISelection:
         """
         Every candidate scored, and the best `limit` of those reaching
@@ -149,6 +174,8 @@ class AISelector:
         could not be reached for any batch: a selection made from part of
         the list would look like a judgement on all of it. `trending`: the
         list is a trending round's, and the model is told so (TRENDING).
+        `edition` is the round's (src/config/editions.py): which question
+        the model is asked, and whose group names it is told.
         """
 
         started = time.perf_counter()
@@ -159,7 +186,7 @@ class AISelector:
         # matched to batch k's candidates. The LLM permit inside
         # complete_json is what bounds how many calls run at once.
         answers = bounded_map(
-            lambda batch: self._score_batch(batch, groups, trending),
+            lambda batch: self._score_batch(batch, groups, trending, edition),
             batches,
             max_workers=max(len(batches), 1),
             thread_name_prefix="ai-selection",
@@ -201,17 +228,27 @@ class AISelector:
             notes=notes,
         )
 
-    def _score_batch(self, batch: list[dict], groups: list[str], trending: bool = False) -> dict | None:
+    def _score_batch(self, batch: list[dict], groups: list[str], trending: bool = False, edition: str = "positive") -> dict | None:
 
-        system = DEFINITION + ("\n\n" + TRENDING if trending else "") + "\n\n" + ANSWER_FORMAT
+        system = definition(edition, trending) + "\n\n" + ANSWER_FORMAT
 
-        return self.llm.complete_json(system, prompt(batch, groups))
+        return self.llm.complete_json(system, prompt(batch, groups, edition))
 
 
-def prompt(batch: list[dict], groups: list[str]) -> str:
+def definition(edition: str = "positive", trending: bool = False) -> str:
+    """What the model is asked to score, for the round's edition and lens."""
+
+    if edition == "devastating":
+        return DEVASTATING_DEFINITION + ("\n\n" + DEVASTATING_TRENDING if trending else "")
+
+    return DEFINITION + ("\n\n" + TRENDING if trending else "")
+
+
+def prompt(batch: list[dict], groups: list[str], edition: str = "positive") -> str:
     """The numbered list the model scores: number, language, title, source, summary."""
 
-    topics = ", ".join(TOPIC_GROUP_NAMES.get(group, group) for group in groups) or "any"
+    names = group_names_of(edition)
+    topics = ", ".join(names.get(group, group) for group in groups) or "any"
 
     lines = [f"Chosen topics: {topics}.", ""]
 

@@ -1,0 +1,36 @@
+# A source of the Devastating edition only (docs/decisions/editions.md):
+# no positive `groups`, so the positive edition never reads it.
+# Investigations into corruption, abuse of power and institutional failure.
+# Feed checked live on 2026-10-30. Its reliability rating is a first
+# estimate by Claude on that day, not yet reviewed by a person.
+
+id: propublica
+
+name: ProPublica
+
+base_url: https://www.propublica.org
+
+rss_url: https://www.propublica.org/feeds/propublica/main
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.9
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - investigations
+
+devastating_groups:
+  - abuse_of_power
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss

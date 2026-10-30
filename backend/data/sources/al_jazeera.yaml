@@ -1,0 +1,41 @@
+# A source of the Devastating edition only (docs/decisions/editions.md):
+# no positive `groups`, so the positive edition never reads it.
+# Its all-news feed: wars, attacks and disasters on every continent, from the
+# places the European outlets cover least. Sport too - the screen drops it.
+# Feed checked live on 2026-10-30. Its reliability rating is a first
+# estimate by Claude on that day, not yet reviewed by a person.
+
+id: al_jazeera
+
+name: Al Jazeera
+
+base_url: https://www.aljazeera.com
+
+rss_url: https://www.aljazeera.com/xml/rss/all.xml
+
+language: en
+
+country: QA
+
+source_type: news
+
+reliability_index: 0.82
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - world
+  - conflict
+
+devastating_groups:
+  - violence
+  - hate
+  - catastrophe
+  - abuse_of_power
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { EditionSwitch } from "@/components/EditionSwitch";
 import { NavLinks } from "@/components/NavLinks";
+import { EditionProvider } from "@/lib/edition";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,11 +17,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="site-header">
-          <span className="brand">Inspiring News Tools</span>
-          <NavLinks />
-        </header>
-        <main className="site-main">{children}</main>
+        <EditionProvider>
+          <header className="site-header">
+            <EditionSwitch />
+            <NavLinks />
+          </header>
+          <main className="site-main">{children}</main>
+        </EditionProvider>
       </body>
     </html>
   );

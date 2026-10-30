@@ -32,6 +32,7 @@ from .rss import (
     covers_only,
     filed_under,
     keyword_in,
+    edition_of_topics,
     off_mission,
     slug_mentions,
 )
@@ -103,7 +104,7 @@ class TrafilaturaFeedDiscoveryStrategy(RSSDiscoveryStrategy):
 
             # Live coverage and off-mission sections too, as the feed step
             # drops them: these links reach the same candidate list.
-            if not self._is_article(link) or off_mission(link):
+            if not self._is_article(link) or off_mission(link, edition_of_topics(normalized_topics)):
                 continue
 
             if not by_topic:

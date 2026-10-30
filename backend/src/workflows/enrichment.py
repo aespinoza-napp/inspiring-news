@@ -81,6 +81,7 @@ class NewsEnrichmentPipeline:
                 article.content,
                 thresholds.topic_classifier_threshold,
                 embedding=embedding,
+                edition=thresholds.edition,
             ),
 
             claims=self.claims.process(

@@ -224,6 +224,7 @@ class TrendingDiscovery:
         search: bool = False,
         topic_emphasis: float | None = None,
         now: datetime | None = None,
+        edition: str = "positive",
     ) -> dict:
         """
         A round of candidates from what is trending: the signals in
@@ -235,6 +236,11 @@ class TrendingDiscovery:
         seeds.SeedError for a seed with nothing to search for, and
         ValueError for an emphasis outside [0, 1] - both before any feed
         is read.
+
+        `edition` (src/config/editions.py) chooses which signals are read
+        (TrendService.signals_for: the uplifting ones are never the
+        Devastating edition's, nor the bleak ones the positive's), the
+        screen and the groups' topics.
         """
 
         started = now or datetime.now(timezone.utc)
@@ -244,7 +250,7 @@ class TrendingDiscovery:
 
         seeded = self.trends.seed(seed) if seed else None
 
-        reads: list[SignalRead] = self.trends.read(signal_ids) if signal_ids != [] else []
+        reads: list[SignalRead] = self.trends.read(signal_ids, edition) if signal_ids != [] else []
 
         signal_trends = [trend for read in reads for trend in read.trends]
 
@@ -254,7 +260,7 @@ class TrendingDiscovery:
         if seeded is not None:
             self.trends.search_articles([seeded], SEED_SEARCH)
 
-        topics = topics_for(groups or None)
+        topics = topics_for(groups or None, edition)
         known = self.ingestion.stored_urls()
 
         rows: list[_Row] = []
@@ -295,7 +301,7 @@ class TrendingDiscovery:
 
                     url = article.url
 
-                    if not url.lower().startswith(("http://", "https://")) or not looks_like_article(url) or off_mission(url):
+                    if not url.lower().startswith(("http://", "https://")) or not looks_like_article(url) or off_mission(url, edition):
                         row.not_articles += 1
                         continue
 
@@ -330,7 +336,7 @@ class TrendingDiscovery:
                 seen_at=started,
             )
 
-        verdicts, readings, screen = self._screen(offered)
+        verdicts, readings, screen = self._screen(offered, edition)
 
         candidates: list[dict] = []
         to_rank: list[tuple[dict, Reading | None, str, float | None, str]] = []
@@ -443,6 +449,7 @@ class TrendingDiscovery:
         return {
             "startedAt": started.isoformat(timespec="seconds"),
             "lens": LENS,
+            "edition": edition,
             "groups": list(groups or []),
             "topics": topics if groups else [],
             "signals": [read.signal.id for read in reads],
@@ -474,7 +481,7 @@ class TrendingDiscovery:
             },
         }
 
-    def _screen(self, offered: list[_Offered]) -> tuple[dict, dict, dict]:
+    def _screen(self, offered: list[_Offered], edition: str = "positive") -> tuple[dict, dict, dict]:
         """
         The mission screen over every offered article in one pass, as
         IngestionService._pick runs it: (verdicts, readings, state). With
@@ -482,8 +489,13 @@ class TrendingDiscovery:
         round says which.
         """
 
-        screen = self.ingestion.screen
-        state = {"status": "off" if screen is None else "ok", "margin": MARGIN, "margins": MARGINS, "error": None}
+        screen = self.ingestion.screen_for(edition)
+        state = {
+            "status": "off" if screen is None else "ok",
+            "margin": MARGIN,
+            "margins": getattr(screen, "margins", MARGINS),
+            "error": None,
+        }
 
         if screen is None or not offered:
             return {}, {}, state

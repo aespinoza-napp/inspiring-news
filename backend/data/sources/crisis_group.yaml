@@ -1,0 +1,37 @@
+# A source of the Devastating edition only (docs/decisions/editions.md):
+# no positive `groups`, so the positive edition never reads it.
+# Analysis of wars and armed conflicts as they develop.
+# Feed checked live on 2026-10-30. Its reliability rating is a first
+# estimate by Claude on that day, not yet reviewed by a person.
+
+id: crisis_group
+
+name: International Crisis Group
+
+base_url: https://www.crisisgroup.org
+
+rss_url: https://www.crisisgroup.org/rss.xml
+
+language: en
+
+country: INT
+
+source_type: academic
+
+reliability_index: 0.88
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - conflict
+  - analysis
+
+devastating_groups:
+  - violence
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss

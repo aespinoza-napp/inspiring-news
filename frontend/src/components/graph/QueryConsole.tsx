@@ -2,6 +2,7 @@
 
 import { KeyboardEvent, useEffect, useMemo, useState } from "react";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
+import { Edition, useEdition } from "@/lib/edition";
 import {
   nodeCaption,
   nodeColor,
@@ -46,8 +47,9 @@ function mergeGraphs(a: GraphData, b: GraphData): GraphData {
   return { nodes: Array.from(nodes.values()), relationships: Array.from(rels.values()) };
 }
 
-async function runQuery(cypher: string, params: Record<string, string>): Promise<GraphQueryResult> {
-  const response = await fetch("/api/graph/query", {
+async function runQuery(cypher: string, params: Record<string, string>, edition: Edition): Promise<GraphQueryResult> {
+  // The edition's graph: two databases (docs/decisions/editions.md).
+  const response = await fetch(`/api/graph/query?edition=${edition}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ cypher, params }),
@@ -73,6 +75,7 @@ export function QueryConsole({
   request: ConsoleRequest | null;
   onRelated: (url: string) => void;
 }) {
+  const { edition } = useEdition();
   const [cypher, setCypher] = useState(presets[0]?.cypher ?? "MATCH (n) RETURN n LIMIT 25");
   const [params, setParams] = useState<Record<string, string>>({});
   const [activePreset, setActivePreset] = useState<string | null>(presets[0]?.id ?? null);
@@ -104,7 +107,7 @@ export function QueryConsole({
     );
 
     try {
-      const data = await runQuery(query, used);
+      const data = await runQuery(query, used, edition);
       setResult(data);
       setGraph(data.graph);
       setView(preferred ?? (data.graph.nodes.length > 0 ? "graph" : "table"));
@@ -150,7 +153,7 @@ export function QueryConsole({
     setExpanding(true);
     setError(null);
     try {
-      const data = await runQuery(EXPAND, { id: node.id });
+      const data = await runQuery(EXPAND, { id: node.id }, edition);
       setGraph((current) => mergeGraphs(current, data.graph));
       setView("graph");
     } catch (exc) {

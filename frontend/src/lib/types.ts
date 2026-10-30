@@ -1,3 +1,5 @@
+import type { Edition } from "@/lib/edition";
+
 /** One of a topic's own keywords, scored against the article. */
 export interface TopicKeyword {
   keyword: string;
@@ -193,6 +195,9 @@ export interface FactCheckSummary {
  * out-of-range or unknown names come back as a 422.
  */
 export interface ThresholdOverrides {
+  /** The edition the run is for (backend src/config/editions.py): its topic labels and tone gate. */
+  edition?: Edition;
+  devastation_min_score?: number;
   topic_classifier_threshold?: number;
   entity_threshold?: number;
   claim_min_confidence?: number;
@@ -565,6 +570,9 @@ export interface TopicGroup {
 
 /** GET /ingest/sources */
 export interface IngestSourcesResponse {
+  /** The edition these groups, sources and signals are for; absent before the editions (positive). */
+  edition?: Edition;
+  editions?: { id: Edition; name: string }[];
   sources: IngestSource[];
   groups: TopicGroup[];
   maxGroups: number;
@@ -594,6 +602,8 @@ export interface TrendSignal {
   country: string | null;
   /** Its items are chosen for being good news (r/UpliftingNews, Upworthy). The screen still reads them. */
   positive: boolean;
+  /** Its items lean to bad news (r/worldnews): read only by the Devastating edition. */
+  devastating?: boolean;
 }
 
 export interface TrendingLimits {
@@ -824,6 +834,8 @@ export interface QueuedSelection {
 export interface CandidateRound {
   id: string;
   startedAt: string;
+  /** The round's edition; absent on rounds from before the editions (positive). */
+  edition?: Edition;
   /** "trending": its candidates are the articles behind what is spreading (docs/decisions/trends.md). */
   lens?: "trending";
   /** A trending round's signals read, the seed typed and whether trends were searched for. */
@@ -868,6 +880,7 @@ export interface CandidateRound {
 export interface CandidateRoundSummary {
   id: string;
   startedAt: string | null;
+  edition?: Edition;
   lens?: "trending" | null;
   groups: string[] | null;
   /** The topic emphasis the round was ranked at; null with no topic to weigh or before 2026-10-13. */

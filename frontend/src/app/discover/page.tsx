@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlowSteps } from "@/components/FlowSteps";
+import { editionOf, toneLabel, useEdition } from "@/lib/edition";
 import { safeHref } from "@/lib/links";
 import {
   Candidate,
@@ -19,6 +20,10 @@ import {
 } from "@/lib/types";
 
 const PER_SOURCE_OPTIONS = [1, 2, 3, 5, 10];
+
+// Where "Articles per source" starts, always: one, the person's choice
+// (2026-10-30). A reopened round still shows the count it was made with.
+const DEFAULT_PER_SOURCE = 1;
 
 // The trending lens's defaults when the backend does not say (one older
 // than 2026-10-26): src/services/trends/trending.py.
@@ -99,7 +104,7 @@ function percent(value: number | undefined): string {
 // how well it fits the topics picked (weighed against the first by the
 // round's topic emphasis), how much of its source's news the screen kept
 // this round, and the source's reliability rating.
-function RankLine({ rank, place }: { rank: CandidateRank; place: number | undefined }) {
+function RankLine({ rank, place, tone }: { rank: CandidateRank; place: number | undefined; tone: string }) {
   return (
     <div className="candidate-rank">
       <span
@@ -110,7 +115,7 @@ function RankLine({ rank, place }: { rank: CandidateRank; place: number | undefi
         {Math.round(rank.score * 100)}
       </span>
       <span className="stats-muted">
-        <span title="How much nearer its title and summary come to positive impact than to anything off-mission">
+        <span title={`How much nearer its title and summary come to ${tone} than to anything off-mission`}>
           story {rank.news === null ? "not read" : Math.round(rank.news * 100)}
         </span>
         {rank.topic !== undefined && rank.topic !== null && (
@@ -199,12 +204,15 @@ function EmphasisControl({
   hasTopic,
   disabled,
   onChange,
+  tone,
 }: {
   value: number;
   defaultValue: number;
   hasTopic: boolean;
   disabled: boolean;
   onChange: (value: number) => void;
+  /** What the story is read for in this edition: "positive impact" or "devastation". */
+  tone: string;
 }) {
   const topic = Math.round(value * 100);
   const atDefault = sameEmphasis(value, defaultValue);
@@ -215,7 +223,7 @@ function EmphasisControl({
         What comes first
       </label>
       <div className="emphasis-slider">
-        <span className="emphasis-end">Positive impact</span>
+        <span className="emphasis-end">{tone[0].toUpperCase() + tone.slice(1)}</span>
         <input
           id="topic-emphasis"
           type="range"
@@ -225,16 +233,16 @@ function EmphasisControl({
           value={value}
           disabled={disabled || !hasTopic}
           onChange={(event) => onChange(Number(event.target.value))}
-          aria-valuetext={`${topic}% topic relevance, ${100 - topic}% positive impact`}
+          aria-valuetext={`${topic}% topic relevance, ${100 - topic}% ${tone}`}
         />
         <span className="emphasis-end">Topic relevance</span>
       </div>
       <p className="claims-note">
         {hasTopic ? (
           <>
-            {topic}% topic relevance, {100 - topic}% positive impact
+            {topic}% topic relevance, {100 - topic}% {tone}
             {atDefault ? " (the default)" : ""}: of what each story counts for, how much is how
-            squarely it fits these topics and how much how positive it reads. Its source&apos;s record
+            squarely it fits these topics and how much {tone} it reads as. Its source&apos;s record
             and rating count the same either way, and stories nearer another topic are listed after
             the rest at any setting.
             {!atDefault && (
@@ -252,7 +260,7 @@ function EmphasisControl({
             )}
           </>
         ) : (
-          "Pick a topic to weigh it against positive impact: with no topic picked there is no topic relevance to order by."
+          `Pick a topic to weigh it against ${tone}: with no topic picked there is no topic relevance to order by.`
         )}
       </p>
     </div>
@@ -275,10 +283,17 @@ function writeRoundToUrl(id: string | null) {
 }
 
 export default function DiscoverPage() {
+  // The header's edition (lib/edition.tsx): which groups, sources and
+  // signals are offered, and the edition a round is made - and its picks
+  // analysed - in.
+  const { edition, setEdition, ready } = useEdition();
+  const devastating = edition === "devastating";
+  const tone = toneLabel(edition).toLowerCase();
+
   const [catalogue, setCatalogue] = useState<IngestSourcesResponse | null>(null);
   const [groups, setGroups] = useState<string[]>([]);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
-  const [perSource, setPerSource] = useState(3);
+  const [perSource, setPerSource] = useState(DEFAULT_PER_SOURCE);
   const [emphasis, setEmphasis] = useState(FALLBACK_TOPIC_EMPHASIS);
 
   // The trending lens (docs/decisions/trends.md): what is spreading right
@@ -320,27 +335,41 @@ export default function DiscoverPage() {
   // Load the groups and sources, and a round named in the URL
   // ------------------------------------------------------------------
 
+  // Mirrors of the open round and the catalogue for the effects below,
+  // which must not re-run each time either changes.
+  const roundRef = useRef<CandidateRound | null>(null);
+  roundRef.current = round;
+  const catalogueRef = useRef<IngestSourcesResponse | null>(null);
+  catalogueRef.current = catalogue;
+  const urlRoundRead = useRef(false);
+
+  // The groups, sources and signals of the edition - again whenever the
+  // header's switch changes it. A group or a round of the other edition
+  // is let go: its picks would be judged by the wrong gate.
   useEffect(() => {
+    if (!ready) return;
+
     let cancelled = false;
 
     (async () => {
       try {
-        const data = await call<IngestSourcesResponse>("/api/ingest/sources");
+        const data = await call<IngestSourcesResponse>(`/api/ingest/sources?edition=${edition}`);
         if (cancelled) return;
         setCatalogue(data);
-        setEmphasis(data.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS);
-        setPerTrend(data.trending?.perTrend ?? FALLBACK_PER_TREND);
+        setGroups((current) => current.filter((id) => data.groups.some((group) => group.id === id)));
+        setSignalsOff(new Set());
 
-        const id = roundFromUrl();
-        if (id) {
-          const saved = await call<CandidateRound>(`/api/ingest/rounds/${id}`);
-          if (cancelled) return;
-          setRound(saved);
-          setGroups(saved.groups);
-          setPerSource(saved.perSource);
-          setEmphasis(emphasisOf(saved, data.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS));
-          restoreTrending(saved, data.signals ?? []);
-          setChosen(new Set(saved.queued?.urls ?? []));
+        const open = roundRef.current;
+        if (open && editionOf(open) !== edition) {
+          setRound(null);
+          setChosen(new Set());
+          writeRoundToUrl(null);
+        }
+
+        if (!roundRef.current || editionOf(roundRef.current) !== edition) {
+          setPerSource(DEFAULT_PER_SOURCE);
+          setEmphasis(data.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS);
+          setPerTrend(data.trending?.perTrend ?? FALLBACK_PER_TREND);
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Could not load the sources.");
@@ -352,7 +381,35 @@ export default function DiscoverPage() {
     return () => {
       cancelled = true;
     };
-  }, [loadRecent]);
+  }, [ready, edition, loadRecent]);
+
+  // A round named in the URL, once: it opens in its own edition, which
+  // becomes the page's.
+  useEffect(() => {
+    if (!ready || urlRoundRead.current) return;
+    urlRoundRead.current = true;
+
+    const id = roundFromUrl();
+    if (!id) return;
+
+    (async () => {
+      try {
+        const saved = await call<CandidateRound>(`/api/ingest/rounds/${id}`);
+        roundRef.current = saved;
+        setEdition(editionOf(saved));
+        setRound(saved);
+        setGroups(saved.groups);
+        setPerSource(saved.perSource);
+        setEmphasis(emphasisOf(saved, catalogueRef.current?.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS));
+        restoreTrending(saved, catalogueRef.current?.signals ?? []);
+        setChosen(new Set(saved.queued?.urls ?? []));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not reopen that round.");
+      }
+    })();
+    // restoreTrending only sets state; it is the same function in effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, setEdition]);
 
   // ------------------------------------------------------------------
   // Poll the round while its AI selection runs
@@ -561,6 +618,7 @@ export default function DiscoverPage() {
               perSource: again?.perSource ?? perTrend,
               listed,
               topicEmphasis,
+              edition,
             }
           : {
               groups: again?.groups ?? groups,
@@ -568,6 +626,7 @@ export default function DiscoverPage() {
               perSource: again?.perSource ?? perSource,
               listed,
               topicEmphasis,
+              edition,
             }
       );
       setRound(created);
@@ -659,6 +718,8 @@ export default function DiscoverPage() {
     setError(null);
     try {
       const saved = await call<CandidateRound>(`/api/ingest/rounds/${id}`);
+      roundRef.current = saved;
+      setEdition(editionOf(saved));
       setRound(saved);
       setGroups(saved.groups);
       setPerSource(saved.perSource);
@@ -686,13 +747,21 @@ export default function DiscoverPage() {
     <>
       <FlowSteps current="discover" />
 
-      <h1>Discover</h1>
+      <h1>Discover{devastating ? " · Devastating" : ""}</h1>
+      {devastating && (
+        <p className="edition-note">
+          The Devastating edition: the news that is really bad for humanity - terrorism, mass
+          killings, war, hate, suicide and overdose crises, disasters, abuse of power. Every
+          general outlet is read and its stories screened for harm instead of hope; the
+          good-news outlets are not read. What you analyse is still fact-checked.
+        </p>
+      )}
       <p className="subtitle">
         Pick up to {maxGroups} topics: only the sources that cover them are
         read, and only for those topics. Or pick Trending: what is spreading
         right now, and the articles that explain it. The articles found come
-        best first, by how squarely they fit those topics and how positive
-        they read - you say which counts more - and by their source; the{" "}
+        best first, by how squarely they fit those topics and how{" "}
+        {devastating ? "devastating" : "positive"} they read - you say which counts more - and by their source; the{" "}
         {listed} best shown, up to {maxListed} if you ask for more. Choose up
         to {maxSelected} of them, yourself or from the AI&apos;s proposal, and
         send them to analysis.
@@ -762,6 +831,7 @@ export default function DiscoverPage() {
 
         {catalogue && (
           <EmphasisControl
+            tone={tone}
             value={emphasis}
             defaultValue={defaultEmphasis}
             hasTopic={groups.length > 0}
@@ -944,7 +1014,7 @@ export default function DiscoverPage() {
               Best first, by the story and its source:
               {(round.ranking.weights.topic ?? 0) > 0 &&
                 ` how well it fits ${round.groups.map(groupName).join(", ")} (${percent(round.ranking.weights.topic)}),`}{" "}
-              how near its title and summary come to positive impact rather than to anything
+              how near its title and summary come to {tone} rather than to anything
               off-mission ({percent(round.ranking.weights.news)}),{" "}
               {round.lens === "trending" ? (
                 <>
@@ -1098,7 +1168,7 @@ export default function DiscoverPage() {
             <p className="claims-note">
               The AI proposed {round.aiSelection.picks?.length ?? 0} of{" "}
               {round.candidates.length - unscored}, scoring each from its title and summary
-              against the publication&apos;s idea of positive impact ({round.aiSelection.model},{" "}
+              against the publication&apos;s idea of {tone} ({round.aiSelection.model},{" "}
               {round.aiSelection.calls} {round.aiSelection.calls === 1 ? "call" : "calls"},{" "}
               {Math.round((round.aiSelection.elapsedMs ?? 0) / 1000)} s). Its picks are ticked;
               change them freely.
@@ -1176,7 +1246,7 @@ export default function DiscoverPage() {
                       </div>
                       {candidate.trend && <TrendLine trend={candidate.trend} />}
                       {candidate.summary && <p className="candidate-summary">{candidate.summary}</p>}
-                      {candidate.rank && <RankLine rank={candidate.rank} place={places.get(candidate.url)} />}
+                      {candidate.rank && <RankLine rank={candidate.rank} place={places.get(candidate.url)} tone={tone} />}
                       {scored && (
                         <div className="candidate-ai">
                           <span
@@ -1267,7 +1337,7 @@ export default function DiscoverPage() {
                 </tr>
               </thead>
               <tbody>
-                {recent.map((summary) => (
+                {recent.filter((summary) => editionOf(summary) === edition).map((summary) => (
                   <tr key={summary.id}>
                     <td>{when(summary.startedAt)}</td>
                     <td>

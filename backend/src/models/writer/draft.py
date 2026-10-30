@@ -19,6 +19,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
+from src.config.editions import DEFAULT_EDITION, Edition
 from src.models.corrector.correction_metric import CorrectionMetric
 
 # Catalan is a writing language only: no source is ingested or scored in
@@ -231,6 +232,11 @@ class ArticleDraft(CamelModel):
 
     language: Language
 
+    # The edition it is written for (src/config/editions.py): the voice the
+    # writer and the rewrite stage use. Drafts from before the editions
+    # were all positive.
+    edition: Edition = DEFAULT_EDITION
+
     # The editor's indications for the writer: angle, length, register.
     instructions: str = ""
 
@@ -280,6 +286,8 @@ class DraftSummary(CamelModel):
 
     language: Language
 
+    edition: Edition = DEFAULT_EDITION
+
     title: str
 
     status: DraftStatus
@@ -297,6 +305,7 @@ class DraftSummary(CamelModel):
             id=draft.id,
             source_article_id=draft.source_article_id,
             language=draft.language,
+            edition=draft.edition,
             title=draft.content.title,
             status=draft.status,
             busy=draft.busy,

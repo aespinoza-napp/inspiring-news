@@ -75,8 +75,8 @@ from threading import Lock
 
 import numpy as np
 
+from src.config.editions import known_edition, topics_of
 from src.config.lexicons import lexicon_for
-from src.config.topics import TOPICS
 from src.services.embeddings.service import EmbeddingService
 
 
@@ -231,6 +231,39 @@ MARGINS = {
     "celebrity": 0.02,
 }
 
+# The Devastating edition's screen (docs/decisions/editions.md): the same
+# machinery, the mission turned around. On mission are its own topics
+# (DEVASTATING_TOPICS) - crime, conflict and disaster are what it covers -
+# and off it is what this edition never runs: good news, and the same
+# service pages, markets, sport and celebrity the positive edition leaves
+# out. Unmeasured, so every margin is MARGIN: no round of this edition has
+# been labelled yet, and the positive screen's narrower margins were
+# fitted to positive rounds.
+DEVASTATING_OFF_MISSION = {
+    "good_news": (
+        "Good news",
+        "Progress, solutions that work, recoveries, discoveries, people helping others, awards, celebrations, inspiring personal stories and positive initiatives.",
+        ["progress", "solution", "breakthrough", "recovery", "award", "celebration", "inspiring", "volunteers", "success", "hope"],
+    ),
+    "celebrity": OFF_MISSION["celebrity"],
+    "sport": OFF_MISSION["sport"],
+    "markets": OFF_MISSION["markets"],
+    "service": OFF_MISSION["service"],
+    "lifestyle": (
+        "Lifestyle and advice",
+        "Recipes, travel tips, wellness advice, product reviews, gadgets, horoscopes and how-to guides.",
+        ["recipe", "travel", "tips", "review", "gadget", "wellness", "guide", "how to"],
+    ),
+}
+
+# What the ranking's "news" part reads closeness to in that edition: harm
+# done to people, at scale.
+DEVASTATING_IMPACT = (
+    "Devastating impact",
+    "Real harm done to many people: deaths, attacks, killings, hatred, persecution, catastrophes, famine, abuse of power and suffering with lasting consequences for humanity.",
+    ["killed", "dead", "attack", "massacre", "victims", "hatred", "catastrophe", "abuse", "suffering", "devastation"],
+)
+
 # Candidates per request to inference/: one permit each (concurrency.py).
 BATCH = 32
 
@@ -378,11 +411,12 @@ def reports_a_death(title: str | None, language: str | None) -> bool:
     return any(f" {_folded(phrase).strip()} " in folded for phrase in lexicon_for(language).death_report)
 
 
-def _by_headline(candidate: Candidate, exempt: bool) -> Verdict | None:
+def _by_headline(candidate: Candidate, exempt: bool, deaths_off_mission: bool = True) -> Verdict | None:
     """
     The judgements that need no model: not an article (every candidate,
     a positive outlet's too - it is a format, not a subject), then a
-    death report (not a positive outlet's).
+    death report (not a positive outlet's, and never in the Devastating
+    edition, where a death is the story).
     """
 
     kind = format_of(candidate.title, candidate.summary)
@@ -390,7 +424,7 @@ def _by_headline(candidate: Candidate, exempt: bool) -> Verdict | None:
     if kind is not None:
         return Verdict(off_mission=kind)
 
-    if not exempt and reports_a_death(candidate.title, candidate.language):
+    if deaths_off_mission and not exempt and reports_a_death(candidate.title, candidate.language):
         return Verdict(off_mission=OBITUARY)
 
     return None
@@ -404,16 +438,26 @@ class MissionScreen:
         margin: float = MARGIN,
         margins: dict[str, float] | None = None,
         topics: dict | None = None,
+        edition: str = "positive",
     ):
 
         self.embedding_service = embedding_service or EmbeddingService()
         self.margin = margin
-        self.margins = MARGINS if margins is None else margins
 
-        # The topics a candidate is compared with: the configured ones,
-        # unless an experiment compares two sets (the 23 and the 24 of
+        # Which mission (src/config/editions.py). A screen is one edition's:
+        # the ingestion service holds one per edition (screen_for).
+        self.edition = known_edition(edition)
+        devastating = self.edition == "devastating"
+
+        self.margins = ({} if devastating else MARGINS) if margins is None else margins
+        self.off_mission = DEVASTATING_OFF_MISSION if devastating else OFF_MISSION
+        self.impact = DEVASTATING_IMPACT if devastating else IMPACT
+        self.deaths_off_mission = not devastating
+
+        # The topics a candidate is compared with: the edition's, unless
+        # an experiment compares two sets (the 23 and the 24 of
         # 2026-10-26, src/evaluation/trend_experiments.py).
-        self.topics = TOPICS if topics is None else topics
+        self.topics = topics_of(self.edition) if topics is None else topics
 
         # (topic ids, off-mission ids, one row per description, IMPACT
         # last), embedded on first use - the ingestion service that holds
@@ -422,6 +466,14 @@ class MissionScreen:
         # lesson).
         self._labels: tuple[list[str], list[str], np.ndarray] | None = None
         self._labels_lock = Lock()
+
+    def sibling(self, edition: str) -> "MissionScreen":
+        """The same screen, embedding service included, for another edition."""
+
+        if known_edition(edition) == self.edition:
+            return self
+
+        return MissionScreen(embedding_service=self.embedding_service, margin=self.margin, edition=edition)
 
     def screen(self, candidates: list[Candidate]) -> list[Verdict | None]:
         """
@@ -442,7 +494,7 @@ class MissionScreen:
         exempt = exempt or [False] * len(candidates)
 
         verdicts: list[Verdict | None] = [
-            _by_headline(candidate, spared)
+            _by_headline(candidate, spared, self.deaths_off_mission)
             for candidate, spared in zip(candidates, exempt)
         ]
 
@@ -495,11 +547,11 @@ class MissionScreen:
                 if self._labels is None:
 
                     topic_ids = list(self.topics)
-                    off_ids = list(OFF_MISSION)
+                    off_ids = list(self.off_mission)
 
                     texts = [_describe(self.topics[t].name, self.topics[t].description, self.topics[t].keywords) for t in topic_ids]
-                    texts += [_describe(*OFF_MISSION[o]) for o in off_ids]
-                    texts += [_describe(*IMPACT)]
+                    texts += [_describe(*self.off_mission[o]) for o in off_ids]
+                    texts += [_describe(*self.impact)]
 
                     labels = np.asarray(self.embedding_service.encode_many(texts))
 

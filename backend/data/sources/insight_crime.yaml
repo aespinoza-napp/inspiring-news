@@ -1,0 +1,41 @@
+# A source of the Devastating edition only (docs/decisions/editions.md):
+# no positive `groups`, so the positive edition never reads it.
+# Organised crime in Latin America, in Spanish: cartels, gang wars, drug
+# trafficking (the Despair group's overdose crisis starts here) and the
+# corruption that protects them.
+# Feed checked live on 2026-10-30. Its reliability rating is a first
+# estimate by Claude on that day, not yet reviewed by a person.
+
+id: insight_crime
+
+name: InSight Crime
+
+base_url: https://insightcrime.org
+
+rss_url: https://insightcrime.org/es/feed/
+
+language: es
+
+country: INT
+
+source_type: news
+
+reliability_index: 0.85
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - organised crime
+  - latin america
+
+devastating_groups:
+  - violence
+  - despair
+  - abuse_of_power
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss

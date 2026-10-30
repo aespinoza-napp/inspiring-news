@@ -40,6 +40,10 @@ tags:
 groups:
   - health
 
+# The Devastating edition's groups (docs/decisions/editions.md).
+devastating_groups:
+  - catastrophe
+
 metadata:
   extractor: trafilatura
   discovery:
