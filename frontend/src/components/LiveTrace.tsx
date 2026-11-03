@@ -1,3 +1,4 @@
+import { ClaimFocus } from "@/components/ClaimFocus";
 import { ClaimStep, ClaimTrace, JobTrace, TraceRejected, TraceSource } from "@/lib/liveTrace";
 import { safeHref } from "@/lib/links";
 import { VerdictBadge } from "@/components/VerdictBadge";
@@ -6,6 +7,7 @@ import { ArticleTiming, ClaimTimingPanel, QUERY_KIND_LABELS } from "@/components
 export { QUERY_KIND_LABELS };
 
 const STEP_LABELS: Record<ClaimStep, string> = {
+  restating: "Working out what exactly to check…",
   searching: "Searching the web…",
   found: "Sources found",
   scraping: "Reading the top sources…",
@@ -74,6 +76,8 @@ function ClaimTraceCard({ claim }: { claim: ClaimTrace }) {
           </span>
         )}
       </header>
+
+      <ClaimFocus restatement={claim.restatement} />
 
       {claim.queries.length > 0 && (
         <div className="trace-block">

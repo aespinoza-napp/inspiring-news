@@ -426,6 +426,23 @@ class Settings(BaseSettings):
     # 60 -> 13%: it rarely catches a changed figure. `full` was the
     # default before; `thorough.json` keeps it for the harness.
     VERIFIER_ANSWER: Literal["full", "compact", "per_source"] = "per_source"
+
+    # CLAIM_RESTATEMENT (2026-11-03): `standalone` rewrites each selected
+    # claim, before anything is searched, as a statement that can be
+    # checked on its own - who is speaking and in what role, what exactly
+    # is asserted, the article's names and dates put back - and searches
+    # and judges *that* (services/fact_checker/restatement.py). Built for
+    # "Samuda argued Jamaica was different because ... it had spent 30
+    # years being in the top three most murderous countries", searched as
+    # `Samuda Jamaica "30"`. One more model call per claim. `off` checks
+    # the sentence as written, as every run before it did - the default,
+    # so the evaluation's numbers stay comparable until it is measured.
+    CLAIM_RESTATEMENT: Literal["off", "standalone"] = "off"
+    # The model that restates claims; None means LLM_MODEL. Its own, like
+    # the writer's: restating is rewriting a sentence from its article, and
+    # the verifier's 3B labelled the same sentence "attributed" in one run
+    # and "opinion" in the next (2026-11-03).
+    RESTATEMENT_LLM_MODEL: str | None = None
     # VERIFIER_RULES: `original` is the prompt every run had until
     # 2026-10-22, which defines neither TRUE nor FALSE and has no stance
     # for a source that is on the subject but silent on the claim's point;

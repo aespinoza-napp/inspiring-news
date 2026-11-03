@@ -31,7 +31,7 @@ class AnalysisCache:
     existed has no age to judge, so with a TTL it counts as expired.
     """
 
-    SCHEMA_VERSION = 13
+    SCHEMA_VERSION = 14
 
     def __init__(self, directory: Path | None = None, ttl_hours: float | None = None):
 

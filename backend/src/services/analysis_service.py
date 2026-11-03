@@ -601,6 +601,7 @@ class AnalysisService:
                     "llmUnreachable": False,
                     "searchUnavailable": False,
                     "secondLook": None,
+                    "restatement": None,
                 }
                 for claim in (article.claims or [])
             ]
@@ -631,6 +632,8 @@ class AnalysisService:
                 "searchUnavailable": check.search_unavailable,
                 # The first verdict, when a second look replaced it.
                 "secondLook": self._build_second_look(check),
+                # What the sentence was checked as, when it was restated.
+                "restatement": check.restatement.model_dump() if check.restatement else None,
             }
             for check in checks
         ]

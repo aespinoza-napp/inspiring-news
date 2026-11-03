@@ -247,3 +247,47 @@ probe counts results, not whether they are on the subject, which is how it
 went unnoticed. Check the queries on `/live` before trusting a batch of
 UNVERIFIED verdicts.
 
+## 10. What exactly is checked: restating a claim (2026-11-03)
+
+"Samuda argued Jamaica was different because, although the country had
+'conquered our crime monster', it had 'spent 30 years being in the top
+three most murderous countries on the planet'" was searched as
+`Samuda Jamaica "30"` and judged as a quotation. Two things in it can be
+checked - that a minister said it, and that Jamaica spent thirty years
+among the three highest murder rates - and only the second is the fact the
+article rests on.
+
+`claim_restatement=standalone` (a threshold; `CLAIM_RESTATEMENT`, **off by
+default**) adds one model call per claim before retrieval
+(`services/fact_checker/restatement.py`): from the headline, the opening
+and the sentence, the model answers its kind (fact / attributed / opinion),
+the speaker, the sentence made self-contained, the one statement to check
+(for reported speech, the fact inside the quote) and one or two questions.
+The statement is then what is searched, ranked and judged; the check keeps
+the sentence as its `claim` and the restatement beside it
+(`FactCheck.restatement`, the `claim_restated` event, `restatement` in the
+response - cache schema 14 - and `checkedAs` on the reader).
+
+The answer is held to the sentence, deterministically: no number the
+article does not contain; a plain statement, never a question or a topic;
+every number of the sentence kept; at least one of its content words. When
+the checkable statement fails, the model's own standalone sentence is tried
+under the same rules; otherwise the sentence is checked as written, with a
+note saying why. A sentence carrying a figure is never taken for an
+opinion. Under a claim deadline it is skipped, like the second look.
+
+Measured only by hand, on the Jamaica article's four selected claims with
+`llama3.2:3b`. Before the rules on statements and figures, the model
+restated the Samuda sentence as "Jamaica's ranking in the most murderous
+countries on the planet" (a topic, the 30 years gone), and in a second run
+called it an opinion; after them: "Jamaica has spent 30 years being in the
+top three most murderous countries on the planet". Tourism: "Tourism is the
+largest foreign exchange earner and the main source of income for nearly
+200,000 Jamaicans", found quoted and judged TRUE. The swim sentence lost
+its "11" and was checked as written. `gemma4:e4b` (`reviewer`) took 80-145 s
+a sentence and ran out of its 400-token answer; `qwen3.5:4b` (`writer`)
+about 90 s: neither is usable for this on the CPU. **Not adopted**: whether
+it helps is a retrieval question - the reference-evidence recall of a
+retrieval-only run with and without it on the train half - and that is
+the measurement to make before turning it on for the harness.
+

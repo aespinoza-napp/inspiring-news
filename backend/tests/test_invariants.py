@@ -160,6 +160,8 @@ NON_THRESHOLD_SETTINGS = {
     # The writing flow's storage and models (docs/decisions/writing.md):
     # infrastructure, like LLM_MODEL and LAKE_PATH.
     "DRAFTS_PATH", "WRITER_LLM_MODEL", "WRITER_LLM_TIMEOUT", "CORRECTOR_LLM_MODEL",
+    # Which model restates claims: infrastructure, like LLM_MODEL.
+    "RESTATEMENT_LLM_MODEL",
     # How the review asks its model for a correction: the shape of a
     # call, like the model it goes to - not a judgement a run makes.
     "REVIEW_CORRECTION",
@@ -436,6 +438,14 @@ ANALYZE_RESPONSE_SHAPE = {
     # claimsUnverified and claimsNotChecked - what was found, apart from
     # how much could be checked (Sep 21 audit). A v12 entry has none.
     13: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
+    # 14, same keys: each claim gained `restatement` - what the sentence
+    # was checked as, when CLAIM_RESTATEMENT restated it (2026-11-03).
+    # A v13 entry lacks it.
+    14: {
         "url", "storage", "thresholds", "title", "keywords", "entities",
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",

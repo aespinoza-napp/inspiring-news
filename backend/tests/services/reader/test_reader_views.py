@@ -289,3 +289,29 @@ def test_an_article_whose_processed_record_is_gone_says_so():
 
     assert view["claimsAvailable"] is False
     assert view["claims"] == []
+
+
+def test_a_restated_claim_says_what_was_checked():
+    """A reader seeing a verdict beside a quotation learns that the fact inside it was judged (2026-11-03)."""
+
+    from src.services.reader.views import claim_view
+
+    restated = claim_view(0, {
+        "claim": "Samuda argued Jamaica had spent 30 years among the most murderous countries.",
+        "verdict": "TRUE",
+        "restatement": {
+            "kind": "attributed", "speaker": "Matthew Samuda, minister", "used": True,
+            "checkable": "Jamaica spent 30 years among the three highest murder rates.",
+            "standalone": "...", "questions": ["internal"], "note": None,
+        },
+    })
+
+    assert restated["checkedAs"] == {
+        "statement": "Jamaica spent 30 years among the three highest murder rates.",
+        "kind": "attributed",
+        "speaker": "Matthew Samuda, minister",
+    }
+
+    refused = claim_view(0, {"claim": "x", "restatement": {"used": False, "checkable": "x"}})
+    assert refused["checkedAs"] is None
+    assert claim_view(0, {"claim": "x"})["checkedAs"] is None

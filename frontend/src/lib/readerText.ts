@@ -154,6 +154,10 @@ export interface ReaderText {
   outcome: Record<"ungrounded" | "no_evidence" | "search_unavailable" | "llm_unreachable" | "no_answer", string>;
   confident: (pct: string) => string;
   modelAnswered: string;
+  /** Before the statement a restated claim was checked as. */
+  checkedAs: string;
+  /** For reported speech: what was judged is the fact inside the quote. */
+  checkedAsQuote: (speaker: string | null) => string;
   /** Followed by the pipeline's own reason, in English, and a full stop. */
   changedBecause: string;
   searchFailedNote: string;
@@ -367,6 +371,9 @@ const en: ReaderText = {
   },
   confident: (pct) => `${pct} confident`,
   modelAnswered: "The model itself answered",
+  checkedAs: "What was checked:",
+  checkedAsQuote: (speaker) =>
+    `${speaker ? `${speaker} is quoted here` : "This is a quotation"}; what was checked is the fact in it, not whether it was said.`,
   changedBecause: "; it was changed because ",
   searchFailedNote:
     "The web search failed for this claim; the verdict rests only on articles this site had already checked.",
@@ -674,6 +681,9 @@ const es: ReaderText = {
   },
   confident: (pct) => `confianza ${pct}`,
   modelAnswered: "El propio modelo respondió",
+  checkedAs: "Lo que se ha comprobado:",
+  checkedAsQuote: (speaker) =>
+    `${speaker ? `Aquí se cita a ${speaker}` : "Esto es una cita"}; lo que se ha comprobado es el hecho que contiene, no si se dijo.`,
   changedBecause: "; se cambió porque ",
   searchFailedNote:
     "La búsqueda web falló para esta afirmación; el veredicto se apoya solo en artículos que este sitio ya había verificado.",
@@ -990,6 +1000,9 @@ const ca: ReaderText = {
   },
   confident: (pct) => `confiança ${pct}`,
   modelAnswered: "El mateix model va respondre",
+  checkedAs: "El que s'ha comprovat:",
+  checkedAsQuote: (speaker) =>
+    `${speaker ? `Aquí es cita ${speaker}` : "Això és una cita"}; el que s'ha comprovat és el fet que conté, no si es va dir.`,
   changedBecause: "; es va canviar perquè ",
   searchFailedNote:
     "La cerca web va fallar per a aquesta afirmació; el veredicte es recolza només en articles que aquest lloc ja havia verificat.",

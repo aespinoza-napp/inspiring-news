@@ -7,6 +7,7 @@ import {
   ClaimResult,
   QualityScores,
   SentimentScores,
+  ThresholdOverrides,
   TopicPrediction,
 } from "@/lib/types";
 import { VerdictBadge } from "@/components/VerdictBadge";
@@ -27,6 +28,10 @@ import { useBatchAnalysisJobs } from "@/lib/useBatchAnalysisJobs";
 export default function AnalyzerPage() {
   const [input, setInput] = useState("");
   const [forceRefresh, setForceRefresh] = useState(false);
+  // Per run, not in backend/.env: the evaluation harness reads .env, and
+  // restating changes what is searched and judged (restatement.py).
+  const [restate, setRestate] = useState(false);
+  const [runRestate, setRunRestate] = useState(false);
   const [bulkMode, setBulkMode] = useState(false);
   const [urls, setUrls] = useState<string[]>([]);
 
@@ -46,6 +51,7 @@ export default function AnalyzerPage() {
     if (parsed.length === 0) return;
 
     setRunEdition(edition);
+    setRunRestate(restate);
     setUrls(parsed);
   }
 
@@ -93,23 +99,29 @@ export default function AnalyzerPage() {
             />
             Bulk mode (one batch submission, with overall progress)
           </label>
+          <label className="checkbox-label" title="One more model call per claim. Each claim then shows, on this page and on Live, what it was checked as.">
+            <input type="checkbox" checked={restate} onChange={(event) => setRestate(event.target.checked)} />
+            Work out what each claim asserts before searching it (who is speaking, the fact inside a quote)
+          </label>
         </div>
       </form>
 
       {bulkMode ? (
         <BulkResults
-          key={`${urls.join("\n")}:${forceRefresh}:${runEdition}`}
+          key={`${urls.join("\n")}:${forceRefresh}:${runEdition}:${runRestate}`}
           urls={urls}
           forceRefresh={forceRefresh}
           edition={runEdition}
+          restate={runRestate}
         />
       ) : (
         urls.map((url) => (
           <JobCard
-            key={`${url}:${forceRefresh}:${runEdition}`}
+            key={`${url}:${forceRefresh}:${runEdition}:${runRestate}`}
             url={url}
             forceRefresh={forceRefresh}
             edition={runEdition}
+            restate={runRestate}
           />
         ))
       )}
@@ -121,13 +133,15 @@ function BulkResults({
   urls,
   forceRefresh,
   edition,
+  restate,
 }: {
   urls: string[];
   forceRefresh: boolean;
   edition: Edition;
+  restate: boolean;
 }) {
   // A new object each render is fine: the hook keys on its JSON.
-  const { jobsByUrl, error } = useBatchAnalysisJobs(urls, forceRefresh, { edition });
+  const { jobsByUrl, error } = useBatchAnalysisJobs(urls, forceRefresh, runOptions(edition, restate));
 
   if (urls.length === 0) return null;
 
@@ -161,8 +175,23 @@ function BulkResults({
   );
 }
 
-function JobCard({ url, forceRefresh, edition }: { url: string; forceRefresh: boolean; edition: Edition }) {
-  const { job, error } = useAnalysisJob(url, forceRefresh, { edition });
+/** What a run is asked for: its edition, and restating only when ticked, so a plain run sends what it always did. */
+function runOptions(edition: Edition, restate: boolean): ThresholdOverrides {
+  return restate ? { edition, claim_restatement: "standalone" } : { edition };
+}
+
+function JobCard({
+  url,
+  forceRefresh,
+  edition,
+  restate,
+}: {
+  url: string;
+  forceRefresh: boolean;
+  edition: Edition;
+  restate: boolean;
+}) {
+  const { job, error } = useAnalysisJob(url, forceRefresh, runOptions(edition, restate));
 
   return <JobCardView url={url} job={job} error={error} edition={edition} />;
 }
@@ -369,6 +398,17 @@ function JobCardView({
               key={`${claim.text}-${index}`}
             >
               <p className="claim-text">{claim.text}</p>
+              {/* What it was searched and judged as, when restated: only
+                  when it differs from the sentence, so a plain run reads
+                  as it always did. The full block is on Live. */}
+              {claim.restatement?.used && claim.restatement.checkable !== claim.text && (
+                <p className="claim-checked-as">
+                  <span className="trace-muted">
+                    Checked as{claim.restatement.kind === "attributed" ? " (the fact inside the quote)" : ""}:
+                  </span>{" "}
+                  {claim.restatement.checkable}
+                </p>
+              )}
               {claim.step ? (
                 // Still being checked. Its own progress, not the job's:
                 // claims run concurrently, so one can be judged while
@@ -514,6 +554,7 @@ function summarizeJob(job: AnalysisJob): PartialResult {
       // Only while it is still being worked on; a finished claim shows
       // its verdict instead.
       step: claim.step === "done" ? null : claim.step,
+      restatement: claim.restatement,
     })),
   };
 }
@@ -522,6 +563,7 @@ function summarizeJob(job: AnalysisJob): PartialResult {
 // liveTrace's ClaimStep rather than to the backend phases directly, so
 // there is one place that reads the phase literals.
 const CLAIM_STEP_LABELS: Record<ClaimStep, string> = {
+  restating: "Working out what exactly to check…",
   searching: "Searching for evidence…",
   found: "Sources found",
   scraping: "Reading the sources…",

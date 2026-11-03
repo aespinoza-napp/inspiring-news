@@ -158,6 +158,23 @@ that way.
 `reliabilityKnown: false` is rendered as "unrated" — it is the default for
 an unrated domain, not a rating.
 
+## What a claim is checked as
+
+`components/ClaimFocus.tsx` (2026-11-03), above each claim's search on
+`/live`: the kind (a fact, reported speech, an opinion), who is speaking,
+the statement that was searched and judged, the sentence made
+self-contained and the questions that would settle it - from the
+`claim_restated` event, folded into `ClaimTrace.restatement` by
+`lib/liveTrace.ts`. Without a restatement it says the sentence was checked
+as written and how to turn restating on. On `/` the claim row adds
+"Checked as: ..." when it differs from the sentence, and the form has a
+per-run checkbox that sends `thresholds.claim_restatement` - per run
+rather than `backend/.env`, because the evaluation harness reads `.env`.
+The reader shows `checkedAs` ("What was checked:", and for reported
+speech that the fact in the quote was checked, not whether it was said) in
+all three languages (`readerText`'s `checkedAs` / `checkedAsQuote`).
+Checked by `scripts/e2e.py` ("What a claim is checked as").
+
 ## Where the time went
 
 `components/TimingBreakdown.tsx` (2026-10-22): an article's stages

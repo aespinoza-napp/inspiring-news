@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -36,6 +38,11 @@ class Claim(BaseModel):
     # checkable assertion. Scored for every candidate sentence; those
     # above the run's opinion_max_score never become claims at all.
     opinion_score: float = 0.0
+
+    # The sentence as its article wrote it, when `text` is a restatement of
+    # it (fact_checker/restatement.py): what a source is compared with to
+    # tell a copy of the article from a source of its own (independence.py).
+    written_as: Optional[str] = None
 
     # How load-bearing this claim is for the article's credibility, set
     # by ClaimSelector. None until selection has run.

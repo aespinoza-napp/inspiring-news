@@ -3,6 +3,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 from src.models.fact_checker.evidence import Evidence, RejectedEvidence
+from src.models.fact_checker.restatement import ClaimRestatement
 from src.models.fact_checker.pipeline_stage import PipelineStage
 
 
@@ -99,3 +100,8 @@ class FactCheck(BaseModel):
     # Set when a second look (a second, wider search) produced this
     # verdict; None for a claim judged on its first pass.
     second_look: SecondLook | None = None
+
+    # What the claim was checked as, when it was restated before the
+    # search (services/fact_checker/restatement.py); None when restating
+    # was off. `claim` stays the sentence as the article wrote it.
+    restatement: ClaimRestatement | None = None

@@ -58,6 +58,20 @@ export function ReaderClaim({
         </span>
       </div>
 
+      {/* What the verdict is about, when the sentence was restated before
+          it was checked: written by the model in the article's language. */}
+      {claim.checkedAs && claim.checkedAs.statement !== claim.text && (
+        <div className="reader-checked-as">
+          <p>
+            <span className="reader-fine">{t.checkedAs}</span>{" "}
+            <span lang={contentLang ?? undefined}>{claim.checkedAs.statement}</span>
+          </p>
+          {claim.checkedAs.kind === "attributed" && (
+            <p className="reader-fine">{t.checkedAsQuote(claim.checkedAs.speaker)}</p>
+          )}
+        </div>
+      )}
+
       {outcome && <p className={`reader-outcome${failed ? " reader-outcome-failed" : ""}`}>{outcome}</p>}
 
       {/* The model's own reasoning - only where the model actually judged.

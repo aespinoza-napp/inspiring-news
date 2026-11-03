@@ -4980,3 +4980,81 @@ button.button-link:hover:not(:disabled) {
     font-size: 0.95rem;
   }
 }
+
+/* ---------------------------------------------------------------------
+   What a claim is checked as (components/ClaimFocus.tsx), above its
+   search on Live and on Analyze
+   --------------------------------------------------------------------- */
+
+.claim-focus {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.75rem;
+}
+
+.claim-focus.is-plain {
+  border-left-color: var(--border);
+}
+
+.claim-focus-kind {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+}
+
+.claim-focus-chip {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.claim-focus-chip.is-attributed {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.claim-focus-chip.is-opinion {
+  color: var(--muted);
+}
+
+.claim-focus-checkable {
+  margin: 0.35rem 0;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.claim-focus-standalone {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.claim-focus-questions {
+  font-size: 0.85rem;
+}
+
+.claim-focus-questions ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.claim-checked-as {
+  margin: 0.25rem 0 0.4rem;
+  font-size: 0.85rem;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.6rem;
+}
+
+/* The reader: what a restated claim was checked as (ReaderClaim.tsx). */
+.reader-checked-as {
+  margin: 0.4rem 0 0.6rem;
+  padding-left: 0.7rem;
+  border-left: 3px solid var(--border);
+}
+
+.reader-checked-as p {
+  margin: 0.15rem 0;
+}

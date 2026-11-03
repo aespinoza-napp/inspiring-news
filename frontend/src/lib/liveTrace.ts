@@ -1,4 +1,4 @@
-import { EvidenceStance, PhaseEvent, QueryKind, Verdict } from "@/lib/types";
+import { EvidenceStance, PhaseEvent, QueryKind, Verdict, ClaimRestatement } from "@/lib/types";
 
 /**
  * Folds a job's phase events into what a person watching wants to see:
@@ -30,6 +30,7 @@ import { EvidenceStance, PhaseEvent, QueryKind, Verdict } from "@/lib/types";
  */
 
 export type ClaimStep =
+  | "restating"
   | "searching"
   | "found"
   | "scraping"
@@ -137,6 +138,8 @@ export interface JobTiming {
 
 export interface ClaimTrace {
   claim: string;
+  /** What it was checked as, when the run restated it (`claim_restated`). */
+  restatement: ClaimRestatement | null;
   /** Position in the selected set - what the backend calls this claim. */
   index: number;
   step: ClaimStep;
@@ -252,6 +255,7 @@ const toRejected = (raw: Data): TraceRejected => ({
 function emptyClaim(claim: string, index: number): ClaimTrace {
   return {
     claim,
+    restatement: null,
     index,
     step: "searching",
     queries: [],
@@ -434,6 +438,32 @@ export function buildTrace(events: PhaseEvent[]): JobTrace {
           if (!text || byClaim.has(text)) continue;
           addClaim(text, asNumber(entry.index) ?? trace.claims.length);
         }
+        break;
+      }
+
+      // Before anything is searched, with CLAIM_RESTATEMENT=standalone:
+      // the sentence made checkable on its own (backend restatement.py).
+      case "restating_claim": {
+        const claim = claimFor(data);
+        if (claim) claim.step = "restating";
+        break;
+      }
+
+      case "claim_restated": {
+        const claim = claimFor(data);
+        const restatement = data.restatement as Data | undefined;
+        if (!claim || !restatement || typeof restatement !== "object") break;
+        const kind = asString(restatement.kind);
+        claim.restatement = {
+          kind: kind === "attributed" || kind === "opinion" ? kind : "fact",
+          speaker: asString(restatement.speaker),
+          standalone: asString(restatement.standalone) ?? claim.claim,
+          checkable: asString(restatement.checkable) ?? claim.claim,
+          questions: asStrings(restatement.questions),
+          used: restatement.used !== false,
+          note: asString(restatement.note),
+        };
+        claim.step = "searching";
         break;
       }
 

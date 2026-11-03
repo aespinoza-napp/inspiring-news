@@ -144,6 +144,8 @@ export interface ReaderClaim {
   sources: ReaderSource[];
   notUsed: ReaderNotUsed[];
   notUsedTotal: number;
+  /** What was searched and judged, when the sentence was restated first; absent on older runs. */
+  checkedAs?: { statement: string; kind: "fact" | "attributed" | "opinion"; speaker: string | null } | null;
 }
 
 export interface ReaderArticle extends ReaderCard {

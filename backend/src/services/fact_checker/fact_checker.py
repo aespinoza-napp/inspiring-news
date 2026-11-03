@@ -13,6 +13,8 @@ from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
 from src.services.concurrency import bounded_map
+from src.models.fact_checker.restatement import ClaimRestatement
+from src.services.fact_checker.restatement import ClaimRestater, working_claim
 from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelector
 from src.services.fact_checker.deadline import MIN_STAGE_SECONDS, Deadline
 from src.services.fact_checker.progress import source_summary
@@ -105,6 +107,7 @@ class FactChecker:
         verifier: LLMVerifier | None = None,
         confidence_scorer: ConfidenceScorer | None = None,
         second_looker: SecondLooker | None = None,
+        restater: ClaimRestater | None = None,
     ):
         self.repository = repository
         self.claim_selector = claim_selector or ClaimSelector()
@@ -113,6 +116,7 @@ class FactChecker:
         self.verifier = verifier or LLMVerifier()
         self.confidence_scorer = confidence_scorer or ConfidenceScorer()
         self.second_looker = second_looker or SecondLooker()
+        self.restater = restater or ClaimRestater()
 
     def run(
         self,
@@ -282,10 +286,35 @@ class FactChecker:
         # updates spread over a minute of apparent silence. CLAUDE.md's
         # rule is per stage, not per method.
 
+        # What is searched and judged: the sentence, or - with
+        # `claim_restatement` - the checkable statement restated from it
+        # (restatement.py). `claim` stays the sentence for every event and
+        # for the check's own `claim`, so a label still matches its row.
+        restatement = None
+        working = claim
+
+        if thresholds.claim_restatement == "standalone":
+
+            if deadline.active:
+                # Like the second look: one more model call is what a
+                # deadline cannot afford.
+                restatement = ClaimRestatement(
+                    standalone=claim.text, checkable=claim.text, used=False,
+                    note="Not restated under a deadline: checked as written.",
+                )
+            else:
+                phase("restating_claim", {})
+                restatement = self.restater.restate(claim, context, language)
+                clock["restatement"] = round(deadline.elapsed(), 3)
+
+            working = working_claim(claim, restatement)
+
+            phase("claim_restated", {"restatement": restatement.model_dump()})
+
         phase("retrieving_evidence", {"deadline": deadline.seconds})
 
         retrieval = self.evidence_retriever.retrieve(
-            claim,
+            working,
             thresholds,
             context=context,
             language=language,
@@ -305,7 +334,7 @@ class FactChecker:
         })
 
         check = self._judge(
-            claim,
+            working,
             retrieval.kept,
             phase,
             thresholds,
@@ -328,7 +357,7 @@ class FactChecker:
         if trigger:
             first_done = deadline.elapsed()
             check = self.second_look(
-                claim,
+                working,
                 check,
                 phase,
                 thresholds,
@@ -337,6 +366,9 @@ class FactChecker:
                 trigger=trigger,
             )
             clock["secondLook"] = round(deadline.elapsed() - first_done, 3)
+
+        if restatement is not None:
+            check = check.model_copy(update={"claim": claim.text, "restatement": restatement})
 
         cited = set(check.cited_evidence_indices)
 

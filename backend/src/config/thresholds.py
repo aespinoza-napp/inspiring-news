@@ -340,6 +340,14 @@ class PipelineThresholds(BaseModel):
         default_factory=lambda: settings.VERIFIER_ANSWER,
     )
 
+    # Whether a claim is restated as a standalone, checkable statement
+    # before it is searched (settings.CLAIM_RESTATEMENT has why). Per-run
+    # because it changes what is searched and judged, so a run with it and
+    # one without are two conditions to compare.
+    claim_restatement: Literal["off", "standalone"] = Field(
+        default_factory=lambda: settings.CLAIM_RESTATEMENT,
+    )
+
     # What the verifier is told a verdict means (settings.py has why).
     # Per-run because it changes the verdicts themselves, and whether it
     # judges better is measured by replaying one run's evidence
@@ -444,6 +452,7 @@ class ThresholdOverrides(BaseModel):
     verifier_excerpt: Optional[Literal["head", "passages"]] = Field(None)
     verifier_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
     verifier_answer: Optional[Literal["full", "compact", "per_source"]] = Field(None)
+    claim_restatement: Optional[Literal["off", "standalone"]] = Field(None)
     verifier_rules: Optional[Literal["original", "stated"]] = Field(None)
     evidence_prerank: Optional[Literal["embedding", "lexical"]] = Field(None)
     ranking_text: Optional[Literal["head", "passages"]] = Field(None)

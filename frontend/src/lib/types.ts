@@ -101,6 +101,24 @@ export interface EvidenceItem {
   quote?: string | null;
 }
 
+/**
+ * What a claim was checked *as* (backend services/fact_checker/
+ * restatement.py, CLAIM_RESTATEMENT=standalone): the sentence made
+ * self-contained, and the one statement that was searched and judged. For
+ * reported speech that is the fact inside the quote, not whether it was
+ * said. `used: false` means the sentence was checked as written, and
+ * `note` says why (an opinion, an invented figure, the model down...).
+ */
+export interface ClaimRestatement {
+  kind: "fact" | "attributed" | "opinion";
+  speaker: string | null;
+  standalone: string;
+  checkable: string;
+  questions: string[];
+  used: boolean;
+  note: string | null;
+}
+
 export interface ClaimResult {
   text: string;
   confidence: number;
@@ -120,6 +138,8 @@ export interface ClaimResult {
   independentDomains?: number;
   /** The first verdict, when a second, wider search replaced it. */
   secondLook?: SecondLook | null;
+  /** What the sentence was checked as; absent before 2026-11-03 or with restating off. */
+  restatement?: ClaimRestatement | null;
 }
 
 /** backend/src/services/fact_checker/second_look.py */
@@ -197,6 +217,8 @@ export interface FactCheckSummary {
 export interface ThresholdOverrides {
   /** The edition the run is for (backend src/config/editions.py): its topic labels and tone gate. */
   edition?: Edition;
+  /** Restate each claim as a standalone, checkable statement before searching it (backend restatement.py). */
+  claim_restatement?: "off" | "standalone";
   devastation_min_score?: number;
   topic_classifier_threshold?: number;
   entity_threshold?: number;

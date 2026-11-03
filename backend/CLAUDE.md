@@ -140,6 +140,16 @@ detection, where a silently empty result corrupts a decision).
   `pytest.mark.usefixtures("list_verifier")` (conftest). Compare verifiers with
   `cli run --replay <run>` (same evidence, `docs/decisions/evaluation.md`,
   "Replay"), never with two searched runs.
+- **A claim can be restated before it is searched** (2026-11-03,
+  `claim_restatement=standalone`, off by default):
+  `fact_checker/restatement.py` asks the model, from the headline, the
+  opening and the sentence, for the one checkable statement - for reported
+  speech, the fact inside the quote - and the stages after it search and
+  judge `working_claim(...)`, while the check and every event keep the
+  sentence as `claim`. Held to the sentence without a model (no invented
+  number, no question, no dropped figure), else the sentence as written
+  with a `note`. Events `restating_claim` / `claim_restated`;
+  `FactCheck.restatement`. `docs/fact-checking-changes.md` section 10.
 - **Across claims those events interleave**, because the claims run at
   once. Two things make a client's life possible and both are
   load-bearing: `claims_selected` carries the whole claim set with

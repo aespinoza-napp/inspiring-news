@@ -391,6 +391,24 @@ def claim_view(index: int, check: dict) -> dict:
         "sources": sources,
         "notUsed": not_used[:MAX_NOT_USED],
         "notUsedTotal": len(not_used),
+        # What was actually searched and judged, when the sentence was
+        # restated first (fact_checker/restatement.py) - a reader seeing
+        # "False" beside a quotation should know it was the fact inside
+        # the quote that was judged, not whether it was said. Only the
+        # public part: the statement, its kind and speaker.
+        "checkedAs": _checked_as(check.get("restatement")),
+    }
+
+
+def _checked_as(restatement) -> dict | None:
+
+    if not isinstance(restatement, dict) or not restatement.get("used") or not restatement.get("checkable"):
+        return None
+
+    return {
+        "statement": restatement.get("checkable"),
+        "kind": restatement.get("kind") or "fact",
+        "speaker": restatement.get("speaker"),
     }
 
 
