@@ -278,6 +278,9 @@ for the whole suite, so nothing depends on `.env` or the environment.
 
 `tests/test_invariants.py` enforces the root `CLAUDE.md` invariants.
 
+`tests/test_gold_set_integrity.py` reads the committed custom set: ids, labels,
+the frozen split, altered facts beside their sources and carrying the AI marker.
+
 `tests/test_fake_contracts.py` asserts every shared fake accepts what the
 real collaborator accepts — five fakes drifted at once when thresholds
 became per-call, each found by a `TypeError` days later.

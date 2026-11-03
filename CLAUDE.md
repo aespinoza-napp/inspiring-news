@@ -195,8 +195,7 @@ write them down than to have each be rediscovered.
   the lake). Hand-labelled facts only get there through `POST
   /graph/sync` (the Sync button on `/graph`): the labeller imports
   nothing from `backend/`. The lake is the record, the graph a view that
-  sync rebuilds. `docs/decisions/graph.md`. `motor` (MongoDB) is an
-  unused dependency.
+  sync rebuilds. `docs/decisions/graph.md`.
 - **`TopicPrediction.probability` carries no signal.** It is a softmax
   over raw cosine similarities across 23 topics, so it comes back
   near-uniform (0.049 top vs 0.044 bottom). Use `confidence`.

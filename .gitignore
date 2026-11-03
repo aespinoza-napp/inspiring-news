@@ -151,6 +151,11 @@ activemq-data/
 
 # Environments
 .env
+# Any copy of it: `.env.bak-*` holds the same secrets, and the exact name
+# above let one through (audit 2026-11-03). The examples hold none.
+.env.*
+!.env.example
+!.env.local.example
 # The shared settings (scripts/init_env.sh) - holds the secrets.
 .env_global
 .envrc

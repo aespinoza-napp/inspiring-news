@@ -61,8 +61,7 @@ Storage is behind an interface (`src/repositories/lake_backend.py`'s
 `LakeBackend` protocol; `JsonFileLakeBackend` is the default, with atomic
 temp-file + `os.replace` writes because the persist stage runs in
 FastAPI's background threadpool). Moving the lake to MongoDB/Postgres/S3
-means writing one class with five methods — no pipeline change. `motor`
-is already a dependency if MongoDB is the direction.
+means writing one class with five methods — no pipeline change. 
 
 `AnalysisService` does the staging in `_store_raw`/`_store_processed`/
 `_store_verified` (all funnelled through `_store`, which owns the
@@ -109,6 +108,8 @@ code produced it, since the container has no `.git`. The image now carries
 `CODE_REVISION` (a build argument; `scripts/stack.sh` sets it). Each run's
 lineage also holds every threshold it resolved to (`Lineage.thresholds`), since
 the overrides alone cannot say what a default from this machine's `.env` was.
+
+The gold set has its own checks: `tests/test_gold_set_integrity.py`.
 
 ## The job journal
 
