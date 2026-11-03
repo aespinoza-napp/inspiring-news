@@ -1,0 +1,110 @@
+
+1. Find and select (RQ1, RQ3)
+
+┌────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────┐
+│                     Paper                      │                                  How it helps you                                  │
+├────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ Identifying Features of Constructive           │ The closest published work to your mission screen: it classifies articles as       │
+│ Journalism in News Articles: An Explainable ML │ constructive or not, with random forest on embeddings at 89.6%. It gives your      │
+│  Approach (Springer, 2025) — link              │ ranking (AUC 0.78) a direct baseline and a related-work paragraph for RQ1.         │
+├────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ Constructive Institute, Constructive News      │ A BERT tool trained on 3,000+ labelled stories from 28 European media              │
+│ Algorithm — link                               │ organisations. It's a project page, not peer-reviewed, but it shows that newsrooms │
+│                                                │  want what O1 builds.                                                              │
+├────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ Gilardi et al., ChatGPT Outperforms            │ Your strongest argument for the AI labelling pass (108 labels, the 9 Oct rounds).  │
+│ Crowd-Workers for Text-Annotation Tasks (PNAS  │ It also gives RQ3 a published reference point: trained annotators agree 79%, the   │
+│ 2023) — arXiv (already cited)                  │ model 91–97%.                                                                      │
+└────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
+
+2. Claim selection (RQ4: selector precision 0.64)
+
+┌───────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                 Paper                 │                                      How it helps you                                       │
+├───────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┤
+│ ClaimBuster (Hassan et al., PVLDB     │ The original check-worthiness pipeline your ClaimSelector descends from.                    │
+│ 2017) — link (already cited)          │                                                                                             │
+├───────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┤
+│ CLEF-2024 CheckThat! Lab overview     │ New. Task 1 is check-worthiness in English, Dutch and Arabic, scored by F1 on the           │
+│ (Barrón-Cedeño et al.) — overview ·   │ check-worthy class. You can report your 0.64 precision beside its F1 scores, and its data   │
+│ Task 1                                │ could test the selector without labelling more.                                             │
+└───────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+3. Evidence retrieval on the open web (RQ2)
+
+┌───────────────────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────┐
+│                       Paper                       │                                How it helps you                                 │
+├───────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+│ AVeriTeC (Schlichtkrull et al., NeurIPS 2023) —   │ Real claims with web evidence, built specifically to avoid temporal leakage.    │
+│ arXiv (already cited)                             │ Its verdict agreement of κ = 0.619 is a published benchmark for your own 0.6    │
+│                                                   │ bar on the blind re-label.                                                      │
+├───────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+│ FIRE: Fact-checking with Iterative Retrieval and  │ The basis of your second look, which only searches when the verifier is unsure. │
+│ Verification (Xie et al., NAACL Findings 2025) —  │  They report 7.6× lower LLM cost and 16.5× lower search cost. Your result (+0.0 │
+│ arXiv (already cited)                             │  on test) is a useful negative replication of it with a 3B model.               │
+├───────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+│ Glockner et al., Missing Counter-Evidence Renders │ Explains your X-Fact verdict leak: PolitiFact's own verdict page was ranked for │
+│  NLP Fact-Checking Unrealistic (EMNLP 2022) — ACL │  9 of 24 English claims. It's the citation for reporting verdictLeak            │
+│  Anthology (already cited)                        │ separately.                                                                     │
+├───────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+│ FreshLLMs / FreshQA (Vu et al., ACL Findings      │ The freshness axis behind cli freshness. It supports the planned day 0 / 7 / 30 │
+│ 2024) — arXiv (already cited)                     │  retrieval re-runs and the "recency scored against the claim's date" fix.       │
+├───────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+│ Cormack et al., Reciprocal Rank Fusion (SIGIR     │ The justification for fusing your three queries by rank (k = 60).               │
+│ 2009) — PDF (already cited)                       │                                                                                 │
+├───────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+│ BGE M3-Embedding (Chen et al., 2024) — arXiv      │ Your one embedding model, covering 100+ languages and both same-language and    │
+│ (already cited)                                   │ cross-language retrieval. It also supports a fix you list: searching a Spanish  │
+│                                                   │ claim's evidence in English.                                                    │
+└───────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────┘
+
+4. Verification: the stage the measurements say limits you
+
+Paper: MiniCheck (Tang, Laban, Durrett, EMNLP 2024) — arXiv · code
+How it helps you: New, and the most useful. It asks whether a document supports a claim, which is your per-source question. A 770M Flan-T5
+reaches GPT-4 accuracy at about 400× lower cost. On your CPU that could take the model out of the per-source loop, the same goal as
+Laya's planned source-stance decision (D4). Test it by replay against V2b on the same evidence; it's open and runs locally. It also
+reports that splitting claims into parts didn't consistently help, which matches your results.
+────────────────────────────────────────
+Paper: QuanTemp (Venktesh et al., SIGIR 2024) — arXiv · QuanTemp++ (2025) — arXiv
+How it helps you: New. Real numerical claims: comparisons, statistics, intervals, dates. They find claim decomposition and number-aware
+models help. That's your open weakness, the altered detail (caught 60% → 13%). It's a ready test set for "compare the figures, dates and
+names one by one", and QuanTemp++ also corrects temporal leakage.
+────────────────────────────────────────
+Paper: Quelle & Bovet, The Perils & Promises of Fact-checking with LLMs (Frontiers in AI, 2024) — link
+How it helps you: New. LLM fact-checkers with retrieval, whose accuracy shifts with the claim's language and with whether it's true or
+false. That matches your 3B's lean towards FALSE and your English/Spanish gap. Good for the discussion and threats to validity.
+────────────────────────────────────────
+Paper: Schuster et al., Towards Debiasing Fact Verification Models (EMNLP 2019) — arXiv (already cited)
+How it helps you: Your 30 synthetic FALSE claims carry the same risk it found in FEVER: the claim text alone gives the label away. A
+claim-only model reached 61.7%. Check that your closed-book run doesn't do well on the altered claims for that reason; it scored 60% on
+them.
+
+5. Evaluation (O4)
+
+┌────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────┐
+│                       Paper                        │                                How it helps you                                │
+├────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+│ X-Fact (Gupta & Srikumar, ACL 2021) — ACL          │ Your external benchmark. The best model reached about 40 F1, against your      │
+│ Anthology · data (already cited)                   │ pilot's macro-F1 of 0.168 and 29.7% accuracy.                                  │
+└────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
+
+6. Write and publish (the extension)
+
+┌──────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────┐
+│                Paper                 │                                       How it helps you                                       │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+│ FActScore (Min et al., EMNLP 2023) — │ The planned writer evaluation: split a draft into atomic facts and score the share its own   │
+│  arXiv (already cited)               │ sources support. Note it measures precision only, so a draft that says less can score        │
+│                                      │ higher.                                                                                      │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+│ ALCE: Enabling LLMs to Generate Text │ Citation precision and recall, the metric your reviewer's "every sentence cites [n]" check   │
+│  with Citations (Gao et al., EMNLP   │ needs. Even the best models lacked full citation support in about half their answers.        │
+│ 2023) — arXiv · code (already cited) │                                                                                              │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                      │ New. Splits text into facts and checks each with web searches. It agreed with crowd          │
+│ Long-form factuality / SAFE (Wei et  │ annotators 72% of the time, won 76% of the disagreements, and is 20× cheaper. It's a         │
+│ al., NeurIPS 2024) — arXiv           │ template for checking a trend story's angle claims, and its F1@K metric balances precision   │
+│                                      │ and recall where FActScore has only precision.                                               │
+└──────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────┘
+

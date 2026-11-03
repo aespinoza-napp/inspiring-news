@@ -1,0 +1,8 @@
+/goal create the option to transform the news filters into "devastating news".
+	it's goals is to transmit news based on some news that are really bad for the humanity it should also have their own labels and also 
+	it's writting procedure it should be a litle bit ironic and also it does not need to be verified. Also if it's possible to generate and also try to see trend news and try to classify them into controversial point of view in order to have more repecurssion we do not care about anything, it should be a little bit ironic in the sense the writter should be a little bit narcisist.
+	
+/goal the classification of the different articles would be different. Example: Terrorism, suicidals, multiple kills, human racism
+
+/goal it should be a button that you can pick and select wheter you are looking for negative or positive news it is important that everything changes according of what we select and the way of writting and everything should change.
+
