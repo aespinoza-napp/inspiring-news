@@ -65,6 +65,7 @@ src.main:app --port 8001`.
 | Claude Code in this repo: the skills (`/verify`, `/debug-verdict`, `/fact-check-change`, `/audit`, `/commit`) and hooks | `.claude/skills/`, `.claude/hooks/` |
 | The thesis defence: likely questions, the structural gaps, what to do next | `docs/thesis-defense-brief.md` (3 Nov), `docs/audit-2026-10-28.md` |
 | One article's journey across every stage (round → job → lake → reader → draft) | `/trace` (`frontend/CLAUDE.md`), `GET /trace`, `backend/src/services/trace.py` |
+| Bringing in a WordPress export unverified, to compare on the same articles (lake + graph, not the reader) | `scripts/import_wordpress.py`, `backend/src/services/imports/`, `POST /imports/wordpress` |
 | Pipeline stages, entry points, container | `backend/CLAUDE.md` |
 | What decides whether an article is checked at all | `backend/src/services/admission/README.md` |
 | Why the models live in their own service | `docs/decisions/inference.md` |

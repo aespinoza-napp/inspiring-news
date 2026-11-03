@@ -176,10 +176,61 @@ class AnalysisService:
 
         report_phase("scraped", {"title": news.title, "url": news.url})
 
+        return self._analyse_news(url, news, report_phase, thresholds)
+
+    def analyze_news(
+        self,
+        news: News,
+        thresholds: PipelineThresholds | None = None,
+        on_phase: Optional[OnPhase] = None,
+        verify: bool = True,
+        remember: bool = True,
+        extractor: str = "supplied",
+    ) -> dict:
+        """
+        An article already in hand - its text from a file, not fetched - through
+        every stage after extraction: the lake's three layers, enrichment,
+        admission, the fact-check, the graph. Not cached: the cache is keyed by
+        URL for what a fetch would return, and this text was not fetched.
+
+        `verify=False` stops after admission, which is still asked and recorded
+        but decides nothing: an admitted article is stored as checked by
+        nobody (`fact_check_skipped="import"`), never publishable, and a
+        rejected one as rejected, both in the graph. `remember=False` keeps it
+        out of the vector store: that collection is the corpus the fact-checker
+        searches, so an imported article remembered there would be found as
+        evidence for itself when the same text is verified later
+        (services/imports/, 2026-11-03).
+        """
+
+        report_phase = on_phase or _noop
+        thresholds = thresholds or PipelineThresholds()
+
+        result = self._analyse_news(
+            news.url, news, report_phase, thresholds,
+            verify=verify, remember=remember, extractor=extractor,
+        )
+
+        final = {**result, "cached": False}
+        report_phase("done", final)
+
+        return final
+
+    def _analyse_news(
+        self,
+        url: str,
+        news: News,
+        report_phase: OnPhase,
+        thresholds: PipelineThresholds,
+        verify: bool = True,
+        remember: bool = True,
+        extractor: str | None = None,
+    ) -> dict:
+
         # Layer 1, immediately: what was extracted is worth keeping even
         # if every later stage fails.
         run = self._start_run(url, thresholds, report_phase)
-        raw = self._store_raw(run, news, report_phase)
+        raw = self._store_raw(run, news, report_phase, extractor)
 
         report_phase("enriching", {})
 
@@ -204,7 +255,7 @@ class AnalysisService:
         # NLP pass.
         processed = self._store_processed(run, raw, article, report_phase)
 
-        report = self._check(article, report_phase, thresholds)
+        report = self._check(article, report_phase, thresholds, verify=verify, remember=remember)
 
         # Layer 3, and the report attached back onto layer 2.
         storage = self._store_verified(
@@ -253,6 +304,8 @@ class AnalysisService:
         article: EnrichedArticle,
         report_phase: OnPhase,
         thresholds: PipelineThresholds,
+        verify: bool = True,
+        remember: bool = True,
     ) -> FactCheckReport:
         """
         Admission, then - only for an admitted article - the fact-check.
@@ -264,6 +317,11 @@ class AnalysisService:
         """
 
         if self.admission is None:
+
+            if not verify:
+                report_phase("fact_check_skipped", {"reason": "import"})
+                return self._unchecked(article, "import")
+
             return self.fact_checker.run(
                 article,
                 on_phase=report_phase,
@@ -285,6 +343,11 @@ class AnalysisService:
         if thresholds.edition == "devastating":
             report_phase("fact_check_skipped", {"reason": "edition", "edition": thresholds.edition})
             report = self._unchecked(article)
+        elif not verify:
+            # Brought in to be compared on, not to be published: the same
+            # record a check would start from, with no verdict of ours.
+            report_phase("fact_check_skipped", {"reason": "import"})
+            report = self._unchecked(article, "import")
         else:
             report = self.fact_checker.run(
                 article,
@@ -293,8 +356,10 @@ class AnalysisService:
             )
 
         # Only now, after its own claims were checked: stored earlier, the
-        # article would be found as internal evidence for itself.
-        self.admission.remember(article)
+        # article would be found as internal evidence for itself. Not at all
+        # for an import, whose own check comes later (analyze_news).
+        if remember:
+            self.admission.remember(article)
 
         return report.model_copy(update={
             "topic_ok": admission.topic_ok,
@@ -305,12 +370,17 @@ class AnalysisService:
         })
 
     @staticmethod
-    def _unchecked(article: EnrichedArticle) -> FactCheckReport:
-        """An admitted article no one checked: publishable, with no verdict of ours on any claim."""
+    def _unchecked(article: EnrichedArticle, reason: str = "edition") -> FactCheckReport:
+        """
+        An admitted article no one checked, with no verdict of ours on any
+        claim: publishable for the Devastating edition, never for an import
+        (DataLakeRepository._is_publishable).
+        """
 
         return FactCheckReport(
             article_id=article.id,
             validation_passed=True,
+            fact_check_skipped=reason,
             claims_total=len(article.claims or []),
             claims_selected=0,
             overall_verdict=Verdict.UNVERIFIED,
@@ -375,13 +445,16 @@ class AnalysisService:
         run: RunContext | None,
         news: News,
         report_phase: OnPhase,
+        extractor: str | None = None,
     ) -> RawRecord | None:
 
+        # Who produced the text: the cascade's default unless told, as for a
+        # file's own text ("wordpress_export"), which nothing extracted.
         return self._store(
             run,
             DataLayer.RAW,
             report_phase,
-            lambda: self.lake.persist_raw(run, news),
+            lambda: self.lake.persist_raw(run, news, extractor=extractor) if extractor else self.lake.persist_raw(run, news),
         )
 
     def _store_processed(

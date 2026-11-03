@@ -63,6 +63,18 @@ than one overwriting the other.
   deleted: a claim is only ever reachable from an article.
 - Rejected articles are written too (`admitted: false`, no verdict): what
   they mention and what they are about is still true.
+- **An article no one checked has no verdict** (2026-11-03): `fact_checked:
+  false` and `fact_check_skipped` says why - `"import"` (a WordPress export,
+  `services/imports/`) or `"edition"` (the Devastating edition). Before, the
+  Devastating edition's articles carried the report's default `UNVERIFIED`,
+  which reads as a check that found nothing. `topic_ok`, `positive_ok` and
+  `source_id` (`wordpress:inspiringnews.ai` for an import) are on every article
+  since, so the filters' answer can be queried beside the checked ones:
+
+  ```cypher
+  MATCH (a:Article {source_id: "wordpress:inspiringnews.ai"})
+  RETURN a.admitted, a.topic_ok, a.positive_ok, a.duplicate, count(*)
+  ```
 - Cache hits are not re-written - they were written when computed.
 - `AnalysisService.graph` has **no default**, like `lake`: Neo4j Community
   has one database, so a default would have every test writing into the

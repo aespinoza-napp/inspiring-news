@@ -246,3 +246,7 @@ backend/data/evaluation/writing/runs/
 
 # One person's Claude Code overrides; .claude/settings.json is the shared one.
 .claude/settings.local.json
+
+# WordPress imports' snapshots and results (scripts/import_wordpress.py): the
+# export carries unpublished posts as well as published ones.
+/backend/data/imports/

@@ -308,6 +308,11 @@ class GraphWriter:
         domain = domain_of(url)
         sentiment = article.sentiment
 
+        # A verdict only where something was checked: an article no one
+        # checked (an import, the Devastating edition) carries none, rather
+        # than the report's default UNVERIFIED, which reads as a finding.
+        checked = report.validation_passed and not report.fact_check_skipped
+
         props = {
             "id": article.id,
             "title": article.title or None,
@@ -319,12 +324,15 @@ class GraphWriter:
             "skipped_reason": report.skipped_reason,
             "duplicate": report.duplicate,
             "impact_score": report.impact_score,
-            "overall_verdict": (
-                report.overall_verdict.value if report.validation_passed else None
-            ),
-            "overall_confidence": (
-                report.overall_confidence if report.validation_passed else None
-            ),
+            "overall_verdict": report.overall_verdict.value if checked else None,
+            "overall_confidence": report.overall_confidence if checked else None,
+            "fact_checked": checked,
+            "fact_check_skipped": report.fact_check_skipped,
+            "topic_ok": report.topic_ok,
+            "positive_ok": report.positive_ok,
+            # Where the article came from: a configured source's id, or the
+            # file it was imported from ("wordpress:inspiringnews.ai").
+            "source_id": article.source_id,
             "claims_total": report.claims_total,
             "claims_selected": report.claims_selected,
             "sentiment_label": sentiment.label if sentiment else None,

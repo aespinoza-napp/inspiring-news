@@ -45,7 +45,8 @@ NODES: list[dict] = [
             "admitted", "skipped_reason", "overall_verdict",
             "overall_confidence", "sentiment_label", "impact_score",
             "claims_total", "claims_selected", "content_hash", "run_id",
-            "labelled",
+            "labelled", "fact_checked", "fact_check_skipped", "topic_ok",
+            "positive_ok", "source_id",
         ],
     },
     {

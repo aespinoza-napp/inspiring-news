@@ -111,6 +111,18 @@ the overrides alone cannot say what a default from this machine's `.env` was.
 
 The gold set has its own checks: `tests/test_gold_set_integrity.py`.
 
+## Imports
+
+A WordPress export comes in through `POST /imports/wordpress`
+(`services/imports/`, `scripts/import_wordpress.py`): the text in the file, never
+a fetched page, through the same three layers as any analysis, the file's post
+id, status, categories, tags and linked sources in the raw record's metadata.
+Not fact-checked unless `verify=true`; then not publishable
+(`_is_publishable`, rejection reason `imported_not_checked`), and not
+remembered in the vector store. `data/imports/<id>/snapshot.jsonl` is the posts
+as read, with each text's sha256: two runs worked on the same data when those
+agree. Git ignores `backend/data/imports/`: the export holds private posts.
+
 ## The job journal
 
 The lake keeps *results*. Everything a run does on the way — the queries it

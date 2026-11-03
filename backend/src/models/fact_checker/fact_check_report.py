@@ -28,6 +28,14 @@ class FactCheckReport(BaseModel):
 
     duplicate: bool = False
 
+    # Why no fact-check ran on an admitted article, when none did: "edition"
+    # (the Devastating edition, by request, 2026-10-30) or "import" (an
+    # article brought in from a file to be compared on later, never
+    # published by it: services/imports/). None when it was checked, or
+    # rejected before it could be. Its overall_verdict is then the default
+    # UNVERIFIED, which is nobody's finding - read this first.
+    fact_check_skipped: Optional[str] = None
+
     failed_stage: Optional[PipelineStage] = None
 
     unselected_claims: list[RejectedClaim] = Field(default_factory=list)

@@ -89,6 +89,7 @@ _graph_writers: dict = {}
 _graph_readers: dict = {}
 
 _labelling_batch = None
+_wordpress_import = None
 
 _reader_index = None
 
@@ -507,6 +508,29 @@ def get_labelling_batch():
                 )
 
     return _labelling_batch
+
+
+def get_wordpress_import():
+    """
+    Backs /imports/wordpress (services/imports/wordpress_import.py). Runs in
+    this process because it borrows the analysis service - whose admission
+    reads the on-disk Qdrant this process holds locked. Its snapshots and
+    results go beside the lake, in data/imports/.
+    """
+
+    global _wordpress_import
+
+    if _wordpress_import is None:
+        with _lock:
+            if _wordpress_import is None:
+                from src.services.imports.wordpress_import import WordPressImport
+
+                _wordpress_import = WordPressImport(
+                    get_analysis_service(),
+                    directory=settings.LAKE_PATH.parent / "imports",
+                )
+
+    return _wordpress_import
 
 
 def get_reader_index():

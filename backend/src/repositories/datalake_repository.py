@@ -437,6 +437,11 @@ class DataLakeRepository:
         if report is None or not report.validation_passed:
             return False
 
+        # Imported to be compared on: on the reader it would read as one of
+        # the newsroom's checked articles, which it is not (services/imports/).
+        if report.fact_check_skipped == "import":
+            return False
+
         return report.overall_verdict not in _BLOCKING_VERDICTS
 
     @staticmethod
@@ -446,6 +451,9 @@ class DataLakeRepository:
             return ["no_fact_check_report"]
 
         if report.validation_passed:
+
+            if report.fact_check_skipped == "import":
+                return ["imported_not_checked"]
 
             if report.overall_verdict in _BLOCKING_VERDICTS:
                 return [f"verdict_{report.overall_verdict.value.lower()}"]

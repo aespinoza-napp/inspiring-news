@@ -2,7 +2,7 @@ import secrets
 from logging import getLogger
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, Request, Response
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field, model_validator
 
@@ -22,6 +22,7 @@ from src.container import (
     get_source_probe,
     get_text_corrector,
     get_trend_service,
+    get_wordpress_import,
     job_store,
 )
 from src.config.editions import DEFAULT_EDITION, Edition
@@ -1375,6 +1376,71 @@ def labelling_batch_state():
     """Whether a batch is being built, and the last one built."""
 
     return get_labelling_batch().state()
+
+
+# ---------------------------------------------------------------------
+# Imports
+#
+# A WordPress export brought into the lake and the graph without a
+# fact-check, so every comparison after it works on the same articles
+# (src/services/imports/wordpress_import.py, scripts/import_wordpress.py).
+# ---------------------------------------------------------------------
+
+# The site's own export of 2026-11-03 is 6 MB; this is room for years more.
+MAX_IMPORT_BYTES = 64 * 1024 * 1024
+
+
+@router.post("/imports/wordpress", status_code=202, dependencies=[Depends(require_storage_key)])
+async def start_wordpress_import(
+    request: Request,
+    statuses: str = Query("publish", max_length=100),
+    verify: bool = Query(False),
+    limit: int | None = Query(None, ge=1, le=10_000),
+):
+    """
+    The export's bytes as the body. `statuses`: which posts, comma-separated
+    (`publish` - what the site shows - by default; `publish,private,draft`
+    for every one). `verify=true` fact-checks them too: the same file, read
+    the same way, for the comparison after. 202, then poll the GET.
+    """
+
+    from src.services.imports.wordpress import NotAnExport
+
+    data = await request.body()
+
+    if not data:
+        raise HTTPException(status_code=422, detail="Send the WordPress export (the .xml file) as the request body.")
+
+    if len(data) > MAX_IMPORT_BYTES:
+        raise HTTPException(status_code=413, detail=f"An export over {MAX_IMPORT_BYTES // (1024 * 1024)} MB.")
+
+    wanted = tuple(part.strip() for part in statuses.split(",") if part.strip())
+
+    try:
+        return get_wordpress_import().start(data, statuses=wanted, verify=verify, limit=limit)
+    except NotAnExport as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@router.get("/imports/wordpress", dependencies=[Depends(require_storage_key)])
+def wordpress_import_state(results: bool = Query(True)):
+    """The running or last import: progress, then each post's line and a summary."""
+
+    return get_wordpress_import().state(with_results=results)
+
+
+@router.get("/imports/wordpress/snapshot", dependencies=[Depends(require_storage_key)])
+def wordpress_import_snapshot():
+    """The last import's posts exactly as read, one JSON object a line."""
+
+    path = get_wordpress_import().snapshot_path()
+
+    if path is None or not path.exists():
+        raise HTTPException(status_code=404, detail="No import has been run by this process.")
+
+    return PlainTextResponse(path.read_text(encoding="utf-8"), media_type="application/x-ndjson")
 
 
 # ---------------------------------------------------------------------
