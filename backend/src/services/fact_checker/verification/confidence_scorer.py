@@ -1,3 +1,4 @@
+from src.services.fact_checker.outlets import outlet_of
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
@@ -91,7 +92,7 @@ class ConfidenceScorer:
         ]
 
         independent_domains = len({
-            item.domain or item.url for item in corroborating
+            outlet_of(item.domain or item.url) for item in corroborating
         })
 
         # The model's own judgement of each source, enforced. It is told

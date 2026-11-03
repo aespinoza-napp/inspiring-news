@@ -40,6 +40,7 @@ from dataclasses import dataclass
 
 from src.models.fact_checker.evidence import Evidence, EvidenceStance
 from src.models.fact_checker.fact_check import Verdict
+from src.services.fact_checker.outlets import outlet_of
 
 PER_SOURCE_SYSTEM_PROMPT = (
     "You check one claim from a news article against one source. The "
@@ -112,7 +113,7 @@ def verdict_from(answers: list[SourceAnswer], evidence: list[Evidence]) -> tuple
 
     def outlets(stance: EvidenceStance) -> set[str]:
         return {
-            evidence[answer.index].domain or evidence[answer.index].url
+            outlet_of(evidence[answer.index].domain or evidence[answer.index].url)
             for answer in answers
             if answer.stance == stance
         }
@@ -128,7 +129,7 @@ def verdict_from(answers: list[SourceAnswer], evidence: list[Evidence]) -> tuple
     if not supporting and not contradicting:
         return Verdict.UNVERIFIED, 0.0, []
 
-    every = len({item.domain or item.url for item in evidence}) or 1
+    every = len({outlet_of(item.domain or item.url) for item in evidence}) or 1
 
     if len(contradicting) > len(supporting):
         return Verdict.FALSE, min(1.0, 0.5 + 0.5 * len(contradicting) / every), cited

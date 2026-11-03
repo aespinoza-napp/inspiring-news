@@ -38,6 +38,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Protocol
 
+from src.services.fact_checker.outlets import outlet_of, same_outlet
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, WriterThresholds
 from src.models.fact_checker.evidence import EvidenceStance
@@ -377,16 +378,16 @@ def judge(
         return angle, []
 
     cited = set(check.cited_evidence_indices)
-    own = (article.domain or "").lower()
+    own = article.domain or ""
 
     supporting = [
         evidence
         for index, evidence in enumerate(check.evidence)
         if index in cited and evidence.stance == EvidenceStance.SUPPORTS
-        and (evidence.domain or domain_of(evidence.url)).lower() != own
+        and not same_outlet(evidence.domain or domain_of(evidence.url), own)
     ]
 
-    domains = sorted({(evidence.domain or domain_of(evidence.url)).lower() for evidence in supporting})
+    domains = sorted({outlet_of(evidence.domain or domain_of(evidence.url)) for evidence in supporting})
     angle.domains = domains
 
     if angle.verdict != "TRUE":

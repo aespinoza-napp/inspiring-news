@@ -13,6 +13,7 @@ from src.services.concurrency import bounded_map
 from src.services.embeddings.service import EmbeddingService
 from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.fact_checker.deadline import Deadline
+from src.services.fact_checker.outlets import outlet_of
 from src.services.fact_checker.progress import source_summary
 from src.services.search import SearchUnavailableError
 from src.services.fact_checker.terms import (
@@ -404,7 +405,7 @@ class EvidenceRetriever:
 
         for item in evidence:
 
-            domain = item.domain or item.url
+            domain = outlet_of(item.domain or item.url)
 
             if domain in seen:
                 dropped.append(RejectedEvidence(
