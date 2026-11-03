@@ -291,3 +291,68 @@ it helps is a retrieval question - the reference-evidence recall of a
 retrieval-only run with and without it on the train half - and that is
 the measurement to make before turning it on for the harness.
 
+## 11. Whether a source says anything of its own (2026-11-03)
+
+The two real articles above showed sources that were not sources:
+`thenote.app`, `newsminimalist.com` and `lipstickalley.com` "supporting"
+the Guardian's sentence by repeating it, and the 3B marking `theconversation.com`
+as *contradicting* a sentence it quoted from that same page. On the train
+half (run `cc053417c0cb`, labels unreviewed): 12 of 69 claims had such a page,
+17 of 303 judged sources, 15 of them "supports".
+
+`fact_checker/independence.py` (`evidence_independence`, **on by default**,
+`false` in `thresholds/thorough.json`), inside `_judge`, so replays and second
+looks go through it. Word-level, no model:
+
+- **A page repeating the sentence is not evidence**: taken out, with its reason
+  among the rejected sources.
+- **The same sentence with one detail changed contradicts it**: "68" where the
+  claim says "168", "summer" for "spring". The claim is FALSE and the model
+  is not asked, since this is what it reliably misses. Unless a page also repeats
+  the sentence word for word: then outlets disagree, and the model judges.
+
+**Replayed on the train half**, same evidence, same model (`c4da4471418d`
+against `cc053417c0cb`, labels unreviewed): accuracy 47.8 -> 46.4%, paired
+**-1.4 points [-7.2, +4.3]**, no detectable difference; natural 29 -> 26 of 54,
+altered 4 -> 6 of 15, confidently wrong 20 -> 20; 13 copies removed. Two natural
+claims were TRUEs resting only on a copy of their own sentence, and became
+UNVERIFIED. A third, `fact010`, is the cost a simulation on recorded stances
+missed (it said 47.8% and 19): a removed copy frees its slot, another source
+gets judged, and `es.wikipedia.org` turned a right UNVERIFIED into TRUE. **So
+this was not adopted for accuracy, which it does not raise.** It was adopted
+because a verdict resting on a page repeating the claim was never evidence.
+
+**Read the altered figure with care.** The set's altered claims were made by
+changing a detail of a real sentence, which is exactly what this detects, so
+the gain on them overstates what it finds in the wild. The figure to trust is
+its false alarms: 0 on the 54 natural train claims, and none on the two real
+articles. The test half has not been looked at.
+
+The HPV article, the same evidence sources: "Since October 2024, South Africa
+has adopted a single-dose HPV vaccination" was FALSE (the 3B reading a copy of
+the sentence as contradicting it) and is TRUE at 93%, on The Lancet. Still FALSE,
+wrongly as far as can be told: two claims where the 3B cites an unrelated
+sentence as contradicting ("96% diagnosed" against "7.9 million living with
+HIV"), which withholds both articles under worst-claim-wins. So:
+
+**Tried and not adopted.** Requiring a contradicting source's quote to overlap
+with the claim. It does not separate good contradictions from bad ("nació en
+Jerez" scores 0.14; a wrong one 0.57). At 0.5, true claims called FALSE fall
+7 -> 1 and altered claims caught fall 6 -> 3: a policy choice on thin data, not
+a fix. Requiring a quote at all: altered 4 -> 2.
+
+Also on 3 Nov:
+
+- **An off-subject answer is no answer** (`search.py`, `MIN_QUERY_COVERAGE`,
+  0.35). If the best web result holds under 35% of a query's words, the search
+  counts as failed: DuckDuckGo next, then "not checked", never UNVERIFIED.
+  Measured on 12 proposition queries: Bing's best 0-29%, the fixed engines'
+  44-100%. The source probe reports it (`offSubject`, `queryCoverage`, and two
+  longer probe queries: "renewable energy" could not tell the difference).
+- **Outlets are counted as outlets** (`fact_checker/outlets.py`): `en.` and
+  `es.wikipedia.org` are one voice, `bbc.com` and `bbc.co.uk` one, in the
+  verdict's count, the independent domains and the funnel's one-page-per-domain.
+  `abc.es` and `abc.net.au` stay two. Closes the 28 Oct audit's N7 too.
+- **A looping model is not an unreachable one** (`llms.py`): Ollama's "token
+  repeat limit" now reads as no usable answer, and is not asked again.
+- **SearXNG `safe_search: 1`**: adult sites were taking candidate slots.

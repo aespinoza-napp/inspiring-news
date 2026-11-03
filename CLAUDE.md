@@ -66,6 +66,7 @@ src.main:app --port 8001`.
 | Why the models live in their own service | `docs/decisions/inference.md` |
 | Per-run thresholds, how overrides resolve | `docs/decisions/thresholds.md` |
 | The three storage layers and lineage | `docs/decisions/storage.md` |
+| Whether a source says anything of its own (copies, a changed detail); what counts as one outlet | `backend/src/services/fact_checker/independence.py`, `outlets.py`, `docs/fact-checking-changes.md` (11) |
 | How claims run in parallel; the resource ceilings | `docs/decisions/concurrency.md` |
 | What is searched for; why a source is cut | `docs/decisions/retrieval.md` |
 | Why a given rule exists; what broke before | `docs/decisions/incidents.md` |
@@ -226,6 +227,12 @@ write them down than to have each be rediscovered.
   rarely catches a changed figure. Every report before 22 Oct afternoon,
   and `thorough.json`, is the list verifier. Never compare two verifiers
   across two searched runs: replay one (`cli run --replay`).
+- **A copy of the article is not evidence, and one changed detail is FALSE**
+  (2026-11-03, `evidence_independence`, on by default, `false` in
+  `thorough.json`; `fact_checker/independence.py`). Every report before it
+  counted pages repeating the claim's sentence as outlets confirming it.
+  Compare across it by replay only. Its gain on altered claims overstates the
+  real world: they were made by changing a detail of a real sentence.
 - **The search changed on 2026-11-03** (engines, SearXNG 2026.11.2, and an
   answer whose best result holds under 35% of the query's words now counts
   as failed): searched runs either side are not comparable.

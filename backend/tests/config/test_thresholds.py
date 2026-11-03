@@ -313,4 +313,4 @@ def test_each_profile_is_its_harness_preset():
         ThresholdOverrides(**json.loads((presets / "thorough.json").read_text(encoding="utf-8")))
     )
 
-    assert thorough == PipelineThresholds(verifier_answer="full")
+    assert thorough == PipelineThresholds(verifier_answer="full", evidence_independence=False)

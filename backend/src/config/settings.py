@@ -427,6 +427,14 @@ class Settings(BaseSettings):
     # default before; `thorough.json` keeps it for the harness.
     VERIFIER_ANSWER: Literal["full", "compact", "per_source"] = "per_source"
 
+    # EVIDENCE_INDEPENDENCE (2026-11-03): a page repeating the claim's
+    # sentence word for word is not evidence, and one carrying that sentence
+    # with a detail changed contradicts it, without asking the model
+    # (fact_checker/independence.py). On by default: a copy of the article
+    # counted as an outlet confirming it on 12 of 69 train claims. False is
+    # the pipeline as it was, which thresholds/thorough.json keeps.
+    EVIDENCE_INDEPENDENCE: bool = True
+
     # CLAIM_RESTATEMENT (2026-11-03): `standalone` rewrites each selected
     # claim, before anything is searched, as a statement that can be
     # checked on its own - who is speaking and in what role, what exactly

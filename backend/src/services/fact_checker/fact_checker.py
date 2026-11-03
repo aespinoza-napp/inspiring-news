@@ -7,13 +7,14 @@ from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim
 from src.models.core.enriched_article import EnrichedArticle
-from src.models.fact_checker.evidence import Evidence, EvidenceOrigin, RejectedEvidence
+from src.models.fact_checker.evidence import Evidence, EvidenceOrigin, EvidenceStance, RejectedEvidence
 from src.models.fact_checker.fact_check import FactCheck, Verdict
 from src.models.fact_checker.fact_check_report import FactCheckReport
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.repositories.vector_repository import VectorRepository
 from src.services.concurrency import bounded_map
 from src.models.fact_checker.restatement import ClaimRestatement
+from src.services.fact_checker.independence import Sorted, decisive_altered, describe, sort_sources
 from src.services.fact_checker.restatement import ClaimRestater, working_claim
 from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelector
 from src.services.fact_checker.deadline import MIN_STAGE_SECONDS, Deadline
@@ -28,6 +29,7 @@ from src.services.fact_checker.verification.confidence_scorer import (
     holds_to_stances,
 )
 from src.services.fact_checker.verification.llm_verification import (
+    EvidenceAssessment,
     LLMVerificationResult,
     LLMVerifier,
 )
@@ -518,11 +520,15 @@ class FactChecker:
 
         clock = {} if clock is None else clock
 
+        # Before ranking, so a copy takes no evidence slot; here rather than
+        # in the retriever, so a replay and a second look go through it too.
+        independence = sort_sources(claim, candidates) if thresholds.evidence_independence else Sorted(kept=candidates)
+
         started = time.perf_counter()
 
         ranking = self.ranker.rank(
             claim,
-            candidates,
+            independence.kept,
             thresholds,
             claim_embedding=claim_embedding,
             language=language,
@@ -538,7 +544,7 @@ class FactChecker:
         # claim at all rather than merely its subject.
         phase("evidence_ranked", {
             "sources": [source_summary(item) for item in ranked],
-            "cut": self._rejected_summary(ranking.rejected),
+            "cut": self._rejected_summary(independence.copies + ranking.rejected),
             "seconds": clock["ranking"],
         })
 
@@ -546,7 +552,29 @@ class FactChecker:
 
         out_of_time = False
 
-        if below_evidence_floor(ranked, thresholds):
+        altered = decisive_altered(independence, ranked)
+
+        if altered:
+
+            # The same sentence with a detail changed: no reading to ask
+            # for, and the one thing the small model reliably misses. No
+            # `verifying_claim`, as the model is not being asked.
+            llm_result = LLMVerificationResult(
+                verdict=Verdict.FALSE,
+                confidence=min(1.0, 0.5 + 0.5 * len(altered) / len(ranked)),
+                explanation=describe(independence, ranked, altered),
+                cited_evidence=altered,
+                assessments=[
+                    EvidenceAssessment(
+                        index=index,
+                        stance=EvidenceStance.CONTRADICTS,
+                        quote=independence.altered[ranked[index].url].sentence,
+                    )
+                    for index in altered
+                ],
+            )
+
+        elif below_evidence_floor(ranked, thresholds):
 
             # Below the evidence floor the scorer forces UNVERIFIED
             # whatever the model says, so asking it was the single longest
@@ -619,7 +647,7 @@ class FactChecker:
             )
 
         return check.model_copy(update={
-            "rejected_sources": (rejected or []) + ranking.rejected + not_cited,
+            "rejected_sources": (rejected or []) + independence.copies + ranking.rejected + not_cited,
             "reached_stage": reached_stage,
             "stage_note": stage_note,
             "raw_verdict": llm_result.verdict,

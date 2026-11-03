@@ -140,6 +140,14 @@ detection, where a silently empty result corrupts a decision).
   `pytest.mark.usefixtures("list_verifier")` (conftest). Compare verifiers with
   `cli run --replay <run>` (same evidence, `docs/decisions/evaluation.md`,
   "Replay"), never with two searched runs.
+- **A source is compared with the claim's sentence before it is weighed**
+  (2026-11-03, `evidence_independence`, on by default):
+  `fact_checker/independence.py`, in `_judge`, so a replay and a second look go
+  through it. One repeating the sentence word for word is rejected, since a copy
+  says nothing independent; one carrying it with a short detail changed makes
+  the claim FALSE without asking the model, unless a copy also exists. Outlets
+  are counted by `fact_checker/outlets.py` (registrable domain and a few
+  aliases), not by host; reliability ratings stay per host.
 - **A claim can be restated before it is searched** (2026-11-03,
   `claim_restatement=standalone`, off by default):
   `fact_checker/restatement.py` asks the model, from the headline, the

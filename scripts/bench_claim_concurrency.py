@@ -446,7 +446,7 @@ def run_once(
             # The list verifier, one model call a claim, as every figure
             # this bench has produced (4 Oct): the per-source verifier, the
             # default since 22 Oct, makes one call per source.
-            report = checker.run(article(claims, dimension), thresholds=PipelineThresholds(verifier_answer="full"))
+            report = checker.run(article(claims, dimension), thresholds=PipelineThresholds(verifier_answer="full", evidence_independence=False))
 
             seconds = time.perf_counter() - started
 
