@@ -20,6 +20,7 @@ import { PhaseStepper } from "@/components/PhaseStepper";
 import { FlowSteps } from "@/components/FlowSteps";
 import { WriteArticleLink } from "@/components/drafts/WriteArticleLink";
 import { TraceLink } from "@/components/TraceLink";
+import { follow } from "@/lib/following";
 import { ArticleTiming, ClaimTimingPanel } from "@/components/TimingBreakdown";
 import { buildTrace, ClaimStep } from "@/lib/liveTrace";
 import { Edition, editionName, useEdition } from "@/lib/edition";
@@ -217,6 +218,13 @@ function JobCardView({
   /** The edition the job was asked for; the result's own wins once it is in. */
   edition: Edition;
 }) {
+  // Into the corner dock as soon as the backend names the job, so it can
+  // be followed from any page after this one is left.
+  const jobId = job?.jobId;
+  useEffect(() => {
+    if (jobId) follow([{ jobId, url, from: "analyze" }]);
+  }, [jobId, url]);
+
   if (error) {
     return (
       <div className="card">

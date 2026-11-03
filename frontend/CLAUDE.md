@@ -64,6 +64,21 @@ loopback first and fail to reach uvicorn's IPv4-only default.
 | `/graph` | The Neo4j graph, three tabs (`?tab=schema|explore|related`). **Schema**: the declared labels and relationships drawn with live counts (`components/graph/SchemaDiagram.tsx`, hand-placed), click one for its properties and a "query these" jump. **Explore**: a read-only Cypher console with presets from the backend, `$params` as inputs, results as a table or a node-link canvas (`GraphCanvas.tsx`, over the dependency-free `lib/forceLayout.ts`); click a node for its properties, expand its neighbours in place. **Related articles** (`?article=<url>`): what connects one article to the others, with each weight shown. A Sync button (`POST /api/graph/sync`) and a link to Neo4j Browser. All through `app/api/graph/[...path]/route.ts`, which forwards **only** the six known paths - a catch-all that forwarded anything would be an open proxy with the storage key attached |
 | `/evaluation` | What the evaluation has produced, read from `backend/data/evaluation/` on every refresh (`GET /api/evaluation`, behind the storage key). The hand-labelled set against its 150-fact target, the verdict × topic-group balance (`components/evaluation/BalanceMatrix.tsx`), its make-up by language, claim type, evidence tier and annotator (AI-labelled facts apart until a person checks them), the claim selector's precision per daily batch and per skip reason, the harness's model runs with 95% intervals, the median seconds a claim took (`responseTime`, else the older `usage.unitLatency`; the 90th percentile in its title) and the confusion matrix (`RunsPanel.tsx` reads `metrics.json` defensively: an unknown key shows "–"), and every fact, filterable. Charts use one hue; verdict colours only on the badges. Shapes in `lib/evaluation.ts`, not `types.ts` |
 
+**The Following dock** (`components/FollowingDock.tsx`, in `app/layout.tsx`;
+2026-11-03): the articles this browser sent to analysis - Discover's queue
+and every Analyze job card call `lib/following.ts` `follow()` - in the
+corner of every operator page, each with its live phase
+(`CURRENT_PHASE_LABELS`), then its outcome (on the reader + verdict,
+withheld, rejected at admission, failed, gone), and its `/live?job=` and
+Trace links. Kept in localStorage (a per-viewer convenience, every access
+guarded; `useFollowing` is null until read, so loading is never mistaken
+for a new follow, which would pop it open on every page). **Only running
+jobs are polled** (`GET /api/jobs/batch`, every 3 s, rescheduled behind
+`cancelled`); a finished one is summarised once and never asked again,
+since its full record is hundreds of KB. Hidden, and not polling, on
+`/reader`. `scripts/e2e.py` checks it follows a job across pages, and the
+existing "leaving the page mid-poll" check still holds with it mounted.
+
 **The edition** (`docs/decisions/editions.md`): the header's Positive /
 Devastating switch (`components/EditionSwitch.tsx`) sets `lib/edition.tsx`'s
 context, kept in localStorage and on `<html data-edition>` (globals.css

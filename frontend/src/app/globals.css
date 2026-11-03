@@ -5063,6 +5063,161 @@ button.button-link:hover:not(:disabled) {
 }
 
 /* ---------------------------------------------------------------------
+   The dock of followed articles (components/FollowingDock.tsx): in the
+   corner of every operator page, so what was just sent to analysis is
+   never out of view
+   --------------------------------------------------------------------- */
+
+.following-dock {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 50;
+  width: min(24rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.following-dock > * {
+  pointer-events: auto;
+}
+
+.following-toggle {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  order: 2;
+}
+
+.following-toggle:hover:not(:disabled) {
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.following-panel {
+  order: 1;
+  width: 100%;
+  max-height: min(60vh, 32rem);
+  overflow-y: auto;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+  animation: fadeSlideIn 0.2s var(--ease) both;
+}
+
+.following-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.following-head .section-label {
+  margin: 0;
+}
+
+.following-clear,
+.following-remove {
+  margin: 0;
+  padding: 0.1rem 0.45rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.following-clear:hover:not(:disabled),
+.following-remove:hover:not(:disabled) {
+  color: var(--fg);
+  opacity: 1;
+}
+
+.following-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.following-item {
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.following-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.following-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.following-good {
+  color: var(--true);
+  font-weight: 600;
+}
+
+.following-bad {
+  color: var(--false);
+}
+
+.following-muted {
+  color: var(--muted);
+}
+
+.following-links {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.following-links .following-remove {
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .following-dock {
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: calc(100vw - 1rem);
+  }
+}
+
+@media print {
+  .following-dock {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
    What a claim is checked as (components/ClaimFocus.tsx), above its
    search on Live and on Analyze
    --------------------------------------------------------------------- */

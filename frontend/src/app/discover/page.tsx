@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { TraceLink } from "@/components/TraceLink";
+import { follow } from "@/lib/following";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlowSteps } from "@/components/FlowSteps";
 import { editionOf, toneLabel, useEdition } from "@/lib/edition";
@@ -701,6 +702,21 @@ export default function DiscoverPage() {
       const urls = candidates.map((candidate) => candidate.url).filter((url) => chosen.has(url));
       const result = await post<CandidateRound["queued"]>(`/api/ingest/rounds/${round.id}/queue`, { urls });
       setRound({ ...round, queued: result });
+      // Into the dock in the corner (components/FollowingDock.tsx), which
+      // opens and follows each pick from any page - the "Sent to
+      // analysis" step below sits under twenty candidates, out of view.
+      if (result) {
+        follow(
+          result.jobs
+            .filter((job) => job.jobId)
+            .map((job) => ({
+              jobId: job.jobId as string,
+              url: job.url,
+              title: round.candidates.find((candidate) => candidate.url === job.url)?.title ?? null,
+              from: "discover",
+            }))
+        );
+      }
       loadRecent();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not send the selection to analysis.");

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { EditionSwitch } from "@/components/EditionSwitch";
+import { FollowingDock } from "@/components/FollowingDock";
 import { NavLinks } from "@/components/NavLinks";
 import { EditionProvider } from "@/lib/edition";
 import "./globals.css";
@@ -23,6 +24,7 @@ export default function RootLayout({
             <NavLinks />
           </header>
           <main className="site-main">{children}</main>
+          <FollowingDock />
         </EditionProvider>
       </body>
     </html>
