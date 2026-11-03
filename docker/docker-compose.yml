@@ -182,6 +182,11 @@ services:
       # /mnt/c. See backend/.dockerignore for what else is excluded.
       context: ../backend
       dockerfile: ../docker/backend.Dockerfile
+      args:
+        # For every record's lineage (backend.Dockerfile). Empty when
+        # compose is called without it: scripts/stack.sh sets it, and the
+        # lake's integrity check warns about a record that has none.
+        CODE_REVISION: ${CODE_REVISION:-}
     ports:
       - "8000:8000"
     env_file:

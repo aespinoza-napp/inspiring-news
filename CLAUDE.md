@@ -18,6 +18,7 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ./scripts/check.sh gcp       # deploy/gcp/ applied to Floci (local GCP emulator); Docker only
 ./scripts/check.sh labeller  # the fact labeller, plain python
 ./scripts/check.sh e2e       # built frontend in headless Chrome, stub backend
+./scripts/check.sh lake      # the lake's lineage holds together (read-only)
 ```
 
 `make check` / `make fast` / `make slow` do the same. Use these rather
@@ -65,7 +66,7 @@ src.main:app --port 8001`.
 | What decides whether an article is checked at all | `backend/src/services/admission/README.md` |
 | Why the models live in their own service | `docs/decisions/inference.md` |
 | Per-run thresholds, how overrides resolve | `docs/decisions/thresholds.md` |
-| The three storage layers and lineage | `docs/decisions/storage.md` |
+| The three storage layers and lineage; checking they hold together | `docs/decisions/storage.md`, `./scripts/check.sh lake` |
 | Whether a source says anything of its own (copies, a changed detail); what counts as one outlet | `backend/src/services/fact_checker/independence.py`, `outlets.py`, `docs/fact-checking-changes.md` (11) |
 | How claims run in parallel; the resource ceilings | `docs/decisions/concurrency.md` |
 | What is searched for; why a source is cut | `docs/decisions/retrieval.md` |

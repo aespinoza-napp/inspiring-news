@@ -93,6 +93,23 @@ The lazy-init checks are guarded by `_lock`, a `threading.RLock()` — it must s
 
 `get_fact_checker()` is a singleton shared by `/analyze` and `/verify-claim`: it owns the `VectorRepository` (one Qdrant client per process) and an `EmbeddingService`, and two instances would be two chances for the two entry points to reach different verdicts. `get_claim_service()` likewise borrows `get_enrichment_pipeline().entities` rather than loading a second GLiNER.
 
+## Checking that it holds together
+
+`src/services/lake_integrity.py` (`./scripts/check.sh lake`, `GET /lake/integrity`,
+the button on `/trace`), read-only. **Errors**: a record's id is not the one its
+run and article derive; a parent that is missing or of another run; a body that
+does not hash to its lineage's `content_hash`; a served verdict or confidence
+that is not its report's; publishable with a blocking verdict or without
+passing admission. **Warnings**: outside the manifest, no parent link (allowed
+by design), no code revision.
+
+Its first run, 2026-11-03, over the dev lake: 37 records, 13 runs, 48 manifest
+entries, **0 errors** and 37 warnings, all one thing: no record could say which
+code produced it, since the container has no `.git`. The image now carries
+`CODE_REVISION` (a build argument; `scripts/stack.sh` sets it). Each run's
+lineage also holds every threshold it resolved to (`Lineage.thresholds`), since
+the overrides alone cannot say what a default from this machine's `.env` was.
+
 ## The job journal
 
 The lake keeps *results*. Everything a run does on the way — the queries it

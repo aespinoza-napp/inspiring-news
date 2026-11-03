@@ -23,6 +23,7 @@
 #                                 not skips, when it is not running
 #   ./scripts/check.sh gcp        the Google Cloud deployment against Floci,
 #                                 a local emulator - needs Docker only
+#   ./scripts/check.sh lake       the lake's lineage holds together (read-only)
 #   ./scripts/check.sh e2e        the built frontend in headless Chrome against
 #                                 a stub backend: the reader, the job polling
 
@@ -122,6 +123,23 @@ run_frontend() {
   fi
 }
 
+run_lake() {
+  step "The lake's integrity (the running stack's lake, else this machine's)"
+  # Read-only. Inside the container when it runs: that is where the app's
+  # lake is, a named volume this machine's backend/data/lake is not.
+  if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^docker-backend-1$'; then
+    if docker exec docker-backend-1 python -m src.services.lake_integrity; then
+      pass "lake integrity"
+    else
+      fail "lake integrity"
+    fi
+  elif (cd "$ROOT/backend" && uv run python -m src.services.lake_integrity); then
+    pass "lake integrity"
+  else
+    fail "lake integrity"
+  fi
+}
+
 # Builds the frontend and needs Chrome, so not part of `all` (like graph,
 # which needs Neo4j). Standard library only, like the labeller.
 run_e2e() {
@@ -154,9 +172,10 @@ case "$TARGET" in
   frontend)  run_frontend ;;
   labeller)  run_labeller ;;
   e2e)       run_e2e ;;
+  lake)      run_lake ;;
   all)       run_backend; run_inference; run_frontend; run_labeller ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller | e2e" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller | e2e | lake" >&2
     exit 2
     ;;
 esac

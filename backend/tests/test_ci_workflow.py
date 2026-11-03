@@ -38,7 +38,7 @@ CASE_BRANCH = re.compile(r"^\s*([A-Za-z0-9_-]+)\)")
 # workflow's header: real models, the whole corpus, a running Neo4j,
 # Docker. A job calling one of them would either fail on every run or
 # take an hour - and a CI that is always red is a CI nobody reads.
-LOCAL_ONLY = {"inference", "slow", "graph", "gcp"}
+LOCAL_ONLY = {"inference", "slow", "graph", "gcp", "lake"}
 
 
 @pytest.fixture(scope="module")

@@ -17,6 +17,7 @@
 #   slow       - the whole data/raw corpus through the real models.
 #   graph      - needs a running Neo4j, and fails (not skips) without one.
 #   gcp        - needs Docker and two images (Floci, Terraform).
+#   lake       - reads the running stack's lake; a runner has none.
 #
 # No linter or formatter runs: none is configured (no ruff, black or
 # mypy), and that is a decision for now, not an omission - adding one is

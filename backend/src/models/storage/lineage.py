@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 from uuid import NAMESPACE_URL, uuid5
 
 from pydantic import BaseModel, Field
@@ -98,6 +98,10 @@ class Lineage(BaseModel):
     # done the same.
     threshold_overrides: dict[str, ThresholdValue] = Field(default_factory=dict)
 
+    # Every threshold the run resolved to; empty on records from before
+    # 2026-11-03.
+    thresholds: dict[str, Any] = Field(default_factory=dict)
+
     # Named versions of the components that shaped this record, e.g.
     # {"embedding_model": "...", "llm_model": "...", "sentiment_model": "..."}.
     # Without this, a record's numbers are unreproducible the moment a
@@ -123,5 +127,9 @@ class RunContext(BaseModel):
     code_revision: Optional[str] = None
 
     threshold_overrides: dict[str, ThresholdValue] = Field(default_factory=dict)
+
+    # Every threshold the run resolved to; empty on records from before
+    # 2026-11-03.
+    thresholds: dict[str, Any] = Field(default_factory=dict)
 
     components: dict[str, str] = Field(default_factory=dict)

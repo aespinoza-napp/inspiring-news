@@ -96,9 +96,7 @@ class Settings(BaseSettings):
 
     # Documentary only, same caveat as SENTIMENT_MODEL above - the model
     # loads in inference/src/config.py now.
-    EMBEDDING_MODEL: str = (
-        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    )
+    EMBEDDING_MODEL: str = "BAAI/bge-m3"
 
     # The model server for GLiNER/sentiment/embeddings (inference/) -
     # see backend/src/services/inference_client.py. Defaults to

@@ -41,6 +41,9 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="$ROOT/backend/.env"
 COMPOSE=(docker compose -f "$ROOT/docker/docker-compose.yml" --env-file "$ENV_FILE")
+# Baked into the backend image at build, for every record's lineage.
+CODE_REVISION="$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null)$(git -C "$ROOT" diff --quiet HEAD 2>/dev/null || echo -dirty)"
+export CODE_REVISION
 KEEP_ALIVE="${KEEP_ALIVE:-30m}"
 MARGIN_GB="${MARGIN_GB:-1.5}"
 

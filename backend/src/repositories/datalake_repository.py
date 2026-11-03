@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import subprocess
 from dataclasses import dataclass
 from logging import getLogger
@@ -44,10 +45,20 @@ def content_hash(text: str) -> str:
 
 def _code_revision() -> Optional[str]:
     """
-    Short git revision of the running code, or None outside a checkout.
-    Resolved once per process - shelling out per record would add a
-    subprocess to every write.
+    Short git revision of the running code, `-dirty` when it has changes
+    git does not hold, or None when neither says. Resolved once per process
+    - shelling out per record would add a subprocess to every write.
+
+    CODE_REVISION first, set when the image is built: the container has no
+    `.git`, so every record the app ever wrote there said None, and "which
+    code produced this" had no answer (the lake's first integrity check,
+    2026-11-03: 37 of 37 records).
     """
+
+    given = os.environ.get("CODE_REVISION", "").strip()
+
+    if given:
+        return given
 
     try:
         result = subprocess.run(
@@ -128,6 +139,10 @@ class DataLakeRepository:
             threshold_overrides=(
                 thresholds.overridden_from_defaults() if thresholds else {}
             ),
+            # Every value the run used, not only what it overrode: a default
+            # comes from this machine's environment, and the overrides alone
+            # cannot say what a run with none of them did.
+            thresholds=(thresholds or PipelineThresholds()).model_dump(mode="json"),
             components={
                 "embedding_model": settings.EMBEDDING_MODEL,
                 "sentiment_model": settings.SENTIMENT_MODEL,
@@ -325,6 +340,15 @@ class DataLakeRepository:
 
         return self.backend.list(layer, limit=limit)
 
+    def manifest(self) -> "list[dict]":
+        """
+        The append-only write log, oldest first: one entry per write, with
+        its run, article, source URL and parent record. What a trace by URL
+        reads instead of opening every record (services/trace.py).
+        """
+
+        return self.backend.manifest()
+
     def stamps(self, layer: DataLayer) -> dict | None:
         """
         Record id -> a change stamp, for every record in the layer, without
@@ -392,6 +416,7 @@ class DataLakeRepository:
             pipeline_version=run.pipeline_version,
             code_revision=run.code_revision,
             threshold_overrides=run.threshold_overrides,
+            thresholds=run.thresholds,
             components=run.components,
         )
 

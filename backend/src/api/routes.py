@@ -1131,6 +1131,20 @@ def trace_article(article_id: str):
     return get_datalake_repository().trace(article_id)
 
 
+@router.get("/lake/integrity", dependencies=[Depends(require_storage_key)])
+def lake_integrity():
+    """
+    Whether the lake holds together: parents that exist, bodies that hash
+    to what their lineage states, served verdicts that are their reports'
+    (src/services/lake_integrity.py). Opens every record, so it is asked
+    for, never polled.
+    """
+
+    from src.services.lake_integrity import verify
+
+    return verify(get_datalake_repository()).view()
+
+
 # ---------------------------------------------------------------------
 # Graph (Neo4j)
 #

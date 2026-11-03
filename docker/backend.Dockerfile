@@ -76,6 +76,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 ENV PATH="/app/.venv/bin:$PATH"
 
+# Which code this image holds, for every record's lineage: the image has no
+# .git. From the environment at build time (scripts/stack.sh sets it). After
+# the install, so a new revision does not reinstall every dependency.
+ARG CODE_REVISION=
+ENV CODE_REVISION=$CODE_REVISION
+
 # The transformer models (GLiNER, the embedding model, the sentiment
 # classifier) are NOT baked into the image - they download on first use,
 # which is why docker-compose.yml mounts a named volume here. Without
