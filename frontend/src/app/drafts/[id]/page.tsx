@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { TraceLink } from "@/components/TraceLink";
 import { useCallback, useEffect, useState } from "react";
 import { DraftEditor } from "@/components/drafts/DraftEditor";
 import { DraftReviewPanel } from "@/components/drafts/DraftReviewPanel";
@@ -85,6 +86,14 @@ export default function DraftPage({ params }: { params: { id: string } }) {
       <p className="subtitle">
         {language} · {draft.status}
         {draft.model ? ` · written by ${draft.model}` : ""}
+      </p>
+
+      {/* Where the draft came from, and where it has gone: the analysed
+          article it rests on and the published story, one click each. */}
+      <p className="draft-lineage">
+        <Link href={`/reader/${draft.sourceArticleId}`}>The analysed article</Link>
+        {draft.status === "published" && <Link href={`/reader/stories/${draft.id}`}>The published story</Link>}
+        <TraceLink q={draft.id} label="Trace the article's journey" />
       </p>
 
       {draft.busy && (

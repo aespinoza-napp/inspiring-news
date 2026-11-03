@@ -8,9 +8,51 @@ import { LiveTrace } from "@/components/LiveTrace";
 import { CURRENT_PHASE_LABELS } from "@/components/PhaseStepper";
 import { FlowSteps } from "@/components/FlowSteps";
 import { WriteArticleLink } from "@/components/drafts/WriteArticleLink";
+import { TraceLink } from "@/components/TraceLink";
+
+const JOB_ID = /^[0-9a-f]{32}$/;
 
 export default function LivePage() {
   const { jobs, loading, error } = useLiveJobs();
+
+  // ?job=<id>: one run opened by link - from Trace, from Discover's queue,
+  // from anywhere that holds a job id. The list holds only what this
+  // process keeps in memory; a run from before a restart is still read by
+  // id from the journal, so it is fetched on its own and pinned on top.
+  const [focus, setFocus] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<AnalysisJob | null>(null);
+  const [pinError, setPinError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("job");
+    if (id && JOB_ID.test(id)) setFocus(id);
+  }, []);
+
+  const listed = focus ? jobs.some((job) => job.jobId === focus) : false;
+
+  useEffect(() => {
+    if (!focus || loading || listed || pinned) return;
+
+    let cancelled = false;
+
+    fetch(`/api/jobs/${focus}`, { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (cancelled) return;
+        if (!response.ok) {
+          setPinError(data?.error ?? data?.detail ?? `No job ${focus} (${response.status}).`);
+          return;
+        }
+        setPinned(data as AnalysisJob);
+      })
+      .catch((err) => {
+        if (!cancelled) setPinError(err instanceof Error ? err.message : "Something went wrong.");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [focus, loading, listed, pinned]);
 
   return (
     <>
@@ -39,9 +81,35 @@ export default function LivePage() {
         </p>
       )}
 
-      {jobs.map((job) => (
-        <LiveJobCard key={job.jobId} job={job} />
-      ))}
+      {focus && (
+        <p className="trace-muted">
+          Showing the run opened by link first.{" "}
+          <button
+            type="button"
+            className="live-toggle"
+            onClick={() => {
+              setFocus(null);
+              setPinned(null);
+              const url = new URL(window.location.href);
+              url.searchParams.delete("job");
+              window.history.replaceState(null, "", url.toString());
+            }}
+          >
+            Show all as usual
+          </button>
+        </p>
+      )}
+
+      {pinError && <div className="error-banner">{pinError}</div>}
+
+      {pinned && !listed && <LiveJobCard key={pinned.jobId} job={pinned} focused />}
+
+      {[...jobs]
+        // The focused run first, the rest in the backend's order.
+        .sort((a, b) => Number(b.jobId === focus) - Number(a.jobId === focus))
+        .map((job) => (
+          <LiveJobCard key={job.jobId} job={job} focused={job.jobId === focus} />
+        ))}
     </>
   );
 }
@@ -50,12 +118,18 @@ function isActive(job: AnalysisJob) {
   return job.status === "queued" || job.status === "running";
 }
 
-function LiveJobCard({ job }: { job: AnalysisJob }) {
+function LiveJobCard({ job, focused = false }: { job: AnalysisJob; focused?: boolean }) {
   const active = isActive(job);
 
-  // Running jobs open themselves; finished ones stay a one-line summary
-  // until asked for, since a long run is a lot to draw.
-  const [open, setOpen] = useState(active);
+  // Running jobs open themselves, and so does the one opened by link;
+  // finished ones stay a one-line summary until asked for, since a long
+  // run is a lot to draw.
+  const [open, setOpen] = useState(active || focused);
+  const card = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (focused) card.current?.scrollIntoView({ block: "start" });
+  }, [focused]);
   const [full, setFull] = useState<AnalysisJob | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -113,7 +187,7 @@ function LiveJobCard({ job }: { job: AnalysisJob }) {
       : "Queued…";
 
   return (
-    <article className="card live-job">
+    <article ref={card} className={focused ? "card live-job is-focused" : "card live-job"}>
       <header className="live-job-head">
         <span className={`live-kind live-kind-${isClaim ? "claim" : "article"}`}>
           {isClaim ? "Claim" : "Article"}
@@ -134,6 +208,8 @@ function LiveJobCard({ job }: { job: AnalysisJob }) {
         {job.createdAt && (
           <span className="trace-muted">Started {clock(job.createdAt)}</span>
         )}
+
+        {!isClaim && <TraceLink q={job.jobId} />}
 
         <button
           type="button"

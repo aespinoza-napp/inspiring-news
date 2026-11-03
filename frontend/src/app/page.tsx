@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AnalysisJob,
   ClaimResult,
@@ -19,6 +19,7 @@ import { TopicPanel } from "@/components/TopicPanel";
 import { PhaseStepper } from "@/components/PhaseStepper";
 import { FlowSteps } from "@/components/FlowSteps";
 import { WriteArticleLink } from "@/components/drafts/WriteArticleLink";
+import { TraceLink } from "@/components/TraceLink";
 import { ArticleTiming, ClaimTimingPanel } from "@/components/TimingBreakdown";
 import { buildTrace, ClaimStep } from "@/lib/liveTrace";
 import { Edition, editionName, useEdition } from "@/lib/edition";
@@ -39,6 +40,14 @@ export default function AnalyzerPage() {
   // page keep it, so flipping the switch afterwards does not re-run them.
   const { edition } = useEdition();
   const [runEdition, setRunEdition] = useState<Edition>("positive");
+
+  // ?url=<article>: prefilled from Trace's "Analyse again" (and any page
+  // that links here with one). Only prefilled, never started - a run is
+  // minutes of CPU and a request to someone else's server, a click each.
+  useEffect(() => {
+    const given = new URLSearchParams(window.location.search).getAll("url");
+    if (given.length) setInput(given.join("\n"));
+  }, []);
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -258,7 +267,8 @@ function JobCardView({
           (isFailed ? "Analysis failed" : isRunning ? "Analyzing…" : "(untitled)")}
         {cached && <span className="cached-tag">Cached</span>}
       </h2>
-      <span className="card-url">{url}</span>
+      <span className="card-url">{url}</span>{" "}
+      <TraceLink q={job.jobId || url} />
 
       {cached ? (
         <div className="stepper-status stepper-status-cached">

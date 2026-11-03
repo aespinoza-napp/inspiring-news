@@ -62,6 +62,7 @@ src.main:app --port 8001`.
 | Looking for | Go to |
 |---|---|
 | The plan, and what is actually done | `docs/roadmap.md` |
+| One article's journey across every stage (round → job → lake → reader → draft) | `/trace` (`frontend/CLAUDE.md`), `GET /trace`, `backend/src/services/trace.py` |
 | Pipeline stages, entry points, container | `backend/CLAUDE.md` |
 | What decides whether an article is checked at all | `backend/src/services/admission/README.md` |
 | Why the models live in their own service | `docs/decisions/inference.md` |

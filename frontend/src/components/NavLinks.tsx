@@ -7,7 +7,8 @@ import { usePathname } from "next/navigation";
 // the path an article takes - found, analysed, followed, published - and
 // FlowSteps draws it on those pages. The lab is every tool for looking
 // inside one stage on its own: one claim, one enrichment, the scraper,
-// the sources, the graph, the evaluation.
+// the sources, the graph, the evaluation. Trace leads them: it is the one
+// that joins every stage for one article, and links out to the rest.
 const GROUPS = [
   {
     label: "Newsroom",
@@ -22,6 +23,7 @@ const GROUPS = [
   {
     label: "Lab",
     links: [
+      { href: "/trace", label: "Trace" },
       { href: "/claim", label: "Claim Check" },
       { href: "/enrich", label: "Enrichment" },
       { href: "/corrector", label: "Corrector" },

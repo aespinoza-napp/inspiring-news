@@ -1,5 +1,6 @@
 "use client";
 
+import { TraceLink } from "@/components/TraceLink";
 import { useEffect, useState } from "react";
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { useEdition } from "@/lib/edition";
@@ -154,7 +155,8 @@ export function RelatedArticles({
                   <a className="card-url" href={safeHref(url)!} target="_blank" rel="noreferrer">
                     {url}
                   </a>
-                )}
+                )}{" "}
+                <TraceLink q={url} />
               </div>
               <button type="button" className="graph-secondary" onClick={() => onShowGraph(url)}>
                 Show its graph

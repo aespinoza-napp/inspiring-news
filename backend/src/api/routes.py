@@ -1145,6 +1145,35 @@ def lake_integrity():
     return verify(get_datalake_repository()).view()
 
 
+@router.get("/trace", dependencies=[Depends(require_storage_key)])
+def trace_journey(q: str = Query(min_length=1, max_length=2_000)):
+    """
+    One article's journey through every stage, from whatever id a page
+    shows: its URL, a job id, a draft or story id, or a reader id. The
+    rounds that listed it and who chose it, the jobs that analysed it, each
+    run's records in the lake with the code and models behind them, the
+    reader's decision and the drafts written from it
+    (src/services/trace.py). Behind the key like /storage/*: it is the
+    lineage, rejected runs included.
+    """
+
+    from src.container import get_draft_store
+    from src.services.selection.rounds import selection_rounds
+    from src.services.trace import NotTraceable, trace
+
+    try:
+        return trace(
+            q,
+            lake=get_datalake_repository(),
+            jobs=job_store,
+            rounds=selection_rounds,
+            drafts=get_draft_store(),
+            reader=get_reader_index(),
+        )
+    except NotTraceable as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+
 # ---------------------------------------------------------------------
 # Graph (Neo4j)
 #

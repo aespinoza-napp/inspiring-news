@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { TraceLink } from "@/components/TraceLink";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlowSteps } from "@/components/FlowSteps";
 import { editionOf, toneLabel, useEdition } from "@/lib/edition";
@@ -1309,6 +1310,26 @@ export default function DiscoverPage() {
               Start a new round
             </button>
           </div>
+          {/* Each pick's own run, and its journey: the queue is where the
+              round's record and the job's meet, so both ids are in hand. */}
+          <ul className="discover-sent">
+            {queued.jobs.map((job) => {
+              const title = round?.candidates.find((candidate) => candidate.url === job.url)?.title;
+              return (
+                <li key={job.url}>
+                  <span className="discover-sent-title">{title || job.url}</span>
+                  {job.jobId ? (
+                    <span className="discover-sent-links">
+                      <Link href={`/live?job=${job.jobId}`}>Live</Link>
+                      <TraceLink q={job.jobId} label="Trace" />
+                    </span>
+                  ) : (
+                    <span className="stats-muted">not queued</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
           {queued.jobs.some((job) => job.error) && (
             <div className="error-banner" role="alert">
               {queued.jobs.filter((job) => job.error).length} could not be queued:{" "}

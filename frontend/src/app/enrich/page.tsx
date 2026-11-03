@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EnrichmentResult, ExtractedField, FieldOrigin } from "@/lib/types";
 import { ScoreBar } from "@/components/ScoreBar";
 
@@ -65,6 +65,13 @@ export default function EnrichPage() {
   const [result, setResult] = useState<EnrichmentResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ?url=<article>: prefilled from Trace's "Enrichment only". Not run on
+  // arrival: the person presses the button, as for any other URL.
+  useEffect(() => {
+    const given = new URLSearchParams(window.location.search).get("url");
+    if (given) setUrl(given);
+  }, []);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();

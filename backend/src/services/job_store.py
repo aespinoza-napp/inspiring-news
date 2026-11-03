@@ -115,6 +115,42 @@ class JobStore:
 
         return jobs[:limit]
 
+    def find(self, matches, limit: int = 50) -> "list[Job]":
+        """
+        Every job `matches(url, kind)` accepts, newest first: the ones this
+        process holds, then the journal's (after a restart, or evicted), each
+        job once. Backs the trace (services/trace.py), which asks "which
+        runs were about this article" - `list` answers only for memory.
+        """
+
+        with self._lock:
+            held = [job for job in self._jobs.values() if matches(job.url, job.kind)]
+
+        held.sort(key=lambda job: job.created_at, reverse=True)
+
+        found = held[:limit]
+        seen = {job.job_id for job in found}
+
+        if self._journal is not None and len(found) < limit:
+
+            for entry in self._journal.created():
+
+                if len(found) >= limit:
+                    break
+
+                if entry["jobId"] in seen or not matches(entry["url"], entry["kind"]):
+                    continue
+
+                job = self._journal.load(entry["jobId"])
+
+                if job is not None:
+                    found.append(job)
+                    seen.add(job.job_id)
+
+        found.sort(key=lambda job: job.created_at, reverse=True)
+
+        return found
+
     def add_event(self, job_id: str, phase: str, data: dict) -> None:
 
         with self._lock:

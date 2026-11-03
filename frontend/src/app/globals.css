@@ -4982,6 +4982,87 @@ button.button-link:hover:not(:disabled) {
 }
 
 /* ---------------------------------------------------------------------
+   Traceability: the header's quick jump (components/QuickJump.tsx) and
+   the "Trace its journey" link every stage carries (TraceLink.tsx)
+   --------------------------------------------------------------------- */
+
+.quick-jump {
+  flex: 1 1 14rem;
+  max-width: 26rem;
+  margin: 0;
+}
+
+.quick-jump input[type="text"] {
+  width: 100%;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+@media (max-width: 640px) {
+  .quick-jump {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
+
+.trace-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* A run opened on /live by link (?job=), from Trace or Discover. */
+.live-job.is-focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* Discover's step 4: each pick, its run on Live and its trace. */
+.discover-sent {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+}
+
+.discover-sent li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.discover-sent-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discover-sent-links {
+  display: inline-flex;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+}
+
+/* /drafts/[id]: where the draft came from and where it went. */
+.draft-lineage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin: -0.25rem 0 1.25rem;
+  font-size: 0.85rem;
+}
+
+/* ---------------------------------------------------------------------
    What a claim is checked as (components/ClaimFocus.tsx), above its
    search on Live and on Analyze
    --------------------------------------------------------------------- */

@@ -1,15 +1,18 @@
 "use client";
 
+import { QuickJump } from "@/components/QuickJump";
 import { EDITIONS, editionName, useEdition } from "@/lib/edition";
 
-// The header's brand and the Positive / Devastating choice. Everything
-// the edition changes reads it from lib/edition.tsx.
+// The header's brand, the quick jump to any article's trace, and the
+// Positive / Devastating choice. Everything the edition changes reads it
+// from lib/edition.tsx.
 export function EditionSwitch() {
   const { edition, setEdition } = useEdition();
 
   return (
     <div className="edition-switch">
       <span className="brand">{editionName(edition)} Tools</span>
+      <QuickJump />
       <div className="edition-toggle" role="radiogroup" aria-label="Edition">
         {EDITIONS.map((option) => (
           <button

@@ -120,6 +120,48 @@ class JobJournal:
 
         return job
 
+    def created(self) -> list[dict]:
+        """
+        Every journalled job's first line - id, url, kind, when - newest
+        first, without reading the rest of any file: a finished run's
+        result line is hundreds of KB, and a trace only needs to know which
+        jobs were about one article before it loads those few.
+        """
+
+        found = []
+
+        try:
+            paths = list(self.directory.glob("*.jsonl"))
+        except OSError:
+            return found
+
+        for path in paths:
+
+            job_id = path.stem
+
+            if not _JOB_ID.fullmatch(job_id):
+                continue
+
+            try:
+                with path.open(encoding="utf-8") as handle:
+                    entry = json.loads(handle.readline() or "{}")
+            except (OSError, ValueError):
+                continue
+
+            if entry.get("type") != "created":
+                continue
+
+            found.append({
+                "jobId": job_id,
+                "url": entry.get("url", ""),
+                "kind": entry.get("kind", "article"),
+                "at": entry.get("at") or "",
+            })
+
+        found.sort(key=lambda entry: entry["at"], reverse=True)
+
+        return found
+
     def _path(self, job_id: str) -> Path | None:
 
         if not _JOB_ID.fullmatch(job_id or ""):

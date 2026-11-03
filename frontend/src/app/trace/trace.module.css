@@ -1,0 +1,314 @@
+/* The trace page (app/trace/page.tsx). Its own module, like the drafts'
+   components, so globals.css keeps only what several pages share. */
+
+.search {
+  margin-bottom: 1.5rem;
+}
+
+.searchRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.searchRow input[type="text"] {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.searchRow button {
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.title {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+}
+
+.keyLine {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.refresh {
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+
+/* ---- The five stages, as one line ------------------------------------ */
+
+.journey {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 1rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+@media (max-width: 640px) {
+  .journey {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.step a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  height: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
+  transition: border-color 0.15s var(--ease);
+}
+
+.step a:hover {
+  border-color: var(--accent);
+}
+
+.dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+}
+
+.done .dot {
+  background: var(--true);
+  border-color: var(--true);
+}
+
+.partial .dot {
+  background: transparent;
+  border-color: var(--misleading);
+}
+
+.none a {
+  opacity: 0.6;
+}
+
+.stepLabel {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.stepNote {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* ---- Where to go from here ------------------------------------------- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0 0 1.5rem;
+  font-size: 0.85rem;
+}
+
+/* ---- Sections ---------------------------------------------------------- */
+
+.section {
+  margin: 1.75rem 0;
+  scroll-margin-top: 1rem;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.item {
+  margin-bottom: 0.6rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.push {
+  margin-left: auto;
+}
+
+.detail {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.good {
+  color: var(--true);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.bad {
+  color: var(--false);
+  font-size: 0.85rem;
+}
+
+/* ---- One run's lineage ------------------------------------------------- */
+
+.chain {
+  list-style: none;
+  padding: 0;
+  margin: 0.9rem 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+@media (max-width: 640px) {
+  .chain {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+
+.chain li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+/* The arrow between two layers: each record names the one before it. */
+.chain li + li::before {
+  content: "→";
+  position: absolute;
+  left: -1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .chain li + li::before {
+    content: "↓";
+    left: 50%;
+    top: -0.55rem;
+    transform: translateX(-50%);
+  }
+}
+
+.linkDone {
+  border-left: 3px solid var(--true) !important;
+}
+
+.linkMissing {
+  border-style: dashed !important;
+  color: var(--muted);
+}
+
+.layerName {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+}
+
+.layerText {
+  color: var(--muted);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.3rem 0.9rem;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.writes {
+  margin-top: 0.8rem;
+  font-size: 0.8rem;
+}
+
+.writes ol {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+/* ---- Recently analysed ------------------------------------------------- */
+
+.recent {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.recent button {
+  margin-top: 0;
+  width: 100%;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  text-align: left;
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  font-weight: 400;
+}
+
+.recentUrl {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+/* The lake's integrity check: an action, so it reads as one beside the hints. */
+.checkButton {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.8rem;
+  margin-bottom: 0.75rem;
+}
