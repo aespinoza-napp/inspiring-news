@@ -36,10 +36,24 @@ from src.models.core.claim import Claim
 if TYPE_CHECKING:
     from src.services.fact_checker.claim_selector import ArticleContext
 
-# Words of 4+ letters. Digits are excluded here on purpose: figures reach
-# the query through claim.facts.figures, quoted, rather than as loose
-# tokens the engine is free to ignore.
-WORD = re.compile(r"\b[^\W\d_]{4,}\b", re.UNICODE)
+# Words of 4+ letters - or an acronym of 2-3 capitals. Digits are excluded
+# here on purpose: figures reach the query through claim.facts.figures,
+# quoted, rather than as loose tokens the engine is free to ignore.
+#
+# The acronyms since 2026-11-03. "Since October 2024, South Africa has
+# adopted a single-dose HPV vaccination approach" was searched as "South
+# Africa 2024 single dose vaccination": HPV, the one word that says what
+# the claim is about, is three letters, and GLiNER had not tagged it as an
+# entity. Every claim of that article lost it the same way (HIV, WHO, NHS
+# and UN would have too). Short lower-case words stay out: they are the
+# stopwords the 4-letter floor was for.
+WORD = re.compile(r"\b(?:[^\W\d_]{4,}|[A-Z]{2,3})\b", re.UNICODE)
+
+
+def _acronym(word: str) -> bool:
+    """HPV, WHO, US: short and all capitals - kept even where its lower-case form is a stopword ("us", "who")."""
+
+    return len(word) < 4 and word.isupper()
 
 # Any run of letters or digits, for matching a term inside a document -
 # looser than WORD because here we are checking presence, not choosing.
@@ -72,8 +86,25 @@ def fold(text: str) -> str:
     return "".join(c for c in decomposed if not unicodedata.combining(c))
 
 
+ACRONYM = re.compile(r"\b[A-Z]{2,6}\b")
+
+
+def acronyms(text: str, entities: list[str] | None = None) -> list[str]:
+    """
+    The acronyms in `text` that no entity already holds: HPV, WHO, NHS.
+
+    They name what a claim is about as surely as an entity does, and the
+    entity model misses them often - "HPV" in the HPV-vaccination claims
+    of 2026-11-03 was tagged in none. So they count as anchors.
+    """
+
+    inside = {token for entity in entities or [] for token in TOKEN.findall(fold(entity))}
+
+    return _unique([word for word in ACRONYM.findall(text) if fold(word) not in inside])
+
+
 def anchor_terms(claim: Claim) -> list[str]:
-    """The claim's named entities, figures and dates, in that order."""
+    """The claim's named entities, its acronyms, figures and dates, in that order."""
 
     entities = [
         value.strip()
@@ -86,7 +117,7 @@ def anchor_terms(claim: Claim) -> list[str]:
 
     dates = [date.strip() for date in claim.facts.dates if date.strip()]
 
-    return _unique(entities + figures + dates)
+    return _unique(entities + acronyms(claim.text, entities) + figures + dates)
 
 
 def content_terms(text: str, language: str | None = None) -> list[str]:
@@ -102,7 +133,7 @@ def content_terms(text: str, language: str | None = None) -> list[str]:
     return _unique([
         word
         for word in WORD.findall(text)
-        if fold(word) not in excluded
+        if _acronym(word) or fold(word) not in excluded
     ])
 
 

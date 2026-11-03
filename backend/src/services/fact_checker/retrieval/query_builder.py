@@ -46,7 +46,7 @@ from enum import Enum
 
 from src.models.core.claim import Claim
 from src.services.fact_checker.claim_selector import ArticleContext
-from src.services.fact_checker.terms import claim_terms, content_terms, subject_terms
+from src.services.fact_checker.terms import acronyms, claim_terms, content_terms, subject_terms
 
 # Terms that pull refutations to the surface, per language. Every query
 # built from a claim is phrased affirmatively, which biases retrieval
@@ -60,6 +60,7 @@ REFUTATION_TERMS = {
 
 MAX_ENTITIES = 4
 MAX_FIGURES = 2
+MAX_ACRONYMS = 2
 MAX_DATES = 1
 MAX_FALLBACK_WORDS = 8
 
@@ -134,9 +135,17 @@ def build_query(
 
     parts += entities
 
-    parts += [_quoted(figure) for figure in claim.facts.figures[:MAX_FIGURES]]
+    # An acronym the entity model missed is still the subject: "HPV" in
+    # "South Africa has adopted a single-dose HPV vaccination approach"
+    # (terms.acronyms). Without it the query was `South Africa "2024" 2024`.
+    parts += acronyms(claim.text, entities)[:MAX_ACRONYMS]
 
-    parts += claim.facts.dates[:MAX_DATES]
+    figures = claim.facts.figures[:MAX_FIGURES]
+
+    parts += [_quoted(figure) for figure in figures]
+
+    # A year is often both a figure and a date: asked once, quoted.
+    parts += [date for date in claim.facts.dates[:MAX_DATES] if date.strip() not in {f.strip() for f in figures}]
 
     # No entity in the sentence means the subject is elsewhere in the
     # article - almost always a pronoun referring back to the headline's
