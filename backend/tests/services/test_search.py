@@ -490,3 +490,101 @@ def test_a_failed_answer_is_routed_as_failed(monkeypatch):
         client.search("anything")
 
     assert client.last_route() == "failed"
+
+
+# ----------------------------------------------------------------------
+# An answer about something else (2026-11-03)
+# ----------------------------------------------------------------------
+
+
+def _hit(title, content="", engines=("duckduckgo",)):
+    return {"title": title, "content": content, "url": "https://example.org/a", "engines": list(engines)}
+
+
+def test_results_holding_the_query_words_are_an_answer():
+
+    from src.services.search import best_query_coverage
+
+    assert best_query_coverage(
+        "gene therapy restores sight blind people",
+        [_hit("Gene therapy partly restores sight in blind people")],
+    ) == 1.0
+
+
+def test_results_about_the_first_word_only_are_measured_as_such():
+    """What Bing returned from this machine: "Gene therapy..." -> the Wikipedia page "Gene"."""
+
+    from src.services.search import MIN_QUERY_COVERAGE, best_query_coverage
+
+    assert best_query_coverage(
+        "gene therapy restores sight blind people",
+        [_hit("Gene - Wikipedia"), _hit("Gene | Britannica", "A gene is a unit of heredity.")],
+    ) < MIN_QUERY_COVERAGE
+
+
+def test_a_scholarly_engine_does_not_vouch_for_a_search_the_web_failed():
+
+    from src.services.search import MIN_QUERY_COVERAGE, best_query_coverage
+
+    assert best_query_coverage(
+        "gene therapy restores sight blind people",
+        [_hit("Gene"), _hit("Gene therapy restores sight in blind people", engines=("arxiv",))],
+    ) < MIN_QUERY_COVERAGE
+
+
+def test_too_short_a_query_says_nothing():
+
+    from src.services.search import best_query_coverage
+
+    assert best_query_coverage('Jamaica "30"', [_hit("Tripadvisor")]) is None
+
+
+def test_the_words_a_refutation_query_adds_do_not_count():
+
+    from src.services.search import best_query_coverage
+
+    assert best_query_coverage(
+        "gene therapy sight fact check OR debunked OR false",
+        [_hit("Gene therapy and sight")],
+    ) == 1.0
+
+
+def _client_answering(monkeypatch, results):
+    from src.services.search import SearxngClient
+
+    monkeypatch.setattr(httpx, "get", lambda *args, **kwargs: FakeResponse(json_data={"results": results, "unresponsive_engines": []}))
+
+    return SearxngClient
+
+
+def test_an_answer_about_something_else_is_no_answer(monkeypatch):
+    """Everything downstream then says "the search failed", never UNVERIFIED."""
+
+    from src.services.search import SearchUnavailableError
+
+    client = _client_answering(monkeypatch, [_hit("Gene - Wikipedia")])(fallback=None)
+
+    with pytest.raises(SearchUnavailableError, match="something else"):
+        client.search("gene therapy restores sight blind people")
+
+
+def test_an_answer_about_something_else_goes_to_the_fallback(monkeypatch):
+
+    class Fallback:
+        def fetch(self, query, language):
+            return [_hit("Gene therapy restores sight in blind people")]
+
+    client = _client_answering(monkeypatch, [_hit("Gene - Wikipedia")])(fallback=Fallback())
+
+    assert client.search("gene therapy restores sight blind people")[0]["title"].startswith("Gene therapy")
+    assert client.last_route() == "duckduckgo"
+
+
+def test_the_health_check_reports_it(monkeypatch):
+
+    client = _client_answering(monkeypatch, [_hit("Gene - Wikipedia")])(fallback=None)
+
+    health = client.health("gene therapy restores sight blind people")
+
+    assert health["results"] == 1
+    assert health["ok"] is False and health["offSubject"] is True

@@ -67,7 +67,12 @@ HEALTHY_EXTRACTION_RATE = 0.5
 
 # One everyday query per language the sources publish in: if these come
 # back empty, no claim's will come back with anything.
-SEARCH_CHECKS = (("renewable energy", "en"), ("energía renovable", "es"))
+# Whole sentences' worth of words, since 2026-11-03: "renewable energy" could
+# not tell a search that reads the query from one that reads its first word.
+SEARCH_CHECKS = (
+    ("gene therapy restores sight in blind people", "en"),
+    ("terapia génica devuelve la vista a personas ciegas", "es"),
+)
 
 
 class _Recorder(RequestStats):

@@ -1,3 +1,5 @@
+import re
+import unicodedata
 import threading
 import time
 from dataclasses import dataclass, field
@@ -9,6 +11,56 @@ from src.config.settings import settings
 from src.services.concurrency import SEARXNG
 
 logger = getLogger(__name__)
+
+
+# The share of a query's words its best result has to hold for the search to
+# have answered at all. Measured 2026-11-03 on 12 of the train half's
+# proposition queries: when Bing searched only the first word, the best
+# result of every query held 0-29% of the words; through the fixed engines,
+# 44-100%. Not per-run: it says whether a service works, not how to judge.
+MIN_QUERY_COVERAGE = 0.35
+
+# A query needs this many words for the share to mean anything.
+MIN_QUERY_WORDS = 3
+
+# Not asked of the scholarly engines, which answer anything with whatever
+# paper shares a word; what is being checked is whether the web answered.
+_SCHOLARLY_ENGINES = frozenset({"arxiv", "crossref", "semantic scholar", "pubmed"})
+
+# Refutation queries end in these: they say what is being looked for, not
+# what the results must be about.
+_QUERY_NOISE = frozenset({
+    "fact", "check", "debunked", "false", "verificacion", "desmentido", "falso", "bulo",
+    "the", "and", "for", "del", "las", "los", "con", "por", "una",
+})
+
+_WORD = re.compile(r"[^\W_]+", re.UNICODE)
+
+
+def _words(text: str) -> set[str]:
+
+    decomposed = unicodedata.normalize("NFKD", (text or "").lower())
+
+    return set(_WORD.findall("".join(char for char in decomposed if not unicodedata.combining(char))))
+
+
+def best_query_coverage(query: str, results: list[dict]) -> float | None:
+    """
+    The largest share of `query`'s words any one result's title and summary
+    hold; None when that says nothing (no results, or too short a query).
+    """
+
+    terms = {word for word in _words(query) if len(word) >= 3} - _QUERY_NOISE
+
+    if len(terms) < MIN_QUERY_WORDS or not results:
+        return None
+
+    general = [item for item in results if not _SCHOLARLY_ENGINES & set(item.get("engines") or [])]
+
+    return max(
+        len(terms & _words(f"{item.get('title') or ''} {item.get('content') or ''}")) / len(terms)
+        for item in (general or results)
+    )
 
 
 class SearchUnavailableError(RuntimeError):
@@ -278,6 +330,24 @@ class SearxngClient:
             # error of the two - the other one is a verdict.
             raise SearchUnavailableError(f"no results; engines down: {down}")
 
+        # Results about something else are not an answer either, and they
+        # look like one to everything downstream (off_subject).
+        best = best_query_coverage(query, results)
+
+        if best is not None and best < MIN_QUERY_COVERAGE:
+
+            logger.warning(
+                "SearXNG answered %r with %d results about something else: the best holds %.0f%% of its words",
+                query,
+                len(results),
+                best * 100,
+            )
+
+            raise SearchUnavailableError(
+                f"answered about something else: the best of {len(results)} results "
+                f"holds {best:.0%} of the query's words"
+            )
+
         return results
 
     def health(self, query: str = "news", language: str | None = None) -> dict:
@@ -325,10 +395,17 @@ class SearxngClient:
             for engine in (item.get("engines") or [])
         })
 
+        # A count says nothing: ten results about the query's first word
+        # read as a healthy search for as long as nobody looked at them.
+        coverage = best_query_coverage(query, results)
+        off_subject = coverage is not None and coverage < MIN_QUERY_COVERAGE
+
         return {
             "query": query,
-            "ok": bool(results),
+            "ok": bool(results) and not off_subject,
             "results": len(results),
+            "queryCoverage": None if coverage is None else round(coverage, 2),
+            "offSubject": off_subject,
             "engines": engines,
             "unresponsive": [
                 {"engine": name, "reason": reason}

@@ -271,6 +271,20 @@ Items 1 and 3 above still stand.
   by 2026-10-01: it still lacked the science engines added on
   2026-09-28.
 
+### 2026-11-03: Bing answered, about the wrong thing
+
+Bing through SearXNG returned ten results for every query, about the
+query's first word only - so the source probe and `inspiring_web_searches_
+total` both counted healthy searches while every claim's evidence was
+off-subject and its verdict UNVERIFIED. Engines re-measured on on-topic
+results, not result counts; Bing out, DuckDuckGo, Startpage, Mojeek and
+Yahoo in, SearXNG 2026.11.2 (`docker/searxng/settings.yml`). And
+acronyms became query terms (`docs/fact-checking-changes.md`, section 9).
+**A results count is not a health signal.** Since then a query whose best web
+result holds under 35% of its words counts as failed (`search.py`,
+`MIN_QUERY_COVERAGE`; `docs/fact-checking-changes.md`, section 11), and the
+probe reports the share.
+
 ## What is still not fixed
 
 - **The model's on-point judgement is enforced, not measured.** The

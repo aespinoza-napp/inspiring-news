@@ -226,6 +226,9 @@ write them down than to have each be rediscovered.
   rarely catches a changed figure. Every report before 22 Oct afternoon,
   and `thorough.json`, is the list verifier. Never compare two verifiers
   across two searched runs: replay one (`cli run --replay`).
+- **The search changed on 2026-11-03** (engines, SearXNG 2026.11.2, and an
+  answer whose best result holds under 35% of the query's words now counts
+  as failed): searched runs either side are not comparable.
 - **The Devastating edition is not fact-checked, by request.** Since
   2026-10-30 an admitted article of that edition is stored and published
   with no claim selection, search or model (`fact_check_skipped`); its

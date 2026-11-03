@@ -54,8 +54,37 @@ use_default_settings:
     #
     # Re-measure before trusting this list on a different network - these
     # are blocked/allowed by where the container runs, not by SearXNG.
+    #
+    # 2026-11-03: re-measured, because every claim of an HPV-vaccination
+    # article came back UNVERIFIED citing arXiv papers and a dictionary.
+    # Google "access denied", Brave "too many requests", Yep "HTTP error":
+    # suspended. And **Bing searched only the first word** of every query,
+    # in Spanish, whatever `language` said ("cervical cancer vaccination
+    # Africa" -> pages on neck pain; "Gene therapy restores sight..." ->
+    # the Wikipedia page "Gene"), on this image and on 2026.11.2 alike: a
+    # degraded answer Bing serves this address, not a SearXNG bug. So the
+    # list had no working web engine, and the arXiv/Crossref fallbacks
+    # filled every claim's evidence with unrelated papers. On-topic results
+    # in the top 10, three claims (HPV vaccination, gene therapy and
+    # sight, beavers at Loch Ness), engine by engine:
+    #
+    #   bing         0 / 1 / 0   (of 10 each)  -> removed
+    #   duckduckgo  10 / 6 / 9                 -> added (no CAPTCHA today)
+    #   startpage   10 / 6 / 9                 -> added
+    #   mojeek       9 / 5 / 7                 -> added (its own index)
+    #   yahoo        6 / 3 / 7  (of 7)         -> added
+    #   bing news    8 / 3 / 9  (of 8, 6, 9)   -> kept
+    #   qwant, google news: down               -> still out
+    #
+    # Kept: google, brave, yep - suspended engines fail fast and come back.
+    # DuckDuckGo CAPTCHA'd this machine in September: if it does again,
+    # the source probe on /scraper says so, and three other web engines
+    # still answer.
     keep_only:
-      - bing
+      - duckduckgo
+      - startpage
+      - mojeek
+      - yahoo
       - google
       - brave
       - yep
@@ -74,7 +103,15 @@ use_default_settings:
 # two engines that happen to be on by default (brave, bing news), so a
 # single rate-limit suspension on brave took the whole search to zero.
 engines:
-  - name: bing
+  # The four web engines added 2026-11-03 (above): on explicitly, since
+  # some ship `disabled: true` and the fact-checker has no preferences.
+  - name: duckduckgo
+    disabled: false
+  - name: startpage
+    disabled: false
+  - name: mojeek
+    disabled: false
+  - name: yahoo
     disabled: false
   - name: google
     disabled: false
@@ -116,6 +153,9 @@ general:
   instance_name: "Inspiring News Fact-Checker"
 
 search:
+  # Moderate: weak queries returned adult sites in the retrieval check; the
+  # pertinence gate cut them, but they took candidate slots (audit 2026-10-16).
+  safe_search: 1
   formats:
     - html
     - json   # required: SearxngClient (backend/src/services/search.py) calls ?format=json

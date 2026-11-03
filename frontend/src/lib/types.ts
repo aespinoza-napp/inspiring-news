@@ -1036,6 +1036,10 @@ export interface SearchHealth {
   results?: number;
   engines?: string[];
   unresponsive?: { engine: string; reason: string }[];
+  /** The largest share of the query's words any one result holds. */
+  queryCoverage?: number | null;
+  /** Results came back, about something else (backend search.py, MIN_QUERY_COVERAGE). */
+  offSubject?: boolean;
   error: string | null;
   ms?: number;
 }

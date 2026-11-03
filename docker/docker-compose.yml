@@ -66,7 +66,12 @@ services:
     # this build, and SearXNG changes its engines' parsers and defaults
     # from one release to the next. Bump it deliberately, then re-run
     # the engine measurements (or /scraper's source probe).
-    image: searxng/searxng:2026.9.8-3fdc6d753
+    #
+    # 2026.9.8 -> 2026.11.2 on 2026-11-03: on 2026.9.8 Startpage and Yahoo
+    # answered "parsing error" to every query; on 2026.11.2 they returned
+    # 10/6/9 and 6/3/7 on-topic results on the three measured claims
+    # (settings.yml, "2026-11-03").
+    image: searxng/searxng:2026.11.2-cccbc9e15
     ports:
       - "8080:8080"
     volumes:

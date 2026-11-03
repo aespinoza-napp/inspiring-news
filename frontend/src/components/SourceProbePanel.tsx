@@ -171,18 +171,22 @@ export function SourceProbePanel() {
         <>
           {searchDown.length > 0 && (
             <div className="error-banner" role="alert">
-              Web search is returning nothing
+              {searchDown.some((check) => check.offSubject)
+                ? "Web search is answering about something else"
+                : "Web search is returning nothing"}
               {searchDown.map((check) => (
                 <span key={check.language}>
                   {" "}
                   · {check.language}:{" "}
-                  {check.error ??
-                    (check.unresponsive ?? [])
-                      .map((engine) => `${engine.engine} (${engine.reason})`)
-                      .join(", ")}
+                  {check.offSubject
+                    ? `the best of ${check.results} results holds ${Math.round((check.queryCoverage ?? 0) * 100)}% of the query's words`
+                    : check.error ??
+                      (check.unresponsive ?? [])
+                        .map((engine) => `${engine.engine} (${engine.reason})`)
+                        .join(", ")}
                 </span>
               ))}
-              . Claims will come back unverified until the engines answer.
+              . Claims will read &quot;not checked&quot; until the engines answer.
             </div>
           )}
 

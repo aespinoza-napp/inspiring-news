@@ -211,3 +211,39 @@ Groq's run was not made then; a 5-claim smoke run was, on 2026-10-30
 | A run's lineage records any threshold, not numbers only | `lineage.ThresholdValue` | `threshold_overrides` was `int \| float`, so a string override (`edition`) failed to start the lake record: no Devastating run was stored, published or writable. A string switch such as `verifier_answer`, or `query_kinds`, overridden per run would have failed the same way |
 | Groq's three verifiers, a 5-claim smoke run | `scripts/bench_groq.sh "" 5` | Replays of `cc053417c0cb`, like the local candidates. Every call answered (13 rate limits waited out, none lost). On the 5 claims all models share: `qwen/qwen3.8-27b` 4 of 5 at 1.3 s a claim's model time, as `gemma4:e4b` (4, 118 s); both gpt-oss 3 (FALSE on an UNVERIFIED claim), the 3B 3 at 46 s. Five claims decide nothing; the 20-claim screen is next |
 
+
+## 9. The web search had stopped searching (2026-11-03)
+
+Found from one article, Gavi's "South Africa's HPV vaccination drive ...
+is working": four claims, all UNVERIFIED at 5-10%, every cited source an
+arXiv paper, a DOI record or a dictionary. The model did run (about 70 s a
+claim, a stance per source), and correctly found that nothing it was given
+addressed the claim. Two causes, both upstream of it:
+
+- **Bing searched only the first word.** Through SearXNG, from this
+  machine, Bing answered "cervical cancer vaccination Africa" with pages
+  about neck pain and "Gene therapy restores sight..." with the Wikipedia
+  page "Gene", in Spanish whatever `language` said, on the pinned image
+  and on the newest alike. Google, Brave and Yep were suspended at the
+  same time, so no general web engine was really answering. Fixed in
+  configuration: measured engine by engine on three claims
+  (`docker/searxng/settings.yml`, "2026-11-03"), Bing out (1 of 30
+  on-topic), DuckDuckGo (25/29), Startpage (25/30), Mojeek and Yahoo in,
+  Bing News kept; the SearXNG image 2026.9.8 -> 2026.11.2, on which
+  Startpage and Yahoo parse again. The same HPV query then returned the
+  South African health department's single-dose recommendation and the
+  news of the 2024 switch.
+- **Acronyms never reached a query.** A content word had to be 4+ letters,
+  and GLiNER had not tagged "HPV", so the anchor query was
+  `South Africa "2024" 2024` and no query named the subject. Acronyms
+  (2-6 capitals) are now anchors (`terms.acronyms`) and, at 2-3 letters,
+  content words that bypass the stopword list (WHO, US); a year that is
+  both a figure and a date is asked once. `test_acronym_terms.py`.
+
+**What it means for the numbers.** Both change retrieval, so a run after
+today is not comparable with one before it without a replay (`cli run
+--replay`). Nothing says when Bing started answering this way: the source
+probe counts results, not whether they are on the subject, which is how it
+went unnoticed. Check the queries on `/live` before trusting a batch of
+UNVERIFIED verdicts.
+
