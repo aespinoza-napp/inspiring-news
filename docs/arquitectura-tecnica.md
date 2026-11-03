@@ -2,7 +2,7 @@
 
 ## Sistema Integral de Inteligencia de Noticias: Pipeline, Verificación y Sistema de Recomendación
 
-Versión 1.1 — 28 de septiembre de 2026 (la 1.0 describía la ingesta y el renderizado de JavaScript como pendientes, y la recuperación de evidencia como secuencial; las tres cosas han cambiado)
+Versión 1.2 — 3 de noviembre de 2026. Cambios desde la 1.1 (28 de septiembre): el verificador pregunta fuente por fuente; una copia del artículo ya no cuenta como evidencia; los motores de búsqueda se volvieron a medir; existen la redacción de artículos, las tendencias, las dos ediciones y la trazabilidad de extremo a extremo. El detalle fechado de cada cambio está en `fact-checking-changes.md`.
 
 ---
 
@@ -21,7 +21,7 @@ Versión 1.1 — 28 de septiembre de 2026 (la 1.0 describía la ingesta y el ren
 
 Este documento describe exclusivamente la arquitectura técnica y la estrategia lógica del sistema: qué componentes existen, con qué tecnología están construidos y por qué cada decisión de diseño es la que es. No cubre la justificación de negocio ni la propuesta de valor del producto — para eso, véase `idea-de-negocio.md`. Para una síntesis breve orientada a toma de decisiones, véase `resumen-ejecutivo.md`.
 
-El sistema se organiza en tres fases técnicas. La Fase 1 es el pipeline ya construido que extrae, enriquece y verifica noticias. La Fase 2 es el sistema de recomendación basado en grafos, en diseño. La Fase 3 es la capa cliente que consume ambas. El proyecto reside en un monorepo que separa backend, frontend e infraestructura de contenedores.
+El sistema se organiza en tres fases técnicas. La Fase 1 es el pipeline ya construido que extrae, enriquece y verifica noticias, y que desde octubre también redacta y publica. La Fase 2 es el sistema de recomendación: el grafo de Neo4j ya existe y se escribe en cada análisis, pero **la recomendación está en diseño y no se ha construido**; queda fuera del trabajo de fin de máster. La Fase 3 es la capa cliente que consume ambas. El proyecto reside en un monorepo que separa backend, frontend e infraestructura de contenedores.
 
 ---
 
@@ -37,9 +37,9 @@ El backend está construido sobre Python y FastAPI, con `uv` como gestor de depe
 | Contenerización | Docker, `docker-compose` |
 | Servicio de inferencia (entidades, sentimiento, embeddings) | Servicio FastAPI independiente que carga los modelos GLiNER, XLM-RoBERTa y BGE-M3; el backend lo consulta por HTTP |
 | Base de datos de grafos (artículos, entidades, temas, afirmaciones, veredictos y fuentes; desde el 29/09) | Neo4j |
-| Motor de búsqueda para evidencia | SearXNG autoalojado, con una lista cerrada de motores medidos uno a uno: Bing, Google, Brave, Yep, Bing News y Wikipedia, más cuatro APIs científicas (arXiv, Crossref, Semantic Scholar, PubMed) |
+| Motor de búsqueda para evidencia | SearXNG autoalojado, con una lista cerrada de motores medidos uno a uno: DuckDuckGo, Startpage, Mojeek, Yahoo, Google, Brave, Yep, Bing News y Wikipedia (Bing web se retiró el 3 de noviembre: buscaba solo la primera palabra de cada consulta), más cuatro APIs científicas (arXiv, Crossref, Semantic Scholar, PubMed) |
 | Extracción de páginas | trafilatura → BeautifulSoup sobre el mismo HTML → navegador sin interfaz (Playwright, opcional) |
-| Modelo de lenguaje | Endpoint compatible con OpenAI, por defecto `llama3.2:3b` local vía Ollama |
+| Modelo de lenguaje | Endpoint compatible con OpenAI vía Ollama, un modelo por tarea: verifica `llama3.2:3b`, redacta `qwen3.5:4b` y revisa `gemma4:e4b`, elegidos por medición el 29 de octubre |
 | Base de datos vectorial | Qdrant (modo embebido/local) |
 
 ```mermaid
@@ -50,9 +50,9 @@ flowchart LR
 
     subgraph api["backend/ — FastAPI"]
         API["/analyze · /analyze/jobs\n/correct · /verify-claim\n/ingest · /scraper · /sources"]
-        ING["Ingesta\n(36 fuentes YAML:\nRSS → feeds → páginas de tema)"]
+        ING["Ingesta\n(fuentes YAML:\nRSS → feeds → páginas de tema)"]
         PIPE["Enrichment + FactChecker"]
-        CACHE[("AnalysisCache\n(file, sin expiración)")]
+        CACHE[("AnalysisCache\n(file, caduca a los 7 días)")]
         JOURNAL[("JobJournal\n(disco, por evento)")]
         VDB[("Qdrant\n(embebido/local)")]
     end
@@ -63,7 +63,7 @@ flowchart LR
         EMB["BGE-M3 (embeddings)"]
     end
 
-    SEARX["SearXNG (autoalojado)\nweb: Bing · Google · Brave · Yep\nciencia: arXiv · Crossref ·\nSemantic Scholar · PubMed"]
+    SEARX["SearXNG (autoalojado)\nweb: DuckDuckGo · Startpage · Mojeek · Yahoo\nciencia: arXiv · Crossref ·\nSemantic Scholar · PubMed"]
     WEB["Web abierta\n(fuentes de evidencia)"]
     NEWS["Medios configurados\n(noticias a analizar)"]
     LLM["Ollama\nllama3.2:3b\n(compatible OpenAI)"]
@@ -93,7 +93,7 @@ flowchart LR
 
 Una noticia entra al sistema por dos vías: una persona envía su URL al análisis, o la **ingesta** la descubre en una de las fuentes configuradas y la encola como un análisis más. La ingesta se ejecuta solo cuando alguien la pide (`POST /ingest`, desde la página `/scraper`); nada corre de forma programada.
 
-- **Fuentes declarativas**: una definición YAML por medio — 36 en total (20 en inglés, 16 en español). Cada una declara su feed, su idioma y un índice de fiabilidad editorial que el ranking de evidencia reutiliza (§2.4.4). Añadir un medio es añadir un archivo, no escribir código. Dos verificadores profesionales (Newtral, Maldita) están configurados pero **desactivados a propósito**: aportan su índice de fiabilidad cuando aparecen como evidencia, pero no se ingieren, porque un desmentido cita la afirmación falsa que desmiente y la extracción de claims la tomaría por una afirmación del propio artículo. Solo se admite una fuente por dominio, y un test lo impone: tanto la fiabilidad como el reconocimiento de una URL enviada se buscan por dominio.
+- **Fuentes declarativas**: una definición YAML por medio, en inglés y en español. Cada una declara su feed, su idioma y un índice de fiabilidad editorial que el ranking de evidencia reutiliza (§2.4.4). Añadir un medio es añadir un archivo, no escribir código. Dos verificadores profesionales (Newtral, Maldita) están configurados pero **desactivados a propósito**: aportan su índice de fiabilidad cuando aparecen como evidencia, pero no se ingieren, porque un desmentido cita la afirmación falsa que desmiente y la extracción de claims la tomaría por una afirmación del propio artículo. Solo se admite una fuente por dominio, y un test lo impone: tanto la fiabilidad como el reconocimiento de una URL enviada se buscan por dominio.
 - **Descubrimiento de URLs, de lo barato a lo caro**: primero el feed RSS de la fuente; si no da nada, la búsqueda de feeds de trafilatura (tolerante con XML roto, y capaz de encontrar el feed desde la portada); y solo si no hay feed alguno, las páginas de sección temática del medio (`/science/`, `/ciencia/`…). Un filtro de "forma de artículo" que funciona también en español descarta portadas, secciones y vídeos; el prefiltro por palabras clave de tema solo se aplica a fuentes en inglés, porque las palabras clave están en inglés.
 - **Extracción en cascada, de lo barato a lo caro**: trafilatura (una petición); después BeautifulSoup sobre el mismo HTML ya descargado (sin segunda petición: JSON-LD, metaetiquetas, selectores declarados por fuente y el bloque de párrafos más denso); y por último, un navegador sin interfaz (Playwright) para los sitios que construyen su contenido con JavaScript. El navegador es opcional, pasa por el mismo control de URLs en cada petición y redirección, tiene su propio tope de concurrencia y nunca se usa para páginas de evidencia. Una página que no existe (404, tiempo agotado, dominio inexistente) termina la cascada en vez de gastar más peticiones.
 - **Observabilidad**: cada petición se contabiliza por dominio con el motivo de cada fallo, y dos comprobaciones bajo demanda — la sonda de fuentes (`POST /scraper/probe`) y la comprobación de fuentes (`POST /sources/check`) — dicen qué medios siguen entregando artículos legibles y qué motores de SearXNG responden.
@@ -149,40 +149,50 @@ La evidencia reunida se reordena mediante un puntaje que combina cuatro señales
 - **Afinidad semántica** con la afirmación, calculada sobre los mismos embeddings de todo el sistema.
 - **Cobertura léxica** de los términos propios de la afirmación. La similitud de embeddings por sí sola puntúa igual una página *sobre el mismo tema* que una que aborda la afirmación: una afirmación que mencionaba ACME recuperó tres páginas sobre la etimología griega de la palabra, todas con similitud alta.
 - **Recencia**, con decaimiento exponencial según una vida media configurable: la evidencia antigua no se descarta de golpe, pero pierde peso de forma suave a medida que envejece.
-- **Fiabilidad de la fuente**, mediante un índice por dominio cargado desde el repositorio de fuentes (36 dominios calificados), con un valor neutral por defecto cuando el dominio es desconocido. Ese valor por defecto no es una calificación, y el sistema lo marca como tal para que no se presente igual que la fiabilidad real de un medio calificado.
+- **Fiabilidad de la fuente**, mediante un índice por dominio cargado desde el repositorio de fuentes (los dominios configurados), con un valor neutral por defecto cuando el dominio es desconocido. Ese valor por defecto no es una calificación, y el sistema lo marca como tal para que no se presente igual que la fiabilidad real de un medio calificado.
 
 Cada grupo de pesos debe sumar 1,0, y el backend se niega a arrancar si no es así: la plantilla de configuración llegó a distribuir pesos de ranking que sumaban 1,2 sin que nada lo advirtiera. Ningún factor domina por diseño: una fuente muy afín pero obsoleta, o muy reciente pero poco fiable, no desplaza automáticamente a una evidencia mejor equilibrada. Solo se retiene un número acotado de las mejores evidencias por afirmación.
 
 En el mismo paso actúa un **filtro de pertinencia**: una combinación de afinidad semántica y cobertura léxica por debajo de un umbral (por ejecución) indica una fuente que trata el tema pero no aborda la afirmación, y se descarta antes de que el modelo de lenguaje la vea. Es un piso deliberadamente bajo: su umbral está razonado, no ajustado, porque todavía no existe un conjunto etiquetado contra el que ajustarlo.
 
-#### 2.4.5. Verificación mediante modelo de lenguaje
+#### 2.4.5. Independencia de las fuentes
 
-El paso que involucra un modelo de lenguaje (servido localmente por defecto, con la posibilidad de apuntar a un proveedor externo mediante configuración) está deliberadamente acotado: se exige una salida estructurada con un veredicto de un conjunto cerrado de cinco categorías (verdadero, parcialmente verdadero, falso, engañoso, no verificado), una confianza numérica, una explicación breve, los índices de qué evidencias concretas se usaron para decidir y, por cada fuente, su postura (apoya, contradice, no guarda relación) con la cita textual en la que se basó. Toda cita que no aparezca literalmente en la fuente se descarta: una cita inventada es peor que ninguna. Se instruye explícitamente al modelo a responder "no verificado" cuando la evidencia esté vacía o no guarde relación con la afirmación, y a nunca afirmar algo que la evidencia no respalde. Reducir la tarea a una clasificación cerrada con justificación citada — en vez de un veredicto libre sin trazabilidad — convierte la pregunta de si el modelo alucinó en algo verificable mecánicamente en el paso siguiente, en vez de una cuestión de confianza ciega en el modelo.
+Antes de pesar una fuente se compara su texto con la frase de la afirmación, palabra por palabra y sin modelo (`independence.py`, desde el 3 de noviembre). Una página que repite la frase no es evidencia: es el artículo, una copia suya o su origen común, y una voz no se confirma a sí misma. Se descarta y el motivo queda registrado. En la mitad de ajuste, 12 de 69 afirmaciones tenían una página así, y casi todas contaban como apoyo.
 
-#### 2.4.6. Recalibración de confianza
+Una página con la misma frase y un solo detalle distinto («68» donde la afirmación dice «168») la contradice, y la afirmación es falsa sin preguntar al modelo, porque es justo lo que el modelo pequeño no detecta. Si además otra página repite la frase tal cual, los medios discrepan entre sí y decide el modelo. La mejora medida en afirmaciones alteradas sobrestima el efecto real, ya que esas afirmaciones se crearon cambiando un detalle de una frase real; el dato fiable es que no hubo falsas alarmas en las 54 afirmaciones naturales.
+
+Los medios se cuentan como medios, no como dominios técnicos: `en.` y `es.wikipedia.org` son una voz, y `bbc.com` y `bbc.co.uk` también.
+
+#### 2.4.6. Verificación mediante modelo de lenguaje
+
+El modelo (local por defecto, con la posibilidad de apuntar a un proveedor externo por configuración) responde sobre **una fuente cada vez**: si la fuente afirma lo mismo, afirma algo incompatible, no dice nada o trata de otra cosa, con la frase que lo demuestra copiada literalmente. El veredicto se deduce de esas respuestas por una regla comprobable: gana el lado que afirman más medios, y un empate queda como «no verificado». La cita se comprueba contra la fuente y se descarta si no aparece. Esta es la configuración por defecto desde el 22 de octubre: en la mitad de prueba, con la misma evidencia que el verificador anterior, las afirmaciones naturales pasaron del 49 % al 67 % y los errores con confianza del 47 % al 29 %, a costa de detectar peor las alteradas (del 60 % al 13 %), que es lo que motivó el paso anterior.
+
+Opcionalmente (`claim_restatement`), cada afirmación se reformula antes de la búsqueda como un enunciado comprobable por sí solo; en el discurso referido, el hecho que contiene la cita. Está desactivado para la evaluación hasta medirlo.
+
+#### 2.4.7. Recalibración de confianza
 
 Esta es la salvaguarda más importante del sistema, y la razón por la que puede usarse un modelo de lenguaje modesto sin comprometer la fiabilidad general del resultado:
 
 - Si la cantidad de evidencia disponible no alcanza un mínimo, el veredicto se fuerza a "no verificado" con confianza cero, y el modelo de lenguaje **ni siquiera se consulta**: su respuesta se habría descartado igualmente, y era el paso más lento del pipeline gastado en nada (23 de 24 afirmaciones el 25 de septiembre, cuando la búsqueda no devolvía resultados).
 - La confianza final no es la que reporta el modelo tal cual: se combina con una puntuación de calidad de evidencia calculada de forma independiente (afinidad promedio de la evidencia retenida, proporción de evidencia efectivamente citada sobre el total disponible, y cantidad de evidencia respecto al máximo esperado).
 - Un veredicto definitivo (verdadero, falso o engañoso) que no cita ninguna evidencia, aunque hubiera evidencia disponible, se degrada automáticamente a "no verificado" con un techo de confianza bajo. Una afirmación categórica sin ninguna referencia comprobable es, por definición, no fundamentada, sin importar cuán convincente sea el texto de la explicación.
-- Un veredicto "verdadero" cuando alguna fuente contradice un detalle se degrada a "parcialmente verdadero", y si lo respalda un solo dominio independiente su confianza queda acotada.
+- Con el verificador de una fuente cada vez, un veredicto que ninguna fuente citada sostiene pasa a "no verificado", y si lo respalda un solo dominio independiente su confianza queda acotada.
 
 La regla de las citas es agnóstica al modelo utilizado: protege contra la alucinación de cualquier modelo, presente o futuro, sin necesitar reentrenamiento ni ajustes de prompt adicionales.
 
-#### 2.4.7. Agregación a nivel de artículo
+#### 2.4.8. Agregación a nivel de artículo
 
 Un artículo puede contener varias afirmaciones verificadas por separado. El veredicto global del artículo no es un promedio ni el veredicto de la afirmación más relevante: es el peor veredicto de todo el conjunto, según un orden de severidad fijo (verdadero < parcialmente verdadero < no verificado < engañoso < falso); la confianza global sí se promedia, pero el veredicto no. Limitación conocida: como "no verificado" pesa más que "verdadero", una sola afirmación sin evidencia suficiente —el resultado habitual con un modelo local pequeño— domina el veredicto del artículo, y el promedio de confianzas mezcla veredictos distintos. Separar "cuánto se pudo comprobar" de "qué se encontró" está pendiente. Relacionado: cuando todos los motores de búsqueda están caídos, una afirmación vuelve como "no verificado", indistinguible de una que se buscó y no tenía respaldo; un estado propio de "búsqueda no disponible", como el que ya existe para el modelo de lenguaje inalcanzable, también está pendiente.
 
-#### 2.4.8. Diagrama de las siete etapas
+#### 2.4.9. Diagrama de las etapas
 
 ```mermaid
 flowchart TD
     A["1. Filtro de admisión\nadmission_filter\n(tema · impacto positivo · duplicado)"]
     B["2. Selección de afirmaciones\nclaim_selection\n(banda ancla, 2-4 claims)"]
     C["3. Recuperación de evidencia\nevidence_retrieval\n(SearXNG + Qdrant, 3 queries/claim,\nen paralelo; consulta repetida = 1 envío)"]
-    D["4. Ranking de evidencia\nevidence_ranking\n(semántica · recencia · fiabilidad · léxico\n+ filtro de pertinencia)"]
-    E["5. Verificación LLM\nllm_verification\n(veredicto + cita verbatim por fuente)"]
+    D["4. Independencia y ranking\nevidence_ranking\n(sin copias del artículo; semántica · recencia ·\nfiabilidad · léxico + filtro de pertinencia)"]
+    E["5. Verificación LLM\nllm_verification\n(una pregunta por fuente; gana el lado\nque afirman más medios)"]
     F["6. Recalibración de confianza\nconfidence_recalibration\n(fuerza UNVERIFIED sin evidencia o sin cita)"]
     G["7. Agregación\naggregation\n(peor veredicto del artículo gana)"]
 
@@ -199,13 +209,21 @@ flowchart TD
 
 *Cada afirmación queda etiquetada con `reached_stage`: la etapa más lejana a la que llegó antes de que algo la detuviera o la degradara. Un fallo de admisión detiene el artículo entero antes de la etapa 2; una afirmación sin evidencia salta la etapa 5 y queda en `confidence_recalibration` como `UNVERIFIED`; un LLM inalcanzable (endpoint caído, tras agotar reintentos) se distingue de un veredicto `UNVERIFIED` genuino mediante `llm_unreachable`, para que un backlog de errores de infraestructura no se lea igual que un backlog de afirmaciones sin respaldo.*
 
-#### 2.4.9. Síntesis de la estrategia
+#### 2.4.10. Síntesis de la estrategia
 
 Cada capa de esta cadena es más barata y más determinista que la siguiente, y cada capa puede decir "no" de forma definitiva; ninguna capa posterior puede revertir el rechazo de una capa anterior. El único punto donde interviene un modelo de lenguaje está acotado a una clasificación cerrada, forzada a citar sus fuentes, y su salida pasa por una recalibración de confianza que no depende de la introspección del propio modelo. El resultado es un sistema cuya fiabilidad no descansa en la fiabilidad de un único componente de inteligencia artificial, sino en la composición de varias capas independientes de control.
 
-### 2.5. Frontend y Corrector de Textos
+### 2.5. Trazabilidad e integridad
 
-El ecosistema se cierra con un frontend en Next.js 14 que consulta la API del backend mediante un patrón de trabajos en segundo plano con sondeo periódico del progreso, expuesto como una línea de tiempo de fases (obtención, enriquecimiento, validación, verificación, almacenamiento, resultado). Una pantalla adicional, "Live", permite seguir desde otro cliente cualquier verificación en curso: las consultas enviadas al buscador, cada fuente encontrada y los motores que la devolvieron, la calificación que recibió cada una y el veredicto, a medida que ocurre. Dos páginas internas cubren la recolección: "Scraper" (ingesta bajo demanda, estadísticas de peticiones por dominio y la salud de cada fuente y de los motores de búsqueda) y "Sources" (si cada fuente configurada sigue entregando artículos con título, autor y fecha). Además del analizador de noticias, existe un componente "Corrector" que evalúa texto introducido directamente por el usuario en siete métricas: dos de ellas (legibilidad y verificación de cobertura) se calculan de forma determinista reutilizando los mismos analizadores de calidad de la Fase 1; las otras cinco (gramática, consistencia factual, optimización SEO, índice de alucinación y estilo) se obtienen mediante una única llamada al modelo de lenguaje.
+Cada registro del lago (`raw` → `processed` → `exploitation`) declara su ejecución, su artículo, su registro padre, el hash del texto, los modelos, la revisión del código y todos los umbrales usados. Un registro de escrituras de solo añadido guarda la historia. Dos herramientas lo aprovechan: la página `/trace` sigue un artículo por todas las etapas a partir de cualquier identificador, y `./scripts/check.sh lake` comprueba que esa cadena es cierta (padres que existen, textos que coinciden con su hash, veredictos servidos iguales a su informe). Su primera ejecución, el 3 de noviembre, no encontró ningún error. El conjunto de validación tiene sus propias comprobaciones (`test_gold_set_integrity.py`).
+
+Una búsqueda solo cuenta como respondida si su mejor resultado contiene al menos el 35 % de las palabras de la consulta; si no, cuenta como fallida y la afirmación aparece como «sin comprobar», nunca como un «no verificado» que parezca un hallazgo.
+
+### 2.6. Frontend, redacción y ediciones
+
+El frontend en Next.js 14 consulta la API mediante trabajos en segundo plano con sondeo periódico. Se organiza en una **redacción** (Descubrir, Analizar, Seguir, Escribir, Leer) y un **laboratorio** con una herramienta por etapa, con un panel de seguimiento en cada página de operador. El lector público está en catalán, español e inglés.
+
+El flujo de **redacción** escribe un artículo nuevo a partir de uno publicado, con sus fuentes y sin afirmar nada fuera de ellas; una revisión con métricas y una reescritura guiada preceden a la publicación, que siempre decide una persona y que declara el uso de IA. Las **tendencias** añaden una lente sobre lo que circula, con fuentes públicas y gratuitas. Hay dos **ediciones**: Positiva y Devastadora; la segunda es una condición de contraste, no se verifica y no está pensada para producción (`docs/decisions/editions.md`).
 
 ---
 

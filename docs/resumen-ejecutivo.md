@@ -2,7 +2,7 @@
 
 ## Sistema Integral de Inteligencia de Noticias
 
-Versión 1.0 — Septiembre de 2026
+Versión 1.1 — 3 de noviembre de 2026
 
 ---
 
@@ -20,7 +20,7 @@ Un sistema que produce, verifica y distribuye automáticamente noticias de impac
 
 El sistema se construye en tres fases acumulativas:
 
-1. **Pipeline y verificación (diseñada y en construcción).** Extrae noticias, las evalúa por relevancia e impacto positivo, y verifica sus afirmaciones contra evidencia externa mediante un proceso de varias capas diseñado para fallar hacia la cautela: ante la duda, el sistema prefiere no confirmar una afirmación antes que arriesgarse a validar algo falso. Cada artículo resultante lleva un veredicto de verificación auditable, no una etiqueta editorial sin respaldo.
+1. **Pipeline y verificación (construida y en evaluación).** Extrae noticias, las evalúa por relevancia e impacto positivo, y verifica sus afirmaciones contra evidencia externa mediante un proceso de varias capas diseñado para fallar hacia la cautela: ante la duda, el sistema prefiere no confirmar una afirmación antes que arriesgarse a validar algo falso. Cada artículo resultante lleva un veredicto de verificación auditable, no una etiqueta editorial sin respaldo.
 2. **Sistema de recomendación (en diseño).** Distribuye ese contenido ya verificado de forma personalizada, inspirado en principios de arquitectura probados a escala en la industria (un enfoque de agrupación por comunidades de interés similar al que usa el sistema de recomendación de Twitter/X, parcialmente disponible como código abierto), pero redirigidos hacia relevancia y calidad en vez de hacia maximización de tiempo de pantalla. La personalización nunca puede mostrar contenido que no haya superado ya los filtros de veracidad de la primera fase.
 3. **Aplicación móvil (planeada).** Lleva el producto al usuario final con transparencia como característica central: se muestran directamente las métricas de verificación y confiabilidad detrás de cada noticia y de cada recomendación.
 
@@ -28,9 +28,9 @@ El sistema se construye en tres fases acumulativas:
 
 | Fase | Estado |
 |---|---|
-| Pipeline y verificación | En construcción: funciona de extremo a extremo cuando se le entrega la URL de una noticia; aún sin ingesta automática y sin evaluar la precisión de los modelos |
-| Sistema de recomendación | En diseño — siguiente hito |
-| Aplicación móvil | Planeada |
+| Pipeline y verificación | Funciona de extremo a extremo: descubre noticias por tema, deja elegir a una persona o a la IA, verifica, redacta y publica con revisión humana. Precisión medida en la mitad de prueba del conjunto propio: 51-53 % con un modelo local pequeño, sobre etiquetas aún sin revisar; el resultado definitivo depende de esa revisión |
+| Sistema de recomendación | En diseño; fuera del alcance del trabajo de fin de máster. El grafo de Neo4j en el que se apoyaría ya se escribe en cada análisis |
+| Aplicación móvil | Planeada; fuera del alcance del trabajo de fin de máster |
 
 ## Diferenciadores clave
 
@@ -41,8 +41,9 @@ El sistema se construye en tres fases acumulativas:
 
 ## Documentos de referencia
 
-Este resumen se apoya en dos documentos con mayor nivel de detalle:
+Este resumen se apoya en varios documentos con mayor nivel de detalle:
 
 - `idea-de-negocio.md` — visión, propuesta de valor, principios rectores y diferenciadores del producto.
 - `roadmap.md` — el plan por fases y sprints con el estado real de cada tarea, contrastado con el código.
+- `thesis-defense-brief.md` y `audit-2026-11-03.md` — el estado actual, las carencias y qué hacer a continuación.
 - `arquitectura-tecnica.md` — arquitectura técnica completa, tecnología utilizada y lógica de diseño de cada fase.
