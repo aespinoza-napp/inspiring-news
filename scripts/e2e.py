@@ -121,6 +121,64 @@ STORIES = {"total": 1, "offset": 0, "limit": 4, "published": 1, "topics": [], "l
     "disclosure": STORY["disclosure"]}]}
 
 
+# One article's journey (backend GET /trace): a round that listed it and
+# sent it on, the job, one run through all three layers, published, and a
+# draft published as a story.
+TRACE_URL = "https://example.org/solar-schools"
+TRACE_JOB = "0123456789abcdef0123456789abcdef"
+TRACE = {
+    "key": ARTICLE_ID, "resolvedFrom": "url", "url": TRACE_URL, "title": "Solar panels reach the schools",
+    "discovery": [{
+        "roundId": "round1", "startedAt": "2026-11-01T09:00:00+00:00", "edition": "positive", "lens": None,
+        "groups": ["planet"], "url": TRACE_URL, "title": "Solar panels reach the schools", "source": "BBC News",
+        "place": 2, "shown": True, "rank": {"score": 0.71}, "sameStoryAs": None,
+        "ai": {"picked": True, "score": 8, "reason": "constructive and concrete", "model": "m"},
+        "queued": True, "queuedAt": "2026-11-01T09:05:00+00:00", "selectedBy": "ai+user",
+        "jobId": TRACE_JOB, "queueError": None,
+    }],
+    "jobs": [{"jobId": TRACE_JOB, "url": TRACE_URL, "status": "done", "createdAt": "2026-11-01T09:05:01",
+              "updatedAt": "2026-11-01T09:07:30", "error": None, "eventCount": 42}],
+    "runs": [{
+        "runId": "run1", "articleId": "a1", "url": TRACE_URL, "contentHash": "abc123", "codeRevision": "d047709",
+        "startedAt": "2026-11-01T09:05:10", "pipelineVersion": "1", "components": {"llm_model": "llama3.2:3b"},
+        "thresholdOverrides": {}, "layers": {"raw": "rawrecord1", "processed": "procrecord1", "exploitation": "exprecord1"},
+        "writes": [{"at": "2026-11-01T09:05:10", "layer": "raw", "recordId": "rawrecord1", "parentLayer": None, "parentRecordId": None}],
+        "reached": "exploitation",
+        "fetch": {"extractor": "trafilatura", "fetchedAt": "2026-11-01T09:05:10", "contentLength": 4200, "title": "x", "language": "en"},
+        "outcome": {"publishable": True, "validationPassed": True, "rejectionReasons": [], "isDuplicate": False,
+                    "verdict": "TRUE", "verdictConfidence": 0.8, "claimsTotal": 3, "claimsChecked": 3,
+                    "primaryTopic": "Energy", "impactScore": 0.62, "citedEvidence": 4},
+    }],
+    "reader": {"published": True, "id": ARTICLE_ID, "title": "Solar panels reach the schools", "verdict": None, "checkedAt": None},
+    "drafts": [{"id": STORY_ID, "title": "Les plaques solars arriben a les escoles", "status": "published", "busy": None,
+                "edition": "positive", "language": "ca", "createdAt": "2026-11-01T10:00:00", "updatedAt": "2026-11-01T11:00:00",
+                "revisions": 2, "published": [], "storyId": STORY_ID}],
+}
+
+
+# A running job on Live whose one claim was restated before its search
+# (backend restatement.py): the reported speech, what it is checked as.
+SAMUDA = ("Samuda argued Jamaica was different because, although the country had \u201cconquered our crime "
+          "monster\u201d, it had \u201cspent 30 years being in the top three most murderous countries on the planet\u201d.")
+SAMUDA_CHECKED = "Jamaica has spent 30 years being in the top three most murderous countries on the planet."
+RESTATED_JOB = {
+    "jobId": "1234567890abcdef1234567890abcdef", "url": "https://www.theguardian.com/world/jamaica-beaches",
+    "kind": "article", "status": "running", "eventCount": 4, "result": None, "error": None,
+    "createdAt": "2026-11-03T09:00:00", "updatedAt": "2026-11-03T09:01:00",
+    "events": [
+        {"phase": "claims_selected", "at": "2026-11-03T09:00:10", "data": {"count": 1, "claims": [{"index": 0, "text": SAMUDA}]}},
+        {"phase": "restating_claim", "at": "2026-11-03T09:00:11", "data": {"claim": SAMUDA, "claimIndex": 0}},
+        {"phase": "claim_restated", "at": "2026-11-03T09:00:30", "data": {"claim": SAMUDA, "claimIndex": 0, "restatement": {
+            "kind": "attributed", "speaker": "Matthew Samuda, Jamaica's minister", "used": True, "note": None,
+            "standalone": "Jamaica's minister Matthew Samuda argued that Jamaica had spent 30 years among the three most murderous countries.",
+            "checkable": SAMUDA_CHECKED,
+            "questions": ["Was Jamaica among the three highest murder rates in the world for 30 years?"]}}},
+        {"phase": "searching_web", "at": "2026-11-03T09:00:31", "data": {"claim": SAMUDA, "claimIndex": 0,
+            "queries": ["Jamaica \"30\"", "Jamaica spent years three most murderous countries planet"],
+            "queryKinds": ["anchor", "proposition"]}},
+    ],
+}
+
 HELD_SECONDS = 3.0
 
 
@@ -182,6 +240,12 @@ class Stub(BaseHTTPRequestHandler):
 
         if path in routes:
             return self._json(200, routes[path])
+
+        if path == "/trace":
+            return self._json(200, TRACE)
+
+        if path == "/analyze/jobs":
+            return self._json(200, {"jobs": [RESTATED_JOB]})
 
         return self._json(404, {"detail": "Not found"})
 
@@ -247,6 +311,13 @@ def dom(chrome: str, url: str, lang: str = "en", extra: list[str] | None = None)
         capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90,
     )
     return result.stdout
+
+
+# Each check's Chrome profile is a TemporaryDirectory, removed with
+# ignore_cleanup_errors: Chrome's helper processes can still be writing
+# into it for a moment after the browser exits, and the removal then
+# failed with "Directory not empty: 'Default'" - crashing the whole run
+# after every check had passed (2026-11-03, one run in three).
 
 
 class Connections:
@@ -401,7 +472,7 @@ def leave_while_polling(chrome: str, base: str, bulk: bool = False) -> tuple[boo
 
     Stub.slow_polls.clear()
 
-    with tempfile.TemporaryDirectory() as profile:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
 
         browser = Browser(chrome, profile)
 
@@ -435,6 +506,40 @@ def leave_while_polling(chrome: str, base: str, bulk: bool = False) -> tuple[boo
     return not after, f"{len(after)} poll(s) after leaving the page, {len(Stub.slow_polls)} in all"
 
 
+def dock_follows(chrome: str, base: str) -> tuple[bool, str]:
+    """Start a job on Analyze: it appears in the corner dock, linked to its run, and stays there on another page."""
+
+    import tempfile
+
+    Stub.slow_polls.clear()
+
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
+
+        browser = Browser(chrome, profile)
+
+        try:
+            browser.send("Page.navigate", {"url": f"{base}/"}, browser.session)
+            if not browser.until("!!document.querySelector('#urls-input') && document.readyState === 'complete'"):
+                return False, "the Analyze page never loaded"
+
+            browser.evaluate(START_JOB % "false")
+
+            if not browser.until("!!document.querySelector('.following-dock a[href=\"/live?job=slow1\"]')", timeout=15):
+                return False, "the job never appeared in the dock with its Live link"
+
+            browser.evaluate("document.querySelector('a[href=\"/claim\"]').click()")
+            if not browser.until("location.pathname === '/claim'", timeout=10):
+                return False, "the page never left /"
+
+            if not browser.until("!!document.querySelector('.following-dock')", timeout=5):
+                return False, "the dock was gone on the next page"
+
+            return True, ""
+
+        finally:
+            browser.close()
+
+
 HYDRATED = (
     "(() => { const b = document.querySelector('[data-testid=tiktok-load]');"
     " return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')); })()"
@@ -448,7 +553,7 @@ def click_tiktok(chrome: str, base: str, tiktok: Connections) -> tuple[bool, str
 
     tiktok.reset()
 
-    with tempfile.TemporaryDirectory() as profile:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
 
         browser = Browser(chrome, profile, tiktok_rules(tiktok.port))
 
@@ -476,10 +581,17 @@ def click_tiktok(chrome: str, base: str, tiktok: Connections) -> tuple[bool, str
     return bool(tiktok.count), f"{tiktok.count} connection(s) to TikTok after the click"
 
 
+# Its own build folder (frontend/next.config.js, distDir): building into
+# `.next` while `npm run dev` served from it broke the dev server until it
+# was restarted, so running these checks used to take the editor's page
+# down with them.
+BUILD_ENV = {**os.environ, "NEXT_DIST_DIR": ".next-e2e"}
+
+
 def main(argv=None) -> int:
 
     parser = argparse.ArgumentParser(description="End-to-end checks of the frontend.")
-    parser.add_argument("--no-build", action="store_true", help="use the existing .next build")
+    parser.add_argument("--no-build", action="store_true", help="use the existing .next-e2e build")
     args = parser.parse_args(argv)
 
     # Chrome's DevTools pipe is handed over as file descriptors 3 and 4
@@ -498,7 +610,7 @@ def main(argv=None) -> int:
 
     if not args.no_build:
         print("Building the frontend...")
-        if subprocess.run(["npm", "run", "build"], cwd=FRONTEND, stdout=subprocess.DEVNULL).returncode != 0:
+        if subprocess.run(["npm", "run", "build"], cwd=FRONTEND, env=BUILD_ENV, stdout=subprocess.DEVNULL).returncode != 0:
             print("npm run build failed.", file=sys.stderr)
             return 1
 
@@ -507,7 +619,7 @@ def main(argv=None) -> int:
     stub = ThreadingHTTPServer(("127.0.0.1", stub_port), Stub)
     threading.Thread(target=stub.serve_forever, daemon=True).start()
 
-    env = {**os.environ, "BACKEND_URL": f"http://127.0.0.1:{stub_port}"}
+    env = {**BUILD_ENV, "BACKEND_URL": f"http://127.0.0.1:{stub_port}"}
     env.pop("STORAGE_API_KEY", None)
     env.pop("PUBLIC_SITE_URL", None)
 
@@ -566,6 +678,9 @@ def run(checks: Checks, chrome: str, base: str, tiktok: Connections) -> None:
     ok, detail = leave_while_polling(chrome, base, bulk=True)
     checks.check("the same in bulk mode (useBatchAnalysisJobs' guard)", ok, detail)
 
+    ok, detail = dock_follows(chrome, base)
+    checks.check("a job sent from Analyze is followed in the corner dock, on every page", ok, detail)
+
     print("The reader")
     for lang, title in (("ca", "Articles verificats"), ("es", "Artículos verificados"), ("en", "Checked articles")):
         page = dom(chrome, f"{base}/reader?lang={lang}")
@@ -602,6 +717,39 @@ def run(checks: Checks, chrome: str, base: str, tiktok: Connections) -> None:
 
     page = dom(chrome, f"{base}/claim", lang="ca")
     checks.check("an operator page stays English", 'lang="en"' in page and "Claim Check" in page)
+
+    print("Trace: one article through every stage")
+    page = dom(chrome, f"{base}/trace?q={TRACE_URL}")
+    checks.check(
+        "the five stages are drawn",
+        all(label in page for label in ("Discovered", "Analysed", "Stored", "Published", "Written")),
+    )
+    checks.check(
+        "each stage links to the page that shows it",
+        all(href in page for href in (
+            'href="/discover?round=round1"', f'href="/live?job={TRACE_JOB}"',
+            f'href="/reader/{ARTICLE_ID}"', f'href="/drafts/{STORY_ID}"', f'href="/reader/stories/{STORY_ID}"',
+        )),
+    )
+    checks.check("the latest run's lineage is open: raw, processed, exploitation", all(
+        layer in page for layer in ("rawrecor", "procreco", "exprecor")))
+    checks.check("who chose it is said", "the AI, edited by a person" in page)
+
+    page = dom(chrome, f"{base}/claim")
+    checks.check("an operator page carries the quick jump to Trace", 'class="quick-jump"' in page)
+    page = dom(chrome, f"{base}/reader?lang=en")
+    checks.check("the public reader does not (Trace is behind the password)", 'class="quick-jump"' not in page)
+
+    page = dom(chrome, f"{base}/trace")
+    checks.check("Trace offers the lake's integrity check, without running it on load", "Check the lake" in page and "Holds together" not in page)
+
+    print("What a claim is checked as")
+    page = dom(chrome, f"{base}/live")
+    checks.check(
+        "Live shows what the claim was restated as, above its search",
+        "What is checked" in page and SAMUDA_CHECKED in page and "Reported speech" in page
+        and page.index("What is checked") < page.index("Searched on SearXNG"),
+    )
 
     print("A story from a trend")
     tiktok.reset()

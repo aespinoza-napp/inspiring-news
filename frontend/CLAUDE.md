@@ -191,6 +191,10 @@ speech that the fact in the quote was checked, not whether it was said) in
 all three languages (`readerText`'s `checkedAs` / `checkedAsQuote`).
 Checked by `scripts/e2e.py` ("What a claim is checked as").
 
+**`scripts/e2e.py` builds into `.next-e2e`** (`next.config.js` `distDir`
+from `NEXT_DIST_DIR`): building into `.next` while `npm run dev` served
+from it made every dev page answer 500 until the dev server was restarted.
+
 ## Where the time went
 
 `components/TimingBreakdown.tsx` (2026-10-22): an article's stages

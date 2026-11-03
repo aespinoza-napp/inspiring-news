@@ -112,11 +112,11 @@ def test_every_job_runs_exactly_one_check_target(workflow):
     }
 
 
-def test_the_workflow_runs_the_three_ci_targets_and_none_of_the_local_ones(workflow):
+def test_the_workflow_runs_the_ci_targets_and_none_of_the_local_ones(workflow):
 
     called = {target for targets in called_targets(workflow).values() for target in targets}
 
-    assert called == {"backend", "frontend", "labeller"}
+    assert called == {"backend", "frontend", "labeller", "e2e"}
     assert called.isdisjoint(LOCAL_ONLY)
 
 
