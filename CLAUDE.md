@@ -62,6 +62,7 @@ src.main:app --port 8001`.
 | Looking for | Go to |
 |---|---|
 | The plan, and what is actually done | `docs/roadmap.md` |
+| Claude Code in this repo: the skills (`/verify`, `/debug-verdict`, `/fact-check-change`, `/audit`, `/commit`) and hooks | `.claude/skills/`, `.claude/hooks/` |
 | The thesis defence: likely questions, the structural gaps, what to do next | `docs/thesis-defense-brief.md` (3 Nov), `docs/audit-2026-10-28.md` |
 | One article's journey across every stage (round → job → lake → reader → draft) | `/trace` (`frontend/CLAUDE.md`), `GET /trace`, `backend/src/services/trace.py` |
 | Pipeline stages, entry points, container | `backend/CLAUDE.md` |
