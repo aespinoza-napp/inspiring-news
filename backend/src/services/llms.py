@@ -109,6 +109,12 @@ def _warn_if_cut(model: str, chars: int, response) -> None:
         )
 
 
+def _is_model_loop(exc: Exception) -> bool:
+    """Ollama's answer to a model repeating itself, audit 2026-10-16: "token repeat limit reached"."""
+
+    return "repeat limit" in str(exc).lower()
+
+
 class LLMClient:
     """
     Thin OpenAI-compatible chat-completions client.
@@ -267,6 +273,15 @@ class LLMClient:
                     attempt,
                     exc,
                 )
+
+                # The model answered, in a loop, and Ollama cut it off with
+                # a 500. It was reached, so this is an unusable answer and
+                # not "LLM provider was unreachable": the same question
+                # would loop the same way, so it is not asked again either.
+                if _is_model_loop(exc):
+                    unreachable = False
+                    break
+
                 unreachable = True
                 if attempt < max_retries:
                     time.sleep(self._backoff_seconds(attempt))
