@@ -356,3 +356,51 @@ Also on 3 Nov:
 - **A looping model is not an unreachable one** (`llms.py`): Ollama's "token
   repeat limit" now reads as no usable answer, and is not asked again.
 - **SearXNG `safe_search: 1`**: adult sites were taking candidate slots.
+
+## 12. What a claim turns on, and the queries built from it (2026-11-04)
+
+Found by checking the first 20 train claims by hand against the pipeline
+(`docs/troubleshooting/`, `backend/data/evaluation/experiments/claude-search/`):
+Claude got 16 right, the pipeline today 9. Upstream of every wrong verdict was a
+search that could not find the point. **Built, opt-in, not yet measured.**
+
+- **Harness claims had no figures.** `ClaimService.build_claim` (`POST
+  /verify-claim`, and so every evaluation-harness run) makes a `Claim` with no
+  `facts`, so the anchor query's quoted figures, which the article pipeline's
+  `ClaimExtractor` fills, were empty. The harness has been measuring a weaker
+  search than the app runs. Not changed under the default, so earlier runs stay
+  comparable.
+- **`query_plan: checkable`** (`QUERY_PLAN`, default `sentence`):
+  `fact_checker/retrieval/checkable.py` reads a claim's checkable point from the
+  sentence, with no model:
+  - identifiers kept whole (`SE-20`, where the old pattern kept `20`), times
+    (`14:49`) and counts with their noun (`11-set`);
+  - figures, most distinctive first, with their scale (`25 millones`,
+    `0.001 per cent`);
+  - day-month dates (`12 September`);
+  - names as runs of capitalised words (`James Michael Roe`, `Ignacio Calvo de
+    Mora`);
+  - the assertion's words without the filler ("Meanwhile", "been", "Indeed").
+
+  `query_builder.plan_checkable` asks the three questions from that point.
+  When the claim carries a distinctive figure, an identifier or a day, a
+  **specifics** query (`QueryKind.SPECIFICS`, switched by the `refutation`
+  kind) replaces "fact check OR debunked OR false". That query found no
+  refutation in 20 claims and twice found its own words. The point goes out
+  in `searching_web.checkablePoint`.
+- fact037, for instance: `Florida` / `Florida been total known travel related
+  cases` / `Florida fact check OR debunked OR false` became `Florida "212" 2026`
+  / `Florida "212" travel related cases` / `Florida "212" 2026 travel related
+  cases`.
+- **The subject the sentence lost** ("dengue" in fact037, said only by the
+  headline). Under `checkable` the harness gives each custom-set claim its
+  article's headline from the labeller's batches (`dataset.article_titles`) in
+  `ArticleContext.search_title`, which only the search reads. The subject is
+  the headline's words that the article's other sentences repeat. And the
+  app's own rule (`terms.subject_terms`) was found to be all or nothing: a
+  sentence naming one subject word ("Florida") lost the rest ("dengue").
+  `checkable.lost_subject` restores each missing one.
+- **Not yet measured.** A searched try in the iteration campaign
+  (`/iterate-fact-check`, `query_plan` is in `SEARCH_SIDE`), against two
+  searched baselines in the same window. The default stays `sentence` until it
+  holds there and on the test half once.

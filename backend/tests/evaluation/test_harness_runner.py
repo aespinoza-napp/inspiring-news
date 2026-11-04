@@ -433,6 +433,8 @@ def test_a_run_with_every_query_kind_keeps_the_key_it_had_before_the_switch(tmp_
         "fetch_evidence_pages", "claim_deadline_seconds",
         # What a verdict means (2026-10-22), as every earlier run was told.
         "verifier_rules",
+        # What the search asks (2026-11-04): the sentence's words, as before.
+        "query_plan",
     }
 
     before = {name: value for name, value in thresholds.model_dump().items() if name not in added_later}

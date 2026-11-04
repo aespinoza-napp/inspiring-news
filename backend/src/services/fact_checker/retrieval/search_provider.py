@@ -46,16 +46,17 @@ class SearchProvider:
         context: ArticleContext | None = None,
         language: str | None = None,
         kinds: tuple[str, ...] | None = None,
+        style: str | None = None,
     ) -> list[PlannedQuery]:
         """
         The queries `search` will send, each with the question it asks.
         Public so the live view can show what is being looked up *before*
         the search returns, from the same code that runs it rather than a
         copy that drifts - which is why `kinds` must be the run's
-        `query_kinds`, as `search` passes it.
+        `query_kinds`, as `search` passes it - and `style` its `query_plan`.
         """
 
-        return plan_queries(claim, context, language, kinds)
+        return plan_queries(claim, context, language, kinds, style)
 
     def queries_for(
         self,
@@ -96,10 +97,11 @@ class SearchProvider:
         shows as the time each search took.
         """
 
-        kinds = (thresholds or PipelineThresholds()).query_kinds
+        thresholds = thresholds or PipelineThresholds()
 
         return self.search_queries(
-            self.plan(claim, context, language, kinds), thresholds, language, timings=timings
+            self.plan(claim, context, language, thresholds.query_kinds, thresholds.query_plan),
+            thresholds, language, timings=timings,
         )
 
     def search_queries(

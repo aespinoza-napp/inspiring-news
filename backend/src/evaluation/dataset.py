@@ -372,3 +372,68 @@ def _refuse_duplicates(rows: tuple[DatasetRow, ...]) -> None:
             "duplicate ids - two rows would share one record: "
             + ", ".join(sorted(duplicates))
         )
+
+
+# ----------------------------------------------------------------------
+# The articles' headlines, for the search (2026-11-04)
+# ----------------------------------------------------------------------
+
+# The labeller's daily batches (`POST /labelling/batch`, kept by the
+# labeller): every custom-set fact's article with the headline it had the
+# day it was labelled. The dataset rows keep only the URL.
+QUEUE = "queue"
+
+
+def _article_key(url: str) -> tuple[str, str]:
+    """Host without www and path without its trailing slash: how the job store matches an article."""
+
+    from urllib.parse import urlsplit
+
+    parts = urlsplit(url or "")
+
+    return parts.netloc.lower().removeprefix("www."), parts.path.rstrip("/")
+
+
+def article_titles(evaluation_root: Path | None = None) -> dict[tuple[str, str], dict]:
+    """
+    `{"title", "sentences"}` by article, from every batch in
+    `evaluation/queue/`: the headline and the sentences the batch extracted
+    from it. Read for `query_plan: checkable` only, which restores from them
+    a subject the claim's sentence lost (checkable.title_subject). A broken
+    batch is skipped, never fatal: a claim without its headline is searched
+    as before.
+    """
+
+    from src.config.settings import settings
+
+    root = Path(evaluation_root or Path(settings.STORAGE_PATH) / "evaluation") / QUEUE
+
+    titles: dict[tuple[str, str], dict] = {}
+
+    for path in sorted(root.glob("*.json")):
+
+        try:
+            batch = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+
+        for article in batch.get("articles") or []:
+            if article.get("url") and article.get("title"):
+                entry = titles.setdefault(_article_key(article["url"]), {"title": article["title"], "sentences": []})
+                entry["sentences"] += [
+                    claim["text"] for claim in article.get("claims") or []
+                    if claim.get("text") and claim["text"] not in entry["sentences"]
+                ]
+
+    return titles
+
+
+def title_for(row: "DatasetRow", titles: dict[tuple[str, str], dict]) -> tuple[str, list[str]]:
+    """The row's headline and its article's other sentences (not the row's own)."""
+
+    article = titles.get(_article_key(row.article_url)) if row.article_url else None
+
+    if not article:
+        return "", []
+
+    return article["title"], [sentence for sentence in article["sentences"] if sentence.strip() != row.claim.strip()]

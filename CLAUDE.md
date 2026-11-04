@@ -89,6 +89,7 @@ src.main:app --port 8001`.
 | Every change ever made to fact-checking, by date, with a summary | `docs/fact-checking-changes.md` |
 | Where a claim's seconds go; the speed switches, the claim deadline, the 22 Oct contest | `docs/decisions/performance.md` ("The 20-second fact-check"), `backend/data/evaluation/experiments/speed/` |
 | Why the verifier asks one source at a time; comparing verifiers on one run's evidence (`--replay`) | `docs/decisions/evaluation.md` ("The verifier's FALSE", "Replay"), `backend/data/evaluation/experiments/verifier/` |
+| What goes wrong in each part (what to look for, queries, search results, ranking, verification), found by checking claims by hand against the pipeline | `docs/troubleshooting/`, `backend/data/evaluation/experiments/claude-search/` |
 | An agent iterating on fact-checking (thresholds, prompts, search, model) by a fixed rule, train half only | `/iterate-fact-check`, `cli iterate`, `backend/src/evaluation/iterate.py`, `docs/decisions/evaluation.md` ("The iteration loop") |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
 | Trending: the signals (Google Trends, r/UpliftingNews...), the lens on /discover, the checked positive angle, the TikTok embed; why TikTok is never scraped | `docs/decisions/trends.md` |
@@ -249,6 +250,12 @@ write them down than to have each be rediscovered.
   what those articles say. Its analyses go into a second Neo4j
   (`NEO4J_DEVASTATING_URI`), never the positive graph.
   `docs/decisions/editions.md`.
+- **Harness claims carry no figures** (found 2026-11-04). `ClaimService.build_claim`
+  (`/verify-claim`, every `cli run`) leaves `Claim.facts` empty, so the anchor
+  query's quoted figures, which the app's article pipeline fills, are missing
+  from every harness search: the harness measures a weaker search than the app
+  runs. `query_plan: checkable` reads them from the sentence; the default
+  `sentence` keeps it as it was. `docs/troubleshooting/02-queries.md`.
 - **The Docker backend cannot reach a host Ollama bound to 127.0.0.1.**
   On Linux the systemd service binds only localhost; the container's model
   calls then all fail (`/healthz`: `llm: ConnectError`). `docker/README.md`

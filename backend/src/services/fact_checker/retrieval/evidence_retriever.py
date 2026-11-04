@@ -22,6 +22,7 @@ from src.services.fact_checker.terms import (
     coverage,
 )
 
+from .checkable import checkable_point
 from .scraper import EvidenceScraper
 from .search_provider import SearchProvider
 from .vector_retriever import VectorRetriever
@@ -126,10 +127,10 @@ class EvidenceRetriever:
         # Announced before the search runs, not after: the search is the
         # slow part, and this is what lets a second screen show what is
         # being looked up while the answer is still pending.
-        plan = self.search_provider.plan(claim, context, language, thresholds.query_kinds)
+        plan = self.search_provider.plan(claim, context, language, thresholds.query_kinds, thresholds.query_plan)
         queries = [query.text for query in plan]
 
-        report("searching_web", {
+        searching = {
             "claim": claim.text,
             "queries": queries,
             # Which question each query asks (anchor / proposition /
@@ -137,7 +138,15 @@ class EvidenceRetriever:
             # assertion was looked up and not only its subject.
             "queryKinds": [query.kind.value for query in plan],
             "candidates": thresholds.evidence_fetch_candidates,
-        })
+        }
+
+        # What the queries were built to find, under `query_plan: checkable`:
+        # a run's record then says what was looked for, not only what was
+        # typed (docs/troubleshooting/01-what-to-look-for.md).
+        if thresholds.query_plan == "checkable":
+            searching["checkablePoint"] = checkable_point(claim, context, language).as_dict()
+
+        report("searching_web", searching)
 
         # The claim's embedding, the web search and the internal-corpus
         # lookup are three independent waits, and the internal lookup used

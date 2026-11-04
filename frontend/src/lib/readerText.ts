@@ -246,7 +246,7 @@ const en: ReaderText = {
   unknownLanguage: "Unknown language",
   topic: {},
   stance: { supports: "supports the claim", contradicts: "contradicts the claim", unrelated: "judged unrelated", silent: "says nothing on the claim" },
-  queryKind: { anchor: "who & what", proposition: "what it claims", refutation: "counter-evidence" },
+  queryKind: { anchor: "who & what", proposition: "what it claims", refutation: "counter-evidence", specifics: "its figures & dates" },
 
   switchLabel: "Language of this page",
   backToFeed: "← Checked articles",
@@ -552,7 +552,7 @@ const es: ReaderText = {
     "Public Health": "Salud pública",
   },
   stance: { supports: "respalda la afirmación", contradicts: "contradice la afirmación", unrelated: "considerada no relacionada", silent: "no dice nada sobre la afirmación" },
-  queryKind: { anchor: "quién y qué", proposition: "lo que afirma", refutation: "pruebas en contra" },
+  queryKind: { anchor: "quién y qué", proposition: "lo que afirma", refutation: "pruebas en contra", specifics: "sus cifras y fechas" },
 
   switchLabel: "Idioma de esta página",
   backToFeed: "← Artículos verificados",
@@ -871,7 +871,7 @@ const ca: ReaderText = {
     "Public Health": "Salut pública",
   },
   stance: { supports: "dona suport a l'afirmació", contradicts: "contradiu l'afirmació", unrelated: "considerada no relacionada", silent: "no diu res sobre l'afirmació" },
-  queryKind: { anchor: "qui i què", proposition: "el que afirma", refutation: "proves en contra" },
+  queryKind: { anchor: "qui i què", proposition: "el que afirma", refutation: "proves en contra", specifics: "les seves xifres i dates" },
 
   switchLabel: "Llengua d'aquesta pàgina",
   backToFeed: "← Articles verificats",

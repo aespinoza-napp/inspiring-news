@@ -444,6 +444,18 @@ class Settings(BaseSettings):
     # the sentence as written, as every run before it did - the default,
     # so the evaluation's numbers stay comparable until it is measured.
     CLAIM_RESTATEMENT: Literal["off", "standalone"] = "off"
+
+    # QUERY_PLAN (2026-11-04): what the web search asks. `sentence` builds
+    # the three queries from the claim sentence's words, as every run did
+    # before; `checkable` builds them from the claim's checkable point - its
+    # figures, dates, identifiers and names, read from the sentence without
+    # a model (fact_checker/retrieval/checkable.py) - and asks a "specifics"
+    # query in the refutation's place when it has any. Built because on 20
+    # train claims every figure was missing from every query, the key noun
+    # often too (docs/troubleshooting/01-what-to-look-for.md,
+    # 02-queries.md). `sentence` stays the default until a searched try
+    # measures the other (the iterate-fact-check campaign).
+    QUERY_PLAN: Literal["sentence", "checkable"] = "sentence"
     # The model that restates claims; None means LLM_MODEL. Its own, like
     # the writer's: restating is rewriting a sentence from its article, and
     # the verifier's 3B labelled the same sentence "attributed" in one run

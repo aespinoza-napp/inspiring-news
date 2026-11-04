@@ -203,7 +203,7 @@ const asList = (value: unknown): Data[] =>
     ? value.filter((item): item is Data => typeof item === "object" && item !== null)
     : [];
 
-const QUERY_KINDS = new Set<string>(["anchor", "proposition", "refutation"]);
+const QUERY_KINDS = new Set<string>(["anchor", "proposition", "refutation", "specifics"]);
 
 const isQueryKind = (value: string): value is QueryKind =>
   QUERY_KINDS.has(value);

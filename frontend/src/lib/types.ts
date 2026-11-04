@@ -45,7 +45,9 @@ export type EvidenceOrigin = "web" | "internal";
  * alone retrieves the claim's subject, which is how a claim mentioning
  * ACME came back with pages on the Greek etymology of the word.
  */
-export type QueryKind = "anchor" | "proposition" | "refutation";
+// "specifics" only under the backend's query_plan=checkable (2026-11-04):
+// the claim's figures, dates and identifiers, asked in the refutation's place.
+export type QueryKind = "anchor" | "proposition" | "refutation" | "specifics";
 
 export interface RejectedSource {
   url: string;

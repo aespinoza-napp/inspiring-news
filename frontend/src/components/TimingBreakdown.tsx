@@ -7,6 +7,7 @@ export const QUERY_KIND_LABELS: Record<QueryKind, string> = {
   anchor: "who & what",
   proposition: "what it claims",
   refutation: "counter-evidence",
+  specifics: "its figures & dates",
 };
 
 // How a query was answered (backend: SearxngClient.last_route). A search

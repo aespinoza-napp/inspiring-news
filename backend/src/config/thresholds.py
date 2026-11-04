@@ -355,6 +355,14 @@ class PipelineThresholds(BaseModel):
         default_factory=lambda: settings.CLAIM_RESTATEMENT,
     )
 
+    # What the web search asks: from the sentence's words, or from the
+    # claim's checkable point (settings.QUERY_PLAN has why). Per-run because
+    # it changes what is searched, so the two are compared as two searched
+    # conditions, never by replay.
+    query_plan: Literal["sentence", "checkable"] = Field(
+        default_factory=lambda: settings.QUERY_PLAN,
+    )
+
     # What the verifier is told a verdict means (settings.py has why).
     # Per-run because it changes the verdicts themselves, and whether it
     # judges better is measured by replaying one run's evidence
@@ -460,6 +468,7 @@ class ThresholdOverrides(BaseModel):
     verifier_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
     verifier_answer: Optional[Literal["full", "compact", "per_source"]] = Field(None)
     claim_restatement: Optional[Literal["off", "standalone"]] = Field(None)
+    query_plan: Optional[Literal["sentence", "checkable"]] = Field(None)
     evidence_independence: Optional[bool] = Field(None)
     verifier_rules: Optional[Literal["original", "stated"]] = Field(None)
     evidence_prerank: Optional[Literal["embedding", "lexical"]] = Field(None)

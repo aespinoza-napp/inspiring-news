@@ -46,6 +46,7 @@ from enum import Enum
 
 from src.models.core.claim import Claim
 from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.fact_checker.retrieval.checkable import checkable_point
 from src.services.fact_checker.terms import acronyms, claim_terms, content_terms, subject_terms
 
 # Terms that pull refutations to the surface, per language. Every query
@@ -92,6 +93,13 @@ class QueryKind(str, Enum):
     # A second look's queries, written by the model from what the first
     # verdict said was missing (fact_checker/second_look.py).
     FOLLOW_UP = "follow_up"
+
+    # `query_plan: checkable` only (2026-11-04): the claim's figures, dates
+    # and identifiers with its key words and no names - the page that states
+    # the figure, however it names the subject. Asked in the refutation's
+    # place when the claim carries one, so `query_kinds` treats it as the
+    # refutation: "refutation" in the kinds keeps it.
+    SPECIFICS = "specifics"
 
 
 @dataclass(frozen=True)
@@ -229,11 +237,88 @@ def build_refutation_query(
     return f"{base} {terms}"
 
 
+def plan_checkable(
+    claim: Claim,
+    context: ArticleContext | None = None,
+    language: str | None = None,
+) -> list[PlannedQuery]:
+    """
+    `query_plan: checkable` (2026-11-04): the three questions asked from the
+    claim's checkable point (retrieval/checkable.py) rather than from the
+    sentence's words. Why, with the queries it replaced:
+    docs/troubleshooting/02-queries.md.
+
+    - anchor:      the names, identifiers and figures, and a date - who and
+                   what, pinned to this event;
+    - proposition: the names, the main figure and the assertion's words;
+    - specifics:   the distinctive figures, identifiers and dates with one
+                   name and a few key words, when the claim carries any
+                   (CheckablePoint.specific); otherwise the
+                   refutation query, as in the sentence plan. "fact check
+                   OR debunked" found no refutation in 20 claims and twice
+                   found its own words ("Bunk: The Rise of Hoaxes").
+    """
+
+    point = checkable_point(claim, context, language)
+
+    figures = [_quoted(figure) for figure in point.figures]
+    identifiers = [_quoted(identifier) for identifier in point.identifiers]
+
+    # No name and no subject: the assertion's first words say what it is
+    # about ("eight industrial sectors"), where a bare `"11"` would not.
+    who = point.names[:3] + point.subject[:4] or point.terms[:3]
+
+    anchor = _joined(who + identifiers[:2] + figures[:2] + point.dates[:1])
+
+    proposition = _joined(point.names[:2] + point.subject[:2] + figures[:1] + point.terms[:5]) if point.terms else ""
+
+    if point.specific:
+        distinctive = [_quoted(figure) for figure in point.distinctive_figures]
+        third = PlannedQuery(
+            _joined(point.names[:1] + point.subject[:2] + identifiers[:2] + distinctive[:3] + point.dates[:2] + point.terms[:3]),
+            QueryKind.SPECIFICS,
+        )
+    else:
+        third = PlannedQuery(
+            f"{anchor} {_refutation_terms(language)}" if anchor else "", QueryKind.REFUTATION,
+        )
+
+    # Nothing identifying at all: the sentence plan's own fallback.
+    if not anchor:
+        anchor = build_query(claim, context, language)
+
+    return [
+        PlannedQuery(anchor, QueryKind.ANCHOR),
+        PlannedQuery(proposition, QueryKind.PROPOSITION),
+        third,
+    ]
+
+
+def _joined(parts: list[str]) -> str:
+
+    seen: set[str] = set()
+    kept: list[str] = []
+
+    for part in parts:
+        key = part.strip().strip('"').lower()
+        if part.strip() and key not in seen:
+            seen.add(key)
+            kept.append(part.strip())
+
+    return " ".join(kept)
+
+
+def _refutation_terms(language: str | None) -> str:
+
+    return REFUTATION_TERMS.get((language or "en").lower()[:2], REFUTATION_TERMS["en"])
+
+
 def plan_queries(
     claim: Claim,
     context: ArticleContext | None = None,
     language: str | None = None,
     kinds: tuple[str, ...] | None = None,
+    style: str | None = None,
 ) -> list[PlannedQuery]:
     """
     Every query this claim should be looked up with, in order.
@@ -246,7 +331,14 @@ def plan_queries(
     the retrieval ablation's switch); None asks all three. Filtered
     before duplicates are dropped, so with the anchor switched off a
     proposition identical to it is still sent.
+
+    `style` is `PipelineThresholds.query_plan`: None or "sentence" plans
+    from the sentence's words, as every run did before 2026-11-04;
+    "checkable" plans from the claim's checkable point (`plan_checkable`).
     """
+
+    if style == "checkable":
+        return _filtered(plan_checkable(claim, context, language), kinds)
 
     planned = [
         PlannedQuery(build_query(claim, context, language), QueryKind.ANCHOR),
@@ -260,8 +352,16 @@ def plan_queries(
         ),
     ]
 
+    return _filtered(planned, kinds)
+
+
+def _filtered(planned: list[PlannedQuery], kinds: tuple[str, ...] | None) -> list[PlannedQuery]:
+
     if kinds is not None:
-        planned = [query for query in planned if query.kind.value in kinds]
+        planned = [
+            query for query in planned
+            if (QueryKind.REFUTATION.value if query.kind is QueryKind.SPECIFICS else query.kind.value) in kinds
+        ]
 
     seen: set[str] = set()
     unique: list[PlannedQuery] = []

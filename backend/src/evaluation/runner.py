@@ -47,7 +47,7 @@ from urllib.parse import urlsplit
 
 from src.config.settings import WEIGHT_GROUPS, settings
 from src.config.thresholds import SEARCH_QUERY_KINDS, PipelineThresholds
-from src.evaluation.dataset import CUSTOM, Dataset, DatasetRow
+from src.evaluation.dataset import CUSTOM, Dataset, DatasetRow, article_titles, title_for
 from src.evaluation.record import (
     HARNESS_VERSION,
     OK,
@@ -153,6 +153,8 @@ _SPEED_BEFORE = {
     "claim_deadline_seconds": 0,
     # What the verifier was told a verdict means, until 2026-10-22.
     "verifier_rules": "original",
+    # What the web search asked, until 2026-11-04: the sentence's words.
+    "query_plan": "sentence",
 }
 
 
@@ -377,16 +379,22 @@ def latest_records(directory: Path) -> dict[str, dict]:
     return ResultsFile(Path(directory) / RESULTS).latest(lambda record: record["id"])
 
 
-def context_for(row: DatasetRow) -> ArticleContext | None:
+def context_for(row: DatasetRow, search_title: str = "", search_sentences: list[str] | None = None) -> ArticleContext | None:
     """
     The custom set's article, so its URL is excluded from its own
-    evidence. Nothing else from the row: title and lead stay empty.
+    evidence. Title and lead stay empty: the verifier reads `title`, and the
+    row does not hold it. `search_title`, the article's headline from the
+    labeller's batches, is given under `query_plan: checkable` only, and only
+    the search reads it (ArticleContext.search_title).
     """
 
     if row.dataset != CUSTOM or not row.article_url:
         return None
 
-    return ArticleContext(url=row.article_url, title="", lead="", keywords=[], entities={})
+    return ArticleContext(
+        url=row.article_url, title="", lead="", keywords=[], entities={},
+        search_title=search_title, search_sentences=list(search_sentences or []),
+    )
 
 
 def reference_urls(row: DatasetRow) -> list[str]:
@@ -447,6 +455,11 @@ class HarnessRunner:
         self.evidence = ResultsFile(self.directory / EVIDENCE)
 
         self._stop = threading.Event()
+
+        # The articles' headlines, for `query_plan: checkable` only: under the
+        # sentence plan the context stays as every earlier run had it, so its
+        # searches stay comparable (dataset.article_titles).
+        self._titles = article_titles() if config.thresholds.query_plan == "checkable" else {}
 
         # What this session wrote, for its totals in run.json: usage and
         # time only, not whole records.
@@ -614,7 +627,7 @@ class HarnessRunner:
                         reference_urls(row),
                         collect,
                         self.config.thresholds,
-                        context=context_for(row),
+                        context=self._context(row),
                         language=row.language,
                     )
                     # The pipeline says claim_checked in _check_claim, which
@@ -627,7 +640,7 @@ class HarnessRunner:
                         claim,
                         collect,
                         self.config.thresholds,
-                        context=context_for(row),
+                        context=self._context(row),
                         language=row.language,
                     )
 
@@ -668,6 +681,13 @@ class HarnessRunner:
 
         return self._keep(record)
 
+    def _context(self, row: DatasetRow) -> ArticleContext | None:
+
+        if not self._titles:
+            return context_for(row)
+
+        return context_for(row, *title_for(row, self._titles))
+
     def _keep_evidence(self, row: DatasetRow) -> None:
         """This claim's retrieval, for a later replay, when it was kept."""
 
@@ -706,7 +726,7 @@ class HarnessRunner:
         """
 
         thresholds = self.config.thresholds
-        context = context_for(row)
+        context = self._context(row)
         gold = row.label
 
         loop = {

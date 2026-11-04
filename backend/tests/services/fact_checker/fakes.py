@@ -268,7 +268,7 @@ class FakeSearchProvider:
         self.calls = []
         self.follow_up_queries: list[list[str]] = []
 
-    def plan(self, claim, context=None, language=None, kinds=None):
+    def plan(self, claim, context=None, language=None, kinds=None, style=None):
         return [PlannedQuery(f"query for {claim.text}", QueryKind.ANCHOR)]
 
     def queries_for(self, claim, context=None, language=None):

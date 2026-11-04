@@ -1,0 +1,1478 @@
+[
+ {
+  "id": "fact008",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "FALSE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "SpaceX Chile Elon Musk"
+   ],
+   [
+    "p",
+    "SpaceX Chile nave Starship amerizó éxito lunes océano"
+   ],
+   [
+    "r",
+    "SpaceX Chile Elon Musk verificación OR desmentido OR bulo OR falso"
+   ]
+  ],
+  "ncand": 16,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 11
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 13, to": 1,
+   "cut by pre-rank funnel (rank 7 of 13, to": 1,
+   "cut by pre-rank funnel (rank 8 of 13, to": 1,
+   "cut by pre-rank funnel (rank 9 of 13, to": 1,
+   "cut by pre-rank funnel (rank 10 of 13, t": 1,
+   "cut by pre-rank funnel (rank 11 of 13, t": 1,
+   "cut by pre-rank funnel (rank 12 of 13, t": 1,
+   "cut by pre-rank funnel (rank 13 of 13, t": 1,
+   "same domain as a higher-ranked source (s": 1,
+   "same domain as a higher-ranked source (e": 1,
+   "the article being checked cannot corrobo": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "elmundo.es",
+   "xataka.com"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "abc.es",
+    "supports",
+    true
+   ],
+   [
+    "efe.com",
+    "supports",
+    true
+   ],
+   [
+    "ondacero.es",
+    "contradicts",
+    true
+   ],
+   [
+    "en.wikipedia.org",
+    "supports",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact009",
+  "gold": "PARTIALLY_TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "SpaceX EE.UU"
+   ],
+   [
+    "p",
+    "SpaceX EE.UU nave despegó hora española decimocuarta prueba"
+   ],
+   [
+    "r",
+    "SpaceX EE.UU verificación OR desmentido OR bulo OR falso"
+   ]
+  ],
+  "ncand": 15,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 10
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 13, to": 1,
+   "cut by pre-rank funnel (rank 7 of 13, to": 1,
+   "cut by pre-rank funnel (rank 8 of 13, to": 1,
+   "cut by pre-rank funnel (rank 9 of 13, to": 1,
+   "cut by pre-rank funnel (rank 10 of 13, t": 1,
+   "cut by pre-rank funnel (rank 11 of 13, t": 1,
+   "cut by pre-rank funnel (rank 12 of 13, t": 1,
+   "cut by pre-rank funnel (rank 13 of 13, t": 1,
+   "same domain as a higher-ranked source (s": 1,
+   "same domain as a higher-ranked source (e": 1
+  },
+  "claude_dom_in_cands": [
+   "en.wikipedia.org"
+  ],
+  "ref_doms": [
+   "elmundo.es",
+   "xataka.com"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "lasexta.com",
+    "supports",
+    true
+   ],
+   [
+    "infobae.com",
+    "supports",
+    true
+   ],
+   [
+    "eldebate.com",
+    "supports",
+    true
+   ],
+   [
+    "elespanol.com",
+    "supports",
+    true
+   ],
+   [
+    "vietnam.vn",
+    "unrelated",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact010",
+  "gold": "UNVERIFIED",
+  "origin": "natural",
+  "claude": "UNVERIFIED",
+  "pipe_oct29": "UNVERIFIED",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Ronda Urbana Norte Sevilla"
+   ],
+   [
+    "p",
+    "Ronda Urbana Norte Sevilla ejecutada infraestructura función metropolitana pasará nueva"
+   ],
+   [
+    "r",
+    "Ronda Urbana Norte Sevilla verificación OR desmentido OR bulo OR falso"
+   ]
+  ],
+  "ncand": 13,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 8
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 8, top": 1,
+   "cut by pre-rank funnel (rank 7 of 8, top": 1,
+   "cut by pre-rank funnel (rank 8 of 8, top": 1,
+   "same domain as a higher-ranked source (a": 3,
+   "same domain as a higher-ranked source (d": 1,
+   "same domain as a higher-ranked source (e": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "abc.es"
+  ],
+  "ref_in_cands": [
+   "abc.es"
+  ],
+  "kept_now": [
+   [
+    "abc.es",
+    "silent",
+    false
+   ],
+   [
+    "sevillabuenasnoticias.com",
+    "silent",
+    false
+   ],
+   [
+    "elcorreoweb.es",
+    "silent",
+    false
+   ],
+   [
+    "es.wikipedia.org",
+    "supports",
+    true
+   ],
+   [
+    "diariodesevilla.es",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact011",
+  "gold": "UNVERIFIED",
+  "origin": "natural",
+  "claude": "UNVERIFIED",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Europa Ronda Urbana Norte"
+   ],
+   [
+    "p",
+    "Europa Ronda Urbana Norte proyecto original intermedia tumbó hace diez"
+   ],
+   [
+    "r",
+    "Europa Ronda Urbana Norte verificación OR desmentido OR bulo OR falso"
+   ]
+  ],
+  "ncand": 15,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 10
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 8, top": 1,
+   "cut by pre-rank funnel (rank 7 of 8, top": 1,
+   "cut by pre-rank funnel (rank 8 of 8, top": 1,
+   "same domain as a higher-ranked source (a": 7
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "abc.es"
+  ],
+  "ref_in_cands": [
+   "abc.es"
+  ],
+  "kept_now": [
+   [
+    "elcorreoweb.es",
+    "silent",
+    false
+   ],
+   [
+    "abc.es",
+    "silent",
+    false
+   ],
+   [
+    "castellonplaza.com",
+    "supports",
+    true
+   ],
+   [
+    "lasprovincias.es",
+    "silent",
+    false
+   ],
+   [
+    "es.wikipedia.org",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact012",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "James Michael Roe University of Oslo Norway"
+   ],
+   [
+    "p",
+    "James Michael Roe University of Oslo found structural changes brain occur high"
+   ],
+   [
+    "r",
+    "James Michael Roe University of Oslo Norway fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 21,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 16
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 13, to": 1,
+   "cut by pre-rank funnel (rank 7 of 13, to": 1,
+   "cut by pre-rank funnel (rank 8 of 13, to": 1,
+   "cut by pre-rank funnel (rank 9 of 13, to": 1,
+   "cut by pre-rank funnel (rank 10 of 13, t": 1,
+   "cut by pre-rank funnel (rank 11 of 13, t": 1,
+   "cut by pre-rank funnel (rank 12 of 13, t": 1,
+   "cut by pre-rank funnel (rank 13 of 13, t": 1,
+   "same domain as a higher-ranked source (s": 1,
+   "same domain as a higher-ranked source (e": 6,
+   "same domain as a higher-ranked source (l": 1
+  },
+  "claude_dom_in_cands": [
+   "sciencedaily.com"
+  ],
+  "ref_doms": [
+   "nature.com"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "sciencedaily.com",
+    "supports",
+    true
+   ],
+   [
+    "news.ssbcrack.com",
+    "supports",
+    true
+   ],
+   [
+    "scitechdaily.com",
+    "supports",
+    true
+   ],
+   [
+    "news-medical.net",
+    "supports",
+    true
+   ],
+   [
+    "medicalxpress.com",
+    "supports",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact015",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Angela Wachuka Wanjiru Koinange nonprofit Eastlands"
+   ],
+   [
+    "p",
+    "Angela Wachuka Wanjiru Koinange Founded writer publisher restored Kaloleni libraries"
+   ],
+   [
+    "r",
+    "Angela Wachuka Wanjiru Koinange nonprofit Eastlands fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 16,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 11
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 16, to": 1,
+   "cut by pre-rank funnel (rank 7 of 16, to": 1,
+   "cut by pre-rank funnel (rank 8 of 16, to": 1,
+   "cut by pre-rank funnel (rank 9 of 16, to": 1,
+   "cut by pre-rank funnel (rank 10 of 16, t": 1,
+   "cut by pre-rank funnel (rank 11 of 16, t": 1,
+   "cut by pre-rank funnel (rank 12 of 16, t": 1,
+   "cut by pre-rank funnel (rank 13 of 16, t": 1,
+   "cut by pre-rank funnel (rank 14 of 16, t": 1,
+   "cut by pre-rank funnel (rank 15 of 16, t": 1,
+   "cut by pre-rank funnel (rank 16 of 16, t": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "wri.org",
+   "brittlepaper.com"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "en.wikiquote.org",
+    "supports",
+    true
+   ],
+   [
+    "memoryofnations.eu",
+    "contradicts",
+    true
+   ],
+   [
+    "monocle.com",
+    "supports",
+    true
+   ],
+   [
+    "wanjirukoinange.com",
+    "supports",
+    true
+   ],
+   [
+    "en.wikipedia.org",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact016",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "UNVERIFIED",
+  "pipe_oct29": "UNVERIFIED",
+  "pipe_now": "UNVERIFIED",
+  "raw_now": "UNVERIFIED",
+  "queries": [
+   [
+    "a",
+    "Book Bunk"
+   ],
+   [
+    "p",
+    "Book Bunk cataloged books added another titles converting"
+   ],
+   [
+    "r",
+    "Book Bunk fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 24,
+  "stoppedAt": {
+   "ranked": 4,
+   "evidence_retrieval": 19,
+   "evidence_ranking": 1
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 19, to": 1,
+   "cut by pre-rank funnel (rank 7 of 19, to": 1,
+   "cut by pre-rank funnel (rank 8 of 19, to": 1,
+   "cut by pre-rank funnel (rank 9 of 19, to": 1,
+   "cut by pre-rank funnel (rank 10 of 19, t": 1,
+   "cut by pre-rank funnel (rank 11 of 19, t": 1,
+   "cut by pre-rank funnel (rank 12 of 19, t": 1,
+   "cut by pre-rank funnel (rank 13 of 19, t": 1,
+   "cut by pre-rank funnel (rank 14 of 19, t": 1,
+   "cut by pre-rank funnel (rank 15 of 19, t": 1,
+   "cut by pre-rank funnel (rank 16 of 19, t": 1,
+   "cut by pre-rank funnel (rank 17 of 19, t": 1,
+   "cut by pre-rank funnel (rank 18 of 19, t": 1,
+   "cut by pre-rank funnel (rank 19 of 19, t": 1,
+   "same domain as a higher-ranked source (e": 5,
+   "on-topic but does not address the claim ": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "bookbunk.org",
+   "bookbunk.org"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "bookshop.org",
+    "silent",
+    false
+   ],
+   [
+    "barnesandnoble.com",
+    "silent",
+    false
+   ],
+   [
+    "gutenberg.org",
+    "silent",
+    false
+   ],
+   [
+    "apps.apple.com",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact020",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "UNVERIFIED",
+  "raw_now": "UNVERIFIED",
+  "queries": [
+   [
+    "a",
+    "Jimato Jire"
+   ],
+   [
+    "p",
+    "Jimato Jire carried lifeless body infant"
+   ],
+   [
+    "r",
+    "Jimato Jire fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 24,
+  "stoppedAt": {
+   "ranked": 4,
+   "evidence_retrieval": 19,
+   "evidence_ranking": 1
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 18, to": 1,
+   "cut by pre-rank funnel (rank 7 of 18, to": 1,
+   "cut by pre-rank funnel (rank 8 of 18, to": 1,
+   "cut by pre-rank funnel (rank 9 of 18, to": 1,
+   "cut by pre-rank funnel (rank 10 of 18, t": 1,
+   "cut by pre-rank funnel (rank 11 of 18, t": 1,
+   "cut by pre-rank funnel (rank 12 of 18, t": 1,
+   "cut by pre-rank funnel (rank 13 of 18, t": 1,
+   "cut by pre-rank funnel (rank 14 of 18, t": 1,
+   "cut by pre-rank funnel (rank 15 of 18, t": 1,
+   "cut by pre-rank funnel (rank 16 of 18, t": 1,
+   "cut by pre-rank funnel (rank 17 of 18, t": 1,
+   "cut by pre-rank funnel (rank 18 of 18, t": 1,
+   "same domain as a higher-ranked source (g": 1,
+   "same domain as a higher-ranked source (e": 2,
+   "same domain as a higher-ranked source (t": 1,
+   "same domain as a higher-ranked source (c": 1,
+   "the article being checked cannot corrobo": 1,
+   "on-topic but does not address the claim ": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "ora.ox.ac.uk"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "9jaflaver.com",
+    "contradicts",
+    true
+   ],
+   [
+    "hindustantimes.com",
+    "supports",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact021",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Mahale Mountains Tanzania infant mother"
+   ],
+   [
+    "p",
+    "Mahale Mountains Tanzania Indeed example Jire Jimato eclipsed carried"
+   ],
+   [
+    "r",
+    "Mahale Mountains Tanzania infant mother fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 22,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 17
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 17, to": 1,
+   "cut by pre-rank funnel (rank 7 of 17, to": 1,
+   "cut by pre-rank funnel (rank 8 of 17, to": 1,
+   "cut by pre-rank funnel (rank 9 of 17, to": 1,
+   "cut by pre-rank funnel (rank 10 of 17, t": 1,
+   "cut by pre-rank funnel (rank 11 of 17, t": 1,
+   "cut by pre-rank funnel (rank 12 of 17, t": 1,
+   "cut by pre-rank funnel (rank 13 of 17, t": 1,
+   "cut by pre-rank funnel (rank 14 of 17, t": 1,
+   "cut by pre-rank funnel (rank 15 of 17, t": 1,
+   "cut by pre-rank funnel (rank 16 of 17, t": 1,
+   "cut by pre-rank funnel (rank 17 of 17, t": 1,
+   "same domain as a higher-ranked source (e": 2,
+   "same domain as a higher-ranked source (g": 3
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "pmc.ncbi.nlm.nih.gov"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "nomad-tanzania.com",
+    "silent",
+    false
+   ],
+   [
+    "explorersweb.com",
+    "silent",
+    false
+   ],
+   [
+    "en.wikipedia.org",
+    "supports",
+    true
+   ],
+   [
+    "siyabona.com",
+    "silent",
+    false
+   ],
+   [
+    "smh.com.au",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact036",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Hillsborough county Florida health authorities officials"
+   ],
+   [
+    "p",
+    "Hillsborough county Florida made declaration September recorded confirmed cases"
+   ],
+   [
+    "r",
+    "Hillsborough county Florida health authorities officials fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 21,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 16
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 14, to": 1,
+   "cut by pre-rank funnel (rank 7 of 14, to": 1,
+   "cut by pre-rank funnel (rank 8 of 14, to": 1,
+   "cut by pre-rank funnel (rank 9 of 14, to": 1,
+   "cut by pre-rank funnel (rank 10 of 14, t": 1,
+   "cut by pre-rank funnel (rank 11 of 14, t": 1,
+   "cut by pre-rank funnel (rank 12 of 14, t": 1,
+   "cut by pre-rank funnel (rank 13 of 14, t": 1,
+   "cut by pre-rank funnel (rank 14 of 14, t": 1,
+   "same domain as a higher-ranked source (f": 1,
+   "same domain as a higher-ranked source (w": 2,
+   "same domain as a higher-ranked source (h": 1,
+   "same domain as a higher-ranked source (a": 3
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "hcfl.gov",
+   "baynews9.com"
+  ],
+  "ref_in_cands": [
+   "hcfl.gov"
+  ],
+  "kept_now": [
+   [
+    "newsweek.com",
+    "supports",
+    true
+   ],
+   [
+    "tampanewsroom.com",
+    "supports",
+    true
+   ],
+   [
+    "fox13news.com",
+    "supports",
+    true
+   ],
+   [
+    "wtsp.com",
+    "contradicts",
+    true
+   ],
+   [
+    "forbes.com",
+    "contradicts",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact037",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "FALSE",
+  "pipe_now": "FALSE",
+  "raw_now": "FALSE",
+  "queries": [
+   [
+    "a",
+    "Florida"
+   ],
+   [
+    "p",
+    "Florida been total known travel related cases"
+   ],
+   [
+    "r",
+    "Florida fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 16,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 11
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 11, to": 1,
+   "cut by pre-rank funnel (rank 7 of 11, to": 1,
+   "cut by pre-rank funnel (rank 8 of 11, to": 1,
+   "cut by pre-rank funnel (rank 9 of 11, to": 1,
+   "cut by pre-rank funnel (rank 10 of 11, t": 1,
+   "cut by pre-rank funnel (rank 11 of 11, t": 1,
+   "same domain as a higher-ranked source (c": 1,
+   "same domain as a higher-ranked source (v": 2,
+   "same domain as a higher-ranked source (n": 1,
+   "same domain as a higher-ranked source (a": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "floridahealth.gov"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "nytimes.com",
+    "contradicts",
+    true
+   ],
+   [
+    "worldatlas.com",
+    "silent",
+    false
+   ],
+   [
+    "cnn.com",
+    "silent",
+    false
+   ],
+   [
+    "visitflorida.com",
+    "silent",
+    false
+   ],
+   [
+    "clickorlando.com",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact038",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Arctic"
+   ],
+   [
+    "p",
+    "Arctic Meanwhile recorded minimum summer extent September"
+   ],
+   [
+    "r",
+    "Arctic fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 24,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 19
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 18, to": 1,
+   "cut by pre-rank funnel (rank 7 of 18, to": 1,
+   "cut by pre-rank funnel (rank 8 of 18, to": 1,
+   "cut by pre-rank funnel (rank 9 of 18, to": 1,
+   "cut by pre-rank funnel (rank 10 of 18, t": 1,
+   "cut by pre-rank funnel (rank 11 of 18, t": 1,
+   "cut by pre-rank funnel (rank 12 of 18, t": 1,
+   "cut by pre-rank funnel (rank 13 of 18, t": 1,
+   "cut by pre-rank funnel (rank 14 of 18, t": 1,
+   "cut by pre-rank funnel (rank 15 of 18, t": 1,
+   "cut by pre-rank funnel (rank 16 of 18, t": 1,
+   "cut by pre-rank funnel (rank 17 of 18, t": 1,
+   "cut by pre-rank funnel (rank 18 of 18, t": 1,
+   "same domain as a higher-ranked source (s": 1,
+   "same domain as a higher-ranked source (n": 1,
+   "same domain as a higher-ranked source (j": 3,
+   "the article being checked cannot corrobo": 1
+  },
+  "claude_dom_in_cands": [
+   "nsidc.org",
+   "science.nasa.gov"
+  ],
+  "ref_doms": [
+   "nsidc.org",
+   "natureworldnews.com"
+  ],
+  "ref_in_cands": [
+   "nsidc.org"
+  ],
+  "kept_now": [
+   [
+    "scitechdaily.com",
+    "supports",
+    true
+   ],
+   [
+    "nsidc.org",
+    "supports",
+    true
+   ],
+   [
+    "carbonbrief.org",
+    "supports",
+    true
+   ],
+   [
+    "science.nasa.gov",
+    "supports",
+    true
+   ],
+   [
+    "climate.gov",
+    "supports",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact049",
+  "gold": "UNVERIFIED",
+  "origin": "natural",
+  "claude": "UNVERIFIED",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Shah"
+   ],
+   [
+    "p",
+    "Shah neurons comprise fewer cent brain cells"
+   ],
+   [
+    "r",
+    "Shah fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 24,
+  "stoppedAt": {
+   "ranked": 4,
+   "evidence_retrieval": 19,
+   "evidence_ranking": 1
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 16, to": 1,
+   "cut by pre-rank funnel (rank 7 of 16, to": 1,
+   "cut by pre-rank funnel (rank 8 of 16, to": 1,
+   "cut by pre-rank funnel (rank 9 of 16, to": 1,
+   "cut by pre-rank funnel (rank 10 of 16, t": 1,
+   "cut by pre-rank funnel (rank 11 of 16, t": 1,
+   "cut by pre-rank funnel (rank 12 of 16, t": 1,
+   "cut by pre-rank funnel (rank 13 of 16, t": 1,
+   "cut by pre-rank funnel (rank 14 of 16, t": 1,
+   "cut by pre-rank funnel (rank 15 of 16, t": 1,
+   "cut by pre-rank funnel (rank 16 of 16, t": 1,
+   "same domain as a higher-ranked source (e": 6,
+   "same domain as a higher-ranked source (a": 1,
+   "same domain as a higher-ranked source (p": 1,
+   "on-topic but does not address the claim ": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "sciencedaily.com",
+    "silent",
+    false
+   ],
+   [
+    "ncbi.nlm.nih.gov",
+    "supports",
+    true
+   ],
+   [
+    "frontiersin.org",
+    "supports",
+    true
+   ],
+   [
+    "en.wikipedia.org",
+    "contradicts",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact062",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "FALSE",
+  "pipe_now": "FALSE",
+  "raw_now": "FALSE",
+  "queries": [
+   [
+    "a",
+    "Chinese industry"
+   ],
+   [
+    "p",
+    "Chinese industry several measures becoming less dependent fossil"
+   ],
+   [
+    "r",
+    "Chinese industry fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 15,
+  "stoppedAt": {
+   "ranked": 3,
+   "evidence_retrieval": 10,
+   "evidence_ranking": 2
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 8, top": 1,
+   "cut by pre-rank funnel (rank 7 of 8, top": 1,
+   "cut by pre-rank funnel (rank 8 of 8, top": 1,
+   "same domain as a higher-ranked source (e": 7,
+   "on-topic but does not address the claim ": 2
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "ember-energy.org",
+   "ember-energy.org"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "energypolicy.columbia.edu",
+    "contradicts",
+    true
+   ],
+   [
+    "uscc.gov",
+    "contradicts",
+    true
+   ],
+   [
+    "en.wikipedia.org",
+    "supports",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact063",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "China Ember"
+   ],
+   [
+    "p",
+    "China Ember clean power growth demand across last"
+   ],
+   [
+    "r",
+    "China Ember fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 16,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 11
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 9, top": 1,
+   "cut by pre-rank funnel (rank 7 of 9, top": 1,
+   "cut by pre-rank funnel (rank 8 of 9, top": 1,
+   "cut by pre-rank funnel (rank 9 of 9, top": 1,
+   "same domain as a higher-ranked source (e": 7
+  },
+  "claude_dom_in_cands": [
+   "ember-energy.org"
+  ],
+  "ref_doms": [
+   "ember-energy.org",
+   "ember-energy.org",
+   "climatechangenews.com"
+  ],
+  "ref_in_cands": [
+   "ember-energy.org"
+  ],
+  "kept_now": [
+   [
+    "ember-energy.org",
+    "supports",
+    true
+   ],
+   [
+    "apnews.com",
+    "silent",
+    false
+   ],
+   [
+    "reuters.com",
+    "silent",
+    false
+   ],
+   [
+    "en.m.wikipedia.org",
+    "silent",
+    false
+   ],
+   [
+    "en.wikipedia.org",
+    "unrelated",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact064",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "food machinery pharmaceuticals textiles"
+   ],
+   [
+    "p",
+    "food machinery eight industrial sectors including fossil fuel"
+   ],
+   [
+    "r",
+    "food machinery pharmaceuticals textiles fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 15,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 10
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 10, to": 1,
+   "cut by pre-rank funnel (rank 7 of 10, to": 1,
+   "cut by pre-rank funnel (rank 8 of 10, to": 1,
+   "cut by pre-rank funnel (rank 9 of 10, to": 1,
+   "cut by pre-rank funnel (rank 10 of 10, t": 1,
+   "same domain as a higher-ranked source (e": 5
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "ember-energy.org",
+   "climatechangenews.com"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "lnzonelink.com",
+    "silent",
+    false
+   ],
+   [
+    "ipes-food.org",
+    "supports",
+    true
+   ],
+   [
+    "abc-directory.com",
+    "silent",
+    false
+   ],
+   [
+    "theglobaltradelinks.com",
+    "silent",
+    false
+   ],
+   [
+    "en.wikipedia.org",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact065",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Ignacio Calvo de Mora Bodegas Benjamin de Rothschild & Vega Sicilia Macán"
+   ],
+   [
+    "p",
+    "Ignacio Calvo de Mora Bodegas Benjamin de Rothschild & Vega Sicilia director general"
+   ],
+   [
+    "r",
+    "Ignacio Calvo de Mora Bodegas Benjamin de Rothschild & Vega Sicilia Macán verificación OR desmentido OR bulo OR falso"
+   ]
+  ],
+  "ncand": 15,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 10
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 14, to": 1,
+   "cut by pre-rank funnel (rank 7 of 14, to": 1,
+   "cut by pre-rank funnel (rank 8 of 14, to": 1,
+   "cut by pre-rank funnel (rank 9 of 14, to": 1,
+   "cut by pre-rank funnel (rank 10 of 14, t": 1,
+   "cut by pre-rank funnel (rank 11 of 14, t": 1,
+   "cut by pre-rank funnel (rank 12 of 14, t": 1,
+   "cut by pre-rank funnel (rank 13 of 14, t": 1,
+   "cut by pre-rank funnel (rank 14 of 14, t": 1,
+   "same domain as a higher-ranked source (e": 1
+  },
+  "claude_dom_in_cands": [
+   "okdiario.com"
+  ],
+  "ref_doms": [
+   "elespanol.com",
+   "okdiario.com"
+  ],
+  "ref_in_cands": [
+   "okdiario.com"
+  ],
+  "kept_now": [
+   [
+    "okdiario.com",
+    "supports",
+    true
+   ],
+   [
+    "solowine.es",
+    "silent",
+    false
+   ],
+   [
+    "vivino.com",
+    "silent",
+    false
+   ],
+   [
+    "millesima.es",
+    "supports",
+    true
+   ],
+   [
+    "temposvegasicilia.com",
+    "supports",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact066",
+  "gold": "PARTIALLY_TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "TRUE",
+  "pipe_now": "TRUE",
+  "raw_now": "TRUE",
+  "queries": [
+   [
+    "a",
+    "Bodegas Benjamin de Rothschild & Vega Sicilia Macán Samaniego Vega Sicilia"
+   ],
+   [
+    "p",
+    "Bodegas Benjamin de Rothschild & Vega Sicilia Macán proyecto conjunto sede familias ligadas vino"
+   ],
+   [
+    "r",
+    "Bodegas Benjamin de Rothschild & Vega Sicilia Macán Samaniego Vega Sicilia verificación OR desmentido OR bulo OR falso"
+   ]
+  ],
+  "ncand": 14,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 9
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 13, to": 1,
+   "cut by pre-rank funnel (rank 7 of 13, to": 1,
+   "cut by pre-rank funnel (rank 8 of 13, to": 1,
+   "cut by pre-rank funnel (rank 9 of 13, to": 1,
+   "cut by pre-rank funnel (rank 10 of 13, t": 1,
+   "cut by pre-rank funnel (rank 11 of 13, t": 1,
+   "cut by pre-rank funnel (rank 12 of 13, t": 1,
+   "cut by pre-rank funnel (rank 13 of 13, t": 1,
+   "same domain as a higher-ranked source (v": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "macan-wine.com",
+   "okdiario.com"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "mundovinum.com",
+    "supports",
+    true
+   ],
+   [
+    "vino-vi.com",
+    "supports",
+    true
+   ],
+   [
+    "encopadebalon.com",
+    "supports",
+    true
+   ],
+   [
+    "eleconomista.es",
+    "silent",
+    false
+   ],
+   [
+    "lagacetadelvino.com",
+    "supports",
+    true
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact081",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "UNVERIFIED",
+  "pipe_now": "UNVERIFIED",
+  "raw_now": "UNVERIFIED",
+  "queries": [
+   [
+    "a",
+    "Venn diagram criteria discovered another sets found"
+   ],
+   [
+    "p",
+    "Venn diagram criteria discovered another sets"
+   ],
+   [
+    "r",
+    "Venn diagram criteria discovered another sets found fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 17,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 12
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 13, to": 1,
+   "cut by pre-rank funnel (rank 7 of 13, to": 1,
+   "cut by pre-rank funnel (rank 8 of 13, to": 1,
+   "cut by pre-rank funnel (rank 9 of 13, to": 1,
+   "cut by pre-rank funnel (rank 10 of 13, t": 1,
+   "cut by pre-rank funnel (rank 11 of 13, t": 1,
+   "cut by pre-rank funnel (rank 12 of 13, t": 1,
+   "cut by pre-rank funnel (rank 13 of 13, t": 1,
+   "same domain as a higher-ranked source (n": 1,
+   "same domain as a higher-ranked source (e": 2,
+   "same domain as a higher-ranked source (b": 1
+  },
+  "claude_dom_in_cands": [],
+  "ref_doms": [
+   "arxiv.org",
+   "cs.uvic.ca",
+   "arxiv.org"
+  ],
+  "ref_in_cands": [],
+  "kept_now": [
+   [
+    "newscientist.com",
+    "silent",
+    false
+   ],
+   [
+    "medium.com",
+    "silent",
+    false
+   ],
+   [
+    "simple.wikipedia.org",
+    "silent",
+    false
+   ],
+   [
+    "en.wikipedia.org",
+    "silent",
+    false
+   ],
+   [
+    "math.libretexts.org",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ },
+ {
+  "id": "fact082",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": "TRUE",
+  "pipe_oct29": "UNVERIFIED",
+  "pipe_now": "UNVERIFIED",
+  "raw_now": "UNVERIFIED",
+  "queries": [
+   [
+    "a",
+    "Chris Dzoba"
+   ],
+   [
+    "p",
+    "Chris Dzoba Software developer decided using find next"
+   ],
+   [
+    "r",
+    "Chris Dzoba fact check OR debunked OR false"
+   ]
+  ],
+  "ncand": 14,
+  "stoppedAt": {
+   "ranked": 5,
+   "evidence_retrieval": 9
+  },
+  "reasons": {
+   "cut by pre-rank funnel (rank 6 of 12, to": 1,
+   "cut by pre-rank funnel (rank 7 of 12, to": 1,
+   "cut by pre-rank funnel (rank 8 of 12, to": 1,
+   "cut by pre-rank funnel (rank 9 of 12, to": 1,
+   "cut by pre-rank funnel (rank 10 of 12, t": 1,
+   "cut by pre-rank funnel (rank 11 of 12, t": 1,
+   "cut by pre-rank funnel (rank 12 of 12, t": 1,
+   "same domain as a higher-ranked source (c": 1,
+   "same domain as a higher-ranked source (d": 1
+  },
+  "claude_dom_in_cands": [
+   "github.com"
+  ],
+  "ref_doms": [
+   "arxiv.org",
+   "github.com"
+  ],
+  "ref_in_cands": [
+   "github.com"
+  ],
+  "kept_now": [
+   [
+    "buymeacoffee.com",
+    "silent",
+    false
+   ],
+   [
+    "me.sh",
+    "silent",
+    false
+   ],
+   [
+    "appshunter.io",
+    "silent",
+    false
+   ],
+   [
+    "ticalc.org",
+    "silent",
+    false
+   ],
+   [
+    "c85.ticalc.org",
+    "silent",
+    false
+   ]
+  ],
+  "note": ""
+ }
+]

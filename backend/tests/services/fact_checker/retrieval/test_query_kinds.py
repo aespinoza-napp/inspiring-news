@@ -23,7 +23,9 @@ def _claim():
 def test_the_config_names_the_kinds_the_planner_plans():
     """Named twice so config imports no service; held equal here."""
 
-    first_pass = [kind.value for kind in QueryKind if kind != QueryKind.FOLLOW_UP]
+    # Follow-ups are a second look's; `specifics` (query_plan: checkable)
+    # is asked in the refutation's place and switched by its kind.
+    first_pass = [kind.value for kind in QueryKind if kind not in (QueryKind.FOLLOW_UP, QueryKind.SPECIFICS)]
 
     assert tuple(first_pass) == SEARCH_QUERY_KINDS
     assert [query.kind.value for query in plan_queries(_claim(), None, "en")] == first_pass
@@ -113,7 +115,7 @@ def test_the_retriever_announces_the_plan_it_will_send():
     asked = []
 
     class Recording(FakeSearchProvider):
-        def plan(self, claim, context=None, language=None, kinds=None):
+        def plan(self, claim, context=None, language=None, kinds=None, style=None):
             asked.append(kinds)
             return [PlannedQuery(f"{kind} query", QueryKind(kind)) for kind in kinds or SEARCH_QUERY_KINDS]
 

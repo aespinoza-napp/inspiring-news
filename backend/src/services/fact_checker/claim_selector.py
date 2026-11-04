@@ -26,6 +26,21 @@ class ArticleContext:
 
     entities: dict[str, list[str]] = field(default_factory=dict)
 
+    # The article's headline for the search alone (2026-11-04): what the
+    # evaluation harness knows of a custom-set article it does not hold
+    # (the labeller's batches, evaluation/dataset.article_titles), read only
+    # by `query_plan: checkable` to restore a subject the sentence lost -
+    # "dengue" in "212 known travel-related cases in Florida". Kept apart
+    # from `title`, which the verifier's prompt also reads, so a checkable
+    # try changes what is searched and nothing the model is shown.
+    search_title: str = ""
+
+    # The article's other sentences the harness knows (the batch's claims):
+    # a headline word they repeat is the article's subject, one they do not
+    # is the headline's framing ("querida suegra"). The keywords' role in
+    # terms.subject_terms, for a context that has none.
+    search_sentences: list[str] = field(default_factory=list)
+
     def thesis(self) -> str:
         return f"{self.title}. {self.lead}".strip()
 
