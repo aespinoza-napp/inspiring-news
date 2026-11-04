@@ -1536,6 +1536,47 @@ body that starts `%PDF-`; the claim keeps the search snippet
 (`scraper/fetcher.py`, `NotAPage`). The replays above still carry those
 two pages, the same for every entry.
 
+## The iteration loop (2026-11-04)
+
+An agent iterates on the fact-checker - thresholds, the verifier's
+prompts, what is searched, the verifier model - for accuracy and for the
+20-second claim (docs/decisions/performance.md), one try at a time, each
+decided by a rule written before the first try. Built, tested on fixture
+runs (`backend/tests/evaluation/test_iterate.py`), not yet run on a real
+campaign.
+
+- **`cli iterate`** (`src/evaluation/iterate.py`): `init` starts a campaign
+  over one searched train run's evidence and writes its `rule.md`;
+  `propose` pre-registers a try (hypothesis, prediction, kind) and prints
+  the commands that run it; `score` decides it; `status`, `abandon`,
+  `close` (which writes `summary.md`). A campaign lives in
+  `data/evaluation/experiments/iterate/<name>/`, its `ledger.jsonl`
+  append-only.
+- **The `iterate-fact-check` skill** is the agent: one step per invocation
+  (decide a finished run, start a pending one, or choose and propose the
+  next try), driven by `/loop /iterate-fact-check <campaign>`. Code tries
+  are committed on `iterate/<name>`, reverted when rejected.
+- **`.claude/hooks/sealed_test_half.py`** refuses, while a campaign is
+  active, harness runs not on `--split train`, the test half's runs and
+  reports, and the label files. Against accident, not against intent.
+
+What the rule holds, and why (the rule itself is `RULE_TEXT`):
+
+| Choice | Why |
+|---|---|
+| Every try against one fixed baseline (the defaults replayed, try 0), never against the best so far | hill-climbing on 69 claims, each step a "win" inside its own interval, fits the train half; a combination of kept tries is a try of its own |
+| A replay wherever the change comes after retrieval; `propose` decides, from the thresholds (`SEARCH_SIDE`) and the files changed since the campaign began (`SEARCH_SIDE_PATHS`) | two searched runs differ by 6-9 points from the web alone (§Replay) |
+| A searched try against two searched baselines made back to back, and it must beat the gap between them | the web's noise measured in the same window, rather than assumed |
+| A claim set apart (error, not checked) more than one beyond the baseline's makes the try invalid | the paired comparison drops set-apart claims from both sides, so a try could gain accuracy by giving up on its hard claims - a deadline would do exactly that |
+| A screen on the first 20 claims, the same run then resumed | a full replay takes up to an hour; `--limit` is not in the run key, so nothing is run twice |
+| Better = paired accuracy interval above zero, confidently wrong no more often; kept for speed = no detectable difference (at most one claim lost, at most one more confidently wrong) and faster or meeting the target | the 22 Oct contest's rule, "not worse beyond one verdict", and the verifier rule's "fewer confidently wrong" |
+| A replay's seconds are its own plus that claim's retrieval in the evidence run | a replay hands retrieval's answer over at once; without it every replay would look 8 s faster |
+| Every try runs under the evidence run's settings (`commands` prints them) | concurrency and timeouts change the seconds, and are not per-run levers (invariant 12) |
+| The hypothesis and prediction before the run; a repeat of a measured model, thresholds and commit refused | the model is deterministic on fixed evidence (10 of 10 replayed claims identical), and a result must not choose its story |
+
+Nothing a campaign keeps becomes a default: the best kept try goes to the
+test half once, run by the author, under the `fact-check-change` skill.
+
 ## Where it runs
 
 The harness needs `inference/`, SearXNG and the LLM, like any analysis.
@@ -1601,6 +1642,7 @@ The harness needs `inference/`, SearXNG and the LLM, like any analysis.
 | `writing.py` | writing benchmark | The text set, its runner, the rubric, `writing run` / `writing report` |
 | `loop.py` | second look | `cli loop`: the tuning loop's outcomes, the trigger without gold; first against final for a `second_look_enabled` run |
 | `consistency.py` | consistency | `cli consistency`: two runs of the same claims, agreement, kappa, evidence overlap |
+| `iterate.py` | iteration loop | `cli iterate`: campaigns, pre-registered tries, the fixed rule, replay vs searched, the time estimate |
 
 Run as `cd backend && uv run python -m src.evaluation.cli run --dataset
 data/evaluation/xfact_en_es_pilot.jsonl --model llama3.2:3b [--limit N]

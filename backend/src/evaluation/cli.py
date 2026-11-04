@@ -27,6 +27,12 @@ The evaluation harness's one command.
 
     uv run python -m src.evaluation.cli freshness --dataset data/evaluation/manual [--split test] [--run <dir> ...]
 
+    uv run python -m src.evaluation.cli iterate init --name <campaign> --evidence <searched train run> [--goal ...]
+    uv run python -m src.evaluation.cli iterate propose --campaign <c> --kind <k> --hypothesis ... --predict ...
+    uv run python -m src.evaluation.cli iterate score --campaign <c> --try N --run <dir>
+    uv run python -m src.evaluation.cli iterate status --campaign <c>
+    uv run python -m src.evaluation.cli iterate close --campaign <c> --reason ...
+
     uv run python -m src.evaluation.cli writing run --model llama3.2:3b [--repeats 2] [--texts f.jsonl]
     uv run python -m src.evaluation.cli writing report --run <dir> --run <dir> ... [--prices ...]
 
@@ -338,6 +344,110 @@ def cmd_consistency(args: argparse.Namespace) -> int:
     return 0
 
 
+# ----------------------------------------------------------------------
+# iterate: the agent's loop over the fact-checker (iterate.py)
+# ----------------------------------------------------------------------
+
+
+def cmd_iterate_init(args: argparse.Namespace) -> int:
+
+    from src.evaluation import iterate
+
+    campaign = iterate.init_campaign(
+        args.name, args.evidence, model=args.model, thresholds_path=args.thresholds, tries=args.tries,
+        screen=args.screen, target_median=args.target_median, target_p90=args.target_p90, goal=args.goal or "",
+        root=Path(args.root) if args.root else None,
+    )
+
+    print(f"Campaign {campaign.name} started in {campaign.directory}")
+    print(f"Rule: {campaign.directory / iterate.RULE}")
+    print("Next: the baseline, try 0 -")
+    print(f"  uv run python -m src.evaluation.cli iterate propose --campaign {campaign.name} --kind baseline "
+          "--hypothesis 'the defaults, replayed' --predict 'what the campaign is compared with'")
+
+    return 0
+
+
+def cmd_iterate_propose(args: argparse.Namespace) -> int:
+
+    from src.evaluation import iterate
+
+    campaign = iterate.load_campaign(args.campaign, Path(args.root) if args.root else None)
+
+    entry = iterate.propose(
+        campaign, kind=args.kind, hypothesis=args.hypothesis, prediction=args.predict,
+        thresholds_path=args.thresholds, model=args.model, again=args.again,
+    )
+
+    print(json.dumps({key: entry[key] for key in ("try", "label", "kind", "mode", "searchSide", "model", "thresholdsOverridden")}, indent=2))
+    print("\nRun, from backend/ (in the background: a claim takes about a minute):\n")
+    print("\n\n".join(iterate.commands(campaign, entry)))
+    print(f"\nThen: uv run python -m src.evaluation.cli iterate score --campaign {campaign.name} --try {entry['try']} --run <the run directory it printed>")
+
+    return 0
+
+
+def cmd_iterate_score(args: argparse.Namespace) -> int:
+
+    from src.evaluation import iterate
+
+    campaign = iterate.load_campaign(args.campaign, Path(args.root) if args.root else None)
+
+    decision = iterate.score(campaign, args.try_number, args.run)
+
+    print(json.dumps(decision, indent=2, ensure_ascii=False))
+
+    return 0
+
+
+def cmd_iterate_searched_baseline(args: argparse.Namespace) -> int:
+
+    from src.evaluation import iterate
+
+    campaign = iterate.load_campaign(args.campaign, Path(args.root) if args.root else None)
+
+    print(json.dumps(iterate.register_searched_baseline(campaign, args.run), indent=2))
+
+    return 0
+
+
+def cmd_iterate_status(args: argparse.Namespace) -> int:
+
+    from src.evaluation import iterate
+
+    campaign = iterate.load_campaign(args.campaign, Path(args.root) if args.root else None)
+
+    state = iterate.status(campaign)
+
+    print(json.dumps(state, indent=2, ensure_ascii=False) if args.json else iterate.render_status(state))
+
+    return 0
+
+
+def cmd_iterate_abandon(args: argparse.Namespace) -> int:
+
+    from src.evaluation import iterate
+
+    campaign = iterate.load_campaign(args.campaign, Path(args.root) if args.root else None)
+
+    print(json.dumps(iterate.abandon(campaign, args.try_number, args.reason), indent=2))
+
+    return 0
+
+
+def cmd_iterate_close(args: argparse.Namespace) -> int:
+
+    from src.evaluation import iterate
+
+    campaign = iterate.load_campaign(args.campaign, Path(args.root) if args.root else None)
+
+    target = iterate.close(campaign, args.reason)
+
+    print(target.read_text(encoding="utf-8"))
+
+    return 0
+
+
 def _report_options(command: argparse.ArgumentParser) -> None:
 
     command.add_argument("--prices", help="a prices file (data/evaluation/prices.json) to cost the run")
@@ -504,6 +614,65 @@ def parser() -> argparse.ArgumentParser:
     fresh.add_argument("--run", action="append", help="a run over the set; repeat for several")
     _report_options(fresh)
     fresh.set_defaults(handler=cmd_freshness)
+
+    iterate_ = commands.add_parser(
+        "iterate",
+        help="an agent's campaign of changes to the fact-checker, each decided by a fixed rule (iterate.py)",
+    ).add_subparsers(dest="iterate_command", required=True)
+
+    def campaign_arg(command):
+        command.add_argument("--campaign", required=True, help="the campaign's name (or its directory)")
+        command.add_argument("--root", help=argparse.SUPPRESS)
+
+    it_init = iterate_.add_parser("init", help="start a campaign over a searched train run's evidence")
+    it_init.add_argument("--name", required=True)
+    it_init.add_argument("--evidence", required=True, help="a full run over the train half that kept evidence.jsonl")
+    it_init.add_argument("--model", help="the verifier every try uses unless it says otherwise (default: the evidence run's)")
+    it_init.add_argument("--thresholds", help="the baseline's thresholds file (default: the environment's defaults)")
+    it_init.add_argument("--tries", type=int, default=15, help="the budget, the baseline not counted")
+    it_init.add_argument("--screen", type=int, default=20, help="claims in the screen; 0 for none")
+    it_init.add_argument("--target-median", type=float, default=20.0, help="seconds a claim, median")
+    it_init.add_argument("--target-p90", type=float, default=30.0, help="seconds a claim, 90th percentile")
+    it_init.add_argument("--goal", help="one line: what the campaign is for")
+    it_init.add_argument("--root", help=argparse.SUPPRESS)
+    it_init.set_defaults(handler=cmd_iterate_init)
+
+    it_propose = iterate_.add_parser("propose", help="pre-register one try: hypothesis and prediction before the run")
+    campaign_arg(it_propose)
+    it_propose.add_argument("--kind", required=True, choices=["baseline", "thresholds", "prompt", "model", "code", "search"])
+    it_propose.add_argument("--hypothesis", required=True, help="what is wrong and why this change should help")
+    it_propose.add_argument("--predict", required=True, help="what it should do to the numbers, and to which claims")
+    it_propose.add_argument("--thresholds", help="the try's thresholds file (overrides over the defaults)")
+    it_propose.add_argument("--model", help="the verifier for this try (default: the campaign's)")
+    it_propose.add_argument("--again", action="store_true", help="allow a repeat of an earlier try's model, thresholds and commit")
+    it_propose.set_defaults(handler=cmd_iterate_propose)
+
+    it_score = iterate_.add_parser("score", help="decide a try by the rule (the screen, or every claim)")
+    campaign_arg(it_score)
+    it_score.add_argument("--try", dest="try_number", type=int, required=True)
+    it_score.add_argument("--run", required=True, help="the try's run directory")
+    it_score.set_defaults(handler=cmd_iterate_score)
+
+    it_searched = iterate_.add_parser("searched-baseline", help="register one of the two searched baselines")
+    campaign_arg(it_searched)
+    it_searched.add_argument("--run", required=True)
+    it_searched.set_defaults(handler=cmd_iterate_searched_baseline)
+
+    it_status = iterate_.add_parser("status", help="every try, the best kept, and whether to stop")
+    campaign_arg(it_status)
+    it_status.add_argument("--json", action="store_true")
+    it_status.set_defaults(handler=cmd_iterate_status)
+
+    it_abandon = iterate_.add_parser("abandon", help="give up a pending try (it stays in the ledger)")
+    campaign_arg(it_abandon)
+    it_abandon.add_argument("--try", dest="try_number", type=int, required=True)
+    it_abandon.add_argument("--reason", required=True)
+    it_abandon.set_defaults(handler=cmd_iterate_abandon)
+
+    it_close = iterate_.add_parser("close", help="end the campaign and write summary.md")
+    campaign_arg(it_close)
+    it_close.add_argument("--reason", required=True)
+    it_close.set_defaults(handler=cmd_iterate_close)
 
     writing = commands.add_parser(
         "writing",

@@ -62,7 +62,7 @@ src.main:app --port 8001`.
 | Looking for | Go to |
 |---|---|
 | The plan, and what is actually done | `docs/roadmap.md` |
-| Claude Code in this repo: the skills (`/verify`, `/debug-verdict`, `/fact-check-change`, `/audit`, `/commit`) and hooks | `.claude/skills/`, `.claude/hooks/` |
+| Claude Code in this repo: the skills (`/verify`, `/debug-verdict`, `/fact-check-change`, `/iterate-fact-check`, `/audit`, `/commit`) and hooks | `.claude/skills/`, `.claude/hooks/` |
 | The thesis defence: likely questions, the structural gaps, what to do next | `docs/thesis-defense-brief.md` (3 Nov), `docs/audit-2026-10-28.md` |
 | One article's journey across every stage (round → job → lake → reader → draft) | `/trace` (`frontend/CLAUDE.md`), `GET /trace`, `backend/src/services/trace.py` |
 | Bringing in a WordPress export unverified, to compare on the same articles (lake + graph, not the reader) | `scripts/import_wordpress.py`, `backend/src/services/imports/`, `POST /imports/wordpress` |
@@ -89,6 +89,7 @@ src.main:app --port 8001`.
 | Every change ever made to fact-checking, by date, with a summary | `docs/fact-checking-changes.md` |
 | Where a claim's seconds go; the speed switches, the claim deadline, the 22 Oct contest | `docs/decisions/performance.md` ("The 20-second fact-check"), `backend/data/evaluation/experiments/speed/` |
 | Why the verifier asks one source at a time; comparing verifiers on one run's evidence (`--replay`) | `docs/decisions/evaluation.md` ("The verifier's FALSE", "Replay"), `backend/data/evaluation/experiments/verifier/` |
+| An agent iterating on fact-checking (thresholds, prompts, search, model) by a fixed rule, train half only | `/iterate-fact-check`, `cli iterate`, `backend/src/evaluation/iterate.py`, `docs/decisions/evaluation.md` ("The iteration loop") |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
 | Trending: the signals (Google Trends, r/UpliftingNews...), the lens on /discover, the checked positive angle, the TikTok embed; why TikTok is never scraped | `docs/decisions/trends.md` |
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
