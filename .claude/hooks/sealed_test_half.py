@@ -58,9 +58,10 @@ def refusal(tool: str, tool_input: dict) -> str | None:
 
         command = tool_input.get("command") or ""
 
-        if "src.evaluation.cli" in command and re.search(r"\brun\b", command) and "--split train" not in command:
-            if re.search(r"cli\s+run\b", command):
-                return "a harness run must be `--split train` during a campaign"
+        # The module invoked, not its name mentioned: `pgrep -f "src.evaluation.cli run"`
+        # checking on a run was refused by the first version (2026-11-04).
+        if re.search(r"-m\s+src\.evaluation\.cli\s+run\b", command) and "--split train" not in command:
+            return "a harness run must be `--split train` during a campaign"
 
         text = ALLOWED_DATASET.sub("--dataset <train>", command)
 

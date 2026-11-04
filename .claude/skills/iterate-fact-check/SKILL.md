@@ -96,6 +96,16 @@ the overrides to `<campaign dir>/tries/NN.json`:
 | `qwen3.5:9b-bench` | V5: best kappa, catches altered claims, but ~123 s a claim. Only with fewer, shorter sources |
 | `gemma4:e4b-bench`, `qwen3.5:4b-bench` | -10 on 20 claims; not without a new reason |
 
+**Hosted, for the benchmark** (`--kind model --provider groq --model <groq id>`; a
+replay). The author **prefers self-hosted**. Groq is the comparison side, and it has usage
+limits. Its key is `LLM_API_KEY` in `backend/.env`, never printed. Run hosted tries only
+after the self-hosted tries of the same thresholds, so each pair compares like with like.
+On 30 Oct, 5 replayed claims each (too few to rank them): `qwen/qwen3.8-27b` 4 right,
+1.3 s a call; `openai/gpt-oss-120b` and `openai/gpt-oss-20b` 3 right, 2.5-3 s. A 429
+waits out `retry-after`; a claim still throttled is set apart (`llmUnreachable`). If more
+than one is set apart, the rule calls the try invalid. Re-run it with
+`--retry-unavailable` once the limit resets, then score again.
+
 **Prompt / code after retrieval** (`--kind prompt` or `code`): `verification/per_source.py`
 (`PER_SOURCE_SYSTEM_PROMPT`), `verification/llm_verification.py`, `confidence_scorer.py`,
 `ranking/ranking_retrieval.py`, `independence.py`, `FactChecker._judge`. Add the variant
@@ -110,6 +120,23 @@ fast` and the touched tests, then commit on `iterate/<name>` as `Iterate <name> 
 `fact_checker/retrieval/`, `terms.py`, `restatement.py`, `second_look.py`,
 `services/scraper/`, `services/search.py`. The first searched try also makes the two
 searched baselines (`propose` prints them). Run them back to back with the try.
+
+### The order for campaign 20261104-speed (the author's choice, 4 Nov)
+
+The baseline on this laptop: ~93 s a claim replayed (ranking 22 s, waiting for the other
+claim's call 21 s, the model 48 s over ~5 calls and ~2,100 prompt tokens), plus ~15 s of
+original retrieval. Self-hosted first, then the same on Groq:
+
+1. `ranking_text: passages` (ranking time).
+2. That, with `max_evidence_per_claim: 3` and `verifier_excerpt_chars: 400` (model time).
+3. The best kept of those on the integrated GPU. The author runs `sudo
+   ./scripts/ollama_igpu.sh on` first. It is the same model, so propose with `--again`
+   and say "integrated GPU" in the hypothesis.
+4. The best self-hosted thresholds on Groq, one model per try: `qwen/qwen3.8-27b`, then
+   `openai/gpt-oss-120b`.
+5. Granite 8B only with fewer, shorter sources: alone it took 227 s a claim here.
+
+Revise the order when a result says so, and say why in the next hypothesis.
 
 ### Already measured: do not repeat without a new reason
 
@@ -167,9 +194,14 @@ asks:
 $CLI iterate close --campaign <name> --reason "<why>"
 ```
 
-This writes `summary.md`. In `/loop`, end the loop. Tell the user:
+This writes `summary.md` and `benchmark.md` (every try side by side, self-hosted against
+hosted: accuracy, interval, confidently wrong, seconds, calls, tokens, cost).
+`$CLI iterate benchmark --campaign <name>` writes the table at any time. In `/loop`,
+end the loop. Tell the user:
 
 - the best kept try, with its train numbers;
+- the trade-off: the best self-hosted against the best hosted, in accuracy, seconds, cost
+  and what leaves the machine;
 - the caveats: 69 claims, labels mostly the AI pass's, the evidence from 29 Oct (before
   the 3 Nov search change);
 - that it goes to the **test half once, run by them**. Nothing becomes a default until

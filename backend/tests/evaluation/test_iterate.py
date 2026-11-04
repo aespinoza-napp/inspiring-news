@@ -415,3 +415,73 @@ def test_the_budget_is_spent_and_close_writes_the_summary(campaign, tmp_path, st
     assert "Nothing: no try was kept." in summary
     assert iterate.load_campaign(campaign.directory).config["status"] == "closed"
     assert iterate.active_campaigns(tmp_path / "campaigns") == []
+
+
+# ----------------------------------------------------------------------
+# Self-hosted against hosted
+# ----------------------------------------------------------------------
+
+
+def test_a_hosted_try_points_its_verifier_at_the_provider_and_never_prints_the_key(campaign, tmp_path):
+
+    with_baseline(campaign, tmp_path)
+
+    entry = iterate.propose(campaign, kind="model", hypothesis="a larger reader, hosted", prediction="faster",
+                            model="openai/gpt-oss-120b", provider="groq")
+
+    command = iterate.commands(campaign, entry)[-1]
+
+    assert "LLM_BASE_URL=https://api.groq.com/openai/v1" in command
+    assert "LLM_API_KEY" not in command
+    assert entry["provider"] == "groq"
+
+
+def test_a_hosted_provider_is_only_a_model_try(campaign, tmp_path):
+
+    with_baseline(campaign, tmp_path)
+
+    with pytest.raises(SystemExit, match="--kind model"):
+        iterate.propose(campaign, kind="thresholds", hypothesis="h", prediction="p", provider="groq",
+                        thresholds_path=thresholds_file(tmp_path, {"verifier_excerpt_chars": 900}))
+
+
+def test_a_hosted_try_whose_run_used_the_local_model_server_is_refused(campaign, tmp_path):
+
+    with_baseline(campaign, tmp_path)
+
+    entry = iterate.propose(campaign, kind="model", hypothesis="h", prediction="p",
+                            model="openai/gpt-oss-120b", provider="groq")
+
+    ran_locally = replay_of(campaign, entry, records(6), tmp_path, "groqtry")  # provider localhost:11434
+
+    with pytest.raises(SystemExit, match="not api.groq.com"):
+        iterate.score(campaign, 1, ran_locally, reports_root=tmp_path / "reports")
+
+
+def test_the_benchmark_puts_every_measured_try_side_by_side(campaign, tmp_path):
+
+    with_baseline(campaign, tmp_path)
+
+    entry = iterate.propose(campaign, kind="model", hypothesis="hosted", prediction="p",
+                            model="openai/gpt-oss-120b", provider="groq")
+
+    directory = run_dir(
+        tmp_path, "hosted", records(9, total=4.0), mode="replay", replayOf="x/evidencekey1",
+        label=entry["label"], thresholdsHash=entry["thresholdsHash"], model=entry["model"],
+    )
+    run_json = tmp_path / "runs" / "hosted" / "run.json"
+    data = json.loads(run_json.read_text())
+    data["provider"] = "api.groq.com"
+    run_json.write_text(json.dumps(data))
+
+    iterate.score(campaign, 1, directory, reports_root=tmp_path / "reports")
+
+    rows = iterate.benchmark(campaign)
+
+    assert [(row["try"], row["provider"]) for row in rows] == [(0, "local"), (1, "groq")]
+    assert rows[1]["accuracy"] == pytest.approx(0.9)
+
+    text = iterate.render_benchmark(campaign, rows)
+
+    assert "| 0 | self-hosted | stub-model |" in text
+    assert "| 1 | groq | openai/gpt-oss-120b |" in text

@@ -1574,6 +1574,15 @@ What the rule holds, and why (the rule itself is `RULE_TEXT`):
 | Every try runs under the evidence run's settings (`commands` prints them) | concurrency and timeouts change the seconds, and are not per-run levers (invariant 12) |
 | The hypothesis and prediction before the run; a repeat of a measured model, thresholds and commit refused | the model is deterministic on fixed evidence (10 of 10 replayed claims identical), and a result must not choose its story |
 
+A try's verifier can be hosted (`propose --kind model --provider groq`):
+the command points `LLM_BASE_URL` at the provider and leaves the key in
+`backend/.env`, and `score` checks the run's recorded `provider` is that
+host. `iterate benchmark` (and `close`) writes `benchmark.md`, every try
+side by side - where the verifier ran, accuracy and its paired interval,
+confidently wrong, seconds, calls and tokens a claim, cost from
+`prices.json` - the self-hosted / hosted trade-off. Self-hosted is
+preferred; the hosted side has usage limits and sees the claims.
+
 Nothing a campaign keeps becomes a default: the best kept try goes to the
 test half once, run by the author, under the `fact-check-change` skill.
 

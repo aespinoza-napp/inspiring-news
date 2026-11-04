@@ -49,7 +49,7 @@ from src.evaluation import metrics
 from src.evaluation.effort import confidently_wrong
 from src.evaluation.replay import EVIDENCE
 from src.evaluation.report import compare, load_run, write_report
-from src.evaluation.runner import default_runs_root, thresholds_hash
+from src.evaluation.runner import default_runs_root, provider_of, thresholds_hash
 from src.evaluation.stats import median, percentile, rounded
 
 RULE_VERSION = 1
@@ -86,6 +86,7 @@ SEARCH_SIDE = (
     "evidence_prerank",
     "fetch_evidence_pages",
     "claim_restatement",
+    "query_plan",
     "second_look_enabled",
     "second_look_below_confidence",
     "claim_deadline_seconds",
@@ -95,6 +96,7 @@ SEARCH_SIDE = (
 # value for it, or null).
 _BEFORE_IT_EXISTED = {
     "claim_restatement": "off",
+    "query_plan": "sentence",
 }
 
 # Code a replay never runs: a change here makes a try a searched one.
@@ -112,6 +114,18 @@ SEARCH_SIDE_PATHS = (
 # Where the code that can change a verdict lives: a try that changes code
 # must have it committed, so the commit a run records is the code it ran.
 CODE_PATHS = ("backend/src/",)
+
+# Where a try's verifier runs. `local` is whatever the evidence run used
+# (Ollama on this machine); a hosted provider is its OpenAI-compatible base
+# URL, the key read from backend/.env (LLM_API_KEY) as the API reads it -
+# never printed in a command. The host is what a run records as `provider`,
+# so `score` can check a try ran where it said. Hosted tries are the
+# benchmark's other side: self-hosted is preferred, a provider has usage
+# limits and sees the claims and the sources' excerpts.
+PROVIDERS = {
+    "local": None,
+    "groq": "https://api.groq.com/openai/v1",
+}
 
 DEFAULT_TRIES = 15
 DEFAULT_SCREEN = 20
@@ -503,6 +517,7 @@ def propose(
     prediction: str,
     thresholds_path: str | None = None,
     model: str | None = None,
+    provider: str = "local",
     again: bool = False,
 ) -> dict:
     """Pre-register one try. Returns its ledger entry, with the commands to run it."""
@@ -518,6 +533,12 @@ def propose(
 
     if kind not in KINDS:
         raise SystemExit(f"--kind must be one of {', '.join(KINDS)}")
+
+    if provider not in PROVIDERS:
+        raise SystemExit(f"--provider must be one of {', '.join(PROVIDERS)}")
+
+    if provider != "local" and kind != "model":
+        raise SystemExit("a hosted provider is a --kind model try: one change at a time")
 
     tries = campaign.tries()
 
@@ -568,14 +589,16 @@ def propose(
             "Start the campaign from a searched run made with these thresholds."
         )
 
-    identity = {"model": model, "thresholdsHash": thresholds_hash(thresholds), "commit": commit}
+    identity = {
+        "model": model, "provider": provider, "thresholdsHash": thresholds_hash(thresholds), "commit": commit,
+    }
 
     if not again:
         for earlier in tries.values():
             # An abandoned or invalid try measured nothing: it may run again.
             if earlier["decision"] == INVALID:
                 continue
-            if {key: earlier.get(key) for key in identity} == identity:
+            if {key: earlier.get(key, "local" if key == "provider" else None) for key in identity} == identity:
                 raise SystemExit(
                     f"try {earlier['try']} already ran this model, thresholds and commit; "
                     "the model is deterministic on fixed evidence (--again to insist)"
@@ -601,15 +624,18 @@ def propose(
     return entry
 
 
-def run_command(campaign: Campaign, *, label: str, model: str, thresholds: str | None, replay: bool) -> str:
+def run_command(campaign: Campaign, *, label: str, model: str, thresholds: str | None, replay: bool,
+                provider: str = "local") -> str:
     """One `cli run`, from backend/, under the settings the evidence run ran under."""
 
     config = campaign.config
 
-    env = " ".join(
-        f"{name}={value}" for name, value in sorted((config["evidence"].get("settings") or {}).items())
-        if value is not None
-    )
+    settings_ = dict(config["evidence"].get("settings") or {})
+
+    if PROVIDERS.get(provider):
+        settings_["LLM_BASE_URL"] = PROVIDERS[provider]
+
+    env = " ".join(f"{name}={value}" for name, value in sorted(settings_.items()) if value is not None)
 
     command = (
         f"{env} uv run python -m src.evaluation.cli run "
@@ -652,6 +678,7 @@ def commands(campaign: Campaign, entry: dict) -> list[str]:
 
     command = run_command(
         campaign, label=entry["label"], model=entry["model"], thresholds=entry.get("thresholdsFile"), replay=replay,
+        provider=entry.get("provider", "local"),
     )
 
     if entry["kind"] != "baseline" and config.get("screen"):
@@ -913,6 +940,13 @@ def _check_run(campaign: Campaign, entry: dict, run, *, label: str, model: str, 
     if run.model != model:
         problems.append(f"run with {run.model}, not {model}")
 
+    provider = entry.get("provider", "local")
+    expected = provider_host(PROVIDERS.get(provider) or campaign.config["evidence"].get("settings", {}).get("LLM_BASE_URL"))
+    ran_at = run.manifest.get("provider")
+
+    if expected and ran_at and ran_at != expected:
+        problems.append(f"its verifier ran at {ran_at}, not {expected} ({provider})")
+
     if replay:
         if run.manifest.get("mode") != "replay" or Path(str(run.manifest.get("replayOf") or "")).name != campaign.config["evidence"]["key"]:
             problems.append(f"not a replay of the evidence run {campaign.config['evidence']['key']}")
@@ -929,6 +963,12 @@ def _check_run(campaign: Campaign, entry: dict, run, *, label: str, model: str, 
 
     if problems:
         raise SystemExit(f"{run.directory} is not try {entry['try']}: " + "; ".join(problems))
+
+
+def provider_host(base_url: str | None) -> str | None:
+    """The host a run records as its `provider` for this base URL (runner.provider_of)."""
+
+    return provider_of(base_url) if base_url else None
 
 
 def register_searched_baseline(campaign: Campaign, run_directory: str | Path) -> dict:
@@ -1164,6 +1204,8 @@ def status(campaign: Campaign, runs_root: Path | None = None) -> dict:
             "try": number,
             "kind": entry["kind"],
             "mode": entry["mode"],
+            "model": entry["model"],
+            "provider": entry.get("provider", "local"),
             "hypothesis": entry["hypothesis"],
             "decision": entry["decision"] or "pending",
             "net": pairing["net"] if pairing else None,
@@ -1216,8 +1258,8 @@ def render_status(state: dict) -> str:
         f"Target: median <= {state['target']['medianSeconds']:g} s, p90 <= {state['target']['p90Seconds']:g} s a claim",
         f"Tries: {state['tries']['spent']} of {state['tries']['budget']}",
         "",
-        "| Try | Kind | Mode | Decision | Net | Accuracy | Conf. wrong | Median s | p90 s | Hypothesis |",
-        "|---:|---|---|---|---:|---:|---:|---:|---:|---|",
+        "| Try | Kind | Mode | Model | Decision | Net | Accuracy | Conf. wrong | Median s | p90 s | Hypothesis |",
+        "|---:|---|---|---|---|---:|---:|---:|---:|---:|---|",
     ]
 
     for row in state["rows"]:
@@ -1229,7 +1271,8 @@ def render_status(state: dict) -> str:
             decision += f" ({progress['records']} done)" if progress else " (not started)"
 
         cells = [
-            str(row["try"]), row["kind"], row["mode"], decision,
+            str(row["try"]), row["kind"], row["mode"],
+            row["model"] + ("" if row["provider"] == "local" else f" ({row['provider']})"), decision,
             "" if row["net"] is None else f"{row['net']:+d}",
             "" if row["accuracy"] is None else _pct(row["accuracy"]),
             _blank(row["confidentlyWrong"]), _blank(row["median"]), _blank(row["p90"]),
@@ -1301,5 +1344,141 @@ def close(campaign: Campaign, reason: str) -> Path:
     target = campaign.directory / "summary.md"
 
     target.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+
+    write_benchmark(campaign)
+
+    return target
+
+
+# ----------------------------------------------------------------------
+# benchmark: self-hosted against hosted, every try side by side
+# ----------------------------------------------------------------------
+
+
+def default_prices_path() -> Path:
+
+    return Path(settings.STORAGE_PATH) / "evaluation" / "prices.json"
+
+
+def benchmark(campaign: Campaign, prices: dict | None = None) -> list[dict]:
+    """
+    One row per measured try, from its last decision and its report: where
+    the verifier ran, what it got right, what it cost in seconds, tokens and
+    money. A screened-out try's row is its screen's (fewer claims, said).
+    """
+
+    from src.evaluation.usage import cost, price_for
+
+    rows = []
+
+    for number, entry in sorted(campaign.tries().items()):
+
+        decisions = [d for d in entry["decisions"] if d.get("report")]
+
+        if not decisions:
+            continue
+
+        last = decisions[-1]
+
+        metrics_path = Path(last["report"]) / "metrics.json"
+        result = _read_json(metrics_path) if metrics_path.exists() else {}
+
+        usage = result.get("usage") or {}
+        scored = (result.get("metrics") or {}).get("scored") or {}
+
+        pairing = (last.get("pairings") or [None])[0]
+
+        provider = entry.get("provider", "local")
+        host = (result.get("run") or {}).get("provider")
+
+        priced = cost(usage, price_for(prices, entry["model"], host)) if usage else None
+
+        rows.append({
+            "try": number,
+            "provider": provider,
+            "model": entry["model"],
+            "changes": entry.get("thresholdsOverridden") or {},
+            "decision": last["decision"],
+            "claims": last.get("records") or scored.get("n"),
+            "accuracy": scored.get("accuracy"),
+            "difference": pairing["accuracy"] if pairing else None,
+            "confidentlyWrong": pairing["confidentlyWrong"]["try"] if pairing else None,
+            "kappa": scored.get("kappa"),
+            "coverage": scored.get("coverage"),
+            "median": pairing["seconds"]["try"]["median"] if pairing else (last.get("seconds") or {}).get("median"),
+            "p90": pairing["seconds"]["try"]["p90"] if pairing else (last.get("seconds") or {}).get("p90"),
+            "callsPerClaim": rounded(usage["llmCalls"] / usage["units"], 1) if usage.get("units") else None,
+            "callMedian": (usage.get("callLatency") or {}).get("median"),
+            "promptTokensPerClaim": usage.get("promptTokensPerUnit"),
+            "completionTokensPerClaim": usage.get("completionTokensPerUnit"),
+            "costPer100Claims": priced.get("per100Units") if priced else None,
+            "currency": priced.get("currency") if priced else None,
+        })
+
+    return rows
+
+
+def render_benchmark(campaign: Campaign, rows: list[dict]) -> str:
+
+    target = campaign.config["target"]
+
+    lines = [
+        f"# Benchmark: campaign {campaign.name}",
+        "",
+        "Every try on the same claims and, for a replay, the same evidence, each against the "
+        "baseline (try 0). Self-hosted is this machine's Ollama; a hosted provider sees the claims "
+        "and the sources' excerpts and limits how much it serves. Seconds are a claim's, retrieval "
+        f"included; the target is a median <= {target['medianSeconds']:g} s and p90 <= {target['p90Seconds']:g} s.",
+        "",
+        "| Try | Where | Model | Changes | Decision | Claims | Accuracy | vs baseline [95% CI] | Conf. wrong | Kappa | Median s | p90 s | Calls / claim | A call, s | Tokens / claim | Cost / 100 claims |",
+        "|---:|---|---|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+
+    for row in rows:
+
+        diff = row["difference"]
+
+        cells = [
+            str(row["try"]),
+            "self-hosted" if row["provider"] == "local" else row["provider"],
+            row["model"],
+            ", ".join(f"{k}={v}" for k, v in row["changes"].items()) or "-",
+            row["decision"],
+            _blank(row["claims"]),
+            "" if row["accuracy"] is None else _pct(row["accuracy"]),
+            "" if not diff else f"{_points(diff.get('difference'))} [{_points(diff.get('low'))}, {_points(diff.get('high'))}]",
+            _blank(row["confidentlyWrong"]),
+            "" if row["kappa"] is None else f"{row['kappa']:.2f}",
+            _blank(row["median"]),
+            _blank(row["p90"]),
+            _blank(row["callsPerClaim"]),
+            _blank(row["callMedian"]),
+            "" if row["promptTokensPerClaim"] is None else f"{row['promptTokensPerClaim']:.0f} + {row['completionTokensPerClaim']:.0f}",
+            "n/a" if row["costPer100Claims"] is None else f"{row['costPer100Claims']:.4f} {row['currency']}",
+        ]
+
+        lines.append("| " + " | ".join(cells) + " |")
+
+    lines += [
+        "",
+        "A screened-out try's row is its screen's first claims only. Train half, labels mostly the "
+        "AI pass's and unreviewed: no figure here is final. Cost is n/a where prices.json has no "
+        "price for that model and host.",
+    ]
+
+    return "\n".join(lines) + "\n"
+
+
+def write_benchmark(campaign: Campaign, prices_path: Path | None = None) -> Path:
+
+    from src.evaluation.usage import load_prices
+
+    path = Path(prices_path or default_prices_path())
+
+    prices = load_prices(path) if path.exists() else None
+
+    target = campaign.directory / "benchmark.md"
+
+    target.write_text(render_benchmark(campaign, benchmark(campaign, prices)), encoding="utf-8", newline="\n")
 
     return target

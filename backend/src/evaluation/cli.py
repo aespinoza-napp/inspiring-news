@@ -376,10 +376,10 @@ def cmd_iterate_propose(args: argparse.Namespace) -> int:
 
     entry = iterate.propose(
         campaign, kind=args.kind, hypothesis=args.hypothesis, prediction=args.predict,
-        thresholds_path=args.thresholds, model=args.model, again=args.again,
+        thresholds_path=args.thresholds, model=args.model, provider=args.provider, again=args.again,
     )
 
-    print(json.dumps({key: entry[key] for key in ("try", "label", "kind", "mode", "searchSide", "model", "thresholdsOverridden")}, indent=2))
+    print(json.dumps({key: entry[key] for key in ("try", "label", "kind", "mode", "searchSide", "model", "provider", "thresholdsOverridden")}, indent=2))
     print("\nRun, from backend/ (in the background: a claim takes about a minute):\n")
     print("\n\n".join(iterate.commands(campaign, entry)))
     print(f"\nThen: uv run python -m src.evaluation.cli iterate score --campaign {campaign.name} --try {entry['try']} --run <the run directory it printed>")
@@ -431,6 +431,19 @@ def cmd_iterate_abandon(args: argparse.Namespace) -> int:
     campaign = iterate.load_campaign(args.campaign, Path(args.root) if args.root else None)
 
     print(json.dumps(iterate.abandon(campaign, args.try_number, args.reason), indent=2))
+
+    return 0
+
+
+def cmd_iterate_benchmark(args: argparse.Namespace) -> int:
+
+    from src.evaluation import iterate
+
+    campaign = iterate.load_campaign(args.campaign, Path(args.root) if args.root else None)
+
+    target = iterate.write_benchmark(campaign, Path(args.prices) if args.prices else None)
+
+    print(target.read_text(encoding="utf-8"))
 
     return 0
 
@@ -644,6 +657,10 @@ def parser() -> argparse.ArgumentParser:
     it_propose.add_argument("--predict", required=True, help="what it should do to the numbers, and to which claims")
     it_propose.add_argument("--thresholds", help="the try's thresholds file (overrides over the defaults)")
     it_propose.add_argument("--model", help="the verifier for this try (default: the campaign's)")
+    it_propose.add_argument(
+        "--provider", default="local", choices=["local", "groq"],
+        help="where the verifier runs: local (this machine's Ollama) or a hosted endpoint, its key from backend/.env",
+    )
     it_propose.add_argument("--again", action="store_true", help="allow a repeat of an earlier try's model, thresholds and commit")
     it_propose.set_defaults(handler=cmd_iterate_propose)
 
@@ -669,7 +686,12 @@ def parser() -> argparse.ArgumentParser:
     it_abandon.add_argument("--reason", required=True)
     it_abandon.set_defaults(handler=cmd_iterate_abandon)
 
-    it_close = iterate_.add_parser("close", help="end the campaign and write summary.md")
+    it_bench = iterate_.add_parser("benchmark", help="every try side by side, self-hosted against hosted: benchmark.md")
+    campaign_arg(it_bench)
+    it_bench.add_argument("--prices", help="a prices file (default: data/evaluation/prices.json)")
+    it_bench.set_defaults(handler=cmd_iterate_benchmark)
+
+    it_close = iterate_.add_parser("close", help="end the campaign and write summary.md and benchmark.md")
     campaign_arg(it_close)
     it_close.add_argument("--reason", required=True)
     it_close.set_defaults(handler=cmd_iterate_close)
