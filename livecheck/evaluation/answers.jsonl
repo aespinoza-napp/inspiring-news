@@ -1,0 +1,38 @@
+{"id": "en-01", "question": "What is the capital of Australia?", "reply": "The capital of Australia is Canberra.", "label": "answered", "tags": []}
+{"id": "en-02", "question": "What is the capital of Australia?", "reply": "The capital of Australia is Sydney, of course.", "label": "answered", "tags": ["false"]}
+{"id": "en-03", "question": "And which is the longest river in Africa?", "reply": "Denial is the longest river in Africa.", "label": "answered", "tags": ["misheard"]}
+{"id": "en-04", "question": "Who was the first person to walk on the moon?", "reply": "Yuri Gagarin was the first person to walk on the moon in 1975.", "label": "answered", "tags": ["false"]}
+{"id": "en-05", "question": "Who was the first person to walk on the moon?", "reply": "Neil Armstrong, in July 1969.", "label": "answered", "tags": []}
+{"id": "en-06", "question": "Will your government raise taxes next year? Yes or no?", "reply": "Look, what people really care about is their families. We have always stood with working people, and I am proud of that record.", "label": "not_answered", "tags": ["yesno"]}
+{"id": "en-07", "question": "Will your government raise taxes next year? Yes or no?", "reply": "No. Income tax and VAT stay where they are next year.", "label": "answered", "tags": ["yesno"]}
+{"id": "en-08", "question": "What is the boiling point of water at sea level? And why does it change on a mountain?", "reply": "Water boils at 100 degrees Celsius at sea level.", "label": "partial", "tags": ["multi"]}
+{"id": "en-09", "question": "What is the boiling point of water at sea level? And why does it change on a mountain?", "reply": "Water boils at 100 degrees Celsius at sea level, and on a mountain the air pressure is lower, so it boils sooner.", "label": "answered", "tags": ["multi"]}
+{"id": "en-10", "question": "Finally, did you meet the minister last week?", "reply": "I would rather not get into private meetings. Thank you very much for having me.", "label": "not_answered", "tags": ["yesno"]}
+{"id": "en-11", "question": "Did you meet the minister last week?", "reply": "Yes, we had lunch on Tuesday.", "label": "answered", "tags": ["yesno"]}
+{"id": "en-12", "question": "How many people lost their jobs at the plant?", "reply": "About four hundred, most of them on the night shift.", "label": "answered", "tags": []}
+{"id": "en-13", "question": "How many people lost their jobs at the plant?", "reply": "That is a question you should be asking the previous management, who ran it into the ground.", "label": "not_answered", "tags": ["attack"]}
+{"id": "en-14", "question": "How much did the new bridge cost?", "reply": "It cost twelve billion dollars, which makes it the cheapest bridge ever built.", "label": "answered", "tags": ["false"]}
+{"id": "en-15", "question": "Why did the project run two years late?", "reply": "Because the steel supplier went bankrupt and we had to find another one.", "label": "answered", "tags": []}
+{"id": "en-16", "question": "Why did the project run two years late?", "reply": "I think the important thing is that it is open now and people are using it every day.", "label": "not_answered", "tags": []}
+{"id": "en-17", "question": "Where were you on the night of the vote?", "reply": "I can't comment on that while the inquiry is ongoing.", "label": "not_answered", "tags": ["refusal"]}
+{"id": "en-18", "question": "Where were you on the night of the vote?", "reply": "I was at home in Leeds with my family.", "label": "answered", "tags": []}
+{"id": "en-19", "question": "When did the company first report the leak, and to whom?", "reply": "We reported it on the third of March.", "label": "partial", "tags": ["multi"]}
+{"id": "en-20", "question": "When did the company first report the leak, and to whom?", "reply": "On the third of March, to the environment agency.", "label": "answered", "tags": ["multi"]}
+{"id": "en-21", "question": "Is it true that inflation is now below two percent?", "reply": "Yes, it fell to one point eight percent in September.", "label": "answered", "tags": ["yesno"]}
+{"id": "en-22", "question": "Is it true that inflation is now below two percent?", "reply": "Inflation is at fifteen percent, the highest in Europe.", "label": "answered", "tags": ["yesno", "false"]}
+{"id": "en-23", "question": "Who is going to pay for the new hospital?", "reply": "That's a great question, and I'm glad you asked it, because healthcare matters to every family in this country.", "label": "not_answered", "tags": []}
+{"id": "en-24", "question": "Which country won the 2010 World Cup?", "reply": "Brazil won the 2010 World Cup.", "label": "answered", "tags": ["false"]}
+{"id": "en-25", "question": "How tall is Mount Everest?", "reply": "Mount Everest is about eight thousand eight hundred meters tall.", "label": "answered", "tags": []}
+{"id": "en-26", "question": "What did the report find, and what will you change because of it?", "reply": "The report found that waiting times doubled. We will hire two hundred more nurses next year.", "label": "answered", "tags": ["multi"]}
+{"id": "en-27", "question": "What did the report find, and what will you change because of it?", "reply": "We are still studying it carefully with our partners.", "label": "not_answered", "tags": ["multi"]}
+{"id": "en-28", "question": "Do you regret the decision?", "reply": "No, I would make the same decision again tomorrow.", "label": "answered", "tags": ["yesno"]}
+{"id": "es-01", "question": "¿Cuál es la capital de Portugal?", "reply": "La capital de Portugal es Lisboa.", "label": "answered", "tags": ["es"]}
+{"id": "es-02", "question": "¿Cuál es la capital de Portugal?", "reply": "La capital de Portugal es Oporto.", "label": "answered", "tags": ["es", "false"]}
+{"id": "es-03", "question": "¿Van a subir el IVA el año que viene?", "reply": "Mire, lo que le importa a la gente es llegar a fin de mes, y nosotros siempre hemos estado a su lado.", "label": "not_answered", "tags": ["es", "yesno"]}
+{"id": "es-04", "question": "¿Van a subir el IVA el año que viene?", "reply": "No, el IVA se queda igual en 2027.", "label": "answered", "tags": ["es", "yesno"]}
+{"id": "es-05", "question": "¿Cuánta gente vive en España?", "reply": "En España viven unos cuarenta y ocho millones de personas.", "label": "answered", "tags": ["es"]}
+{"id": "es-06", "question": "¿Cuánta gente vive en España?", "reply": "En España viven más de cien millones de personas.", "label": "answered", "tags": ["es", "false"]}
+{"id": "es-07", "question": "¿Quién firmó el contrato y cuándo?", "reply": "Lo firmó la consejera de Sanidad.", "label": "partial", "tags": ["es", "multi"]}
+{"id": "es-08", "question": "¿Por qué se canceló el concierto?", "reply": "No voy a entrar en eso ahora.", "label": "not_answered", "tags": ["es", "refusal"]}
+{"id": "es-09", "question": "¿Por qué se canceló el concierto?", "reply": "Porque el escenario no pasó la inspección de seguridad.", "label": "answered", "tags": ["es"]}
+{"id": "es-10", "question": "¿Dónde nació Cervantes?", "reply": "Cervantes nació en Sevilla.", "label": "answered", "tags": ["es", "false"]}

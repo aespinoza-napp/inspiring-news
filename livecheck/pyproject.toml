@@ -1,0 +1,32 @@
+[project]
+name = "livecheck"
+version = "0.1.0"
+description = "Listens to a live conversation's audio: transcript, who asks and who answers, whether it was answered, whether it is true."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "faster-whisper>=1.1",
+    # faster-whisper 1.2.1 calls av.open(metadata_errors=...), which PyAV 16 no
+    # longer takes: decoding any file raises TypeError. Found on real audio.
+    "av>=11,<16",
+    "sherpa-onnx>=1.12",
+    "numpy>=1.26",
+    "httpx>=0.28.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.4.2"]
+
+[project.scripts]
+livecheck = "livecheck.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/livecheck"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
