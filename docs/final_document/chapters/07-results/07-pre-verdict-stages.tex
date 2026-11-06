@@ -112,3 +112,46 @@ about 15~s a claim at some 17 points of accuracy, or about a minute at
 does not fix it.
 \pending{admission's own time, and one ingestion round end to end, from
 the metrics endpoint and the job journal.}
+
+\paragraph{Knowing what to look for.} Before any search, the hosted
+assistant (Claude) wrote down for each of the first 20 tuning claims
+what would settle it (4~November). In 16 the decisive detail was a
+figure, a date or a named place; in 9 the settling source was a primary
+one that could be named in advance, and 8 of those held the detail. The
+pipeline's queries named neither: for one claim on 212 travel-related
+dengue cases in Florida, none of its three queries contained ``dengue''
+or ``212''. Five of the pipeline's eleven wrong verdicts on those claims
+rested on sources that were on the subject and silent on the point. The
+rule-based checkable point (Section~\ref{subsec:sota-what-to-search})
+was then refined in five rounds on 20 further tuning claims, each round
+one change, kept only if the share of the assistant's decisive details
+it carried rose, no claim lost any, and a held-out batch of 20 more did
+not fall (Table~\ref{tab:what-to-look-for}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}cXcc@{}}
+\toprule
+Round & Change & Tuning batch & Held-out batch \\
+\midrule
+1 & Framing words (``study'', ``led'', ``said'') after the finding & 0.767 $\to$ 0.813 & 0.678 $\to$ 0.678 \\
+2 & Figures with units and signs kept (``\pounds 5.9bn'', ``189p'') & 0.813 $\to$ 0.832 & 0.678 $\to$ 0.678 \\
+3 & Prepositions, adverbs and past verbs after the finding & 0.832 $\to$ 0.850 & 0.678 $\to$ 0.698 \\
+4 & The noun a figure counts kept with it (``116 mujeres'') & 0.850 $\to$ 0.858 & 0.698 $\to$ 0.698 \\
+5 & The sentence's last finding word kept as a seventh term & 0.858 $\to$ 0.875 & 0.698 $\to$ 0.728 \\
+\bottomrule
+\end{tabularx}
+\caption{The checkable point's coverage of the decisive details the
+assistant named before searching, 5~November, measured offline. Claims
+carrying every detail rose from 5 to 10 of 20 in the tuning batch.}
+\label{tab:what-to-look-for}
+\end{table}
+
+These are string matches against details another model chose, measured
+with no search and no verdict, on labels mostly unreviewed, and several
+claims share an article. None of the five rounds is in the application's
+defaults yet: whether better terms find better pages, and whether that
+changes a verdict, needs a searched run, and searched runs already
+differ by 6 to 9 points from one another. The pipeline still names no
+kind of source, which the assistant did for all 20 claims.

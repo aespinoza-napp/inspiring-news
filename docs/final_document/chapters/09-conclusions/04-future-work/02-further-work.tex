@@ -22,6 +22,37 @@ would become the evaluator of its own writer --- validated, not assumed.
 Publishing to social networks would first need a stage that turns an
 article into media.
 
+\paragraph{Asking questions before searching.} AVeriTeC records evidence
+as question--answer pairs, and its strongest systems ask questions before
+they search (Section~\ref{subsec:sota-what-to-search}). The pipeline
+asks none, and its stage-by-stage check found what that costs: the
+decisive figure and the kind of source that would hold it are missing
+from its queries. A question plan would answer both, and a question
+per detail would make the verifier compare a changed figure rather than
+the claim as a whole, its weakest case. It would also make the official
+AVeriTeC score possible: without question--answer pairs the pipeline is
+scored on its verdict alone. Against it, the literature is split. More
+sub-claims add noise and help a weak verifier only up to a point
+\cite{hu2025decomposition}; models find the literal questions far more
+often than the implied ones \cite{chen2022claimdecomp}; and pieces cut
+too small lose the context that makes them checkable
+\cite{gunjal2024molecular}, which is what this work met when a claim's
+subject, dengue, was named only in its headline. Here the 3B verifier
+would also be the model writing the questions, and every question
+multiplies the searches and model calls of a claim that already takes
+about 44~s on the CPU; aggregation would need a rule as well, since the
+article verdict is already worst-claim-wins. The experiment is
+therefore a new query plan beside the existing ones, not a replacement:
+at most three questions, each carrying the claim's subject and one
+decisive detail of the rule-based checkable point, so that a question
+the claim does not support is rejected as livecheck rejects a claim not
+in the transcript; queries written per question; tried first on
+AVeriTeC's training split, then measured on the 500 development claims
+in both evidence conditions against the rule-based plan, with the
+question--answer score reported beside accuracy and compared with
+InFact, HerO and ClaimCheck
+\cite{rothermel2024infact,yoon2024hero,putta2025claimcheck}.
+
 \paragraph{Evidence against the age of a claim.} Re-running retrieval on
 the same recent claims after a week and after a month, to put a number
 on how much evidence a claim gains as it ages --- the question that

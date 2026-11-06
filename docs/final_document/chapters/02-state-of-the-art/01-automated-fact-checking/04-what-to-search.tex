@@ -1,0 +1,86 @@
+% ============================================================
+% Chapter 2: State of the Art
+%   Section: Automated Fact-Checking
+%     Subsection: Deciding What to Search
+% Included from chapters/02-state-of-the-art/01-automated-fact-checking/automated-fact-checking.tex
+% Source: docs/troubleshooting/fact-checking/01-what-to-look-for.md (6 Nov);
+% each paper checked against its ACL Anthology or arXiv page on 6 Nov 2026.
+% ============================================================
+
+\subsection{Deciding What to Search}
+\label{subsec:sota-what-to-search}
+
+Open retrieval needs a query, and the claim's sentence is rarely a good
+one. A human fact-checker first decides what the claim turns on --- a
+figure, a date, who did what --- and which source would settle it, and
+only then searches. The literature has made that step explicit in three
+ways.
+
+\paragraph{Asking questions.} Fan et al.\ generate \emph{question-answering
+briefs}: questions that decompose the claim, answered from the web
+before a person checks it. Briefs raised crowdworkers' accuracy by about
+10\% and cut volunteer fact-checkers' time by about a fifth
+\cite{fan2020qabriefs}. Chen et al.\ distinguish \emph{literal}
+subquestions, which ask about what the claim says, from \emph{implied}
+ones, which ask about what it leaves unsaid: their best generator
+recovered over 70\% of the literal questions and 18\% of the implied
+ones, so a model asks reasonable questions but rarely the complete set
+from the claim alone \cite{chen2022claimdecomp}. Varifocal generates
+questions from several focal points of the claim and its metadata, such
+as its speaker and date, without presuming that the answer is already in
+a supplied passage \cite{ousidhoum2022varifocal}; FACTIFY-5WQA builds its
+questions from the claim's \emph{who, what, when, where} and \emph{why}
+slots, found by semantic role labelling \cite{rani2023factify5wqa}.
+AVeriTeC adopts the question as the unit of evidence: its annotators
+record each claim's evidence as question--answer pairs, and a system's
+evidence is scored by matching its pairs to theirs
+\cite{schlichtkrull2023averitec}. The systems that led its 2024 shared
+task \cite{schlichtkrull2024sharedtask} all ask before they search:
+InFact poses ten questions and lets the model write the search queries
+for each, which its authors found better than searching the question
+literally \cite{rothermel2024infact}; HerO, built on open models only,
+generates the questions with an 8B Llama~3 prompted with ten examples
+\cite{yoon2024hero}.
+
+\paragraph{Splitting the claim.} Other pipelines split a claim into
+simpler sub-claims and verify each: ProgramFC as the steps of a program
+\cite{pan2023programfc}, FActScore as atomic facts
+\cite{min2023factscore}, Factcheck-Bench as claims that each hold one
+property or fact \cite{wang2024factcheckbench}. Chen et al.\ add the
+constraint this work also faces, evidence published before the claim on
+the open web, and find that retrieved evidence usually covers some
+aspects of a claim and rarely all of them \cite{chen2024wild}. Whether
+splitting helps is contested. FActScore's result depends on the
+decomposition method chosen \cite{wanner2024closer}. Hu, Long and Wang
+find a trade-off: simpler sub-claims help a weaker verifier, but every
+sub-claim adds noise, and with a strong verifier the noise can outweigh
+the gain; more sub-claims help at first and then hurt
+\cite{hu2025decomposition}.
+
+\paragraph{Making the claim stand alone.} A sentence taken from an
+article leans on its context: ``the agency'', ``that year'', a subject
+named only in the headline. Decontextualisation rewrites it so that it
+can be read on its own \cite{choi2021decontextualization}. Gunjal and
+Durrett show the cost of going too far the other way: atomic facts can
+lose the context that makes them checkable, and they propose
+\emph{molecular} facts, which carry the least added context that makes
+them unambiguous \cite{gunjal2024molecular}.
+
+\paragraph{Small models.} The step need not take a large model.
+ClaimCheck plans its web queries with a 4B model and reports 76.4\%
+accuracy on AVeriTeC's development split; turning the model's reasoning
+off in the planning step alone cost about four points in its ablation
+\cite{putta2025claimcheck}.
+
+\paragraph{This work.} By default the pipeline has no such step: every
+query is built from the sentence's own words
+(Section~\ref{sec:design-fact-checking}). The one built and measured so
+far takes no model. It reads the claim's \emph{checkable point} from the
+sentence by rule --- figures with their units, dates, multi-word names,
+the words of the finding before those of its framing --- and restores
+the article's subject when the sentence leaves it out. It is close to
+the literal subquestions and the 5W slots above, and to
+decontextualisation, but it writes no question and names no kind of
+source. It is kept as it is, as the baseline against which a
+question-based plan is to be measured
+(Sections~\ref{sec:results-pre-verdict} and~\ref{subsec:future-further}).
