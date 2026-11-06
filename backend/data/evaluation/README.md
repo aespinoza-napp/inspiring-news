@@ -1,3 +1,7 @@
+> **Since 2026-11-05 the benchmark is AVeriTeC**, in `averitec/` (gitignored, made by
+> `cli averitec import`): `docs/decisions/evaluation.md`, "AVeriTeC". This page is on
+> X-Fact and the custom set, which stay for Spanish and constructive news.
+
 # X-Fact evaluation set (English + Spanish)
 
 The ground-truth set Phase 5 (`docs/roadmap.md`) needs and did not have:

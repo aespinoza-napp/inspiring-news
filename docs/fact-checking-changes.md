@@ -360,7 +360,7 @@ Also on 3 Nov:
 ## 12. What a claim turns on, and the queries built from it (2026-11-04)
 
 Found by checking the first 20 train claims by hand against the pipeline
-(`docs/troubleshooting/`, `backend/data/evaluation/experiments/claude-search/`):
+(`docs/troubleshooting/fact-checking/`, `backend/data/evaluation/experiments/claude-search/`):
 Claude got 16 right, the pipeline today 9. Upstream of every wrong verdict was a
 search that could not find the point. **Built, opt-in, not yet measured.**
 
@@ -404,3 +404,59 @@ search that could not find the point. **Built, opt-in, not yet measured.**
   (`/iterate-fact-check`, `query_plan` is in `SEARCH_SIDE`), against two
   searched baselines in the same window. The default stays `sentence` until it
   holds there and on the test half once.
+
+## 13. AVeriTeC, and nothing from after the claim (2026-11-05)
+
+All fact-checking evaluation moves to AVeriTeC's dev split, measured as ClaimCheck
+measures it. `docs/decisions/evaluation.md`, "AVeriTeC"; pre-registered in
+`backend/data/evaluation/experiments/averitec/protocol.md`, which has the results.
+
+- **The temporal gate** (`retrieval/temporal.py`, `ArticleContext.evidence_before`,
+  `evidence_undated`). A page must be shown to predate the claim: refused for a late
+  date known for it or stated in its text, as a reference work served today, or as an
+  undated fact-check. **The app is unchanged:** it has no cutoff, and nothing runs.
+  Replaced from further down the ranking, up to three times the evidence cap.
+- **Recency is measured from the claim, under a cutoff**, not from today.
+- **What the audit missed.** The first store run's audit said Held, reading addresses
+  and dates only. Its pages' text said otherwise on 26 of 100 claims, so that 50.0% is
+  void, the gate reads text now, and the audit reads what the gate read.
+- **The harness:** a third way to search (`--knowledge-store`), the dataset's kind, the
+  report's first section, `cli averitec import | audit-store | submission`; the sealed
+  test half's hook lets AVeriTeC's runs through during a campaign, by the user's choice,
+  and nothing else.
+
+## 14. Questions before the search, and no papers for AVeriTeC (2026-11-06)
+
+Both off in the app. The rule, written before either ran, and every try with its numbers:
+`backend/data/evaluation/experiments/averitec/questions-rule.md`. The literature behind the
+first: the thesis, "Deciding What to Search".
+
+- **`query_plan: questions`** (`fact_checker/questions.py`). One call to the verifier's model
+  writes up to three questions from the claim's text, its names and its checkable point's
+  details; each is held to the claim without a model (it names one of the claim's names,
+  carries a decisive detail, states no figure the claim does not, repeats no kept one). The
+  search is the checkable plan's anchor query, then one query per question. A question's
+  answer is the first judged source its query found that supports or contradicts. None kept,
+  or a deadline: the checkable plan as it is. `FactCheck.question_plan`, the response's
+  `questionPlan`, cache schema 15. The checkable point itself is unchanged.
+- **Built on 10 AVeriTeC train claims**, the question step read alone first: from 9 claims
+  keeping a question about "a Presidential candidate" to 10 keeping ones that name Joe Biden,
+  Nanavati Hospital, Ryan Zinke. Searched: the questions alone left too few candidates after
+  the temporal gate (369 against 634), so the anchor goes first (620).
+- **`cli run --search-cache`** (`evaluation/search_cache.py`): a query asked before is
+  answered as it was. Identical queries found a source taking a side one hour and none the
+  next, swinging one 10-claim run from 8 right to 3; through the cache, two plans differ by
+  what they asked. For comparing on train only; it needs a label.
+- **`search_science_engines: drop`** for AVeriTeC's web runs (`averitec_web*.json`; the app
+  keeps them). A result only arXiv, Crossref, Semantic Scholar or PubMed returned is left out
+  before the candidates are counted. With the news cut by the temporal gate, those engines
+  filled the evidence with papers silent on the claim. Measured on its own on the same 10
+  claims, all but six searches recorded: no detectable difference in accuracy (checkable 4 ->
+  5, questions 5 -> 5 of 10), the papers among the judged sources 23 -> 0 and 20 -> 0, the
+  sources taking a side 20 -> 18 and 14 -> 11, and the median claim 95 -> 48 s and 99 -> 60 s
+  with half the model calls. Adopted for the time and for validity, not for accuracy.
+- **`cli averitec qa-score`** (`evaluation/averitec_score.py`): the official scorer's Q-only,
+  Q+A and AVeriTeC score, re-implemented; the submission carries the questions.
+- **Not yet:** the 100-claim train try and the dev conditions `store-questions` and
+  `web-questions`, held at the user's request until the plan is improved further on 10 claims
+  at a time. 10 claims decide nothing: none of the figures above is a result.

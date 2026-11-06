@@ -131,13 +131,13 @@ def on_site(domain: str | None, site: str | None) -> bool:
 
 def verdict_leak(record: dict) -> bool | None:
     """
-    x-fact only: a ranked source is on the row's own site, the
+    x-fact and AVeriTeC: a ranked source is on the row's own site, the
     fact-checker that published the verdict. A verdict read off that page
     is the answer retrieved, not a claim verified. None for the custom
     set, whose `site` is the article's publisher, not a fact-checker.
     """
 
-    if record.get("dataset") != "xfact":
+    if record.get("dataset") not in ("xfact", "averitec"):
         return None
 
     return any(

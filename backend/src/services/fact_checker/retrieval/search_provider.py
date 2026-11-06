@@ -9,9 +9,13 @@ from src.models.fact_checker.evidence import Evidence, EvidenceOrigin
 from src.services.concurrency import bounded_map
 from src.services.fact_checker.claim_selector import ArticleContext
 from src.services.duckduckgo import DuckDuckGoClient
-from src.services.search import SearchUnavailableError, SearxngClient
+from src.services.search import SearchUnavailableError, SearxngClient, only_scholarly
 
-from .query_builder import PlannedQuery, fuse_by_rank, plan_queries
+# As many results as SearXNG gave: what is asked for when some are to be
+# left out before the candidates are counted.
+EVERY_RESULT = 1000
+
+from .query_builder import PlannedQuery, fuse_by_rank, plan_arguments, plan_queries
 
 
 def default_fallback() -> DuckDuckGoClient | None:
@@ -47,16 +51,20 @@ class SearchProvider:
         language: str | None = None,
         kinds: tuple[str, ...] | None = None,
         style: str | None = None,
+        terms_order: str | None = None,
+        figures_style: str | None = None,
     ) -> list[PlannedQuery]:
         """
         The queries `search` will send, each with the question it asks.
         Public so the live view can show what is being looked up *before*
         the search returns, from the same code that runs it rather than a
         copy that drifts - which is why `kinds` must be the run's
-        `query_kinds`, as `search` passes it - and `style` its `query_plan`.
+        `query_kinds`, as `search` passes it - `style` its `query_plan`
+        `terms_order` its `checkable_terms` and `figures_style` its
+        `checkable_figures` (query_builder.plan_arguments).
         """
 
-        return plan_queries(claim, context, language, kinds, style)
+        return plan_queries(claim, context, language, kinds, style, terms_order, figures_style)
 
     def queries_for(
         self,
@@ -100,7 +108,7 @@ class SearchProvider:
         thresholds = thresholds or PipelineThresholds()
 
         return self.search_queries(
-            self.plan(claim, context, language, thresholds.query_kinds, thresholds.query_plan),
+            self.plan(claim, context, language, *plan_arguments(thresholds)),
             thresholds, language, timings=timings,
         )
 
@@ -124,8 +132,10 @@ class SearchProvider:
         if not queries:
             return []
 
+        scholarly = thresholds.search_science_engines != "drop"
+
         timed = bounded_map(
-            lambda query: self._timed(query, candidates, language),
+            lambda query: self._timed(query, candidates, language, scholarly),
             queries,
             max_workers=settings.QUERY_MAX_CONCURRENCY,
             thread_name_prefix="searxng-query",
@@ -153,6 +163,7 @@ class SearchProvider:
         query: PlannedQuery,
         candidates: int,
         language: str | None,
+        scholarly: bool = True,
     ) -> tuple[list[Evidence] | SearchUnavailableError, dict]:
         """
         `_run_or_failure`, and how long it took. Measured in the query's
@@ -162,7 +173,7 @@ class SearchProvider:
 
         started = time.perf_counter()
 
-        result = self._run_or_failure(query, candidates, language)
+        result = self._run_or_failure(query, candidates, language, scholarly)
 
         last_route = getattr(self.client, "last_route", None)
 
@@ -180,6 +191,7 @@ class SearchProvider:
         query: PlannedQuery,
         candidates: int,
         language: str | None,
+        scholarly: bool = True,
     ) -> list[Evidence] | SearchUnavailableError:
         """
         `_run`, with a failure returned rather than raised: `bounded_map`
@@ -188,7 +200,7 @@ class SearchProvider:
         """
 
         try:
-            return self._run(query, candidates, language)
+            return self._run(query, candidates, language, scholarly)
         except SearchUnavailableError as exc:
             return exc
 
@@ -197,18 +209,31 @@ class SearchProvider:
         query: PlannedQuery,
         candidates: int,
         language: str | None,
+        scholarly: bool = True,
     ) -> list[Evidence]:
-        """One query's hits, in the order the engine returned them."""
+        """
+        One query's hits, in the order the engine returned them.
+
+        Without the scholarly engines (`search_science_engines: drop`), the
+        whole answer is asked for and what only they returned is left out
+        before `candidates` are counted, so web results take their places
+        rather than leaving the slots empty.
+        """
 
         evidence: list[Evidence] = []
 
         seen: set[str] = set()
 
-        for item in self.client.search(
+        answer = self.client.search(
             query.text,
-            max_results=candidates,
+            max_results=candidates if scholarly else EVERY_RESULT,
             language=language,
-        ):
+        )
+
+        if not scholarly:
+            answer = [item for item in answer if not only_scholarly(item)][:candidates]
+
+        for item in answer:
 
             url = item.get("url")
             title = item.get("title")
@@ -237,7 +262,7 @@ class SearchProvider:
                     # different indexes are better corroboration than
                     # two found by the same one.
                     engines=list(item.get("engines") or []),
-                    found_by=[query.kind.value],
+                    found_by=[query.label],
                 )
             )
 
@@ -271,8 +296,8 @@ class SearchProvider:
 
                 kinds = found_by.setdefault(item.url, [])
 
-                if query.kind.value not in kinds:
-                    kinds.append(query.kind.value)
+                if query.label not in kinds:
+                    kinds.append(query.label)
 
                 # The first query to return a page owns its metadata; the
                 # later ones only add to found_by. Snippets differ per

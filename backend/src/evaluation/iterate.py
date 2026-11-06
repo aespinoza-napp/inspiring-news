@@ -87,6 +87,10 @@ SEARCH_SIDE = (
     "fetch_evidence_pages",
     "claim_restatement",
     "query_plan",
+    "checkable_terms",
+    "checkable_figures",
+    "evidence_undated",
+    "search_science_engines",
     "second_look_enabled",
     "second_look_below_confidence",
     "claim_deadline_seconds",
@@ -97,6 +101,10 @@ SEARCH_SIDE = (
 _BEFORE_IT_EXISTED = {
     "claim_restatement": "off",
     "query_plan": "sentence",
+    "checkable_terms": "sentence",
+    "checkable_figures": "bare",
+    "evidence_undated": "drop",
+    "search_science_engines": "keep",
 }
 
 # Code a replay never runs: a change here makes a try a searched one.

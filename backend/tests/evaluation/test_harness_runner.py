@@ -247,8 +247,10 @@ def test_every_field_of_the_record_format_is_filled(repository, tmp_path):
     # Null only where null is the pipeline's real answer: no error, no
     # stage note for a verdict that was not recalibrated, no second look
     # in a run that did not enable one, and no loop in a run without it.
-    # closedBook exists only in a closed-book run (test_closed_book.py).
-    nullable = {"error", "stageNote", "secondLook", "loop", "closedBook"}
+    # closedBook exists only in a closed-book run (test_closed_book.py), and
+    # factCheckUrl only on an AVeriTeC row (test_averitec.py), and
+    # questionPlan only under `query_plan: questions` (test_questions.py).
+    nullable = {"error", "stageNote", "secondLook", "loop", "closedBook", "factCheckUrl", "questionPlan"}
 
     empty = [
         key for key, value in record.items()
@@ -270,7 +272,7 @@ def test_every_field_of_the_record_format_is_filled(repository, tmp_path):
     first = record["evidence"][0]
 
     assert set(first) == {
-        "url", "domain", "title", "origin", "publishedAt", "relevance", "semantic",
+        "url", "domain", "title", "origin", "publishedAt", "latestDateInText", "relevance", "semantic",
         "lexical", "recency", "reliability", "reliabilityKnown", "pertinence",
         "stance", "cited", "quote", "engines", "foundBy",
     }
@@ -435,6 +437,16 @@ def test_a_run_with_every_query_kind_keeps_the_key_it_had_before_the_switch(tmp_
         "verifier_rules",
         # What the search asks (2026-11-04): the sentence's words, as before.
         "query_plan",
+        # Which words fill the checkable point's terms (2026-11-05), as before.
+        "checkable_terms",
+        # Whether a figure keeps its currency or unit (2026-11-05), as before.
+        "checkable_figures",
+        # What a temporal cutoff does with an undated page (2026-11-05): read
+        # only under a cutoff, which no earlier run had.
+        "evidence_undated",
+        # Whether a result only the scholarly engines found counts (2026-11-06):
+        # it did, as before.
+        "search_science_engines",
     }
 
     before = {name: value for name, value in thresholds.model_dump().items() if name not in added_later}

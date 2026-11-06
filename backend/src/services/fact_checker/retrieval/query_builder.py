@@ -46,8 +46,8 @@ from enum import Enum
 
 from src.models.core.claim import Claim
 from src.services.fact_checker.claim_selector import ArticleContext
-from src.services.fact_checker.retrieval.checkable import checkable_point
-from src.services.fact_checker.terms import acronyms, claim_terms, content_terms, subject_terms
+from src.services.fact_checker.retrieval.checkable import MAX_TERMS, CheckablePoint, carries, checkable_point, names_in, proper_names
+from src.services.fact_checker.terms import TOKEN, acronyms, claim_terms, content_terms, fold, subject_terms
 
 # Terms that pull refutations to the surface, per language. Every query
 # built from a claim is phrased affirmatively, which biases retrieval
@@ -101,6 +101,12 @@ class QueryKind(str, Enum):
     # refutation: "refutation" in the kinds keeps it.
     SPECIFICS = "specifics"
 
+    # `query_plan: questions` only (2026-11-06): one of the claim's own
+    # questions (fact_checker/questions.py), searched as its subject, its
+    # detail and its key words. The plan's only kind: `query_kinds` does
+    # not filter it, since the questions replace all three.
+    QUESTION = "question"
+
 
 @dataclass(frozen=True)
 class PlannedQuery:
@@ -108,6 +114,15 @@ class PlannedQuery:
     text: str
 
     kind: QueryKind
+
+    # What its hits carry in `Evidence.found_by`, when the kind alone does
+    # not tell its queries apart: "question-2" is how the second question
+    # finds the source that answers it. Empty: the kind's value.
+    tag: str = ""
+
+    @property
+    def label(self) -> str:
+        return self.tag or self.kind.value
 
 
 def _entities(claim: Claim) -> list[str]:
@@ -241,12 +256,14 @@ def plan_checkable(
     claim: Claim,
     context: ArticleContext | None = None,
     language: str | None = None,
+    terms_order: str | None = None,
+    figures_style: str | None = None,
 ) -> list[PlannedQuery]:
     """
     `query_plan: checkable` (2026-11-04): the three questions asked from the
     claim's checkable point (retrieval/checkable.py) rather than from the
     sentence's words. Why, with the queries it replaced:
-    docs/troubleshooting/02-queries.md.
+    docs/troubleshooting/fact-checking/02-queries.md.
 
     - anchor:      the names, identifiers and figures, and a date - who and
                    what, pinned to this event;
@@ -257,9 +274,13 @@ def plan_checkable(
                    refutation query, as in the sentence plan. "fact check
                    OR debunked" found no refutation in 20 claims and twice
                    found its own words ("Bunk: The Rise of Hoaxes").
+
+    `terms_order` is `PipelineThresholds.checkable_terms`, passed to
+    `checkable_point`: which of the sentence's words fill the terms;
+    `figures_style` its `checkable_figures`: whether "£5.9bn" is a figure.
     """
 
-    point = checkable_point(claim, context, language)
+    point = checkable_point(claim, context, language, terms_order, figures_style)
 
     figures = [_quoted(figure) for figure in point.figures]
     identifiers = [_quoted(identifier) for identifier in point.identifiers]
@@ -270,7 +291,13 @@ def plan_checkable(
 
     anchor = _joined(who + identifiers[:2] + figures[:2] + point.dates[:1])
 
-    proposition = _joined(point.names[:2] + point.subject[:2] + figures[:1] + point.terms[:5]) if point.terms else ""
+    # Past the six slots there is only ever `finding_closing`'s word, and a
+    # word kept in the point and searched by no query would be a kept word on
+    # paper only: terms[:5] never reached the sixth, let alone a seventh.
+    proposition = (
+        _joined(point.names[:2] + point.subject[:2] + figures[:1] + point.terms[:5] + point.terms[MAX_TERMS:])
+        if point.terms else ""
+    )
 
     if point.specific:
         distinctive = [_quoted(figure) for figure in point.distinctive_figures]
@@ -294,6 +321,126 @@ def plan_checkable(
     ]
 
 
+# A question is three of them at most: the leading systems ask more
+# (InFact ten), but every question is a search and its pages, and a claim
+# already takes most of a minute on this machine's CPU.
+MAX_QUESTIONS = 3
+
+MAX_QUESTION_WORDS = 6
+
+# A question's own words that are not about the claim: searched, "What
+# document study" and "What does" (6 Nov) were noise. Both languages, folded.
+QUESTION_WORDS = {
+    "what", "which", "when", "where", "whom", "whose", "does", "did", "have", "has", "were", "was",
+    "many", "much", "said", "says", "say", "source", "sources", "state", "states", "stated",
+    "document", "documents", "study", "studies", "according", "name", "true", "claim", "claims",
+    "cual", "cuales", "cuando", "donde", "quien", "quienes", "como", "cuanto", "cuanta", "cuantos",
+    "cuantas", "segun", "dice", "dijo", "fuente", "fuentes", "documento", "estudio", "nombre",
+    "cierto", "verdad",
+}
+
+
+def question_tag(position: int) -> str:
+    """The `found_by` tag of the question at `position`, from 1."""
+
+    return f"question-{position}"
+
+
+def question_query(question: str, claim: Claim, point: CheckablePoint, language: str | None = None) -> str:
+    """
+    One question as a search: the claim's first name, and the others the
+    question names (checkable.names_in: "Ryan Zinke" names the Secretary), the figures and identifiers it carries
+    quoted, a date it carries, then its own key words, none twice and no
+    question words. InFact found model-written queries better than the
+    question as typed; these are written by rule instead, so a question
+    costs no second call.
+    """
+
+    names = proper_names(claim, point)
+    named = [name for name in names if names_in(question, name)]
+    named += [word for word in point.subject if carries(question, word)]
+
+    # The claim's first name leads every query, named in the question or not:
+    # "When did the Sovereign Internet law come into effect?" searched without
+    # "Russian Authorities" found papers on broadband in the UK (6 Nov).
+    if names and names[0] not in named:
+        named.insert(0, names[0])
+
+    # A name inside a longer one it names is the same name: "Ryan Zinke"
+    # beside "US Interior Secretary Ryan Zinke", "Walmart" beside "Walmart
+    # Tweeted" (6 Nov).
+    def tokens(name: str) -> set[str]:
+        return set(TOKEN.findall(fold(name)))
+
+    # Of a name and a longer one holding it, the one the question writes
+    # whole: "Ryan Zinke", not the point's "US Interior Secretary Ryan Zinke",
+    # whose query found nothing where the shorter found five sources (6 Nov).
+    def written(name: str) -> bool:
+        return carries(question, name)
+
+    named = [
+        name for name in named
+        if not any(
+            other != name and tokens(name) < tokens(other) and (written(other) or not written(name))
+            for other in named
+        )
+        and not any(
+            other != name and tokens(other) < tokens(name) and written(other) and not written(name)
+            for other in named
+        )
+    ]
+    exact = [_quoted(value) for value in point.identifiers + point.figures if carries(question, value)]
+    dates = [value for value in point.dates if carries(question, value)]
+
+    # A word already inside a name or a figure is not searched again:
+    # "Joe Biden US Biden" (6 Nov).
+    taken = {word for part in named[:3] + exact + dates for word in TOKEN.findall(fold(part))}
+
+    words = [
+        word for word in content_terms(question, language)
+        if fold(word) not in QUESTION_WORDS and fold(word) not in taken
+    ]
+
+    return _joined(named[:3] + exact[:2] + dates[:1] + words[:MAX_QUESTION_WORDS])
+
+
+def plan_questions(
+    claim: Claim,
+    context: ArticleContext | None = None,
+    language: str | None = None,
+    terms_order: str | None = None,
+    figures_style: str | None = None,
+) -> list[PlannedQuery]:
+    """
+    `query_plan: questions` (2026-11-06): the checkable plan's anchor query,
+    then one query per question the claim kept (`ArticleContext.
+    search_questions`, set by FactChecker), each tagged with its position.
+    None kept: the checkable plan, as it is.
+
+    The anchor first because the questions alone left too little after the
+    temporal gate: their queries are specific, so they return fewer pages,
+    and most of what the web returns is dated after the claim. On 10 train
+    claims through one search cache, 48 candidates for Biden against the
+    checkable plan's 80, and one source left (6 Nov). Broad, then pointed.
+    """
+
+    questions = (context.search_questions if context else [])[:MAX_QUESTIONS]
+
+    checkable = plan_checkable(claim, context, language, terms_order, figures_style)
+
+    if not questions:
+        return checkable
+
+    point = checkable_point(claim, context, language, terms_order, figures_style)
+
+    anchor = [query for query in checkable if query.kind is QueryKind.ANCHOR][:1]
+
+    return anchor + [
+        PlannedQuery(question_query(question, claim, point, language), QueryKind.QUESTION, question_tag(position))
+        for position, question in enumerate(questions, start=1)
+    ]
+
+
 def _joined(parts: list[str]) -> str:
 
     seen: set[str] = set()
@@ -313,12 +460,34 @@ def _refutation_terms(language: str | None) -> str:
     return REFUTATION_TERMS.get((language or "en").lower()[:2], REFUTATION_TERMS["en"])
 
 
+def plan_arguments(thresholds) -> tuple:
+    """
+    The thresholds that decide what is planned, in the order plan_queries
+    and SearchProvider.plan take them after the claim, context and language.
+
+    One place, so the retriever and the offline measure of the
+    troubleshooting loop (src/evaluation/troubleshoot.py, which the loop's
+    agent may not edit) cannot drift: a new planning threshold is added here
+    and to the two signatures, and both callers see it.
+    """
+
+    return thresholds.query_kinds, thresholds.query_plan, thresholds.checkable_terms, thresholds.checkable_figures
+
+
+def plan_for_thresholds(claim: Claim, context: ArticleContext | None, language: str | None, thresholds) -> list[PlannedQuery]:
+    """plan_queries under one run's thresholds, as the retriever plans them."""
+
+    return plan_queries(claim, context, language, *plan_arguments(thresholds))
+
+
 def plan_queries(
     claim: Claim,
     context: ArticleContext | None = None,
     language: str | None = None,
     kinds: tuple[str, ...] | None = None,
     style: str | None = None,
+    terms_order: str | None = None,
+    figures_style: str | None = None,
 ) -> list[PlannedQuery]:
     """
     Every query this claim should be looked up with, in order.
@@ -334,11 +503,18 @@ def plan_queries(
 
     `style` is `PipelineThresholds.query_plan`: None or "sentence" plans
     from the sentence's words, as every run did before 2026-11-04;
-    "checkable" plans from the claim's checkable point (`plan_checkable`).
+    "checkable" plans from the claim's checkable point (`plan_checkable`);
+    "questions" from the claim's questions (`plan_questions`).
+    `terms_order` is `PipelineThresholds.checkable_terms` and
+    `figures_style` its `checkable_figures`, both read under "checkable"
+    only.
     """
 
     if style == "checkable":
-        return _filtered(plan_checkable(claim, context, language), kinds)
+        return _filtered(plan_checkable(claim, context, language, terms_order, figures_style), kinds)
+
+    if style == "questions":
+        return _filtered(plan_questions(claim, context, language, terms_order, figures_style), kinds)
 
     planned = [
         PlannedQuery(build_query(claim, context, language), QueryKind.ANCHOR),
@@ -360,7 +536,8 @@ def _filtered(planned: list[PlannedQuery], kinds: tuple[str, ...] | None) -> lis
     if kinds is not None:
         planned = [
             query for query in planned
-            if (QueryKind.REFUTATION.value if query.kind is QueryKind.SPECIFICS else query.kind.value) in kinds
+            if query.kind is QueryKind.QUESTION
+            or (QueryKind.REFUTATION.value if query.kind is QueryKind.SPECIFICS else query.kind.value) in kinds
         ]
 
     seen: set[str] = set()

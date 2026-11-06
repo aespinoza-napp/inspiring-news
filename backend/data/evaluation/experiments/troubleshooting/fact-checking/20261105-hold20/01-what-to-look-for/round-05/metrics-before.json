@@ -1,0 +1,11 @@
+{
+ "stage": "01",
+ "label": "before",
+ "at": "2026-11-05T12:54:45+01:00",
+ "claims": 20,
+ "decisiveDetails": 99,
+ "checkablePointCoverage": 0.698,
+ "checkablePointAllCarried": 6,
+ "sentencePlanCoverage": 0.382,
+ "claudeNamedSourceType": 20
+}

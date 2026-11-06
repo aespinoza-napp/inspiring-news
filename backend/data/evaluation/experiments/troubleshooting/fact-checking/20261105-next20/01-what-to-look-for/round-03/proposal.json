@@ -1,0 +1,18 @@
+{
+  "stage": "01",
+  "change": "New checkable_terms value finding_first: framing_last with the sentence's asides moved too - prepositions, adverbs and modals the stopword lists leave out (checkable.ASIDES) and a verb in the simple past (checkable.PAST_TENSE: en -ed not -eed, es -ó/-aron/-ieron) go after the finding's words and before the framing, moved, never dropped. Default 'sentence' and 'framing_last' unchanged.",
+  "files": [
+    "backend/src/services/fact_checker/retrieval/checkable.py",
+    "backend/src/config/thresholds.py",
+    "backend/src/config/settings.py",
+    "backend/tests/services/fact_checker/retrieval/test_checkable.py"
+  ],
+  "kind": "code",
+  "mode": "offline",
+  "thresholds": {
+    "checkable_terms": "finding_first"
+  },
+  "predict": "fact123 gains 'monitoring cameras' (0.8 -> 1.0; checkablePointAllCarried 7 -> 8) and fact088 gains 'cartilage' (0.667 -> 0.833; 'older mice' kept, 'knee' still missing). fact106 unchanged ('maple', 'crew' still past the sixth term), fact085 and fact086 unchanged (their slots go to nouns). Every other claim carries the same details: fact090 keeps summer/sewage, fact101 prices/therm, fact122 'third', fact117 'llenó'. checkablePointCoverage up from 0.832 by about 0.018; sentencePlanCoverage stays 0.523. Predicted by hand from the code and comparison-before.json's terms (running Python on the batch needed an approval this session did not have); the script computes the figures.",
+  "risks": "(1) A past-tense verb that is the finding ('banned', 'approved', 'infected') is moved behind the other content words and cut in a sentence with more than six: the likeliest loss on the held-out batch. (2) An -ed noun or adjective ('hundred', 'sacred') is moved too. (3) The proposition (terms[:5]) and specifics (terms[:3]) queries change for claims that lose no detail here (fact090, fact099, fact100, fact101, fact122); only a searched try measures that. (4) Read under query_plan checkable only; 'sentence' and 'framing_last' keep every earlier run and its key.",
+  "iterate": "cli iterate propose --campaign <campaign> --kind search --hypothesis \"Under query_plan checkable, prepositions, adverbs and past-tense verbs ('above', 'snapped', 'reversed') take term slots before the finding's nouns, so 'monitoring cameras' (fact123) and 'cartilage' (fact088) reach no query (20261105-next20 round 3); putting them after the finding puts its nouns into the proposition query.\" --predict \"Against the base {query_plan: checkable, checkable_terms: framing_last, checkable_figures: with_units}: the settling source is among the candidates as often or more; train accuracy judged by the rule on the full train half, not on the 20 (run-to-run noise 6-9 points).\" --thresholds <campaign dir>/tries/NN.json  (NN.json = {\"query_plan\": \"checkable\", \"checkable_terms\": \"finding_first\", \"checkable_figures\": \"with_units\"})"
+}

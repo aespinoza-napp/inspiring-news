@@ -452,10 +452,68 @@ class Settings(BaseSettings):
     # a model (fact_checker/retrieval/checkable.py) - and asks a "specifics"
     # query in the refutation's place when it has any. Built because on 20
     # train claims every figure was missing from every query, the key noun
-    # often too (docs/troubleshooting/01-what-to-look-for.md,
+    # often too (docs/troubleshooting/fact-checking/01-what-to-look-for.md,
     # 02-queries.md). `sentence` stays the default until a searched try
-    # measures the other (the iterate-fact-check campaign).
-    QUERY_PLAN: Literal["sentence", "checkable"] = "sentence"
+    # measures the other (the iterate-fact-check campaign). `questions`
+    # (2026-11-06): one model call writes up to three questions from the
+    # claim and its checkable point, each held to the claim without a model
+    # (it must carry the claim's subject and one decisive detail, and state
+    # no figure the claim does not), and each kept question is one query;
+    # none kept is the checkable plan. Asked before searching, as AVeriTeC's
+    # leading systems do (fact_checker/questions.py; the rule:
+    # data/evaluation/experiments/averitec/questions-rule.md).
+    QUERY_PLAN: Literal["sentence", "checkable", "questions"] = "sentence"
+
+    # SEARCH_SCIENCE_ENGINES (2026-11-06): whether a web result that only the
+    # scholarly engines returned (arXiv, Crossref, Semantic Scholar, PubMed:
+    # services/search.SCHOLARLY_ENGINES) may be evidence. `keep`, as every run
+    # before. `drop` removes them before a query's candidates are counted, so
+    # web results take their places. For AVeriTeC, whose claims are politics
+    # and health from 2019-2020: on 10 of its train claims, with the news cut
+    # by the temporal gate, Crossref and arXiv gave 1,093 of 1,538 results (by engine)
+    # and filled the evidence with papers that said nothing on the claim
+    # (data/evaluation/experiments/averitec/questions-rule.md). The app keeps
+    # them: a paper is evidence for a science story.
+    SEARCH_SCIENCE_ENGINES: Literal["keep", "drop"] = "keep"
+
+    # EVIDENCE_UNDATED (2026-11-05): under a temporal cutoff
+    # (ArticleContext.evidence_before, the benchmark's), what happens to a
+    # page with no date. `drop`: what cannot be shown to predate the claim is
+    # not evidence (retrieval/temporal.py). `keep` is for the AVeriTeC
+    # knowledge store, whose pages have no dates and were collected for the
+    # purpose. Read only under a cutoff, so the app never sees it.
+    EVIDENCE_UNDATED: Literal["drop", "keep"] = "drop"
+
+    # CHECKABLE_TERMS (2026-11-05): under QUERY_PLAN=checkable, which of the
+    # sentence's words fill the checkable point's six terms. `sentence`
+    # takes them in the sentence's order, as before; `framing_last` puts
+    # who did, said or published it after the finding (checkable.FRAMING),
+    # because a news sentence names its author first and the finding was
+    # cut ("estudio liderado identificado" kept, "disfunción diastólica"
+    # lost: docs/troubleshooting/fact-checking/experiments/
+    # 01-what-to-look-for/20261105-next20.md). `finding_first` also puts the
+    # sentence's asides - prepositions, adverbs, modals and a verb in the
+    # past (checkable.ASIDES, PAST_TENSE) - after the finding and before the
+    # framing: "above snapped" took the slots "monitoring cameras" needed
+    # (fact123, 20261105-next20-round-03.md). `finding_closing` is
+    # `finding_first` with a seventh term when the cut took the sentence's
+    # closing finding word, which also goes into the proposition query:
+    # "macrófagos" (fact086) and "knee" (fact088) came after six others
+    # (20261105-next20-round-05.md). Read under `checkable` only.
+    CHECKABLE_TERMS: Literal["sentence", "framing_last", "finding_first", "finding_closing"] = "sentence"
+    # CHECKABLE_FIGURES (2026-11-05): under QUERY_PLAN=checkable, whether a
+    # figure with its currency or unit written onto it ("£5.9bn", "189p",
+    # "$40m", "8640km") is a figure. `bare` keeps the old pattern, which
+    # stops at any letter after the digits and so dropped those whole:
+    # "£5.9bn of gas imports" (fact099) and "189p per therm" (fact101)
+    # reached no query (docs/troubleshooting/fact-checking/experiments/
+    # 01-what-to-look-for/20261105-next20-round-02.md). `with_units` keeps
+    # each as written, sign and unit included. `counted` is `with_units` with
+    # the noun a figure counts kept beside it ("30 minutes", "116 mujeres"),
+    # the spaced form of an "11-set": the noun stops taking one of the six
+    # term slots, and on the 5 Nov batch "minutes" took the one "crew"
+    # needed (fact106, 20261105-next20-round-04.md). Read under `checkable` only.
+    CHECKABLE_FIGURES: Literal["bare", "with_units", "counted"] = "bare"
     # The model that restates claims; None means LLM_MODEL. Its own, like
     # the writer's: restating is rewriting a sentence from its article, and
     # the verifier's 3B labelled the same sentence "attributed" in one run

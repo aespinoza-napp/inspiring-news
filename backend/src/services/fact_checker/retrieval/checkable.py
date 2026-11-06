@@ -2,7 +2,7 @@
 What a claim turns on - the "checkable point" - found before anything is
 searched, without a model (`query_plan: checkable`).
 
-Why this exists (docs/troubleshooting/01-what-to-look-for.md, 4 Nov 2026):
+Why this exists (docs/troubleshooting/fact-checking/01-what-to-look-for.md, 4 Nov 2026):
 on the first 20 train claims, 16 turned on a figure, a date or a named
 place, and the pipeline's queries carried none of them. Three causes, each
 seen there:
@@ -56,6 +56,19 @@ NUMBER = re.compile(r"(?<![\w.,:-])\d+(?:[.,]\d+)*(?![\w-]|[.,:]\d)")
 
 YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
 
+# A figure with its currency or unit written onto it: "£5.9bn", "189p",
+# "$40m", "€1,2bn", "8640km", "50GW". NUMBER stops at any letter after the
+# digits, so each of these used to be dropped whole, figure and all: on the
+# 5 Nov batch "£5.9bn" (fact099) and "189p per therm" (fact101) reached no
+# query (`checkable_figures: with_units`, 2026-11-05). A sign, a short
+# suffix, or both; ordinals ("21st", "2nd", "3er", "2do", "4to") are not
+# units, in either language (invariant 8).
+UNIT_FIGURE = re.compile(
+    r"(?<![\w.,:-])(?:[£$€¥](?=\d))?\d+(?:[.,]\d+)*(?:[A-Za-z]{1,3})?(?![\w-]|[.,:]\d)",
+)
+CURRENCY = "£$€¥"
+ORDINAL_SUFFIXES = {"st", "nd", "rd", "th", "er", "ra", "ro", "do", "da", "to", "ta", "mo", "vo", "no"}
+
 # A figure's scale belongs to it: "25 millones" is a different search from
 # "25", and the scale word alone is nothing to look for.
 SCALE = re.compile(
@@ -91,6 +104,74 @@ FILLERS = {
         "según", "segun", "dijo", "afirmó", "afirmo", "señaló", "senalo", "tras", "pues",
         "incluso", "ejemplo", "total", "decidiera", "después", "despues",
     },
+}
+
+# Who did, said or published it: the sentence's framing, which a news
+# sentence puts first and its finding last. `checkable_terms: framing_last`
+# (2026-11-05) moves these after the other terms instead of dropping them,
+# so a short sentence keeps them. Built because on the 5 Nov batch
+# (docs/troubleshooting/fact-checking/experiments/01-what-to-look-for/
+# 20261105-next20.md) the six term slots went to "estudio liderado
+# identificado" (fact085), "primera autora investigadora resultados
+# muestran" (fact086) and "colleague associate professor" (fact088), and
+# the finding - "disfunción diastólica", "hiperglucemia", "older mice" -
+# was cut before any query. Word classes, not those claims' words:
+# reporting and attribution, research roles and acts, discourse framing.
+# Not "first" / "primer": "primer país" is what fact118 claims. Both
+# languages (invariant 8); exact words, folded, since a Spanish prefix
+# ("autor*") would take "autoridad" too.
+FRAMING = {
+    "en": {
+        "study", "studies", "led", "author", "authors", "researcher", "researchers",
+        "colleague", "colleagues", "professor", "professors", "associate", "assistant",
+        "results", "showed", "shown", "discovered", "identified", "published", "reported",
+        "adds", "added", "reveals", "revealed", "explained", "explains", "told",
+        "later", "main", "goal", "aim",
+    },
+    "es": {
+        "estudio", "estudios", "liderado", "liderada", "dirigido", "dirigida",
+        "autor", "autora", "autores", "autoras", "investigador", "investigadora",
+        "investigadores", "investigadoras", "profesor", "profesora", "profesores",
+        "resultados", "muestran", "identificado", "identificada", "publicado", "publicada",
+        "participaron", "explicó", "explica", "añadió", "indicó", "aseguró", "destacó",
+        "reveló", "principal", "objetivo",
+    },
+}
+
+# Words that are neither the finding nor its framing: the closed classes the
+# stopword lists leave out (prepositions, adverbs of place, time and degree,
+# modals) and a verb in the simple past. `checkable_terms: finding_first`
+# (2026-11-05) puts them after the finding's words and before the framing,
+# moved, never dropped. Built because on the 5 Nov batch, under framing_last,
+# "above" and "snapped" took two of the six slots and "monitoring cameras"
+# was cut (fact123), and "reversed" took the one "cartilage" needed (fact088)
+# (docs/troubleshooting/fact-checking/experiments/01-what-to-look-for/
+# 20261105-next20-round-03.md). A page states the finding in nouns; the
+# verb comes in any tense ("reversed", "reverses", "reversal"), so it is the
+# term a search loses least by. Not "-ing": "monitoring" is the camera.
+# Not "bajo": "más bajo" is what fact124 claims. Both languages
+# (invariant 8).
+ASIDES = {
+    "en": {
+        "above", "below", "along", "around", "against", "among", "amongst", "behind", "beyond",
+        "within", "without", "toward", "towards", "upon", "onto", "near", "back", "away", "again",
+        "ever", "even", "like", "unlike", "since", "until", "despite", "though", "although",
+        "almost", "rather", "quite", "often", "soon", "once", "twice", "will", "would", "could",
+        "should", "might", "must", "shall",
+    },
+    "es": {
+        "ante", "contra", "dentro", "fuera", "cerca", "lejos", "encima", "debajo", "detrás",
+        "detras", "delante", "luego", "ahora", "siempre", "nunca", "antes", "casi", "apenas",
+        "puede", "pueden", "podría", "podria", "podrían", "podrian", "debe", "deben",
+    },
+}
+
+# The simple past: "reversed", "snapped", "arrived" (not "need", "speed",
+# "used"); "logró", "nació", "presentaron", "consiguieron". Read on the word
+# as written, lowercased: the accent is what makes "llenó" a verb.
+PAST_TENSE = {
+    "en": re.compile(r"^[a-z]{2,}[^e\W]ed$"),
+    "es": re.compile(r"^\w{2,}(?:ó|aron|ieron)$"),
 }
 
 DISTINCTIVE = re.compile(r"[%.,]|cent|ciento|\d{3}|[^\W\d_]{3,}$", re.IGNORECASE)
@@ -189,13 +270,91 @@ def dates_of(text: str, language: str | None = None) -> list[str]:
     return _unique(found)
 
 
-def figures_of(text: str) -> tuple[list[str], list[str]]:
+def unit_figures(text: str) -> tuple[list[str], str]:
+    """
+    `(figures, rest)`: the figures with a currency sign or a unit written
+    onto them (`UNIT_FIGURE`), as written ("£5.9bn", "189p"), and the text
+    without them, cut by position so "£40" does not eat the start of
+    "£400m". Not a bare number, not an ordinal, not a single digit with a
+    letter and no sign ("5G", "3D" say too little).
+    """
+
+    found: list[str] = []
+
+    def take(match: re.Match) -> str:
+        token = match.group(0)
+        signed = token[0] in CURRENCY
+        suffix = re.search(r"[A-Za-z]+$", token)
+        digits = re.sub(r"\D", "", token)
+
+        if suffix and suffix.group(0).lower() in ORDINAL_SUFFIXES:
+            return token
+        if not signed and not suffix:
+            return token
+        if not signed and len(digits) < 2:
+            return token
+
+        found.append(token)
+        return " "
+
+    rest = UNIT_FIGURE.sub(take, text)
+
+    return found, rest
+
+
+def counted_figures(text: str, figures: list[str], excluded: set[str], language: str | None = None) -> list[str]:
+    """
+    Each figure with the noun it counts, when the sentence writes one right
+    after it: "30 minutes", "116 mujeres", "24 años", "41% share" - the
+    spaced form of a COUNTED identifier ("11-set"). `checkable_figures:
+    counted` (2026-11-05). Built because on the 5 Nov batch "minutes" took
+    one of the six term slots as a word of its own and "crew" was cut
+    (fact106, docs/troubleshooting/fact-checking/experiments/
+    01-what-to-look-for/20261105-next20-round-04.md); bound to its number,
+    the noun stays in the point and frees the slot.
+
+    A noun only: four letters or more, lowercase (a capital is a name),
+    not a stopword, filler or month (`excluded`), not an aside or a verb in
+    the simple past ("£5.9bn since", not "since"), and not the first half
+    of a compound ("212 travel-related" would cut the compound in two).
+    Order and number of figures unchanged: only what each one says.
+    """
+
+    code = (language or "en").lower()[:2]
+    asides = {fold(word) for word in ASIDES.get(code, ASIDES["en"])}
+    past = PAST_TENSE.get(code, PAST_TENSE["en"])
+
+    def noun_after(figure: str) -> str:
+        match = re.search(rf"(?<![\w.,:-]){re.escape(figure)}\s+([^\W\d_]{{4,}})(?![\w\-‑])", text)
+        if not match:
+            return ""
+        word = match.group(1)
+        if not word[:1].islower():
+            return ""
+        if fold(word) in excluded or fold(word) in asides or past.match(word.lower()):
+            return ""
+        return word
+
+    counted = []
+
+    for figure in figures:
+        noun = noun_after(figure)
+        counted.append(f"{figure} {noun}" if noun else figure)
+
+    return counted
+
+
+def figures_of(text: str, units: bool = False) -> tuple[list[str], list[str]]:
     """
     `(identifiers, figures)`. Identifiers, counts and times are taken out of
     the text first, so their numbers are not reported again on their own;
     years are dates, not figures. Figures are ordered most distinctive
     first: a percentage or a number with separators or decimals, then by
     length. A single digit says too little to search for.
+
+    `units` (`checkable_figures: with_units`) also keeps a figure with its
+    currency or unit written onto it (`unit_figures`); False reads the
+    figures as every run did before 2026-11-05.
     """
 
     identifiers = _unique(IDENTIFIER.findall(text) + COUNTED.findall(text) + TIME.findall(text))
@@ -210,11 +369,20 @@ def figures_of(text: str) -> tuple[list[str], list[str]]:
     for token in percents:
         rest = rest.replace(token, " ")
 
-    numbers = [number for number in NUMBER.findall(rest) if not YEAR.fullmatch(number) and len(re.sub(r"\D", "", number)) > 1]
+    with_units: list[str] = []
 
+    if units:
+        with_units, rest = unit_figures(rest)
+
+    numbers = with_units + [
+        number for number in NUMBER.findall(rest) if not YEAR.fullmatch(number) and len(re.sub(r"\D", "", number)) > 1
+    ]
+
+    # A sign or a unit makes a figure as distinctive as a decimal does: no
+    # bare number carries one, so the order of bare numbers is unchanged.
     def distinctive(figure: str) -> tuple:
         digits = re.sub(r"\D", "", figure)
-        return (bool(re.search(r"[%.,]|cent|ciento", figure)), len(digits))
+        return (bool(re.search(r"[%.,£$€¥]|cent|ciento|[A-Za-z]$", figure)), len(digits))
 
     figures = _unique(percents + sorted(numbers, key=distinctive, reverse=True))
 
@@ -371,13 +539,98 @@ def name_groups(text: str, excluded: set[str]) -> list[str]:
     ]
 
 
-def checkable_point(claim: Claim, context=None, language: str | None = None) -> CheckablePoint:
+def framing_last(terms: list[str], language: str | None = None) -> list[str]:
+    """
+    The terms with the sentence's framing (`FRAMING`) after the rest, each
+    group in sentence order. Nothing dropped: only which six are kept moves.
+    """
+
+    framing = {fold(word) for word in FRAMING.get((language or "en").lower()[:2], FRAMING["en"])}
+
+    return sorted(terms, key=lambda word: fold(word) in framing)
+
+
+def finding_first(terms: list[str], language: str | None = None) -> list[str]:
+    """
+    The finding's words, then the asides (`ASIDES`, `PAST_TENSE`), then the
+    framing (`FRAMING`), each group in sentence order: `framing_last` with
+    the asides moved too. Nothing dropped.
+    """
+
+    return sorted(terms, key=_term_group(language))
+
+
+def _term_group(language: str | None = None):
+    """A term's group, for `finding_first`: 0 the finding, 1 an aside, 2 the framing."""
+
+    code = (language or "en").lower()[:2]
+
+    framing = {fold(word) for word in FRAMING.get(code, FRAMING["en"])}
+    asides = {fold(word) for word in ASIDES.get(code, ASIDES["en"])}
+    past = PAST_TENSE.get(code, PAST_TENSE["en"])
+
+    def group(word: str) -> int:
+        if fold(word) in framing:
+            return 2
+        if fold(word) in asides or past.match(word.lower()):
+            return 1
+        return 0
+
+    return group
+
+
+def finding_closing(terms: list[str], language: str | None = None) -> list[str]:
+    """
+    `finding_first`'s six terms, and a seventh when the cut took the
+    sentence's closing finding word: the last of `terms` (in sentence order)
+    that is neither an aside nor framing. A sentence puts what is new last
+    (end-focus, in both languages): the last item of a list, the place a
+    finding happened. On the 5 Nov batch "macrófagos" closed fact086's list
+    and "knee" fact088's finding, and each sentence ran well past six terms
+    before them (20261105-next20-round-05.md). The six are `finding_first`'s
+    exactly, so nothing leaves; `plan_checkable` adds the seventh to the
+    proposition query.
+    """
+
+    group = _term_group(language)
+
+    kept = finding_first(terms, language)[:MAX_TERMS]
+
+    finding = [word for word in terms if group(word) == 0]
+
+    if finding and finding[-1] not in kept:
+        kept.append(finding[-1])
+
+    return kept
+
+
+def checkable_point(
+    claim: Claim,
+    context=None,
+    language: str | None = None,
+    terms_order: str | None = None,
+    figures_style: str | None = None,
+) -> CheckablePoint:
     """
     The claim's point, read from its own sentence. The claim's entities and
     acronyms are its names; a capitalised word the entity model missed
     ("Arctic", "Jire") is one too, unless it opens the sentence. The article's
     subject is restored when the sentence lost it (terms.subject_terms, the
     same rule the sentence plan uses).
+
+    `terms_order` is `PipelineThresholds.checkable_terms`: None or
+    "sentence" keeps the terms in the sentence's order, as every run did
+    before 2026-11-05; "framing_last" puts its framing after them
+    (`framing_last`); "finding_first" puts its asides, then its framing,
+    after them (`finding_first`); "finding_closing" does too, and keeps the
+    sentence's closing finding word as a seventh term when the cut took it
+    (`finding_closing`).
+
+    `figures_style` is `PipelineThresholds.checkable_figures`: None or
+    "bare" reads the figures as before 2026-11-05; "with_units" keeps a
+    figure with its currency or unit written onto it (`unit_figures`);
+    "counted" does too, and keeps the noun a figure counts beside it
+    (`counted_figures`).
     """
 
     text = claim.text
@@ -390,7 +643,7 @@ def checkable_point(claim: Claim, context=None, language: str | None = None) -> 
 
     entities = [value.strip() for values in claim.entities.values() for value in values if value.strip()]
 
-    identifiers, figures = figures_of(text)
+    identifiers, figures = figures_of(text, units=figures_style in ("with_units", "counted"))
 
     dates = dates_of(text, language)
 
@@ -398,6 +651,12 @@ def checkable_point(claim: Claim, context=None, language: str | None = None) -> 
 
     # A figure already inside a date ("24" of "24 September") is the date.
     figures = [figure for figure in figures if not any(figure in date.split() for date in dates)]
+
+    # Before `inside` is read below, so the counted noun leaves the terms.
+    # It makes the figure distinctive (`DISTINCTIVE`), as a hyphen already
+    # makes "11-set" an identifier: the same count, written with a space.
+    if figures_style == "counted":
+        figures = counted_figures(text, figures, stop | month_words, language)
 
     words = content_terms(text, language)
 
@@ -428,6 +687,18 @@ def checkable_point(claim: Claim, context=None, language: str | None = None) -> 
         if fold(word) not in stop and fold(word) not in inside and fold(word) not in month_words
     ]
 
+    if terms_order == "framing_last":
+        terms = framing_last(terms, language)
+    elif terms_order == "finding_first":
+        terms = finding_first(terms, language)
+
+    # Every other order is cut to the six slots below; this one has cut
+    # already, and its seventh term is the point of it.
+    if terms_order == "finding_closing":
+        terms = finding_closing(terms, language)
+    else:
+        terms = terms[:MAX_TERMS]
+
     subject = lost_subject(claim, context, language) if context is not None else []
 
     # No keywords to tell the headline's subject from its other words
@@ -448,7 +719,20 @@ def checkable_point(claim: Claim, context=None, language: str | None = None) -> 
         identifiers=identifiers,
         figures=figures[:MAX_FIGURES],
         dates=dates[:2],
-        terms=terms[:MAX_TERMS],
+        terms=terms,
+    )
+
+
+def point_for_thresholds(claim: Claim, context=None, language: str | None = None, thresholds=None) -> CheckablePoint:
+    """
+    checkable_point under one run's thresholds: what the retriever records
+    and what the troubleshooting loop measures, from one call (see
+    query_builder.plan_arguments for why).
+    """
+
+    return checkable_point(
+        claim, context, language,
+        getattr(thresholds, "checkable_terms", None), getattr(thresholds, "checkable_figures", None),
     )
 
 
@@ -464,3 +748,92 @@ def _unique(values: list[str]) -> list[str]:
             unique.append(value)
 
     return unique
+
+
+_CARRIED = re.compile(r"[^\W_]+", re.UNICODE)
+
+
+def carries(text: str, value: str) -> bool:
+    """
+    Whether `text` states `value` - a name, a figure, a date - whole: every
+    word of it, accents and case aside. "Florida Health" is not carried by
+    "Florida", and "212" is not carried by "2120".
+    """
+
+    words = set(_CARRIED.findall(fold(text)))
+    needed = _CARRIED.findall(fold(value))
+
+    return bool(needed) and all(word in words for word in needed)
+
+
+# ---- Names, for `query_plan: questions` (fact_checker/questions.py) ----
+
+# Words of a role, not of a name: "Ryan Zinke" names "US Interior Secretary
+# Ryan Zinke", "Secretary" does not. Both languages (invariant 8).
+TITLE_WORDS = {
+    "president", "presidential", "former", "secretary", "minister", "prime", "interior", "senator",
+    "governor", "mayor", "candidate", "chief", "director", "general", "king", "queen", "prince",
+    "doctor", "dr", "mr", "mrs", "ms", "sir", "the", "of", "and",
+    "presidente", "presidenta", "expresidente", "ministro", "ministra", "secretario", "secretaria",
+    "alcalde", "alcaldesa", "gobernador", "gobernadora", "senador", "senadora", "rey", "reina",
+    "doctora", "don", "dona", "de", "del", "la", "el", "los", "las", "y",
+}
+
+# The lowercase words a name may hold: "Bank of England", "Ciudad de México".
+JOINERS = {"of", "the", "and", "for", "de", "del", "la", "las", "los", "el", "y"}
+
+ROMAN = re.compile(r"^[ivx]+$")
+
+ACRONYM = re.compile(r"^[A-Z]{2,6}s?$")
+
+
+def is_proper(value: str) -> bool:
+    """
+    A name, not a phrase the entity model or the sentence's capital letter
+    took for one: every word capitalised (an acronym included), "Presidential
+    candidate", "mentally ill" and "hot milk" not (all three from GLiNER on the
+    first 10 AVeriTeC train claims, 6 Nov).
+    """
+
+    words = [word for word in value.split() if fold(word) not in JOINERS]
+
+    # A date or a figure is a detail of its own kind: "November 1st 2019".
+    if not words or any(word[:1].isdigit() for word in words):
+        return False
+
+    return all(word[:1].isupper() for word in words)
+
+
+def proper_names(claim: Claim, point: CheckablePoint) -> list[str]:
+    """The claim's names - the entity model's and the checkable point's - that are names, in the sentence's order."""
+
+    candidates = [value for values in claim.entities.values() for value in values] + point.names
+
+    seen: set[str] = set()
+    names: list[str] = []
+
+    for value in candidates:
+        key = fold(value)
+        if key and key not in seen and is_proper(value) and fold(value) in fold(claim.text):
+            seen.add(key)
+            names.append(value)
+
+    return sorted(names, key=lambda name: fold(claim.text).find(fold(name)))
+
+
+def names_in(text: str, name: str) -> bool:
+    """
+    Whether `text` names `name`: an acronym whole, else any word of it that is
+    not a title or a numeral. "Ryan Zinke" names "US Interior Secretary Ryan
+    Zinke"; "Secretary" does not; "Aquino" names "Benigno Aquino III".
+    """
+
+    if ACRONYM.match(name.strip()):
+        return carries(text, name)
+
+    core = [
+        word for word in re.findall(r"[^\W_]+", fold(name))
+        if word not in TITLE_WORDS and not ROMAN.match(word) and len(word) >= 3
+    ]
+
+    return any(carries(text, word) for word in core) if core else carries(text, name)

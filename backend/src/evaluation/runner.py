@@ -40,14 +40,14 @@ import subprocess
 import threading
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Callable
 from urllib.parse import urlsplit
 
 from src.config.settings import WEIGHT_GROUPS, settings
 from src.config.thresholds import SEARCH_QUERY_KINDS, PipelineThresholds
-from src.evaluation.dataset import CUSTOM, Dataset, DatasetRow, article_titles, title_for
+from src.evaluation.dataset import AVERITEC, CUSTOM, Dataset, DatasetRow, article_titles, title_for
 from src.evaluation.record import (
     HARNESS_VERSION,
     OK,
@@ -155,6 +155,16 @@ _SPEED_BEFORE = {
     "verifier_rules": "original",
     # What the web search asked, until 2026-11-04: the sentence's words.
     "query_plan": "sentence",
+    # Which words fill the checkable point's terms, until 2026-11-05.
+    "checkable_terms": "sentence",
+    # Whether "£5.9bn" is a checkable figure, until 2026-11-05: not.
+    "checkable_figures": "bare",
+    # What a temporal cutoff does with an undated page: nothing had a cutoff
+    # before 2026-11-05, so no earlier run read this.
+    "evidence_undated": "drop",
+    # Whether a result only the scholarly engines found counted, until
+    # 2026-11-06: it did.
+    "search_science_engines": "keep",
 }
 
 
@@ -338,6 +348,17 @@ class RunConfig:
     # Its key is part of this run's: one replay per run replayed.
     replay_of: Path | None = None
 
+    # The official AVeriTeC knowledge store's zip, searched instead of the
+    # live web (`--knowledge-store`, src/evaluation/knowledge_store.py). Two
+    # searches, two runs: `cli run` keys it through the label.
+    knowledge_store: Path | None = None
+
+    # A file of earlier SearXNG answers, asked before the live search
+    # (`--search-cache`, src/evaluation/search_cache.py): for comparing two
+    # plans on train by what they asked, never for a reported figure. Keyed
+    # through the label, which `cli run` requires with it.
+    search_cache: Path | None = None
+
     @property
     def key(self) -> str:
 
@@ -386,7 +407,18 @@ def context_for(row: DatasetRow, search_title: str = "", search_sentences: list[
     row does not hold it. `search_title`, the article's headline from the
     labeller's batches, is given under `query_plan: checkable` only, and only
     the search reads it (ArticleContext.search_title).
+
+    AVeriTeC's: the claim's date as the temporal cutoff, and its fact-check
+    in the place of the article, so it is never its own evidence. Nothing else
+    of the row reaches the pipeline: the speaker, the justification and the
+    annotators' questions stay out.
     """
+
+    if row.dataset == AVERITEC:
+        return ArticleContext(
+            url=row.fact_check_url or "", title="", lead="", keywords=[], entities={},
+            evidence_before=date.fromisoformat(row.claim_date),
+        )
 
     if row.dataset != CUSTOM or not row.article_url:
         return None
@@ -1016,7 +1048,36 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
         from src.evaluation.closed_book import ClosedBookJudge
         closed_book = ClosedBookJudge(metered(LLMClient(model=config.model), meter))
 
-    checker = FactChecker(repository, verifier=verifier)
+    # The questions of `query_plan: questions` are the verifier's model's,
+    # metered with it: what they cost is part of what the plan costs.
+    from src.services.fact_checker.questions import QuestionPlanner
+
+    checker = FactChecker(
+        repository,
+        verifier=verifier,
+        question_planner=QuestionPlanner(metered(LLMClient(model=config.model), meter)),
+    )
+
+    if config.knowledge_store is not None:
+        from src.evaluation.knowledge_store import (
+            KnowledgeStore,
+            KnowledgeStoreProvider,
+            KnowledgeStoreScraper,
+        )
+
+        checker.evidence_retriever.search_provider = KnowledgeStoreProvider(
+            KnowledgeStore(config.knowledge_store),
+            store_indexes(config.dataset),
+        )
+        checker.evidence_retriever.scraper = KnowledgeStoreScraper()
+
+    if config.search_cache is not None and config.knowledge_store is None:
+        from src.evaluation.search_cache import CachedSearxngClient
+        from src.services.fact_checker.retrieval.search_provider import SearchProvider, default_fallback
+
+        checker.evidence_retriever.search_provider = SearchProvider(
+            client=CachedSearxngClient(config.search_cache, fallback=default_fallback()),
+        )
 
     recorder = None
 
@@ -1053,6 +1114,21 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
     )
 
     return runner, database.close
+
+
+def store_indexes(dataset: Dataset) -> dict[str, int]:
+    """
+    Each claim's text -> its position in the official split, which is how the
+    store names its files (a row's id ends in that position). A repeated claim
+    has one set of pages to search; the first's stands for both.
+    """
+
+    indexes: dict[str, int] = {}
+
+    for row in sorted(dataset.rows, key=lambda row: row.id):
+        indexes.setdefault(row.claim, int(row.id.rsplit("-", 1)[1]))
+
+    return indexes
 
 
 class RetrievalOnlyVerifier:

@@ -33,7 +33,7 @@ from src.evaluation.metrics import (
     OUTCOMES,
     SCORED,
 )
-from src.evaluation import attribution, effort, retrieval
+from src.evaluation import attribution, averitec, effort, retrieval
 from src.evaluation.runner import CLOSED_BOOK, FULL, MANIFEST, ORACLE, REPLAY, RESULTS, RETRIEVAL, model_slug
 from src.evaluation.stats import median, percentile, rounded
 from src.evaluation.store import ResultsFile, read_json, write_json
@@ -203,6 +203,9 @@ def evaluate(
         "effort": effort.effort_metrics(
             records, seed=seed, resamples=resamples, minutes_per_fact=minutes_per_fact,
         ),
+        **({"averitec": averitec.evaluate(records, rows=rows, seed=seed, resamples=resamples)}
+           if records and all(record.get("dataset") == "averitec" for record in records)
+           and run.manifest.get("mode") != RETRIEVAL else {}),
         "responseTime": response_time(scored),
         # A closed-book run's "I remember a fact-check of this", counted
         # (closed_book.py): x-fact's claims were checked and published
@@ -564,6 +567,7 @@ def render(result: dict) -> str:
         f"Intervals: percentile {int(boot['level'] * 100)}% bootstrap over claims, "
         f"{boot['resamples']} resamples, seed {boot['seed']}.",
         "",
+        *(averitec.render(result["averitec"]) if result.get("averitec") else []),
         "## Headline",
         "",
         _table(["Scored claims", "All", "Without leak flags"], [

@@ -1,0 +1,195 @@
+{
+ "batch": "20261105-next20",
+ "createdAt": "2026-11-05T11:02:08+01:00",
+ "evidenceRun": "data/evaluation/runs/manual-train/llama3.2-3b-bench/cc053417c0cb",
+ "replayRun": "data/evaluation/runs/manual-train/llama3.2-3b-bench/1d07e163a659",
+ "selection": {
+  "offset": 20,
+  "limit": 20
+ },
+ "ids": [
+  "fact085",
+  "fact086",
+  "fact089",
+  "fact088",
+  "fact090",
+  "fact100",
+  "fact099",
+  "fact101",
+  "fact106",
+  "fact107",
+  "fact114",
+  "fact116",
+  "fact115",
+  "fact117",
+  "fact122",
+  "fact118",
+  "fact123",
+  "fact124",
+  "fact125",
+  "fact126"
+ ],
+ "steps": {
+  "plan": [
+   {
+    "startedAt": "2026-11-05T11:22:50+01:00",
+    "finishedAt": "2026-11-05T11:24:34+01:00",
+    "exit": 0,
+    "turns": 5,
+    "costUsd": 0.6749784,
+    "outcome": "success",
+    "log": "backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/logs/plan.jsonl",
+    "model": "default"
+   }
+  ],
+  "01-analyse": [
+   {
+    "startedAt": "2026-11-05T11:24:35+01:00",
+    "finishedAt": "2026-11-05T11:28:45+01:00",
+    "exit": 0,
+    "turns": 24,
+    "costUsd": 1.6107235999999998,
+    "outcome": "success",
+    "log": "backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/logs/01-analyse.jsonl",
+    "model": "default"
+   }
+  ],
+  "01-implement": [
+   {
+    "startedAt": "2026-11-05T11:41:08+01:00",
+    "finishedAt": "2026-11-05T11:49:01+01:00",
+    "exit": 0,
+    "turns": 67,
+    "costUsd": 2.2795782000000004,
+    "outcome": "success",
+    "log": "backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/logs/01-implement.jsonl",
+    "model": "default"
+   }
+  ],
+  "01-round-01": [
+   {
+    "startedAt": "2026-11-05T12:25:30+01:00",
+    "finishedAt": "2026-11-05T12:28:59+01:00",
+    "exit": 0,
+    "turns": 21,
+    "costUsd": 1.4057824,
+    "outcome": "success",
+    "log": "backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/logs/01-round-01.jsonl",
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "apiKeySource": "none",
+    "config": {
+     "agentModel": "claude-opus-5-5",
+     "agentEffort": "high",
+     "maxStepUsd": 6.0,
+     "maxTotalUsd": 30.0,
+     "rounds": 5,
+     "patience": 2,
+     "llmModel": "llama3.2:3b-bench",
+     "billing": "subscription",
+     "localOnly": true
+    }
+   }
+  ],
+  "01-round-02": [
+   {
+    "startedAt": "2026-11-05T12:29:35+01:00",
+    "finishedAt": "2026-11-05T12:36:21+01:00",
+    "exit": 0,
+    "turns": 52,
+    "costUsd": 2.1633282,
+    "outcome": "success",
+    "log": "backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/logs/01-round-02.jsonl",
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "apiKeySource": "none",
+    "config": {
+     "agentModel": "claude-opus-5-5",
+     "agentEffort": "high",
+     "maxStepUsd": 6.0,
+     "maxTotalUsd": 30.0,
+     "rounds": 5,
+     "patience": 2,
+     "llmModel": "llama3.2:3b-bench",
+     "billing": "subscription",
+     "localOnly": true
+    }
+   }
+  ],
+  "01-round-03": [
+   {
+    "startedAt": "2026-11-05T12:37:01+01:00",
+    "finishedAt": "2026-11-05T12:45:48+01:00",
+    "exit": 0,
+    "turns": 49,
+    "costUsd": 2.7468344,
+    "outcome": "success",
+    "log": "backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/logs/01-round-03.jsonl",
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "apiKeySource": "none",
+    "config": {
+     "agentModel": "claude-opus-5-5",
+     "agentEffort": "high",
+     "maxStepUsd": 6.0,
+     "maxTotalUsd": 30.0,
+     "rounds": 5,
+     "patience": 2,
+     "llmModel": "llama3.2:3b-bench",
+     "billing": "subscription",
+     "localOnly": true
+    }
+   }
+  ],
+  "01-round-04": [
+   {
+    "startedAt": "2026-11-05T12:46:33+01:00",
+    "finishedAt": "2026-11-05T12:54:08+01:00",
+    "exit": 0,
+    "turns": 50,
+    "costUsd": 3.5103246000000006,
+    "outcome": "success",
+    "log": "backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/logs/01-round-04.jsonl",
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "apiKeySource": "none",
+    "config": {
+     "agentModel": "claude-opus-5-5",
+     "agentEffort": "high",
+     "maxStepUsd": 6.0,
+     "maxTotalUsd": 30.0,
+     "rounds": 5,
+     "patience": 2,
+     "llmModel": "llama3.2:3b-bench",
+     "billing": "subscription",
+     "localOnly": true
+    }
+   }
+  ],
+  "01-round-05": [
+   {
+    "startedAt": "2026-11-05T12:54:45+01:00",
+    "finishedAt": "2026-11-05T12:59:09+01:00",
+    "exit": 0,
+    "turns": 49,
+    "costUsd": 2.1242608,
+    "outcome": "success",
+    "log": "backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/logs/01-round-05.jsonl",
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "apiKeySource": "none",
+    "config": {
+     "agentModel": "claude-opus-5-5",
+     "agentEffort": "high",
+     "maxStepUsd": 6.0,
+     "maxTotalUsd": 30.0,
+     "rounds": 5,
+     "patience": 2,
+     "llmModel": "llama3.2:3b-bench",
+     "billing": "subscription",
+     "localOnly": true
+    }
+   }
+  ]
+ }
+}

@@ -25,7 +25,18 @@ MIN_QUERY_WORDS = 3
 
 # Not asked of the scholarly engines, which answer anything with whatever
 # paper shares a word; what is being checked is whether the web answered.
-_SCHOLARLY_ENGINES = frozenset({"arxiv", "crossref", "semantic scholar", "pubmed"})
+# Also what `search_science_engines: drop` leaves out of the evidence. Held
+# equal to the science engines of docker/searxng/settings.yml by a test.
+SCHOLARLY_ENGINES = frozenset({"arxiv", "crossref", "semantic scholar", "pubmed"})
+_SCHOLARLY_ENGINES = SCHOLARLY_ENGINES
+
+
+def only_scholarly(item: dict) -> bool:
+    """Whether only the scholarly engines returned this result: none of the web engines did."""
+
+    engines = set(item.get("engines") or [])
+
+    return bool(engines) and engines <= SCHOLARLY_ENGINES
 
 # Refutation queries end in these: they say what is being looked for, not
 # what the results must be about.

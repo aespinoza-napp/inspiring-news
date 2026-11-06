@@ -13,7 +13,7 @@ ends the campaign, and ITERATE_ALLOW_TEST_HALF=1 in the session's
 environment lets the author through.
 
 Refused while a campaign is active:
-- a harness `run` that is not `--split train`;
+- a harness `run` that is not `--split train`, unless it is over AVeriTeC;
 - anything naming the test half's runs or reports (`manual-test`), its
   split (`--split test`), or the labels themselves (`custom_en_es.jsonl`,
   a fact file under `data/evaluation/manual/`). A train run's records carry
@@ -33,6 +33,11 @@ CAMPAIGNS = "backend/data/evaluation/experiments/iterate/*/campaign.json"
 
 # The harness's own dataset argument names the directory, not a file in it.
 ALLOWED_DATASET = re.compile(r"--dataset\s+(?:\S*/)?data/evaluation/manual(?=\s|$)")
+
+# AVeriTeC is not the custom set: its dev split is public, is the split published
+# figures are reported on, and shares no claim with the half sealed here.
+# Exempted at the author's choice, 2026-11-05 (src/evaluation/averitec.py).
+AVERITEC_DATASET = re.compile(r"--dataset\s+(?:\S*/)?data/evaluation/averitec/averitec_(?:dev|train)\.jsonl(?=\s|$)")
 
 TOKENS = ("manual-test", "--split test", "--split=test", "custom_en_es.jsonl", "evaluation/manual/")
 
@@ -60,7 +65,11 @@ def refusal(tool: str, tool_input: dict) -> str | None:
 
         # The module invoked, not its name mentioned: `pgrep -f "src.evaluation.cli run"`
         # checking on a run was refused by the first version (2026-11-04).
-        if re.search(r"-m\s+src\.evaluation\.cli\s+run\b", command) and "--split train" not in command:
+        if (
+            re.search(r"-m\s+src\.evaluation\.cli\s+run\b", command)
+            and "--split train" not in command
+            and not AVERITEC_DATASET.search(command)
+        ):
             return "a harness run must be `--split train` during a campaign"
 
         text = ALLOWED_DATASET.sub("--dataset <train>", command)

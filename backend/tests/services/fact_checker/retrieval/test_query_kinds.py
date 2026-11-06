@@ -25,7 +25,12 @@ def test_the_config_names_the_kinds_the_planner_plans():
 
     # Follow-ups are a second look's; `specifics` (query_plan: checkable)
     # is asked in the refutation's place and switched by its kind.
-    first_pass = [kind.value for kind in QueryKind if kind not in (QueryKind.FOLLOW_UP, QueryKind.SPECIFICS)]
+    # `question` (query_plan: questions) replaces all three and is not a kind
+    # the config switches.
+    first_pass = [
+        kind.value for kind in QueryKind
+        if kind not in (QueryKind.FOLLOW_UP, QueryKind.SPECIFICS, QueryKind.QUESTION)
+    ]
 
     assert tuple(first_pass) == SEARCH_QUERY_KINDS
     assert [query.kind.value for query in plan_queries(_claim(), None, "en")] == first_pass
@@ -115,7 +120,7 @@ def test_the_retriever_announces_the_plan_it_will_send():
     asked = []
 
     class Recording(FakeSearchProvider):
-        def plan(self, claim, context=None, language=None, kinds=None, style=None):
+        def plan(self, claim, context=None, language=None, kinds=None, style=None, terms_order=None, figures_style=None):
             asked.append(kinds)
             return [PlannedQuery(f"{kind} query", QueryKind(kind)) for kind in kinds or SEARCH_QUERY_KINDS]
 

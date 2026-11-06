@@ -1,0 +1,1577 @@
+[
+ {
+  "id": "fact085",
+  "language": "es",
+  "claim": "Un estudio liderado por el Centro Nacional de Investigaciones Cardiovasculares Carlos III (CNIC) ha identificado la activación del receptor de glucocorticoides como un mecanismo causal de la disfunción diastólica temprana asociada a la obesidad.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "A study led by Spain's CNIC (Centro Nacional de Investigaciones Cardiovasculares Carlos III) identified activation of the glucocorticoid receptor as a causal mechanism of early diastolic dysfunction associated with obesity.",
+   "decisive": [
+    "receptor de glucocorticoides",
+    "disfunción diastólica",
+    "obesidad",
+    "CNIC"
+   ],
+   "sourceType": "research institute's release: CNIC (cnic.es), and the study in its journal",
+   "queries": [
+    "CNIC receptor de glucocorticoides disfunción diastólica obesidad",
+    "CNIC glucocorticoid receptor diastolic dysfunction obesity study"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Centro Nacional de Investigaciones Cardiovasculares Carlos III",
+     "CNIC"
+    ],
+    "subject": [
+     "corazón"
+    ],
+    "headline": "La obesidad activa un mecanismo que altera la relajación del corazón",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "activación",
+     "receptor",
+     "glucocorticoides",
+     "mecanismo",
+     "causal",
+     "disfunción"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Centro Nacional de Investigaciones Cardiovasculares Carlos III CNIC",
+    "Centro Nacional de Investigaciones Cardiovasculares Carlos III CNIC estudio liderado identificado activación receptor glucocorticoides",
+    "Centro Nacional de Investigaciones Cardiovasculares Carlos III CNIC verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "receptor de glucocorticoides",
+     "obesidad",
+     "CNIC"
+    ],
+    "missing": [
+     "disfunción diastólica"
+    ],
+    "share": 0.75
+   },
+   "sentencePlan": {
+    "carried": [
+     "receptor de glucocorticoides",
+     "CNIC"
+    ],
+    "missing": [
+     "disfunción diastólica",
+     "obesidad"
+    ],
+    "share": 0.5
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact086",
+  "language": "es",
+  "claim": "Según la primera autora, Antonella Ausiello, también investigadora en el CNIC, los resultados muestran que “la obesidad y la hiperglucemia provocan la remodelación molecular más intensa y extensa, con cambios en distintos tipos de células presentes en el corazón: cardiomiocitos, fibroblastos, células endoteliales y macrófagos”.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Antonella Ausiello, first author of the CNIC study on obesity and the heart, said obesity and hyperglycaemia cause the most intense and extensive molecular remodelling, with changes in cardiomyocytes, fibroblasts, endothelial cells and macrophages.",
+   "decisive": [
+    "Antonella Ausiello",
+    "hiperglucemia",
+    "remodelación molecular",
+    "cardiomiocitos",
+    "macrófagos",
+    "CNIC"
+   ],
+   "sourceType": "research institute's release: CNIC (cnic.es); else a second outlet's report of the same study",
+   "queries": [
+    "Antonella Ausiello CNIC obesidad hiperglucemia remodelación cardiomiocitos fibroblastos macrófagos",
+    "Ausiello CNIC obesity hyperglycemia heart remodeling glucocorticoid receptor"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Antonella Ausiello",
+     "CNIC",
+     "cardiomiocitos"
+    ],
+    "subject": [
+     "activa",
+     "mecanismo"
+    ],
+    "headline": "La obesidad activa un mecanismo que altera la relajación del corazón",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "primera",
+     "obesidad",
+     "hiperglucemia",
+     "provocan",
+     "remodelación",
+     "molecular"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Antonella Ausiello CNIC cardiomiocitos",
+    "Antonella Ausiello CNIC primera autora investigadora resultados muestran obesidad",
+    "Antonella Ausiello CNIC cardiomiocitos verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Antonella Ausiello",
+     "hiperglucemia",
+     "remodelación molecular",
+     "cardiomiocitos",
+     "CNIC"
+    ],
+    "missing": [
+     "macrófagos"
+    ],
+    "share": 0.833
+   },
+   "sentencePlan": {
+    "carried": [
+     "Antonella Ausiello",
+     "cardiomiocitos",
+     "CNIC"
+    ],
+    "missing": [
+     "hiperglucemia",
+     "remodelación molecular",
+     "macrófagos"
+    ],
+    "share": 0.5
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact089",
+  "language": "en",
+  "claim": "I’m with 14-year-old Emmylou Vaxby, a London schoolgirl, mudlark – a forager of artefacts on a riverbank – and author of A Guide to Mudlarking on the River Thames.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Emmylou Vaxby is a 14-year-old London schoolgirl and mudlark, and the author of the book A Guide to Mudlarking on the River Thames.",
+   "decisive": [
+    "Emmylou Vaxby",
+    "A Guide to Mudlarking on the River Thames",
+    "14",
+    "mudlark",
+    "London"
+   ],
+   "sourceType": "publisher's or bookseller's listing of the book; else a second outlet's profile",
+   "queries": [
+    "Emmylou Vaxby \"A Guide to Mudlarking on the River Thames\"",
+    "Emmylou Vaxby mudlark 14-year-old London"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Emmylou Vaxby",
+     "London",
+     "A Guide",
+     "Mudlarking"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [
+     "14-year"
+    ],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "schoolgirl",
+     "mudlark",
+     "forager",
+     "artefacts",
+     "riverbank",
+     "author"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Emmylou Vaxby London",
+    "Emmylou Vaxby London schoolgirl mudlark forager artefacts riverbank author",
+    "Emmylou Vaxby London fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Emmylou Vaxby",
+     "14",
+     "mudlark",
+     "London"
+    ],
+    "missing": [
+     "A Guide to Mudlarking on the River Thames"
+    ],
+    "share": 0.8
+   },
+   "sentencePlan": {
+    "carried": [
+     "Emmylou Vaxby",
+     "mudlark",
+     "London"
+    ],
+    "missing": [
+     "A Guide to Mudlarking on the River Thames",
+     "14"
+    ],
+    "share": 0.6
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact088",
+  "language": "en",
+  "claim": "Blau and her colleague, Nidhi Bhutani, an associate professor of orthopedic surgery, discovered that in older mice, blocking 15‑PGDH reversed the cartilage loss that normally accompanies aging in the knee.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Blau and Nidhi Bhutani, an associate professor of orthopedic surgery, found that in older mice blocking the enzyme 15-PGDH reversed the age-related loss of knee cartilage.",
+   "decisive": [
+    "15-PGDH",
+    "Nidhi Bhutani",
+    "Blau",
+    "cartilage",
+    "older mice",
+    "knee"
+   ],
+   "sourceType": "the study in its journal, and the university's news release (likely Stanford Medicine)",
+   "queries": [
+    "Bhutani Blau 15-PGDH cartilage aged mice knee",
+    "Stanford 15-PGDH inhibitor cartilage regeneration osteoarthritis mice"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Blau",
+     "Nidhi Bhutani",
+     "PGDH"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [
+     "15"
+    ],
+    "dates": [],
+    "terms": [
+     "orthopedic",
+     "surgery",
+     "older",
+     "mice",
+     "blocking",
+     "reversed"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Blau Nidhi Bhutani PGDH",
+    "Blau Nidhi Bhutani colleague associate professor orthopedic surgery discovered",
+    "Blau Nidhi Bhutani PGDH fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "15-PGDH",
+     "Nidhi Bhutani",
+     "Blau",
+     "older mice"
+    ],
+    "missing": [
+     "cartilage",
+     "knee"
+    ],
+    "share": 0.667
+   },
+   "sentencePlan": {
+    "carried": [
+     "Nidhi Bhutani",
+     "Blau"
+    ],
+    "missing": [
+     "15-PGDH",
+     "cartilage",
+     "older mice",
+     "knee"
+    ],
+    "share": 0.333
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact090",
+  "language": "en",
+  "claim": "“It’s like in the Great Stink,” she adds, referring to the hot, dry summer of 1858, when the Thames – and all the raw sewage and rubbish dumped into it, rotting flesh and all – became a foul-smelling health hazard.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "The Great Stink was the hot, dry summer of 1858, when the Thames, full of raw sewage and rubbish, became a foul-smelling health hazard in London.",
+   "decisive": [
+    "Great Stink",
+    "1858",
+    "Thames",
+    "sewage",
+    "summer"
+   ],
+   "sourceType": "reference work: Britannica, UK Parliament or Science Museum history pages",
+   "queries": [
+    "Great Stink 1858 Thames hot summer sewage",
+    "UK Parliament Great Stink 1858 history"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Great Stink",
+     "she",
+     "Thames"
+    ],
+    "subject": [
+     "old",
+     "London"
+    ],
+    "headline": "Meet the 14-year-old uncovering London’s lost history",
+    "identifiers": [],
+    "figures": [
+     "1858"
+    ],
+    "dates": [],
+    "terms": [
+     "like",
+     "referring",
+     "summer",
+     "sewage",
+     "rubbish",
+     "dumped"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Great Stink she Thames",
+    "Great Stink she like adds referring summer sewage rubbish",
+    "Great Stink she Thames fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Great Stink",
+     "1858",
+     "Thames",
+     "sewage",
+     "summer"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "Great Stink",
+     "Thames",
+     "sewage",
+     "summer"
+    ],
+    "missing": [
+     "1858"
+    ],
+    "share": 0.8
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact100",
+  "language": "en",
+  "claim": "In total, wind and solar have generated a record 41% share of the UK’s electricity needs in 2026 to date, compared with 25% from gas, according to Carbon Brief’s analysis.",
+  "gold": "UNVERIFIED",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Wind and solar generated a record 41% of UK electricity in 2026 to date (to late September), compared with 25% from gas, per Carbon Brief's analysis.",
+   "decisive": [
+    "41%",
+    "25%",
+    "wind and solar",
+    "gas",
+    "2026",
+    "UK"
+   ],
+   "sourceType": "grid statistics: NESO / Elexon / Ember; else a second outlet's report of the analysis",
+   "queries": [
+    "UK wind solar record 41% electricity 2026 gas 25%",
+    "Ember UK electricity 2026 wind solar share gas"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "gas",
+     "wind and solar",
+     "UK",
+     "Carbon Brief"
+    ],
+    "subject": [
+     "imports",
+     "worth",
+     "Hormuz"
+    ],
+    "headline": "Analysis: Wind and solar save UK from gas imports worth £5.9bn during Hormuz crisis - Carbon Brief",
+    "identifiers": [],
+    "figures": [
+     "41%",
+     "25%"
+    ],
+    "dates": [
+     "2026"
+    ],
+    "terms": [
+     "generated",
+     "record",
+     "share",
+     "electricity",
+     "needs",
+     "date"
+    ]
+   },
+   "sentencePlanQueries": [
+    "gas wind and solar UK Carbon Brief",
+    "gas wind and solar total generated record share electricity needs",
+    "gas wind and solar UK Carbon Brief fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "41%",
+     "25%",
+     "wind and solar",
+     "gas",
+     "2026",
+     "UK"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "wind and solar",
+     "gas",
+     "UK"
+    ],
+    "missing": [
+     "41%",
+     "25%",
+     "2026"
+    ],
+    "share": 0.5
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact099",
+  "language": "en",
+  "claim": "The UK has avoided the need for gas imports worth £5.9bn since the start of the Hormuz crisis as a result of record generation from wind and solar, reveals Carbon Brief analysis.",
+  "gold": "UNVERIFIED",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Record wind and solar generation has spared the UK gas imports worth £5.9bn since the start of the Hormuz crisis (2026), per Carbon Brief analysis.",
+   "decisive": [
+    "£5.9bn",
+    "gas imports",
+    "Hormuz",
+    "wind and solar",
+    "UK"
+   ],
+   "sourceType": "a second outlet's report of the Carbon Brief analysis (the analysis itself is on the excluded site)",
+   "queries": [
+    "£5.9bn gas imports wind solar UK Hormuz crisis",
+    "Carbon Brief wind solar avoided gas imports Hormuz 5.9bn"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "UK",
+     "Hormuz crisis",
+     "wind and solar",
+     "Carbon Brief"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "avoided",
+     "need",
+     "imports",
+     "worth",
+     "since",
+     "start"
+    ]
+   },
+   "sentencePlanQueries": [
+    "UK Hormuz crisis wind and solar Carbon Brief",
+    "UK Hormuz crisis avoided need imports worth since start",
+    "UK Hormuz crisis wind and solar Carbon Brief fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Hormuz",
+     "wind and solar",
+     "UK"
+    ],
+    "missing": [
+     "£5.9bn",
+     "gas imports"
+    ],
+    "share": 0.6
+   },
+   "sentencePlan": {
+    "carried": [
+     "Hormuz",
+     "wind and solar",
+     "UK"
+    ],
+    "missing": [
+     "£5.9bn",
+     "gas imports"
+    ],
+    "share": 0.6
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact101",
+  "language": "en",
+  "claim": "In September 2026 to date, gas prices have averaged 189p per therm, reaching their highest level since the global energy crisis in 2022, as shown in the figure below.",
+  "gold": "UNVERIFIED",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "UK wholesale gas prices averaged 189p per therm in September 2026 to date, their highest level since the 2022 global energy crisis.",
+   "decisive": [
+    "189p",
+    "therm",
+    "September 2026",
+    "2022",
+    "gas prices",
+    "UK"
+   ],
+   "sourceType": "market data: Ofgem wholesale market indicators / NBP day-ahead prices; else a market news report",
+   "queries": [
+    "UK gas price 189p per therm September 2026",
+    "NBP wholesale gas price September 2026 highest since 2022"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "global energy crisis",
+     "September"
+    ],
+    "subject": [
+     "Analysis",
+     "Wind",
+     "solar"
+    ],
+    "headline": "Analysis: Wind and solar save UK from gas imports worth £5.9bn during Hormuz crisis - Carbon Brief",
+    "identifiers": [],
+    "figures": [],
+    "dates": [
+     "2026",
+     "2022"
+    ],
+    "terms": [
+     "date",
+     "prices",
+     "averaged",
+     "therm",
+     "reaching",
+     "highest"
+    ]
+   },
+   "sentencePlanQueries": [
+    "global energy crisis",
+    "global energy crisis September date prices averaged therm reaching",
+    "global energy crisis fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "therm",
+     "September 2026",
+     "2022",
+     "gas prices",
+     "UK"
+    ],
+    "missing": [
+     "189p"
+    ],
+    "share": 0.833
+   },
+   "sentencePlan": {
+    "carried": [
+     "therm"
+    ],
+    "missing": [
+     "189p",
+     "September 2026",
+     "2022",
+     "gas prices",
+     "UK"
+    ],
+    "share": 0.167
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact106",
+  "language": "en",
+  "claim": "Two days later, last Friday, a stranger arrived at Kirk’s debris-laden front lawn in Wyandotte County, and said he’d be back in 30 minutes with a tarp, some lumber, and a crew to cover up the maple-shaped gash in Kirk’s house.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Two days after Kirk's televised plea, a stranger came to his storm-damaged house in Wyandotte County (Kansas) and returned with a tarp, lumber and a crew to cover the gash a maple tree had made in it.",
+   "decisive": [
+    "Kirk",
+    "Wyandotte County",
+    "tarp",
+    "maple",
+    "plea",
+    "crew"
+   ],
+   "sourceType": "local TV news: the Kansas City station that aired the plea",
+   "queries": [
+    "Wyandotte County Kirk tree house strangers tarp",
+    "Kansas City Kansas man maple tree house plea strangers tarp lumber crew"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Kirk",
+     "stranger",
+     "Wyandotte County",
+     "tarp"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [
+     "30"
+    ],
+    "dates": [],
+    "terms": [
+     "arrived",
+     "debris",
+     "laden",
+     "front",
+     "lawn",
+     "back"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Kirk stranger Wyandotte County tarp",
+    "Kirk stranger later last Friday arrived debris laden",
+    "Kirk stranger Wyandotte County tarp fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Kirk",
+     "Wyandotte County",
+     "tarp"
+    ],
+    "missing": [
+     "maple",
+     "plea",
+     "crew"
+    ],
+    "share": 0.5
+   },
+   "sentencePlan": {
+    "carried": [
+     "Kirk",
+     "Wyandotte County",
+     "tarp"
+    ],
+    "missing": [
+     "maple",
+     "plea",
+     "crew"
+    ],
+    "share": 0.5
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact107",
+  "language": "en",
+  "claim": "“Oh, it’s unbelievable, the way the community has come together,” Kirk said.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Kirk, whose Wyandotte County house was damaged and covered with a tarp by strangers, said it was unbelievable the way the community had come together.",
+   "decisive": [
+    "Kirk",
+    "community has come together",
+    "unbelievable",
+    "Wyandotte County",
+    "tarp"
+   ],
+   "sourceType": "local TV news: the Kansas City station's follow-up report",
+   "queries": [
+    "Kirk \"the way the community has come together\" tarp Wyandotte County",
+    "Wyandotte County man strangers tarp house community came together"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Kirk"
+    ],
+    "subject": [
+     "Strangers",
+     "House",
+     "Tarp"
+    ],
+    "headline": "Strangers Showed Up to Man's Destroyed House to Put Up a Tarp Having Seen His Televised Plea",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "unbelievable",
+     "community",
+     "come",
+     "together"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Kirk",
+    "Kirk unbelievable community come together",
+    "Kirk fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Kirk",
+     "unbelievable",
+     "tarp"
+    ],
+    "missing": [
+     "community has come together",
+     "Wyandotte County"
+    ],
+    "share": 0.6
+   },
+   "sentencePlan": {
+    "carried": [
+     "Kirk",
+     "unbelievable"
+    ],
+    "missing": [
+     "community has come together",
+     "Wyandotte County",
+     "tarp"
+    ],
+    "share": 0.4
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact114",
+  "language": "es",
+  "claim": "El Presidente del Gobierno, Pedro Sánchez, ha presentado hoy en Barcelona un ejercicio de prospectiva social, impulsado y coordinado por la Oficina Nacional de Prospectiva y Estrategia (ONPE), que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "On 28 September 2026 Spanish Prime Minister Pedro Sánchez presented in Barcelona a social foresight exercise by the Oficina Nacional de Prospectiva y Estrategia (ONPE) on how Spaniards' life trajectories could evolve over the next 24 years, to 2050.",
+   "decisive": [
+    "Pedro Sánchez",
+    "Barcelona",
+    "Oficina Nacional de Prospectiva y Estrategia",
+    "24 años",
+    "2050",
+    "prospectiva"
+   ],
+   "sourceType": "government release: La Moncloa / Oficina Nacional de Prospectiva y Estrategia",
+   "queries": [
+    "Pedro Sánchez Barcelona Oficina Nacional de Prospectiva informe 2050 trayectorias vitales",
+    "La Moncloa prospectiva social 2050 vínculos sociales soledad Sánchez Barcelona"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Pedro Sánchez",
+     "Barcelona",
+     "ONPE",
+     "Oficina Nacional de Prospectiva y Estrategia"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [
+     "24"
+    ],
+    "dates": [],
+    "terms": [
+     "presentado",
+     "ejercicio",
+     "social",
+     "impulsado",
+     "coordinado",
+     "analiza"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Pedro Sánchez Barcelona ONPE Oficina Nacional de Prospectiva y Estrategia",
+    "Pedro Sánchez Barcelona Presidente Gobierno presentado ejercicio social impulsado",
+    "Pedro Sánchez Barcelona ONPE Oficina Nacional de Prospectiva y Estrategia verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Pedro Sánchez",
+     "Barcelona",
+     "Oficina Nacional de Prospectiva y Estrategia",
+     "24 años",
+     "prospectiva"
+    ],
+    "missing": [
+     "2050"
+    ],
+    "share": 0.833
+   },
+   "sentencePlan": {
+    "carried": [
+     "Pedro Sánchez",
+     "Barcelona",
+     "Oficina Nacional de Prospectiva y Estrategia",
+     "prospectiva"
+    ],
+    "missing": [
+     "24 años",
+     "2050"
+    ],
+    "share": 0.667
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact116",
+  "language": "es",
+  "claim": "Judeline logró uno de los discos más aclamados de 2024 con Bodhiria.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Judeline's album Bodhiria was one of the most acclaimed records of 2024.",
+   "decisive": [
+    "Bodhiria",
+    "2024",
+    "Judeline",
+    "aclamados"
+   ],
+   "sourceType": "music press year-end lists (Rolling Stone en Español, Mondo Sonoro, Pitchfork, Billboard)",
+   "queries": [
+    "Judeline Bodhiria mejores discos 2024",
+    "Bodhiria Judeline best albums of 2024"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Judeline",
+     "Bodhiria"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [],
+    "dates": [
+     "2024"
+    ],
+    "terms": [
+     "logró",
+     "discos",
+     "aclamados"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Judeline Bodhiria",
+    "Judeline Bodhiria logró discos aclamados",
+    "Judeline Bodhiria verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Bodhiria",
+     "2024",
+     "Judeline",
+     "aclamados"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "Bodhiria",
+     "Judeline",
+     "aclamados"
+    ],
+    "missing": [
+     "2024"
+    ],
+    "share": 0.75
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact115",
+  "language": "es",
+  "claim": "Lara Fernández, conocida artísticamente como Judeline, nació en Jerez de la Frontera en 2003.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Judeline's real name is Lara Fernández and she was born in Jerez de la Frontera in 2003.",
+   "decisive": [
+    "Lara Fernández",
+    "Jerez de la Frontera",
+    "2003",
+    "Judeline"
+   ],
+   "sourceType": "a second outlet's profile or biography (music press, encyclopaedia)",
+   "queries": [
+    "Judeline Lara Fernández Jerez de la Frontera 2003",
+    "Judeline singer born 2003 Jerez real name"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Lara Fernández",
+     "Judeline",
+     "Jerez de la Frontera"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [],
+    "dates": [
+     "2003"
+    ],
+    "terms": [
+     "conocida",
+     "artísticamente",
+     "nació"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Lara Fernández Judeline Jerez de la Frontera",
+    "Lara Fernández Judeline conocida artísticamente nació",
+    "Lara Fernández Judeline Jerez de la Frontera verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Lara Fernández",
+     "Jerez de la Frontera",
+     "2003",
+     "Judeline"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "Lara Fernández",
+     "Jerez de la Frontera",
+     "Judeline"
+    ],
+    "missing": [
+     "2003"
+    ],
+    "share": 0.75
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact117",
+  "language": "es",
+  "claim": "Judeline llenó por primera vez el Palacio de Deportes de Madrid a inicios de 2026.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Judeline sold out (filled) Madrid's Palacio de Deportes, now the Movistar Arena, for the first time in early 2026.",
+   "decisive": [
+    "Palacio de Deportes",
+    "Movistar Arena",
+    "Madrid",
+    "2026",
+    "Judeline",
+    "llenó"
+   ],
+   "sourceType": "a second outlet's concert report; the venue's or promoter's announcement",
+   "queries": [
+    "Judeline Movistar Arena Madrid 2026 lleno",
+    "Judeline Palacio de Deportes Madrid 2026 concierto entradas agotadas"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Judeline",
+     "Palacio de Deportes de Madrid"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [],
+    "dates": [
+     "2026"
+    ],
+    "terms": [
+     "llenó",
+     "primera",
+     "inicios"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Judeline Madrid",
+    "Judeline Madrid llenó primera Palacio Deportes inicios",
+    "Judeline Madrid verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Palacio de Deportes",
+     "Madrid",
+     "2026",
+     "Judeline",
+     "llenó"
+    ],
+    "missing": [
+     "Movistar Arena"
+    ],
+    "share": 0.833
+   },
+   "sentencePlan": {
+    "carried": [
+     "Palacio de Deportes",
+     "Madrid",
+     "Judeline",
+     "llenó"
+    ],
+    "missing": [
+     "Movistar Arena",
+     "2026"
+    ],
+    "share": 0.667
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact122",
+  "language": "en",
+  "claim": "While the main goal was to alter Juice’s trajectory, the flyby also provided a third opportunity to test out Juice’s science instruments on a real surface in space – with the first being during the spacecraft’s 2024 lunar-Earth gravity assist, and the second during the 2025 observations of Comet 3I/ATLAS.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Juice's 2026 Earth flyby was the third chance to test its science instruments in space, after the 2024 lunar-Earth gravity assist and the 2025 observations of Comet 3I/ATLAS.",
+   "decisive": [
+    "3I/ATLAS",
+    "lunar-Earth",
+    "2024",
+    "2025",
+    "third",
+    "Earth flyby"
+   ],
+   "sourceType": "space press reporting ESA (esa.int is excluded): SpaceNews, Space.com, NASA or mission-team pages",
+   "queries": [
+    "Juice Earth flyby 2026 instruments 3I/ATLAS lunar-Earth flyby 2024",
+    "Juice spacecraft observed comet 3I/ATLAS 2025"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Juice",
+     "Juice’s",
+     "Comet",
+     "ATLAS"
+    ],
+    "subject": [
+     "Jupiter"
+    ],
+    "headline": "Successful Earth flyby improves Juice’s course to Jupiter",
+    "identifiers": [],
+    "figures": [],
+    "dates": [
+     "2024",
+     "2025"
+    ],
+    "terms": [
+     "alter",
+     "trajectory",
+     "flyby",
+     "provided",
+     "third",
+     "opportunity"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Juice ATLAS",
+    "Juice ATLAS main goal alter trajectory flyby provided",
+    "Juice ATLAS fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "2024",
+     "2025",
+     "third",
+     "Earth flyby"
+    ],
+    "missing": [
+     "3I/ATLAS",
+     "lunar-Earth"
+    ],
+    "share": 0.667
+   },
+   "sentencePlan": {
+    "carried": [],
+    "missing": [
+     "3I/ATLAS",
+     "lunar-Earth",
+     "2024",
+     "2025",
+     "third",
+     "Earth flyby"
+    ],
+    "share": 0.0
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact118",
+  "language": "es",
+  "claim": "España es el primer país del mundo en donación de órganos.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Spain is the world's leading country in organ donation (donors per million population).",
+   "decisive": [
+    "España",
+    "donación de órganos",
+    "primer país",
+    "ONT"
+   ],
+   "sourceType": "official statistics: Organización Nacional de Trasplantes (ont.es); IRODaT registry",
+   "queries": [
+    "ONT España líder mundial donación de órganos donantes por millón",
+    "Spain world leader organ donation donors per million IRODaT"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "España"
+    ],
+    "subject": [
+     "Judeline"
+    ],
+    "headline": "Judeline: “Las ciudades son de quienes tienen poder adquisitivo y no de quienes se las trabajan”",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "primer",
+     "país",
+     "donación",
+     "órganos"
+    ]
+   },
+   "sentencePlanQueries": [
+    "España",
+    "España primer país donación órganos",
+    "España verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "España",
+     "donación de órganos",
+     "primer país"
+    ],
+    "missing": [
+     "ONT"
+    ],
+    "share": 0.75
+   },
+   "sentencePlan": {
+    "carried": [
+     "España",
+     "donación de órganos",
+     "primer país"
+    ],
+    "missing": [
+     "ONT"
+    ],
+    "share": 0.75
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact123",
+  "language": "en",
+  "claim": "As Juice flew just 8640 km above the Indian Ocean, it snapped a series of images with its onboard monitoring cameras.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "During its 2026 Earth flyby, ESA's Juice passed just 8640 km above the Indian Ocean and took images with its onboard monitoring cameras.",
+   "decisive": [
+    "8640 km",
+    "Indian Ocean",
+    "monitoring cameras",
+    "Juice",
+    "Earth flyby"
+   ],
+   "sourceType": "space press reporting the flyby (esa.int is excluded)",
+   "queries": [
+    "Juice Earth flyby 8640 km Indian Ocean",
+    "Juice Earth flyby 2026 closest approach monitoring camera images"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Indian Ocean",
+     "As Juice"
+    ],
+    "subject": [
+     "Earth",
+     "flyby",
+     "Jupiter"
+    ],
+    "headline": "Successful Earth flyby improves Juice’s course to Jupiter",
+    "identifiers": [],
+    "figures": [
+     "8640"
+    ],
+    "dates": [],
+    "terms": [
+     "flew",
+     "above",
+     "snapped",
+     "series",
+     "images",
+     "onboard"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Juice Indian Ocean",
+    "Juice Indian Ocean flew above snapped series images onboard",
+    "Juice Indian Ocean fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "8640 km",
+     "Indian Ocean",
+     "Juice",
+     "Earth flyby"
+    ],
+    "missing": [
+     "monitoring cameras"
+    ],
+    "share": 0.8
+   },
+   "sentencePlan": {
+    "carried": [
+     "Indian Ocean",
+     "Juice"
+    ],
+    "missing": [
+     "8640 km",
+     "monitoring cameras",
+     "Earth flyby"
+    ],
+    "share": 0.4
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact124",
+  "language": "es",
+  "claim": "Esto también conlleva un estado de ánimo más bajo que afecta al bienestar emocional de las mujeres, según un estudio publicado en la revista Psychological Medicine, de Cambridge University Press, y dirigido por el profesor Macià Buades, de la Facultad de Psicología y el Instituto de Neurociencias de la Universidad de Barcelona.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "A study published in Psychological Medicine (Cambridge University Press), led by Professor Macià Buades of the University of Barcelona's Faculty of Psychology and Institute of Neurosciences, found hormonal changes bring lower mood affecting women's emotional wellbeing.",
+   "decisive": [
+    "Psychological Medicine",
+    "Macià Buades",
+    "Universidad de Barcelona",
+    "estado de ánimo",
+    "hormonas"
+   ],
+   "sourceType": "university release: Universitat de Barcelona (ub.edu); the paper in Psychological Medicine",
+   "queries": [
+    "Macià Buades Psychological Medicine estado de ánimo hormonas Universidad de Barcelona",
+    "Buades Psychological Medicine menstrual cycle hormones mood women"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Cambridge University Press",
+     "Facultad de Psicología",
+     "Macià Buades",
+     "Psychological Medicine"
+    ],
+    "subject": [
+     "hormonas"
+    ],
+    "headline": "Nuevas evidencias sobre cómo las hormonas alteran el estado de ánimo de las mujeres",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "Esto",
+     "conlleva",
+     "estado",
+     "ánimo",
+     "bajo",
+     "afecta"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Cambridge University Press Facultad de Psicología Instituto de Neurociencias Universidad de Barcelona",
+    "Cambridge University Press Facultad de Psicología Esto conlleva estado ánimo bajo afecta",
+    "Cambridge University Press Facultad de Psicología Instituto de Neurociencias Universidad de Barcelona verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Psychological Medicine",
+     "Macià Buades",
+     "estado de ánimo",
+     "hormonas"
+    ],
+    "missing": [
+     "Universidad de Barcelona"
+    ],
+    "share": 0.8
+   },
+   "sentencePlan": {
+    "carried": [
+     "Universidad de Barcelona",
+     "estado de ánimo"
+    ],
+    "missing": [
+     "Psychological Medicine",
+     "Macià Buades",
+     "hormonas"
+    ],
+    "share": 0.4
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact125",
+  "language": "es",
+  "claim": "En el estudio participaron 116 mujeres con ciclos menstruales naturales (que no utilizaban anticonceptivos hormonales).",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "The University of Barcelona study on hormones and women's mood involved 116 women with natural menstrual cycles who were not using hormonal contraceptives.",
+   "decisive": [
+    "116",
+    "ciclos menstruales naturales",
+    "anticonceptivos hormonales",
+    "estado de ánimo"
+   ],
+   "sourceType": "the study in Psychological Medicine; Universitat de Barcelona release",
+   "queries": [
+    "estudio 116 mujeres ciclos menstruales naturales estado de ánimo hormonas",
+    "Buades Psychological Medicine 116 naturally cycling women mood"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "116 mujeres"
+    ],
+    "subject": [
+     "estado",
+     "ánimo"
+    ],
+    "headline": "Nuevas evidencias sobre cómo las hormonas alteran el estado de ánimo de las mujeres",
+    "identifiers": [],
+    "figures": [
+     "116"
+    ],
+    "dates": [],
+    "terms": [
+     "ciclos",
+     "menstruales",
+     "naturales",
+     "utilizaban",
+     "anticonceptivos",
+     "hormonales"
+    ]
+   },
+   "sentencePlanQueries": [
+    "116 mujeres",
+    "116 mujeres estudio participaron ciclos menstruales naturales utilizaban",
+    "116 mujeres verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "116",
+     "ciclos menstruales naturales",
+     "anticonceptivos hormonales",
+     "estado de ánimo"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "116",
+     "ciclos menstruales naturales"
+    ],
+    "missing": [
+     "anticonceptivos hormonales",
+     "estado de ánimo"
+    ],
+    "share": 0.5
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact126",
+  "language": "en",
+  "claim": "A 2026 Pew report found that 10% of Americans are using chatbots for emotional support or companionship.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "A 2026 Pew Research Center report found that 10% of Americans use AI chatbots for emotional support or companionship.",
+   "decisive": [
+    "10%",
+    "Pew",
+    "2026",
+    "emotional support",
+    "companionship",
+    "chatbots"
+   ],
+   "sourceType": "survey report: Pew Research Center (pewresearch.org)",
+   "queries": [
+    "Pew Research 2026 10% Americans chatbots emotional support companionship",
+    "Pew Research Center survey AI chatbot companionship emotional support"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Pew",
+     "Americans",
+     "chatbots"
+    ],
+    "subject": [
+     "AI"
+    ],
+    "headline": "Chatbots as oracles: How AI is giving new life to the ancient practice of seeking answers from inscrutable sources",
+    "identifiers": [],
+    "figures": [
+     "10%"
+    ],
+    "dates": [
+     "2026"
+    ],
+    "terms": [
+     "emotional",
+     "support",
+     "companionship"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Pew Americans chatbots",
+    "Pew Americans found using emotional support companionship",
+    "Pew Americans chatbots fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "10%",
+     "Pew",
+     "2026",
+     "emotional support",
+     "companionship",
+     "chatbots"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "Pew",
+     "emotional support",
+     "companionship",
+     "chatbots"
+    ],
+    "missing": [
+     "10%",
+     "2026"
+    ],
+    "share": 0.667
+   },
+   "pipelineNamesSourceType": false
+  }
+ }
+]

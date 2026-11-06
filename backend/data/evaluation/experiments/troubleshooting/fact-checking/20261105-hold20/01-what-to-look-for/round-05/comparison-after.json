@@ -1,0 +1,1583 @@
+[
+ {
+  "id": "fact128",
+  "language": "en",
+  "claim": "In 2021, Ask Delphi, an AI-based website to which people could pose ethical or moral questions, received 3 million queries in a few weeks.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "In 2021 the AI ethics website Ask Delphi (Allen Institute for AI) received 3 million queries within a few weeks of launch.",
+   "decisive": [
+    "3 million",
+    "Ask Delphi",
+    "queries",
+    "2021",
+    "few weeks"
+   ],
+   "sourceType": "the Allen Institute for AI's Delphi paper or blog; else a 2021 tech outlet's report on Ask Delphi",
+   "queries": [
+    "Ask Delphi 3 million queries few weeks 2021",
+    "Allen Institute Delphi AI ethics questions submitted number 2021"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Ask Delphi",
+     "people",
+     "AI-based",
+     "AI"
+    ],
+    "subject": [
+     "Chatbots"
+    ],
+    "headline": "Chatbots as oracles: How AI is giving new life to the ancient practice of seeking answers from inscrutable sources",
+    "identifiers": [],
+    "figures": [
+     "3 million queries"
+    ],
+    "dates": [
+     "2021"
+    ],
+    "terms": [
+     "website",
+     "pose",
+     "ethical",
+     "moral",
+     "questions",
+     "weeks"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Ask Delphi people AI",
+    "Ask Delphi people based website could pose ethical moral",
+    "Ask Delphi people AI fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "3 million",
+     "Ask Delphi",
+     "queries",
+     "2021"
+    ],
+    "missing": [
+     "few weeks"
+    ],
+    "share": 0.8
+   },
+   "sentencePlan": {
+    "carried": [
+     "Ask Delphi"
+    ],
+    "missing": [
+     "3 million",
+     "queries",
+     "2021",
+     "few weeks"
+    ],
+    "share": 0.2
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact127",
+  "language": "en",
+  "claim": "The system’s designers – researchers at the Allen Institute for AI and the University of Washington – said they did not intend it to be a moral authority but worried that users might see it that way.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Ask Delphi's designers, researchers at the Allen Institute for AI and the University of Washington, said they did not intend it as a moral authority but worried users might treat it as one.",
+   "decisive": [
+    "Ask Delphi",
+    "Allen Institute for AI",
+    "University of Washington",
+    "moral authority"
+   ],
+   "sourceType": "the Delphi project's own site/paper (Allen Institute for AI, University of Washington); else a 2021 outlet interviewing the researchers",
+   "queries": [
+    "Ask Delphi Allen Institute University of Washington not intended moral authority",
+    "Delphi AI researchers worried users treat it as moral authority"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "researchers",
+     "users",
+     "Allen Institute for AI",
+     "University of Washington"
+    ],
+    "subject": [
+     "Chatbots"
+    ],
+    "headline": "Chatbots as oracles: How AI is giving new life to the ancient practice of seeking answers from inscrutable sources",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "system",
+     "designers",
+     "intend",
+     "moral",
+     "authority",
+     "worried"
+    ]
+   },
+   "sentencePlanQueries": [
+    "researchers users Allen Institute for AI University of Washington",
+    "researchers users system designers intend moral authority worried",
+    "researchers users Allen Institute for AI University of Washington fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Allen Institute for AI",
+     "University of Washington",
+     "moral authority"
+    ],
+    "missing": [
+     "Ask Delphi"
+    ],
+    "share": 0.75
+   },
+   "sentencePlan": {
+    "carried": [
+     "Allen Institute for AI",
+     "University of Washington",
+     "moral authority"
+    ],
+    "missing": [
+     "Ask Delphi"
+    ],
+    "share": 0.75
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact129",
+  "language": "en",
+  "claim": "Cases of ARFID are also on the rise, increasing by 305 percent from 2018 to 2022, according to a 2023 FAIR Health white paper.",
+  "gold": "PARTIALLY_TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Diagnoses of ARFID (avoidant/restrictive food intake disorder) rose 305 percent from 2018 to 2022, according to a 2023 FAIR Health white paper.",
+   "decisive": [
+    "305",
+    "ARFID",
+    "FAIR Health",
+    "2018",
+    "2022",
+    "white paper"
+   ],
+   "sourceType": "primary report: FAIR Health white paper on eating disorders (2023)",
+   "queries": [
+    "FAIR Health ARFID 305 percent 2018 2022",
+    "FAIR Health 2023 white paper eating disorders ARFID increase"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "FAIR Health",
+     "Cases of ARFID"
+    ],
+    "subject": [
+     "Eating"
+    ],
+    "headline": "When Picky Eating is Actually a Psychiatric Disorder",
+    "identifiers": [],
+    "figures": [
+     "305 percent"
+    ],
+    "dates": [
+     "2018",
+     "2022"
+    ],
+    "terms": [
+     "rise",
+     "increasing",
+     "white",
+     "paper"
+    ]
+   },
+   "sentencePlanQueries": [
+    "FAIR Health ARFID",
+    "FAIR Health ARFID Cases rise increasing percent white paper",
+    "FAIR Health ARFID fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "305",
+     "ARFID",
+     "FAIR Health",
+     "2018",
+     "2022",
+     "white paper"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "ARFID",
+     "FAIR Health",
+     "white paper"
+    ],
+    "missing": [
+     "305",
+     "2018",
+     "2022"
+    ],
+    "share": 0.5
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact133",
+  "language": "en",
+  "claim": "But instead of waiting for that approval, tech companies keen to build the infrastructure for A.I. are often building gas generators on site.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Rather than waiting for grid interconnection approval, US tech companies building AI data centers are often building gas generators on site.",
+   "decisive": [
+    "gas generators",
+    "on site",
+    "data centers",
+    "grid",
+    "approval"
+   ],
+   "sourceType": "a second outlet's report (energy/tech press) on behind-the-meter gas at data centers",
+   "queries": [
+    "AI data centers building onsite gas generators instead of waiting for grid connection",
+    "data centers on-site gas power grid interconnection delays 2026"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "tech companies",
+     "A.I"
+    ],
+    "subject": [
+     "Data",
+     "Centers",
+     "Battery"
+    ],
+    "headline": "Data Centers are Helping Fuel a U.S. Battery Boom",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "instead",
+     "waiting",
+     "approval",
+     "keen",
+     "build",
+     "infrastructure",
+     "site"
+    ]
+   },
+   "sentencePlanQueries": [
+    "tech companies",
+    "tech companies instead waiting approval keen build infrastructure",
+    "tech companies fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "on site",
+     "data centers",
+     "approval"
+    ],
+    "missing": [
+     "gas generators",
+     "grid"
+    ],
+    "share": 0.6
+   },
+   "sentencePlan": {
+    "carried": [
+     "approval"
+    ],
+    "missing": [
+     "gas generators",
+     "on site",
+     "data centers",
+     "grid"
+    ],
+    "share": 0.2
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact132",
+  "language": "en",
+  "claim": "By one estimate, more than 100 gigawatts of onsite gas power, the rough equivalent of 100 large gas power plants, is planned for data centers across the U.S.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "By one estimate, more than 100 gigawatts of onsite gas power, roughly 100 large gas plants, is planned for US data centers (2026).",
+   "decisive": [
+    "100 gigawatts",
+    "onsite gas",
+    "data centers",
+    "U.S.",
+    "planned"
+   ],
+   "sourceType": "an energy analytics firm's estimate of planned behind-the-meter gas for data centers; else a second outlet citing it",
+   "queries": [
+    "100 gigawatts onsite gas power planned data centers U.S.",
+    "behind-the-meter gas data centers gigawatts planned estimate 2026"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "data centers",
+     "U.S.",
+     "U.S"
+    ],
+    "subject": [
+     "Battery",
+     "Boom"
+    ],
+    "headline": "Data Centers are Helping Fuel a U.S. Battery Boom",
+    "identifiers": [],
+    "figures": [
+     "100 gigawatts"
+    ],
+    "dates": [],
+    "terms": [
+     "estimate",
+     "onsite",
+     "power",
+     "rough",
+     "equivalent",
+     "large",
+     "plants"
+    ]
+   },
+   "sentencePlanQueries": [
+    "data centers U.S.",
+    "data centers U.S. estimate gigawatts onsite power rough equivalent",
+    "data centers U.S. fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "100 gigawatts",
+     "data centers",
+     "U.S."
+    ],
+    "missing": [
+     "onsite gas",
+     "planned"
+    ],
+    "share": 0.6
+   },
+   "sentencePlan": {
+    "carried": [
+     "data centers",
+     "U.S."
+    ],
+    "missing": [
+     "100 gigawatts",
+     "onsite gas",
+     "planned"
+    ],
+    "share": 0.4
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact138",
+  "language": "en",
+  "claim": "Over the same period, there were 38 locally contracted dengue cases reported in Florida.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Florida reported 38 locally acquired dengue cases in 2026 up to late September (the same period as the travel-related count).",
+   "decisive": [
+    "38",
+    "locally acquired",
+    "dengue",
+    "Florida",
+    "2026"
+   ],
+   "sourceType": "official report: Florida Department of Health, arbovirus surveillance",
+   "queries": [
+    "Florida 38 locally acquired dengue cases 2026",
+    "Florida Health arbovirus surveillance report September 2026 locally acquired dengue"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Florida"
+    ],
+    "subject": [
+     "fever",
+     "counties",
+     "declare"
+    ],
+    "headline": "Dengue fever outbreak prompts Florida counties to declare state of emergency",
+    "identifiers": [],
+    "figures": [
+     "38 locally"
+    ],
+    "dates": [],
+    "terms": [
+     "same",
+     "period",
+     "dengue",
+     "cases",
+     "contracted"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Florida",
+    "Florida same period locally contracted dengue cases",
+    "Florida fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "38",
+     "dengue",
+     "Florida"
+    ],
+    "missing": [
+     "locally acquired",
+     "2026"
+    ],
+    "share": 0.6
+   },
+   "sentencePlan": {
+    "carried": [
+     "dengue",
+     "Florida"
+    ],
+    "missing": [
+     "38",
+     "locally acquired",
+     "2026"
+    ],
+    "share": 0.4
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact140",
+  "language": "en",
+  "claim": "Inside, inscriptions make reference to Mars, while fragments of a statue of Victoria, the Roman goddess of victory with her wings and laurel wreath, were found on the site.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "At a newly excavated Roman temple to Mars in a German forest, inscriptions refer to Mars and fragments of a statue of Victoria with wings and laurel wreath were found.",
+   "decisive": [
+    "Mars",
+    "Victoria",
+    "statue",
+    "inscriptions",
+    "Roman temple",
+    "Germany"
+   ],
+   "sourceType": "the excavating German state heritage office's release (Landesamt für Denkmalpflege); else a second outlet on the same find",
+   "queries": [
+    "Roman temple Mars Germany forest excavation Victoria statue fragments",
+    "Marstempel Limes Ausgrabung Victoria Statue Inschrift 2026"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Mars",
+     "Victoria",
+     "Roman"
+    ],
+    "subject": [
+     "Archeologists"
+    ],
+    "headline": "Inches Below the Forest Floor, Archeologists in Germany Unearthed a Roman Temple to the War God",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "Inside",
+     "inscriptions",
+     "make",
+     "reference",
+     "fragments",
+     "statue",
+     "site"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Mars Victoria",
+    "Mars Victoria Inside inscriptions make reference fragments statue",
+    "Mars Victoria fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Mars",
+     "Victoria",
+     "statue",
+     "inscriptions",
+     "Roman temple",
+     "Germany"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "Mars",
+     "Victoria",
+     "statue",
+     "inscriptions"
+    ],
+    "missing": [
+     "Roman temple",
+     "Germany"
+    ],
+    "share": 0.667
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact139",
+  "language": "en",
+  "claim": "Designated a UNESCO World Heritage Site in 2005, the limes have produced dozens of important archeological discoveries.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "The Roman limes in Germany (Upper Germanic-Raetian Limes) was designated a UNESCO World Heritage Site in 2005 and has produced dozens of important archaeological discoveries.",
+   "decisive": [
+    "2005",
+    "UNESCO World Heritage",
+    "limes",
+    "Germany"
+   ],
+   "sourceType": "UNESCO World Heritage Centre listing (Frontiers of the Roman Empire)",
+   "queries": [
+    "Upper Germanic-Raetian Limes UNESCO World Heritage 2005",
+    "Frontiers of the Roman Empire UNESCO limes Germany inscribed year"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "UNESCO World Heritage Site"
+    ],
+    "subject": [
+     "Roman"
+    ],
+    "headline": "Inches Below the Forest Floor, Archeologists in Germany Unearthed a Roman Temple to the War God",
+    "identifiers": [],
+    "figures": [],
+    "dates": [
+     "2005"
+    ],
+    "terms": [
+     "limes",
+     "dozens",
+     "important",
+     "archeological",
+     "discoveries",
+     "Designated"
+    ]
+   },
+   "sentencePlanQueries": [
+    "UNESCO World Heritage Site",
+    "UNESCO World Heritage Site Designated limes produced dozens important archeological",
+    "UNESCO World Heritage Site fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "2005",
+     "UNESCO World Heritage",
+     "limes",
+     "Germany"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "UNESCO World Heritage",
+     "limes"
+    ],
+    "missing": [
+     "2005",
+     "Germany"
+    ],
+    "share": 0.5
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact141",
+  "language": "en",
+  "claim": "Much attention is now directed toward this, including an MIT report on AI and education published this summer.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "MIT published a report on AI and education in summer 2026.",
+   "decisive": [
+    "MIT report",
+    "AI and education",
+    "summer",
+    "2026"
+   ],
+   "sourceType": "MIT's own site (the report's page or its announcement)",
+   "queries": [
+    "MIT report AI and education 2026",
+    "MIT report artificial intelligence education published summer 2026"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "MIT",
+     "AI"
+    ],
+    "subject": [
+     "Questions"
+    ],
+    "headline": "3 Questions: What is the best path forward for AI in academia?",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "attention",
+     "education",
+     "summer",
+     "directed",
+     "toward",
+     "published"
+    ]
+   },
+   "sentencePlanQueries": [
+    "MIT AI",
+    "MIT AI attention directed toward including education published",
+    "MIT AI fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "summer"
+    ],
+    "missing": [
+     "MIT report",
+     "AI and education",
+     "2026"
+    ],
+    "share": 0.25
+   },
+   "sentencePlan": {
+    "carried": [],
+    "missing": [
+     "MIT report",
+     "AI and education",
+     "summer",
+     "2026"
+    ],
+    "share": 0.0
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact142",
+  "language": "es",
+  "claim": "Wright ha ampliado la búsqueda a las «tecnofirmas»: rastros físicos u observables de tecnología alienígena en el cosmos.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Astronomer Jason Wright has broadened the search for extraterrestrial intelligence to technosignatures: physical or observable traces of alien technology.",
+   "decisive": [
+    "Jason Wright",
+    "tecnofirmas",
+    "technosignatures",
+    "tecnología extraterrestre"
+   ],
+   "sourceType": "Jason Wright's institutional page (Penn State) or a second outlet's profile",
+   "queries": [
+    "Jason Wright tecnofirmas tecnología extraterrestre",
+    "Jason Wright technosignatures search Penn State"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Wright",
+     "cosmos"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "ampliado",
+     "búsqueda",
+     "tecnofirmas",
+     "rastros",
+     "físicos",
+     "observables",
+     "alienígena"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Wright cosmos",
+    "Wright cosmos ampliado búsqueda tecnofirmas rastros físicos observables",
+    "Wright cosmos verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "tecnofirmas"
+    ],
+    "missing": [
+     "Jason Wright",
+     "technosignatures",
+     "tecnología extraterrestre"
+    ],
+    "share": 0.25
+   },
+   "sentencePlan": {
+    "carried": [
+     "tecnofirmas"
+    ],
+    "missing": [
+     "Jason Wright",
+     "technosignatures",
+     "tecnología extraterrestre"
+    ],
+    "share": 0.25
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact143",
+  "language": "es",
+  "claim": "En sus proyectos más recientes, el equipo de Wright ha estudiado cómo la Red del Espacio Profundo de la NASA emite señales accidentales hacia el cosmos.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "In recent work, Jason Wright's team studied how NASA's Deep Space Network accidentally leaks signals into space.",
+   "decisive": [
+    "Red del Espacio Profundo",
+    "Deep Space Network",
+    "NASA",
+    "Wright",
+    "señales accidentales"
+   ],
+   "sourceType": "the study itself (journal paper or arXiv) and its university press release",
+   "queries": [
+    "Jason Wright Deep Space Network leakage signals technosignature study",
+    "Wright Red del Espacio Profundo NASA señales tecnofirmas"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Wright",
+     "cosmos",
+     "Red del Espacio Profundo de la NASA"
+    ],
+    "subject": [
+     "búsqueda",
+     "tecnofirmas",
+     "tecnología"
+    ],
+    "headline": "Jason Wright y la búsqueda de tecnofirmas para detectar tecnología extraterrestre en el cosmos",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "proyectos",
+     "recientes",
+     "equipo",
+     "estudiado",
+     "emite",
+     "señales",
+     "accidentales"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Wright NASA cosmos",
+    "Wright NASA proyectos recientes equipo estudiado Espacio Profundo",
+    "Wright NASA cosmos verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Red del Espacio Profundo",
+     "NASA",
+     "Wright",
+     "señales accidentales"
+    ],
+    "missing": [
+     "Deep Space Network"
+    ],
+    "share": 0.8
+   },
+   "sentencePlan": {
+    "carried": [
+     "NASA",
+     "Wright"
+    ],
+    "missing": [
+     "Red del Espacio Profundo",
+     "Deep Space Network",
+     "señales accidentales"
+    ],
+    "share": 0.4
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact145",
+  "language": "en",
+  "claim": "Scientists using the European Space Agency's Mars Express, in combination with a state-of-the-art meteorological model of the Red Planet, have found that there may be some very exotic physics behind Mars’s most curious cloud.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Using ESA's Mars Express and a state-of-the-art Martian meteorological model, scientists found that exotic physics may lie behind the Arsia Mons Elongated Cloud (AMEC), Mars's most curious cloud.",
+   "decisive": [
+    "Mars Express",
+    "Arsia Mons",
+    "meteorological model",
+    "exotic physics",
+    "cloud"
+   ],
+   "sourceType": "the study (planetary science journal) or a second outlet on the same ESA result",
+   "queries": [
+    "Mars Express Arsia Mons elongated cloud meteorological model study 2026",
+    "Arsia Mons cloud exotic physics Mars model"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Scientists",
+     "European Space Agency",
+     "Red Planet",
+     "European Space Agency's Mars Express"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "combination",
+     "state",
+     "meteorological",
+     "model",
+     "exotic",
+     "physics",
+     "cloud"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Scientists European Space Agency Mars Red Planet",
+    "Scientists European Space Agency using Express combination state meteorological model",
+    "Scientists European Space Agency Mars Red Planet fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Mars Express",
+     "meteorological model",
+     "exotic physics",
+     "cloud"
+    ],
+    "missing": [
+     "Arsia Mons"
+    ],
+    "share": 0.8
+   },
+   "sentencePlan": {
+    "carried": [
+     "Mars Express",
+     "meteorological model"
+    ],
+    "missing": [
+     "Arsia Mons",
+     "exotic physics",
+     "cloud"
+    ],
+    "share": 0.4
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact146",
+  "language": "en",
+  "claim": "The World Health Organization (WHO) launched a new five-year strategy for its Hub for Pandemic and Epidemic Intelligence, charting a path towards a world where every country can detect and understand emerging health threats within 24 hours of their appearance by 2030.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "On 12 October 2026 WHO launched a five-year strategy for its Hub for Pandemic and Epidemic Intelligence aiming for every country to detect emerging health threats within 24 hours by 2030.",
+   "decisive": [
+    "24 hours",
+    "2030",
+    "five-year strategy",
+    "Hub for Pandemic and Epidemic Intelligence",
+    "WHO"
+   ],
+   "sourceType": "a second outlet's report on the WHO Hub's strategy (WHO's own pages are the excluded site)",
+   "queries": [
+    "WHO Hub for Pandemic and Epidemic Intelligence five-year strategy 24 hours 2030",
+    "WHO Berlin pandemic hub strategy detect outbreaks within 24 hours"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "WHO",
+     "World Health Organization",
+     "every country",
+     "Hub"
+    ],
+    "subject": [
+     "goal"
+    ],
+    "headline": "WHO Pandemic Hub sets ambitious goal to detect new outbreaks within 24 hours",
+    "identifiers": [],
+    "figures": [
+     "24 hours"
+    ],
+    "dates": [
+     "2030"
+    ],
+    "terms": [
+     "five",
+     "strategy",
+     "charting",
+     "path",
+     "detect",
+     "understand",
+     "appearance"
+    ]
+   },
+   "sentencePlanQueries": [
+    "WHO World Health Organization world every country",
+    "WHO World Health Organization launched five strategy Pandemic Epidemic Intelligence",
+    "WHO World Health Organization world every country fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "24 hours",
+     "2030",
+     "WHO"
+    ],
+    "missing": [
+     "five-year strategy",
+     "Hub for Pandemic and Epidemic Intelligence"
+    ],
+    "share": 0.6
+   },
+   "sentencePlan": {
+    "carried": [
+     "WHO"
+    ],
+    "missing": [
+     "24 hours",
+     "2030",
+     "five-year strategy",
+     "Hub for Pandemic and Epidemic Intelligence"
+    ],
+    "share": 0.2
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact144",
+  "language": "en",
+  "claim": "Mars Express first revealed the AMEC in 2018, and has viewed the recurrent cloud repeatedly since.",
+  "gold": "TRUE",
+  "origin": "natural",
+  "claude": {
+   "lookingFor": "Mars Express first revealed the Arsia Mons Elongated Cloud (AMEC) in 2018 and has observed the recurring cloud repeatedly since.",
+   "decisive": [
+    "2018",
+    "AMEC",
+    "Arsia Mons",
+    "Mars Express",
+    "recurrent"
+   ],
+   "sourceType": "a second outlet's 2018 report of the cloud, or the AMEC study (JGR Planets)",
+   "queries": [
+    "Mars Express Arsia Mons elongated cloud 2018 first spotted",
+    "AMEC Arsia Mons cloud recurrent Mars Express"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Mars Express",
+     "AMEC"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [],
+    "dates": [
+     "2018"
+    ],
+    "terms": [
+     "first",
+     "recurrent",
+     "cloud",
+     "repeatedly",
+     "viewed",
+     "since"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Mars Express AMEC",
+    "Mars Express AMEC first revealed viewed recurrent cloud repeatedly",
+    "Mars Express AMEC fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "2018",
+     "AMEC",
+     "Mars Express",
+     "recurrent"
+    ],
+    "missing": [
+     "Arsia Mons"
+    ],
+    "share": 0.8
+   },
+   "sentencePlan": {
+    "carried": [
+     "AMEC",
+     "Mars Express",
+     "recurrent"
+    ],
+    "missing": [
+     "2018",
+     "Arsia Mons"
+    ],
+    "share": 0.6
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact153",
+  "language": "en",
+  "claim": "Much attention is now directed toward this, including an MIT report on AI and education published this spring.",
+  "gold": "FALSE",
+  "origin": "mutated",
+  "claude": {
+   "lookingFor": "MIT published a report on AI and education in spring 2026.",
+   "decisive": [
+    "MIT report",
+    "AI and education",
+    "spring",
+    "2026"
+   ],
+   "sourceType": "MIT's own site (the report's page or its announcement)",
+   "queries": [
+    "MIT report AI and education 2026",
+    "MIT report artificial intelligence education published spring 2026"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "MIT",
+     "AI"
+    ],
+    "subject": [
+     "Questions"
+    ],
+    "headline": "3 Questions: What is the best path forward for AI in academia?",
+    "identifiers": [],
+    "figures": [],
+    "dates": [],
+    "terms": [
+     "attention",
+     "education",
+     "spring",
+     "directed",
+     "toward",
+     "published"
+    ]
+   },
+   "sentencePlanQueries": [
+    "MIT AI",
+    "MIT AI attention directed toward including education published",
+    "MIT AI fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "spring"
+    ],
+    "missing": [
+     "MIT report",
+     "AI and education",
+     "2026"
+    ],
+    "share": 0.25
+   },
+   "sentencePlan": {
+    "carried": [],
+    "missing": [
+     "MIT report",
+     "AI and education",
+     "spring",
+     "2026"
+    ],
+    "share": 0.0
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact151",
+  "language": "es",
+  "claim": "La vicepresidenta segunda del Gobierno, Yolanda Díaz, ha presentado hoy en Barcelona un ejercicio de prospectiva social, impulsado y coordinado por la Oficina Nacional de Prospectiva y Estrategia (ONPE), que analiza cómo podrían evolucionar las trayectorias vitales de la población española en los próximos 24 años.",
+  "gold": "FALSE",
+  "origin": "mutated",
+  "claude": {
+   "lookingFor": "On 28 September 2026 Spain's second deputy prime minister Yolanda Díaz presented in Barcelona a social foresight exercise by the Oficina Nacional de Prospectiva y Estrategia (ONPE) on how Spaniards' life paths may evolve over the next 24 years (to 2050).",
+   "decisive": [
+    "Yolanda Díaz",
+    "Barcelona",
+    "Oficina Nacional de Prospectiva y Estrategia",
+    "24 años",
+    "2050",
+    "prospectiva"
+   ],
+   "sourceType": "Government of Spain press release (La Moncloa / Ministerio de Trabajo, ONPE); else a second Spanish outlet",
+   "queries": [
+    "Yolanda Díaz Barcelona Oficina Nacional de Prospectiva y Estrategia 2050 trayectorias vitales",
+    "ONPE informe prospectiva 2050 vínculos sociales soledad presentación"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Gobierno",
+     "ONPE",
+     "Oficina Nacional de Prospectiva y Estrategia",
+     "Yolanda Díaz"
+    ],
+    "subject": [],
+    "headline": "",
+    "identifiers": [],
+    "figures": [
+     "24"
+    ],
+    "dates": [],
+    "terms": [
+     "vicepresidenta",
+     "segunda",
+     "presentado",
+     "ejercicio",
+     "social",
+     "impulsado",
+     "próximos"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Gobierno ONPE Oficina Nacional de Prospectiva y Estrategia Yolanda Díaz",
+    "Gobierno ONPE vicepresidenta segunda presentado ejercicio social impulsado",
+    "Gobierno ONPE Oficina Nacional de Prospectiva y Estrategia Yolanda Díaz verificación OR desmentido OR bulo OR falso"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Yolanda Díaz",
+     "Oficina Nacional de Prospectiva y Estrategia",
+     "24 años",
+     "prospectiva"
+    ],
+    "missing": [
+     "Barcelona",
+     "2050"
+    ],
+    "share": 0.667
+   },
+   "sentencePlan": {
+    "carried": [
+     "Yolanda Díaz",
+     "Oficina Nacional de Prospectiva y Estrategia",
+     "prospectiva"
+    ],
+    "missing": [
+     "Barcelona",
+     "24 años",
+     "2050"
+    ],
+    "share": 0.5
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact154",
+  "language": "en",
+  "claim": "Two days later, last Friday, a county emergency official arrived at Kirk’s debris-laden front lawn in Wyandotte County, and said he’d be back in 30 minutes with a tarp, some lumber, and a crew to cover up the maple-shaped gash in Kirk’s house.",
+  "gold": "FALSE",
+  "origin": "mutated",
+  "claude": {
+   "lookingFor": "Two days after his televised plea, on a Friday in early October 2026, a county emergency official came to Kirk's damaged house in Wyandotte County (Kansas) and promised to return in 30 minutes with a tarp, lumber and a crew.",
+   "decisive": [
+    "Kirk",
+    "Wyandotte County",
+    "tarp",
+    "30 minutes",
+    "county emergency official"
+   ],
+   "sourceType": "a Kansas City local TV/news outlet's original report",
+   "queries": [
+    "Kirk Wyandotte County house tarp tree televised plea",
+    "Wyandotte County man house tree hole tarp strangers emergency official"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Wyandotte County",
+     "tarp",
+     "Friday",
+     "Kirk’s"
+    ],
+    "subject": [
+     "Strangers"
+    ],
+    "headline": "Strangers Showed Up to Man's Destroyed House to Put Up a Tarp Having Seen His Televised Plea",
+    "identifiers": [],
+    "figures": [
+     "30 minutes"
+    ],
+    "dates": [],
+    "terms": [
+     "emergency",
+     "official",
+     "debris",
+     "laden",
+     "front",
+     "lawn",
+     "house"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Wyandotte County tarp",
+    "Wyandotte County tarp later last Friday emergency official arrived",
+    "Wyandotte County tarp fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "Kirk",
+     "Wyandotte County",
+     "tarp",
+     "30 minutes",
+     "county emergency official"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "Wyandotte County",
+     "tarp",
+     "county emergency official"
+    ],
+    "missing": [
+     "Kirk",
+     "30 minutes"
+    ],
+    "share": 0.6
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact156",
+  "language": "en",
+  "claim": "Software developer Chris Dzoba decided to try using AI to find the next largest diagram – one with 15 sets.",
+  "gold": "FALSE",
+  "origin": "mutated",
+  "claude": {
+   "lookingFor": "Software developer Chris Dzoba used AI to find the next largest symmetric Venn diagram, one with 15 sets.",
+   "decisive": [
+    "15",
+    "sets",
+    "Chris Dzoba",
+    "symmetric",
+    "Venn diagram"
+   ],
+   "sourceType": "Chris Dzoba's own write-up/preprint; else a second outlet on the same result",
+   "queries": [
+    "Chris Dzoba symmetric Venn diagram AI sets",
+    "AI finds symmetric Venn diagram next largest number of sets 2026"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Chris Dzoba",
+     "AI"
+    ],
+    "subject": [
+     "Venn"
+    ],
+    "headline": "AI finds bafflingly complex but beautiful symmetrical Venn diagram | New Scientist",
+    "identifiers": [],
+    "figures": [
+     "15 sets"
+    ],
+    "dates": [],
+    "terms": [
+     "Software",
+     "developer",
+     "find",
+     "largest",
+     "diagram"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Chris Dzoba AI",
+    "Chris Dzoba AI Software developer decided using find next",
+    "Chris Dzoba AI fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "15",
+     "sets",
+     "Chris Dzoba",
+     "symmetric",
+     "Venn diagram"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "Chris Dzoba"
+    ],
+    "missing": [
+     "15",
+     "sets",
+     "symmetric",
+     "Venn diagram"
+    ],
+    "share": 0.2
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact159",
+  "language": "en",
+  "claim": "In 2021, Ask Delphi, an AI-based website to which people could pose ethical or moral questions, received 300,000 queries in a few weeks.",
+  "gold": "FALSE",
+  "origin": "mutated",
+  "claude": {
+   "lookingFor": "In 2021 the AI ethics website Ask Delphi (Allen Institute for AI) received 300,000 queries within a few weeks of launch.",
+   "decisive": [
+    "300,000",
+    "Ask Delphi",
+    "queries",
+    "2021",
+    "few weeks"
+   ],
+   "sourceType": "the Allen Institute for AI's Delphi paper or blog; else a 2021 tech outlet's report on Ask Delphi",
+   "queries": [
+    "Ask Delphi 300,000 queries few weeks 2021",
+    "Allen Institute Delphi AI ethics questions submitted number 2021"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Ask Delphi",
+     "people",
+     "AI-based",
+     "AI"
+    ],
+    "subject": [
+     "Chatbots"
+    ],
+    "headline": "Chatbots as oracles: How AI is giving new life to the ancient practice of seeking answers from inscrutable sources",
+    "identifiers": [],
+    "figures": [
+     "300,000 queries"
+    ],
+    "dates": [
+     "2021"
+    ],
+    "terms": [
+     "website",
+     "pose",
+     "ethical",
+     "moral",
+     "questions",
+     "weeks"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Ask Delphi people AI",
+    "Ask Delphi people based website could pose ethical moral",
+    "Ask Delphi people AI fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "300,000",
+     "Ask Delphi",
+     "queries",
+     "2021"
+    ],
+    "missing": [
+     "few weeks"
+    ],
+    "share": 0.8
+   },
+   "sentencePlan": {
+    "carried": [
+     "Ask Delphi"
+    ],
+    "missing": [
+     "300,000",
+     "queries",
+     "2021",
+     "few weeks"
+    ],
+    "share": 0.2
+   },
+   "pipelineNamesSourceType": false
+  }
+ },
+ {
+  "id": "fact158",
+  "language": "en",
+  "claim": "A 2026 Pew report found that 40% of Americans are using chatbots for emotional support or companionship.",
+  "gold": "FALSE",
+  "origin": "mutated",
+  "claude": {
+   "lookingFor": "A 2026 Pew Research Center report found that 40% of Americans use AI chatbots for emotional support or companionship.",
+   "decisive": [
+    "40%",
+    "Pew",
+    "2026",
+    "emotional support",
+    "companionship",
+    "chatbots"
+   ],
+   "sourceType": "primary report: Pew Research Center survey (2026)",
+   "queries": [
+    "Pew 2026 Americans chatbots emotional support companionship percent",
+    "Pew Research Center survey AI chatbots emotional support 2026"
+   ]
+  },
+  "pipeline": {
+   "checkablePoint": {
+    "names": [
+     "Pew",
+     "Americans",
+     "chatbots"
+    ],
+    "subject": [
+     "AI"
+    ],
+    "headline": "Chatbots as oracles: How AI is giving new life to the ancient practice of seeking answers from inscrutable sources",
+    "identifiers": [],
+    "figures": [
+     "40%"
+    ],
+    "dates": [
+     "2026"
+    ],
+    "terms": [
+     "emotional",
+     "support",
+     "companionship"
+    ]
+   },
+   "sentencePlanQueries": [
+    "Pew Americans chatbots",
+    "Pew Americans found using emotional support companionship",
+    "Pew Americans chatbots fact check OR debunked OR false"
+   ]
+  },
+  "counted": {
+   "checkablePoint": {
+    "carried": [
+     "40%",
+     "Pew",
+     "2026",
+     "emotional support",
+     "companionship",
+     "chatbots"
+    ],
+    "missing": [],
+    "share": 1.0
+   },
+   "sentencePlan": {
+    "carried": [
+     "Pew",
+     "emotional support",
+     "companionship",
+     "chatbots"
+    ],
+    "missing": [
+     "40%",
+     "2026"
+    ],
+    "share": 0.667
+   },
+   "pipelineNamesSourceType": false
+  }
+ }
+]

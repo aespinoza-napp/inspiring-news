@@ -34,6 +34,9 @@ from src.models.fact_checker.fact_check import Verdict
 
 XFACT = "xfact"
 CUSTOM = "custom"
+# The benchmark every evaluation is measured on since 2026-11-05
+# (src/evaluation/averitec.py). A row says so itself (`"dataset": "averitec"`).
+AVERITEC = "averitec"
 
 # The five groups, as the labeller balances them. The backend's copy
 # lives in src/config/topics.py (ingestion selects sources by them too);
@@ -105,6 +108,10 @@ class DatasetRow:
     # (never after claim_date, labeller Rule 3). Read by freshness.py; not
     # copied into records, which predate it.
     evidence_date: str | None = None
+
+    # AVeriTeC only: the fact-check the claim and its label were taken from.
+    # Never evidence for its own claim (runner.context_for).
+    fact_check_url: str | None = None
 
     @property
     def topic_group(self) -> str | None:
@@ -249,11 +256,18 @@ def parse_row(raw: dict, where: str = "row") -> DatasetRow:
     if not isinstance(links, list):
         raise DatasetError(f"{where}: referenceEvidenceLinks must be a list")
 
-    is_custom = bool(raw.get("id"))
+    is_averitec = raw.get("dataset") == AVERITEC
+
+    is_custom = bool(raw.get("id")) and not is_averitec
+
+    # The cutoff is the claim's date: an AVeriTeC row without one could read
+    # anything, so it is refused here rather than run unguarded.
+    if is_averitec and not _claim_date(raw.get("claimDate")):
+        raise DatasetError(f"{where}: an AVeriTeC row needs `claimDate`, its temporal cutoff")
 
     return DatasetRow(
-        id=str(raw["id"]) if is_custom else xfact_id(language, site or "", claim),
-        dataset=CUSTOM if is_custom else XFACT,
+        id=str(raw["id"]) if (is_custom or is_averitec) else xfact_id(language, site or "", claim),
+        dataset=AVERITEC if is_averitec else CUSTOM if is_custom else XFACT,
         language=language,
         site=site,
         claim=claim,
@@ -268,6 +282,7 @@ def parse_row(raw: dict, where: str = "row") -> DatasetRow:
         origin=("mutated" if raw.get("mutatedFrom") else "natural") if is_custom else None,
         split=raw.get("split") or None,
         evidence_date=_claim_date(raw.get("evidenceDate")) if is_custom else None,
+        fact_check_url=(raw.get("factCheckUrl") or None) if is_averitec else None,
     )
 
 
@@ -324,6 +339,31 @@ def select_rows(dataset: Dataset, split: str | None = None, sample: str | None =
         sha256=selection,
         rows=rows,
     )
+
+
+def only_ids(dataset: Dataset, ids: list[str]) -> Dataset:
+    """
+    These rows of an already selected dataset, for a run over a batch of
+    claims (the troubleshooting loop, src/evaluation/troubleshoot.py, which
+    re-runs a stage on its 20 claims each round). Applied after the split, so
+    an id from the other half is an error, never a way into it. Its own stem
+    and sha256, so the batch's runs never share a directory with the half's.
+    """
+
+    wanted = list(dict.fromkeys(claim_id.strip() for claim_id in ids if claim_id.strip()))
+    by_id = {row.id: row for row in dataset.rows}
+    missing = [claim_id for claim_id in wanted if claim_id not in by_id]
+
+    if missing:
+        raise DatasetError(f"not in {dataset.stem}: {', '.join(missing)}")
+
+    rows = tuple(row for row in dataset.rows if row.id in set(wanted))
+
+    selection = hashlib.sha256(
+        "\n".join([dataset.sha256, *sorted(row.id for row in rows)]).encode("utf-8")
+    ).hexdigest()
+
+    return Dataset(path=dataset.path, stem=f"{dataset.stem}-ids{selection[:8]}", sha256=selection, rows=rows)
 
 
 def recheck_ids(dataset: Dataset) -> list[str]:

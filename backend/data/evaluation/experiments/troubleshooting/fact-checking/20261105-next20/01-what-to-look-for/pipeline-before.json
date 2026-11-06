@@ -1,0 +1,10 @@
+{
+ "label": "before",
+ "at": "2026-11-05T11:52:24+01:00",
+ "thresholds": null,
+ "thresholdsOverrides": {},
+ "gitCommit": "693af93",
+ "dirty": true,
+ "evidenceRun": "data/evaluation/runs/manual-train/llama3.2-3b-bench/cc053417c0cb",
+ "replayRun": "data/evaluation/runs/manual-train/llama3.2-3b-bench/1d07e163a659"
+}

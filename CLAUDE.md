@@ -17,6 +17,7 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ./scripts/check.sh graph     # the graph against a real Neo4j; fails if it is down
 ./scripts/check.sh gcp       # deploy/gcp/ applied to Floci (local GCP emulator); Docker only
 ./scripts/check.sh labeller  # the fact labeller, plain python
+./scripts/check.sh livecheck # the live-conversation listener, no models
 ./scripts/check.sh e2e       # built frontend in headless Chrome, stub backend
 ./scripts/check.sh lake      # the lake's lineage holds together (read-only)
 ```
@@ -55,6 +56,10 @@ src.main:app --port 8001`.
   `join` merges them. Its Today tab gets the day's articles and claims
   from the backend's `POST /labelling/batch` over HTTP and keeps them in
   `backend/data/evaluation/queue/`. See `labeller/README.md`.
+- `livecheck/` — listens to a conversation playing on this machine: words,
+  who asks and who answers, whether it was answered, whether it is true, a
+  report. Its own venv; reaches the fact-checker over `POST /verify-claim`.
+  See `livecheck/README.md`.
 - `docs/decisions/` — why things are the way they are.
 
 ## Navigation
@@ -82,6 +87,8 @@ src.main:app --port 8001`.
 | Pages, polling hook, API proxies | `frontend/CLAUDE.md` |
 | Running the stack | `docker/README.md` |
 | Production, Google Cloud, sizing, `/healthz` and `/metrics` | `docs/decisions/deployment.md` |
+| Asking up to three questions before searching (`query_plan: questions`, off); a search cache for comparing plans on train; AVeriTeC's web runs without the scholarly engines | `backend/src/services/fact_checker/questions.py`, `backend/data/evaluation/experiments/averitec/questions-rule.md`, `docs/fact-checking-changes.md` (14) |
+| The benchmark since 5 Nov 2026: AVeriTeC, how it is scored, the gate on evidence from after the claim, the results | `docs/decisions/evaluation.md` ("AVeriTeC"), `backend/data/evaluation/experiments/averitec/protocol.md`, `backend/src/services/fact_checker/retrieval/temporal.py` |
 | The evaluation harness: research questions, record format, metrics, stage attribution | `docs/decisions/evaluation.md` |
 | The custom set's frozen train/test split; the second look and its tuning loop; run-to-run consistency | `docs/decisions/evaluation.md`, `backend/data/evaluation/split.json` |
 | What to run for an activity without running out of memory; one model in Ollama at a time | `scripts/stack.sh`, `docs/decisions/deployment.md` ("Models in memory") |
@@ -89,7 +96,8 @@ src.main:app --port 8001`.
 | Every change ever made to fact-checking, by date, with a summary | `docs/fact-checking-changes.md` |
 | Where a claim's seconds go; the speed switches, the claim deadline, the 22 Oct contest | `docs/decisions/performance.md` ("The 20-second fact-check"), `backend/data/evaluation/experiments/speed/` |
 | Why the verifier asks one source at a time; comparing verifiers on one run's evidence (`--replay`) | `docs/decisions/evaluation.md` ("The verifier's FALSE", "Replay"), `backend/data/evaluation/experiments/verifier/` |
-| What goes wrong in each part (what to look for, queries, search results, ranking, verification), found by checking claims by hand against the pipeline | `docs/troubleshooting/`, `backend/data/evaluation/experiments/claude-search/` |
+| What goes wrong in each part (what to look for, queries, search results, ranking, verification), found by checking claims by hand against the pipeline | `docs/troubleshooting/fact-checking/`, `backend/data/evaluation/experiments/claude-search/` |
+| An agent per part of fact-checking against Claude's blind checks on 20 train claims: one experiment file per part and batch; what to search for a claim | `scripts/troubleshoot.sh`, `backend/src/evaluation/troubleshoot.py`, `docs/troubleshooting/fact-checking/README.md` ("Running it"), `/what-to-search`, `/troubleshoot-fact-check` |
 | An agent iterating on fact-checking (thresholds, prompts, search, model) by a fixed rule, train half only | `/iterate-fact-check`, `cli iterate`, `backend/src/evaluation/iterate.py`, `docs/decisions/evaluation.md` ("The iteration loop") |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
 | Trending: the signals (Google Trends, r/UpliftingNews...), the lens on /discover, the checked positive angle, the TikTok embed; why TikTok is never scraped | `docs/decisions/trends.md` |
@@ -239,6 +247,15 @@ write them down than to have each be rediscovered.
   counted pages repeating the claim's sentence as outlets confirming it.
   Compare across it by replay only. Its gain on altered claims overstates the
   real world: they were made by changing a detail of a real sentence.
+- **Every custom-set figure predates the benchmark** (2026-11-05). Evaluation is on
+  AVeriTeC's dev split now, with no evidence from the claim's day on, and neither its
+  figures nor the custom set's compare with the other's. The custom set could read
+  pages written after its claims, and still can; the app too, having no cutoff to
+  apply. `docs/decisions/evaluation.md`, "AVeriTeC".
+- **AVeriTeC's web runs leave out the scholarly engines since 2026-11-06**
+  (`search_science_engines: drop` in `averitec_web*.json`); the app keeps them. On
+  10 train claims it halved a claim's time with no detectable change in accuracy.
+  `docs/fact-checking-changes.md` (14).
 - **The search changed on 2026-11-03** (engines, SearXNG 2026.11.2, and an
   answer whose best result holds under 35% of the query's words now counts
   as failed): searched runs either side are not comparable.
@@ -255,7 +272,7 @@ write them down than to have each be rediscovered.
   query's quoted figures, which the app's article pipeline fills, are missing
   from every harness search: the harness measures a weaker search than the app
   runs. `query_plan: checkable` reads them from the sentence; the default
-  `sentence` keeps it as it was. `docs/troubleshooting/02-queries.md`.
+  `sentence` keeps it as it was. `docs/troubleshooting/fact-checking/02-queries.md`.
 - **The Docker backend cannot reach a host Ollama bound to 127.0.0.1.**
   On Linux the systemd service binds only localhost; the container's model
   calls then all fail (`/healthz`: `llm: ConnectError`). `docker/README.md`

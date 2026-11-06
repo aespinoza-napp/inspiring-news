@@ -121,6 +121,71 @@ Why it can be trusted, or checked:
   stream of tool calls; the terminal shows one line per call as it runs.
 - **Nothing is committed**; with `--implement` the change is in `git diff` for review.
 
+### Standard settings and cost
+
+Every run takes `backend/data/evaluation/experiments/troubleshooting/fact-checking/config.json`
+(agent model and effort, per-step and total budget, rounds, patience, the replays' model);
+a flag overrides one value for one run, and every step records the config it ran with
+(`batch.json`, `steps`). Change the file, not the flags, when the standard changes.
+
+`./scripts/troubleshoot.sh preflight` says whether anything would cost money, and the
+loop and `agent` refuse to start when it would:
+
+- **The agent** bills the claude.ai subscription only when `claude` is logged in that way
+  (`claude auth status`: `authMethod: claude.ai`) and no API credential is in the
+  environment. The script strips `ANTHROPIC_API_KEY` and its kin from the agent's
+  environment anyway, and stops if a step's log says it ran on a key (`apiKeySource` not
+  `none`). The dollars it prints are the API price of the tokens: under the subscription
+  they measure usage against the plan's limits, not a charge.
+- **Extra credits are never spent** (`extraCredits: never`). On 5 Nov an account past its
+  five-hour limit with usage credits on kept running on them, with `apiKeySource: none`.
+  So preflight makes one very short call to read the account's rate-limit report and
+  refuses unless credits are off (and when it cannot confirm that), and every step is
+  killed at the first report saying credits are on or in use, its half-built change put
+  back. An account holding credits with the switch on therefore cannot run this at all.
+  This guards the script only: an interactive Claude Code session on such an account can
+  still spend them. Only switching them off on claude.ai covers that.
+- **The harness's model** (04-05) must be on this machine (`LLM_BASE_URL` on localhost):
+  `backend/.env` also holds a Groq key, used only by `iterate --provider groq`, never here.
+- SearXNG, `inference/` and Ollama are local and free.
+
+### In a loop, round after round (since 5 Nov 2026)
+
+```bash
+./scripts/troubleshoot.sh prepare --batch 20261105-hold20 --offset 40 --limit 20   # the held-out batch
+./scripts/troubleshoot.sh loop --batch 20261105-next20 --holdout 20261105-hold20 --stage 01
+./scripts/troubleshoot.sh loop --batch 20261105-next20 --holdout 20261105-hold20 --stage all --rounds 3
+```
+
+Each round: the stage measured under the changes kept so far (the base), on both batches;
+the agent proposes and builds one change, reading only the tune batch; the script runs
+`check.sh fast` and the fact-checker and evaluation tests itself, measures both batches
+again in a fresh process, and decides (`troubleshoot.decide`):
+
+- **keep** when the tune batch's number goes up, no tune claim goes down (01-02, exact) or
+  the claims gained outnumber those lost (03-05; by two for 03, a live search), and the
+  held-out batch does not go down;
+- otherwise **reject**, and every file under `backend/src` and `backend/tests` is put back
+  byte for byte.
+
+A stage stops after `--patience` (2) rounds in a row with nothing kept, after `--rounds`
+(5), or when the agent steps have cost `--max-total-usd` (30). Kept overrides accumulate in
+the tune batch's `loop.json` and carry into the next stage; the kept code stays in the
+working tree, uncommitted. Each round is an experiment file,
+`experiments/<part>/<batch>-round-NN.md`, with the decision at the top of Measured.
+
+The held-out batch is the guard against fitting: the agent writes rules while looking at 20
+claims, and the hook refuses it the held-out batch, the measuring script, its tests and the
+hook. `loop.json` says only whether the held-out batch held; its numbers are in the
+held-out batch's `round-NN/result.json`.
+
+What each stage's measure needs: 01-02 nothing (offline; `inference/` for the entities);
+03 SearXNG and `inference/` (a searched `--retrieval-only` run of the batch per measure);
+04-05 `inference/` and Ollama with the evidence run's model (a replay per measure,
+`--llm-model`, ~20-40 minutes for 20 claims on this laptop). The loop checks they answer
+before it starts. 03-05 also need Claude's blind search (`claude.jsonl`) of both batches,
+which the loop runs once. A run's measure is a run: check the laptop is otherwise idle.
+
 The batch's files: `backend/data/evaluation/experiments/troubleshooting/fact-checking/<batch>/`
 (`claims.jsonl`, `plan.jsonl`, `claude.jsonl`, `batch.json`, `logs/`, and one directory per
 part). The experiment files: `experiments/<part>/<batch>.md` here.

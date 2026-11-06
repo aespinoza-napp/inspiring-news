@@ -17,6 +17,8 @@ interface Stage {
 export const CURRENT_PHASE_LABELS: Record<string, string> = {
   restating_claim: "Working out what exactly to check…",
   claim_restated: "Claim restated; searching…",
+  planning_questions: "Writing the questions to search…",
+  questions_planned: "Questions ready; searching…",
   initializing: "Warming up (loading local AI models, first run only)…",
   initialized: "Models ready",
   scraping: "Fetching the article…",

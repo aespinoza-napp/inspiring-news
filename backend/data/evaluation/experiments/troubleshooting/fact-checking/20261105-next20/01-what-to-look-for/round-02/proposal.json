@@ -1,0 +1,25 @@
+{
+  "stage": "01",
+  "change": "New threshold checkable_figures: with_units. A figure with a currency sign or a unit written onto it (£5.9bn, 189p, $40m, 3,5kg, 50GW) is kept whole as a checkable figure, where the bare NUMBER pattern stops at the letter and drops it. Ordinals (21st, 2do, 3er) and one digit with a letter and no sign (5G, 3D) are excluded. Default 'bare' is unchanged.",
+  "files": [
+    "backend/src/services/fact_checker/retrieval/checkable.py",
+    "backend/src/services/fact_checker/retrieval/query_builder.py",
+    "backend/src/services/fact_checker/retrieval/search_provider.py",
+    "backend/src/config/thresholds.py",
+    "backend/src/config/settings.py",
+    "backend/src/evaluation/runner.py",
+    "backend/src/evaluation/iterate.py",
+    "backend/tests/services/fact_checker/retrieval/test_checkable.py",
+    "backend/tests/services/fact_checker/retrieval/test_query_kinds.py",
+    "backend/tests/services/fact_checker/fakes.py",
+    "backend/tests/evaluation/test_harness_runner.py"
+  ],
+  "kind": "code",
+  "mode": "offline",
+  "thresholds": {
+    "checkable_figures": "with_units"
+  },
+  "predict": "fact099 gains £5.9bn (share 0.6 -> 0.8; 'gas imports' stays missing) and fact101 gains 189p (0.833 -> 1.0, so checkablePointAllCarried 6 -> 7). The other 18 claims are unchanged: going through their sentences by hand, none has a sign or unit stuck to a figure (fact122's '3I' is one digit with no sign, so it is excluded; fact088's '15‑PGDH' uses a non-breaking hyphen and reads as before). checkablePointCoverage should rise a little from 0.813; the script computes the figure. sentencePlanCoverage stays 0.523 (the sentence plan is untouched). Both new figures are distinctive, so under query_plan checkable fact099 and fact101 also get the specifics query in place of the refutation query. Predicted from the code and the tests, not measured on the batch: the hook blocks a throwaway script.",
+  "risks": "(1) Only three figures are kept (MAX_FIGURES). A unit figure sorts as distinctive, so in a sentence with many figures it can push out a bare number that mattered: the one way coverage can fall on the held-out batch. (2) The anchor query quotes the figure as written ('\"£5.9bn\"'), which an engine may not match against '£5.9 billion' or '5.9bn'. This is a search-side risk for stage 02/03, not counted here. (3) Glued tokens that are not quantities, such as '10am' or '1990s', become figures. They are not distinctive, so they only take a figure slot, and only when they are among the longest. (4) Only when query_plan is checkable; the default 'bare' keeps every earlier run and its key (keyed_thresholds drops it).",
+  "iterate": "cli iterate propose --campaign <campaign> --kind search --hypothesis \"Under query_plan checkable a figure with its currency or unit written onto it (£5.9bn, 189p) is dropped whole, so the claim's one decisive figure reaches no query (fact099, fact101 in 20261105-next20); keeping it puts it, quoted, into the anchor and specifics queries.\" --predict \"Against the base {query_plan: checkable, checkable_terms: framing_last}: the settling source is among the candidates more often for claims with money or unit figures; train accuracy judged by the rule on the full train half, not on the 20 (run-to-run noise 6-9 points).\" --thresholds <campaign dir>/tries/NN.json  (NN.json = {\"query_plan\": \"checkable\", \"checkable_terms\": \"framing_last\", \"checkable_figures\": \"with_units\"})"
+}

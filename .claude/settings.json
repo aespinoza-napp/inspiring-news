@@ -47,6 +47,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Bash|Read|Grep|Glob|Write|Edit|NotebookEdit|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$(command -v python3 || command -v python)\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/troubleshoot_blind.py\"",
+            "timeout": 10
+          }
+        ]
       }
     ]
   }

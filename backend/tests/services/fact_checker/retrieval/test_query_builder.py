@@ -46,7 +46,7 @@ def test_every_query_carries_the_subject_the_sentence_lost():
 
     # Every kind the first pass plans; `follow_up` is a second look's only,
     # `specifics` the checkable plan's only (query_plan: checkable).
-    assert {query.kind for query in plan} == set(QueryKind) - {QueryKind.FOLLOW_UP, QueryKind.SPECIFICS}
+    assert {query.kind for query in plan} == set(QueryKind) - {QueryKind.FOLLOW_UP, QueryKind.SPECIFICS, QueryKind.QUESTION}
 
     for query in plan:
         assert "Farmear aura" in query.text, query

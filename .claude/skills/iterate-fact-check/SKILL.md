@@ -26,7 +26,10 @@ git switch -c iterate/<name>                  # code tries are committed here, n
 ```
 
 `cc053417c0cb` is the one local searched train run with `evidence.jsonl` (29 Oct,
-`llama3.2:3b-bench`, per-source verifier). While the campaign is active,
+`llama3.2:3b-bench`, per-source verifier), over the custom set. **A new campaign should start from
+an AVeriTeC one** (the benchmark since 5 Nov, `docs/decisions/evaluation.md`, "AVeriTeC"): none exists
+yet, so make it first, with `--dataset data/evaluation/averitec/averitec_train.jsonl --split train
+--thresholds data/evaluation/thresholds/averitec_web.json`. While the campaign is active,
 `.claude/hooks/sealed_test_half.py` refuses anything touching the test half.
 
 ## 1. Where are we?

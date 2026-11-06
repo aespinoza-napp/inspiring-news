@@ -26,6 +26,7 @@ from src.evaluation.dataset import DatasetRow
 from src.models.fact_checker.evidence import Evidence
 from src.models.fact_checker.fact_check import FactCheck
 from src.models.fact_checker.pipeline_stage import PipelineStage
+from src.services.fact_checker.retrieval import temporal
 from src.services.fact_checker.retrieval.search_provider import registrable_domain
 from src.services.fact_checker.verification.llm_verification import (
     INVALID_OUTPUT_EXPLANATION,
@@ -56,6 +57,8 @@ RECORD_FIELDS = (
     # Added after the x-fact pilot without a HARNESS_VERSION bump: it
     # changes no outcome, and a report skips a dimension a record lacks.
     "origin",
+    # Added 2026-11-05, same standing: AVeriTeC's fact-check, never evidence.
+    "factCheckUrl",
     # The outcome.
     "status", "error",
     "verdict", "rawVerdict", "confidence", "rawConfidence", "explanation",
@@ -78,6 +81,10 @@ RECORD_FIELDS = (
     # Added 2026-10-20, same standing: a closed-book run's answer to
     # "do you remember a published fact-check of this claim" (closed_book.py).
     "closedBook",
+    # Added 2026-11-06, same standing: under `query_plan: questions`, the
+    # questions the claim was searched by and their answers - what
+    # AVeriTeC's scorer compares with the annotators' (averitec_score.py).
+    "questionPlan",
     # Provenance.
     "model", "provider", "thresholdsHash", "harnessVersion", "gitCommit",
     "startedAt", "finishedAt",
@@ -170,6 +177,9 @@ def build_record(
         ),
         "loop": loop,
         "closedBook": closed_book,
+        "questionPlan": (
+            check.question_plan.model_dump(mode="json") if check.question_plan else None
+        ),
     })
 
     record.update(_provenance(provenance, timing))
@@ -230,6 +240,7 @@ def _row_fields(row: DatasetRow) -> dict:
         "labelRaw": row.label_raw,
         "referenceEvidenceLinks": list(row.reference_links),
         "articleUrl": row.article_url,
+        "factCheckUrl": row.fact_check_url,
         "topic": row.topic,
         "topicGroup": row.topic_group,
         "claimType": row.claim_type,
@@ -327,6 +338,8 @@ def _evidence(item: Evidence, cited: bool) -> dict:
         "title": item.title,
         "origin": _value(item.origin),
         "publishedAt": item.published_at.isoformat() if item.published_at else None,
+        # What the temporal audit checks, since a record does not keep the text.
+        "latestDateInText": _latest_in_text(item),
         "relevance": item.relevance_score,
         "semantic": item.semantic_score,
         "lexical": item.lexical_score,
@@ -340,6 +353,13 @@ def _evidence(item: Evidence, cited: bool) -> dict:
         "engines": list(item.engines),
         "foundBy": list(item.found_by),
     }
+
+
+def _latest_in_text(item: Evidence) -> str | None:
+
+    day = temporal.latest_in_text(item)
+
+    return day.isoformat() if day else None
 
 
 def _domain(item: Evidence) -> str:

@@ -4,6 +4,10 @@
 > the evaluation harness, its metrics, or anything the paper reports a
 > number from.
 
+**Status, 2026-11-05: AVeriTeC is the benchmark** (§AVeriTeC): its dev split,
+accuracy beside always answering Refuted, and nothing from the claim's day on as
+evidence. Every custom-set figure below stands as what it was, and is not comparable.
+
 **Status, 2026-10-19: the custom set is split** into a tuning and a
 test half, 50/50, frozen (§The split); **the second look** - a second,
 wider search for a verdict in doubt - is built into the pipeline, off
@@ -147,7 +151,7 @@ key exists.
 | `reachedStage`, `stageNote`, `searchUnavailable`, `llmUnreachable` | From the `FactCheck`. |
 | `queries` | `[{text, kind}]`, from the `searching_web` event (anchor / proposition / refutation). |
 | `candidates` | Every source seen, **once**: `{url, domain, title, origin, stoppedAt, reason, score}`. `stoppedAt` is `ranked`, or the stage that cut it (`evidence_retrieval`: funnel, same domain, own article; `evidence_ranking`: pertinence gate, cap). Rejected sources carry no domain; it is computed with `registrable_domain`, as `Evidence.domain` is. |
-| `evidence` | The ranked list in index order: `{url, domain, title, origin, publishedAt, relevance, semantic, lexical, recency, reliability, reliabilityKnown, pertinence, stance, cited, quote, engines, foundBy}`. |
+| `evidence` | The ranked list in index order: `{url, domain, title, origin, publishedAt, latestDateInText, relevance, semantic, lexical, recency, reliability, reliabilityKnown, pertinence, stance, cited, quote, engines, foundBy}`. |
 | `citedIndices`, `evidenceCount`, `independentDomains` | From the `FactCheck`. |
 | `events` | The `on_phase` trace: `[{phase, t, data}]`, `t` in seconds since the claim started, starting at `extracting_entities`. |
 | `latency` | `total`, `entities` (building the claim) and per stage, from the events: `retrieval` (`retrieving_evidence` → `evidence_retrieved`), `ranking` (→ `evidence_ranked`), `llm` (`verifying_claim` → `claim_checked`; `null` when the model was not asked). |
@@ -1585,6 +1589,69 @@ preferred; the hosted side has usage limits and sees the claims.
 
 Nothing a campaign keeps becomes a default: the best kept try goes to the
 test half once, run by the author, under the `fact-check-change` skill.
+
+## AVeriTeC: the benchmark since 2026-11-05
+
+Every fact-checking evaluation from this date on is on AVeriTeC (Schlichtkrull
+et al., NeurIPS 2023), the set the field reports on, with its official dev split
+and accuracy as ClaimCheck (arXiv:2510.01226) reports it. The pre-registered
+conditions and how they are read are in
+`backend/data/evaluation/experiments/averitec/protocol.md`; the results and their
+order are there too. The custom set stays for what AVeriTeC cannot say: Spanish,
+and the constructive news the app actually checks.
+
+**The data.** `cli averitec import` writes `data/evaluation/averitec/averitec_{dev,train}.jsonl`
+(gitignored, CC BY-NC 4.0, Hugging Face `chenxwh/AVeriTeC` revision `2ca9dee`):
+500 dev claims, 2,953 train (115 excluded: no date, before 2000, or a bad label).
+Rows are in SHA-256 order of their id, so `--limit N` is a fixed random sample a
+larger N extends. The test split has no gold labels. Labels map Supported to TRUE,
+Refuted to FALSE, Not Enough Evidence to UNVERIFIED, Conflicting to MISLEADING;
+PARTIALLY_TRUE also scores as Conflicting.
+
+**The measure.** `evaluation/averitec.py`, the first section of a report on these
+claims: accuracy over every claim (no verdict is wrong) with a bootstrap interval,
+macro-F1, per-class F1 and confusion, and always beside them **always answering
+Refuted on the same claims** (61.0% over dev): accuracy alone flatters a model that
+says FALSE to everything. The official AVeriTeC score (METEOR over question-answer
+pairs) does not apply as such, since the pipeline's evidence is not question-answer
+pairs; `cli averitec submission` writes the file the official scorer reads.
+
+**The temporal rule.** Nothing written from the claim's day on may reach the model:
+no later coverage, no follow-up, not the fact-check behind the label.
+`ArticleContext.evidence_before` carries the date; None, the app's case, and nothing
+runs. No free search filters by date from this machine (tried on 5 Nov: SearXNG has
+no absolute range, `before:` is ignored, Google does not answer through it, and
+DuckDuckGo, Mojeek and Brave refuse), so the search stays open and
+`retrieval/temporal.py` decides afterwards. Refused:
+
+| What | Why it was found |
+|---|---|
+| Any date known for the page on or after the claim's day (engine's, page's, address's) | The rule itself |
+| A date in the page's own text on or after it | The first 100 store claims: 33 of 480 sources, under an audit saying Held. AP and ABC of the claim's own day, Mayo Clinic "updated" 2022 |
+| A reference work as served today (`LIVING_SITES`) | Wikipedia's "Walmart" passed dated 2001, its creation |
+| A fact-check with no date, or anything undated on the site of the claim's own | The Quint: fact-check at `fit.`, store's copy at `www.` |
+| Any other page with no date, under `evidence_undated: drop` | The web condition; the store cannot, its pages carry no dates |
+
+The report's audit re-reads this from the records, not from the gate's word, and any
+hit makes the run invalid. **What it cannot see:** a page with no date anywhere (the
+store's run counts them), a page rewritten without a trace, and what the model
+remembers: Llama 3.2's training ended after these claims, which `--closed-book` bounds.
+
+**Three conditions, and what each can be compared with.** `closed-book`: no evidence,
+against the zero-evidence figures. `store`: the official knowledge store through BM25
+(`evaluation/knowledge_store.py`, `--knowledge-store`), offline and repeatable, against
+HerO and InFact; the store's dev audit found about 5% of the pages dated in their
+address to be too late and 37 claims holding their own fact-check. `web`: live SearXNG
+through the strict gate, against ClaimCheck, PASS-FC and DEFAME, who had Google's date
+filter: a gap may be the engine. Only at 500 claims; 100 is a preliminary figure.
+
+**What it does not say.** English only, mostly politics and health from 2019-2020.
+
+**The loops.** Campaigns and troubleshooting read their set from their evidence run
+(`iterate`: its manifest; `troubleshoot.py`: `_dataset_of`), so an AVeriTeC train run
+binds them to it, and dev is never tuned on. That run does not exist yet, so their
+defaults still name the custom set's. The train knowledge store is 63 GB and is not
+downloaded: on train, only `web`.
 
 ## Where it runs
 

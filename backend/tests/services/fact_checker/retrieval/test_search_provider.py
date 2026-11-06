@@ -324,3 +324,50 @@ def test_each_query_reports_its_time_results_and_route_in_plan_order():
         ("proposition", "second query"),
     ]
     assert all(timing["seconds"] >= 0 and timing["error"] is None for timing in timings)
+
+
+def test_without_the_scholarly_engines_web_results_take_their_places():
+    """
+    `search_science_engines: drop` (2026-11-06, for AVeriTeC): a result only
+    arXiv or Crossref returned is left out before the candidates are counted;
+    one a web engine returned too stays.
+    """
+
+    from src.config.thresholds import PipelineThresholds
+
+    results = [
+        {"url": "https://arxiv.org/abs/1", "title": "Paper", "content": "", "engines": ["arxiv"]},
+        {"url": "https://doi.org/2", "title": "Paper", "content": "", "engines": ["crossref", "semantic scholar"]},
+        {"url": "https://news.example/3", "title": "News", "content": "", "engines": ["yahoo"]},
+        {"url": "https://journal.example/4", "title": "Both", "content": "", "engines": ["crossref", "brave"]},
+        {"url": "https://news.example/5", "title": "More news", "content": "", "engines": ["brave"]},
+    ]
+
+    claim = create_claim(entities={"ORG": ["NASA"]})
+
+    kept = SearchProvider(client=FakeSearxngClient(results=results)).search(
+        claim, PipelineThresholds(search_science_engines="drop", evidence_fetch_candidates=2, query_kinds=("anchor",)),
+    )
+
+    assert [item.url for item in kept] == ["https://news.example/3", "https://journal.example/4"]
+
+    every = SearchProvider(client=FakeSearxngClient(results=results)).search(
+        claim, PipelineThresholds(evidence_fetch_candidates=2, query_kinds=("anchor",)),
+    )
+
+    assert [item.url for item in every] == ["https://arxiv.org/abs/1", "https://doi.org/2"]
+
+
+def test_the_scholarly_engines_are_the_science_engines_searxng_runs():
+
+    from pathlib import Path
+
+    import yaml
+
+    from src.services.search import SCHOLARLY_ENGINES
+
+    config = yaml.safe_load((Path(__file__).parents[5] / "docker/searxng/settings.yml").read_text())
+
+    science = {engine["name"] for engine in config["engines"] if "science" in (engine.get("categories") or [])}
+
+    assert science == set(SCHOLARLY_ENGINES)

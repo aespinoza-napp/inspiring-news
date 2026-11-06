@@ -153,7 +153,10 @@ def test_a_dead_feed_falls_through_to_the_json_listing():
     result = DiscoveryService(
         [RSSDiscoveryStrategy(fetcher=DeadFeed()), JsonFeedDiscoveryStrategy(fetcher=Canned(WHO_API))],
         stats=RequestStats(),
-        max_age=timedelta(days=30),
+        # Wide on purpose: what is tested is the fall-through, not the age.
+        # At 30 days the fixture's older item went stale on 2026-11-06 and
+        # the test started failing with the calendar.
+        max_age=timedelta(days=3650),
     ).run(who, topics=["medicine", "mental_health", "nutrition", "fitness", "public_health"])
 
     assert result.method == "JsonFeedDiscoveryStrategy"

@@ -1,0 +1,18 @@
+{
+  "stage": "01",
+  "change": "New checkable_figures value 'counted' (with_units plus the counted noun): a figure keeps the noun it counts when the sentence writes one right after it ('30 minutes', '116 mujeres', '24 años', '41% share'), the spaced form of a COUNTED identifier ('11-set'). The noun then leaves the six term slots and the next finding word moves in. The noun must be lowercase, 4+ letters, not a stopword, filler, month, aside or simple-past verb, and not the first half of a compound. The number and order of figures are unchanged. Defaults 'bare' and 'with_units' are unchanged.",
+  "files": [
+    "backend/src/config/settings.py",
+    "backend/src/config/thresholds.py",
+    "backend/src/services/fact_checker/retrieval/checkable.py",
+    "backend/tests/services/fact_checker/retrieval/test_checkable.py"
+  ],
+  "kind": "code",
+  "mode": "offline",
+  "thresholds": {
+    "checkable_figures": "counted"
+  },
+  "predict": "fact106 gains 'crew': its terms go from 'debris laden front lawn minutes lumber' to 'debris laden front lawn lumber crew' (the fixture test asserts exactly this), and its share goes 0.5 -> 0.667. 'maple' and 'plea' stay missing. The point also changes in fact100 ('41% share'), fact114 ('24 años' if 'años' is not in the Spanish stopwords/noise) and fact125 ('116 mujeres'), but none of them gains or loses a detail: the noun only moves from terms to figures, and the coverage measure reads the whole point. No other tune claim has a non-year figure followed by an eligible noun ('£5.9bn since', '189p per', '10% of', '8640 km' with a 2-letter unit, '15‑PGDH' with no space). checkablePointCoverage should rise a little from 0.85; the script computes the figure. checkablePointAllCarried stays 8 and sentencePlanCoverage stays 0.523. This cannot lower coverage on any batch, because the noun stays in the point, the count of figures is unchanged, and the terms can only gain a word. Predicted from the code and the module test, not from a run over the batch: the hook blocks a throwaway script.",
+  "risks": "(1) Search side, not measured here. The anchor query quotes figures, so '\"30 minutes\"' becomes a phrase search, and a page that writes 'half an hour' or 'thirty minutes' no longer matches it. (2) A figure ending in a word matches DISTINCTIVE, so the claim becomes `specific` and its third query switches from refutation to specifics. This follows how '11-set' is already treated as an identifier, but '30 minutes' says less than '116 mujeres'. (3) A word after a number that is not what the number counts ('page 12 shows') gets bound to it. That is harmless to coverage but adds noise to the quoted query. (4) Only under query_plan checkable; 'bare' keeps every earlier run and its key.",
+  "iterate": "cli iterate propose --campaign <campaign> --kind search --hypothesis \"Under query_plan checkable a figure's counted noun ('30 minutes', '116 mujeres') takes a term slot of its own, which cuts a finding word (fact106 'crew' in 20261105-next20); binding the noun to its figure keeps it and frees the slot.\" --predict \"Against the base {query_plan: checkable, checkable_terms: finding_first, checkable_figures: with_units}: no fewer settling sources among the candidates for claims with a counted figure; train accuracy judged by the rule on the full train half (run-to-run noise 6-9 points).\" --thresholds <campaign dir>/tries/NN.json  (NN.json = {\"query_plan\": \"checkable\", \"checkable_terms\": \"finding_first\", \"checkable_figures\": \"counted\"})"
+}

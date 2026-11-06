@@ -675,6 +675,7 @@ class AnalysisService:
                     "searchUnavailable": False,
                     "secondLook": None,
                     "restatement": None,
+                    "questionPlan": None,
                 }
                 for claim in (article.claims or [])
             ]
@@ -707,6 +708,8 @@ class AnalysisService:
                 "secondLook": self._build_second_look(check),
                 # What the sentence was checked as, when it was restated.
                 "restatement": check.restatement.model_dump() if check.restatement else None,
+                # The questions it was searched by, under QUERY_PLAN=questions.
+                "questionPlan": check.question_plan.model_dump() if check.question_plan else None,
             }
             for check in checks
         ]

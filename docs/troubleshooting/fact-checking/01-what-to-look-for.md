@@ -103,6 +103,35 @@ claim (an official report, the study, the organisation's own site).
   the kind of source that would hold it (official report, the study, the
   organisation's own site). Code on the search side, so a searched try.
 
+## Against the literature (2026-11-06)
+
+The rule-based checkable point is **kept as it is, as the baseline** that a
+question-based plan is measured against. The papers, and where this stage sits
+among them, are in the thesis: `docs/final_document/chapters/02-state-of-the-art/
+01-automated-fact-checking/04-what-to-search.tex`; the five rounds are in its
+results (`07-results/07-pre-verdict-stages.tex`, "Knowing what to look for"),
+and the planned question plan in `09-conclusions/04-future-work/02-further-work.tex`
+("Asking questions before searching").
+
+- **Questions first:** QABriefs (Fan et al. 2020), literal vs implied subquestions
+  (Chen et al. 2022: >70% literal, 18% implied recovered), Varifocal (Ousidhoum
+  et al. 2022), FACTIFY-5WQA (Rani et al. 2023); AVeriTeC's evidence is
+  question-answer pairs, and InFact (10 questions, model-written queries per
+  question) and HerO (open 8B) led its 2024 shared task.
+- **Splitting the claim:** ProgramFC, FActScore, Factcheck-Bench; with pre-claim
+  web evidence, Chen et al. 2024 (evidence covers some aspects, rarely all).
+  Contested: Wanner et al. 2024 (the score depends on the decomposition method),
+  Hu et al. 2025 (helps weak verifiers, adds noise, more sub-claims eventually hurt).
+- **Standing alone:** decontextualisation (Choi et al. 2021); molecular rather
+  than atomic facts (Gunjal & Durrett 2024) - the dengue case is exactly this.
+- **Small models:** ClaimCheck (Qwen3-4B plans the queries; 76.4% on AVeriTeC dev).
+
+What a question plan would add here: the kind of source, the official AVeriTeC
+score (it needs question-answer pairs), and a question per figure for the altered
+detail. The plan to try: `query_plan: questions` beside the others, at most three
+questions, each carrying the subject and one decisive detail of this checkable
+point, tried on AVeriTeC train first.
+
 ## Experiments
 
 One file per batch in [experiments/01-what-to-look-for/](experiments/01-what-to-look-for/README.md), run by

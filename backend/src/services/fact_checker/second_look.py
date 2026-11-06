@@ -52,6 +52,7 @@ from src.models.fact_checker.evidence import Evidence, RejectedEvidence
 from src.models.fact_checker.fact_check import FactCheck, SecondLook, Verdict
 from src.models.fact_checker.pipeline_stage import PipelineStage
 from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.fact_checker.retrieval import temporal
 from src.services.fact_checker.retrieval.evidence_retriever import _comparable
 from src.services.fact_checker.retrieval.query_builder import PlannedQuery, QueryKind
 from src.services.fact_checker.retrieval.search_provider import registrable_domain
@@ -273,6 +274,15 @@ class SecondLooker:
         new, cut = self._new_pages(found, first, context, thresholds.max_evidence_per_claim)
 
         fetched = retriever.scraper.enrich(new)
+
+        # A second search is a search: the temporal cutoff holds here too.
+        fetched, too_late = temporal.within(
+            fetched,
+            context.evidence_before if context else None,
+            thresholds.evidence_undated,
+            context.url if context else None,
+        )
+        cut = cut + too_late
 
         # The first pass's stances and quotes were the first judgment's;
         # the second one assigns its own.

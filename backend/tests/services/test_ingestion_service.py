@@ -527,7 +527,10 @@ def test_a_feed_with_only_old_items_counts_as_empty_and_the_next_step_is_tried()
     from src.services.scraper.strategies.rss import DiscoveredLink
 
     stats = RequestStats()
-    section_pages = Canned(["https://rtve.es/cultura/20261006/a-new-one/1.shtml"])
+    # Dated from today: a fixed date in this URL aged past max_age on 5 Nov 2026
+    # and failed the test with no change to the code.
+    fresh = f"https://rtve.es/cultura/{days_ago(1):%Y%m%d}/a-new-one/1.shtml"
+    section_pages = Canned([fresh])
 
     discovery = DiscoveryService(
         [Dated([DiscoveredLink(url="https://rtve.es/television/20220609/old/2.shtml", published=days_ago(1580))]), section_pages],
@@ -537,7 +540,7 @@ def test_a_feed_with_only_old_items_counts_as_empty_and_the_next_step_is_tried()
 
     result = discovery.run(build_source(rss_url="https://rtve.es/rss.xml"))
 
-    assert result.urls == ["https://rtve.es/cultura/20261006/a-new-one/1.shtml"]
+    assert result.urls == [fresh]
     assert result.method == "Canned"
     assert section_pages.calls == 1
 

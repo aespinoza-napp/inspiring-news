@@ -3,6 +3,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 from src.models.fact_checker.evidence import Evidence, RejectedEvidence
+from src.models.fact_checker.questions import QuestionPlan
 from src.models.fact_checker.restatement import ClaimRestatement
 from src.models.fact_checker.pipeline_stage import PipelineStage
 
@@ -105,3 +106,8 @@ class FactCheck(BaseModel):
     # search (services/fact_checker/restatement.py); None when restating
     # was off. `claim` stays the sentence as the article wrote it.
     restatement: ClaimRestatement | None = None
+
+    # The questions the claim was searched by and what its sources answered,
+    # under `query_plan: questions` (services/fact_checker/questions.py);
+    # None under every other plan.
+    question_plan: QuestionPlan | None = None

@@ -18,6 +18,7 @@
 #   ./scripts/check.sh inference  inference only - real models, no mocks
 #   ./scripts/check.sh frontend   frontend only
 #   ./scripts/check.sh labeller   the fact labeller - stdlib only, no venv
+#   ./scripts/check.sh livecheck  the live-conversation listener, no models
 #   ./scripts/check.sh slow       the slow model-stack tests, only
 #   ./scripts/check.sh graph      the graph against a real Neo4j - fails,
 #                                 not skips, when it is not running
@@ -151,6 +152,17 @@ run_e2e() {
   fi
 }
 
+# Its own venv: it hears and tells voices apart with models the backend must
+# not import (invariant 13). The tests replace every model, so seconds.
+run_livecheck() {
+  step "Live-conversation listener tests"
+  if (cd "$ROOT/livecheck" && uv run --extra test python -m pytest -q); then
+    pass "livecheck tests"
+  else
+    fail "livecheck tests"
+  fi
+}
+
 # Plain `python`, not uv: the labeller has no dependencies on purpose, so
 # the test must not lean on a virtualenv either.
 run_labeller() {
@@ -171,11 +183,12 @@ case "$TARGET" in
   inference) run_inference ;;
   frontend)  run_frontend ;;
   labeller)  run_labeller ;;
+  livecheck) run_livecheck ;;
   e2e)       run_e2e ;;
   lake)      run_lake ;;
-  all)       run_backend; run_inference; run_frontend; run_labeller ;;
+  all)       run_backend; run_inference; run_frontend; run_labeller; run_livecheck ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller | e2e | lake" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller | livecheck | e2e | lake" >&2
     exit 2
     ;;
 esac

@@ -1,0 +1,13 @@
+{
+ "label": "after",
+ "at": "2026-11-05T12:54:34+01:00",
+ "thresholds": "/home/aespinoz/dev/napp/inspiring-news/backend/data/evaluation/experiments/troubleshooting/fact-checking/20261105-next20/01-what-to-look-for/round-04/thresholds-after.json",
+ "thresholdsOverrides": {
+  "checkable_terms": "finding_first",
+  "checkable_figures": "counted"
+ },
+ "gitCommit": "693af93",
+ "dirty": true,
+ "run": "/home/aespinoz/dev/napp/inspiring-news/backend/data/evaluation/runs/manual-train/llama3.2-3b-bench/cc053417c0cb",
+ "replay": "/home/aespinoz/dev/napp/inspiring-news/backend/data/evaluation/runs/manual-train/llama3.2-3b-bench/1d07e163a659"
+}

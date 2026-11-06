@@ -240,6 +240,9 @@ backend/data/drafts/
 # docs/decisions/evaluation.md §Run layout.
 backend/data/evaluation/runs/
 backend/data/evaluation/writing/runs/
+# AVeriTeC: CC BY-NC 4.0, and the knowledge store is 11.5 GB. Rebuilt by
+# `cli averitec import` from the pinned files (src/evaluation/averitec.py).
+backend/data/evaluation/averitec/
 
 # Laya fine-tuned checkpoints, ~1.3 GB each (docs/decisions/laya.md)
 /inference/checkpoints/

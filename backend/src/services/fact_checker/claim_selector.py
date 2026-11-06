@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import date
 
 from src.config.thresholds import PipelineThresholds
 from src.models.core.claim import Claim, RejectedClaim
@@ -40,6 +41,17 @@ class ArticleContext:
     # is the headline's framing ("querida suegra"). The keywords' role in
     # terms.subject_terms, for a context that has none.
     search_sentences: list[str] = field(default_factory=list)
+
+    # The claim's questions, under `query_plan: questions` (2026-11-06):
+    # set per claim by FactChecker from fact_checker/questions.py, read by
+    # the query plan alone. Empty: the plan falls back to the checkable one.
+    search_questions: list[str] = field(default_factory=list)
+
+    # The claim's date, when nothing published from that day on may be
+    # evidence (retrieval/temporal.py, 2026-11-05): the benchmark's rule, so a
+    # claim is not "verified" by reading the fact-check it was taken from.
+    # None, the app's case: an article is checked against today's web.
+    evidence_before: date | None = None
 
     def thesis(self) -> str:
         return f"{self.title}. {self.lead}".strip()

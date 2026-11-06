@@ -1,3 +1,4 @@
+import dataclasses
 import threading
 import time
 from logging import getLogger
@@ -16,6 +17,7 @@ from src.services.concurrency import bounded_map
 from src.models.fact_checker.restatement import ClaimRestatement
 from src.services.fact_checker.independence import Sorted, decisive_altered, describe, sort_sources
 from src.services.fact_checker.restatement import ClaimRestater, working_claim
+from src.services.fact_checker.questions import QuestionPlanner, answered, unused
 from src.services.fact_checker.claim_selector import ArticleContext, ClaimSelector
 from src.services.fact_checker.deadline import MIN_STAGE_SECONDS, Deadline
 from src.services.fact_checker.progress import source_summary
@@ -110,6 +112,7 @@ class FactChecker:
         confidence_scorer: ConfidenceScorer | None = None,
         second_looker: SecondLooker | None = None,
         restater: ClaimRestater | None = None,
+        question_planner: QuestionPlanner | None = None,
     ):
         self.repository = repository
         self.claim_selector = claim_selector or ClaimSelector()
@@ -119,6 +122,7 @@ class FactChecker:
         self.confidence_scorer = confidence_scorer or ConfidenceScorer()
         self.second_looker = second_looker or SecondLooker()
         self.restater = restater or ClaimRestater()
+        self.question_planner = question_planner or QuestionPlanner()
 
     def run(
         self,
@@ -313,6 +317,28 @@ class FactChecker:
 
             phase("claim_restated", {"restatement": restatement.model_dump()})
 
+        # `query_plan: questions` - the questions the claim is searched by
+        # (questions.py), written from what is searched: the restatement,
+        # when there is one. They reach the query plan through a per-claim
+        # copy of the context; none kept, and it plans as `checkable`.
+        question_plan = None
+
+        if thresholds.query_plan == "questions":
+
+            if deadline.active:
+                question_plan = unused("No questions under a deadline: searched by the checkable plan.")
+            else:
+                phase("planning_questions", {})
+                question_plan = self.question_planner.plan(working, context, language, thresholds)
+                clock["questions"] = round(deadline.elapsed(), 3)
+
+            context = dataclasses.replace(
+                context or ArticleContext(),
+                search_questions=[question.text for question in question_plan.kept],
+            )
+
+            phase("questions_planned", {"questionPlan": question_plan.model_dump()})
+
         phase("retrieving_evidence", {"deadline": deadline.seconds})
 
         retrieval = self.evidence_retriever.retrieve(
@@ -371,6 +397,10 @@ class FactChecker:
 
         if restatement is not None:
             check = check.model_copy(update={"claim": claim.text, "restatement": restatement})
+
+        # Each question's answer: the first judged source its query found.
+        if question_plan is not None:
+            check = check.model_copy(update={"question_plan": answered(question_plan, check.evidence)})
 
         cited = set(check.cited_evidence_indices)
 

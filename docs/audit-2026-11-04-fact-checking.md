@@ -7,7 +7,7 @@ and checks claims and an article live. **Not scored**: the nine-dimension score
 covers the whole project, and a fact-checking-only score would break that series.
 
 **Written by the same session that wrote some of what it audits.** The iteration
-loop (`cli iterate`), `query_plan: checkable` and `docs/troubleshooting/` are this
+loop (`cli iterate`), `query_plan: checkable` and `docs/troubleshooting/fact-checking/` are this
 session's work, so read their findings with that in mind. The pipeline's default
 behaviour is not this session's.
 
@@ -41,7 +41,7 @@ Two things measured so far are weaker than the app itself:
 | 10 train claims live, today's defaults (`79d4c2ac724d`) | 7 / 10 right; median 96 s a claim; no search unavailable |
 | The same 10, `query_plan: checkable` (`9bae31b05174`) | 7 / 10 right, different claims; median 92 s |
 | One real article through the app's own path (local API, `POST /analyze/jobs`) | SINC, "Este telescopio submarino pone a prueba a Einstein...", from today's `/discover` round: 4 claims, all TRUE, overall 0.86, publishable; 5 min 9 s; graph write failed soft (Neo4j down) |
-| The first 20 train claims by hand, blind (morning) | Claude 16 / 20; the pipeline on 29 Oct's evidence 9 / 20 (`docs/troubleshooting/`) |
+| The first 20 train claims by hand, blind (morning) | Claude 16 / 20; the pipeline on 29 Oct's evidence 9 / 20 (`docs/troubleshooting/fact-checking/`) |
 | Search on-subject screen (`scripts/evidence_on_subject.py`) | 29 Oct: 65% of web titles share a claim word, 1% off-subject domains. Today's live runs: 57% / 5% and 63% / 8%. Much of the latter is arXiv/oadoi from one claim (H4); the screen counts arXiv as off-subject even when it is the paper |
 
 The configuration that ran (`backend/.env` and defaults):
@@ -90,7 +90,7 @@ sources makes a claim TRUE at 0.6, and one "contradicts" makes it FALSE.
   **Castellón**.
 
 That is 6 of the pipeline's 11 wrong verdicts on 20 claims
-(`docs/troubleshooting/05-verification.md`). With worst-claim-wins, one such FALSE
+(`docs/troubleshooting/fact-checking/05-verification.md`). With worst-claim-wins, one such FALSE
 withholds a whole article.
 
 **H2: The 3B misreads on-subject sources, and that now decides more verdicts than
@@ -163,7 +163,7 @@ To fix before the campaign's searched try.
 
 - The pertinence gate rarely fires: 4 of 20 claims, 1-2 pages each. Pages that
   cannot answer (bookshop.org, profile pages) reach the model and each cost a call
-  (`docs/troubleshooting/04-ranking.md`).
+  (`docs/troubleshooting/fact-checking/04-ranking.md`).
 - The refutation query found no refutation in 20 claims, and twice found its own
   words: "Bunk: The Rise of Hoaxes" for Book Bunk, "Florida election myths...
   debunked" (`02-queries.md`).

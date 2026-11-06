@@ -58,7 +58,7 @@ from pathlib import Path
 
 from src.config.settings import settings
 from src.config.thresholds import PipelineThresholds, ThresholdOverrides
-from src.evaluation.dataset import SAMPLES, load_dataset, select_rows
+from src.evaluation.dataset import AVERITEC, SAMPLES, load_dataset, only_ids, select_rows
 from src.evaluation.consistency import write_consistency
 from src.evaluation.freshness import freshness, write_freshness
 from src.evaluation import pooling
@@ -69,6 +69,7 @@ from src.evaluation.runner import (
     CORPUS_MODES,
     FULL,
     CLOSED_BOOK,
+    NONE,
     ORACLE,
     REPLAY,
     RETRIEVAL,
@@ -103,6 +104,26 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     dataset = select_rows(load_dataset(args.dataset), split=args.split, sample=args.sample)
 
+    if args.ids:
+        dataset = only_ids(dataset, args.ids.split(","))
+
+    is_averitec = all(row.dataset == AVERITEC for row in dataset.rows)
+
+    # The corpus is this project's own articles from 2026: nothing there
+    # predates a 2020 claim, and it has no place in a benchmark.
+    if is_averitec and args.corpus == SNAPSHOT:
+        raise SystemExit("an AVeriTeC run takes no corpus: leave --corpus out, or --corpus none")
+
+    corpus = args.corpus or (NONE if is_averitec else SNAPSHOT)
+
+    if args.knowledge_store:
+
+        if not is_averitec:
+            raise SystemExit("--knowledge-store is AVeriTeC's, and this dataset is not")
+
+        if args.oracle or args.closed_book or args.replay or args.loop:
+            raise SystemExit("--knowledge-store takes none of --oracle, --closed-book, --replay or --loop")
+
     if args.oracle and (args.retrieval_only or args.loop):
         # The loop already ends on the annotator's pages, and retrieval-only
         # asks no model: neither means anything over evidence given in.
@@ -132,7 +153,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         # No model is asked in a retrieval-only run; its directory says so.
         model=RETRIEVAL_ONLY_MODEL if args.retrieval_only else (args.model or settings.LLM_MODEL),
         thresholds=load_thresholds(args.thresholds),
-        corpus=args.corpus,
+        corpus=corpus,
         root=Path(args.root) if args.root else default_runs_root(),
         mode=(
             RETRIEVAL if args.retrieval_only
@@ -141,10 +162,19 @@ def cmd_run(args: argparse.Namespace) -> int:
             else REPLAY if args.replay
             else FULL
         ),
-        label=args.label,
+        # The search is part of what a run measures, so the store has its own key.
+        label=args.label or ("knowledge-store" if args.knowledge_store else None),
         loop=args.loop,
         replay_of=Path(args.replay) if args.replay else None,
+        knowledge_store=Path(args.knowledge_store) if args.knowledge_store else None,
+        search_cache=Path(args.search_cache) if args.search_cache else None,
     )
+
+    if config.search_cache is not None and not args.label:
+        raise SystemExit("--search-cache needs a --label: a run on recorded answers is not a run on the web")
+
+    if config.knowledge_store is not None and config.thresholds.second_look_enabled:
+        raise SystemExit("a second look searches again, and the knowledge store cannot be searched without a claim")
 
     runner, close = build_runner(config)
 
@@ -162,6 +192,82 @@ def cmd_run(args: argparse.Namespace) -> int:
     print(json.dumps({"run": str(config.directory), **session}, indent=2))
 
     return 0 if session["errors"] == 0 else 1
+
+
+def cmd_averitec_import(args: argparse.Namespace) -> int:
+
+    from src.evaluation import averitec
+
+    target = Path(args.out or f"data/evaluation/averitec/averitec_{args.split}.jsonl")
+
+    provenance = averitec.import_split(Path(args.raw), args.split, target)
+
+    print(json.dumps({"written": str(target), **{k: v for k, v in provenance.items() if k != "excluded"},
+                      "excluded": len(provenance["excluded"])}, indent=2))
+
+    return 0
+
+
+def cmd_averitec_audit(args: argparse.Namespace) -> int:
+
+    from src.evaluation.knowledge_store import KnowledgeStore, audit
+    from src.evaluation.runner import store_indexes
+
+    dataset = load_dataset(args.dataset)
+
+    claims = [
+        {
+            "index": int(row.id.rsplit("-", 1)[1]),
+            "id": row.id,
+            "claimDate": row.claim_date,
+            "factCheckUrl": row.fact_check_url,
+        }
+        for row in dataset.rows
+    ]
+
+    result = audit(KnowledgeStore(Path(args.store)), claims)
+
+    if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out).write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    print(json.dumps({key: value for key, value in result.items() if key not in ("late", "factChecks")}, indent=2))
+
+    return 0
+
+
+def cmd_averitec_qa_score(args: argparse.Namespace) -> int:
+
+    from src.evaluation import averitec_score
+    from src.evaluation.report import load_run
+
+    run = load_run(args.run)
+    result = averitec_score.evaluate(run.records, averitec_score.load_gold(Path(args.gold)))
+
+    out = Path(args.out) if args.out else run.directory / "averitec_score.json"
+    out.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    print("\n".join(averitec_score.render(result)))
+    print(f"Per claim: {out}")
+
+    return 0
+
+
+def cmd_averitec_submission(args: argparse.Namespace) -> int:
+
+    from src.evaluation import averitec
+    from src.evaluation.report import load_run
+
+    run = load_run(args.run)
+
+    Path(args.out).write_text(
+        json.dumps(averitec.submission(run.records), indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+    print(f"{len(run.records)} claims in {args.out}")
+
+    return 0
 
 
 def cmd_report(args: argparse.Namespace) -> int:
@@ -496,6 +602,7 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--dataset", required=True, help="a JSONL file, or a directory of one-fact JSON files")
     run.add_argument("--model", help=f"the LLM to verify with (default: LLM_MODEL, {settings.LLM_MODEL})")
     run.add_argument("--limit", type=int, help="only the first N rows of the dataset")
+    run.add_argument("--ids", help="only these comma-separated claim ids, of the split chosen (a troubleshooting batch); their own run directory")
     run.add_argument(
         "--split",
         help="only the rows of this split (the custom set's frozen train / test halves, "
@@ -508,7 +615,19 @@ def parser() -> argparse.ArgumentParser:
         "the test half labelled again and run again, for consistency",
     )
     run.add_argument("--thresholds", help="a JSON file of threshold overrides")
-    run.add_argument("--corpus", choices=CORPUS_MODES, default=SNAPSHOT)
+    run.add_argument("--corpus", choices=CORPUS_MODES, help="default: snapshot, or none for AVeriTeC")
+    run.add_argument(
+        "--knowledge-store",
+        metavar="ZIP",
+        help="AVeriTeC only: search the official knowledge store instead of the live web "
+        "(src/evaluation/knowledge_store.py); take data/evaluation/thresholds/averitec_store.json",
+    )
+    run.add_argument(
+        "--search-cache",
+        metavar="FILE",
+        help="answer a query asked before from FILE, and add new answers to it "
+        "(src/evaluation/search_cache.py): to compare two plans on train by what they asked; needs --label",
+    )
     run.add_argument(
         "--retry-unavailable",
         action="store_true",
@@ -553,6 +672,41 @@ def parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--root", help=argparse.SUPPRESS)
     run.set_defaults(handler=cmd_run)
+
+    benchmark = commands.add_parser("averitec", help="the AVeriTeC benchmark's data")
+    benchmark_commands = benchmark.add_subparsers(dest="averitec_command", required=True)
+
+    importing = benchmark_commands.add_parser("import", help="the official JSON as the harness's rows")
+    importing.add_argument("--raw", required=True, help="the official file (dev.json, train.json)")
+    importing.add_argument("--split", required=True, choices=("dev", "train"))
+    importing.add_argument("--out", help="default: data/evaluation/averitec/averitec_<split>.jsonl")
+    importing.set_defaults(handler=cmd_averitec_import)
+
+    auditing = benchmark_commands.add_parser(
+        "audit-store",
+        help="what the knowledge store holds that breaks the temporal rule, per claim",
+    )
+    auditing.add_argument("--store", required=True, help="the store's zip")
+    auditing.add_argument("--dataset", required=True, help="the imported rows")
+    auditing.add_argument("--out", help="write the audit here as JSON")
+    auditing.set_defaults(handler=cmd_averitec_audit)
+
+    submitting = benchmark_commands.add_parser(
+        "submission",
+        help="a run's predictions in the shared task's format, for the official scorer",
+    )
+    submitting.add_argument("--run", required=True, help="the run directory")
+    submitting.add_argument("--out", required=True)
+    submitting.set_defaults(handler=cmd_averitec_submission)
+
+    scoring = benchmark_commands.add_parser(
+        "qa-score",
+        help="a run's questions and answers against the annotators': Q-only, Q+A, AVeriTeC score",
+    )
+    scoring.add_argument("--run", required=True, help="the run directory")
+    scoring.add_argument("--gold", default="data/evaluation/averitec/raw/dev.json", help="the official dev.json")
+    scoring.add_argument("--out", help="default: <run>/averitec_score.json")
+    scoring.set_defaults(handler=cmd_averitec_qa_score)
 
     report = commands.add_parser("report", help="metrics.json and report.md for a run")
     report.add_argument("--run", required=True, help="the run directory (runs/<dataset>/<model>/<key>)")

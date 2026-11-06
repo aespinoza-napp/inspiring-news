@@ -1,0 +1,154 @@
+{
+ "base": {
+  "checkable_terms": "finding_closing",
+  "checkable_figures": "counted"
+ },
+ "rounds": [
+  {
+   "stage": "01",
+   "round": 1,
+   "at": "2026-11-05T12:28:59+01:00",
+   "base": {},
+   "doc": "docs/troubleshooting/fact-checking/experiments/01-what-to-look-for/20261105-next20-round-01.md",
+   "change": "Switch on checkable_terms: framing_last alone (already in checkable.py behind the threshold, never through the loop): the sentence's framing words (checkable.FRAMING, en and es) move after the finding's words before the six term slots are taken. No new code.",
+   "thresholds": {
+    "checkable_terms": "framing_last"
+   },
+   "files": [],
+   "decision": "keep",
+   "reason": "tune 0.767 -> 0.813, held-out batch not worse",
+   "gained": [
+    "fact086",
+    "fact088",
+    "fact122",
+    "fact125"
+   ],
+   "lost": [],
+   "tuneBefore": 0.767,
+   "tuneAfter": 0.813
+  },
+  {
+   "stage": "01",
+   "round": 2,
+   "at": "2026-11-05T12:36:21+01:00",
+   "base": {
+    "checkable_terms": "framing_last"
+   },
+   "doc": "docs/troubleshooting/fact-checking/experiments/01-what-to-look-for/20261105-next20-round-02.md",
+   "change": "New threshold checkable_figures: with_units. A figure with a currency sign or a unit written onto it (£5.9bn, 189p, $40m, 3,5kg, 50GW) is kept whole as a checkable figure, where the bare NUMBER pattern stops at the letter and drops it. Ordinals (21st, 2do, 3er) and one digit with a letter and no sign (5G, 3D) are excluded. Default 'bare' is unchanged.",
+   "thresholds": {
+    "checkable_figures": "with_units"
+   },
+   "files": [
+    "backend/src/config/settings.py",
+    "backend/src/config/thresholds.py",
+    "backend/src/evaluation/iterate.py",
+    "backend/src/evaluation/runner.py",
+    "backend/src/services/fact_checker/retrieval/checkable.py",
+    "backend/src/services/fact_checker/retrieval/query_builder.py",
+    "backend/src/services/fact_checker/retrieval/search_provider.py",
+    "backend/tests/evaluation/test_harness_runner.py",
+    "backend/tests/services/fact_checker/fakes.py",
+    "backend/tests/services/fact_checker/retrieval/test_checkable.py",
+    "backend/tests/services/fact_checker/retrieval/test_query_kinds.py"
+   ],
+   "decision": "keep",
+   "reason": "tune 0.813 -> 0.832, held-out batch not worse",
+   "gained": [
+    "fact099",
+    "fact101"
+   ],
+   "lost": [],
+   "tuneBefore": 0.813,
+   "tuneAfter": 0.832
+  },
+  {
+   "stage": "01",
+   "round": 3,
+   "at": "2026-11-05T12:45:48+01:00",
+   "base": {
+    "checkable_terms": "framing_last",
+    "checkable_figures": "with_units"
+   },
+   "doc": "docs/troubleshooting/fact-checking/experiments/01-what-to-look-for/20261105-next20-round-03.md",
+   "change": "New checkable_terms value finding_first: framing_last with the sentence's asides moved too - prepositions, adverbs and modals the stopword lists leave out (checkable.ASIDES) and a verb in the simple past (checkable.PAST_TENSE: en -ed not -eed, es -ó/-aron/-ieron) go after the finding's words and before the framing, moved, never dropped. Default 'sentence' and 'framing_last' unchanged.",
+   "thresholds": {
+    "checkable_terms": "finding_first"
+   },
+   "files": [
+    "backend/src/config/settings.py",
+    "backend/src/config/thresholds.py",
+    "backend/src/services/fact_checker/retrieval/checkable.py",
+    "backend/tests/services/fact_checker/retrieval/test_checkable.py"
+   ],
+   "decision": "keep",
+   "reason": "tune 0.832 -> 0.85, held-out batch not worse",
+   "gained": [
+    "fact088",
+    "fact123"
+   ],
+   "lost": [],
+   "tuneBefore": 0.832,
+   "tuneAfter": 0.85
+  },
+  {
+   "stage": "01",
+   "round": 4,
+   "at": "2026-11-05T12:54:08+01:00",
+   "base": {
+    "checkable_terms": "finding_first",
+    "checkable_figures": "with_units"
+   },
+   "doc": "docs/troubleshooting/fact-checking/experiments/01-what-to-look-for/20261105-next20-round-04.md",
+   "change": "New checkable_figures value 'counted' (with_units plus the counted noun): a figure keeps the noun it counts when the sentence writes one right after it ('30 minutes', '116 mujeres', '24 años', '41% share'), the spaced form of a COUNTED identifier ('11-set'). The noun then leaves the six term slots and the next finding word moves in. The noun must be lowercase, 4+ letters, not a stopword, filler, month, aside or simple-past verb, and not the first half of a compound. The number and order of figures are unchanged. Defaults 'bare' and 'with_units' are unchanged.",
+   "thresholds": {
+    "checkable_figures": "counted"
+   },
+   "files": [
+    "backend/src/config/settings.py",
+    "backend/src/config/thresholds.py",
+    "backend/src/services/fact_checker/retrieval/checkable.py",
+    "backend/tests/services/fact_checker/retrieval/test_checkable.py"
+   ],
+   "decision": "keep",
+   "reason": "tune 0.85 -> 0.858, held-out batch not worse",
+   "gained": [
+    "fact106"
+   ],
+   "lost": [],
+   "tuneBefore": 0.85,
+   "tuneAfter": 0.858
+  },
+  {
+   "stage": "01",
+   "round": 5,
+   "at": "2026-11-05T12:59:09+01:00",
+   "base": {
+    "checkable_terms": "finding_first",
+    "checkable_figures": "counted"
+   },
+   "doc": "docs/troubleshooting/fact-checking/experiments/01-what-to-look-for/20261105-next20-round-05.md",
+   "change": "New checkable_terms value finding_closing: finding_first's six terms unchanged, plus the sentence's closing finding word (the last term in sentence order that is neither an aside nor framing) as a seventh when the cut took it; plan_checkable adds that word to the proposition query, since terms past the fifth reach no query. Defaults 'sentence', 'framing_last' and 'finding_first' unchanged.",
+   "thresholds": {
+    "checkable_terms": "finding_closing"
+   },
+   "files": [
+    "backend/src/config/settings.py",
+    "backend/src/config/thresholds.py",
+    "backend/src/services/fact_checker/retrieval/checkable.py",
+    "backend/src/services/fact_checker/retrieval/query_builder.py",
+    "backend/tests/services/fact_checker/retrieval/test_checkable.py"
+   ],
+   "decision": "keep",
+   "reason": "tune 0.858 -> 0.875, held-out batch not worse",
+   "gained": [
+    "fact086",
+    "fact088"
+   ],
+   "lost": [],
+   "tuneBefore": 0.858,
+   "tuneAfter": 0.875
+  }
+ ],
+ "holdout": "20261105-hold20"
+}

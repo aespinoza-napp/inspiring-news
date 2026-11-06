@@ -1,0 +1,19 @@
+{
+ "stage": "01",
+ "change": "New checkable_terms value finding_closing: finding_first's six terms unchanged, plus the sentence's closing finding word (the last term in sentence order that is neither an aside nor framing) as a seventh when the cut took it; plan_checkable adds that word to the proposition query, since terms past the fifth reach no query. Defaults 'sentence', 'framing_last' and 'finding_first' unchanged.",
+ "files": [
+  "backend/src/config/settings.py",
+  "backend/src/config/thresholds.py",
+  "backend/src/services/fact_checker/retrieval/checkable.py",
+  "backend/src/services/fact_checker/retrieval/query_builder.py",
+  "backend/tests/services/fact_checker/retrieval/test_checkable.py"
+ ],
+ "kind": "code",
+ "mode": "offline",
+ "thresholds": {
+  "checkable_terms": "finding_closing"
+ },
+ "predict": "fact086 gains macrófagos and fact088 gains knee; coverage 0.858 -> about 0.875 (agent's arithmetic: two details of six, over 20 claims); no claim loses a detail, since the six terms are unchanged. fact085, fact106 and fact122 stay missing their words, which are not the closing ones.",
+ "risks": "The closing word is sometimes not the point ('figure' in fact101's 'the figure below', 'analysis' in fact099), and this measure cannot see that: adding a word can only raise coverage, so the held-out check is weak evidence for this rule. The real cost is one more word in the proposition query on sentences over six terms, and its effect on what the search returns is unmeasured until a searched try.",
+ "iterate": "cli iterate propose with thresholds {\"query_plan\": \"checkable\", \"checkable_terms\": \"finding_closing\", \"checkable_figures\": \"counted\"} against the same with checkable_terms finding_first, searched, train half; the 6-9 point spread between searched runs applies"
+}

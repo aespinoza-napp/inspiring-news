@@ -29,6 +29,11 @@ The verdicts are what the thesis measures, so a change is also a change to the e
 
 ## Measuring it
 
+**Since 2026-11-05 the benchmark is AVeriTeC** (`data/evaluation/experiments/averitec/protocol.md`,
+`docs/decisions/evaluation.md`, "AVeriTeC"): tune on `averitec_train.jsonl --split train`, read
+dev once per protocol, and no figure counts unless its report's temporal audit says **Held**. The
+commands below still show the custom set, which remains for Spanish and for constructive news.
+
 Simulating on recorded stances is a quick screen, not a result: on 3 Nov it said 47.8%
 where the real replay said 46.4%, because a removed source frees a slot for another.
 

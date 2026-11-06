@@ -450,6 +450,14 @@ ANALYZE_RESPONSE_SHAPE = {
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",
     },
+    # 15, same keys: each claim gained `questionPlan` - the questions it
+    # was searched by and their answers, under QUERY_PLAN=questions
+    # (2026-11-06). A v14 entry lacks it.
+    15: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
 }
 
 

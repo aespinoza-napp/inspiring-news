@@ -22,7 +22,9 @@ from src.services.fact_checker.terms import (
     coverage,
 )
 
-from .checkable import checkable_point
+from . import temporal
+from .checkable import point_for_thresholds
+from .query_builder import plan_arguments
 from .scraper import EvidenceScraper
 from .search_provider import SearchProvider
 from .vector_retriever import VectorRetriever
@@ -127,7 +129,9 @@ class EvidenceRetriever:
         # Announced before the search runs, not after: the search is the
         # slow part, and this is what lets a second screen show what is
         # being looked up while the answer is still pending.
-        plan = self.search_provider.plan(claim, context, language, thresholds.query_kinds, thresholds.query_plan)
+        plan = self.search_provider.plan(
+            claim, context, language, *plan_arguments(thresholds),
+        )
         queries = [query.text for query in plan]
 
         searching = {
@@ -142,9 +146,14 @@ class EvidenceRetriever:
 
         # What the queries were built to find, under `query_plan: checkable`:
         # a run's record then says what was looked for, not only what was
-        # typed (docs/troubleshooting/01-what-to-look-for.md).
-        if thresholds.query_plan == "checkable":
-            searching["checkablePoint"] = checkable_point(claim, context, language).as_dict()
+        # typed (docs/troubleshooting/fact-checking/01-what-to-look-for.md).
+        if thresholds.query_plan in ("checkable", "questions"):
+            searching["checkablePoint"] = point_for_thresholds(claim, context, language, thresholds).as_dict()
+
+        # And the questions the queries were written from, in their order:
+        # query i is question i (query_builder.plan_questions).
+        if thresholds.query_plan == "questions" and context is not None:
+            searching["questions"] = list(context.search_questions)
 
         report("searching_web", searching)
 
@@ -215,6 +224,17 @@ class EvidenceRetriever:
 
         web_evidence, itself = self._without_the_article(web_evidence, context)
 
+        # Under a temporal cutoff: what says it is too late goes before it
+        # costs a fetch or a place in the funnel (retrieval/temporal.py).
+        cutoff = context.evidence_before if context else None
+
+        fact_check = context.url if context else None
+
+        web_evidence, late_web = temporal.without_late(web_evidence, cutoff, fact_check)
+        internal_evidence, late_internal = temporal.without_late(internal_evidence, cutoff, fact_check)
+
+        itself = itself + late_web + late_internal
+
         candidates = web_evidence + internal_evidence
 
         if not candidates:
@@ -281,7 +301,20 @@ class EvidenceRetriever:
         top_web = web_ranked[:max_evidence]
         cut_web = web_ranked[max_evidence:]
 
-        if thresholds.fetch_evidence_pages:
+        # How far down the ranking the funnel went: its limit, unless a
+        # temporal cutoff refused pages and it went on for replacements.
+        consumed = len(top_web)
+
+        refused: list[RejectedEvidence] = []
+
+        if cutoff is not None:
+
+            scraped, refused, consumed = self._within_cutoff(
+                web_ranked, cutoff, thresholds, deadline, claim, report, fact_check,
+            )
+            cut_web = web_ranked[consumed:]
+
+        elif thresholds.fetch_evidence_pages:
 
             # How long the pages may take: what is left of retrieval's
             # share of the claim's deadline, or as long as they take.
@@ -327,6 +360,9 @@ class EvidenceRetriever:
             if evidence.origin == EvidenceOrigin.INTERNAL
         ]
 
+        # Corpus entries have no page to fetch: the final say comes here.
+        internal, refused_internal = temporal.within(internal, cutoff, thresholds.evidence_undated, fact_check)
+
         rejected = [
             RejectedEvidence(
                 url=evidence.url,
@@ -339,8 +375,8 @@ class EvidenceRetriever:
                 ),
                 score=scores[id(evidence)],
             )
-            for rank, evidence in enumerate(cut_web, start=len(top_web) + 1)
-        ] + same_domain + itself
+            for rank, evidence in enumerate(cut_web, start=consumed + 1)
+        ] + same_domain + itself + refused + refused_internal
 
         return RetrievalResult(
             kept=scraped + internal,
@@ -349,6 +385,80 @@ class EvidenceRetriever:
             claim_embedding=claim_embedding,
             search_unavailable=search_unavailable,
         )
+
+    def _within_cutoff(
+        self,
+        ranked: list[Evidence],
+        cutoff,
+        thresholds: PipelineThresholds,
+        deadline: Deadline | None,
+        claim: Claim,
+        report: OnPhase,
+        fact_check: str | None = None,
+    ) -> tuple[list[Evidence], list[RejectedEvidence], int]:
+        """
+        The funnel under a temporal cutoff: fetch from the top of the ranking,
+        keep what can be shown to predate the claim, and go on down for
+        replacements, since a page's date is often only known once fetched.
+        At most `temporal.FETCH_FACTOR` times the evidence cap per claim.
+
+        Returns what was kept (best-ranked first), what was refused, and how
+        far down the ranking it went. Keeps the phase events the funnel sends
+        without a cutoff, one pair per round.
+        """
+
+        wanted = thresholds.max_evidence_per_claim
+
+        limit = min(len(ranked), wanted * temporal.FETCH_FACTOR)
+
+        kept: list[Evidence] = []
+        refused: list[RejectedEvidence] = []
+
+        position = 0
+
+        while len(kept) < wanted and position < limit:
+
+            batch = ranked[position:min(limit, position + wanted - len(kept))]
+
+            position += len(batch)
+
+            if thresholds.fetch_evidence_pages:
+
+                wait = deadline.retrieval_left() if deadline else None
+
+                report("scraping_sources", {
+                    "claim": claim.text,
+                    "sources": [{"url": item.url, "domain": item.domain} for item in batch],
+                    "wait": None if wait is None else round(wait, 3),
+                })
+
+                started = time.perf_counter()
+                page_timings: list[dict] = []
+
+                batch = self.scraper.enrich(batch, wait=wait, timings=page_timings)
+
+                outcomes = {timing["url"]: timing for timing in page_timings}
+
+                report("sources_scraped", {
+                    "claim": claim.text,
+                    "sources": [
+                        {
+                            "url": item.url,
+                            "scraped": bool(item.content),
+                            "seconds": outcomes.get(item.url, {}).get("seconds"),
+                            "outcome": outcomes.get(item.url, {}).get("outcome"),
+                        }
+                        for item in batch
+                    ],
+                    "seconds": _since(started),
+                })
+
+            good, bad = temporal.within(batch, cutoff, thresholds.evidence_undated, fact_check)
+
+            kept += good
+            refused += bad
+
+        return kept, refused, position
 
     @staticmethod
     def _without_the_article(
@@ -368,14 +478,16 @@ class EvidenceRetriever:
         if not context or not context.url:
             return evidence, []
 
-        own = _comparable(context.url)
+        # A benchmark's fact-check URL is often an archive.org copy; the
+        # search finds the page itself.
+        own = _comparable(temporal.unarchived(context.url))
 
         kept = []
         dropped = []
 
         for item in evidence:
 
-            if _comparable(item.url) != own:
+            if _comparable(temporal.unarchived(item.url)) != own:
                 kept.append(item)
                 continue
 

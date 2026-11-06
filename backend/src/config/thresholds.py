@@ -359,8 +359,36 @@ class PipelineThresholds(BaseModel):
     # claim's checkable point (settings.QUERY_PLAN has why). Per-run because
     # it changes what is searched, so the two are compared as two searched
     # conditions, never by replay.
-    query_plan: Literal["sentence", "checkable"] = Field(
+    query_plan: Literal["sentence", "checkable", "questions"] = Field(
         default_factory=lambda: settings.QUERY_PLAN,
+    )
+
+    # Whether a result only the scholarly engines found may be evidence
+    # (settings.SEARCH_SCIENCE_ENGINES has why). Per-run: it changes what is
+    # searched, and AVeriTeC's runs and the app's differ on it.
+    search_science_engines: Literal["keep", "drop"] = Field(
+        default_factory=lambda: settings.SEARCH_SCIENCE_ENGINES,
+    )
+
+    # Under a temporal cutoff, whether a page with no date may be evidence
+    # (settings.EVIDENCE_UNDATED has why). Per-run: the live web and the
+    # knowledge store differ on it, and it changes what is judged.
+    evidence_undated: Literal["drop", "keep"] = Field(
+        default_factory=lambda: settings.EVIDENCE_UNDATED,
+    )
+
+    # Under `query_plan: checkable`, which words fill the checkable point's
+    # terms (settings.CHECKABLE_TERMS has why). Per-run for the same reason:
+    # it changes what is searched.
+    checkable_terms: Literal["sentence", "framing_last", "finding_first", "finding_closing"] = Field(
+        default_factory=lambda: settings.CHECKABLE_TERMS,
+    )
+
+    # Under `query_plan: checkable`, whether a figure with its currency or
+    # unit written onto it ("£5.9bn", "189p") is kept (settings.
+    # CHECKABLE_FIGURES has why). Per-run: it changes what is searched.
+    checkable_figures: Literal["bare", "with_units", "counted"] = Field(
+        default_factory=lambda: settings.CHECKABLE_FIGURES,
     )
 
     # What the verifier is told a verdict means (settings.py has why).
@@ -468,7 +496,11 @@ class ThresholdOverrides(BaseModel):
     verifier_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
     verifier_answer: Optional[Literal["full", "compact", "per_source"]] = Field(None)
     claim_restatement: Optional[Literal["off", "standalone"]] = Field(None)
-    query_plan: Optional[Literal["sentence", "checkable"]] = Field(None)
+    query_plan: Optional[Literal["sentence", "checkable", "questions"]] = Field(None)
+    evidence_undated: Optional[Literal["drop", "keep"]] = Field(None)
+    search_science_engines: Optional[Literal["keep", "drop"]] = Field(None)
+    checkable_terms: Optional[Literal["sentence", "framing_last", "finding_first", "finding_closing"]] = Field(None)
+    checkable_figures: Optional[Literal["bare", "with_units", "counted"]] = Field(None)
     evidence_independence: Optional[bool] = Field(None)
     verifier_rules: Optional[Literal["original", "stated"]] = Field(None)
     evidence_prerank: Optional[Literal["embedding", "lexical"]] = Field(None)

@@ -120,6 +120,7 @@ class EvidenceRanker:
         scored = [
             item.model_copy(update=self._score(
                 text, vector, claim_embedding, anchors, content, item,
+                as_of=context.evidence_before if context else None,
             ))
             for item, text, vector in zip(evidence, texts, vectors)
         ]
@@ -197,6 +198,7 @@ class EvidenceRanker:
         anchors: list[str],
         content: list[str],
         evidence: Evidence,
+        as_of=None,
     ) -> dict:
         """
         The composite score *and* the four factors that produced it.
@@ -220,7 +222,7 @@ class EvidenceRanker:
 
         lexical = coverage(f"{evidence.title}. {text}", anchors, content)
 
-        recency = self._recency_score(evidence.published_at)
+        recency = self._recency_score(evidence.published_at, as_of)
         reliability = self._reliability(evidence)
 
         return {
@@ -245,7 +247,13 @@ class EvidenceRanker:
             ),
         }
 
-    def _recency_score(self, published_at) -> float:
+    def _recency_score(self, published_at, as_of=None) -> float:
+        """
+        `as_of` is a temporal cutoff's date (ArticleContext.evidence_before):
+        how old a page was when the claim was made, not how old it is today.
+        Measured from today, every source for a 2020 claim is six years old
+        and recency says nothing about any of them.
+        """
 
         if published_at is None:
             return 0.5
@@ -253,7 +261,13 @@ class EvidenceRanker:
         if published_at.tzinfo is None:
             published_at = published_at.replace(tzinfo=timezone.utc)
 
-        age_days = max((datetime.now(timezone.utc) - published_at).days, 0)
+        now = (
+            datetime(as_of.year, as_of.month, as_of.day, tzinfo=timezone.utc)
+            if as_of is not None
+            else datetime.now(timezone.utc)
+        )
+
+        age_days = max((now - published_at).days, 0)
 
         return math.exp(-age_days / self.RECENCY_HALF_LIFE_DAYS)
 

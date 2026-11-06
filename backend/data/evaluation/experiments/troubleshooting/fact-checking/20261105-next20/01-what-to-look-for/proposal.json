@@ -1,0 +1,28 @@
+{
+  "stage": "01",
+  "change": "Order the checkable point's terms framing-last: words of who did, said or published it (checkable.FRAMING, en and es) move after the finding's words before terms[:6] is taken, instead of sentence order. New field checkable_terms (default \"sentence\"), read under query_plan checkable only.",
+  "files": [
+    "backend/src/services/fact_checker/retrieval/checkable.py",
+    "backend/src/services/fact_checker/retrieval/query_builder.py",
+    "backend/src/services/fact_checker/retrieval/search_provider.py",
+    "backend/src/services/fact_checker/retrieval/evidence_retriever.py",
+    "backend/src/config/thresholds.py",
+    "backend/src/config/settings.py",
+    "backend/src/evaluation/runner.py",
+    "backend/src/evaluation/iterate.py",
+    "backend/src/evaluation/troubleshoot.py",
+    "backend/tests/services/fact_checker/retrieval/test_checkable.py",
+    "backend/tests/services/fact_checker/retrieval/test_query_kinds.py",
+    "backend/tests/services/fact_checker/fakes.py",
+    "backend/tests/evaluation/test_harness_runner.py"
+  ],
+  "kind": "code",
+  "mode": "offline",
+  "thresholds": {
+    "query_plan": "checkable",
+    "checkable_terms": "framing_last"
+  },
+  "predict": "fact086 gains 'hiperglucemia' and 'remodelación molecular' (0.333 -> 0.667), fact088 gains 'older mice' (0.5 -> 0.667), fact122 gains 'third' (0.5 -> 0.667); fact085 unchanged at 0.75 ('disfunción' enters, 'diastólica' stays seventh behind 'mecanismo causal'); the other 16 unchanged. checkablePointCoverage 0.732 -> about 0.765, checkablePointAllCarried unchanged at 5, sentencePlanCoverage unchanged at 0.388. From reading the code, the term-level gains confirmed by test_checkable.py on the batch's sentences; the coverage figure is the script's to measure.",
+  "risks": "A claim whose point is its framing (an author, who led a study, what a report revealed) loses those words from the queries' terms[:5]. The lexicon was written while looking at train claims and can fit them: measure offline on all 69 train claims and on the 4 Nov batch's 20 before adopting, and no claim's share may fall. A small gain (three claims of 20) inside an offline string match, not a verdict. Default 'sentence' keeps every earlier run reproducible and its key unchanged.",
+  "iterate": "cli iterate propose --campaign <campaign> --kind search --hypothesis \"Under query_plan checkable the six term slots go to the sentence's framing (primera autora investigadora resultados muestran; colleague associate professor; main goal) and the finding's words are cut before any query (fact086, fact088, fact122 in 20261105-next20); moving framing words last puts the finding into the proposition and specifics queries.\" --predict \"Searched against query_plan checkable alone: the settling source among candidates more often for fact086, fact088, fact122; train accuracy within run-to-run noise (6-9 points), so judged by the rule on the full train half, not the 20.\" --thresholds <campaign dir>/tries/NN.json  (NN.json = {\"query_plan\": \"checkable\", \"checkable_terms\": \"framing_last\"})"
+}
