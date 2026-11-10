@@ -50,7 +50,7 @@ def test_a_draft_is_written_from_a_published_article(tmp_path, inline_store, mon
 
     response = client.post(
         "/drafts",
-        json={"articleId": article_id, "language": "ca", "instructions": "  Per a joves.  "},
+        json={"articleId": article_id, "language": "es", "instructions": "  Per a joves.  "},
     )
 
     assert response.status_code == 202
@@ -58,7 +58,7 @@ def test_a_draft_is_written_from_a_published_article(tmp_path, inline_store, mon
     body = response.json()
 
     assert body["sourceArticleId"] == article_id
-    assert body["language"] == "ca"
+    assert body["language"] == "es"
     assert body["instructions"] == "Per a joves."
     assert body["busy"] is None and body["error"] is None
     assert body["content"]["title"] == "Un bosc torna a la vall"
@@ -77,7 +77,7 @@ def test_a_draft_is_written_from_a_published_article(tmp_path, inline_store, mon
     # The indications reach the model, and the language is named to it.
     _, prompt = llm.calls[0]
     assert "Per a joves." in prompt
-    assert "LANGUAGE: Catalan (català)" in prompt
+    assert "LANGUAGE: Spanish (español)" in prompt
 
     # Listed, and saved where the store keeps it.
     assert [row["id"] for row in client.get("/drafts").json()] == [body["id"]]

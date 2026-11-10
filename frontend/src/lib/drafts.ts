@@ -142,7 +142,6 @@ export interface DraftSummary {
 }
 
 export const LANGUAGES: { code: DraftLanguage; label: string }[] = [
-  { code: "ca", label: "Català" },
   { code: "es", label: "Español" },
   { code: "en", label: "English" },
 ];

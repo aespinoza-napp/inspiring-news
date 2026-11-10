@@ -12,6 +12,8 @@ creating or revising one costs minutes of the model's time.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Path
+from typing import Literal
+
 from pydantic import Field, model_validator
 
 from src.api.routes import require_storage_key
@@ -42,7 +44,9 @@ class NewDraftRequest(CamelModel):
 
     article_url: str | None = Field(None, max_length=2048)
 
-    language: Language
+    # Catalan is no longer offered (2026-11-10: the models write it badly);
+    # drafts already stored in it still load (models/writer/draft.py Language).
+    language: Literal["es", "en"]
 
     instructions: str = Field("", max_length=MAX_INSTRUCTIONS_CHARS)
 

@@ -45,7 +45,7 @@ export function NewDraftForm({
 
   const [choice, setChoice] = useState<string>(initialUrl ? BY_URL : initialArticleId ?? "");
   const [url, setUrl] = useState(initialUrl ?? "");
-  const [language, setLanguage] = useState<DraftLanguage>("ca");
+  const [language, setLanguage] = useState<DraftLanguage>("es");
   const [instructions, setInstructions] = useState("");
 
   // The header's edition: the articles offered are its own, and the
