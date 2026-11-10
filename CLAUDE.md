@@ -100,6 +100,7 @@ src.main:app --port 8001`.
 | An agent per part of fact-checking against Claude's blind checks on 20 train claims: one experiment file per part and batch; what to search for a claim | `scripts/troubleshoot.sh`, `backend/src/evaluation/troubleshoot.py`, `docs/troubleshooting/fact-checking/README.md` ("Running it"), `/what-to-search`, `/troubleshoot-fact-check` |
 | An agent iterating on fact-checking (thresholds, prompts, search, model) by a fixed rule, train half only | `/iterate-fact-check`, `cli iterate`, `backend/src/evaluation/iterate.py`, `docs/decisions/evaluation.md` ("The iteration loop") |
 | Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
+| Ready-to-post packages: WordPress post files (sent as a draft only with the site's keys), Instagram carousel, stories, TikTok photos; posted by hand | `docs/decisions/writing.md` ("Packages"), `backend/src/services/packages/` |
 | Trending: the signals (Google Trends, r/UpliftingNews...), the lens on /discover, the checked positive angle, the TikTok embed; why TikTok is never scraped | `docs/decisions/trends.md` |
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
 | Laya: typed decisions in `inference/` (`/decisions`), what was fine-tuned, what was adopted (nothing yet) | `docs/decisions/laya.md`, `backend/data/evaluation/experiments/laya/` |

@@ -150,6 +150,12 @@ NON_THRESHOLD_SETTINGS = {
     "CACHE_PATH", "LAKE_PATH", "LAKE_ENABLED", "QDRANT_PATH",
     "STORAGE_PATH", "RAW_PATH", "PROCESSED_PATH", "EMBEDDINGS_PATH",
     "FACT_CHECK_PATH", "GRAPH_PATH",
+    # Ready-to-post packages (src/services/packages/): where they are kept,
+    # the site's public address, and the WordPress site a package may be
+    # sent to as a draft. Infrastructure: where and to whom, not how a run
+    # judges anything.
+    "PACKAGES_PATH", "PUBLIC_SITE_URL",
+    "WORDPRESS_URL", "WORDPRESS_USER", "WORDPRESS_APP_PASSWORD", "WORDPRESS_TIMEOUT",
     "EMBEDDING_MODEL", "EMBEDDING_DIMENSION", "SENTIMENT_MODEL",
     "LLM_MODEL", "LLM_BASE_URL", "LLM_API_KEY", "LLM_TIMEOUT",
     "LLM_RETRY_BACKOFF_SECONDS",

@@ -611,6 +611,28 @@ def get_publishers():
     return _publishers
 
 
+_package_builder = None
+
+
+def get_package_builder():
+    """
+    Backs /drafts/{id}/packages (src/api/package_routes.py): ready-to-post
+    packages under PACKAGES_PATH (src/services/packages/). Tests replace it
+    with one over tmp_path.
+    """
+
+    global _package_builder
+
+    if _package_builder is None:
+        with _lock:
+            if _package_builder is None:
+                from src.services.packages.builder import PackageBuilder
+
+                _package_builder = PackageBuilder(settings.PACKAGES_PATH, settings.PUBLIC_SITE_URL)
+
+    return _package_builder
+
+
 _draft_reviewer = None
 
 

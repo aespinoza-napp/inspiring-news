@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DraftEditor } from "@/components/drafts/DraftEditor";
 import { DraftReviewPanel } from "@/components/drafts/DraftReviewPanel";
 import { DraftTrendPanel } from "@/components/drafts/DraftTrendPanel";
+import { PackagePanel } from "@/components/drafts/PackagePanel";
 import { PublishPanel } from "@/components/drafts/PublishPanel";
 import { RewritePanel } from "@/components/drafts/RewritePanel";
 import { ArticleDraft, BUSY_LABEL, LANGUAGES, draftsApi } from "@/lib/drafts";
@@ -117,6 +118,7 @@ export default function DraftPage({ params }: { params: { id: string } }) {
       <RewritePanel draft={draft} onChange={setDraft} />
 
       <PublishPanel draft={draft} onChange={setDraft} />
+      <PackagePanel draft={draft} onChange={setDraft} />
     </>
   );
 }

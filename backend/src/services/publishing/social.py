@@ -11,8 +11,10 @@ stage of its own that does not exist.
 
 Each says what it would need, in the reason the panel shows. Neither
 makes a network call or holds a credential: there is no configuration
-that turns them on, on purpose, until both the media stage and the
-account and app review below exist.
+that turns them on, on purpose, until the account and app review below
+exist. The media stage does exist since 2026-11-10: a package
+(src/services/packages/) renders a carousel, stories and a TikTok photo
+post, to post by hand - which is what each reason now points to.
 
 Read 2026-10-15:
 - TikTok: developers.tiktok.com/doc/content-posting-api-get-started and
@@ -59,7 +61,8 @@ class TikTokPublisher(UnavailablePublisher):
         "article, so the article would first have to become one. It also needs a TikTok "
         "developer app approved for the video.publish scope, the account's authorization "
         "through Login Kit, media served from a domain verified with TikTok, and TikTok's "
-        "audit of the app: until then every post is private."
+        "audit of the app: until then every post is private. Meanwhile, build a package "
+        "on the draft's page: TikTok photos and a caption to post by hand."
     )
 
 
@@ -75,5 +78,6 @@ class InstagramPublisher(UnavailablePublisher):
         "carousel of cards linking back to the web page). It also needs a professional "
         "(business or creator) account, a Meta app granted instagram_business_content_publish "
         "with its access token, and each image at a public URL when it is posted; at most "
-        "100 posts in 24 hours."
+        "100 posts in 24 hours. Meanwhile, build a package on the draft's page: a carousel, "
+        "stories and a caption to post by hand."
     )

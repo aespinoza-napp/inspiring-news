@@ -23,8 +23,12 @@ COPY --from=ghcr.io/astral-sh/uv:0.7.2 /uv /usr/local/bin/uv
 # degrades gracefully when git is missing, but then every record in the
 # lake loses its code_revision - so install it and keep traceability.
 # curl: for the healthcheck below.
+# fonts-dejavu-core: the typeface packages draw their cards in
+# (src/services/packages/cards.py); without it they fall back to
+# Pillow's own. ffmpeg is left out on purpose (~100 MB): without it a
+# TikTok package is a photo post, and the manifest says so.
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y git curl \
+    && apt-get install --no-install-recommends -y git curl fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

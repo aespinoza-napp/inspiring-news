@@ -1272,6 +1272,56 @@ holds no credential; there is no setting that turns either on.
 - `ArticleBody`'s `.article-body` has no global style; the story page
   styles it under its own CSS module.
 
+## Packages (2026-11-10)
+
+A published article still had to become media before Instagram or TikTok
+could carry it ("TikTok and Instagram: what each would need"). That stage
+exists now, without either platform's API: neither developer app is
+approved, so a package is **files a person posts by hand**, and WordPress
+is the one channel the app may send to, as a draft, when its keys are set.
+
+`src/services/packages/`, `POST /drafts/{id}/packages`, and the
+"Ready-to-post packages" panel on `/drafts/[id]`. Only an approved or
+published draft that is not busy is packaged: it is text about to be posted.
+
+| Channel | Files | By hand |
+|---|---|---|
+| WordPress | `post.json` (REST API body), `post.xml` (WXR 1.2, Tools > Import) | Import, or **Send to WordPress as a draft** when `WORDPRESS_URL`, `WORDPRESS_USER` and `WORDPRESS_APP_PASSWORD` are set (an application password, https only). Always `status: draft`, whatever the file says; sent once per package |
+| Instagram | a carousel of 1080x1350 cards (cover, at most six points, the checks, where to read on), `caption.txt` | Post the carousel, paste the caption, link in bio |
+| Stories | 1080x1920 frames, the last with its text at the top | Add the link sticker with the manifest's `link` in the empty space |
+| TikTok | 1080x1920 photos, `caption.txt`; `video.mp4` only when `ffmpeg` is on the PATH (4 s a photo, no sound) | Post as a photo post (or the video) |
+
+Each package is a directory under `PACKAGES_PATH/<draft>/<package>/` with
+`manifest.json`: every file with its size, sha256 and pixel size, each
+channel's caption, link and steps, the text's `contentHash` (the panel marks
+a package made from an earlier text) and notes (no link yet, no video, the
+typeface). `GET .../zip` downloads it all.
+
+What a card says is the draft's own text. A point is a whole body sentence,
+factual ones first, citations replaced by the source's name ("Fuente:
+europapress.es"; for an uncited sentence, the source that says it, by the
+review's own `grounding.in_source`). A sentence over 280 characters is left
+out, never cut. Captions keep the headline, the standfirst, a few points,
+the link, the sources, the AI disclosure (`PublishedStory`'s models and
+whether a person edited it) and up to eight hashtags from the draft's tags
+and keywords, at most 2,200 characters, dropping points to fit.
+
+**Safe margins.** Text is laid out only inside each format's safe box
+(stories: 260 px clear at the top, 350 at the bottom; TikTok: 160 top, 490
+bottom, 170 right), at one common scale down to 34 px; what does not fit
+is left out. `tests/services/packages/test_packages.py` checks every pixel
+outside the box is background, and caught a glyph 1 px over on TikTok.
+
+**The link** is `PUBLIC_SITE_URL` + `/reader/stories/<id>`, only once the
+draft is published: the backend does not know the site's address
+otherwise. Without it the captions and the last frame say the link comes
+with publication, and the manifest notes why.
+
+**Not done.** Posting to Instagram or TikTok (the apps), sound for the
+video, WordPress tags through the REST API (it wants the site's tag ids:
+they are in `post.xml` by name), a featured image. The Docker image installs
+`fonts-dejavu-core`, not `ffmpeg`.
+
 ## A draft from a trend (2026-10-26)
 
 When the analysed article came from a trending round (the trend ledger,

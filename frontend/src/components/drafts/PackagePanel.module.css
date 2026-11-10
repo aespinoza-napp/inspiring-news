@@ -1,0 +1,145 @@
+/* The packages stage of /drafts/[id]. Buttons, cards and labels are the
+   global ones; this is the stage's own layout, after PublishPanel's. */
+
+.panel h2 {
+  margin-bottom: 0.5rem;
+}
+
+.help {
+  margin: 0 0 1rem;
+  max-width: 70ch;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.channels {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: none;
+}
+
+.channels legend {
+  padding: 0;
+}
+
+.channel + .channel {
+  margin-top: 0.5rem;
+}
+
+.channelLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.note {
+  margin: 0.2rem 0 0 1.6rem;
+  max-width: 62ch;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.packages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.package {
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.packageHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.packageHead a {
+  margin-top: 0;
+}
+
+.stale {
+  margin-left: 0.6rem;
+  padding: 0 0.45rem;
+  border: 1px dashed var(--misleading);
+  border-radius: 999px;
+  font-size: 0.72rem;
+}
+
+.notes {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.channelBlock {
+  margin-top: 1rem;
+}
+
+/* Thumbnails scroll sideways rather than wrapping into a wall of cards,
+   and never push the page wider than the phone. */
+.thumbs {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.thumbs img {
+  display: block;
+  height: 160px;
+  width: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+}
+
+.caption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.caption summary {
+  cursor: pointer;
+}
+
+.caption summary button {
+  margin: 0 0 0 0.5rem;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.caption pre {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: inherit;
+  font-size: 0.82rem;
+}
+
+.stepsList {
+  margin: 0.5rem 0;
+  padding-left: 1.2rem;
+  font-size: 0.8rem;
+}
+
+.delivered {
+  font-size: 0.85rem;
+}

@@ -57,6 +57,28 @@ class Settings(BaseSettings):
     # place. Created on the first save, not here.
     DRAFTS_PATH: Path = STORAGE_PATH / "drafts"
 
+    # Ready-to-post packages of an approved or published draft
+    # (src/services/packages/): WordPress post files, Instagram carousel
+    # and story cards, a TikTok photo post. One directory per package
+    # with its manifest. Created on the first build.
+    PACKAGES_PATH: Path = STORAGE_PATH / "packages"
+
+    # The address the public site is served at, e.g. https://example.org
+    # (no trailing slash). The backend cannot know it (publishing/web.py,
+    # public_path); a package's link - the caption's, the story's link
+    # sticker, WordPress's canonical - needs it. None: packages carry no
+    # link, and their manifest says so.
+    PUBLIC_SITE_URL: str | None = None
+
+    # A WordPress site a package may be sent to, as a draft only, through
+    # its REST API with an application password (Users -> Profile ->
+    # Application Passwords). All three or nothing: unset, a package is
+    # files to import by hand (post.xml) and nothing leaves this machine.
+    WORDPRESS_URL: str | None = None
+    WORDPRESS_USER: str | None = None
+    WORDPRESS_APP_PASSWORD: SecretStr | None = None
+    WORDPRESS_TIMEOUT: float = 20.0
+
     NEO4J_URI: str = "bolt://localhost:7687"
     NEO4J_USER: str = "neo4j"
     NEO4J_PASSWORD: SecretStr
