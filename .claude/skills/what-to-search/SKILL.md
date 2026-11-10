@@ -116,3 +116,19 @@ real URL, not a search page.
 - Never guess a URL or a figure: what you write in `found` you read on a page.
 - Do not revise `plan.jsonl` after searching: a plan corrected by its result says
   nothing about planning.
+
+## Pronouns and definite references must be put back (2026-11-10)
+
+A sentence cut from its article often has no subject of its own: "Y dos años
+después **tienen** las primeras evidencias...", "**la iniciativa** también ha
+demostrado...", "**el especialista**", "it", "the programme". Searched as written
+those became `Galicia Portugal UE González Juanatey` and `Galicia Portugal
+especialista` - the project's name (New Heart) was never in a query, so the
+searches found other Galicia/Portugal pages and one claim came back with no
+evidence at all. Before choosing what to search, resolve every pronoun, subject-less
+verb and "the + noun" against the sentences just BEFORE the claim (not only the
+headline) and write the referent's name into the queries: the project, the full
+name and role of the person, the place. If the text never names it, say so and do
+not guess. The fact-checker's `restatement.py` does this (it now reads the passage
+before the sentence, `claim_restatement=standalone` by default); judge its output
+against this rule.

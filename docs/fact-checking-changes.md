@@ -460,3 +460,17 @@ first: the thesis, "Deciding What to Search".
 - **Not yet:** the 100-claim train try and the dev conditions `store-questions` and
   `web-questions`, held at the user's request until the plan is improved further on 10 claims
   at a time. 10 claims decide nothing: none of the figures above is a result.
+
+## 15. Pronouns put back before the search (2026-11-10)
+
+Found on El Mundo's "Lo que Galicia y el norte de Portugal pueden enseñar sobre el
+cuidado del corazón" (New Heart): "Y dos años después **tienen** las primeras
+evidencias..." was searched as `Galicia Portugal UE González Juanatey`, "**la
+iniciativa** también ha demostrado..." as `Galicia Portugal especialista`; the project's
+name was in no query, one claim found nothing and another cited a page on specialist
+consultations. The restater read only the headline and the first 700 characters; it now
+also reads the 900 characters before the sentence (`ArticleContext.body`,
+`restatement.passage_before`) and is told to put names back for pronouns, subject-less
+verbs and "the + noun". `CLAIM_RESTATEMENT=standalone` is set in the app's `backend/.env`, the code default stays `off` (one more model
+call per claim); `thorough.json` keeps `off`. Not measured on AVeriTeC yet: compare by
+replay or on 10 train claims before trusting a figure.

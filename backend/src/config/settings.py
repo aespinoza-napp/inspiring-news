@@ -443,6 +443,10 @@ class Settings(BaseSettings):
     # `Samuda Jamaica "30"`. One more model call per claim. `off` checks
     # the sentence as written, as every run before it did - the default,
     # so the evaluation's numbers stay comparable until it is measured.
+    # Switched on in the app's backend/.env on 2026-11-10 (the restater now
+    # also reads the passage before the sentence, so pronouns get their
+    # names back); the code default stays `off` so the suite and the
+    # evaluation's numbers do not move.
     CLAIM_RESTATEMENT: Literal["off", "standalone"] = "off"
 
     # QUERY_PLAN (2026-11-04): what the web search asks. `sentence` builds

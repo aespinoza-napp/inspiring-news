@@ -20,6 +20,13 @@ class ArticleContext:
 
     lead: str = ""
 
+    # The article's whole text, when the caller holds it. Only the claim
+    # restater reads it: the sentences just before a claim name what its
+    # pronouns and definite phrases ("tienen", "la iniciativa", "el
+    # especialista") point back to, which the headline and opening may
+    # not (2026-11-10, El Mundo's New Heart article).
+    body: str = ""
+
     # Lets internal-evidence retrieval skip the article's own stored copy.
     url: str = ""
 

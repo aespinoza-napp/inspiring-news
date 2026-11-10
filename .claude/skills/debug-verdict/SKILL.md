@@ -45,3 +45,12 @@ Quote the evidence: the query, the source, the stance, the quote. Separate what 
 measured from what you infer. If the cause is the model reading correct evidence
 badly, say so; that is a known limit (`docs/decisions/evaluation.md`), not a bug to
 patch for one article. To change the pipeline, use the `fact-check-change` skill.
+
+## A claim searched without its referent (2026-11-10)
+
+Symptom: sources "found" but about something else, or 0 results, on a sentence
+that starts with a verb or a pronoun ("tienen...", "la iniciativa...", "según
+explica el especialista..."). Look at the queries on the Live screen: if the
+subject's name (a project, a person) is in none of them, the referent was lost.
+Check the `claim_restated` event: `standalone` should carry the name from the
+passage before the sentence. If it is "checked as written" with a note, read why.

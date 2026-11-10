@@ -250,6 +250,7 @@ class FactChecker:
             # upstream marks one, and the first few hundred characters of
             # a news article are the lead often enough to be useful here.
             lead=(article.body or "")[:400],
+            body=article.body or "",
             keywords=article.keywords or [],
             entities=article.entities or {},
         )

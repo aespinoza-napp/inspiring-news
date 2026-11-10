@@ -327,6 +327,12 @@ def subscription(monkeypatch, tmp_path):
     for name in ts.API_BILLING_ENV:
         monkeypatch.delenv(name, raising=False)
 
+    # A local model, whatever backend/.env names: LLM_BASE_URL is
+    # infrastructure, which pinned_settings leaves as configured, and a
+    # machine pointed at Groq (2026-11-10) turned this test red.
+    from src.config.settings import settings
+    monkeypatch.setattr(settings, "LLM_BASE_URL", "http://localhost:11434/v1")
+
     real_run = ts.subprocess.run
 
     def run(command, *args, **kwargs):

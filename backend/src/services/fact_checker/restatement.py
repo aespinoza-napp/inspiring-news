@@ -53,6 +53,11 @@ logger = getLogger(__name__)
 # The opening the model is shown. The lead is what names who and where.
 LEAD_CHARS = 700
 
+# How much of the article before the sentence the model is shown: enough
+# for the two or three sentences that name what "they", "the initiative" or
+# "the specialist" refers to.
+BEFORE_CHARS = 900
+
 MAX_CHECKABLE = 400
 MIN_CHECKABLE = 15
 MAX_QUESTIONS = 2
@@ -72,7 +77,7 @@ NAME = re.compile(
 SYSTEM_PROMPT = """You prepare one sentence from a news article for a fact-checker.
 The sentence was cut out of its article, so on its own it can be unclear who is speaking and what exactly is claimed.
 
-Use ONLY the article's headline, its opening and the sentence. Never add a fact, a number, a date or a name that is not in them.
+Use ONLY the article's headline, its opening, the passage just before the sentence and the sentence. Never add a fact, a number, a date or a name that is not in them.
 Write in the language of the sentence.
 
 Answer with JSON only:
@@ -81,6 +86,8 @@ Answer with JSON only:
  "standalone": "the sentence rewritten so it is understood without the article: full names, roles, places and dates from the article; no pronouns",
  "checkable": "the single factual statement a fact-checker should verify",
  "questions": ["one or two questions a fact-checker would search to settle it"]}
+
+Pronouns and vague references: if the sentence refers back to something named earlier - a pronoun or a verb with no subject ("they have", "tienen", "it", "esto"), or a phrase like "the initiative", "the programme", "the model", "the specialist", "la iniciativa", "el investigador" - put the NAME back from the passage before it (the project's name, the person's full name and role, the place). A search for "the initiative" finds nothing; a search for the project's name does. Never guess a name the text does not give.
 
 Rules for "checkable":
 - A plain statement that can be true or false. Never a question, never a topic.
@@ -117,6 +124,7 @@ class ClaimRestater:
         user_prompt = (
             f"Headline: {context.title}\n"
             f"Opening: {context.lead[:LEAD_CHARS]}\n\n"
+            f"{before_block(context, claim.text)}"
             f"Sentence: {claim.text}"
         )
 
@@ -129,6 +137,29 @@ class ClaimRestater:
             return _as_written(claim, "Restating failed: checked as written.")
 
         return validate(answer, claim, context, language)
+
+
+def passage_before(context: ArticleContext, sentence: str) -> str:
+    """The article's text just before `sentence`, or "" when it is not found in the body."""
+
+    body = context.body or ""
+    at = body.find(sentence)
+
+    if at <= 0:
+        # The harness may hold the sentence in slightly different spacing.
+        at = body.find(" ".join(sentence.split())[:60]) if sentence else -1
+
+    if at <= 0:
+        return ""
+
+    return body[max(0, at - BEFORE_CHARS):at].strip()
+
+
+def before_block(context: ArticleContext, sentence: str) -> str:
+
+    before = passage_before(context, sentence)
+
+    return f"Passage just before the sentence: {before}\n\n" if before else ""
 
 
 def validate(
@@ -168,7 +199,7 @@ def validate(
 
     # Nothing the article does not say. A figure the model wrote is the
     # one thing a search would then look for verbatim.
-    known = _numbers(" ".join([claim.text, context.title, context.lead]))
+    known = _numbers(" ".join([claim.text, context.title, context.lead, passage_before(context, claim.text)]))
     invented = sorted(_numbers(f"{checkable} {standalone}") - known)
 
     if invented:
