@@ -43,6 +43,41 @@ DEFAULT_MIN_SCORE = 6.0
 
 SUMMARY_CHARS = 300
 
+# What the AI proposes is a short list, not a queue (2026-11-10, asked for):
+# at most this many picks, and, unless the round is a trending one, at most
+# AI_PICKS_PER_TOPIC from any one topic group. A trending round has the
+# trend itself to spread the picks, so only the total applies.
+AI_PICKS_MAX = 5
+AI_PICKS_PER_TOPIC = 2
+
+
+def cap_picks(picks: list, candidates: list[dict], trending: bool = False) -> list:
+    """
+    `picks` (best first) cut to AI_PICKS_MAX, and to AI_PICKS_PER_TOPIC per
+    topic group outside a trending round. A candidate's topic is the first
+    of its `groups` (those the round asked for); one with none counts as
+    its own topic "?".
+    """
+
+    topic_of = {c["url"]: ((c.get("groups") or ["?"])[0]) for c in candidates}
+    taken: dict[str, int] = {}
+    kept = []
+
+    for pick in picks:
+
+        topic = topic_of.get(pick.url, "?")
+
+        if not trending and taken.get(topic, 0) >= AI_PICKS_PER_TOPIC:
+            continue
+
+        taken[topic] = taken.get(topic, 0) + 1
+        kept.append(pick)
+
+        if len(kept) >= AI_PICKS_MAX:
+            break
+
+    return kept
+
 REASON_CHARS = 200
 
 DEFINITION = """\
@@ -219,7 +254,7 @@ class AISelector:
             notes.append(f"{missing} candidates were not scored.")
 
         return AISelection(
-            picks=ranked[:limit],
+            picks=cap_picks(ranked, candidates, trending)[:limit],
             scored=scored,
             model=self.llm.model,
             calls=len(batches),

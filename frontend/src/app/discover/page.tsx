@@ -683,7 +683,7 @@ export default function DiscoverPage() {
     try {
       const state = await post<CandidateRound["aiSelection"]>(
         `/api/ingest/rounds/${round.id}/ai-selection`,
-        { limit: maxSelected }
+        { limit: 5 }
       );
       setRound({ ...round, aiSelection: state });
     } catch (err) {

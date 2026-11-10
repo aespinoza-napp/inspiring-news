@@ -28,7 +28,7 @@ import time
 
 from src.config.decisions import WORTH_OFFERING, candidate_state
 from src.services.inference_client import InferenceClient
-from src.services.selection.ai_selector import DEFAULT_MIN_SCORE, AISelection, Scored
+from src.services.selection.ai_selector import DEFAULT_MIN_SCORE, AISelection, Scored, cap_picks
 
 # The fine-tuned checkpoint's folder name in inference/'s checkpoints
 # (scripts/laya_train_all.sh writes it there).
@@ -83,7 +83,7 @@ class LayaSelector:
         ranked = sorted((item for item in scored if item.score >= min_score), key=lambda item: item.score, reverse=True)
 
         return AISelection(
-            picks=ranked[:limit],
+            picks=cap_picks(ranked, candidates)[:limit],
             scored=scored,
             model=f"laya:{CHECKPOINT}",
             calls=1 if candidates else 0,
