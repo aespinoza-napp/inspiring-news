@@ -42,6 +42,7 @@ prompt, and this one is a different instrument.
 from __future__ import annotations
 
 import logging
+import re
 from typing import Callable
 
 from src.config.lexicons import Lexicon, writing_lexicon_for
@@ -110,6 +111,31 @@ MAX_LONG_SENTENCES = 3
 # A citation to a source that does not exist is certain, and each one
 # costs factConsistency this much of its ceiling.
 DANGLING_CITATION_PENALTY = 20.0
+
+# The model's grounding score is set aside when its own summary finds
+# nothing ungrounded and the number says otherwise: below this, a "clean"
+# summary and its score cannot both be right. Seen 2026-11-10 on the New
+# Heart draft: "Todas las afirmaciones del texto están respaldadas por
+# fuentes." and 0 - the model read "hallucination index" as how much it
+# hallucinated, however often the prompt says higher is better.
+CONTRADICTED_BELOW = 50.0
+
+# A summary that says nothing in the draft is ungrounded, in the languages
+# the model answers in (asked for English, it often writes the draft's).
+_CLEAN_SUMMARY = re.compile(
+    r"\b(?:all|every)\b[^.]{0,80}\b(?:supported|grounded|backed|sourced|cited|verified)\b"
+    r"|\bno\s+(?:unsupported|ungrounded|invented|fabricated|hallucinat\w*)"
+    r"|\bnothing\b[^.]{0,30}\b(?:unsupported|invented|ungrounded)\b"
+    r"|\b(?:todas?|todos)\b[^.]{0,80}\b(?:respaldad|sustentad|fundamentad|citad|apoyad|basad|verificad)\w*"
+    r"|\b(?:ninguna?|no hay)\b[^.]{0,40}\b(?:alucinaci|inventad|sin respaldo|sin fuente)\w*",
+    re.IGNORECASE,
+)
+
+# ... unless it goes on to name an exception.
+_SUMMARY_EXCEPTION = re.compile(
+    r"\b(?:but|except|although|however|apart from|aunque|excepto|salvo|pero|sin embargo|menos)\b",
+    re.IGNORECASE,
+)
 
 # ---- the proposal -----------------------------------------------------------
 
@@ -411,7 +437,7 @@ class DraftReviewer:
         for key in REVIEW_LLM_KEYS:
             metrics[key] = normalize_metric(answer, key)
 
-        found = grounding.check(content.body, len(draft.sources), draft.fact_checks, lexicon)
+        found = grounding.check(content.body, len(draft.sources), draft.fact_checks, lexicon, source_texts(draft))
         apply_grounding(metrics, found, len(draft.sources))
         apply_headline_checks(metrics, content)
         apply_angle_check(metrics, draft, lexicon)
@@ -668,8 +694,13 @@ def apply_grounding(metrics: dict[str, CorrectionMetric], found: grounding.Groun
 
         (hallucination if echo.verdict == "UNVERIFIED" else consistency).append(issue)
 
-    for sentence in found.uncited:
-        hallucination.append(f"States a fact and cites no source: {grounding.quote(sentence)}")
+    # Present in a source but not cited: a citation to add, which is about
+    # the draft's attribution, not a statement from nowhere.
+    for sentence, number in found.uncited_present:
+        consistency.append(f"Cites no source, though [{number}] says it - add [{number}]: {grounding.quote(sentence)}")
+
+    for sentence in found.unsupported:
+        hallucination.append(f"States a fact, cites no source, and no source says it: {grounding.quote(sentence)}")
 
     dangling_ceiling = 100.0 - DANGLING_CITATION_PENALTY * len(found.dangling) if found.dangling else None
 
@@ -680,18 +711,64 @@ def apply_grounding(metrics: dict[str, CorrectionMetric], found: grounding.Groun
         f"{len(found.dangling)} citation(s) point at no source.",
     )
 
-    uncited_ceiling = (
-        100.0 * (1 - len(found.uncited) / found.factual)
-        if found.uncited and found.factual
-        else None
-    )
+    # Only what no source says lowers the index (2026-11-10).
+    checked = automatic_grounding(found)
+
+    unsupported_ceiling = checked if found.unsupported else None
 
     metrics["hallucinationIndex"] = _bind(
-        metrics["hallucinationIndex"],
+        follow_the_check(metrics["hallucinationIndex"], checked),
         hallucination,
-        uncited_ceiling,
-        f"{len(found.uncited)} of {found.factual} factual sentences cite no source.",
+        unsupported_ceiling,
+        f"{len(found.unsupported)} of {found.factual} factual sentences are in no source.",
     )
+
+
+def automatic_grounding(found: grounding.Grounding) -> float:
+    """The grounding index the checks alone give: the share of factual sentences some source says."""
+
+    if not found.factual:
+        return 100.0
+
+    return round(100.0 * (1 - len(found.unsupported) / found.factual), 1)
+
+
+def clean_summary(summary: str) -> bool:
+    """Whether a metric's summary says nothing is ungrounded, with no exception named."""
+
+    return bool(_CLEAN_SUMMARY.search(summary)) and not _SUMMARY_EXCEPTION.search(summary)
+
+
+def follow_the_check(metric: CorrectionMetric, checked: float) -> CorrectionMetric:
+    """
+    The model's score cannot contradict its own summary. When the summary
+    finds nothing ungrounded and the score is under CONTRADICTED_BELOW, one
+    of the two is wrong, and the automatic check decides which: the score
+    becomes `checked`, the model's number is kept in `reported` and the
+    summary says so. Otherwise the metric is returned as it was. An
+    unavailable metric is never touched.
+    """
+
+    if metric.summary == UNAVAILABLE_SUMMARY or metric.reported is not None:
+        return metric
+
+    if not clean_summary(metric.summary) or metric.score >= CONTRADICTED_BELOW or checked <= metric.score:
+        return metric
+
+    return metric.model_copy(update={
+        "score": checked,
+        "reported": metric.score,
+        "summary": (
+            f"{metric.summary} The model scored {round(metric.score)}, which contradicts its own summary; "
+            f"the score follows the automatic check ({round(checked)})."
+        ),
+    })
+
+
+def source_texts(draft: ArticleDraft) -> dict[int, str]:
+    """n -> the text of source n the writer saw, for the checks that look a sentence up in it."""
+
+    return {number: source.excerpt for number, source in enumerate(draft.sources, start=1) if source.excerpt}
 
 
 def apply_headline_checks(metrics: dict[str, CorrectionMetric], content: DraftContent) -> None:

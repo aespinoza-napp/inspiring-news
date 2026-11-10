@@ -1,0 +1,106 @@
+{
+ "_about": "The New Heart draft (El Mundo, 9 Nov 2026) as the writer left it, and the review model's answer for its grounding index: 0, with a summary saying every statement is supported. Excerpts are what the writer saw. tests/services/corrector/test_grounding_index.py.",
+ "language": "es",
+ "edition": "positive",
+ "content": {
+  "title": "Mejora la salud cardiaca en Galicia y el nórd de Portugal",
+  "subtitle": "Un proyecto transfronterizo busca mejorar el acceso al diagnóstico y tratamiento",
+  "body": "Galicia y el nórd de Portugal comparten similitudes en demografía y salud, lo que las convierte en un lugar ideal para un proyecto de colaboración en salud cardiovascular. Un proyecto llamado New Heart busca mejorar la salud cardiaca en la región con un enfoque preventivo, personalizado y basado en la innovación tecnológica. El proyecto comenzó en 2024 con la meta de mejorar el acceso al diagnóstico y tratamiento desde la Atención Primaria, facilitar la detección temprana de enfermedades del corazón y asegurar una atención equitativa. Se han obtenido primeras evidencias en dos años de trabajo."
+ },
+ "sources": [
+  {
+   "url": "https://www.elmundo.es/salud/2026/11/09/6aedb306e85ece57498b4579.html",
+   "title": "Lo que Galicia y el norte de Portugal pueden enseñar sobre el cuidado del corazón",
+   "domain": "elmundo.es",
+   "origin": "analysed",
+   "excerpt": "Galicia y el norte de Portugal tienen muchas cosas en común tanto desde el punto de vista social, como cultural o demográfico. En ambas regiones vive un alto porcentaje de personas mayores, muchas de ellas en localidades rurales y dispersas y ambas comparten también una alta incidencia de enfermedades cardiovasculares. Por eso, esa zona se ha convertido en el núcleo de un ambicioso proyecto cuya meta es mejorar la salud cardiaca de la población. La iniciativa, denominada New Heart, es un proyecto de colaboración transfronteriza financiado por la UE que pretende transformar la atención cardiovascular en la zona, de forma que se optimice el diagnóstico temprano de las enfermedades del corazón, se promueva un enfoque preventivo y un abordaje integral, basado en la medicina personalizada y apoyado en la innovación tecnológica. \"El objetivo es disponer de un modelo que permita dar respuesta de una forma integrada y eficiente a las patologías cardiológicas, en concreto a la patología isquémica, que es la enfermedad más prevalente tanto en Galicia como en el Norte de Portugal\", apunta José Ramón González Juanatey, investigador del Instituto de Investigación Sanitaria de Santiago de Compostela (IDIS), jefe del servicio de Cardiología del Área Sanitaria de Santiago y líder de este proyecto junto al investigador portugués Ricardo Fonte-Carvalho. La iniciativa arrancó en 2024 con la meta de conseguir que la cooperación y el empleo de la tecnología permitieran optimizar el acceso al diagnóstico y tratamiento desde Atencíon Primaria, facilitar la detección temprana de los trastornos cardiovasculares o asegurar una atención equitativa. Y dos años después tienen las primeras evidencias para \"sentar las bases de un abordaje que puede ser perfectamente extrapolable a otras regiones de la UE con características comunes a las que comparten Galicia y el norte de Portugal, como la dispersión o el envejecimiento de la población\", señala González Juanatey. Según adelanta, la experiencia ha permitido, por ejemplo, implementar protocolos que mejoran la identificación precoz de pacientes de riesgo, así como la indicación de pruebas o el seguimiento de los enfermos. \"El programa potencia el papel de los médicos de Atención Primaria y los profesionales de Enfermería en la identificación de individuos de riesgo\", señala el investigador, quien también hace hincapié en otro \"punto fuerte\" del modelo: el desarrollo de un modelo de consulta electrónica que permite \"una mayor y mejor accesibilidad al sistema, sobre todo de los más vulnerables\". Este modelo, continúa, ha demostrado que reduce la necesidad de hospitalización y consultas a urgencias, así como una reducción de la mortalidad \"porque es capaz de identificar de forma precoz a los más vulnerables y a los individuos de riesgo\". La tecnología cumple un papel importante dentro del programa tanto desde el punto de vista de su empleo en el diagnóstico como en el uso de herramientas de apoyo a la decisión clínica diseñadas sobre todo para profesionales de Atención Primaria, añade González Juanatey. Según explica el especialista, la iniciativa también ha demostrado su capacidad para promover estilos de vida saludables, una base de la prevención cardiaca. En ese sentido, además del desarrollo de programas de ejercicio dirigidos tanto a población adulta como infantil, también se ha impulsado la promoción de la dieta atlántica, \"basada fundamentalmente en productos de proximidad y sin ultraprocesados\", señala el cardiólogo. Por otro lado, New Heart también ha desarrollado un sistema que permite el intercambio seguro de datos clínicos e información sobre gestión sanitaria o de carácter asistencial. El balance del proyecto se compartirá el próximo 19 de noviembre en el congreso 'Mejoras para vivir 100 años', que se celebrará en la Cidade da Cultura de Galicia. \"Será el punto de partida para una nueva etapa que permita aterrizar a la práctica clínica un modelo asistencial cohesionado, integral, accesible para todas las personas independientemente de su lugar de residencia y que sitúe en la vanguardia de la innovación tecnológica el abordaje transfronterizo de la salud cardiovascular desde una perspectiva preventiva\", concluye González Juanatey. Además del Instituto de Investigación Sanitaria de Santiago de Compostela, también participan en la iniciativa la spin-off Flow Reserve, la plataforma Naevia Medical, la Fundación Dieta Atlántica, la Universidade do Porto, El Centro Hospitar Universitário de Sao Joao y la Unidad de Salud Gaia-Espinho del Servicio Nacional de Salud de Portugal."
+  },
+  {
+   "url": "https://www.redaccionmedica.com/autonomias/20261109/galicia-portugal-convierten-la-frontera-en-un-laboratorio-contra-las-enfermedades-cardiovasculares/364642_0.html",
+   "title": "Galicia y Portugal convierten la frontera en un laboratorio contra las ...",
+   "domain": "redaccionmedica.com",
+   "origin": "evidence",
+   "excerpt": "Galicia y Portugal convierten la frontera en un laboratorio contra las enfermedades cardiovasculares New Heart busca trasladar a la práctica clínica un modelo de atención más preventivo, personalizado y apoyado en la innovación Y además: Galicia aprueba un nuevo plan para impulsar el uso del gallego en la sanidad Las enfermedades cardiovasculares son un grave problema de salud pública. En Galicia y el Norte de Portugal fueron en 2023 la primera causa de defunción en mujeres, con un 28 por ciento, y la segunda en hombres, tras los tumores, según el Instituto Nacional de Estadística (INE). Para…"
+  },
+  {
+   "url": "https://www.elperiodico.digital/ciencia/galicia-y-portugal-ensayan-con-new-heart-la-prevencion-cardiaca-528308.html",
+   "title": "Galicia y Portugal ensayan con New Heart la prevención ...",
+   "domain": "elperiodico.digital",
+   "origin": "evidence",
+   "excerpt": "Galicia y Portugal convierten la frontera en un laboratorio contra las enfermedades cardiovasculares La cooperación entre Galicia y Portugal da un nuevo paso en el ámbito de la salud cardiovascular. El proyecto New Heart pretende trasladar a la práctica clínica un modelo de atención más preventivo, personalizado y apoyado en la innovación, con la frontera como espacio de colaboración y ensayo. La iniciativa parte de una realidad compartida: las enfermedades cardiovasculares continúan siendo una de las principales amenazas para la salud de la población. Aunque muchos de sus factores de riesgo…"
+  },
+  {
+   "url": "https://www.saudebemestar.pt/pt/medico/concelho/",
+   "title": "Médicos por Especialidade e Concelho - Saudebemestar.pt",
+   "domain": "saudebemestar.pt",
+   "origin": "evidence",
+   "excerpt": "Saúde Atividade Física Termalismo Saúde Sexual Clínica Cirurgia Geral Cirurgia Plástica Cirurgia Vascular Dermatologia Fisiatria Gastrenterologia Ginecologia e Obstetrícia Oftalmologia Ortopedia Otorrinolaringologia Urologia Medicina Alergologia Cardiologia Endocrinologia Hematologia Estética Medicina Dentária Medicina Interna Nefrologia Neurologia Pediatria Pneumologia Psiquiatria Exames Imagiologia Patologia Clínica Blog Nutrição Psicologia Podologia Terapia da Fala Blog de saúde Médico Médico especialista Especialidade no seu Concelho Marcação de consultas Marcação de Teleconsultas Sobre…"
+  },
+  {
+   "url": "https://www.europapress.es/galicia/noticia-galicia-portugal-impulsan-proyecto-comun-mejorar-prevencion-diagnostico-enfermedades-cardiovasculares-20261109154429.html",
+   "title": "Galicia y Portugal impulsan un proyecto común para mejorar en ...",
+   "domain": "europapress.es",
+   "origin": "evidence",
+   "excerpt": "Archivo - Foto de archivo - LIGHTFIELDSTUDIOS/ ISTOCK - Archivo SANTIAGO DE COMPOSTELA, 9 Nov. (EUROPA PRESS) - El proyecto de cooperación transfronteriza New Heart, el primero entre España y Portugal centrado en el ámbito de las enfermedades cardiovasculares, \"sienta las bases de un modelo de atención integral, preventivo y personalizado\" para mejorar la salud cardíaca en Galicia y el Norte de Portugal. La iniciativa busca avanzar hacia una cardiología que combine la práctica clínica, la Atención Primaria, la innovación tecnológica y la prevención. Los avances del proyecto, desarrollado…"
+  },
+  {
+   "url": "https://www.sergas.gal/Transparencia-e-Goberno-Aberto/Documents/47/PLAN%20GALLEGO%20DE%20ATENCI%C3%93N%20DOMICILIARIA%20EN%20AP%202024-2025_20240306_075825_6569.pdf",
+   "title": "Plan gallego de atención domiciliaria en atención primaria 2024-2025",
+   "domain": "sergas.gal",
+   "origin": "evidence",
+   "excerpt": "el peso de la población en situación de cronicidad en Galicia creció a un porcentaje anual del · 3%, frente al 1,7% a nivel nacional. 16 · PLAN GALLEGO DE ATENCIÓN DOMICILIARIA EN ATENCIÓN PRIMARIA_ 2024-2025 · ATENCIÓN DOMICILIARIA EN EL S"
+  },
+  {
+   "url": "https://www.lavozdegalicia.es/noticia/santiago/2026/11/10/new-heart-une-galicia-portugal-salud-cardiovascular/0003_202611S10C4991.htm",
+   "title": "El proyecto New Heart une Galicia y Portugal y su salud ...",
+   "domain": "lavozdegalicia.es",
+   "origin": "evidence",
+   "excerpt": "Aunque ayer se hizo una primera aproximación, los resultados finales se mostrarán el próximo 19 de noviembre en la Cidade da Cultura 10 nov 2026 . Actualizado a las 05:00 h.José Ramón González Juanatey y Ricardo Fontes Carvalho avanzaron ayer varias claves del proyecto New Heart, que en los últimos dos años conectó Galicia y el Norte de Portugal. El plan, que busca mejorar la salud cardiovascular de manera integral, marca varios retos en el ámbito de la prevención, diagnóstico precoz e incorporación de nuevas tecnologías con IA para la práctica clínica. Aunque ayer se hizo una primera…"
+  }
+ ],
+ "factChecks": [
+  {
+   "claim": "Y dos años después tienen las primeras evidencias para \"sentar las bases de un abordaje que puede ser perfectamente extrapolable a otras regiones de la UE con características comunes a las que comparten Galicia y el norte de Portugal, como la dispersión o el envejecimiento de la población\", señala González Juanatey.",
+   "verdict": "TRUE",
+   "confidence": 0.9439789603768296,
+   "sourceUrls": [
+    "https://www.redaccionmedica.com/autonomias/20261109/galicia-portugal-convierten-la-frontera-en-un-laboratorio-contra-las-enfermedades-cardiovasculares/364642_0.html",
+    "https://www.europapress.es/galicia/noticia-galicia-portugal-impulsan-proyecto-comun-mejorar-prevencion-diagnostico-enfermedades-cardiovasculares-20261109154429.html",
+    "https://www.lavozdegalicia.es/noticia/santiago/2026/11/10/new-heart-une-galicia-portugal-salud-cardiovascular/0003_202611S10C4991.htm",
+    "https://www.gciencia.com/saude/juanatey-o-maior-reto-da-saude-cardiovascular-en-galicia-e-o-envellecemento-activo/",
+    "https://www.mundiario.com/articulo/eurorregion/jose-ramon-gonzalez-juanatey-hace-historia-galicia/20261009195607445868.html"
+   ]
+  },
+  {
+   "claim": "La iniciativa arrancó en 2024 con la meta de conseguir que la cooperación y el empleo de la tecnología permitieran optimizar el acceso al diagnóstico y tratamiento desde Atencíon Primaria, facilitar la detección temprana de los trastornos cardiovasculares o asegurar una atención equitativa.",
+   "verdict": "TRUE",
+   "confidence": 0.7464624370370957,
+   "sourceUrls": [
+    "https://www.elperiodico.digital/ciencia/galicia-y-portugal-ensayan-con-new-heart-la-prevencion-cardiaca-528308.html",
+    "https://www.sergas.gal/Transparencia-e-Goberno-Aberto/Documents/47/PLAN%20GALLEGO%20DE%20ATENCI%C3%93N%20DOMICILIARIA%20EN%20AP%202024-2025_20240306_075825_6569.pdf",
+    "https://empregoengalicia.gal/es/la-xunta-lanza-un-programa-de-cooperacion-con-portugal-de-13-me-para-promover-la-insercion-laboral-de-la-juventud-en-los-mercados-de-galicia-y-el-norte-luso/"
+   ]
+  },
+  {
+   "claim": "\"El programa potencia el papel de los médicos de Atención Primaria y los profesionales de Enfermería en la identificación de individuos de riesgo\", señala el investigador, quien también hace hincapié en otro \"punto fuerte\" del modelo: el desarrollo de un modelo de consulta electrónica que permite \"una mayor y mejor accesibilidad al sistema, sobre todo de los más vulnerables\".",
+   "verdict": "NOT_CHECKED",
+   "confidence": 0.0,
+   "sourceUrls": []
+  },
+  {
+   "claim": "Según explica el especialista, la iniciativa también ha demostrado su capacidad para promover estilos de vida saludables, una base de la prevención cardiaca.",
+   "verdict": "TRUE",
+   "confidence": 0.5568938616003136,
+   "sourceUrls": [
+    "https://www.saudebemestar.pt/pt/medico/concelho/"
+   ]
+  }
+ ],
+ "modelAnswer": {
+  "hallucinationIndex": {
+   "score": 0.0,
+   "summary": "Todas las afirmaciones del texto están respaldadas por fuentes.",
+   "issues": []
+  }
+ }
+}

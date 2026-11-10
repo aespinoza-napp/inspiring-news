@@ -354,6 +354,9 @@ export interface CorrectionMetric {
   score: number;
   summary: string;
   issues: string[];
+  // The review model's own score, when the review set it aside because it
+  // contradicted the model's summary (backend draft_reviewer.follow_the_check).
+  reported?: number | null;
 }
 
 export interface CorrectionReport {

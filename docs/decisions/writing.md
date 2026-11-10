@@ -618,6 +618,35 @@ need not be judged by the model that wrote it, and a whole article with
 its sources overruns `LLM_TIMEOUT`'s 30 s. It shares `/correct`'s
 sentiment and quality analysers.
 
+### The grounding index: what lowers it (2026-11-10)
+
+The New Heart draft (El Mundo, 9 Nov) cited nothing. Both of its factual
+sentences were in its analysed article, and the review gave its grounding
+index 0, with the summary "Todas las afirmaciones del texto están
+respaldadas por fuentes." That was two faults: the uncited cap counted a
+missing citation as a statement from nowhere, and the model read
+"hallucination index" as how much it hallucinated. Now:
+
+- **Only a statement no source says lowers the index.**
+  `grounding.check` is given the excerpt of each source the writer saw.
+  An uncited factual sentence is in source n when every figure of it is
+  there and at least half its content stems are (`grounding.in_source`,
+  the rewrite's `MIN_SOURCE_SHARE`). Same language only.
+- **Uncited but present in a source is a citation issue**, on
+  factConsistency: "Cites no source, though [n] says it - add [n]". It
+  is reported and caps nothing.
+- **The model's score cannot contradict its own summary.** A summary
+  that finds nothing ungrounded, with no exception named
+  (`clean_summary`, English and Spanish), beside a score under 50 means
+  one of the two is wrong. The automatic check decides: the score
+  becomes the share of factual sentences some source says, the model's
+  number is kept in `CorrectionMetric.reported`, and the summary says
+  so (`follow_the_check`). It never lowers a score. A low automatic
+  score is still applied as the ceiling, with its reason, as before.
+
+The draft is `tests/fixtures/drafts/new_heart.json` and scores 100
+(`tests/services/corrector/test_grounding_index.py`).
+
 ### Catalan
 
 A draft can be `ca`; no source is. Three things were checked before
@@ -813,7 +842,7 @@ of them; a new default is a change to `thresholds.py`.
 | Metric | Default | Why |
 |---|---|---|
 | factConsistency | 85 | One fault fails it: a citation to no source costs 20 of the ceiling (`DANGLING_CITATION_PENALTY`), leaving 80 |
-| hallucinationIndex | 85 | Capped at the share of factual sentences that cite a source: one uncited passes among seven or more, fails among six or fewer |
+| hallucinationIndex | 85 | Capped at the share of factual sentences some source says (since 2026-11-10; before, the share that cite one): one in no source passes among seven or more, fails among six or fewer |
 | grammar | 80 | What a reader sees first, and the most common failure measured in Catalan drafts |
 | title, subtitle, style | 70 | The panels' own "good" tier, the colour /corrector and the review already draw at 70. No subtitle is capped at 20, so it always fails |
 | seo | 60 | The least strict of the model's: it costs a reader nothing; an untrue sentence does |

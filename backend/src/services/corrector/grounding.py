@@ -10,7 +10,12 @@ misses:
 - **a factual sentence with no citation.** "Factual" is a heuristic: a
   figure, a month, a unit, or a reporting verb ("announced", "va
   anunciar") from the draft language's lexicon. Opinion and transition
-  sentences have none and are not asked to cite anything.
+  sentences have none and are not asked to cite anything. When the
+  sources' text is given, such a sentence is looked for in each of them
+  (`in_source`): one a source says is a missing citation, `[n]` to add
+  (`uncited_present`); only one no source says is ungrounded
+  (`unsupported`, 2026-11-10 - the New Heart draft cited nothing and every
+  sentence of it was in its analysed article, yet scored 0).
 - **a citation that points nowhere**: `[n]` with no n-th source.
 - **a sentence that repeats a claim the pipeline judged FALSE,
   MISLEADING or UNVERIFIED.** By word overlap with the claim, so it
@@ -76,6 +81,14 @@ class Grounding:
 
     # Sentences that state something checkable and cite nothing.
     uncited: list[str] = field(default_factory=list)
+
+    # Of those, the ones no source says: what lowers the grounding index.
+    # Every uncited sentence when the sources' text was not given.
+    unsupported: list[str] = field(default_factory=list)
+
+    # (sentence, n): an uncited sentence source n says - a citation to add,
+    # not a statement from nowhere.
+    uncited_present: list[tuple[str, int]] = field(default_factory=list)
 
     # (sentence, n) for every [n] with no n-th source.
     dangling: list[tuple[str, int]] = field(default_factory=list)
@@ -310,6 +323,35 @@ def repointed(
     return moved
 
 
+def in_source(sentence: str, source_text: str, language: str) -> bool:
+    """
+    Whether a source says what `sentence` says, without a model: every
+    figure of the sentence is in the source, and at least MIN_SOURCE_SHARE
+    of its content stems are. Same language only, like every term
+    comparison here.
+    """
+
+    terms = _terms(sentence, language)
+
+    if len(terms) < 2:
+        return False
+
+    if not figures(sentence) <= figures(source_text):
+        return False
+
+    return len(terms & _terms(source_text, language)) / len(terms) >= MIN_SOURCE_SHARE
+
+
+def source_saying(sentence: str, sources: dict[int, str], language: str) -> int | None:
+    """The first source, by number, that says `sentence` (`in_source`), or None."""
+
+    for number in sorted(sources):
+        if in_source(sentence, sources[number], language):
+            return number
+
+    return None
+
+
 def stating(body: str, claim: str, lexicon: Lexicon) -> list[str]:
     """
     The body's sentences that state `claim`, by the echo rule: sharing
@@ -334,7 +376,12 @@ def check(
     source_count: int,
     fact_checks: list[DraftFactCheck],
     lexicon: Lexicon,
+    sources: dict[int, str] | None = None,
 ) -> Grounding:
+    """
+    `sources` maps n to the text of source n the writer saw. Without it an
+    uncited factual sentence is always `unsupported`, as before.
+    """
 
     grounding = Grounding()
 
@@ -357,7 +404,15 @@ def check(
             grounding.factual += 1
 
             if not cited:
+
                 grounding.uncited.append(sentence)
+
+                number = source_saying(sentence, sources, lexicon.language) if sources else None
+
+                if number is None:
+                    grounding.unsupported.append(sentence)
+                else:
+                    grounding.uncited_present.append((sentence, number))
 
         terms = _terms(sentence, lexicon.language)
 

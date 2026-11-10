@@ -157,6 +157,11 @@ function MetricGrid({ metrics }: { metrics: Record<string, CorrectionMetric> }) 
                 <ScoreBar label="Score" value={metric.score} />
               )}
               <p className="metric-summary">{metric.summary}</p>
+              {metric.reported != null && (
+                <p className="metric-summary">
+                  The model scored {Math.round(metric.reported)}; the score shown follows the automatic check.
+                </p>
+              )}
               {metric.issues.length > 0 && (
                 <ul className="metric-issues">
                   {metric.issues.map((issue, index) => (
