@@ -67,7 +67,7 @@ src.main:app --port 8001`.
 | Looking for | Go to |
 |---|---|
 | The plan, and what is actually done | `docs/roadmap.md` |
-| Claude Code in this repo: the skills (`/verify`, `/debug-verdict`, `/fact-check-change`, `/iterate-fact-check`, `/audit`, `/commit`) and hooks | `.claude/skills/`, `.claude/hooks/` |
+| Claude Code in this repo: the skills (`/verify`, `/debug-verdict`, `/fact-check-change`, `/iterate-fact-check`, `/audit`, `/commit`, `/write-constructive-article`, `/write-devastating-article`) and hooks | `.claude/skills/`, `.claude/hooks/` |
 | The thesis defence: likely questions, the structural gaps, what to do next | `docs/thesis-defense-brief.md` (3 Nov), `docs/audit-2026-10-28.md` |
 | One article's journey across every stage (round → job → lake → reader → draft) | `/trace` (`frontend/CLAUDE.md`), `GET /trace`, `backend/src/services/trace.py` |
 | Bringing in a WordPress export unverified, to compare on the same articles (lake + graph, not the reader) | `scripts/import_wordpress.py`, `backend/src/services/imports/`, `POST /imports/wordpress` |
@@ -99,7 +99,7 @@ src.main:app --port 8001`.
 | What goes wrong in each part (what to look for, queries, search results, ranking, verification), found by checking claims by hand against the pipeline | `docs/troubleshooting/fact-checking/`, `backend/data/evaluation/experiments/claude-search/` |
 | An agent per part of fact-checking against Claude's blind checks on 20 train claims: one experiment file per part and batch; what to search for a claim | `scripts/troubleshoot.sh`, `backend/src/evaluation/troubleshoot.py`, `docs/troubleshooting/fact-checking/README.md` ("Running it"), `/what-to-search`, `/troubleshoot-fact-check` |
 | An agent iterating on fact-checking (thresholds, prompts, search, model) by a fixed rule, train half only | `/iterate-fact-check`, `cli iterate`, `backend/src/evaluation/iterate.py`, `docs/decisions/evaluation.md` ("The iteration loop") |
-| Writing an article from an analysed one: drafts, review, rewriting, publishing | `docs/decisions/writing.md` |
+| Writing an article from an analysed one: drafts, review, rewriting, publishing; the readers (15-30) and the five parts, and the two writing skills, one per edition (`/write-constructive-article`, `/write-devastating-article`) | `docs/decisions/writing.md` ("Readers and parts"), `.claude/skills/write-*-article/`, `scripts/check_article.py` |
 | Ready-to-post packages: WordPress post files (sent as a draft only with the site's keys), Instagram carousel, stories, TikTok photos; posted by hand | `docs/decisions/writing.md` ("Packages"), `backend/src/services/packages/` |
 | Trending: the signals (Google Trends, r/UpliftingNews...), the lens on /discover, the checked positive angle, the TikTok embed; why TikTok is never scraped | `docs/decisions/trends.md` |
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |

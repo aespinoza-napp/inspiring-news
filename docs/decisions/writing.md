@@ -198,6 +198,51 @@ The pipeline's topic, not the model's, is the draft's `topic`: it is
 what the reader filters by, and a translated one would be a second
 spelling of the same facet.
 
+### Readers and parts (2026-11-10)
+
+Asked by the author: the drafts read as a few simple sentences, and an
+article should say more - why the news matters, whom it reaches, its
+effect on people and on the environment - for readers **aged 15 to 30**.
+The positive edition's newsroom (`article_writer.NEWSROOM`, so the
+rewrite is held to it too) now carries `READERS`:
+
+- plain, direct and warm; every technical term explained from what the
+  sources say about it; open with the people or the place; "you" only
+  to say why it matters to the reader;
+- the body in five parts (`ARTICLE_PARTS`), each under a subheading of
+  the model's own words: **what happened**, **why it matters**, **who it
+  reaches** (people, and the environment, economy or community where the
+  sources say so), **how it works**, **what is still open**;
+- **800 to 1,200 words** (was "400 to 700 words for a general audience"
+  in the default instructions), the length coming from using more of the
+  sources, never from padding.
+
+Extending is where a model invents: an effect on people or the
+environment *sounds* likely and is in no source. So the closed world is
+unchanged and comes after the readers, and the prompt says what to do
+when the sources are silent on a part: leave it out, or say in one
+sentence it is not yet known. To give the longer article something to
+say, related excerpts went from 1,500 to 2,500 characters and evidence
+excerpts from 600 to 1,200; `prompt_max_chars` is unchanged (30,000,
+sized for a 16k context), so on a long story `fit_excerpts` cuts them in
+proportion as before. The editor's instructions still win on length and
+audience. The review's `style` criterion names the readers too. The
+Devastating edition keeps its own voice and its old default
+(`DEFAULT_INSTRUCTIONS_BY_EDITION`).
+
+Each edition's style is also a skill, for Claude writing or judging an
+article from a draft's sources: `/write-constructive-article` (these
+readers and parts) and `/write-devastating-article` (the narrator's rules
+A-E, no fact-checks, no set parts), in `.claude/skills/`. Both check what
+they write with `scripts/check_article.py` - the app's own `draft_checks`
+and grounding checks, plus the safe-messaging line a Devastating story
+would get. `tests/services/writer/test_article_writer_readers.py` holds
+the constructive skill's parts equal to `ARTICLE_PARTS` and the
+Devastating skill's rules equal to `DEVASTATING_NEWSROOM`'s. **Not measured yet:** no draft has been written live
+under these rules; the writing evaluation (`src/evaluation/writing.py`)
+keys its runs by the prompt's hash, so its earlier runs are of the old
+prompt.
+
 ### Checked without a model (`draft_checks.py`)
 
 **Repaired** before saving: the Markdown reduced to what `ArticleBody`
@@ -230,11 +275,11 @@ an analysis's cache key or an evaluation's config id). Defaults are
 | `related_max_sources` | 5 | 0 searches nothing |
 | `related_min_similarity` | 0.80 | `RELATEDNESS_THRESHOLD` |
 | `related_max_age_days` | 30 | before the story; later ones are kept |
-| `related_excerpt_chars` | 1,500 | |
+| `related_excerpt_chars` | 2,500 | 1,500 before 2026-11-10 |
 | `analysed_excerpt_chars` | 6,000 | |
 | `evidence_max_sources` | 6 | |
-| `evidence_excerpt_chars` | 600 | |
-| `max_output_tokens` | 4,096 | a ceiling, so a looping model stops |
+| `evidence_excerpt_chars` | 1,200 | 600 before 2026-11-10 |
+| `max_output_tokens` | 6,144 | a ceiling, so a looping model stops; 4,096 before 2026-11-10 |
 | `prompt_max_chars` | 30,000 | assumes a 16k-token context - see below |
 
 Infrastructure, not per draft: `WRITER_LLM_MODEL`, `WRITER_LLM_TIMEOUT`.

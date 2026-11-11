@@ -129,7 +129,12 @@ run for its drafts - it looks for constructive angles.
 
 **Writing** (`article_writer.DEVASTATING_NEWSROOM`): the narrator's voice
 and rules A-E (E: never the hopeful register, the voice from the first
-line), then `CLOSED_WORLD_RULES` word for word.
+line), then `CLOSED_WORLD_RULES` word for word. Since 2026-11-10 the
+constructive edition's writer has readers (15-30) and five set parts; this
+one does not, and keeps its 400-700-word default. Claude writes or judges
+one with `/write-devastating-article`, which states rules A-E as the
+writer is given them (a test holds them equal); the constructive edition
+has its own skill.
 
 **Review and rewriting** (`draft_reviewer.review_system_prompt`,
 `correction_system_prompt`): the review used to ask every draft for

@@ -206,7 +206,7 @@ def test_the_rewrite_uses_the_writers_model_and_its_cap():
     rewritten = rewriter.rewrite(reviewed_draft())
 
     assert rewritten.model == WRITER_MODEL
-    assert rewriter.writer.llm.max_tokens == [4096]
+    assert rewriter.writer.llm.max_tokens == [6144]  # WRITER_MAX_OUTPUT_TOKENS since 2026-11-10
 
 
 def test_an_unreachable_model_is_the_writers_error():

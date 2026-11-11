@@ -361,17 +361,22 @@ class Settings(BaseSettings):
     # How much of each source the writer sees, in characters. The writer
     # sees excerpts, never whole pages: the excerpt is also what a review
     # can hold the draft to. The analysed article gets more - it is the
-    # story the draft is about.
-    WRITER_RELATED_EXCERPT_CHARS: int = 1500
+    # story the draft is about. Raised 2026-11-10 (related 1,500, evidence
+    # 600) when the article grew to 800-1,200 words with a part on whom the
+    # news reaches: a longer article needs more of its sources to say,
+    # not more words for the same facts. The prompt's ceiling below still
+    # cuts them in proportion when they do not fit.
+    WRITER_RELATED_EXCERPT_CHARS: int = 2500
     WRITER_ANALYSED_EXCERPT_CHARS: int = 6000
     # The evidence behind the analysed article's verdicts: cited sources
     # only, a few lines each around the passage the verdict was judged on.
     WRITER_EVIDENCE_MAX_SOURCES: int = 6
-    WRITER_EVIDENCE_EXCERPT_CHARS: int = 600
+    WRITER_EVIDENCE_EXCERPT_CHARS: int = 1200
     # The writer's answer, in tokens: an article of 600-900 words plus its
-    # metadata is ~1,500-2,500 in Catalan or Spanish. A ceiling, so a small
-    # model stuck repeating itself stops instead of running to the timeout.
-    WRITER_MAX_OUTPUT_TOKENS: int = 4096
+    # metadata is ~1,500-2,500 in Catalan or Spanish, so 800-1,200 words
+    # (since 2026-11-10) is up to ~3,500. A ceiling, so a small model stuck
+    # repeating itself stops instead of running to the timeout.
+    WRITER_MAX_OUTPUT_TOKENS: int = 6144
     # The whole prompt, in characters (~3.5-5 per token in Catalan,
     # Spanish and English). Excerpts are shortened to fit. Sized for a
     # model served with a 16k-token context, which must be configured:

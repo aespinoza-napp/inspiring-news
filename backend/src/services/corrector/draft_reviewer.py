@@ -188,7 +188,9 @@ REVIEW_SYSTEM_PROMPT = (
     "fact-checks judged UNVERIFIED stated as established fact.\n"
     "- style: Inspiring's voice. Constructive and hopeful but sober; a precise "
     "news register; active voice; no sensationalism, promotional tone or "
-    "moralising; follows the editor's instructions.\n\n"
+    "moralising; written for readers aged 15 to 30 (plain words, every technical "
+    "term explained, the people the story reaches in view); follows the editor's "
+    "instructions.\n\n"
     "In every issue, quote the exact words of the draft it is about. Write the "
     "summaries and issues in English, quoting the draft in its own language. "
     "List only real problems; an empty list is fine.\n\n"
@@ -225,7 +227,9 @@ REVIEW_STYLE = {
     "positive": (
         "- style: Inspiring's voice. Constructive and hopeful but sober; a precise "
         "news register; active voice; no sensationalism, promotional tone or "
-        "moralising; follows the editor's instructions."
+        "moralising; written for readers aged 15 to 30 (plain words, every technical "
+        "term explained, the people the story reaches in view); follows the editor's "
+        "instructions."
     ),
     "devastating": (
         "- style: Devastating News' voice. Ironic, sardonic and self-important: the "

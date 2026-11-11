@@ -68,10 +68,65 @@ VERDICT_RULES = {
 # rewrite to the very rules the article was written under rather than to
 # a copy that drifts: who the model is, the closed-world rules, and - the
 # writer's own - the task and the answer's shape.
-NEWSROOM = """\
+NEWSROOM_ROLE = """\
 You are a journalist at Inspiring News, a publication of constructive, solutions-focused \
 journalism: it reports what is being done about a problem, what works, for whom and with \
 what evidence - accurately, without hype, and without hiding limits or setbacks."""
+
+# The positive article's parts, in order (2026-11-10, asked by the author:
+# the drafts read as a few simple sentences, and a reader should come away
+# knowing why the news matters and whom it reaches). Each part is written
+# from the sources only: "who it reaches" is where a model is most tempted
+# to guess an effect on people or the environment, so the prompt says what
+# to do when the sources are silent. The skill
+# .claude/skills/write-constructive-article/SKILL.md lists the same parts,
+# by these names, and .claude/skills/write-devastating-article/SKILL.md
+# states DEVASTATING_NEWSROOM's rules A-E;
+# tests/services/writer/test_article_writer_readers.py holds both equal.
+ARTICLE_PARTS = (
+    ("What happened", "the news in the first paragraph, and the people or place behind it"),
+    ("Why it matters", "the problem it answers: how big it is, how long it has gone on, what was tried before"),
+    (
+        "Who it reaches",
+        "what changes for people - patients, students, workers, families, a town - and, where the "
+        "sources say so, for the environment, the economy or the community: concrete examples, "
+        "figures and voices from the sources",
+    ),
+    ("How it works", "the method, the evidence that it works, what it costs, who pays and who takes part"),
+    ("What is still open", "limits, risks, criticism, what has not been shown yet, and what comes next"),
+)
+
+ARTICLE_WORDS = "800 to 1,200"
+
+READERS = (
+    """
+
+Your readers are 15 to 30 years old. Write for them:
+- Plain, direct and warm. Short paragraphs, sentences of varied length, active verbs. Explain \
+every technical term, institution or acronym in plain words the first time it appears, using \
+what the sources say about it. No slang, no emojis, no talking down.
+- Human first. Open with the people or the place the story is about, as the sources describe \
+them: who is affected and what changes in their day. Address the reader as "you" (in Spanish, \
+"tú") only to say why the story matters to them, never to tell them what to feel.
+- Deeper than the news. A reader should finish knowing what happened, why it matters, whom it \
+reaches and what is still open.
+
+The body, in this order, each part under a "## " subheading of your own words (not these \
+labels):
+"""
+    + "\n".join(f"{number}. {name}: {what}." for number, (name, what) in enumerate(ARTICLE_PARTS, start=1))
+    + f"""
+Where the sources say nothing about a part - the effect on the environment, say, or what comes \
+next - leave that part out, or say in one plain sentence that it is not yet known. Never fill it \
+from your own knowledge or with a guess: an effect no source states is invented, however likely \
+it sounds.
+
+Length: {ARTICLE_WORDS} words unless the EDITOR'S INSTRUCTIONS say otherwise. The length comes \
+from using more of the sources - their details, figures, examples and the words of the people in \
+them - never from repeating yourself, padding or adding what they do not say."""
+)
+
+NEWSROOM = NEWSROOM_ROLE + READERS
 
 CLOSED_WORLD_RULES = """\
 Rules. All of them, always:
@@ -160,7 +215,7 @@ from two sources [2][3].", \
 "metadata": {"slug": "words-joined-by-hyphens", "seoDescription": "at most 155 characters", \
 "keywords": ["3 to 8 keywords"], "tags": ["2 to 5 tags"], "topic": "..."}}"""
 
-# The positive edition's, as it always was: the evaluation hashes it
+# The positive edition's (its readers and parts since 2026-11-10): the evaluation hashes it
 # (src/evaluation/writing.py).
 SYSTEM_PROMPT = system_prompt("positive")
 
@@ -210,7 +265,20 @@ def with_safe_messaging(body: str, language: str, edition: str, *texts: str | No
 # stated as fact in both languages tried, and not one citation.
 NOT_TO_STATE = {"FALSE", "MISLEADING", "UNVERIFIED", "NOT_CHECKED"}
 
-DEFAULT_INSTRUCTIONS = "(none given: a news article of 400 to 700 words for a general audience)"
+# Before 2026-11-10: "a news article of 400 to 700 words for a general
+# audience". The readers and the parts are in the system prompt now
+# (READERS); this only says nothing was asked on top of them.
+DEFAULT_INSTRUCTIONS = (
+    f"(none given: a full article of {ARTICLE_WORDS} words in the parts above, "
+    "for readers aged 15 to 30)"
+)
+
+# The Devastating edition keeps its own voice and none of READERS: its
+# default is the one every draft had before.
+DEFAULT_INSTRUCTIONS_BY_EDITION = {
+    "positive": DEFAULT_INSTRUCTIONS,
+    "devastating": "(none given: a news article of 400 to 700 words for a general audience)",
+}
 
 # The analysed article's excerpt is never cut below this to fit the
 # budget - it is the story; the other sources' never below MIN_EXCERPT.
@@ -281,6 +349,7 @@ def user_prompt(
     instructions: str,
     notes: list[str],
     trend: DraftTrend | None = None,
+    edition: str = "positive",
 ) -> str:
     """Everything the writer is given, numbered as the draft will cite it."""
 
@@ -289,7 +358,8 @@ def user_prompt(
         "",
         "EDITOR'S INSTRUCTIONS:",
         "<<<",
-        (instructions or "").strip() or DEFAULT_INSTRUCTIONS,
+        (instructions or "").strip()
+        or DEFAULT_INSTRUCTIONS_BY_EDITION.get(edition, DEFAULT_INSTRUCTIONS),
         ">>>",
         "",
         f'THE STORY: the analysed article is source [1], "{article.headline}" ({article.source_name}).',
@@ -549,7 +619,7 @@ class ArticleWriter:
         thresholds = thresholds or WriterThresholds()
 
         def size(candidates: list[DraftSource]) -> int:
-            return len(system_prompt(edition)) + len(user_prompt(article, candidates, fact_checks, language, instructions, notes, trend))
+            return len(system_prompt(edition)) + len(user_prompt(article, candidates, fact_checks, language, instructions, notes, trend, edition))
 
         return fit_excerpts(sources, size, thresholds.prompt_max_chars)
 
@@ -602,7 +672,7 @@ class ArticleWriter:
         thresholds = thresholds or WriterThresholds()
         system = system_prompt(edition)
 
-        prompt = user_prompt(article, sources, fact_checks, language, instructions, notes or [], trend)
+        prompt = user_prompt(article, sources, fact_checks, language, instructions, notes or [], trend, edition)
 
         logger.info(
             "Writing %s in %s with %s: %d sources, %d fact-checks, %d prompt characters",
