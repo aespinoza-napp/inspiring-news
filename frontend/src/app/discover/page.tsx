@@ -1260,6 +1260,11 @@ export default function DiscoverPage() {
                             {` · fits ${candidate.otherGroup} better, ranked after the rest`}
                           </span>
                         )}
+                        {candidate.repost && (
+                          <span title="This outlet mostly republishes what others reported - agency copy, another outlet's study or interview. Its score is lowered, so the outlet that did the work comes first; look for the original before choosing it.">
+                            {" · reposts others' reporting, ranked lower"}
+                          </span>
+                        )}
                       </div>
                       {candidate.trend && <TrendLine trend={candidate.trend} />}
                       {candidate.summary && <p className="candidate-summary">{candidate.summary}</p>}

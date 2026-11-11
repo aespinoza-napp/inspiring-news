@@ -478,6 +478,7 @@ class IngestionService:
             standing = ranking.Standing(
                 reliability=source.reliability_index,
                 positive_editorial=source.positive_editorial and not devastating,
+                reposts=source.reposts,
                 judged=choice.judged,
                 kept=choice.judged - len(choice.screened),
             )
@@ -514,6 +515,11 @@ class IngestionService:
                         if reading else None
                     ),
                 }
+
+                # Its outlet mostly republishes others' reporting: ranked
+                # lower (ranking.REPOST_FACTOR), and the page says why.
+                if source.reposts:
+                    candidate["repost"] = True
 
                 candidates.append(candidate)
                 to_rank.append((candidate, reading, standing, fit))

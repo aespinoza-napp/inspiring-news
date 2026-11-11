@@ -1122,3 +1122,30 @@ def test_an_emphasis_outside_zero_to_one_is_refused_before_any_feed_is_read():
     ingestion.discover_candidates(["health"], topic_emphasis=1.0)
 
     assert read == ["nature"]
+
+
+def test_a_reposters_candidate_is_marked_and_ranked_after_an_equal_original():
+    """2026-11-10: Infobae and 20minutos mostly republish others' reporting."""
+
+    from src.services.selection.ranking import REPOST_FACTOR
+
+    original = build_source(id="sinc", name="SINC", groups=["science"], reliability_index=0.7)
+    reposter = build_source(id="20minutos", name="20minutos", groups=["science"], reliability_index=0.7, reposts=True)
+
+    screen = FakeScreen(impact={"estudio-a": 0.50, "estudio-b": 0.50})
+
+    round_ = screened_service(
+        {
+            "20minutos": ["https://www.20minutos.es/ciencia/estudio-a"],
+            "sinc": ["https://www.agenciasinc.es/noticias/estudio-b"],
+        },
+        screen,
+        sources=[reposter, original],
+    ).discover_candidates(["science"], per_source=1)
+
+    first, second = round_["candidates"]
+
+    assert first["source"] == "sinc" and "repost" not in first
+    assert second["source"] == "20minutos" and second["repost"] is True
+    assert second["rank"]["repostFactor"] == REPOST_FACTOR
+    assert second["rank"]["score"] < first["rank"]["score"]

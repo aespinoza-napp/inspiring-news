@@ -8,6 +8,7 @@ from src.services.selection.ranking import (
     NEWS_RANGE,
     TOPIC_RANGE,
     RECORD_PRIOR,
+    REPOST_FACTOR,
     SAME_STORY,
     WITHOUT_TOPIC,
     Standing,
@@ -384,3 +385,58 @@ def test_a_round_records_how_it_was_ranked():
 
     assert unweighed["weights"]["topic"] == 0.0
     assert unweighed["topicEmphasis"]["applied"] is None and unweighed["topicEmphasis"]["asked"] == 0.9
+
+
+# ----------------------------------------------------------------------
+# Reposts (2026-11-10): outlets that republish what others reported
+# ----------------------------------------------------------------------
+
+
+def test_a_repost_scores_lower_than_the_same_story_from_an_outlet_that_did_the_work():
+
+    original = rank(reading(MIDDLE), Standing(reliability=0.7, judged=10, kept=8), fit=0.0)
+    repost = rank(reading(MIDDLE), Standing(reliability=0.7, judged=10, kept=8, reposts=True), fit=0.0)
+
+    assert repost["score"] == pytest.approx(original["score"] * REPOST_FACTOR, abs=1e-3)
+    assert repost["score"] < original["score"]
+    assert repost["repostFactor"] == REPOST_FACTOR
+
+    # Its parts are what they are; only the score is lowered.
+    assert {key: repost[key] for key in ("news", "topic", "record", "reliability")} == {
+        key: original[key] for key in ("news", "topic", "record", "reliability")
+    }
+
+
+def test_an_original_keeps_the_shape_every_recorded_round_has():
+
+    assert "repostFactor" not in rank(reading(MIDDLE), Standing(reliability=0.7))
+
+
+def test_a_repost_stays_in_zero_to_one_and_is_lowered_not_dropped():
+
+    best = rank(reading(0.95), Standing(reliability=1.0, judged=10, kept=10, reposts=True), fit=1.0)
+
+    assert 0.0 < best["score"] <= REPOST_FACTOR
+    assert 0.0 < REPOST_FACTOR < 1.0
+
+
+def test_one_story_from_an_original_and_a_repost_leads_with_the_original():
+
+    standing = Standing(reliability=0.7, judged=10, kept=8)
+
+    candidates = [
+        {"url": "https://www.20minutos.es/a", "rank": rank(reading(MIDDLE), Standing(**{**standing.__dict__, "reposts": True}))},
+        {"url": "https://elpais.com/a", "rank": rank(reading(MIDDLE), standing)},
+    ]
+
+    vector = np.ones(4) / 2.0
+
+    placed = ordered(candidates, {}, {}, {candidate["url"]: vector for candidate in candidates})
+
+    assert [candidate["url"] for candidate in placed] == ["https://elpais.com/a", "https://www.20minutos.es/a"]
+    assert placed[1]["sameStoryAs"] == "https://elpais.com/a"
+
+
+def test_the_round_records_the_repost_factor():
+
+    assert described(None, None)["repostFactor"] == REPOST_FACTOR

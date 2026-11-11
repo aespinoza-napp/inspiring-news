@@ -18,6 +18,11 @@ reliability_index: 0.7
 
 enabled: true
 
+# Mostly republishes agency copy and other outlets' stories - the study or
+# the interview is someone else's: listed, ranked lower and marked as a
+# repost on /discover (src/models/core/source.py, 2026-11-10).
+reposts: true
+
 requires_javascript: false
 
 tags:

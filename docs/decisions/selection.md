@@ -343,6 +343,37 @@ it moves 18 of the 34 of another group and 10 of the 115 of the round's,
 each of those a story whose first group is another. The fit is recorded
 with each candidate's reading (`groupFit`).
 
+## Reposts, lower (2026-11-10)
+
+Asked by the author: some outlets mostly **republish what others
+reported** - agency copy, another outlet's story, a study they did not do
+or an interview they did not hold. The story may be good; the outlet did
+not do the work, and the one that did should come first. Named as such:
+**Infobae and 20minutos** (`reposts: true` in their YAML; the set is
+pinned by `tests/repositories/test_source_repository.py`, so flagging
+another is a decision). BBC Future, Vogue and The Conversation were
+considered and are not: they report or commission their own.
+
+- **Lowered, never dropped.** A repost's score is its parts' score times
+  `REPOST_FACTOR` (0.8, `selection/ranking.py`), recorded on the
+  candidate's rank as `repostFactor` and in the round's description. The
+  parts themselves are unchanged, so a refit still reads them. A product
+  keeps the score in [0, 1] and the weights summing to 1; the factor is a
+  module constant like `SAME_STORY` and `GROUP_FIT`, not a threshold.
+- **The original leads the story.** When an original and a repost of the
+  same story are both in the round, the original scores higher, so
+  `one_per_story` makes the repost the repeat (`sameStoryAs`).
+- **Said, on the page and to the model.** The candidate carries `repost:
+  true`; `/discover` says "reposts others' reporting, ranked lower", with
+  a hint to look for the original; the AI selection's list adds a
+  "Repost:" line telling it to prefer the original when it is listed.
+- **Reasoned, not fitted.** 0.8 moves a typical kept story (0.6-0.7)
+  below a comparable original without burying a repost of a story nobody
+  else in the round has. No labelled round has measured it yet.
+- **Not touched:** the outlets' reliability as evidence in a fact-check,
+  and a trending round, whose standing is the signal's, not the outlet's
+  (an Infobae link a trend brings in is not marked).
+
 ## Positive impact or the topic: the person's call
 
 Added 2026-10-13, asked for by the person running discovery: how much a

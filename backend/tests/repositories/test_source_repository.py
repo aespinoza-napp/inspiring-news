@@ -75,3 +75,13 @@ def test_source_names_are_read_as_utf_8_on_every_platform():
 
     assert repository.get("el_pais").name == "El País"
     assert "El País" in {source.name for source in repository.list()}
+
+
+def test_only_the_outlets_named_as_reposters_are_flagged():
+    # 2026-11-10, the author's call: Infobae and 20minutos mostly republish
+    # what others reported. Another outlet flagged here is a decision, not
+    # a side effect, so the set is pinned.
+
+    flagged = {source.id for source in SourceRepository().list() if source.reposts}
+
+    assert flagged == {"infobae", "20minutos"}

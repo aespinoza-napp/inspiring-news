@@ -78,6 +78,14 @@ the services that rank are long-lived singletons. None means
 DEFAULT_TOPIC_EMPHASIS. A round with no topic signal - every topic asked
 for, or nothing read - has nothing to weigh, and is ranked at
 WITHOUT_TOPIC whatever was asked.
+
+**Reposts, lower** (2026-11-10, asked by the author). Some outlets mostly
+republish what others reported - agency copy, another outlet's study or
+interview - and do none of the reporting themselves (Infobae and
+20minutos: `reposts: true` in their YAML). Their candidates' scores are
+multiplied by REPOST_FACTOR and marked `repost`: still listed, never
+dropped, but the outlet that did the work comes first when both have the
+story, and `one_per_story` then makes the repost the repeat.
 """
 
 from __future__ import annotations
@@ -170,6 +178,14 @@ SAME_STORY = 0.75
 # a Science round).
 GROUP_FIT = -0.05
 
+# A repost's score, as a share of what its parts give (`reposts` in the
+# source's YAML). Reasoned, not fitted: a fifth off moves a typical kept
+# story (0.6-0.7) below a comparable original by more than the measured
+# rounds' spread between neighbours, without burying a repost of a story
+# nobody else in the round has. A product keeps the score in [0, 1] and
+# the weights summing to 1.
+REPOST_FACTOR = 0.8
+
 
 @dataclass(frozen=True)
 class Standing:
@@ -178,6 +194,9 @@ class Standing:
     reliability: float
 
     positive_editorial: bool = False
+
+    # The source mostly republishes what others reported (REPOST_FACTOR).
+    reposts: bool = False
 
     # This round: how many of the source's newest items the screen read,
     # and how many of those it kept.
@@ -278,13 +297,21 @@ def rank(
     topic = topic_part(fit)
     record = record_part(standing)
 
-    return {
-        "score": round(score(news, topic, record, standing.reliability, weights(emphasis)), 3),
+    total = score(news, topic, record, standing.reliability, weights(emphasis))
+
+    ranked = {
+        "score": round(total * REPOST_FACTOR if standing.reposts else total, 3),
         "news": None if news is None else round(news, 3),
         "topic": None if topic is None else round(topic, 3),
         "record": round(record, 3),
         "reliability": standing.reliability,
     }
+
+    # Only on a repost, so every round recorded before keeps its shape.
+    if standing.reposts:
+        ranked["repostFactor"] = REPOST_FACTOR
+
+    return ranked
 
 
 def applied_emphasis(asked: float | None, signal: bool) -> float | None:
@@ -315,6 +342,7 @@ def described(asked: float | None, applied: float | None) -> dict:
         "topicEmphasis": {"asked": asked, "applied": applied, "default": DEFAULT_TOPIC_EMPHASIS},
         "sameStory": SAME_STORY,
         "groupFit": GROUP_FIT,
+        "repostFactor": REPOST_FACTOR,
     }
 
 

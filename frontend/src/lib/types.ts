@@ -768,6 +768,8 @@ export interface Candidate {
   sameStoryAs?: string;
   /** Nearer a topic of this other group than of the round's: placed after the candidates that fit. */
   otherGroup?: string;
+  /** Its outlet mostly republishes what others reported (Infobae, 20minutos): ranked lower. */
+  repost?: boolean;
   /** In a trending round: the trend this article explains. */
   trend?: TrendCard;
 }

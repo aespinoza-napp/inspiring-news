@@ -127,3 +127,13 @@ def test_an_unreachable_model_fails_the_selection_rather_than_picking_from_part_
 
     with pytest.raises(LLMUnavailableError):
         AISelector(TitleScoringLLM(answer=unreachable)).select([candidate(9)], ["health"], limit=5)
+
+
+def test_the_model_is_told_which_candidates_are_reposts():
+
+    repost = {**candidate(1, "Un estudio halla"), "repost": True}
+
+    text = prompt([repost, candidate(2, "Otro")], ["science"])
+
+    assert text.count("Repost:") == 1
+    assert text.index("Repost:") < text.index("2. [")

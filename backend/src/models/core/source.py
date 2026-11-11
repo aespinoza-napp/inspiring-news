@@ -124,6 +124,15 @@ class NewsSource(BaseModel):
     # jobs story as "crime" (src/services/selection/mission_screen.py).
     positive_editorial: bool = False
 
+    # An outlet that mostly republishes what others reported - agency copy,
+    # another outlet's story, a study it did not do or an interview it did
+    # not hold - rather than doing the reporting itself (2026-11-10, asked
+    # by the author: Infobae and 20minutos). Its candidates are still
+    # listed, ranked lower (selection/ranking.py, REPOST_FACTOR) and marked
+    # `repost`, so the outlet that did the work comes first when both have
+    # the story. Its rating as evidence is unchanged.
+    reposts: bool = False
+
     metadata: dict = Field(default_factory=dict)
 
     @field_validator("sections")

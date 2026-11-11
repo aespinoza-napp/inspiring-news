@@ -303,6 +303,12 @@ def prompt(batch: list[dict], groups: list[str], edition: str = "positive") -> s
         if trend:
             lines.append(f"   Trending: {trend}")
 
+        # The outlet republishes others' reporting (src/models/core/
+        # source.py, `reposts`): the model is told, so that it too prefers
+        # the outlet that did the work when both are in the list.
+        if candidate.get("repost"):
+            lines.append("   Repost: this outlet republishes what others reported; prefer the original if it is listed.")
+
     return "\n".join(lines)
 
 
