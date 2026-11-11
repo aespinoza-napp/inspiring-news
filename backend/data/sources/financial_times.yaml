@@ -1,0 +1,41 @@
+# Added 2026-11-10 (asked by the author), disabled: 403 to a plain fetch,
+# and the headless browser gets only the paywall's first ~1,000
+# characters - a standfirst, not an article to check. Rated as evidence;
+# never ingested.
+
+id: financial_times
+
+name: Financial Times
+
+base_url: https://www.ft.com
+
+rss_url: https://www.ft.com/rss/home
+
+search_url: https://www.ft.com/search?q={query}
+
+language: en
+
+country: UK
+
+source_type: news
+
+reliability_index: 0.9
+
+enabled: false
+
+requires_javascript: false
+
+tags:
+  - economy
+  - business
+  - climate
+
+groups:
+  - society
+  - environment
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

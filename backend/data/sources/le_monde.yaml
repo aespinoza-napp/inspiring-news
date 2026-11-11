@@ -1,0 +1,44 @@
+# Added 2026-11-10 (asked by the author): the English edition's feed.
+# Disabled: each article came back as a 315-character page (the
+# subscription wall), to the plain fetch and to the headless browser.
+# Rated as evidence; never ingested. One source per domain: lemonde.fr
+# is rated here for the French edition's pages too.
+
+id: le_monde
+
+name: Le Monde (in English)
+
+base_url: https://www.lemonde.fr
+
+rss_url: https://www.lemonde.fr/en/rss/une.xml
+
+search_url: https://www.lemonde.fr/en/search/?search_keywords={query}
+
+language: en
+
+country: FR
+
+source_type: news
+
+reliability_index: 0.9
+
+enabled: false
+
+requires_javascript: false
+
+tags:
+  - world
+  - culture
+  - environment
+
+groups:
+  - society
+  - culture
+  - environment
+  - science
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

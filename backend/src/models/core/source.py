@@ -57,6 +57,13 @@ class NewsSource(BaseModel):
 
     rss_url: Optional[HttpUrl] = None
 
+    # More feeds of the same outlet, read with `rss_url` (2026-11-10). One
+    # source per domain is the rule (reliability and posted-URL
+    # recognition look a source up by domain), so a second section of an
+    # outlet with its own feed - BBC Future on bbc.com - is a feed of that
+    # outlet's source, not a source of its own.
+    extra_feeds: list[HttpUrl] = Field(default_factory=list)
+
     # A Google News sitemap: every article of the last two days with its
     # title and publication time, for publishers whose feed has died
     # (CNN's stopped in 2024). Read when the feed finds nothing.

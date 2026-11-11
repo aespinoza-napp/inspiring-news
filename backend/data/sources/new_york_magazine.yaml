@@ -1,0 +1,40 @@
+# Added 2026-11-10 (asked by the author). Checked that day: its feed
+# gives article links and two sample articles extract with title, author
+# and date (scripts' SourceCheckService, the /sources page's check).
+
+id: new_york_magazine
+
+name: New York Magazine
+
+base_url: https://nymag.com
+
+rss_url: https://feeds.feedburner.com/nymag/intelligencer
+
+search_url: https://nymag.com/search.html?q={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.82
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - society
+  - culture
+  - cities
+
+groups:
+  - society
+  - culture
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

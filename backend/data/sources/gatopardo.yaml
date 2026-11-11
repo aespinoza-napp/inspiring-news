@@ -1,0 +1,39 @@
+# Added 2026-11-10 (asked by the author). Checked: both sample articles
+# extract; a magazine issue page has no author.
+
+id: gatopardo
+
+name: Gatopardo
+
+base_url: https://gatopardo.com
+
+rss_url: https://gatopardo.com/feed/
+
+search_url: https://gatopardo.com/?s={query}
+
+language: es
+
+country: MX
+
+source_type: news
+
+reliability_index: 0.8
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - culture
+  - society
+  - long-form
+
+groups:
+  - culture
+  - society
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

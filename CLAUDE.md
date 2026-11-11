@@ -322,7 +322,7 @@ Phase 1.
   (rejections too), and the job store, the cache and the vector store match
   an article by host and path, not by the URL as typed - which assumes no
   source names its articles by query string.
-- **Only the 37 configured domains have a real reliability rating**; every
+- **Only the configured domains (65 YAMLs since 2026-11-10; 37 at the audit) have a real reliability rating**; every
   other domain gets the default and is flagged `reliability_known: false`.
 - **The LLM's accuracy is measured only on labels nobody has reviewed.**
   X-Fact's pilot (29.7%) and the custom set's test half (51-56%) are

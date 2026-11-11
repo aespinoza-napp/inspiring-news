@@ -1,0 +1,41 @@
+# Added 2026-11-10 (asked by the author). Publishes positive news only,
+# but not marked `positive_editorial` yet: screened like any outlet until
+# its feed has been read for a while.
+
+id: cuentame_algo_bueno
+
+name: Cuéntame algo bueno
+
+base_url: https://www.cuentamealgobueno.com
+
+rss_url: https://www.cuentamealgobueno.com/feed/
+
+search_url: https://www.cuentamealgobueno.com/?s={query}
+
+language: es
+
+country: ES
+
+source_type: blog
+
+reliability_index: 0.65
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - community
+  - solutions
+  - society
+
+groups:
+  - society
+  - culture
+  - environment
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

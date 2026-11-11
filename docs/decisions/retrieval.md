@@ -321,5 +321,5 @@ probe reports the share.
   design.
 - **Accuracy is still unmeasured.** There is no labelled set, so the
   threshold defaults are reasoned, not fitted.
-- **Only the 37 configured domains have a real reliability rating**
+- **Only the configured domains have a real reliability rating** (37 then; 65 YAMLs since 2026-11-10)
   (36 until The Optimist Daily was added on 2026-10-09).

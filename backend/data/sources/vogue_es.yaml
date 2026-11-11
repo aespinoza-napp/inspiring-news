@@ -1,0 +1,39 @@
+# Added 2026-11-10 (asked by the author). Checked that day: its feed
+# gives article links and two sample articles extract with title, author
+# and date (scripts' SourceCheckService, the /sources page's check).
+
+id: vogue_es
+
+name: Vogue España
+
+base_url: https://www.vogue.es
+
+rss_url: https://www.vogue.es/feed/rss
+
+search_url: https://www.vogue.es/search?q={query}
+
+language: es
+
+country: ES
+
+source_type: news
+
+reliability_index: 0.72
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - fashion
+  - culture
+  - beauty
+
+groups:
+  - culture
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

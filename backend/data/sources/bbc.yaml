@@ -6,6 +6,12 @@ base_url: https://www.bbc.com
 
 rss_url: http://feeds.bbci.co.uk/news/rss.xml
 
+# BBC Future (science, health, environment, ideas), read with the news
+# feed, interleaved: bbc.com is one domain, so it is a feed of this source
+# rather than a source of its own (src/models/core/source.py, 2026-11-10).
+extra_feeds:
+  - https://www.bbc.com/future/feed.rss
+
 search_url: https://www.bbc.co.uk/search?q={query}
 
 language: en

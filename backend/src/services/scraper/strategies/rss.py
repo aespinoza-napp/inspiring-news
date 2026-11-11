@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
 import feedparser
+from logging import getLogger
 
 from src.models.core.source import NewsSource
 from src.services.scraper.fetcher import Fetcher
@@ -403,7 +404,25 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
         if not source.rss_url:
             return []
 
-        return feedparser.parse(self.fetcher.get(str(source.rss_url)).html).entries
+        entries = feedparser.parse(self.fetcher.get(str(source.rss_url)).html).entries
+
+        if not source.extra_feeds:
+            return entries
+
+        return _interleaved([entries, *(self._extra(source, str(feed)) for feed in source.extra_feeds)])
+
+    def _extra(self, source: NewsSource, feed: str) -> list:
+        """
+        One of `extra_feeds`' items. A failure is logged and reads as
+        empty: the source's own feed has already answered, and one
+        section's feed being down should not cost the rest.
+        """
+
+        try:
+            return feedparser.parse(self.fetcher.get(feed).html).entries
+        except Exception as exc:
+            _logger.warning("Extra feed %s of %s failed: %s", feed, source.id, exc)
+            return []
 
     @staticmethod
     def _filters_by_topic(source: NewsSource) -> bool:
@@ -651,3 +670,22 @@ def _mentions(entry, keywords: set[str]) -> bool:
     text = _folded(f"{getattr(entry, 'title', '')} {categories}")
 
     return any(f" {keyword}" in text for keyword in keywords)
+
+
+_logger = getLogger(__name__)
+
+
+def _interleaved(feeds: list[list]) -> list:
+    """
+    Every feed's items, taking one from each in turn: the steps after this
+    keep the first so many, and BBC's news feed (about 40 items) would
+    otherwise leave none of BBC Future's.
+    """
+
+    merged = []
+
+    for position in range(max((len(feed) for feed in feeds), default=0)):
+        merged.extend(feed[position] for feed in feeds if position < len(feed))
+
+    return merged
+

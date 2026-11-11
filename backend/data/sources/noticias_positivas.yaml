@@ -1,0 +1,41 @@
+# Added 2026-11-10 (asked by the author). It had no feed on 2026-10-09;
+# /feed/ answers now. Positive news only, but screened like any outlet
+# (no `positive_editorial`) until read for a while.
+
+id: noticias_positivas
+
+name: Noticias Positivas
+
+base_url: https://noticiaspositivas.org
+
+rss_url: https://noticiaspositivas.org/feed/
+
+search_url: https://noticiaspositivas.org/?s={query}
+
+language: es
+
+country: ES
+
+source_type: blog
+
+reliability_index: 0.65
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - community
+  - solutions
+  - society
+
+groups:
+  - society
+  - environment
+  - culture
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

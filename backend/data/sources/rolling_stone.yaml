@@ -1,0 +1,39 @@
+# Added 2026-11-10 (asked by the author). Checked that day: its feed
+# gives article links and two sample articles extract with title, author
+# and date (scripts' SourceCheckService, the /sources page's check).
+
+id: rolling_stone
+
+name: Rolling Stone
+
+base_url: https://www.rollingstone.com
+
+rss_url: https://www.rollingstone.com/feed/
+
+search_url: https://www.rollingstone.com/results/#?q={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.74
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - music
+  - culture
+  - trends
+
+groups:
+  - culture
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

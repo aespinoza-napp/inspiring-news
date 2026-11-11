@@ -1,0 +1,42 @@
+# Added 2026-11-10 (asked by the author), disabled: the feed works, but
+# every article answered 403, to the plain fetch and to the headless
+# browser in the Docker image. Rated, so its pages rank as evidence;
+# never ingested (data/sources/README.md, `enabled: false`).
+
+id: nytimes
+
+name: The New York Times
+
+base_url: https://www.nytimes.com
+
+rss_url: https://rss.nytimes.com/services/xml/rss/nyt/Science.xml
+
+search_url: https://www.nytimes.com/search?query={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.9
+
+enabled: false
+
+requires_javascript: false
+
+tags:
+  - science
+  - health
+  - climate
+
+groups:
+  - science
+  - health
+  - environment
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

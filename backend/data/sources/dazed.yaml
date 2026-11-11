@@ -1,0 +1,40 @@
+# Added 2026-11-10 (asked by the author). Checked that day: its feed
+# gives article links and two sample articles extract with title, author
+# and date (scripts' SourceCheckService, the /sources page's check).
+
+id: dazed
+
+name: Dazed
+
+base_url: https://www.dazeddigital.com
+
+rss_url: https://www.dazeddigital.com/rss
+
+search_url: https://www.dazeddigital.com/search?q={query}
+
+language: en
+
+country: UK
+
+source_type: news
+
+reliability_index: 0.72
+
+enabled: true
+
+requires_javascript: false
+
+tags:
+  - culture
+  - youth
+  - art
+  - fashion
+
+groups:
+  - culture
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

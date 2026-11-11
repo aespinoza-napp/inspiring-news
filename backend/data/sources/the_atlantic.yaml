@@ -1,0 +1,43 @@
+# Added 2026-11-10 (asked by the author). Its articles answer 403 to a
+# plain fetch and extract whole through the headless browser (checked in
+# the Docker image, which has it): so `requires_javascript`.
+
+id: the_atlantic
+
+name: The Atlantic
+
+base_url: https://www.theatlantic.com
+
+rss_url: https://www.theatlantic.com/feed/all/
+
+search_url: https://www.theatlantic.com/search/?q={query}
+
+language: en
+
+country: US
+
+source_type: news
+
+reliability_index: 0.86
+
+enabled: true
+
+requires_javascript: true
+
+tags:
+  - ideas
+  - society
+  - culture
+  - science
+
+groups:
+  - society
+  - culture
+  - science
+  - health
+
+metadata:
+  extractor: trafilatura
+  discovery:
+    - rss
+    - search

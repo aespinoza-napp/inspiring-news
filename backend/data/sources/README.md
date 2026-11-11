@@ -11,6 +11,9 @@ id: bbc                      # unique identifier, used as a key elsewhere (e.g. 
 name: BBC
 base_url: https://www.bbc.com
 rss_url: http://feeds.bbci.co.uk/news/rss.xml   # optional — required for RSS discovery to work
+extra_feeds:                 # optional - more feeds of the same outlet, read with rss_url and
+  - https://www.bbc.com/future/feed.rss   # interleaved (one source per domain: BBC Future is a
+                              # feed of the BBC source, not a source of its own)
 search_url: https://www.bbc.co.uk/search?q={query}   # optional
 language: en
 country: UK
@@ -76,6 +79,22 @@ one source per domain; Squirrel News publishes weekly roundups, which the
 mission screen leaves out; YES! Magazine's newest item was a month old;
 Ballena Blanca stopped in 2022; Noticias Positivas has no feed; El País's
 Planeta Futuro is mostly hard development news.
+
+**Added 2026-11-10, asked by the author**, each checked that day with the
+source check (feed links, two sample articles with title, author and
+date): The New Yorker, The Atlantic (only through the headless browser:
+`requires_javascript`), New York Magazine, Gatopardo, Rolling Stone,
+Dazed, Wired, Vanity Fair, Dezeen, Vogue, Vogue España, Esquire, GQ,
+Cuéntame algo bueno and Noticias Positivas (whose `/feed/` answers now),
+and BBC Future as an `extra_feeds` of `bbc.yaml`. **Added disabled**, so
+rated as evidence but never ingested: The New York Times (403 to the
+fetch and to the browser), the Financial Times (the browser gets only
+the paywall's first ~1,000 characters) and Le Monde's English edition
+(a 315-character subscription page). The ratings are Claude's first
+estimates, like the rest. The lifestyle magazines' English feeds go
+through the topic-keyword filter like every English feed, so on a day
+of fashion and celebrity they offer few or none. Not added: "Vogue Asia"
+(no single site by that name: Vogue Singapore, India, Hong Kong...).
 
 `reliability_index` matters beyond discovery: `EvidenceRanker` looks it up by domain (via
 `SourceRepository`) when scoring a piece of evidence during fact-checking, with a neutral default for
