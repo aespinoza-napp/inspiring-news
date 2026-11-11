@@ -1,0 +1,300 @@
+{"id": "conll-es-000", "gold": [["ORG", "Xunta Moza"], ["LOC", "Sama"], ["LOC", "Ciaño"]], "predicted": [["ORG", "Sama"], ["ORG", "Xunta Moza"], ["LOC", "Ciaño"]], "seconds": 0.1293}
+{"id": "conll-es-001", "gold": [["LOC", "Madrid"], ["ORG", "EFE"]], "predicted": [["LOC", "Madrid"], ["ORG", "EFE"]], "seconds": 0.0836}
+{"id": "conll-es-002", "gold": [["LOC", "plaza del Ayuntamiento"]], "predicted": [], "seconds": 0.1334}
+{"id": "conll-es-003", "gold": [["ORG", "Funai"]], "predicted": [["LOC", "Funai"]], "seconds": 0.1349}
+{"id": "conll-es-004", "gold": [["LOC", "Mérida"], ["ORG", "EFE"]], "predicted": [["LOC", "Mérida"], ["ORG", "EFE"]], "seconds": 0.0958}
+{"id": "conll-es-005", "gold": [["PER", "Bernal"], ["PER", "Iglesias"], ["LOC", "Aragón"]], "predicted": [["PER", "Bernal"], ["PER", "Iglesias"], ["LOC", "Aragón"]], "seconds": 0.162}
+{"id": "conll-es-006", "gold": [["LOC", "Barcelona"], ["ORG", "EFE"]], "predicted": [["ORG", "EFE"], ["LOC", "Barcelona"]], "seconds": 0.1032}
+{"id": "conll-es-007", "gold": [["ORG", "EFECOM"], ["LOC", "Washington"], ["ORG", "EFE"]], "predicted": [["ORG", "EFE"], ["ORG", "EFECOM"], ["LOC", "23 may"], ["LOC", "Washington"]], "seconds": 0.1112}
+{"id": "conll-es-008", "gold": [["ORG", "Nuevo Mercado"]], "predicted": [["LOC", "Atlántico"], ["ORG", "Ibex-NM"]], "seconds": 0.1589}
+{"id": "conll-es-009", "gold": [["PER", "Luis Sánchez Polack"], ["PER", "Blanco"]], "predicted": [["PER", "Blanco"], ["PER", "Luis Sánchez Polack"]], "seconds": 0.1637}
+{"id": "conll-es-010", "gold": [["PER", "Enedina Iglesias"], ["LOC", "Sotrondio"], ["LOC", "Hospital Valle del Nalón"], ["LOC", "Langreo"]], "predicted": [["PER", "Enedina Iglesias"], ["LOC", "Hospital Valle del Nalón"], ["LOC", "Langreo"]], "seconds": 0.2187}
+{"id": "conll-es-011", "gold": [["PER", "Iglesias"], ["LOC", "Nicaragua"]], "predicted": [["PER", "Iglesias"], ["LOC", "Nicaragua"]], "seconds": 0.1683}
+{"id": "conll-es-012", "gold": [["LOC", "Ecija"], ["ORG", "Gobierno"], ["LOC", "Sevilla"], ["PER", "Rocío Roche"], ["LOC", "Ecija"], ["PER", "Julián Alvarez"], ["ORG", "PA"]], "predicted": [["LOC", "Ecija"], ["LOC", "Sevilla"], ["ORG", "Gobierno"], ["ORG", "PA"], ["PER", "Julián Alvarez"], ["PER", "Rocío Roche"]], "seconds": 0.1964}
+{"id": "conll-es-013", "gold": [["ORG", "Instituto de Estudios Autonómicos de la Generalitat"], ["PER", "Guillem López Casanovas"], ["ORG", "facultad de Económicas"], ["PER", "Universidad Pompeu Fabra"], ["ORG", "ERC"], ["LOC", "Cataluña"], ["LOC", "España"]], "predicted": [["ORG", "ERC"], ["ORG", "Instituto de Estudios Autonómicos de la Generalitat"], ["ORG", "Universidad Pompeu Fabra"], ["PER", "Guillem López Casanovas"], ["LOC", "Cataluña"], ["LOC", "España"]], "seconds": 0.2555}
+{"id": "conll-es-014", "gold": [["PER", "Barceló"], ["PER", "Francesc Antich"]], "predicted": [["PER", "Barceló"], ["PER", "Francesc Antich"]], "seconds": 0.145}
+{"id": "conll-es-015", "gold": [["ORG", "Plataforma pro Selecciones Catalanas"], ["ORG", "Fórum Samitier"], ["PER", "Jaume Llauradó"], ["ORG", "FC Barcelona"]], "predicted": [["ORG", "FC Barcelona"], ["ORG", "Fórum Samitier"], ["ORG", "Plataforma pro Selecciones Catalanas"], ["PER", "Jaume Llauradó"]], "seconds": 0.1557}
+{"id": "conll-es-016", "gold": [["LOC", "Mieres"], ["ORG", "EFE"]], "predicted": [["LOC", "Mieres"], ["ORG", "EFE"]], "seconds": 0.0988}
+{"id": "conll-es-017", "gold": [["ORG", "Guardia Civil"], ["ORG", "Junta"], ["LOC", "Arévalo"]], "predicted": [["ORG", "Junta"], ["ORG", "La Guardia Civil"], ["LOC", "Arévalo"], ["PER", "familia"]], "seconds": 0.1649}
+{"id": "conll-es-018", "gold": [["LOC", "Madrid"], ["ORG", "EFECOM"]], "predicted": [["LOC", "Madrid"], ["ORG", "EFECOM"]], "seconds": 0.1059}
+{"id": "conll-es-019", "gold": [["LOC", "Líbano"], ["LOC", "Líbano"]], "predicted": [["LOC", "Líbano"]], "seconds": 0.1278}
+{"id": "conll-es-020", "gold": [["ORG", "Junta"], ["LOC", "parque natural del Alto Tajo"]], "predicted": [["ORG", "Junta"], ["LOC", "Alto Tajo"]], "seconds": 0.2036}
+{"id": "conll-es-021", "gold": [], "predicted": [], "seconds": 0.1437}
+{"id": "conll-es-022", "gold": [["LOC", "San Sebastián"]], "predicted": [["LOC", "San Sebastián"]], "seconds": 0.1021}
+{"id": "conll-es-023", "gold": [["ORG", "Ministerio"]], "predicted": [["PER", "El consejero"], ["PER", "ministro"], ["ORG", "Ministerio"]], "seconds": 0.1455}
+{"id": "conll-es-024", "gold": [["PER", "Kewell"], ["PER", "Viduka"], ["PER", "Moore"], ["PER", "Vidmar"]], "predicted": [["PER", "Kewell"], ["PER", "Moore"], ["PER", "Vidmar"], ["PER", "Viduka"]], "seconds": 0.1335}
+{"id": "conll-es-025", "gold": [["ORG", "CiU"], ["ORG", "Generalitat"], ["PER", "Huguet"], ["ORG", "ERC"]], "predicted": [["ORG", "CiU"], ["ORG", "ERC"], ["ORG", "Generalitat"], ["PER", "Huguet"]], "seconds": 0.2014}
+{"id": "conll-es-026", "gold": [["ORG", "British Petroleum"], ["ORG", "BP"], ["ORG", "EFE"]], "predicted": [["ORG", "British Petroleum"]], "seconds": 0.169}
+{"id": "conll-es-027", "gold": [["ORG", "Servicios Sociales del Principado"], ["ORG", "Juzgado de Menores"]], "predicted": [["PER", "Los tres jóvenes"], ["ORG", "Juzgado de Menores"], ["ORG", "Servicios Sociales del Principado"], ["ORG", "centro especial de protección"]], "seconds": 0.1684}
+{"id": "conll-es-028", "gold": [["ORG", "Parlamento"], ["LOC", "Málaga"], ["PER", "Ildefonso Dell'Olmo"], ["ORG", "PA"], ["ORG", "Parlamento"], ["LOC", "Hospital Carlos Haya"]], "predicted": [["ORG", "Hospital Carlos Haya"], ["ORG", "PA"], ["ORG", "Parlamento"], ["LOC", "Málaga"], ["PER", "Ildefonso Dell'Olmo"]], "seconds": 0.1547}
+{"id": "conll-es-029", "gold": [["PER", "Ruano"], ["PER", "Medina"], ["PER", "Ruano"], ["PER", "Medina"]], "predicted": [["PER", "Ruano"], ["LOC", "Medina"], ["LOC", "valenciana"]], "seconds": 0.1803}
+{"id": "conll-es-030", "gold": [["PER", "Ciaran Power"], ["LOC", "IRL"], ["ORG", "Linda"]], "predicted": [["PER", "Ciaran Power"]], "seconds": 0.0885}
+{"id": "conll-es-031", "gold": [["PER", "José Luis Rubiera"], ["LOC", "ESP"], ["ORG", "Kelme"]], "predicted": [["PER", "José Luis Rubiera"], ["ORG", "ESP"], ["ORG", "Kelme"]], "seconds": 0.0936}
+{"id": "conll-es-032", "gold": [["LOC", "Valladolid"], ["ORG", "Comisaría de Policía"]], "predicted": [["LOC", "Valladolid"], ["ORG", "Comisaría de Policía"]], "seconds": 0.1724}
+{"id": "conll-es-033", "gold": [], "predicted": [], "seconds": 0.1225}
+{"id": "conll-es-034", "gold": [], "predicted": [["LOC", "El edificio"]], "seconds": 0.1503}
+{"id": "conll-es-035", "gold": [["ORG", "ESL"], ["LOC", "Líbano"], ["LOC", "Israel"], ["LOC", "Fatma-Metula"]], "predicted": [["ORG", "ESL"], ["LOC", "Israel"], ["LOC", "Fatma-Metula"]], "seconds": 0.187}
+{"id": "conll-es-036", "gold": [["PER", "Mario Cipollini"], ["LOC", "ITA"], ["ORG", "Saeco"]], "predicted": [["PER", "Mario Cipollini"], ["LOC", "ITA"], ["ORG", "Saeco"]], "seconds": 0.0913}
+{"id": "conll-es-037", "gold": [["ORG", "Real Madrid"], ["ORG", "Valencia"], ["LOC", "estadio Saint Denis"], ["LOC", "París"]], "predicted": [["ORG", "Real Madrid"], ["ORG", "Valencia"], ["PER", "alguien"], ["LOC", "Saint Denis"], ["LOC", "París"]], "seconds": 0.1683}
+{"id": "conll-es-038", "gold": [["ORG", "NH Hoteles"], ["LOC", "Buenos Aires"]], "predicted": [["ORG", "NH Hoteles"], ["LOC", "Buenos Aires"]], "seconds": 0.1473}
+{"id": "conll-es-039", "gold": [], "predicted": [["LOC", "campos"]], "seconds": 0.1518}
+{"id": "conll-es-040", "gold": [["PER", "Fortún"], ["ORG", "Gobierno"], ["ORG", "Gobierno"], ["ORG", "Confederación Sindical Unica de Trabajadores Campesinos de Bolivia"]], "predicted": [["PER", "El ministro Fortún"], ["ORG", "Gobierno"], ["LOC", "Bolivia"], ["LOC", "estado de sitio"]], "seconds": 0.1567}
+{"id": "conll-es-041", "gold": [["LOC", "Jaca"], ["LOC", "Ciudadela"]], "predicted": [["PER", "cinco personas"], ["LOC", "Jaca"]], "seconds": 0.1477}
+{"id": "conll-es-042", "gold": [["LOC", "PERU"], ["PER", "RATO"], ["LOC", "Washington"], ["ORG", "EFE"]], "predicted": [["LOC", "PERU"], ["LOC", "Washington"], ["ORG", "EFE"]], "seconds": 0.098}
+{"id": "conll-es-043", "gold": [], "predicted": [], "seconds": 0.0857}
+{"id": "conll-es-044", "gold": [], "predicted": [], "seconds": 0.1318}
+{"id": "conll-es-045", "gold": [["PER", "Collins"]], "predicted": [["PER", "Collins"]], "seconds": 0.1491}
+{"id": "conll-es-046", "gold": [["LOC", "Toledo"], ["ORG", "EFE"]], "predicted": [["LOC", "Toledo"], ["ORG", "EFE"]], "seconds": 0.0849}
+{"id": "conll-es-047", "gold": [["ORG", "Organización Mundial del Comercio"], ["ORG", "OMC"], ["LOC", "Chile"], ["ORG", "Unión Europea"]], "predicted": [["ORG", "OMC"], ["ORG", "Organización Mundial del Comercio"], ["ORG", "Unión Europea"], ["LOC", "Chile"]], "seconds": 0.1481}
+{"id": "conll-es-048", "gold": [["ORG", "Diputación"]], "predicted": [["ORG", "Diputación"]], "seconds": 0.1634}
+{"id": "conll-es-049", "gold": [["ORG", "Guardia Civil"], ["LOC", "Playa de Palma"], ["ORG", "Comandancia"], ["LOC", "Palma"]], "predicted": [["ORG", "La Guardia Civil"], ["PER", "compatriotas"], ["PER", "cuatro ciudadanos"], ["LOC", "Playa de Palma"]], "seconds": 0.1413}
+{"id": "conll-es-050", "gold": [["ORG", "Gran Consejo de Jefes"], ["LOC", "Fiyi"], ["PER", "George Speight"], ["LOC", "Constitución"], ["PER", "Kamisese Mara"]], "predicted": [["ORG", "El Gran Consejo de Jefes de Fiyi"], ["PER", "George Speight"], ["PER", "Kamisese Mara"], ["LOC", "país"]], "seconds": 0.1311}
+{"id": "conll-es-051", "gold": [["ORG", "Servicios Sociales"], ["ORG", "Policía"]], "predicted": [["ORG", "Policía"], ["ORG", "Servicios Sociales municipales"], ["LOC", "casa"]], "seconds": 0.1358}
+{"id": "conll-es-052", "gold": [["ORG", "Valencia"], ["ORG", "Real Madrid"], ["LOC", "Europa"]], "predicted": [["PER", "hermano"], ["LOC", "Valencia"], ["ORG", "Real Madrid"]], "seconds": 0.1834}
+{"id": "conll-es-053", "gold": [["PER", "Dell'Olmo"]], "predicted": [["ORG", "Dell'Olmo"]], "seconds": 0.1611}
+{"id": "conll-es-054", "gold": [["LOC", "Palma"], ["ORG", "EFE"]], "predicted": [["LOC", "Palma"], ["ORG", "EFE"]], "seconds": 0.0829}
+{"id": "conll-es-055", "gold": [["PER", "Antonio Mingote"], ["PER", "Luis Sánchez Polack"], ["LOC", "Madrid"], ["PER", "Tip"]], "predicted": [["PER", "Antonio Mingote"], ["PER", "Luis Sánchez Polack"], ["PER", "Tip"], ["LOC", "Madrid"]], "seconds": 0.1516}
+{"id": "conll-es-056", "gold": [["LOC", "Sevilla"]], "predicted": [["LOC", "Sevilla"]], "seconds": 0.1618}
+{"id": "conll-es-057", "gold": [["LOC", "La Rioja"], ["LOC", "Logroño"], ["ORG", "efe"], ["LOC", "Langreo"], ["ORG", "EFE"]], "predicted": [["LOC", "La Rioja"], ["LOC", "Logroño"], ["ORG", "EFE"]], "seconds": 0.1505}
+{"id": "conll-es-058", "gold": [["PER", "Carlos Samaniego"], ["ORG", "Diputación"], ["ORG", "EA"]], "predicted": [["PER", "Carlos Samaniego"], ["ORG", "EA"]], "seconds": 0.1606}
+{"id": "conll-es-059", "gold": [["LOC", "Maharastra"], ["ORG", "PTI"]], "predicted": [["LOC", "Maharastra"], ["ORG", "PTI"]], "seconds": 0.1393}
+{"id": "conll-es-060", "gold": [["ORG", "Administración"]], "predicted": [["ORG", "Administración"]], "seconds": 0.1113}
+{"id": "conll-es-061", "gold": [["ORG", "Parlamento"], ["LOC", "Andalucía"]], "predicted": [["ORG", "Parlamento"], ["LOC", "Andalucía"]], "seconds": 0.1484}
+{"id": "conll-es-062", "gold": [["PER", "Dalton"], ["ORG", "Agencia Nacional de Desarrollo Espacial de Japón"], ["ORG", "NASDA"], ["PER", "Patrick Collins"]], "predicted": [["PER", "Dalton"], ["PER", "Patrick Collins"], ["LOC", "Japón"], ["ORG", "NASDA"]], "seconds": 0.1662}
+{"id": "conll-es-063", "gold": [], "predicted": [["PER", "Goya"]], "seconds": 0.1426}
+{"id": "conll-es-064", "gold": [["LOC", "Langreo"], ["LOC", "Asturias"], ["ORG", "EFE"]], "predicted": [["LOC", "23 may"], ["LOC", "Langreo"], ["LOC", "Asturias"], ["ORG", "EFE"]], "seconds": 0.0901}
+{"id": "conll-es-065", "gold": [], "predicted": [], "seconds": 0.1188}
+{"id": "conll-es-066", "gold": [["ORG", "Mesa del Pacto por el Empleo"], ["ORG", "Diputación"]], "predicted": [["ORG", "Diputación"], ["ORG", "La Mesa del Pacto por el Empleo"]], "seconds": 0.1373}
+{"id": "conll-es-067", "gold": [["ORG", "Policía Federal"], ["LOC", "Mato Grosso"], ["LOC", "Rondonia"], ["LOC", "Vale do Guaporé"]], "predicted": [["ORG", "Policía Federal"], ["ORG", "autoridades"], ["PER", "mineros"], ["LOC", "Vale do Guaporé"]], "seconds": 0.1696}
+{"id": "conll-es-068", "gold": [["PER", "Racan"], ["PER", "Orban"], ["ORG", "Estados"]], "predicted": [["PER", "Orban"], ["PER", "Racan"]], "seconds": 0.1416}
+{"id": "conll-es-069", "gold": [["ORG", "Chile"], ["ORG", "Chile"]], "predicted": [["PER", "árbitro"], ["LOC", "Chile"]], "seconds": 0.1505}
+{"id": "conll-es-070", "gold": [], "predicted": [["ORG", "Esta empresa"]], "seconds": 0.158}
+{"id": "conll-es-071", "gold": [], "predicted": [], "seconds": 0.1178}
+{"id": "conll-es-072", "gold": [["ORG", "Comunidad de Madrid"], ["PER", "Carlos Mayor Oreja"], ["PER", "Ignacio Echaniz"], ["PER", "Adolfo Cazorla"], ["ORG", "Consejo Regulador"], ["PER", "Félix Martínez"]], "predicted": [["PER", "Adolfo Cazorla"], ["PER", "Carlos Mayor Oreja"], ["PER", "Félix Martínez"], ["PER", "Ignacio Echaniz"], ["ORG", "Empleo"]], "seconds": 0.1735}
+{"id": "conll-es-073", "gold": [], "predicted": [], "seconds": 0.0956}
+{"id": "conll-es-074", "gold": [], "predicted": [["ORG", "Esta empresa"]], "seconds": 0.1599}
+{"id": "conll-es-075", "gold": [["ORG", "Telefónica"]], "predicted": [["ORG", "Telefónica"]], "seconds": 0.1533}
+{"id": "conll-es-076", "gold": [], "predicted": [], "seconds": 0.171}
+{"id": "conll-es-077", "gold": [["ORG", "Unicredit"], ["ORG", "San Paolo"], ["ORG", "Bnl"], ["ORG", "Banca Roma"]], "predicted": [["ORG", "Banca Roma"], ["ORG", "Bnl"], ["ORG", "Unicredit"], ["LOC", "San Paolo"]], "seconds": 0.153}
+{"id": "conll-es-078", "gold": [["ORG", "Panasonic"], ["LOC", "Celrá"], ["ORG", "Delegación de Trabajo de Gerona"]], "predicted": [["PER", "trabajadores"], ["ORG", "Panasonic de Celrá"], ["ORG", "comité de empresa"], ["LOC", "Gerona"]], "seconds": 0.1659}
+{"id": "conll-es-079", "gold": [["LOC", "Padua"], ["LOC", "Italia"], ["ORG", "EFE"]], "predicted": [["LOC", "Padua"], ["LOC", "Italia"], ["ORG", "EFE"]], "seconds": 0.0873}
+{"id": "conll-es-080", "gold": [["PER", "César Cubillas"], ["PER", "Luis Castillo"], ["LOC", "Centro Cultural Concha Espina"]], "predicted": [["ORG", "Centro Cultural Concha Espina"], ["ORG", "Pleno"], ["PER", "César Cubillas"], ["PER", "Luis Castillo"]], "seconds": 0.1474}
+{"id": "conll-es-081", "gold": [], "predicted": [["PER", "Michina"]], "seconds": 0.1224}
+{"id": "conll-es-082", "gold": [["ORG", "Jefatura Superior de Policía"], ["PER", "J. A. A."], ["LOC", "San Antonio"], ["LOC", "Ibiza"]], "predicted": [["ORG", "Jefatura Superior de Policía"], ["PER", "J. A. A."], ["PER", "joven estudiante de música"], ["LOC", "Ibiza"], ["LOC", "San Antonio"]], "seconds": 0.1584}
+{"id": "conll-es-083", "gold": [["PER", "Cecilia Blondet"]], "predicted": [["ORG", "asociación independiente"], ["PER", "Cecilia Blondet"]], "seconds": 0.1286}
+{"id": "conll-es-084", "gold": [["ORG", "Tecnost"], ["ORG", "Olivetti"], ["ORG", "Tim"], ["ORG", "Telecom Italia"]], "predicted": [["ORG", "Olivetti"], ["ORG", "Tecnost"], ["ORG", "Telecom Italia"], ["ORG", "Tim"]], "seconds": 0.145}
+{"id": "conll-es-085", "gold": [["PER", "Julio César Rodríguez"], ["PER", "Elías Pastrana"], ["PER", "Juan Carlos Quiceno"]], "predicted": [["PER", "Elías Pastrana"], ["PER", "Juan Carlos Quiceno"], ["PER", "Julio César Rodríguez"]], "seconds": 0.1314}
+{"id": "conll-es-086", "gold": [["PER", "Gala León"], ["PER", "Virginia Ruano"], ["PER", "Ana Isabel Medina"]], "predicted": [["PER", "Ana Isabel Medina"], ["PER", "Gala León"], ["PER", "Virginia Ruano"]], "seconds": 0.1698}
+{"id": "conll-es-087", "gold": [["ORG", "Eurovestir"], ["LOC", "Olite"], ["LOC", "Caparroso"]], "predicted": [["ORG", "Eurovestir"], ["LOC", "Caparroso"], ["LOC", "Olite"]], "seconds": 0.1782}
+{"id": "conll-es-088", "gold": [["LOC", "SIERRA LEONA"], ["LOC", "R. UNIDO"], ["LOC", "Londres"], ["ORG", "Gobierno"], ["LOC", "Sierra Leona"], ["ORG", "Ejercito"]], "predicted": [["LOC", "SIERRA LEONA"], ["LOC", "Sierra Leona"], ["ORG", "Ejercito"], ["ORG", "Gobierno británico"], ["ORG", "UNIDO"], ["ORG", "fuerzas rebeldes"], ["LOC", "Londres"]], "seconds": 0.1668}
+{"id": "conll-es-089", "gold": [], "predicted": [], "seconds": 0.0911}
+{"id": "conll-es-090", "gold": [["PER", "José Pérez Cequera"], ["LOC", "Ecija"], ["LOC", "Madrid"], ["LOC", "España"], ["PER", "Andrés Hiniesta"]], "predicted": [["PER", "Andrés Hiniesta"], ["PER", "José Pérez Cequera"], ["LOC", "Ecija"], ["LOC", "Madrid"], ["LOC", "España"], ["LOC", "ecijano"]], "seconds": 0.1453}
+{"id": "conll-es-091", "gold": [], "predicted": [["ORG", "entidad"]], "seconds": 0.1435}
+{"id": "conll-es-092", "gold": [["ORG", "Consejería de Medio Ambiente"], ["ORG", "Ayuntamiento de Castro"]], "predicted": [["ORG", "Consejería de Medio Ambiente"], ["LOC", "Ayuntamiento de Castro"]], "seconds": 0.1145}
+{"id": "conll-es-093", "gold": [["ORG", "Diputación de Palencia"], ["PER", "Enrique Martín"], ["ORG", "Mesa del Pacto por el Empleo"], ["ORG", "Efe"]], "predicted": [["ORG", "Diputación de Palencia"], ["ORG", "Mesa del Pacto por el Empleo"], ["PER", "Enrique Martín"]], "seconds": 0.188}
+{"id": "conll-es-094", "gold": [["ORG", "Cepsa"], ["ORG", "BP"], ["LOC", "España"]], "predicted": [["ORG", "BP"], ["ORG", "Cepsa"], ["LOC", "España"]], "seconds": 0.1274}
+{"id": "conll-es-095", "gold": [["LOC", "Valladolid"], ["ORG", "Elche"]], "predicted": [["LOC", "Elche"], ["LOC", "Valladolid"]], "seconds": 0.1055}
+{"id": "conll-es-096", "gold": [["PER", "Fortún"], ["LOC", "Bolivia"]], "predicted": [["PER", "Fortún"], ["LOC", "Bolivia"], ["ORG", "guerrilla"]], "seconds": 0.1838}
+{"id": "conll-es-097", "gold": [], "predicted": [["PER", "diputada socialista"]], "seconds": 0.1304}
+{"id": "conll-es-098", "gold": [["LOC", "Oceanía"], ["LOC", "Australia"], ["LOC", "Sudamérica"]], "predicted": [["LOC", "Australia"]], "seconds": 0.1194}
+{"id": "conll-es-099", "gold": [["ORG", "Banco de Inglaterra"]], "predicted": [["PER", "El gobernador"], ["PER", "ministro de Economía"], ["ORG", "Banco de Inglaterra"]], "seconds": 0.1386}
+{"id": "conll-es-100", "gold": [["PER", "Patrick Süskind"], ["PER", "José Pascual"]], "predicted": [["PER", "José Pascual"], ["PER", "Patrick Süskind"]], "seconds": 0.1235}
+{"id": "conll-es-101", "gold": [["LOC", "China"], ["LOC", "Colombia"], ["LOC", "Ecuador"], ["LOC", "Perú"], ["LOC", "Venezuela"], ["ORG", "Comunidad Andina"], ["ORG", "CAN"], ["LOC", "Lima"]], "predicted": [["LOC", "China"], ["LOC", "Colombia"], ["LOC", "Ecuador"], ["LOC", "Perú"], ["LOC", "Venezuela"], ["ORG", "Comunidad Andina"], ["LOC", "Lima"], ["PER", "ente integrador andino"]], "seconds": 0.1445}
+{"id": "conll-es-102", "gold": [["LOC", "Ourense"], ["ORG", "EFE"]], "predicted": [["LOC", "Ourense"], ["ORG", "EFE"]], "seconds": 0.079}
+{"id": "conll-es-103", "gold": [["PER", "Lawrence Summers"], ["PER", "Rato"]], "predicted": [["ORG", "Tesoro"], ["PER", "Lawrence Summers"], ["PER", "Rato"]], "seconds": 0.1314}
+{"id": "conll-es-104", "gold": [["ORG", "Space Adventures"], ["LOC", "Virginia"], ["PER", "Sarah Dalton"]], "predicted": [["ORG", "Space Adventures"], ["LOC", "Virginia"], ["PER", "Sarah Dalton"]], "seconds": 0.1858}
+{"id": "conll-es-105", "gold": [["ORG", "ERC"], ["LOC", "Cataluña"], ["ORG", "Generalitat"], ["LOC", "España"]], "predicted": [["ORG", "ERC"], ["ORG", "Generalitat"], ["LOC", "Cataluña"], ["LOC", "España"]], "seconds": 0.171}
+{"id": "conll-es-106", "gold": [["LOC", "Basílica de Santa María de Guadalupe"], ["LOC", "Extremadura"], ["LOC", "Coimbra"]], "predicted": [["LOC", "Basílica de Santa María de Guadalupe"], ["LOC", "Coimbra"]], "seconds": 0.1353}
+{"id": "conll-es-107", "gold": [["PER", "Carlos Gil"]], "predicted": [["PER", "Carlos Gil"], ["PER", "director general"], ["ORG", "club"]], "seconds": 0.1477}
+{"id": "conll-es-108", "gold": [["LOC", "Coreto del Pilar de Zaragoza"], ["PER", "Goya"]], "predicted": [["ORG", "Goya"], ["LOC", "techo"]], "seconds": 0.1619}
+{"id": "conll-es-109", "gold": [["LOC", "Jerez de la Frontera"], ["LOC", "Cádiz"], ["ORG", "EFE"]], "predicted": [["LOC", "Cádiz"], ["LOC", "Jerez de la Frontera"], ["ORG", "EFE"]], "seconds": 0.0886}
+{"id": "conll-es-110", "gold": [["LOC", "Milán"]], "predicted": [["LOC", "Milán"]], "seconds": 0.1404}
+{"id": "conll-es-111", "gold": [["LOC", "Vale do Guaporé"], ["LOC", "Mato Grosso"], ["LOC", "Rondonia"]], "predicted": [["LOC", "Mato Grosso"], ["LOC", "Rondonia"], ["LOC", "Vale do Guaporé"]], "seconds": 0.1806}
+{"id": "conll-es-112", "gold": [["LOC", "Sevilla"], ["ORG", "EFECOM"]], "predicted": [["LOC", "Sevilla"], ["ORG", "EFECOM"]], "seconds": 0.0901}
+{"id": "conll-es-113", "gold": [["PER", "De Palacio"], ["ORG", "Comisión"], ["LOC", "España"], ["PER", "Comisario Europeo de Competencia"], ["PER", "Mario Monti"]], "predicted": [["ORG", "Comisario Europeo de Competencia"], ["ORG", "Comisión"], ["LOC", "España"], ["PER", "Mario Monti"]], "seconds": 0.4925}
+{"id": "conll-es-114", "gold": [["ORG", "NH Jousten"], ["LOC", "Bolsa de Comercio"], ["LOC", "Puerto Madero"]], "predicted": [["ORG", "NH Jousten"], ["LOC", "Bolsa de Comercio"], ["LOC", "Puerto Madero"]], "seconds": 0.1463}
+{"id": "conll-es-115", "gold": [["PER", "Charles Goodhart"], ["ORG", "Comité de Política Monetaria"]], "predicted": [["PER", "Charles Goodhart"], ["ORG", "Comité de Política Monetaria"]], "seconds": 0.1184}
+{"id": "conll-es-116", "gold": [["ORG", "Gobierno"], ["LOC", "Bolivia"], ["PER", "Guillermo Fortún"]], "predicted": [["LOC", "Bolivia"], ["PER", "Guillermo Fortún"]], "seconds": 0.1587}
+{"id": "conll-es-117", "gold": [["ORG", "Portugal"], ["LOC", "Valladolid"], ["ORG", "Efe"], ["ORG", "Oficina"], ["LOC", "España"], ["PER", "Joao Sebastiao"]], "predicted": [["LOC", "España"], ["LOC", "Portugal"], ["LOC", "Valladolid"], ["ORG", "Efe"], ["ORG", "Oficina turística lusa"], ["PER", "Joao Sebastiao"]], "seconds": 0.1413}
+{"id": "conll-es-118", "gold": [["PER", "Rodrigo Rato"]], "predicted": [["LOC", "español"], ["PER", "Rodrigo Rato"], ["ORG", "empresas petroleras"]], "seconds": 0.1242}
+{"id": "conll-es-119", "gold": [["PER", "Juan José Ibarretxe"]], "predicted": [["ORG", "socialistas"], ["LOC", "lehendakari"], ["PER", "Juan José Ibarretxe"]], "seconds": 0.1873}
+{"id": "conll-es-120", "gold": [["PER", "Ayala"], ["ORG", "EFE"], ["ORG", "OPEP"]], "predicted": [["ORG", "Ayala"], ["ORG", "OPEP"], ["ORG", "EFE"]], "seconds": 0.1567}
+{"id": "conll-es-121", "gold": [["PER", "Racan"], ["PER", "Viktor Orban"], ["LOC", "Budapest"], ["LOC", "Rijeka"], ["LOC", "Budapest"], ["LOC", "Zagreb"]], "predicted": [["PER", "Racan"], ["PER", "Viktor Orban"], ["LOC", "Budapest"], ["LOC", "Rijeka"], ["LOC", "Zagreb"]], "seconds": 0.1384}
+{"id": "conll-es-122", "gold": [["PER", "Carlos Barboza"], ["PER", "Goya"], ["LOC", "San Juan el Real"]], "predicted": [["PER", "Carlos Barboza"], ["ORG", "Goya"], ["LOC", "San Juan el Real"]], "seconds": 0.1563}
+{"id": "conll-es-123", "gold": [["ORG", "Ejército"], ["LOC", "Marjayun"], ["LOC", "Líbano"], ["ORG", "EFE"]], "predicted": [["ORG", "EFE"], ["ORG", "El Ejército israelí"], ["PER", "cuartel general"], ["LOC", "Marjayun"], ["LOC", "sur del Líbano"]], "seconds": 0.1488}
+{"id": "conll-es-124", "gold": [], "predicted": [], "seconds": 0.1086}
+{"id": "conll-es-125", "gold": [["ORG", "Canal Sur Televisión"]], "predicted": [["ORG", "Canal Sur Televisión"]], "seconds": 0.1059}
+{"id": "conll-es-126", "gold": [], "predicted": [["PER", "estudiantes universitarios"]], "seconds": 0.1415}
+{"id": "conll-es-127", "gold": [], "predicted": [["PER", "persona"]], "seconds": 0.1112}
+{"id": "conll-es-128", "gold": [["LOC", "Torrelavega"], ["ORG", "EFE"]], "predicted": [["LOC", "Torrelavega"], ["ORG", "EFE"]], "seconds": 0.0767}
+{"id": "conll-es-129", "gold": [], "predicted": [["ORG", "amas de casas"], ["ORG", "colectivos sociales"], ["ORG", "coordinadoras antidrogas"], ["PER", "políticos"], ["LOC", "campogibraltareña"]], "seconds": 0.1377}
+{"id": "conll-es-130", "gold": [["PER", "Alston"], ["PER", "Dueñas"]], "predicted": [["PER", "Alston"], ["ORG", "ACB"], ["ORG", "Dueñas"]], "seconds": 0.1156}
+{"id": "conll-es-131", "gold": [["PER", "Hernán Martín"]], "predicted": [["PER", "Hernán Martín"]], "seconds": 0.087}
+{"id": "conll-es-132", "gold": [["ORG", "Federación de Cooperativas Agrarias de Catalunya"], ["ORG", "FCAC"], ["ORG", "Olis de Catalunya"]], "predicted": [["LOC", "Catalunya"], ["ORG", "FCAC"]], "seconds": 0.1338}
+{"id": "conll-es-133", "gold": [["ORG", "Administración"], ["LOC", "Toledo"]], "predicted": [["ORG", "Administración"], ["LOC", "Toledo"]], "seconds": 0.1487}
+{"id": "conll-es-134", "gold": [["PER", "familia Helguera"], ["PER", "Iván"]], "predicted": [["ORG", "aragonés"], ["PER", "Iván"]], "seconds": 0.1311}
+{"id": "conll-es-135", "gold": [["LOC", "La Coruña"], ["ORG", "EFECOM"]], "predicted": [["LOC", "La Coruña"], ["ORG", "EFECOM"]], "seconds": 0.0803}
+{"id": "conll-es-136", "gold": [["ORG", "Confederaciones Hidrográficas"]], "predicted": [["PER", "El consejero"], ["ORG", "Confederaciones Hidrográficas"]], "seconds": 0.1554}
+{"id": "conll-es-137", "gold": [], "predicted": [["PER", "Yo"]], "seconds": 0.1154}
+{"id": "conll-es-138", "gold": [["LOC", "Ecija"], ["LOC", "Sevilla"], ["ORG", "EFE"]], "predicted": [["LOC", "23 may"], ["LOC", "Ecija"], ["LOC", "Sevilla"]], "seconds": 0.0817}
+{"id": "conll-es-139", "gold": [], "predicted": [["PER", "uno de ellos"]], "seconds": 0.0871}
+{"id": "conll-es-140", "gold": [["ORG", "Partido Liberal"], ["ORG", "FPOE"], ["PER", "Susanne Riess-Passer"], ["ORG", "Verde"], ["ORG", "SPOE"], ["PER", "Antonio Guterres"], ["ORG", "Austria"], ["ORG", "UE"]], "predicted": [["ORG", "FPOE"], ["ORG", "Partido Liberal"], ["ORG", "SPOE"], ["PER", "Antonio Guterres"], ["PER", "Susanne Riess-Passer"], ["LOC", "Austria"]], "seconds": 0.198}
+{"id": "conll-es-141", "gold": [["LOC", "Elche"], ["LOC", "Alicante"], ["ORG", "EFE"]], "predicted": [["LOC", "Alicante"], ["LOC", "Elche"], ["ORG", "EFE"]], "seconds": 0.0861}
+{"id": "conll-es-142", "gold": [["ORG", "Volkswagen"], ["LOC", "Hamburgo"]], "predicted": [["ORG", "Volkswagen"], ["LOC", "Hamburgo"]], "seconds": 0.1283}
+{"id": "conll-es-143", "gold": [], "predicted": [], "seconds": 0.0885}
+{"id": "conll-es-144", "gold": [["LOC", "Madrid"]], "predicted": [["LOC", "Madrid"]], "seconds": 0.173}
+{"id": "conll-es-145", "gold": [["LOC", "Montevideo"], ["LOC", "Buenos Aires"]], "predicted": [["LOC", "Buenos Aires"], ["LOC", "Montevideo"]], "seconds": 0.1269}
+{"id": "conll-es-146", "gold": [["PER", "Valentín"]], "predicted": [["ORG", "Sanidad"]], "seconds": 0.1445}
+{"id": "conll-es-147", "gold": [["ORG", "Departamento de Bienestar Social"], ["ORG", "Comité Organizador de FiraGran"], ["LOC", "Cataluña"]], "predicted": [["ORG", "Comité Organizador de FiraGran"], ["ORG", "Departamento de Bienestar Social"], ["LOC", "Cataluña"]], "seconds": 0.1192}
+{"id": "conll-es-148", "gold": [["PER", "Davide Rebellin"], ["LOC", "ITA"], ["ORG", "Liquigas"]], "predicted": [["PER", "Davide Rebellin"], ["LOC", "ITA"], ["ORG", "Liquigas"]], "seconds": 0.0855}
+{"id": "conll-es-149", "gold": [["ORG", "Consejo de Seguridad"], ["ORG", "UNIFIL"]], "predicted": [["ORG", "Consejo de Seguridad"], ["ORG", "UNIFIL"]], "seconds": 0.094}
+{"id": "conll-es-150", "gold": [["PER", "León"]], "predicted": [["LOC", "León"], ["ORG", "Grupo San Victorino II"], ["ORG", "administración regional"]], "seconds": 0.1425}
+{"id": "conll-es-151", "gold": [["ORG", "BP"]], "predicted": [["PER", "PRECIO GASOLEO"]], "seconds": 0.0923}
+{"id": "conll-es-152", "gold": [], "predicted": [], "seconds": 0.1051}
+{"id": "conll-es-153", "gold": [], "predicted": [["ORG", "Foro Internacional del Turismo"], ["LOC", "alicantina"]], "seconds": 0.1474}
+{"id": "conll-es-154", "gold": [["LOC", "Melilla"], ["ORG", "EFE"]], "predicted": [["LOC", "Melilla"], ["ORG", "EFE"]], "seconds": 0.0769}
+{"id": "conll-es-155", "gold": [["ORG", "Antibióticos de León"]], "predicted": [["ORG", "empresa"], ["LOC", "León"]], "seconds": 0.1321}
+{"id": "conll-es-156", "gold": [["PER", "Imaz"], ["PER", "Ibarrola"]], "predicted": [["PER", "Imaz"], ["PER", "lehendakari"], ["ORG", "Ibarrola"], ["LOC", "bosque"]], "seconds": 0.1376}
+{"id": "conll-es-157", "gold": [["ORG", "Alitalia"], ["ORG", "Autostrade"], ["ORG", "Banca Fideuram"], ["ORG", "Banca Intesa"], ["ORG", "Banca di Roma"], ["ORG", "Bipop-Carire"], ["ORG", "Bnl"], ["ORG", "Comit"], ["ORG", "Edison"], ["ORG", "Enel"], ["ORG", "Eni"], ["ORG", "Fiat"], ["ORG", "Finmeccanica"], ["ORG", "Generali"], ["ORG", "Mediaset"], ["ORG", "Mediobanca"], ["ORG", "Mediolanum"], ["ORG", "Monte Paschi"], ["ORG", "Olivetti"], ["ORG", "Pirelli"], ["ORG", "Ras Fraz"], ["ORG", "Rolo 1474"], ["ORG", "Seat Pagine Gialle"], ["ORG", "San Paolo IMI"], ["ORG", "Tecnost"], ["ORG", "Telecom Italia"], ["ORG", "Tim"], ["ORG", "Unicredit"]], "predicted": [["LOC", "Bajan"], ["ORG", "Alitalia"], ["ORG", "Autostrade"], ["ORG", "Banca Fideuram"], ["ORG", "Banca Intesa"], ["ORG", "Banca di Roma"], ["ORG", "Bipop-Carire"], ["ORG", "Bnl"], ["ORG", "Comit"], ["ORG", "Edison"], ["ORG", "Enel"], ["ORG", "Eni"], ["ORG", "Fiat"], ["ORG", "Finmeccanica"], ["ORG", "Generali"], ["ORG", "Mediaset"], ["ORG", "Mediobanca"], ["ORG", "Mediolanum"], ["ORG", "Monte Paschi"], ["ORG", "Olivetti"], ["ORG", "Pirelli"], ["ORG", "Ras Fraz"], ["ORG", "Tecnost"], ["ORG", "Telecom Italia"], ["ORG", "Tim y Unicredit"]], "seconds": 0.1831}
+{"id": "conll-es-158", "gold": [["ORG", "Consell"], ["LOC", "Menorca"]], "predicted": [["ORG", "Consell menorquín"], ["PER", "turista"], ["LOC", "Menorca"]], "seconds": 0.1523}
+{"id": "conll-es-159", "gold": [], "predicted": [["ORG", "sindicato"]], "seconds": 0.1451}
+{"id": "conll-es-160", "gold": [["ORG", "Consellería de Educación"], ["ORG", "Instituto de. Carballeira"], ["ORG", "Confederación Intersindical Galega"], ["ORG", "CIG"]], "predicted": [["ORG", "Confederación Intersindical Galega"], ["ORG", "Consellería de Educación"], ["PER", "Carballeira"], ["PER", "profesora"]], "seconds": 0.1416}
+{"id": "conll-es-161", "gold": [], "predicted": [], "seconds": 0.1273}
+{"id": "conll-es-162", "gold": [["PER", "Fortún"], ["LOC", "Chapare"], ["LOC", "Bolivia"]], "predicted": [["LOC", "Chapare"], ["LOC", "Fortún"], ["LOC", "Bolivia"], ["ORG", "autoridades"]], "seconds": 0.1611}
+{"id": "conll-es-163", "gold": [["PER", "Isaac Rabin"], ["PER", "Raquel"], ["ORG", "EFE"]], "predicted": [["PER", "Isaac Rabin"], ["PER", "Raquel"], ["ORG", "EFE"]], "seconds": 0.1554}
+{"id": "conll-es-164", "gold": [], "predicted": [["ORG", "LV"], ["PER", "personas"]], "seconds": 0.1517}
+{"id": "conll-es-165", "gold": [["PER", "Vladímir Putin"], ["ORG", "Comunidad de Estados Independientes"], ["ORG", "CEI"], ["LOC", "Minsk"], ["PER", "Alexandr Lukashenko"], ["LOC", "Rusia"]], "predicted": [["PER", "Alexandr Lukashenko"], ["PER", "Vladímir Putin"], ["ORG", "Comunidad de Estados Independientes ( CEI )"], ["LOC", "Minsk"], ["LOC", "Rusia"]], "seconds": 0.1526}
+{"id": "conll-es-166", "gold": [["ORG", "Vitaminas \" Vitatene \""], ["ORG", "Grupo Montedison"], ["LOC", "España"], ["ORG", "Antibióticos"]], "predicted": [["ORG", "Antibióticos"], ["ORG", "Grupo Montedison"], ["LOC", "España"]], "seconds": 0.1611}
+{"id": "conll-es-167", "gold": [["ORG", "Consell de Menorca"], ["PER", "Joana Barceló"], ["ORG", "PSOE"]], "predicted": [["PER", "Joana Barceló"], ["ORG", "PSOE"], ["LOC", "aeropuertos"]], "seconds": 0.1508}
+{"id": "conll-es-168", "gold": [["LOC", "Renedo"], ["ORG", "EFE"]], "predicted": [["LOC", "Renedo"], ["ORG", "EFE"]], "seconds": 0.0765}
+{"id": "conll-es-169", "gold": [["LOC", "Mumbai"]], "predicted": [["PER", "pasajeros"], ["LOC", "Mumbai"], ["ORG", "fuentes policiales"]], "seconds": 0.1129}
+{"id": "conll-es-170", "gold": [["ORG", "EFE"], ["LOC", "Ginebra"], ["ORG", "EFE"]], "predicted": [["ORG", "EFE"], ["LOC", "Ginebra"]], "seconds": 0.0801}
+{"id": "conll-es-171", "gold": [["ORG", "Senado"], ["ORG", "Cámara de Representantes"], ["ORG", "Departamento de Justicia de los EEUU"]], "predicted": [["ORG", "Cámara de Representantes estadounidenses"], ["ORG", "Senado"], ["ORG", "grandes empresas de seguros médicos"], ["LOC", "EEUU"]], "seconds": 0.1322}
+{"id": "conll-es-172", "gold": [["LOC", "sala Trajano"]], "predicted": [["LOC", "sala Trajano"]], "seconds": 0.1777}
+{"id": "conll-es-173", "gold": [["PER", "Racan"], ["ORG", "Gobierno"]], "predicted": [["PER", "Racan"], ["ORG", "Gobierno"]], "seconds": 0.1542}
+{"id": "conll-es-174", "gold": [["ORG", "Comisión de Agricultura. Ganadería"]], "predicted": [["ORG", "Comisión de Agricultura"]], "seconds": 0.1692}
+{"id": "conll-es-175", "gold": [["ORG", "Junta"], ["LOC", "Campo de Gibraltar"], ["PER", "Rafael España"], ["LOC", "Algeciras"], ["LOC", "Cádiz"], ["ORG", "Administración"]], "predicted": [["ORG", "Administración autonómica"], ["ORG", "Junta"], ["LOC", "Campo de Gibraltar"], ["PER", "Rafael España"], ["LOC", "Algeciras"], ["LOC", "Cádiz"]], "seconds": 0.152}
+{"id": "conll-es-176", "gold": [["ORG", "Merck"]], "predicted": [["PER", "Algunos empleados"], ["ORG", "Merck"]], "seconds": 0.1149}
+{"id": "conll-es-177", "gold": [["ORG", "Hizbulá"], ["ORG", "Partido de Dios"], ["LOC", "Karkom"], ["ORG", "Ejército"]], "predicted": [["PER", "El oficial"], ["ORG", "Ejército israelí"], ["ORG", "Partido de Dios"], ["LOC", "Karkom"]], "seconds": 0.1799}
+{"id": "conll-es-178", "gold": [["LOC", "La Manga Club"], ["PER", "Carlos Lorenzano"]], "predicted": [["ORG", "La Manga Club"], ["ORG", "La plantilla espanyolista"], ["PER", "Carlos Lorenzano"]], "seconds": 0.1538}
+{"id": "conll-es-179", "gold": [["PER", "Steven De Jongh"], ["LOC", "HOL"], ["ORG", "Rabobank"]], "predicted": [["PER", "Steven De Jongh"], ["ORG", "Rabobank"]], "seconds": 0.0889}
+{"id": "conll-es-180", "gold": [], "predicted": [["ORG", "entidades colocadoras"], ["ORG", "institucionales"], ["ORG", "inversores minoristas"]], "seconds": 0.1493}
+{"id": "conll-es-181", "gold": [["PER", "Ivan Gotti"], ["LOC", "ITA"], ["ORG", "Polti"]], "predicted": [["PER", "Ivan Gotti"]], "seconds": 0.0921}
+{"id": "conll-es-182", "gold": [["ORG", "Unión Europea"], ["ORG", "Chile"], ["ORG", "UE"], ["ORG", "OMC"], ["LOC", "Chile"]], "predicted": [["ORG", "OMC"], ["ORG", "UE"], ["ORG", "Unión Europea"], ["LOC", "Chile"]], "seconds": 0.1496}
+{"id": "conll-es-183", "gold": [["PER", "Jorge Hahaintesu"]], "predicted": [["PER", "Jorge Hahaintesu"]], "seconds": 0.1513}
+{"id": "conll-es-184", "gold": [["LOC", "Perpignan"], ["LOC", "Figueras"], ["LOC", "túnel del Somport"]], "predicted": [["ORG", "comisión intergubernamental"], ["LOC", "Figueras"], ["LOC", "Perpignan"]], "seconds": 0.1926}
+{"id": "conll-es-185", "gold": [["ORG", "British Petroleum"], ["ORG", "BP"], ["ORG", "EFE"]], "predicted": [["ORG", "British Petroleum"]], "seconds": 0.1714}
+{"id": "conll-es-186", "gold": [], "predicted": [], "seconds": 0.1452}
+{"id": "conll-es-187", "gold": [["LOC", "Villafranca"], ["LOC", "Quintana"], ["LOC", "Puebla de la Calzada"], ["LOC", "Cuenca del Tajo"], ["LOC", "Azuaga"], ["LOC", "Llerena"], ["LOC", "Los Molinos"]], "predicted": [["LOC", "Azuaga"], ["LOC", "Llerena"], ["LOC", "Puebla de la Calzada"], ["LOC", "Quintana"], ["LOC", "Villafranca"], ["LOC", "Cuenca del Tajo"]], "seconds": 0.1571}
+{"id": "conll-es-188", "gold": [["PER", "Muñoa"], ["LOC", "Europa"], ["ORG", "Europa"]], "predicted": [["PER", "Muñoa"], ["LOC", "Europa"], ["LOC", "regiones"]], "seconds": 0.1557}
+{"id": "conll-es-189", "gold": [["PER", "Herminia"]], "predicted": [["PER", "Herminia"]], "seconds": 0.1313}
+{"id": "conll-es-190", "gold": [["ORG", "Consejería de Agricultura. Pesca"], ["ORG", "Junta de Andalucía"], ["LOC", "Jaén"], ["LOC", "Córdoba"]], "predicted": [["ORG", "Junta de Andalucía"], ["ORG", "La Consejería de Agricultura"], ["LOC", "Córdoba"], ["LOC", "Jaén"]], "seconds": 0.1493}
+{"id": "conll-es-191", "gold": [["LOC", "Estocolmo"]], "predicted": [["LOC", "Estocolmo"], ["PER", "él"]], "seconds": 0.1681}
+{"id": "conll-es-192", "gold": [["PER", "Fernando Lázaro Carreter"], ["ORG", "Real Academia Española"], ["ORG", "ABC"]], "predicted": [["PER", "Fernando Lázaro Carreter"], ["ORG", "Real Academia Española"]], "seconds": 0.1342}
+{"id": "conll-es-193", "gold": [["LOC", "Mendavia"], ["LOC", "Navarra"]], "predicted": [["ORG", "La asamblea de accionistas"], ["ORG", "consejo de administración"], ["LOC", "Mendavia"], ["LOC", "Navarra"]], "seconds": 0.1487}
+{"id": "conll-es-194", "gold": [["ORG", "ONU"], ["LOC", "Israel"], ["ORG", "Ejército del Sur del Líbano"], ["LOC", "prisión de al-Khiam"]], "predicted": [["PER", "secretario general"], ["ORG", "Ejército del Sur del Líbano"], ["ORG", "ONU"], ["LOC", "Israel"]], "seconds": 0.1445}
+{"id": "conll-es-195", "gold": [], "predicted": [], "seconds": 0.1213}
+{"id": "conll-es-196", "gold": [["ORG", "Gran Serbia"], ["LOC", "Croacia"], ["LOC", "Serbia"], ["ORG", "Estados"]], "predicted": [["LOC", "Serbia"], ["LOC", "Croacia"]], "seconds": 0.1539}
+{"id": "conll-es-197", "gold": [["PER", "Menacho"], ["LOC", "Olvera"], ["ORG", "PSOE"]], "predicted": [["PER", "Menacho"], ["LOC", "Olvera"], ["ORG", "PSOE"]], "seconds": 0.1902}
+{"id": "conll-es-198", "gold": [["PER", "Montoro"], ["PER", "Loyola de Palacio"]], "predicted": [["PER", "Montoro"]], "seconds": 0.1411}
+{"id": "conll-es-199", "gold": [["ORG", "Red Eléctrica"], ["ORG", "REE"], ["ORG", "Endesa"], ["ORG", "Iberdrola"]], "predicted": [["ORG", "Endesa"], ["ORG", "Iberdrola"], ["ORG", "Red Eléctrica"]], "seconds": 0.1663}
+{"id": "conll-es-200", "gold": [], "predicted": [], "seconds": 0.0936}
+{"id": "conll-es-201", "gold": [["LOC", "EEUU"], ["LOC", "ESPAÑA"], ["ORG", "GOBIERNO"], ["LOC", "Freetown"], ["ORG", "EFE"]], "predicted": [["LOC", "EEUU"], ["LOC", "Freetown"], ["ORG", "EFE"]], "seconds": 0.1112}
+{"id": "conll-es-202", "gold": [], "predicted": [["PER", "La profesora afectada"]], "seconds": 0.1332}
+{"id": "conll-es-203", "gold": [["PER", "Paola Suárez"], ["LOC", "ARG"], ["PER", "Erika de Lone"], ["LOC", "USA"]], "predicted": [["PER", "Erika de Lone"], ["PER", "Paola Suárez"], ["LOC", "USA"]], "seconds": 0.1048}
+{"id": "conll-es-204", "gold": [["LOC", "Vitoria"], ["ORG", "EFE"]], "predicted": [["LOC", "Vitoria"], ["ORG", "EFE"]], "seconds": 0.083}
+{"id": "conll-es-205", "gold": [["ORG", "Policía Local"], ["PER", "José Pérez Cequera"], ["PER", "Andrés Hiniesta"], ["LOC", "Ecija"], ["LOC", "Sevilla"]], "predicted": [["ORG", "Policía Local"], ["PER", "Andrés Hiniesta"], ["PER", "José Pérez Cequera"], ["PER", "hombre"], ["LOC", "Ecija"], ["LOC", "Sevilla"]], "seconds": 0.1619}
+{"id": "conll-es-206", "gold": [], "predicted": [["PER", "El diputado andalucista"]], "seconds": 0.1366}
+{"id": "conll-es-207", "gold": [["LOC", "Madrid"], ["ORG", "EFE"]], "predicted": [["LOC", "Madrid"], ["ORG", "EFE"]], "seconds": 0.0852}
+{"id": "conll-es-208", "gold": [["LOC", "Valladolid"], ["ORG", "EFE"]], "predicted": [["LOC", "Valladolid"], ["ORG", "EFE"]], "seconds": 0.0844}
+{"id": "conll-es-209", "gold": [["ORG", "Gobierno"]], "predicted": [["ORG", "Gobierno"]], "seconds": 0.1487}
+{"id": "conll-es-210", "gold": [["LOC", "París"], ["ORG", "EFECOM"]], "predicted": [["LOC", "París"], ["ORG", "EFECOM"]], "seconds": 0.0865}
+{"id": "conll-es-211", "gold": [["PER", "Rodríguez Cancho"]], "predicted": [["PER", "Rodríguez Cancho"]], "seconds": 0.1245}
+{"id": "conll-es-212", "gold": [["LOC", "Buenos Aires"]], "predicted": [["LOC", "Buenos Aires"]], "seconds": 0.1377}
+{"id": "conll-es-213", "gold": [["LOC", "Marruecos"], ["LOC", "España"]], "predicted": [["ORG", "Adidas"], ["LOC", "Marruecos"], ["LOC", "España"]], "seconds": 0.1121}
+{"id": "conll-es-214", "gold": [], "predicted": [["PER", "El ministro"], ["PER", "consejero"]], "seconds": 0.1393}
+{"id": "conll-es-215", "gold": [["ORG", "ADRI de Daroca-Calamocha"], ["ORG", "Unión Europea"]], "predicted": [["ORG", "ADRI de Daroca-Calamocha"], ["LOC", "Unión Europea"]], "seconds": 0.1516}
+{"id": "conll-es-216", "gold": [["LOC", "Huesca"], ["LOC", "Zaragoza"]], "predicted": [["LOC", "Huesca"], ["LOC", "Zaragoza"], ["PER", "alumno"], ["ORG", "institución académica"]], "seconds": 0.1567}
+{"id": "conll-es-217", "gold": [["PER", "Cipollini"]], "predicted": [["PER", "Cipollini"]], "seconds": 0.1009}
+{"id": "conll-es-218", "gold": [["ORG", "Aceralia"]], "predicted": [["ORG", "Aceralia"]], "seconds": 0.1684}
+{"id": "conll-es-219", "gold": [], "predicted": [["LOC", "españoles"]], "seconds": 0.1404}
+{"id": "conll-es-220", "gold": [["LOC", "Atlántico"]], "predicted": [["LOC", "Atlántico"], ["ORG", "inversores"]], "seconds": 0.1695}
+{"id": "conll-es-221", "gold": [], "predicted": [], "seconds": 0.1512}
+{"id": "conll-es-222", "gold": [["PER", "Racan"], ["PER", "Stipe Mesic"], ["ORG", "Gobierno"], ["PER", "Franjo Tudjman"], ["ORG", "Croacia"], ["LOC", "Occidente"]], "predicted": [["PER", "Franjo Tudjman"], ["PER", "Racan"], ["PER", "Stipe Mesic"], ["LOC", "Croacia"], ["LOC", "Occidente"]], "seconds": 0.1345}
+{"id": "conll-es-223", "gold": [["PER", "Carro"]], "predicted": [["PER", "Carro"], ["PER", "trabajadores"]], "seconds": 0.114}
+{"id": "conll-es-224", "gold": [["PER", "Putin"], ["ORG", "Moscú"], ["LOC", "Asia Central"], ["ORG", "CEI"], ["PER", "Lukashenko"], ["ORG", "OTAN"], ["ORG", "EFE"], ["LOC", "Minsk"]], "predicted": [["PER", "Lukashenko"], ["PER", "Putin"], ["LOC", "Asia Central"], ["ORG", "CEI"], ["ORG", "EFE"], ["ORG", "OTAN"], ["LOC", "Minsk"]], "seconds": 0.1622}
+{"id": "conll-es-225", "gold": [], "predicted": [], "seconds": 0.1631}
+{"id": "conll-es-226", "gold": [["PER", "Gregory Reaves"]], "predicted": [["PER", "Gregory Reaves"], ["ORG", "empresa"]], "seconds": 0.1251}
+{"id": "conll-es-227", "gold": [["LOC", "Colegio Larrea"]], "predicted": [["LOC", "patio del Colegio Larrea"]], "seconds": 0.107}
+{"id": "conll-es-228", "gold": [], "predicted": [], "seconds": 0.1397}
+{"id": "conll-es-229", "gold": [["LOC", "España"], ["LOC", "Italia"], ["LOC", "Francia"], ["LOC", "Portugal"]], "predicted": [["LOC", "España"], ["LOC", "Francia"], ["LOC", "Italia"], ["LOC", "Portugal"]], "seconds": 0.1383}
+{"id": "conll-es-230", "gold": [], "predicted": [["LOC", "israelíes"]], "seconds": 0.1124}
+{"id": "conll-es-231", "gold": [["LOC", "Djakovica"], ["LOC", "Kosovo"], ["LOC", "Nis"], ["ORG", "Policía"], ["ORG", "Ejército"], ["ORG", "OTAN"], ["LOC", "Yugoslavia"]], "predicted": [["PER", "143 albaneses"], ["LOC", "Djakovica"], ["LOC", "Nis"], ["LOC", "Kosovo"], ["LOC", "Yugoslavia"], ["ORG", "Ejército yugoslavos"], ["ORG", "OTAN"], ["ORG", "Policía"]], "seconds": 0.1737}
+{"id": "conll-es-232", "gold": [["LOC", "Africa"], ["LOC", "Etiopía"], ["LOC", "Kenia"], ["LOC", "Yibuti"], ["LOC", "Sudán"], ["LOC", "Argelia"], ["LOC", "Marruecos"]], "predicted": [["LOC", "Argelia"], ["LOC", "Etiopía"], ["LOC", "Kenia"], ["LOC", "Marruecos"], ["LOC", "Sudán"], ["LOC", "Yibuti"]], "seconds": 0.1524}
+{"id": "conll-es-233", "gold": [["ORG", "Comisión Especial del Modelo Educativo Universitario de Aragón"]], "predicted": [["PER", "Ambas"], ["ORG", "Comisión Especial del Modelo Educativo Universitario de Aragón"], ["LOC", "campus oscense"]], "seconds": 0.1374}
+{"id": "conll-es-234", "gold": [["PER", "Andrea Ferrigato"], ["LOC", "ITA"], ["ORG", "Fassa"]], "predicted": [["PER", "Andrea Ferrigato"], ["LOC", "ITA"], ["ORG", "Fassa"]], "seconds": 0.0902}
+{"id": "conll-es-235", "gold": [["PER", "Moscoso"]], "predicted": [["LOC", "país"]], "seconds": 0.1557}
+{"id": "conll-es-236", "gold": [["ORG", "Prensa de la PNC"], ["PER", "Gerson López"]], "predicted": [["ORG", "PNC"], ["PER", "Gerson López"]], "seconds": 0.1332}
+{"id": "conll-es-237", "gold": [["LOC", "LOCKERBIE"], ["PER", "CHAVEZ"], ["ORG", "GOBIERNO"], ["ORG", "EEUU"], ["LOC", "Caracas"], ["ORG", "EFE"]], "predicted": [["PER", "JUICIO CHAVEZ"], ["LOC", "Caracas"]], "seconds": 0.1089}
+{"id": "conll-es-238", "gold": [["LOC", "España"]], "predicted": [["LOC", "España"]], "seconds": 0.1224}
+{"id": "conll-es-239", "gold": [], "predicted": [["LOC", "Piazza Affari"]], "seconds": 0.1226}
+{"id": "conll-es-240", "gold": [["LOC", "Colombia"], ["LOC", "Darién"], ["LOC", "Canal"]], "predicted": [["ORG", "guerrilla"], ["LOC", "Colombia"], ["LOC", "Darién"]], "seconds": 0.1701}
+{"id": "conll-es-241", "gold": [["PER", "Racan"], ["LOC", "Belgrado"]], "predicted": [["PER", "Racan"], ["LOC", "Belgrado"]], "seconds": 0.1263}
+{"id": "conll-es-242", "gold": [["PER", "Montoro"], ["ORG", "Gobierno"]], "predicted": [["PER", "Montoro"], ["ORG", "Gobierno"]], "seconds": 0.1468}
+{"id": "conll-es-243", "gold": [["LOC", "Lalín"]], "predicted": [["PER", "vecina"], ["LOC", "Lalín"]], "seconds": 0.1414}
+{"id": "conll-es-244", "gold": [["LOC", "Madrid"], ["ORG", "EFECOM"]], "predicted": [["ORG", "EFE"], ["ORG", "EFECOM"], ["LOC", "Madrid"]], "seconds": 0.0942}
+{"id": "conll-es-245", "gold": [], "predicted": [], "seconds": 0.0982}
+{"id": "conll-es-246", "gold": [["PER", "Javier Gil"], ["ORG", "Agaden"], ["ORG", "Mancomunidad de Municipios del Campo de Gibraltar"], ["ORG", "Diputación Provincial de Cádiz"]], "predicted": [["PER", "Javier Gil"], ["ORG", "Agaden"], ["ORG", "Diputación Provincial de Cádiz"]], "seconds": 0.2151}
+{"id": "conll-es-247", "gold": [["PER", "Vilaboa"], ["LOC", "Mieres"]], "predicted": [["LOC", "Mieres"], ["LOC", "Vilaboa"], ["ORG", "campus universitario"]], "seconds": 0.1548}
+{"id": "conll-es-248", "gold": [["ORG", "CCOO"], ["ORG", "El Segre"], ["PER", "Núria de Gispert"]], "predicted": [["ORG", "CCOO"], ["PER", "alumno"], ["LOC", "El Segre"], ["LOC", "Núria de Gispert"]], "seconds": 0.1506}
+{"id": "conll-es-249", "gold": [["ORG", "Real Zaragoza"]], "predicted": [["PER", "jugador"]], "seconds": 0.1398}
+{"id": "conll-es-250", "gold": [["LOC", "cárcel de Jiam"], ["LOC", "Líbano"]], "predicted": [["PER", "144 prisioneros"], ["LOC", "Jiam"]], "seconds": 0.1349}
+{"id": "conll-es-251", "gold": [["ORG", "Junta de Castilla. León"], ["ORG", "PSOE"], ["ORG", "Cortes"], ["ORG", "Comunidad"], ["ORG", "Tribunal de Cuentas"]], "predicted": [["ORG", "La Junta de Castilla"], ["ORG", "PSOE"], ["LOC", "León"]], "seconds": 0.1612}
+{"id": "conll-es-252", "gold": [["LOC", "SIERRA LEONA"], ["LOC", "Freetown"], ["LOC", "Sierra Leona"]], "predicted": [["LOC", "Freetown"], ["LOC", "SIERRA LEONA"], ["LOC", "Sierra Leona"], ["ORG", "GOLPE"], ["ORG", "gobierno"]], "seconds": 0.0984}
+{"id": "conll-es-253", "gold": [["PER", "Manuel Julio"], ["PER", "Johnny Pérez"], ["PER", "Carlos Mesa"], ["PER", "Juan Urango"], ["PER", "Fulgencio Zúñiga"], ["PER", "Edison Miranda"]], "predicted": [["PER", "Carlos Mesa"], ["PER", "Edison Miranda"], ["PER", "Fulgencio Zúñiga"], ["PER", "Johnny Pérez"], ["PER", "Juan Urango"], ["PER", "Manuel Julio"]], "seconds": 0.1355}
+{"id": "conll-es-254", "gold": [], "predicted": [], "seconds": 0.1429}
+{"id": "conll-es-255", "gold": [["ORG", "Chile"], ["ORG", "Unión Europea"]], "predicted": [["LOC", "Chile"], ["ORG", "Unión Europea"], ["PER", "árbitro"]], "seconds": 0.1249}
+{"id": "conll-es-256", "gold": [["PER", "Wladimir Belli"], ["LOC", "ITA"], ["ORG", "Fassa"]], "predicted": [["PER", "Wladimir Belli"], ["ORG", "Fassa"]], "seconds": 0.0869}
+{"id": "conll-es-257", "gold": [["LOC", "Israel"], ["ORG", "ESL"]], "predicted": [["PER", "El diplomático ghaneano"], ["LOC", "Israel"], ["ORG", "ESL"]], "seconds": 0.1229}
+{"id": "conll-es-258", "gold": [], "predicted": [], "seconds": 0.1842}
+{"id": "conll-es-259", "gold": [["ORG", "Planificación Ambiental de la Generalitat"], ["PER", "Pere Torres"]], "predicted": [["PER", "Pere Torres"]], "seconds": 0.1172}
+{"id": "conll-es-260", "gold": [["LOC", "Pontevedra"], ["PER", "Antón Masa"]], "predicted": [["LOC", "Pontevedra"], ["PER", "Antón Masa"]], "seconds": 0.1469}
+{"id": "conll-es-261", "gold": [["LOC", "Toledo"], ["ORG", "EFE"]], "predicted": [["LOC", "Toledo"], ["ORG", "EFE"]], "seconds": 0.0867}
+{"id": "conll-es-262", "gold": [["LOC", "Ledesma"], ["PER", "Herrera"]], "predicted": [["PER", "Herrera"], ["PER", "Ledesma"]], "seconds": 0.1648}
+{"id": "conll-es-263", "gold": [["PER", "Blanco"], ["PER", "Coll"]], "predicted": [["PER", "Blanco"], ["PER", "Coll"]], "seconds": 0.1123}
+{"id": "conll-es-264", "gold": [["PER", "Arnoldo Alemán"]], "predicted": [["PER", "Arnoldo Alemán"]], "seconds": 0.1436}
+{"id": "conll-es-265", "gold": [["ORG", "Colegio de Ingenieros Técnicos de Minas de Asturias"], ["ORG", "España"], ["ORG", "Italia"]], "predicted": [["PER", "decano"], ["ORG", "Colegio de Ingenieros Técnicos de Minas de Asturias"], ["LOC", "España"], ["LOC", "Italia"]], "seconds": 0.1485}
+{"id": "conll-es-266", "gold": [["LOC", "Centroamérica"]], "predicted": [["LOC", "Centroamérica"]], "seconds": 0.1473}
+{"id": "conll-es-267", "gold": [["ORG", "Fuerza de Tareas Conjuntas"]], "predicted": [["ORG", "Fuerza de Tareas Conjuntas"]], "seconds": 0.1358}
+{"id": "conll-es-268", "gold": [], "predicted": [["ORG", "Junta de Acreedores"], ["PER", "interventor judicial"]], "seconds": 0.1187}
+{"id": "conll-es-269", "gold": [["LOC", "León"], ["ORG", "EFECOM"]], "predicted": [["LOC", "León"], ["ORG", "EFECOM"]], "seconds": 0.0824}
+{"id": "conll-es-270", "gold": [["ORG", "Chunta Aragonesista"], ["ORG", "CHA"], ["ORG", "Cortes de Aragón"], ["LOC", "Aragón"], ["PER", "Marcelino Iglesias"]], "predicted": [["ORG", "CHA"], ["ORG", "Chunta Aragonesista"], ["LOC", "Aragón"], ["LOC", "Aragón"], ["PER", "Marcelino Iglesias"]], "seconds": 0.163}
+{"id": "conll-es-271", "gold": [["LOC", "Guatemala"]], "predicted": [["LOC", "Guatemala"]], "seconds": 0.0972}
+{"id": "conll-es-272", "gold": [["ORG", "Socialista"], ["ORG", "Gobierno"]], "predicted": [["ORG", "El grupo parlamentario Socialista"], ["ORG", "Gobierno"], ["ORG", "grandes distribuidoras"], ["PER", "ciudadanos"]], "seconds": 0.1524}
+{"id": "conll-es-273", "gold": [["ORG", "EFE"]], "predicted": [["LOC", "Panamá"], ["ORG", "EFE"]], "seconds": 0.0841}
+{"id": "conll-es-274", "gold": [["ORG", "Policía"], ["LOC", "Málaga"]], "predicted": [["ORG", "Policía"], ["LOC", "Málaga"], ["PER", "ciudadano francés"]], "seconds": 0.1616}
+{"id": "conll-es-275", "gold": [["PER", "Paolo Svoldelli"], ["LOC", "ITA"], ["ORG", "Saeco"]], "predicted": [["PER", "Paolo Svoldelli"], ["LOC", "ITA"], ["ORG", "Saeco"]], "seconds": 0.0919}
+{"id": "conll-es-276", "gold": [], "predicted": [["ORG", "inversores"]], "seconds": 0.1388}
+{"id": "conll-es-277", "gold": [], "predicted": [["PER", "individuo"]], "seconds": 0.1301}
+{"id": "conll-es-278", "gold": [["ORG", "BP"], ["LOC", "Madrid"], ["ORG", "EFECOM"]], "predicted": [["LOC", "Madrid"], ["ORG", "EFECOM"]], "seconds": 0.1235}
+{"id": "conll-es-279", "gold": [["LOC", "Casares"], ["LOC", "Málaga"], ["ORG", "EFE"]], "predicted": [["LOC", "Casares"], ["LOC", "Málaga"]], "seconds": 0.0917}
+{"id": "conll-es-280", "gold": [["ORG", "Fundación"]], "predicted": [["ORG", "La Fundación"]], "seconds": 0.1177}
+{"id": "conll-es-281", "gold": [["ORG", "Gobierno"], ["PER", "Hugo Banzer"]], "predicted": [["ORG", "Gobierno"], ["PER", "Hugo Banzer"]], "seconds": 0.1527}
+{"id": "conll-es-282", "gold": [["LOC", "España"]], "predicted": [["LOC", "España"]], "seconds": 0.1784}
+{"id": "conll-es-283", "gold": [["LOC", "Minsk"], ["LOC", "Armenia"], ["ORG", "Rusia"], ["ORG", "Estados"], ["ORG", "CEI"]], "predicted": [["LOC", "Minsk"], ["LOC", "Armenia"], ["LOC", "Rusia"], ["ORG", "CEI"]], "seconds": 0.1598}
+{"id": "conll-es-284", "gold": [["LOC", "Guatemala"], ["ORG", "EFE"]], "predicted": [["LOC", "Guatemala"], ["ORG", "EFE"]], "seconds": 0.083}
+{"id": "conll-es-285", "gold": [["ORG", "Finarte España"], ["PER", "Teresa Grasa"], ["PER", "Carlos Barboza"]], "predicted": [["PER", "Carlos Barboza"], ["PER", "Goya"], ["PER", "Teresa Grasa"]], "seconds": 0.149}
+{"id": "conll-es-286", "gold": [["PER", "María Inmaculada González Paniagua"], ["PER", "Esther Barrantes Palencia"], ["PER", "Luis Damián Ramos Pereira"], ["PER", "José Julián Carmona"]], "predicted": [["ORG", "empresa constructora"], ["PER", "Esther Barrantes Palencia"], ["PER", "José Julián Carmona"], ["PER", "Luis Damián Ramos Pereira"], ["PER", "María Inmaculada González Paniagua"]], "seconds": 0.1831}
+{"id": "conll-es-287", "gold": [["PER", "Teresa Grasa"], ["PER", "Carlos Barboza"], ["ORG", "Escuela de Bellas Artes de Madrid"], ["ORG", "Instituto de Restauración de Roma"], ["ORG", "Instituto Central de Restauración de Madrid"], ["PER", "Gonzalo Perales"], ["LOC", "Goya"], ["LOC", "Cartuja"], ["LOC", "Aula Dei"]], "predicted": [["PER", "Carlos Barboza"], ["PER", "Gonzalo Perales"], ["PER", "Teresa Grasa"], ["LOC", "Madrid"], ["LOC", "Roma"]], "seconds": 0.1765}
+{"id": "conll-es-288", "gold": [["ORG", "ASAJA"]], "predicted": [["ORG", "ASAJA"], ["PER", "agricultores y ganaderos"]], "seconds": 0.1298}
+{"id": "conll-es-289", "gold": [["LOC", "Granada"], ["ORG", "EFE"]], "predicted": [["LOC", "Granada"], ["ORG", "EFE"]], "seconds": 0.083}
+{"id": "conll-es-290", "gold": [["PER", "Michael Laudrup"], ["PER", "reina Margarita II"]], "predicted": [["PER", "Michael Laudrup"], ["LOC", "capital danesa"]], "seconds": 0.1551}
+{"id": "conll-es-291", "gold": [["PER", "Alvarez Rendueles"]], "predicted": [["PER", "Alvarez Rendueles"], ["ORG", "grupo"]], "seconds": 0.1319}
+{"id": "conll-es-292", "gold": [["ORG", "Ministerio de Educación. Cultura"], ["ORG", "MEC"]], "predicted": [["PER", "profesores"], ["ORG", "MEC"], ["ORG", "Ministerio de Educación"]], "seconds": 0.1411}
+{"id": "conll-es-293", "gold": [], "predicted": [["PER", "La gata"]], "seconds": 0.1395}
+{"id": "conll-es-294", "gold": [["PER", "Antonio Vegara"], ["PER", "Nieves García"], ["LOC", "Tarifa"], ["LOC", "Cádiz"]], "predicted": [["PER", "Antonio Vegara y Nieves García"], ["LOC", "Cádiz"], ["LOC", "Tarifa"]], "seconds": 0.1495}
+{"id": "conll-es-295", "gold": [], "predicted": [], "seconds": 0.1758}
+{"id": "conll-es-296", "gold": [["ORG", "Space Adventures"]], "predicted": [["ORG", "Space Adventures"]], "seconds": 0.1481}
+{"id": "conll-es-297", "gold": [["PER", "Andrea Noe"], ["LOC", "ITA"], ["ORG", "Mapei"]], "predicted": [["PER", "Andrea Noe"], ["ORG", "Mapei"]], "seconds": 0.0917}
+{"id": "conll-es-298", "gold": [["ORG", "BP"], ["LOC", "España"]], "predicted": [["ORG", "BP"], ["LOC", "España"]], "seconds": 0.1294}
+{"id": "conll-es-299", "gold": [["LOC", "LIBANO"], ["LOC", "ISRAEL"], ["LOC", "PERU"], ["LOC", "Lima"], ["ORG", "EFE"]], "predicted": [["LOC", "ISRAEL"], ["LOC", "Lima"], ["ORG", "EFE"]], "seconds": 0.1096}

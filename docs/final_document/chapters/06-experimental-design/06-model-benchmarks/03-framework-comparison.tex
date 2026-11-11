@@ -1,0 +1,70 @@
+% ============================================================
+% Chapter 6: Experimental Design
+%   Section: Model Benchmarks
+%     Subsection: The Pipeline against Other Ways of Doing Each Phase
+% Included from chapters/06-experimental-design/06-model-benchmarks/model-benchmarks.tex
+% Source: backend/data/evaluation/experiments/frameworks/README.md (2026-11-11);
+% backend/src/evaluation/{headless_claude,frameworks}.py;
+% scripts/standard_benchmarks.py.
+% ============================================================
+
+\subsection{The Pipeline against Other Ways of Doing Each Phase}
+\label{subsec:benchmark-frameworks}
+
+The benchmarks above choose between local language models. A second
+comparison asks a wider question of each phase: how the pipeline's own
+component compares with a model built for the task, with a local
+language model, and with a hosted frontier model, in quality, time and
+the resources each needs. Every contender of a phase reads the same
+frozen input, and the scoring is the one the phase already had.
+
+\paragraph{The hosted model.} Claude (Haiku and Sonnet) was run through
+the vendor's command-line client under a consumer subscription, not
+through the paid interface, with no tools, no web search and none of the
+project's instructions. It is given the prompts the pipeline gives every
+local model, through the same client code, so only the model differs.
+Three properties set it apart and are stated with every figure: it
+accepts no temperature, so a repeated run need not agree with itself,
+where the local models are asked at zero; its size is not published and
+it cannot run without the network and a plan; and its cost is a share of
+that plan, reported beside what the same tokens would cost at list
+price. A guard stops a run at 90\% of the plan's usage and whenever a
+call could be billed.
+
+\paragraph{Phases and inputs.} Three phases have a reference a program
+can score. \emph{Topic classification}: the 58 articles of the labelled
+set, their text fetched once and frozen (56 could be extracted).
+\emph{Verification}: the first ten claims of AVeriTeC's development
+split~\cite{schlichtkrull2023averitec}, every verifier reading the
+evidence one earlier run had kept, so that verifiers differ by their
+reading alone; the hosted model was also asked with no evidence at all,
+to measure what it already knows. \emph{Review}: the 36 planted-defect
+texts of Subsection~\ref{subsec:benchmark-writing}. Extraction and
+writing were not compared: both need a reference made by a person (a
+body copied by hand; readers judging blind) that does not exist yet.
+
+\paragraph{Standard sets.} The project's own labels are few and partly
+written by a model, so the two enrichment tasks were also run on sets
+labelled by people and known to the community, in both of the system's
+languages. Topics: SIB-200~\cite{adelani2024sib200}, 204 test sentences
+per language, the same sentences in English and Spanish, seven topics,
+with 701 training sentences per language for the contenders that learn.
+Entities: a seeded random sample of 300 test sentences each from
+CoNLL-2003 (English)~\cite{tjongkimsang2003conll} and CoNLL-2002
+(Spanish)~\cite{tjongkimsang2002conll}, scored on persons,
+organisations and locations as each sentence's set of typed names,
+micro-averaged. The contenders are deterministic except the hosted
+model: for topics, the pipeline's method untrained (the sentence's
+\texttt{bge-m3} embedding~\cite{chen2024bgem3} against each label's),
+logistic regression trained on those embeddings, and a TF-IDF baseline;
+for entities, GLiNER~\cite{zaratiana2024gliner} exactly as the pipeline
+runs it, an XLM-RoBERTa model fine-tuned for the task
+(\texttt{Davlan/xlm-roberta-base-ner-hrl}) and spaCy's small models.
+
+\paragraph{Resources.} Every contender is reported with what it needs in
+order to be used: parameters, size on disk, memory once loaded and at
+its peak, the processor cores it kept busy, and where it runs. Each
+local model was measured in a process of its own, without a GPU, on the
+machine the comparison ran on (an Intel Core Ultra~7 165U with 64~GB,
+not the laptop of Section~\ref{sec:setup}); for the models served by Ollama the figures are
+the server's own report.

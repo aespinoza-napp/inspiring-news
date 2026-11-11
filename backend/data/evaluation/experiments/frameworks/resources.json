@@ -1,0 +1,153 @@
+{
+  "measuredAt": "2026-11-11T12:32:48+0100",
+  "machine": {
+    "cpu": "Intel(R) Core(TM) Ultra 7 165U",
+    "threads": 14,
+    "ramGb": 65.3,
+    "gpu": "none used"
+  },
+  "models": {
+    "embedding (bge-m3)": {
+      "model": "BAAI/bge-m3",
+      "runsOn": "this machine, CPU",
+      "parameters": 567754752,
+      "diskMb": 4564.4,
+      "loadedMb": 710.1,
+      "peakMb": 2099.4,
+      "loadSeconds": 6.9,
+      "coresUsed": 10.5
+    },
+    "gliner": {
+      "model": "urchade/gliner_small-v2.1",
+      "runsOn": "this machine, CPU",
+      "parameters": 152648704,
+      "diskMb": 610.7,
+      "loadedMb": 1147.5,
+      "peakMb": 1728.1,
+      "loadSeconds": 6.2,
+      "coresUsed": 12.0
+    },
+    "xlmr-ner": {
+      "model": "Davlan/xlm-roberta-base-ner-hrl",
+      "runsOn": "this machine, CPU",
+      "parameters": 277459977,
+      "diskMb": 1114.9,
+      "loadedMb": 734.6,
+      "peakMb": 1116.4,
+      "loadSeconds": 4.5,
+      "coresUsed": 12.0
+    },
+    "spacy-sm en": {
+      "model": "en_core_web_sm",
+      "runsOn": "this machine, CPU",
+      "parameters": null,
+      "diskMb": 15.2,
+      "loadedMb": 310.5,
+      "peakMb": 312.7,
+      "loadSeconds": 1.4,
+      "coresUsed": 1.0
+    },
+    "spacy-sm es": {
+      "model": "es_core_news_sm",
+      "runsOn": "this machine, CPU",
+      "parameters": null,
+      "diskMb": 16.2,
+      "loadedMb": 320.5,
+      "peakMb": 322.7,
+      "loadSeconds": 1.2,
+      "coresUsed": 1.0
+    },
+    "tfidf-logreg": {
+      "model": "trained here on SIB-200 (en)",
+      "runsOn": "this machine, CPU",
+      "parameters": 345261,
+      "diskMb": 3.8,
+      "loadedMb": 139.8,
+      "peakMb": 221.0,
+      "loadSeconds": 6.5,
+      "coresUsed": 11.0
+    },
+    "llama3.2:3b-bench": {
+      "model": "llama 3.2B Q4_K_M",
+      "runsOn": "this machine, CPU",
+      "parameters": "3.2B",
+      "diskMb": 2019.4,
+      "loadedMb": 4088.3,
+      "peakMb": null,
+      "loadSeconds": 4.0,
+      "coresUsed": null
+    },
+    "qwen3.5:4b-bench": {
+      "model": "qwen35 4.2B Q4_K_M",
+      "runsOn": "this machine, CPU",
+      "parameters": "4.2B",
+      "diskMb": 3324.2,
+      "loadedMb": 3661.6,
+      "peakMb": null,
+      "loadSeconds": 4.1,
+      "coresUsed": null
+    },
+    "phi4-mini:bench": {
+      "model": "phi3 3.8B Q4_K_M",
+      "runsOn": "this machine, CPU",
+      "parameters": "3.8B",
+      "diskMb": 2491.9,
+      "loadedMb": 4829.1,
+      "peakMb": null,
+      "loadSeconds": 5.1,
+      "coresUsed": null
+    },
+    "granite3.3:8b-bench": {
+      "model": "granite 8.2B Q4_K_M",
+      "runsOn": "this machine, CPU",
+      "parameters": "8.2B",
+      "diskMb": 4942.9,
+      "loadedMb": 7900.5,
+      "peakMb": null,
+      "loadSeconds": 10.4,
+      "coresUsed": null
+    },
+    "gemma4:e4b-bench": {
+      "model": "gemma4 7.5B Q4_K_M",
+      "runsOn": "this machine, CPU",
+      "parameters": "7.5B",
+      "diskMb": 6583.7,
+      "loadedMb": 2093.4,
+      "peakMb": null,
+      "loadSeconds": 9.8,
+      "coresUsed": null
+    },
+    "qwen3.5:9b-bench": {
+      "model": "qwen35 9.0B Q4_K_M",
+      "runsOn": "this machine, CPU",
+      "parameters": "9.0B",
+      "diskMb": 6550.8,
+      "loadedMb": 6737.3,
+      "peakMb": null,
+      "loadSeconds": 9.1,
+      "coresUsed": null
+    },
+    "claude-headless:haiku": {
+      "model": "not published",
+      "runsOn": "Anthropic's servers, through the claude.ai subscription",
+      "parameters": null,
+      "diskMb": null,
+      "loadedMb": null,
+      "peakMb": null,
+      "loadSeconds": null,
+      "coresUsed": null,
+      "note": "nothing to hold locally but the `claude` CLI process per call; needs the network and a plan"
+    },
+    "claude-headless:sonnet": {
+      "model": "not published",
+      "runsOn": "Anthropic's servers, through the claude.ai subscription",
+      "parameters": null,
+      "diskMb": null,
+      "loadedMb": null,
+      "peakMb": null,
+      "loadSeconds": null,
+      "coresUsed": null,
+      "note": "nothing to hold locally but the `claude` CLI process per call; needs the network and a plan"
+    }
+  }
+}

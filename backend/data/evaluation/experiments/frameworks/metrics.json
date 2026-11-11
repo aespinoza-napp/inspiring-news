@@ -1,0 +1,686 @@
+{
+  "topics": {
+    "claude-headless-haiku": {
+      "articles": 56,
+      "top1": {
+        "mean": 0.7321,
+        "low": 0.6071,
+        "high": 0.8393,
+        "n": 56
+      },
+      "top3": {
+        "mean": 0.9286,
+        "low": 0.8571,
+        "high": 0.9821,
+        "n": 56
+      },
+      "group": {
+        "mean": 0.8571,
+        "low": 0.7679,
+        "high": 0.9464,
+        "n": 56
+      },
+      "unusable": 0,
+      "medianSeconds": 2.9235,
+      "totalSeconds": 169.427,
+      "promptTokens": 148354,
+      "completionTokens": 8121
+    },
+    "claude-headless-sonnet": {
+      "articles": 56,
+      "top1": {
+        "mean": 0.7679,
+        "low": 0.6607,
+        "high": 0.875,
+        "n": 56
+      },
+      "top3": {
+        "mean": 0.9643,
+        "low": 0.9107,
+        "high": 1.0,
+        "n": 56
+      },
+      "group": {
+        "mean": 0.8929,
+        "low": 0.8036,
+        "high": 0.9643,
+        "n": 56
+      },
+      "unusable": 0,
+      "medianSeconds": 2.646,
+      "totalSeconds": 151.391,
+      "promptTokens": 147178,
+      "completionTokens": 1256
+    },
+    "embedding": {
+      "articles": 56,
+      "top1": {
+        "mean": 0.6607,
+        "low": 0.5357,
+        "high": 0.7857,
+        "n": 56
+      },
+      "top3": {
+        "mean": 0.875,
+        "low": 0.7857,
+        "high": 0.9469,
+        "n": 56
+      },
+      "group": {
+        "mean": 0.8214,
+        "low": 0.7143,
+        "high": 0.9107,
+        "n": 56
+      },
+      "unusable": 0,
+      "medianSeconds": 4.7475,
+      "totalSeconds": 329.69,
+      "promptTokens": null,
+      "completionTokens": null
+    },
+    "llama3.2-3b-bench": {
+      "articles": 56,
+      "top1": {
+        "mean": 0.5179,
+        "low": 0.375,
+        "high": 0.6429,
+        "n": 56
+      },
+      "top3": {
+        "mean": 0.8214,
+        "low": 0.7143,
+        "high": 0.9107,
+        "n": 56
+      },
+      "group": {
+        "mean": 0.6071,
+        "low": 0.4821,
+        "high": 0.7321,
+        "n": 56
+      },
+      "unusable": 7,
+      "medianSeconds": 13.799,
+      "totalSeconds": 825.596,
+      "promptTokens": 70095,
+      "completionTokens": 751
+    },
+    "qwen3.5-4b-bench": {
+      "articles": 56,
+      "top1": {
+        "mean": 0.6429,
+        "low": 0.5179,
+        "high": 0.7679,
+        "n": 56
+      },
+      "top3": {
+        "mean": 0.9643,
+        "low": 0.9107,
+        "high": 1.0,
+        "n": 56
+      },
+      "group": {
+        "mean": 0.8036,
+        "low": 0.6964,
+        "high": 0.9107,
+        "n": 56
+      },
+      "unusable": 1,
+      "medianSeconds": 24.252,
+      "totalSeconds": 1334.403,
+      "promptTokens": 69790,
+      "completionTokens": 758
+    }
+  },
+  "factCheck": [
+    {
+      "run": "data/evaluation/runs/averitec_dev/llama3.2-3b-bench/49e4c76106c6",
+      "model": "llama3.2:3b-bench",
+      "mode": "full",
+      "label": "knowledge-store",
+      "gitCommit": "693af93167fb9ea51b8113decc2814f91d1ca836-dirty",
+      "claims": 10,
+      "accuracy": {
+        "mean": 0.4,
+        "low": 0.1,
+        "high": 0.7,
+        "n": 10
+      },
+      "unverified": 2,
+      "verdicts": {
+        "averitec-dev-0243": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0164": [
+          "FALSE",
+          "TRUE"
+        ],
+        "averitec-dev-0072": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0096": [
+          "FALSE",
+          "TRUE"
+        ],
+        "averitec-dev-0175": [
+          "TRUE",
+          "FALSE"
+        ],
+        "averitec-dev-0404": [
+          "MISLEADING",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0368": [
+          "FALSE",
+          "TRUE"
+        ],
+        "averitec-dev-0012": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0290": [
+          "TRUE",
+          "TRUE"
+        ],
+        "averitec-dev-0379": [
+          "FALSE",
+          "FALSE"
+        ]
+      },
+      "medianSeconds": 149.4752,
+      "medianLlmSeconds": 73.449,
+      "promptTokens": 21304,
+      "completionTokens": 1545
+    },
+    {
+      "run": "data/evaluation/runs/averitec_dev/llama3.2-3b-bench/6ecdeb9012dc",
+      "model": "llama3.2:3b-bench",
+      "mode": "replay",
+      "label": "replay-store-ollama",
+      "gitCommit": "fa4476652df06024972678a089ae818b0166a185-dirty",
+      "claims": 10,
+      "accuracy": {
+        "mean": 0.4,
+        "low": 0.1,
+        "high": 0.7,
+        "n": 10
+      },
+      "unverified": 2,
+      "verdicts": {
+        "averitec-dev-0243": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0164": [
+          "FALSE",
+          "TRUE"
+        ],
+        "averitec-dev-0072": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0175": [
+          "TRUE",
+          "FALSE"
+        ],
+        "averitec-dev-0096": [
+          "FALSE",
+          "TRUE"
+        ],
+        "averitec-dev-0368": [
+          "FALSE",
+          "TRUE"
+        ],
+        "averitec-dev-0404": [
+          "MISLEADING",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0012": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0290": [
+          "TRUE",
+          "TRUE"
+        ],
+        "averitec-dev-0379": [
+          "FALSE",
+          "FALSE"
+        ]
+      },
+      "medianSeconds": 70.8175,
+      "medianLlmSeconds": 41.3825,
+      "promptTokens": 21304,
+      "completionTokens": 1545
+    },
+    {
+      "run": "data/evaluation/runs/averitec_dev/claude-headless-sonnet/6c8959f38dc4",
+      "model": "claude-headless:sonnet",
+      "mode": "replay",
+      "label": "replay-store",
+      "gitCommit": "fa4476652df06024972678a089ae818b0166a185-dirty",
+      "claims": 10,
+      "accuracy": {
+        "mean": 0.5,
+        "low": 0.2,
+        "high": 0.8,
+        "n": 10
+      },
+      "unverified": 3,
+      "verdicts": {
+        "averitec-dev-0243": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0164": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0096": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0072": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0175": [
+          "TRUE",
+          "FALSE"
+        ],
+        "averitec-dev-0404": [
+          "MISLEADING",
+          "FALSE"
+        ],
+        "averitec-dev-0368": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0012": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0379": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0290": [
+          "TRUE",
+          "TRUE"
+        ]
+      },
+      "medianSeconds": 37.5764,
+      "medianLlmSeconds": 21.713,
+      "promptTokens": 57279,
+      "completionTokens": 1752
+    },
+    {
+      "run": "data/evaluation/runs/averitec_dev/claude-headless-sonnet/f04afdc96a6d",
+      "model": "claude-headless:sonnet",
+      "mode": "closed_book",
+      "label": "closed-book",
+      "gitCommit": "fa4476652df06024972678a089ae818b0166a185-dirty",
+      "claims": 10,
+      "accuracy": {
+        "mean": 0.7,
+        "low": 0.4,
+        "high": 1.0,
+        "n": 10
+      },
+      "unverified": 2,
+      "verdicts": {
+        "averitec-dev-0243": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0164": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0096": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0072": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0175": [
+          "TRUE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0404": [
+          "MISLEADING",
+          "FALSE"
+        ],
+        "averitec-dev-0368": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0379": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0012": [
+          "FALSE",
+          "FALSE"
+        ],
+        "averitec-dev-0290": [
+          "TRUE",
+          "TRUE"
+        ]
+      },
+      "medianSeconds": 3.9683,
+      "medianLlmSeconds": null,
+      "promptTokens": 8774,
+      "completionTokens": 1614
+    }
+  ],
+  "standard": {
+    "topics": {
+      "claude-headless-haiku": {
+        "en": {
+          "n": 204,
+          "accuracy": {
+            "mean": 0.8775,
+            "low": 0.8284,
+            "high": 0.9216,
+            "n": 204
+          },
+          "macroF1": 0.8585,
+          "unusable": 1,
+          "medianSeconds": 2.3625,
+          "trainSeconds": null,
+          "tokens": [
+            135205,
+            17197
+          ]
+        },
+        "es": {
+          "n": 204,
+          "accuracy": {
+            "mean": 0.8824,
+            "low": 0.8333,
+            "high": 0.9265,
+            "n": 204
+          },
+          "macroF1": 0.8647,
+          "unusable": 0,
+          "medianSeconds": 2.0345,
+          "trainSeconds": null,
+          "tokens": [
+            139595,
+            18437
+          ]
+        }
+      },
+      "embedding-logreg": {
+        "en": {
+          "n": 204,
+          "accuracy": {
+            "mean": 0.8922,
+            "low": 0.848,
+            "high": 0.9314,
+            "n": 204
+          },
+          "macroF1": 0.8815,
+          "unusable": 0,
+          "medianSeconds": 0.0995,
+          "trainSeconds": 76.0981,
+          "tokens": null
+        },
+        "es": {
+          "n": 204,
+          "accuracy": {
+            "mean": 0.9069,
+            "low": 0.8676,
+            "high": 0.9461,
+            "n": 204
+          },
+          "macroF1": 0.8972,
+          "unusable": 0,
+          "medianSeconds": 0.1428,
+          "trainSeconds": 88.3851,
+          "tokens": null
+        }
+      },
+      "embedding-zeroshot": {
+        "en": {
+          "n": 204,
+          "accuracy": {
+            "mean": 0.7451,
+            "low": 0.6814,
+            "high": 0.8039,
+            "n": 204
+          },
+          "macroF1": 0.7394,
+          "unusable": 0,
+          "medianSeconds": 0.1014,
+          "trainSeconds": 0,
+          "tokens": null
+        },
+        "es": {
+          "n": 204,
+          "accuracy": {
+            "mean": 0.7402,
+            "low": 0.6765,
+            "high": 0.8039,
+            "n": 204
+          },
+          "macroF1": 0.74,
+          "unusable": 0,
+          "medianSeconds": 0.1449,
+          "trainSeconds": 0,
+          "tokens": null
+        }
+      },
+      "tfidf-logreg": {
+        "en": {
+          "n": 204,
+          "accuracy": {
+            "mean": 0.7353,
+            "low": 0.6716,
+            "high": 0.799,
+            "n": 204
+          },
+          "macroF1": 0.688,
+          "unusable": 0,
+          "medianSeconds": 0.0003,
+          "trainSeconds": 5.4903,
+          "tokens": null
+        },
+        "es": {
+          "n": 204,
+          "accuracy": {
+            "mean": 0.7206,
+            "low": 0.6569,
+            "high": 0.7795,
+            "n": 204
+          },
+          "macroF1": 0.6728,
+          "unusable": 0,
+          "medianSeconds": 0.0004,
+          "trainSeconds": 6.2019,
+          "tokens": null
+        }
+      }
+    },
+    "ner": {
+      "claude-headless-haiku": {
+        "en": {
+          "n": 300,
+          "typed": {
+            "precision": 0.8257,
+            "recall": 0.8555,
+            "f1": 0.8404
+          },
+          "untyped": {
+            "precision": 0.9085,
+            "recall": 0.9413,
+            "f1": 0.9246
+          },
+          "PER": 0.967,
+          "ORG": 0.7754,
+          "LOC": 0.7961,
+          "unusable": 0,
+          "medianSeconds": 2.259,
+          "trainSeconds": null,
+          "tokens": [
+            218262,
+            49741
+          ]
+        },
+        "es": {
+          "n": 300,
+          "typed": {
+            "precision": 0.8868,
+            "recall": 0.8716,
+            "f1": 0.8791
+          },
+          "untyped": {
+            "precision": 0.9216,
+            "recall": 0.9084,
+            "f1": 0.915
+          },
+          "PER": 0.9655,
+          "ORG": 0.8469,
+          "LOC": 0.8613,
+          "unusable": 0,
+          "medianSeconds": 2.496,
+          "trainSeconds": null,
+          "tokens": [
+            233130,
+            78722
+          ]
+        }
+      },
+      "gliner": {
+        "en": {
+          "n": 300,
+          "typed": {
+            "precision": 0.5024,
+            "recall": 0.7111,
+            "f1": 0.5888
+          },
+          "untyped": {
+            "precision": 0.6188,
+            "recall": 0.8758,
+            "f1": 0.7252
+          },
+          "PER": 0.7025,
+          "ORG": 0.3689,
+          "LOC": 0.688,
+          "unusable": 0,
+          "medianSeconds": 0.0839,
+          "trainSeconds": null,
+          "tokens": null
+        },
+        "es": {
+          "n": 300,
+          "typed": {
+            "precision": 0.7101,
+            "recall": 0.7546,
+            "f1": 0.7317
+          },
+          "untyped": {
+            "precision": 0.7557,
+            "recall": 0.8054,
+            "f1": 0.7798
+          },
+          "PER": 0.75,
+          "ORG": 0.6735,
+          "LOC": 0.7857,
+          "unusable": 0,
+          "medianSeconds": 0.1413,
+          "trainSeconds": null,
+          "tokens": null
+        }
+      },
+      "spacy-sm": {
+        "en": {
+          "n": 300,
+          "typed": {
+            "precision": 0.6364,
+            "recall": 0.5372,
+            "f1": 0.5826
+          },
+          "untyped": {
+            "precision": 0.7754,
+            "recall": 0.6546,
+            "f1": 0.7099
+          },
+          "PER": 0.6054,
+          "ORG": 0.3717,
+          "LOC": 0.7596,
+          "unusable": 0,
+          "medianSeconds": 0.0027,
+          "trainSeconds": null,
+          "tokens": null
+        },
+        "es": {
+          "n": 300,
+          "typed": {
+            "precision": 0.5994,
+            "recall": 0.6063,
+            "f1": 0.6028
+          },
+          "untyped": {
+            "precision": 0.7969,
+            "recall": 0.8083,
+            "f1": 0.8026
+          },
+          "PER": 0.6702,
+          "ORG": 0.5304,
+          "LOC": 0.617,
+          "unusable": 0,
+          "medianSeconds": 0.0043,
+          "trainSeconds": null,
+          "tokens": null
+        }
+      },
+      "xlmr-ner": {
+        "en": {
+          "n": 300,
+          "typed": {
+            "precision": 0.8937,
+            "recall": 0.8916,
+            "f1": 0.8927
+          },
+          "untyped": {
+            "precision": 0.9412,
+            "recall": 0.9391,
+            "f1": 0.9401
+          },
+          "PER": 0.9158,
+          "ORG": 0.8477,
+          "LOC": 0.9161,
+          "unusable": 0,
+          "medianSeconds": 0.041,
+          "trainSeconds": null,
+          "tokens": null
+        },
+        "es": {
+          "n": 300,
+          "typed": {
+            "precision": 0.9059,
+            "recall": 0.9201,
+            "f1": 0.913
+          },
+          "untyped": {
+            "precision": 0.9508,
+            "recall": 0.9685,
+            "f1": 0.9596
+          },
+          "PER": 0.9748,
+          "ORG": 0.894,
+          "LOC": 0.8961,
+          "unusable": 0,
+          "medianSeconds": 0.0837,
+          "trainSeconds": null,
+          "tokens": null
+        }
+      }
+    }
+  }
+}

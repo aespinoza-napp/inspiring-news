@@ -1,0 +1,54 @@
+{
+  "claude-headless-haiku": {
+    "articles": 56,
+    "top1": {
+      "mean": 0.7321,
+      "low": 0.6071,
+      "high": 0.8393,
+      "n": 56
+    },
+    "top3": {
+      "mean": 0.9286,
+      "low": 0.8571,
+      "high": 0.9821,
+      "n": 56
+    },
+    "group": {
+      "mean": 0.8571,
+      "low": 0.7679,
+      "high": 0.9464,
+      "n": 56
+    },
+    "unusable": 0,
+    "medianSeconds": 2.9235,
+    "totalSeconds": 169.427,
+    "promptTokens": 148354,
+    "completionTokens": 8121
+  },
+  "embedding": {
+    "articles": 56,
+    "top1": {
+      "mean": 0.6607,
+      "low": 0.5357,
+      "high": 0.7857,
+      "n": 56
+    },
+    "top3": {
+      "mean": 0.875,
+      "low": 0.7857,
+      "high": 0.9469,
+      "n": 56
+    },
+    "group": {
+      "mean": 0.8214,
+      "low": 0.7143,
+      "high": 0.9107,
+      "n": 56
+    },
+    "unusable": 0,
+    "medianSeconds": 4.7475,
+    "totalSeconds": 329.69,
+    "promptTokens": null,
+    "completionTokens": null
+  }
+}

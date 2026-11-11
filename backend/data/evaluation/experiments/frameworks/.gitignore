@@ -1,0 +1,3 @@
+# Publishers' full article bodies (re-fetch with `frameworks topics-fetch`) and run logs: never committed.
+topics/articles.jsonl
+*.log

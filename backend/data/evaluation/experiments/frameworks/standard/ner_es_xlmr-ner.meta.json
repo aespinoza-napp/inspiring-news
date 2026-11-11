@@ -1,0 +1,6 @@
+{
+  "seconds": 23.541698240000187,
+  "perItemSeconds": 0.0784723274666673,
+  "loadSeconds": 1.718882401000883,
+  "model": "Davlan/xlm-roberta-base-ner-hrl"
+}

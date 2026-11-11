@@ -47,6 +47,10 @@ from urllib.parse import urlsplit
 
 from src.config.settings import WEIGHT_GROUPS, settings
 from src.config.thresholds import SEARCH_QUERY_KINDS, PipelineThresholds
+# Claude through the subscription's `claude -p` when the model says
+# `claude-headless:`; every other model is LLMClient as before.
+from src.evaluation.headless_claude import llm_client
+from src.evaluation.headless_claude import provider as headless_provider
 from src.evaluation.dataset import AVERITEC, CUSTOM, Dataset, DatasetRow, article_titles, title_for
 from src.evaluation.record import (
     HARNESS_VERSION,
@@ -1042,11 +1046,11 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
     if config.mode == RETRIEVAL:
         verifier = RetrievalOnlyVerifier()
     else:
-        verifier = LLMVerifier(client=metered(LLMClient(model=config.model), meter))
+        verifier = LLMVerifier(client=metered(llm_client(config.model), meter))
 
     if config.mode == CLOSED_BOOK:
         from src.evaluation.closed_book import ClosedBookJudge
-        closed_book = ClosedBookJudge(metered(LLMClient(model=config.model), meter))
+        closed_book = ClosedBookJudge(metered(llm_client(config.model), meter))
 
     # The questions of `query_plan: questions` are the verifier's model's,
     # metered with it: what they cost is part of what the plan costs.
@@ -1055,7 +1059,7 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
     checker = FactChecker(
         repository,
         verifier=verifier,
-        question_planner=QuestionPlanner(metered(LLMClient(model=config.model), meter)),
+        question_planner=QuestionPlanner(metered(llm_client(config.model), meter)),
     )
 
     if config.knowledge_store is not None:
@@ -1098,7 +1102,7 @@ def build_runner(config: RunConfig) -> tuple[HarnessRunner, Callable[[], None]]:
         checker=checker,
         claims=claims,
         meter=meter,
-        provider=provider_of(settings.LLM_BASE_URL),
+        provider=headless_provider(config.model, settings.LLM_BASE_URL),
         closed_book=closed_book,
         recorder=recorder,
         manifest_extra={

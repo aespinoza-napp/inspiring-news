@@ -1,0 +1,300 @@
+{"id": "conll-en-000", "gold": [], "predicted": [], "seconds": 0.0034}
+{"id": "conll-en-001", "gold": [["LOC", "Chile"], ["LOC", "Mexico"]], "predicted": [["LOC", "Chile"], ["LOC", "Mexico"]], "seconds": 0.0027}
+{"id": "conll-en-002", "gold": [["LOC", "Japan"]], "predicted": [["LOC", "Japan"]], "seconds": 0.0023}
+{"id": "conll-en-003", "gold": [["ORG", "Bre-X"], ["ORG", "Barrick"], ["ORG", "Mines and Energy Ministry"], ["PER", "Umar Said"], ["LOC", "Busang"], ["LOC", "East Kalimantan"]], "predicted": [["PER", "Bre-X"], ["PER", "Barrick"], ["ORG", "Mines and"], ["ORG", "Energy Ministry"], ["PER", "Umar Said"], ["LOC", "Busang"], ["LOC", "East Kalimantan"]], "seconds": 0.0069}
+{"id": "conll-en-004", "gold": [["ORG", "Greenock Morton"]], "predicted": [["PER", "Greenock Morton"]], "seconds": 0.0026}
+{"id": "conll-en-005", "gold": [["ORG", "CLEVELAND"], ["LOC", "DETROIT"]], "predicted": [["ORG", "CLEVELAND"], ["ORG", "DETROIT"]], "seconds": 0.0021}
+{"id": "conll-en-006", "gold": [["LOC", "U.S"]], "predicted": [["LOC", "U.S"]], "seconds": 0.0067}
+{"id": "conll-en-007", "gold": [["PER", "Thoma"]], "predicted": [], "seconds": 0.0029}
+{"id": "conll-en-008", "gold": [["ORG", "Dunfermline"], ["PER", "Colin Cameron"], ["ORG", "Hearts"], ["PER", "Robert"]], "predicted": [["PER", "-LPR- Dunfermline -RPR-"], ["PER", "Colin Cameron -LPR- Hearts -RPR-"], ["PER", "Robert"]], "seconds": 0.0027}
+{"id": "conll-en-009", "gold": [["PER", "Heidi Zurbriggen"], ["LOC", "Switzerland"]], "predicted": [["PER", "Heidi Zurbriggen"], ["LOC", "Switzerland"]], "seconds": 0.0024}
+{"id": "conll-en-010", "gold": [["LOC", "Hay Point"], ["LOC", "Newcastle"], ["LOC", "Kaohsiung"], ["ORG", "China Steel"]], "predicted": [["ORG", "COAL - Lantau Peak -"], ["ORG", "Hay Point"], ["ORG", "China Steel"]], "seconds": 0.0052}
+{"id": "conll-en-011", "gold": [], "predicted": [], "seconds": 0.0028}
+{"id": "conll-en-012", "gold": [["PER", "Kate Pace Lindsay"], ["LOC", "Canada"]], "predicted": [["PER", "Kate"], ["LOC", "Canada"]], "seconds": 0.0024}
+{"id": "conll-en-013", "gold": [["ORG", "LA CLIPPERS"]], "predicted": [["LOC", "LA"]], "seconds": 0.0023}
+{"id": "conll-en-014", "gold": [], "predicted": [], "seconds": 0.0027}
+{"id": "conll-en-015", "gold": [["ORG", "NHL"], ["ORG", "CANUCKS"], ["PER", "BURE"]], "predicted": [["ORG", "NHL"], ["PER", "BURE SUSPENDED"], ["ORG", "GAME"]], "seconds": 0.003}
+{"id": "conll-en-016", "gold": [["ORG", "United States I"], ["PER", "Jim Herberich"], ["PER", "Garrett"]], "predicted": [["LOC", "United States"], ["PER", "Jim Herberich"]], "seconds": 0.0027}
+{"id": "conll-en-017", "gold": [], "predicted": [], "seconds": 0.004}
+{"id": "conll-en-018", "gold": [], "predicted": [], "seconds": 0.0022}
+{"id": "conll-en-019", "gold": [["LOC", "Syria"]], "predicted": [["LOC", "Syria"]], "seconds": 0.0032}
+{"id": "conll-en-020", "gold": [["PER", "Miyabe Yasunori"], ["LOC", "Japan"]], "predicted": [["PER", "Miyabe Yasunori"], ["LOC", "Japan"]], "seconds": 0.0025}
+{"id": "conll-en-021", "gold": [], "predicted": [], "seconds": 0.0022}
+{"id": "conll-en-022", "gold": [], "predicted": [], "seconds": 0.0021}
+{"id": "conll-en-023", "gold": [["LOC", "Krasnoyarsk"], ["ORG", "Norilsk"]], "predicted": [["LOC", "Krasnoyarsk"], ["ORG", "Norilsk"]], "seconds": 0.0055}
+{"id": "conll-en-024", "gold": [["ORG", "TORONTO"]], "predicted": [], "seconds": 0.0025}
+{"id": "conll-en-025", "gold": [], "predicted": [], "seconds": 0.0024}
+{"id": "conll-en-026", "gold": [], "predicted": [], "seconds": 0.0028}
+{"id": "conll-en-027", "gold": [["ORG", "Southampton"], ["ORG", "Aston Villa"]], "predicted": [["ORG", "Southampton"], ["PER", "Aston Villa 1"]], "seconds": 0.0024}
+{"id": "conll-en-028", "gold": [], "predicted": [], "seconds": 0.0025}
+{"id": "conll-en-029", "gold": [["ORG", "Motherwell"], ["ORG", "Celtic"]], "predicted": [["ORG", "Motherwell 2 Celtic 1"]], "seconds": 0.0019}
+{"id": "conll-en-030", "gold": [], "predicted": [], "seconds": 0.0026}
+{"id": "conll-en-031", "gold": [], "predicted": [], "seconds": 0.0038}
+{"id": "conll-en-032", "gold": [], "predicted": [], "seconds": 0.0036}
+{"id": "conll-en-033", "gold": [["ORG", "Barrick Gold Corp"], ["ORG", "Bre-X Minerals Ltd"], ["ORG", "Santa Fe"], ["LOC", "Indonesia"], ["ORG", "Busang"]], "predicted": [["ORG", "Barrick Gold Corp"], ["ORG", "Bre-X Minerals Ltd"], ["ORG", "Santa Fe"], ["LOC", "Indonesia"], ["LOC", "Busang"]], "seconds": 0.0057}
+{"id": "conll-en-034", "gold": [["LOC", "Israel"], ["LOC", "Lebanon"]], "predicted": [["LOC", "Israel"], ["LOC", "Lebanon"]], "seconds": 0.0044}
+{"id": "conll-en-035", "gold": [], "predicted": [], "seconds": 0.0027}
+{"id": "conll-en-036", "gold": [], "predicted": [], "seconds": 0.003}
+{"id": "conll-en-037", "gold": [["ORG", "PHOENIX"], ["LOC", "NEW JERSEY"]], "predicted": [["ORG", "PHOENIX"], ["LOC", "NEW JERSEY"]], "seconds": 0.0022}
+{"id": "conll-en-038", "gold": [["ORG", "Bre-X"]], "predicted": [["ORG", "Bre-X"]], "seconds": 0.0043}
+{"id": "conll-en-039", "gold": [["ORG", "Wallaby"], ["PER", "Nick Farr-Jones"], ["PER", "Campese"], ["LOC", "England"]], "predicted": [["PER", "Wallaby"], ["PER", "Nick Farr-Jones"], ["LOC", "England"]], "seconds": 0.0035}
+{"id": "conll-en-040", "gold": [["ORG", "National Hockey"]], "predicted": [], "seconds": 0.0029}
+{"id": "conll-en-041", "gold": [["ORG", "Basketball Association"]], "predicted": [["ORG", "Basketball Association"]], "seconds": 0.0036}
+{"id": "conll-en-042", "gold": [["PER", "Matthew"]], "predicted": [["PER", "Matthew"]], "seconds": 0.0049}
+{"id": "conll-en-043", "gold": [["PER", "Paul Justin"], ["PER", "Jim Harbaugh"], ["ORG", "Colts"]], "predicted": [["PER", "Paul Justin"], ["PER", "Jim Harbaugh"]], "seconds": 0.0055}
+{"id": "conll-en-044", "gold": [["PER", "Stefanie Schuster"], ["LOC", "Austria"]], "predicted": [["PER", "Stefanie Schuster"]], "seconds": 0.0026}
+{"id": "conll-en-045", "gold": [["PER", "Svetlana Gladishiva"], ["LOC", "Russia"]], "predicted": [["PER", "Svetlana Gladishiva"], ["LOC", "Russia"]], "seconds": 0.0037}
+{"id": "conll-en-046", "gold": [["PER", "Ivanov"], ["ORG", "Interfax"]], "predicted": [["PER", "Ivanov"], ["ORG", "Interfax"]], "seconds": 0.0056}
+{"id": "conll-en-047", "gold": [["ORG", "Norilsk"]], "predicted": [["ORG", "Norilsk"]], "seconds": 0.0034}
+{"id": "conll-en-048", "gold": [], "predicted": [], "seconds": 0.0055}
+{"id": "conll-en-049", "gold": [["ORG", "Metz"]], "predicted": [], "seconds": 0.0033}
+{"id": "conll-en-050", "gold": [["ORG", "Dunfermline"]], "predicted": [], "seconds": 0.0025}
+{"id": "conll-en-051", "gold": [["PER", "Altin Rraklli"], ["PER", "Viktor Paco"], ["PER", "Fatmir Vata"], ["PER", "Erjon Bogdani"]], "predicted": [["ORG", "Forwards - Altin Rraklli"], ["PER", "Viktor Paco"], ["PER", "Fatmir Vata"], ["PER", "Erjon Bogdani"]], "seconds": 0.0027}
+{"id": "conll-en-052", "gold": [["ORG", "Ironi Rishon"]], "predicted": [], "seconds": 0.0024}
+{"id": "conll-en-053", "gold": [["PER", "Brian Shimer"], ["ORG", "USA III"]], "predicted": [["PER", "Brian Shimer"]], "seconds": 0.0034}
+{"id": "conll-en-054", "gold": [["LOC", "Brazil"]], "predicted": [["LOC", "Brazil"]], "seconds": 0.005}
+{"id": "conll-en-055", "gold": [["PER", "Salim Malik"]], "predicted": [["PER", "Salim Malik"]], "seconds": 0.0025}
+{"id": "conll-en-056", "gold": [], "predicted": [], "seconds": 0.004}
+{"id": "conll-en-057", "gold": [["LOC", "NEW YORK"]], "predicted": [["LOC", "NEW YORK"]], "seconds": 0.0024}
+{"id": "conll-en-058", "gold": [["ORG", "Prudential Securities Incorporated"]], "predicted": [["ORG", "Prudential Securities Incorporated"]], "seconds": 0.0021}
+{"id": "conll-en-059", "gold": [], "predicted": [], "seconds": 0.0036}
+{"id": "conll-en-060", "gold": [], "predicted": [], "seconds": 0.0026}
+{"id": "conll-en-061", "gold": [["ORG", "Philadelphia"], ["ORG", "Green Bay Packers"]], "predicted": [["LOC", "Philadelphia"], ["ORG", "NFC"]], "seconds": 0.0036}
+{"id": "conll-en-062", "gold": [], "predicted": [], "seconds": 0.0028}
+{"id": "conll-en-063", "gold": [], "predicted": [["ORG", "-LPR- 52.92 / 53.21 -RPR-"]], "seconds": 0.0022}
+{"id": "conll-en-064", "gold": [["PER", "Svetland Gladishiva"], ["LOC", "Russia"]], "predicted": [["PER", "Svetland Gladishiva"], ["LOC", "Russia"]], "seconds": 0.0022}
+{"id": "conll-en-065", "gold": [["ORG", "YIT"]], "predicted": [["ORG", "YIT"]], "seconds": 0.006}
+{"id": "conll-en-066", "gold": [["ORG", "DENVER"], ["LOC", "GREEN BAY"]], "predicted": [["LOC", "DENVER"], ["LOC", "GREEN BAY"]], "seconds": 0.0021}
+{"id": "conll-en-067", "gold": [["LOC", "U.S."], ["LOC", "Japan"]], "predicted": [["LOC", "U.S."], ["LOC", "Japan"]], "seconds": 0.0043}
+{"id": "conll-en-068", "gold": [["ORG", "State Council"], ["ORG", "Civil Aviation Administration of China"], ["ORG", "General Administration of Customs"], ["ORG", "Xinhua"]], "predicted": [["ORG", "the State Council 's Port Office"], ["ORG", "the Civil Aviation Administration of China"], ["ORG", "the General Administration of Customs"], ["ORG", "Xinhua"]], "seconds": 0.0055}
+{"id": "conll-en-069", "gold": [["ORG", "Montreal"], ["ORG", "CHICAGO"]], "predicted": [], "seconds": 0.0022}
+{"id": "conll-en-070", "gold": [["PER", "Jani Soininen"], ["LOC", "Finland"]], "predicted": [["PER", "Jani Soininen -LPR- Finland"]], "seconds": 0.0027}
+{"id": "conll-en-071", "gold": [], "predicted": [], "seconds": 0.0047}
+{"id": "conll-en-072", "gold": [["LOC", "United States"]], "predicted": [["ORG", "The Humane Society of the United States"]], "seconds": 0.0045}
+{"id": "conll-en-073", "gold": [["ORG", "NTT"]], "predicted": [["ORG", "NTT"]], "seconds": 0.0044}
+{"id": "conll-en-074", "gold": [["LOC", "Rwanda"], ["LOC", "Zaire"]], "predicted": [["LOC", "Rwanda"], ["LOC", "Zaire"]], "seconds": 0.0046}
+{"id": "conll-en-075", "gold": [["ORG", "Brussels Newsroom"]], "predicted": [["ORG", "Brussels Newsroom"]], "seconds": 0.0028}
+{"id": "conll-en-076", "gold": [["PER", "Stefanie Schuster"], ["LOC", "Austria"]], "predicted": [["PER", "Stefanie Schuster"]], "seconds": 0.0022}
+{"id": "conll-en-077", "gold": [["ORG", "Rueckversicherungs AG"]], "predicted": [["ORG", "Muenchener Rueckversicherungs AG"]], "seconds": 0.0057}
+{"id": "conll-en-078", "gold": [["ORG", "Bre-X"], ["ORG", "Barrick"]], "predicted": [["PER", "Bre-X"], ["PER", "Barrick"]], "seconds": 0.0035}
+{"id": "conll-en-079", "gold": [["LOC", "Singapore"]], "predicted": [["LOC", "Singapore"]], "seconds": 0.0051}
+{"id": "conll-en-080", "gold": [], "predicted": [], "seconds": 0.0038}
+{"id": "conll-en-081", "gold": [["PER", "Paramygina"]], "predicted": [], "seconds": 0.0022}
+{"id": "conll-en-082", "gold": [["LOC", "Britain"]], "predicted": [["LOC", "Britain"]], "seconds": 0.0024}
+{"id": "conll-en-083", "gold": [["LOC", "Republic of Ireland"]], "predicted": [["LOC", "the Republic of Ireland"]], "seconds": 0.0042}
+{"id": "conll-en-084", "gold": [["ORG", "Bochum"], ["ORG", "Bayer Leverkusen"]], "predicted": [["ORG", "Bochum 2 Bayer Leverkusen 2"]], "seconds": 0.0022}
+{"id": "conll-en-085", "gold": [["PER", "Bogdan Stelea"], ["PER", "Florin Prunea"]], "predicted": [["ORG", "Goalkeepers - Bogdan Stelea"], ["LOC", "Florin Prunea"]], "seconds": 0.0026}
+{"id": "conll-en-086", "gold": [["LOC", "Australia"], ["PER", "Dean Jones"], ["LOC", "Victoria"], ["ORG", "Tasmania"]], "predicted": [["LOC", "Australia"], ["PER", "Dean Jones"], ["PER", "Victoria"], ["ORG", "Sheffield Shield"], ["ORG", "Tasmania"]], "seconds": 0.0034}
+{"id": "conll-en-087", "gold": [["ORG", "NTT"]], "predicted": [["ORG", "NTT"]], "seconds": 0.0038}
+{"id": "conll-en-088", "gold": [["ORG", "Fulham"]], "predicted": [["ORG", "Fulham"]], "seconds": 0.0025}
+{"id": "conll-en-089", "gold": [["ORG", "Hapoel Beit She'an"]], "predicted": [], "seconds": 0.0025}
+{"id": "conll-en-090", "gold": [], "predicted": [], "seconds": 0.0027}
+{"id": "conll-en-091", "gold": [["PER", "Clarke"], ["PER", "Major"]], "predicted": [["ORG", "Clarke"]], "seconds": 0.0047}
+{"id": "conll-en-092", "gold": [["PER", "Scalfaro"], ["ORG", "League"]], "predicted": [["LOC", "Mantua"], ["ORG", "Scalfaro"]], "seconds": 0.0054}
+{"id": "conll-en-093", "gold": [["ORG", "Rennes"]], "predicted": [], "seconds": 0.0027}
+{"id": "conll-en-094", "gold": [["LOC", "Frankfurt"]], "predicted": [["LOC", "Frankfurt"]], "seconds": 0.0034}
+{"id": "conll-en-095", "gold": [], "predicted": [["ORG", "-LPR- party"]], "seconds": 0.0048}
+{"id": "conll-en-096", "gold": [["PER", "Pace"], ["ORG", "Virginia Tech"], ["PER", "Cornell Brown"], ["ORG", "Arizona State"], ["PER", "Juan Roque"], ["PER", "Jared Tomich"], ["ORG", "Nebraska"]], "predicted": [["ORG", "Virginia Tech"], ["PER", "Cornell Brown"], ["ORG", "Arizona State"], ["PER", "Juan Roque"], ["PER", "Jared Tomich"], ["LOC", "Nebraska"]], "seconds": 0.004}
+{"id": "conll-en-097", "gold": [["ORG", "Glenavon"], ["ORG", "Linfield"]], "predicted": [["PER", "Glenavon 2 Linfield 1"]], "seconds": 0.0023}
+{"id": "conll-en-098", "gold": [["PER", "Fourie"]], "predicted": [], "seconds": 0.0019}
+{"id": "conll-en-099", "gold": [["LOC", "New Mexico"]], "predicted": [["LOC", "New Mexico"]], "seconds": 0.0049}
+{"id": "conll-en-100", "gold": [["ORG", "Rochdale"]], "predicted": [], "seconds": 0.0024}
+{"id": "conll-en-101", "gold": [], "predicted": [], "seconds": 0.0032}
+{"id": "conll-en-102", "gold": [["ORG", "Hapoel Beersheba"]], "predicted": [["PER", "Hapoel Beersheba"]], "seconds": 0.0024}
+{"id": "conll-en-103", "gold": [["PER", "Megan Gerety"], ["LOC", "U.S."]], "predicted": [], "seconds": 0.0022}
+{"id": "conll-en-104", "gold": [["ORG", "Newmont"], ["ORG", "Santa Fe"]], "predicted": [["LOC", "Newmont"], ["ORG", "Santa Fe"]], "seconds": 0.0045}
+{"id": "conll-en-105", "gold": [["LOC", "Switzerland"]], "predicted": [["LOC", "Switzerland"]], "seconds": 0.0021}
+{"id": "conll-en-106", "gold": [], "predicted": [["ORG", "Fri-"]], "seconds": 0.0029}
+{"id": "conll-en-107", "gold": [["ORG", "Notts County"]], "predicted": [["LOC", "Notts County"]], "seconds": 0.0024}
+{"id": "conll-en-108", "gold": [], "predicted": [], "seconds": 0.0054}
+{"id": "conll-en-109", "gold": [["PER", "Regine Cavagnoud"], ["LOC", "France"]], "predicted": [["PER", "Regine Cavagnoud -LPR- France"]], "seconds": 0.0024}
+{"id": "conll-en-110", "gold": [["ORG", "St Mirren"]], "predicted": [["PER", "St Mirren"]], "seconds": 0.0023}
+{"id": "conll-en-111", "gold": [["LOC", "Singapore"]], "predicted": [["PER", "Sangthai Glory"], ["LOC", "Singapore"]], "seconds": 0.002}
+{"id": "conll-en-112", "gold": [["PER", "Justin Hobday"]], "predicted": [["LOC", "Justin"]], "seconds": 0.0021}
+{"id": "conll-en-113", "gold": [["LOC", "MUNICH"], ["LOC", "Germany"]], "predicted": [["ORG", "MUNICH"], ["LOC", "Germany"]], "seconds": 0.0021}
+{"id": "conll-en-114", "gold": [["PER", "Arafat"], ["PER", "Netanyahu"], ["LOC", "Cairo"]], "predicted": [["PER", "Arafat"], ["PER", "Netanyahu"], ["LOC", "Cairo"]], "seconds": 0.0027}
+{"id": "conll-en-115", "gold": [["LOC", "Switzerland"]], "predicted": [["LOC", "Switzerland"]], "seconds": 0.0039}
+{"id": "conll-en-116", "gold": [["PER", "Yeltsin"]], "predicted": [["PER", "Yeltsin"]], "seconds": 0.0037}
+{"id": "conll-en-117", "gold": [["LOC", "Central African Republic"], ["LOC", "Bangui"]], "predicted": [["LOC", "Central African Republic"], ["ORG", "Bangui"]], "seconds": 0.0041}
+{"id": "conll-en-118", "gold": [["LOC", "Syria"]], "predicted": [["LOC", "Syria"]], "seconds": 0.0026}
+{"id": "conll-en-119", "gold": [["PER", "Reggie Blinker"], ["ORG", "FIFA"], ["ORG", "Sheffield Wednesday"], ["ORG", "Liverpool"]], "predicted": [["PER", "Reggie Blinker"], ["ORG", "FIFA"], ["LOC", "Sheffield"], ["LOC", "Liverpool"]], "seconds": 0.0036}
+{"id": "conll-en-120", "gold": [["PER", "Costa"], ["ORG", "AC Milan"]], "predicted": [["ORG", "Costa"], ["ORG", "AC Milan"], ["ORG", "European Champions ' League"]], "seconds": 0.0036}
+{"id": "conll-en-121", "gold": [["ORG", "Everton"]], "predicted": [], "seconds": 0.0021}
+{"id": "conll-en-122", "gold": [["LOC", "KUUSAMO"], ["LOC", "Finland"]], "predicted": [["LOC", "Finland"]], "seconds": 0.0021}
+{"id": "conll-en-123", "gold": [], "predicted": [], "seconds": 0.0022}
+{"id": "conll-en-124", "gold": [["ORG", "Nippon Telegraph and Telephone Corp"], ["ORG", "NTT"], ["ORG", "NTT"]], "predicted": [["ORG", "Nippon Telegraph and Telephone Corp -LPR- NTT -RPR-"], ["ORG", "NTT"]], "seconds": 0.0048}
+{"id": "conll-en-125", "gold": [["ORG", "Foreign Affairs Department"]], "predicted": [["ORG", "the Foreign Affairs Department"]], "seconds": 0.0051}
+{"id": "conll-en-126", "gold": [], "predicted": [], "seconds": 0.0022}
+{"id": "conll-en-127", "gold": [["ORG", "Prague Newsroom"]], "predicted": [["PER", "Newsroom"]], "seconds": 0.0025}
+{"id": "conll-en-128", "gold": [["PER", "Baril"]], "predicted": [["PER", "Baril"]], "seconds": 0.0032}
+{"id": "conll-en-129", "gold": [["ORG", "Watford"], ["ORG", "Ashford Town"]], "predicted": [["ORG", "Watford 5 Ashford Town 0"]], "seconds": 0.0021}
+{"id": "conll-en-130", "gold": [["PER", "Kenneth Clarke"]], "predicted": [["ORG", "Conservative party"], ["PER", "Kenneth Clarke"]], "seconds": 0.0045}
+{"id": "conll-en-131", "gold": [["LOC", "Italy"], ["LOC", "Zaire"]], "predicted": [["LOC", "Italy"], ["LOC", "Zaire"]], "seconds": 0.0035}
+{"id": "conll-en-132", "gold": [["LOC", "Toronto"], ["LOC", "Jakarta"], ["ORG", "Reuters"]], "predicted": [["LOC", "Toronto"], ["LOC", "Jakarta"], ["ORG", "Reuters"]], "seconds": 0.0034}
+{"id": "conll-en-133", "gold": [["PER", "Charlton"], ["LOC", "Ireland"]], "predicted": [["LOC", "Charlton"], ["LOC", "Ireland"]], "seconds": 0.0044}
+{"id": "conll-en-134", "gold": [["LOC", "Papua New Guinea"]], "predicted": [["ORG", "the national planning office"], ["LOC", "Papua New Guinea"]], "seconds": 0.003}
+{"id": "conll-en-135", "gold": [["PER", "Arafat"]], "predicted": [["PER", "Arafat"]], "seconds": 0.0032}
+{"id": "conll-en-136", "gold": [["PER", "Leatitia Dalloz"], ["LOC", "France"]], "predicted": [["PER", "Leatitia Dalloz"], ["LOC", "France"]], "seconds": 0.0021}
+{"id": "conll-en-137", "gold": [["ORG", "Grimsby"]], "predicted": [], "seconds": 0.0021}
+{"id": "conll-en-138", "gold": [["ORG", "FIFA"], ["LOC", "Barcelona"], ["ORG", "Udinese"]], "predicted": [["ORG", "FIFA"], ["LOC", "Barcelona"]], "seconds": 0.0039}
+{"id": "conll-en-139", "gold": [], "predicted": [], "seconds": 0.0037}
+{"id": "conll-en-140", "gold": [["LOC", "Tamaulipas"], ["LOC", "Gulf"]], "predicted": [["PER", "Tamaulipas"], ["LOC", "Gulf"]], "seconds": 0.0047}
+{"id": "conll-en-141", "gold": [["ORG", "New Mexico Activities Association"], ["PER", "Cito"]], "predicted": [["ORG", "the New Mexico Activities Association"], ["PER", "Cito"]], "seconds": 0.0041}
+{"id": "conll-en-142", "gold": [], "predicted": [], "seconds": 0.002}
+{"id": "conll-en-143", "gold": [], "predicted": [], "seconds": 0.0059}
+{"id": "conll-en-144", "gold": [["ORG", "Bristol City"], ["ORG", "St Albans"]], "predicted": [["ORG", "Bristol City"]], "seconds": 0.0021}
+{"id": "conll-en-145", "gold": [["PER", "Umar"]], "predicted": [["PER", "Umar"]], "seconds": 0.0031}
+{"id": "conll-en-146", "gold": [["PER", "Baril"], ["PER", "Laurent Kabila"], ["LOC", "Goma"]], "predicted": [["PER", "Baril"], ["PER", "Laurent Kabila"], ["LOC", "Goma"]], "seconds": 0.0053}
+{"id": "conll-en-147", "gold": [["LOC", "United States"]], "predicted": [["LOC", "The United States"]], "seconds": 0.0046}
+{"id": "conll-en-148", "gold": [], "predicted": [["ORG", "BASKETBALL - EUROLEAGUE RESULT"]], "seconds": 0.002}
+{"id": "conll-en-149", "gold": [["LOC", "France"], ["LOC", "Italy"]], "predicted": [["LOC", "France"], ["LOC", "Italy"]], "seconds": 0.0026}
+{"id": "conll-en-150", "gold": [["ORG", "HOUSTON"]], "predicted": [["LOC", "HOUSTON"]], "seconds": 0.0019}
+{"id": "conll-en-151", "gold": [["LOC", "West Indies"], ["LOC", "Australia"]], "predicted": [["ORG", "West Indies"], ["LOC", "Australia"]], "seconds": 0.003}
+{"id": "conll-en-152", "gold": [["ORG", "Hamilton"]], "predicted": [["PER", "Hamilton"]], "seconds": 0.002}
+{"id": "conll-en-153", "gold": [["ORG", "United Nations"], ["LOC", "Central African Republic"], ["ORG", "U.N."]], "predicted": [["ORG", "The United Nations"], ["LOC", "the Central African Republic"], ["ORG", "U.N."]], "seconds": 0.0043}
+{"id": "conll-en-154", "gold": [], "predicted": [], "seconds": 0.0021}
+{"id": "conll-en-155", "gold": [["ORG", "DETROIT"]], "predicted": [["ORG", "DETROIT"]], "seconds": 0.0019}
+{"id": "conll-en-156", "gold": [["PER", "Albright"], ["ORG", "NATO"]], "predicted": [["PER", "-LPR- Albright"], ["ORG", "NATO"]], "seconds": 0.0035}
+{"id": "conll-en-157", "gold": [["ORG", "ANAHEIM"], ["LOC", "PITTSBURGH"]], "predicted": [["ORG", "ANAHEIM"]], "seconds": 0.0018}
+{"id": "conll-en-158", "gold": [["LOC", "HANOVER"], ["LOC", "Germany"]], "predicted": [["ORG", "HANOVER"], ["LOC", "Germany"]], "seconds": 0.002}
+{"id": "conll-en-159", "gold": [], "predicted": [], "seconds": 0.002}
+{"id": "conll-en-160", "gold": [], "predicted": [], "seconds": 0.0025}
+{"id": "conll-en-161", "gold": [["PER", "Johann Gregoire"], ["LOC", "France"]], "predicted": [["PER", "Johann Gregoire"], ["LOC", "France"]], "seconds": 0.0029}
+{"id": "conll-en-162", "gold": [["LOC", "Philadelphia"], ["PER", "Troy Vincent"], ["PER", "Faulk"]], "predicted": [["LOC", "Philadelphia"], ["ORG", "Faulk"]], "seconds": 0.005}
+{"id": "conll-en-163", "gold": [["LOC", "JAPAN"], ["PER", "CHINA"]], "predicted": [["ORG", "DEFEAT"]], "seconds": 0.0029}
+{"id": "conll-en-164", "gold": [], "predicted": [["ORG", "Front"]], "seconds": 0.0054}
+{"id": "conll-en-165", "gold": [["LOC", "Canada"], ["PER", "Jeff Bean"]], "predicted": [["LOC", "Canada"], ["PER", "Jeff Bean"]], "seconds": 0.0051}
+{"id": "conll-en-166", "gold": [["PER", "Stefanie Schuster"], ["LOC", "Austria"]], "predicted": [["PER", "Stefanie Schuster"]], "seconds": 0.0026}
+{"id": "conll-en-167", "gold": [["ORG", "EDMONTON"]], "predicted": [["ORG", "EDMONTON"]], "seconds": 0.0024}
+{"id": "conll-en-168", "gold": [["PER", "Shimazaki Kyoko"], ["LOC", "Japan"]], "predicted": [["PER", "Shimazaki Kyoko"], ["LOC", "Japan"]], "seconds": 0.0024}
+{"id": "conll-en-169", "gold": [["PER", "Zieleniec"], ["PER", "Klaus"]], "predicted": [["ORG", "Klaus"]], "seconds": 0.0066}
+{"id": "conll-en-170", "gold": [], "predicted": [], "seconds": 0.0032}
+{"id": "conll-en-171", "gold": [["ORG", "NCAA"], ["PER", "PACE"]], "predicted": [["ORG", "NCAA AMERICAN FOOTBALL-OHIO STATE 'S"]], "seconds": 0.0026}
+{"id": "conll-en-172", "gold": [["ORG", "Hibernian"]], "predicted": [["PER", "-LPR- Hibernian -RPR-"]], "seconds": 0.0017}
+{"id": "conll-en-173", "gold": [["LOC", "Australia"], ["LOC", "Italy"], ["LOC", "Scotland"], ["LOC", "Ireland"], ["LOC", "Wales"]], "predicted": [["LOC", "Australia"], ["LOC", "Italy"], ["LOC", "Scotland"], ["LOC", "Ireland"], ["LOC", "Wales"]], "seconds": 0.0041}
+{"id": "conll-en-174", "gold": [["PER", "Bure"], ["ORG", "Vancouver"], ["PER", "Galley"], ["ORG", "Buffalo"]], "predicted": [["LOC", "Vancouver"], ["PER", "Galley"]], "seconds": 0.0041}
+{"id": "conll-en-175", "gold": [["ORG", "United Nations"]], "predicted": [["ORG", "the United Nations"]], "seconds": 0.0029}
+{"id": "conll-en-176", "gold": [["ORG", "Gillingham"]], "predicted": [], "seconds": 0.002}
+{"id": "conll-en-177", "gold": [["ORG", "Doetinchem"], ["ORG", "The Super Peasants"]], "predicted": [["ORG", "Doetinchem"]], "seconds": 0.0037}
+{"id": "conll-en-178", "gold": [["ORG", "Hearts"], ["ORG", "Raith"]], "predicted": [], "seconds": 0.0025}
+{"id": "conll-en-179", "gold": [], "predicted": [["PER", "Steer"], ["PER", "Heifer Cow"]], "seconds": 0.0022}
+{"id": "conll-en-180", "gold": [], "predicted": [], "seconds": 0.0023}
+{"id": "conll-en-181", "gold": [["LOC", "Italy"], ["PER", "Marcello Cuttitta"]], "predicted": [["LOC", "Italy"], ["ORG", "Marcello"]], "seconds": 0.0021}
+{"id": "conll-en-182", "gold": [], "predicted": [], "seconds": 0.002}
+{"id": "conll-en-183", "gold": [["ORG", "Brentford"]], "predicted": [], "seconds": 0.0023}
+{"id": "conll-en-184", "gold": [["ORG", "Canada I"], ["PER", "Pierre Lueders"], ["PER", "Dave MacEachern"]], "predicted": [["LOC", "Canada"], ["PER", "Pierre Lueders"], ["PER", "Dave MacEachern"]], "seconds": 0.0025}
+{"id": "conll-en-185", "gold": [["PER", "Gunn Margit Andreassen"], ["LOC", "Norway"]], "predicted": [["PER", "Gunn Margit Andreassen -LPR- Norway"]], "seconds": 0.0026}
+{"id": "conll-en-186", "gold": [["PER", "Leszic Betcher"], ["LOC", "Sydney"]], "predicted": [["PER", "Leszic Betcher"], ["LOC", "Sydney"]], "seconds": 0.0035}
+{"id": "conll-en-187", "gold": [["ORG", "Carlisle"], ["ORG", "Darlington"]], "predicted": [["ORG", "Carlisle 1 Darlington"]], "seconds": 0.0019}
+{"id": "conll-en-188", "gold": [], "predicted": [], "seconds": 0.0018}
+{"id": "conll-en-189", "gold": [], "predicted": [["ORG", "SOCCER - FRENCH LEAGUE SUMMARIES"]], "seconds": 0.0032}
+{"id": "conll-en-190", "gold": [["PER", "Warwara Zelenskaja"], ["LOC", "Russia"]], "predicted": [["LOC", "Russia"]], "seconds": 0.0022}
+{"id": "conll-en-191", "gold": [], "predicted": [], "seconds": 0.004}
+{"id": "conll-en-192", "gold": [], "predicted": [], "seconds": 0.0046}
+{"id": "conll-en-193", "gold": [["PER", "Woolmer"], ["LOC", "Kanpur"]], "predicted": [["PER", "Woolmer"], ["LOC", "Kanpur"]], "seconds": 0.0034}
+{"id": "conll-en-194", "gold": [["ORG", "Borussia Dortmund"]], "predicted": [["ORG", "Borussia Dortmund"]], "seconds": 0.0022}
+{"id": "conll-en-195", "gold": [["PER", "Takanobu Okabe"], ["LOC", "Japan"]], "predicted": [["ORG", "Takanobu Okabe"], ["LOC", "Japan"]], "seconds": 0.0024}
+{"id": "conll-en-196", "gold": [["ORG", "Walsall"], ["ORG", "Burnley"]], "predicted": [], "seconds": 0.0018}
+{"id": "conll-en-197", "gold": [["LOC", "U.S."]], "predicted": [["LOC", "U.S."]], "seconds": 0.0043}
+{"id": "conll-en-198", "gold": [["LOC", "Russia"], ["PER", "Albright"]], "predicted": [["LOC", "Russia"], ["PER", "Albright"]], "seconds": 0.0024}
+{"id": "conll-en-199", "gold": [], "predicted": [], "seconds": 0.0018}
+{"id": "conll-en-200", "gold": [["LOC", "India"]], "predicted": [["LOC", "India"]], "seconds": 0.0032}
+{"id": "conll-en-201", "gold": [["PER", "Roberto Carlos"]], "predicted": [["PER", "Roberto Carlos"]], "seconds": 0.0021}
+{"id": "conll-en-202", "gold": [], "predicted": [], "seconds": 0.0016}
+{"id": "conll-en-203", "gold": [["ORG", "Britain I"], ["PER", "Sean Olsson"], ["PER", "Dean Ward"]], "predicted": [["LOC", "Britain"], ["PER", "Sean Olsson"], ["PER", "Dean Ward"]], "seconds": 0.0026}
+{"id": "conll-en-204", "gold": [["PER", "Simona de Logu"]], "predicted": [["ORG", "Simona de Logu"]], "seconds": 0.0017}
+{"id": "conll-en-205", "gold": [], "predicted": [], "seconds": 0.0033}
+{"id": "conll-en-206", "gold": [["LOC", "Italy"]], "predicted": [["LOC", "Italy"]], "seconds": 0.0022}
+{"id": "conll-en-207", "gold": [["PER", "McGregor"]], "predicted": [["PER", "McGregor"]], "seconds": 0.0037}
+{"id": "conll-en-208", "gold": [["LOC", "MUNICH"], ["LOC", "Germany"]], "predicted": [["ORG", "MUNICH"], ["LOC", "Germany"]], "seconds": 0.002}
+{"id": "conll-en-209", "gold": [["PER", "Supple"], ["LOC", "Singapore"]], "predicted": [["LOC", "Singapore"]], "seconds": 0.0033}
+{"id": "conll-en-210", "gold": [["LOC", "Timisoara"], ["LOC", "Arad"], ["LOC", "Oradea"], ["LOC", "Sibiu"]], "predicted": [["LOC", "Timisoara"], ["LOC", "Arad"], ["ORG", "Oradea"], ["PER", "Sibiu"]], "seconds": 0.0031}
+{"id": "conll-en-211", "gold": [["ORG", "Canadian Grain Commission"]], "predicted": [], "seconds": 0.0018}
+{"id": "conll-en-212", "gold": [], "predicted": [], "seconds": 0.0027}
+{"id": "conll-en-213", "gold": [["LOC", "U.S."], ["LOC", "St. Louis"]], "predicted": [["LOC", "U.S."], ["ORG", "the St. Louis Merchants Exchange"]], "seconds": 0.0033}
+{"id": "conll-en-214", "gold": [], "predicted": [], "seconds": 0.0031}
+{"id": "conll-en-215", "gold": [["PER", "LARA"]], "predicted": [["ORG", "CRICKET - LARA ENDURES ANOTHER MISERABLE DAY"]], "seconds": 0.0023}
+{"id": "conll-en-216", "gold": [["ORG", "BOJ"], ["ORG", "Reuters"]], "predicted": [["ORG", "BOJ"], ["ORG", "Reuters"]], "seconds": 0.0057}
+{"id": "conll-en-217", "gold": [["ORG", "Dundee"]], "predicted": [], "seconds": 0.0023}
+{"id": "conll-en-218", "gold": [], "predicted": [], "seconds": 0.0021}
+{"id": "conll-en-219", "gold": [["PER", "Doull"], ["PER", "Kennedy"]], "predicted": [["PER", "Kennedy"]], "seconds": 0.0031}
+{"id": "conll-en-220", "gold": [], "predicted": [], "seconds": 0.0047}
+{"id": "conll-en-221", "gold": [], "predicted": [["PER", "Ord"]], "seconds": 0.0024}
+{"id": "conll-en-222", "gold": [["LOC", "Turkey"], ["ORG", "Antwerp"], ["LOC", "Spain"], ["LOC", "France"], ["LOC", "Germany"]], "predicted": [["LOC", "Turkey"], ["LOC", "Antwerp"], ["LOC", "Spain"], ["LOC", "France"], ["LOC", "Germany"]], "seconds": 0.0037}
+{"id": "conll-en-223", "gold": [["ORG", "Ranyon -LPR- Rangoon -RPR- University"]], "predicted": [], "seconds": 0.0057}
+{"id": "conll-en-224", "gold": [], "predicted": [], "seconds": 0.0019}
+{"id": "conll-en-225", "gold": [["LOC", "New York"]], "predicted": [["LOC", "New York"]], "seconds": 0.0034}
+{"id": "conll-en-226", "gold": [], "predicted": [], "seconds": 0.0032}
+{"id": "conll-en-227", "gold": [["LOC", "China"], ["LOC", "Hainan"]], "predicted": [["LOC", "China"], ["LOC", "Hainan"]], "seconds": 0.0027}
+{"id": "conll-en-228", "gold": [], "predicted": [], "seconds": 0.0036}
+{"id": "conll-en-229", "gold": [], "predicted": [], "seconds": 0.0023}
+{"id": "conll-en-230", "gold": [["PER", "Frode Andresen"], ["LOC", "Norway"]], "predicted": [["PER", "Frode Andresen -LPR- Norway"]], "seconds": 0.0023}
+{"id": "conll-en-231", "gold": [["PER", "Bernd Zobel"]], "predicted": [["PER", "Bernd Zobel"]], "seconds": 0.0037}
+{"id": "conll-en-232", "gold": [["ORG", "Gazzetta dello Sport"], ["PER", "Weah"], ["PER", "Costa"]], "predicted": [["ORG", "Weah"], ["LOC", "Costa"]], "seconds": 0.0036}
+{"id": "conll-en-233", "gold": [], "predicted": [], "seconds": 0.0023}
+{"id": "conll-en-234", "gold": [], "predicted": [], "seconds": 0.0021}
+{"id": "conll-en-235", "gold": [["ORG", "WTO"], ["LOC", "Uruguay"]], "predicted": [["ORG", "WTO"]], "seconds": 0.0048}
+{"id": "conll-en-236", "gold": [], "predicted": [], "seconds": 0.0028}
+{"id": "conll-en-237", "gold": [["PER", "Arafat"], ["PER", "Nabil Abu Rdainah"]], "predicted": [["PER", "Arafat"], ["PER", "Nabil Abu Rdainah"]], "seconds": 0.0021}
+{"id": "conll-en-238", "gold": [["PER", "Matthew Le Tissier"], ["ORG", "Southampton"], ["PER", "Dwight Yorke"], ["ORG", "Aston"]], "predicted": [["PER", "Matthew Le"], ["PER", "Tissier -LPR- Southampton"], ["PER", "Dwight Yorke"]], "seconds": 0.0023}
+{"id": "conll-en-239", "gold": [["PER", "Jordan"], ["ORG", "World Trade Organisation"], ["ORG", "WTO"]], "predicted": [["PER", "Jordan"], ["ORG", "World Trade Organisation -LPR- WTO"], ["PER", "Hansenne"]], "seconds": 0.0051}
+{"id": "conll-en-240", "gold": [], "predicted": [], "seconds": 0.0047}
+{"id": "conll-en-241", "gold": [], "predicted": [], "seconds": 0.002}
+{"id": "conll-en-242", "gold": [["LOC", "Pakistan"], ["LOC", "New Zealand"]], "predicted": [["LOC", "Pakistan"], ["LOC", "New Zealand"]], "seconds": 0.0037}
+{"id": "conll-en-243", "gold": [["ORG", "Dunfermline"], ["ORG", "Aberdeen"]], "predicted": [["PER", "Dunfermline 2 Aberdeen"]], "seconds": 0.002}
+{"id": "conll-en-244", "gold": [["LOC", "West Indies"], ["PER", "Courtney Walsh"], ["LOC", "Australia"], ["LOC", "Melbourne"]], "predicted": [["ORG", "West Indies"], ["PER", "Courtney Walsh"], ["LOC", "Australia"], ["ORG", "the Melbourne Cricket Ground"]], "seconds": 0.0038}
+{"id": "conll-en-245", "gold": [["PER", "Hilde Gerg"], ["LOC", "Germany"]], "predicted": [["PER", "Hilde Gerg -LPR- Germany"]], "seconds": 0.0022}
+{"id": "conll-en-246", "gold": [], "predicted": [], "seconds": 0.0033}
+{"id": "conll-en-247", "gold": [["PER", "Blinker"], ["ORG", "Udinese"]], "predicted": [["PER", "Engllsh"]], "seconds": 0.0036}
+{"id": "conll-en-248", "gold": [["ORG", "Radio Romania"]], "predicted": [["ORG", "Radio Romania"]], "seconds": 0.0023}
+{"id": "conll-en-249", "gold": [["ORG", "Clydebank"]], "predicted": [["ORG", "Clydebank"]], "seconds": 0.002}
+{"id": "conll-en-250", "gold": [["ORG", "MANCHESTER UNITED"], ["LOC", "AUSTRIA"]], "predicted": [["ORG", "GUNMEN"], ["LOC", "AUSTRIA"]], "seconds": 0.0021}
+{"id": "conll-en-251", "gold": [["LOC", "Australia"], ["PER", "Matthew Burke"], ["PER", "Joe Roff"], ["PER", "Daniel Herbert"], ["PER", "Tim Horan"], ["PER", "David Campese"], ["PER", "Pat Howard"], ["PER", "Sam Payne"], ["PER", "Michael Brial"], ["PER", "David Wilson"], ["PER", "Owen Finegan"], ["PER", "David Giffin"], ["PER", "Tim Gavin"], ["PER", "Andrew Blades"], ["PER", "Marco Caputo"], ["PER", "Dan Crowley"]], "predicted": [["LOC", "Australia"], ["PER", "Matthew Burke"], ["PER", "Joe Roff"], ["PER", "Daniel Herbert"], ["PER", "Tim Horan"], ["PER", "David Campese"], ["PER", "Pat Howard"], ["PER", "Sam Payne"], ["PER", "Michael Brial"], ["PER", "David Wilson"], ["PER", "Owen Finegan"], ["PER", "Tim Gavin"], ["PER", "Dan Crowley"]], "seconds": 0.0061}
+{"id": "conll-en-252", "gold": [["ORG", "Livingston"]], "predicted": [["PER", "Livingston"]], "seconds": 0.002}
+{"id": "conll-en-253", "gold": [["PER", "Alexandra Meissnitzer"], ["LOC", "Austria"]], "predicted": [["PER", "Alexandra Meissnitzer"], ["LOC", "Austria"]], "seconds": 0.002}
+{"id": "conll-en-254", "gold": [], "predicted": [], "seconds": 0.003}
+{"id": "conll-en-255", "gold": [["ORG", "NYMEX"]], "predicted": [["ORG", "NYMEX"]], "seconds": 0.0034}
+{"id": "conll-en-256", "gold": [["LOC", "BALKAN"], ["ORG", "REAL"]], "predicted": [], "seconds": 0.0026}
+{"id": "conll-en-257", "gold": [["ORG", "Leicester"], ["PER", "Marshall"], ["ORG", "Blackburn"], ["PER", "Sutton"]], "predicted": [["PER", "Blackburn"]], "seconds": 0.0026}
+{"id": "conll-en-258", "gold": [["PER", "Nicol"], ["PER", "Eyles"]], "predicted": [["PER", "Nicol v Eyles"]], "seconds": 0.002}
+{"id": "conll-en-259", "gold": [["ORG", "Timah"], ["LOC", "London"]], "predicted": [["ORG", "Timah"], ["LOC", "London"], ["ORG", "GMT"]], "seconds": 0.002}
+{"id": "conll-en-260", "gold": [], "predicted": [], "seconds": 0.0017}
+{"id": "conll-en-261", "gold": [["LOC", "Syria"]], "predicted": [["LOC", "Syria"]], "seconds": 0.0018}
+{"id": "conll-en-262", "gold": [["ORG", "St Johnstone"]], "predicted": [["PER", "St Johnstone"]], "seconds": 0.002}
+{"id": "conll-en-263", "gold": [["PER", "Svetlana Gladishiva"], ["LOC", "Russia"]], "predicted": [["PER", "Svetlana Gladishiva -LPR- Russia"]], "seconds": 0.0028}
+{"id": "conll-en-264", "gold": [], "predicted": [["ORG", "the British Airways-American"]], "seconds": 0.0036}
+{"id": "conll-en-265", "gold": [], "predicted": [], "seconds": 0.0041}
+{"id": "conll-en-266", "gold": [["PER", "Van der Vegt"]], "predicted": [], "seconds": 0.002}
+{"id": "conll-en-267", "gold": [["PER", "Fernando Hierro"], ["PER", "Ivan de"]], "predicted": [], "seconds": 0.0021}
+{"id": "conll-en-268", "gold": [["ORG", "Swindon"]], "predicted": [["ORG", "Swindon"]], "seconds": 0.002}
+{"id": "conll-en-269", "gold": [["PER", "EYLES"]], "predicted": [["ORG", "FIFTH TITLE OF YEAR"]], "seconds": 0.0022}
+{"id": "conll-en-270", "gold": [["LOC", "Ohio"]], "predicted": [["LOC", "Ohio"]], "seconds": 0.003}
+{"id": "conll-en-271", "gold": [["PER", "Chirac"], ["LOC", "Burkina Faso"], ["PER", "Blaise Compaore"], ["LOC", "Bangui"], ["LOC", "Gabon"], ["LOC", "Mali"], ["LOC", "Chad"]], "predicted": [["PER", "Chirac"], ["ORG", "Burkina Faso"], ["PER", "Blaise Compaore"], ["LOC", "Gabon"], ["PER", "Mali"], ["LOC", "Chad"]], "seconds": 0.0043}
+{"id": "conll-en-272", "gold": [["PER", "Sybille Brauner"], ["LOC", "Germany"]], "predicted": [["PER", "Sybille Brauner -LPR- Germany"]], "seconds": 0.0021}
+{"id": "conll-en-273", "gold": [["LOC", "Poland"]], "predicted": [["LOC", "Poland"]], "seconds": 0.005}
+{"id": "conll-en-274", "gold": [], "predicted": [], "seconds": 0.002}
+{"id": "conll-en-275", "gold": [["LOC", "NEW YORK"]], "predicted": [["LOC", "NEW YORK"]], "seconds": 0.002}
+{"id": "conll-en-276", "gold": [], "predicted": [], "seconds": 0.0028}
+{"id": "conll-en-277", "gold": [["PER", "Nicol"]], "predicted": [["PER", "Nicol"]], "seconds": 0.0029}
+{"id": "conll-en-278", "gold": [["PER", "Sakakibara"], ["ORG", "Sumitomo"], ["PER", "Note"]], "predicted": [["PER", "Sakakibara"], ["ORG", "Sumitomo"]], "seconds": 0.0032}
+{"id": "conll-en-279", "gold": [["LOC", "Austria"], ["ORG", "Rapid Vienna"]], "predicted": [["LOC", "Austria"], ["PER", "Rapid Vienna"]], "seconds": 0.0038}
+{"id": "conll-en-280", "gold": [["PER", "Baril"], ["LOC", "U.S."], ["LOC", "Bukavu"], ["LOC", "Kindu"]], "predicted": [["PER", "Baril"], ["LOC", "U.S."], ["LOC", "Masisi"], ["PER", "Bukavu"], ["ORG", "Kindu"]], "seconds": 0.0057}
+{"id": "conll-en-281", "gold": [], "predicted": [], "seconds": 0.0038}
+{"id": "conll-en-282", "gold": [["ORG", "Bharatiya Janata Party"], ["ORG", "BJP"]], "predicted": [["ORG", "Bharatiya Janata Party"], ["ORG", "Babri"]], "seconds": 0.0055}
+{"id": "conll-en-283", "gold": [["LOC", "Belgium"], ["LOC", "Spain"], ["LOC", "Zambia"]], "predicted": [["LOC", "Belgium"], ["LOC", "Spain"], ["LOC", "Zambia"]], "seconds": 0.0041}
+{"id": "conll-en-284", "gold": [["ORG", "Reggiana"], ["PER", "Dietmar Beiersdorfer"]], "predicted": [["PER", "Reggiana"], ["PER", "Dietmar Beiersdorfer"]], "seconds": 0.003}
+{"id": "conll-en-285", "gold": [["PER", "Kohl"], ["PER", "Belo"], ["LOC", "Indonesia"], ["LOC", "East Timor"], ["LOC", "Jakarta"]], "predicted": [["PER", "Kohl"], ["PER", "Belo"], ["LOC", "Indonesia"], ["LOC", "East Timor"], ["LOC", "Jakarta"]], "seconds": 0.0035}
+{"id": "conll-en-286", "gold": [["LOC", "Singapore"], ["PER", "Tan Kong Yam"], ["ORG", "National University of Singapore"]], "predicted": [["LOC", "Singapore"], ["PER", "Tan Kong Yam"], ["ORG", "Business Policy"], ["ORG", "the National University of Singapore"]], "seconds": 0.0047}
+{"id": "conll-en-287", "gold": [["LOC", "DODGE CITY"]], "predicted": [["ORG", "DODGE"]], "seconds": 0.0021}
+{"id": "conll-en-288", "gold": [["ORG", "National"], ["LOC", "Football"]], "predicted": [["ORG", "National Football"]], "seconds": 0.0019}
+{"id": "conll-en-289", "gold": [["LOC", "VAIL"], ["LOC", "Colorado"]], "predicted": [["LOC", "VAIL"], ["LOC", "Colorado"]], "seconds": 0.0021}
+{"id": "conll-en-290", "gold": [["ORG", "Ahold"]], "predicted": [], "seconds": 0.0028}
+{"id": "conll-en-291", "gold": [], "predicted": [], "seconds": 0.0028}
+{"id": "conll-en-292", "gold": [["ORG", "NEW YORK"]], "predicted": [["LOC", "NEW YORK"]], "seconds": 0.0019}
+{"id": "conll-en-293", "gold": [["ORG", "Telkom"], ["LOC", "London"]], "predicted": [["LOC", "London"]], "seconds": 0.0019}
+{"id": "conll-en-294", "gold": [["ORG", "London Newsroom"]], "predicted": [["ORG", "London Newsroom"]], "seconds": 0.0023}
+{"id": "conll-en-295", "gold": [["ORG", "RUGBY UNION"], ["PER", "CUTTITTA"], ["LOC", "ITALY"]], "predicted": [], "seconds": 0.0022}
+{"id": "conll-en-296", "gold": [["LOC", "NEW YORK"]], "predicted": [["LOC", "NEW YORK"]], "seconds": 0.0018}
+{"id": "conll-en-297", "gold": [["PER", "Burns"]], "predicted": [["PER", "Burns"]], "seconds": 0.0023}
+{"id": "conll-en-298", "gold": [["ORG", "YIT"], ["ORG", "Reuters"]], "predicted": [["ORG", "YIT"], ["ORG", "Reuters"]], "seconds": 0.0031}
+{"id": "conll-en-299", "gold": [["LOC", "Spain"]], "predicted": [["LOC", "Spain"]], "seconds": 0.0041}

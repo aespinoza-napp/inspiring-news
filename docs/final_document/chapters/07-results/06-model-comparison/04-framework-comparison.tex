@@ -1,0 +1,208 @@
+% ============================================================
+% Chapter 7: Results
+%   Section: Model Comparison
+%     Subsection: The Pipeline against Other Ways of Doing Each Phase
+% Included from chapters/07-results/06-model-comparison/model-comparison.tex
+% Source: backend/data/evaluation/experiments/frameworks/report.md,
+% metrics.json and resources.json (2026-11-11). Every figure below is
+% copied from report.md; rebuild it before changing one.
+% ============================================================
+
+\subsection{The Pipeline against Other Ways of Doing Each Phase}
+\label{subsec:results-frameworks}
+
+The comparison of Subsection~\ref{subsec:benchmark-frameworks} was run
+on 11~November 2026. It is a first reading: the samples are small, and
+what each table cannot show is said beside it.
+
+\paragraph{Topics, on the project's own articles.}
+Table~\ref{tab:frameworks-topics} compares five ways of naming an
+article's topic among the pipeline's 23. The hosted models lead, but
+their intervals overlap the embedding classifier's, and many of these
+labels were written by a model and none has been reviewed by a person:
+agreement with them is not yet accuracy. The two local language models
+are slower than the classifier and no more accurate.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+56 articles, 23 topics & Top-1 & Gold in top 3 & Top-1 group & Median s \\
+\midrule
+Embedding classifier (the pipeline's) & 0.66 [0.54, 0.79] & 0.88 & 0.82 & 4.7 \\
+\texttt{llama3.2:3b} & 0.52 [0.38, 0.64] & 0.82 & 0.61 & 13.8 \\
+\texttt{qwen3.5:4b} & 0.64 [0.52, 0.77] & 0.96 & 0.80 & 24.3 \\
+Claude Haiku & 0.73 [0.61, 0.84] & 0.93 & 0.86 & 2.9 \\
+Claude Sonnet & 0.77 [0.66, 0.88] & 0.96 & 0.89 & 2.6 \\
+\bottomrule
+\end{tabular}
+\caption[Topic classification on the project's articles]{Topic
+classification on the labelled articles. The language models read the
+title and the first 3{,}000 characters, the embedding classifier the
+whole body. 95\% bootstrap intervals; \texttt{llama3.2:3b} gave 7
+unusable answers and \texttt{qwen3.5:4b} one.}
+\label{tab:frameworks-topics}
+\end{table}
+
+\paragraph{Topics, on a standard set.} On SIB-200
+(Table~\ref{tab:frameworks-sib}) training a classifier on the embeddings
+the pipeline already computes adds about 15 points over using them
+untrained, which is the pipeline's method, and equals the hosted model
+at a twentieth of its time per sentence, deterministically. SIB-200 has
+seven topics and single sentences where the pipeline has 23 topics and
+whole articles, so the table shows what training buys the method, not
+how the application's classifier scores; training one for the
+pipeline's topics needs a few hundred labelled articles, and 56 exist.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+SIB-200 test, 204 sentences & English & Spanish & s / sentence \\
+\midrule
+\texttt{bge-m3}, untrained (the pipeline's method) & 0.75 [0.68, 0.80] & 0.74 [0.68, 0.80] & 0.10--0.14 \\
+\texttt{bge-m3} + logistic regression & 0.89 [0.85, 0.93] & 0.91 [0.87, 0.95] & 0.10--0.14 \\
+TF-IDF + logistic regression & 0.74 [0.67, 0.80] & 0.72 [0.66, 0.78] & $<0.001$ \\
+Claude Haiku & 0.88 [0.83, 0.92] & 0.88 [0.83, 0.93] & 2.0--2.4 \\
+\bottomrule
+\end{tabular}
+\caption[Topic classification on SIB-200]{Accuracy on SIB-200, the same
+sentences in both languages, with 95\% bootstrap intervals. The trained
+contenders learn from the language's 701 training sentences (76~s for
+the embedding classifier, embedding included). One sentence was refused
+by the hosted model's safety filter and is counted wrong.}
+\label{tab:frameworks-sib}
+\end{table}
+
+\paragraph{Entities, on a standard set.} GLiNER as the pipeline runs it
+is the weakest of the three serious contenders
+(Table~\ref{tab:frameworks-ner}), with a precision of 0.50 in English
+and an organisation score of 0.37, part of it the sports tables of
+CoNLL-2003, where a city names a team. The fine-tuned model leads, but
+it was trained on these corpora's training sets, which neither GLiNER
+nor the hosted model was given: it is the supervised ceiling rather than
+a like-for-like rival. GLiNER also extracts products and events, which
+that model cannot. The public test sets may be in the hosted model's
+training data.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+ & & Precision & Recall & F1 & F1, any type & s / sentence \\
+\midrule
+GLiNER (the pipeline's) & en & 0.50 & 0.71 & 0.59 & 0.73 & 0.08 \\
+ & es & 0.71 & 0.75 & 0.73 & 0.78 & 0.14 \\
+XLM-RoBERTa, fine-tuned & en & 0.89 & 0.89 & 0.89 & 0.94 & 0.04 \\
+ & es & 0.91 & 0.92 & 0.91 & 0.96 & 0.08 \\
+spaCy, small & en & 0.64 & 0.54 & 0.58 & 0.71 & 0.003 \\
+ & es & 0.60 & 0.61 & 0.60 & 0.80 & 0.004 \\
+Claude Haiku & en & 0.83 & 0.86 & 0.84 & 0.92 & 2.3 \\
+ & es & 0.89 & 0.87 & 0.88 & 0.92 & 2.5 \\
+\bottomrule
+\end{tabular}
+\caption[Entity recognition on CoNLL]{Persons, organisations and
+locations on 300 sampled test sentences each of CoNLL-2003 (en) and
+CoNLL-2002 (es), micro-averaged. ``Any type'' counts a name found under
+another type.}
+\label{tab:frameworks-ner}
+\end{table}
+
+\paragraph{Verification, on the same evidence.} On ten AVeriTeC claims
+(Table~\ref{tab:frameworks-verifier}) the hosted model was right on five
+and the baseline on four, with intervals some 60 points wide: no
+difference is shown. The finding is the last row. Asked with no evidence
+at all, the hosted model was right on seven, more than with the
+evidence: these fact-checks of 2020--22 are, in all likelihood, in what
+it was trained on. No tool reached the web, so the rule that no evidence
+may postdate the claim held for what it read; it cannot hold for what it
+remembers. Any score of such a model on this benchmark is therefore an
+upper bound, and seven of the ten labels being \emph{Refuted}, always
+answering so scores seven too. The baseline, deterministic on fixed
+evidence, repeated its verdicts of 5~November on all ten.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+AVeriTeC dev, 10 claims & Right & Wrong and definite & Not verified & Median s \\
+\midrule
+\texttt{llama3.2:3b}, replayed & 4 & 4 & 2 & 70.8 \\
+Claude Sonnet, replayed & 5 & 2 & 3 & 37.6 \\
+Claude Sonnet, no evidence & 7 & 1 & 2 & 4.0 \\
+Always \emph{Refuted} & 7 & 3 & 0 & --- \\
+\bottomrule
+\end{tabular}
+\caption[The verifier on the same evidence]{Two verifiers on the
+evidence one run had kept for the first ten claims of AVeriTeC's
+development split, and the hosted model with none.}
+\label{tab:frameworks-verifier}
+\end{table}
+
+\paragraph{Review.} On the planted-defect texts the hosted model scored
+every defective text below its clean one (detection 100\%, against 95\%
+for \texttt{gemma4:e4b} and \texttt{qwen3.5:9b}; $+20$ points over
+\texttt{llama3.2:3b}, $[+12, +28]$), named every defect, and took 10.4~s
+a text against 79.2~s for the reviewer in use. It is also the harshest
+on clean text (a mean fact-consistency score of 80.5 where the local
+reviewer gives 100) and moves the scores a defect was not aimed at more
+(16.3 points against 7.3).
+
+\paragraph{Resources.} Table~\ref{tab:frameworks-resources} gives what
+each model needs. The models built for one task hold between 0.3 and
+1.1~GB once loaded; the local language models between 3.7 and 7.9~GB,
+five to ten times as much, and on topics were slower and no more
+accurate. The fine-tuned entity model has nearly twice GLiNER's
+parameters and peaked lower in memory. The trained topic classifier adds
+some seven thousand weights to an embedding model the pipeline already
+holds. The hosted model needs nothing local, and cannot be sized.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+ & Parameters & On disk & RAM loaded & RAM peak & Cores \\
+\midrule
+\texttt{bge-m3} (embeddings) & 568 M & 2.3 GB & 0.7 GB & 2.1 GB & 10.5 \\
+GLiNER small & 153 M & 0.6 GB & 1.1 GB & 1.7 GB & 12.0 \\
+XLM-RoBERTa, fine-tuned & 277 M & 1.1 GB & 0.7 GB & 1.1 GB & 12.0 \\
+spaCy, small & --- & 16 MB & 0.3 GB & 0.3 GB & 1.0 \\
+TF-IDF + logistic regression & 0.3 M & 4 MB & 0.1 GB & 0.2 GB & 11.0 \\
+\midrule
+\texttt{llama3.2:3b} & 3.2 B & 2.0 GB & 4.1 GB & --- & --- \\
+\texttt{qwen3.5:4b} & 4.2 B & 3.3 GB & 3.7 GB & --- & --- \\
+\texttt{phi4-mini} & 3.8 B & 2.5 GB & 4.8 GB & --- & --- \\
+\texttt{granite3.3:8b} & 8.2 B & 4.9 GB & 7.9 GB & --- & --- \\
+\texttt{gemma4:e4b} & 7.5 B & 6.6 GB & 2.1 GB & --- & --- \\
+\texttt{qwen3.5:9b} & 9.0 B & 6.6 GB & 6.7 GB & --- & --- \\
+\midrule
+Claude Haiku, Sonnet & not published & none & none & --- & --- \\
+\bottomrule
+\end{tabular}
+\caption[What each model needs]{Size and resources on the machine these
+comparisons ran on (Intel Core Ultra~7 165U, 14 threads, 64~GB, no GPU
+used), which is not the laptop of Section~\ref{sec:setup}: seconds here
+do not compare with seconds there. Each model of
+the first block was measured in a process of its own over 100 sentences,
+above the bare interpreter; cores is processor time over elapsed time.
+The second block is Ollama's own report once the model is loaded
+(4-bit quantised files); \texttt{gemma4:e4b}'s figure is lower than its
+file and is given as reported. Peak memory and cores were not measured
+for those models.}
+\label{tab:frameworks-resources}
+\end{table}
+
+\paragraph{What follows.} For enrichment, a model trained for the task
+is the better trade on every axis measured: a classifier trained on the
+pipeline's own embeddings for topics, once enough articles are labelled,
+and a fine-tuned entity model where products and events are not needed.
+A language model, local or hosted, is not needed for either. For
+verification the comparison settles nothing at ten claims, and shows
+that a hosted model cannot be measured fairly on a public benchmark it
+may have read. No phase has a timed human run yet, so the person's
+column of this comparison is still empty.

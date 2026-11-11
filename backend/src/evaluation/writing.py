@@ -469,14 +469,16 @@ def build_writing_runner(texts: TextSet, model: str, root: Path | None = None) -
 
     meter = UsageMeter()
 
-    corrector = TextCorrector(llm=metered(LLMClient(model=model), meter))
+    from src.evaluation.headless_claude import llm_client, provider as headless_provider
+
+    corrector = TextCorrector(llm=metered(llm_client(model), meter))
 
     return WritingRunner(
         texts,
         model,
         corrector=corrector,
         meter=meter,
-        provider=provider_of(settings.LLM_BASE_URL),
+        provider=headless_provider(model, settings.LLM_BASE_URL),
         root=root,
     )
 
