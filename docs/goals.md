@@ -237,3 +237,87 @@ Prepared 2026-10-20: the protocol and the sheet, `docs/review/reader-test.md`. T
 ```
 /goal Run the five-reader test of the reader view. Write the protocol in docs/review/reader-test.md: five people who are not me, the same three tasks each (explain why a given claim was judged as it was; tell a FALSE from a "Not checked"; say whether a given story was written by a person), one fixed article and story per task chosen from what the stack serves, what I say and do not say, and a sheet per reader for success, time and what confused them. I run the sessions and paste back each sheet. Then summarise per task: successes out of 5, median time, and the confusions grouped, with each reader quoted by initials only; record it in the RQ4 section of docs/decisions/evaluation.md and the roadmap item, and file each confusion that needs a change as its own roadmap item rather than fixing it here. Follow the goal rules in docs/goals.md. Done when ./scripts/check.sh passes and all five sheets are summarised.
 ```
+
+## Publishing and grounding (added 2026-11-10)
+
+Two goals meant to run **at the same time, in two Claude sessions**. Each
+has its own branch, its own worktree and its own files, and they share a
+contract, so neither has to wait for the other or merge the other's
+half-done work.
+
+```
+P1 Grounding index (session A) ── small; merges first
+P2 Channel packages (session B) ── rebases on P1 once it is merged
+```
+
+**What set them off.** Draft `acc7c8ed366db472` (New Heart, Galicia and
+Portugal, `es`, written and reviewed by `llama3.2:3b`) showed
+"Hallucination index 0 against 85" next to the reviewer's own summary
+"Todas las afirmaciones del texto están respaldadas por fuentes". Read
+on 2026-11-10, two things were wrong at once:
+
+1. **The model gave the 0 itself.** No "Capped at" note follows the
+   summary: the ceiling never acted, because the score was already at
+   or below it. The 3B read the scale backwards - a hallucination
+   *index* of 0 sounds like "no hallucination" - and its score
+   contradicts its own words.
+2. **The rule would have capped it at 0 anyway, for the wrong reason.**
+   The body has no `[n]` at all. Two sentences counted as factual (a
+   year, a named project), both uncited, so the ceiling
+   `100 × (1 − 2/2)` is 0. But both say what source [1], the analysed
+   article, says: they are *uncited*, not *invented*. A missing
+   citation is a citation problem; a hallucination is a statement no
+   source holds. The index today calls the two the same.
+
+The writer citing nothing at all is a third problem, the writer's
+(no `writer` model in `backend/.env`, so it fell back to the 3B). P1
+reports it; it does not fix the writer.
+
+### The rules both follow
+
+On top of the goal rules above:
+
+- **Worktrees, not one checkout.** Session A works in
+  `../inspiring-news-grounding` on `review/grounding-index`; session B in
+  `../inspiring-news-channels` on `publish/channel-packages`. Both branch
+  off `iterate/20261104-speed` (`git worktree add ../inspiring-news-<x>
+  -b <branch> iterate/20261104-speed`) **after** the main checkout's
+  uncommitted work of 2026-11-10 is committed - claim restatement on by
+  default, and Catalan dropped from new drafts (`draft_routes.py`,
+  `lib/drafts.ts`) - so both start from it. Neither touches the main
+  checkout, where that work and the speed campaign live. Commit on
+  the branch when the author says so; never push.
+- **Who owns what.** A file outside a session's list is edited only to
+  add to it, never to change what is there:
+
+  | | Session A (P1) | Session B (P2) |
+  |---|---|---|
+  | backend | `services/corrector/grounding.py`, `draft_reviewer.py`, `services/writer/rewriter.py` (target handling only), `config/thresholds.py` (review/rewrite fields only) | `services/publishing/**`, `api/publish_routes.py`, `models/writer/draft.py` (`PublishRecord` and new publishing models only), `config/settings.py` (publishing keys only), `.env-example` |
+  | frontend | `components/drafts/DraftReviewPanel.tsx`, `RewritePanel.tsx`, the metric labels in `lib/drafts.ts` | `components/drafts/PublishPanel.tsx` (+ css), new files under `components/publishing/`, the publishing types in `lib/drafts.ts`, `app/api/publishing/**` |
+  | docs | `docs/decisions/writing.md` "Reviewing" / "Rewriting" | `docs/decisions/writing.md` "Publishing" |
+
+  `lib/drafts.ts` and `writing.md` are the two shared files: each
+  session edits only its own blocks of them, so the merge is textual.
+- **The contract between them.** P2 never reads a review score to decide
+  anything: whether a draft goes out is `status == approved`, as now.
+  A package may *show* the review, by metric key, so P1 keeps every key
+  (`hallucinationIndex` stays the key, whatever the label says) and the
+  scale (0-100, higher is better, every target a floor -
+  `thresholds.py`).
+- **Free, and nothing posted.** No paid API. Nothing reaches Meta,
+  TikTok or a WordPress site in a test. The live trial in P2 is one,
+  with the author watching.
+- **Merge order.** P1 is smaller and merges first; P2 then rebases and
+  runs `./scripts/check.sh` again before it is called done.
+
+### P1 · A hallucination index that measures hallucination · 6h · session A
+
+```
+/goal Make hallucinationIndex measure statements no source holds, not missing citations. Read the "Publishing and grounding" section of docs/goals.md first: the New Heart draft (acc7c8ed366db472) and the two faults it showed. (1) In services/corrector/grounding.py, split every factual sentence into three: cited (has [n]), uncited but supported (no [n], but MIN_SOURCE_SHARE of its content terms are in some source's text, by the existing _terms rule; record which source), and unsupported (in no source). The draft's own sources are what the writer saw, so the check reads ArticleDraft.sources' text, same-language only as every term comparison there is, and says so when the draft and a source differ in language (it cannot judge; never count those as unsupported). (2) In draft_reviewer.py, hallucinationIndex is capped by the share of factual sentences that are unsupported, not uncited: 100 x (1 - unsupported/factual). Uncited-but-supported sentences become factConsistency issues ("States a fact its source [n] holds, without citing it") with their own ceiling, and a body with no citation at all says so once, plainly. Every issue names its sentence, as now. (3) The model's score cannot contradict the checks: when the checks find nothing unsupported and the model scores below the target, or its summary says every statement is supported while it scores under 50, keep the checks' ceiling as the score and record the model's number and summary in the metric with a note that the model's scale was read backwards - never silently. Write the rule in the review prompt so the model is told 100 means every statement is in a source. (4) frontend: label the metric "Grounding (100 = nothing invented)" in DraftReviewPanel, RewritePanel and lib/drafts.ts's labels, the key unchanged; show cited / uncited-but-supported / unsupported counts. Tests in backend/tests/: the New Heart body and its seven sources as a fixture (committed under backend/tests/fixtures/drafts/, its text only) scores 100 on hallucinationIndex with factConsistency below its target and the no-citation issue; a sentence with a figure in no source caps the index; an English draft over Spanish sources is not called unsupported (Catalan is no longer offered for new drafts since 2026-11-10, but stored ones still load and go through the same rule); the model-contradiction rule both ways. If the review's response shape changes, update the frontend type and say so in writing.md. Then re-review the New Heart draft live (inference not needed; the reviewer model in backend/.env) and record before and after in docs/decisions/writing.md "Reviewing". Follow the goal rules in docs/goals.md and the "Publishing and grounding" rules (worktree, owned files, contract). Done when ./scripts/check.sh passes and the live re-review is recorded.
+```
+
+### P2 · Ready to post: WordPress, Instagram, Instagram Stories, TikTok · 20h · session B
+
+```
+/goal Prepare an approved draft for publishing on WordPress, an Instagram carousel, Instagram Stories and TikTok, saved so each can be posted correctly. Read the "Publishing and grounding" section of docs/goals.md first, and docs/decisions/writing.md "Publishing" and backend/src/services/publishing/social.py: TikTok and Instagram post media with a caption, never an article, and their APIs need app review, so this goal builds the package each one needs and saves it; posting stays a person's step except for WordPress. One package per channel, built from the published snapshot's allowlist (services/publishing/story.py) so a package carries nothing the public page would not, under DRAFTS_PATH/published/<draft id>/<channel>/ with a manifest.json (channel, draft id, revision, publishedAt, files with sizes and sha256, the caption, the link back to /reader/stories/<id>, and the disclosure). WordPress: the post as WordPress takes it - title, excerpt (subtitle), slug and tags from the draft's metadata, Gutenberg-block HTML of the body with each [n] as a link to its source and the sources listed at the end, the AI disclosure as its own block, a featured image when the analysed article has image_url (linked, never downloaded and re-hosted without its credit) - written as post.json (the REST API's /wp/v2/posts body) and post.xml (a one-item WXR the site's importer reads, round-tripped through our own services/imports/wordpress.py parser in a test); and, only when WORDPRESS_URL, WORDPRESS_USER and WORDPRESS_APP_PASSWORD are set, sent through the REST API as status "draft" (never "publish": the site's own editor publishes), the post's id and edit link kept in the PublishRecord. Instagram: a carousel of 1080x1350 PNG cards (cover with the title, 3-8 cards of the story's key points with the source named on each, a last card with the link), rendered with Pillow and fonts committed to the repo, the text never smaller than 32 px and cut only at a sentence; caption.txt under 2,200 characters with at most 30 hashtags from the tags and topic, the sources named, the link said as "link in bio" since captions do not link. Instagram Stories: the same story as 1080x1920 frames inside the 250 px safe areas top and bottom, the last with the link for the link sticker written in the manifest. TikTok: a photo post of the same 1080x1920 frames (TikTok's photo mode) plus caption.txt within its limit, and a still-to-video MP4 only if ffmpeg is on the PATH (reported as skipped otherwise, never required). A card states only sentences of the approved body, each with its citation's source named, so a package never says what the review did not read; numbers checked against the body by the grounding module's figures(). The four channels replace the unavailable ones in social.py's place: each available, packages built in the background (run_in_background "publishing", as writing.md foresaw), all or none as publishing is now, unpublish removing the package; GET /drafts/{id}/packages/{channel} lists the files and serves a zip, behind STORAGE_API_KEY. frontend: PublishPanel lists the four with what each will produce, a preview of the cards and the caption with a copy button, and a download per channel; npx tsc passes. Tests with tmp_path and no network: the snapshot allowlist holds in every package, image sizes and safe areas, caption limits, the WXR round-trip, the REST call faked and refused without the three settings, all-or-none when one channel fails, a Spanish and an English draft (and a stored Catalan one still packages). Then one live trial on an approved draft: the four packages built, the cards looked at by Claude (Read the PNGs) and by the author, WordPress sent as a draft only if the author has set its keys; recorded in docs/decisions/writing.md "Publishing". Follow the goal rules in docs/goals.md and the "Publishing and grounding" rules (worktree, owned files, contract, merge after P1). Done when ./scripts/check.sh passes after rebasing on P1 and the trial is recorded.
+```
