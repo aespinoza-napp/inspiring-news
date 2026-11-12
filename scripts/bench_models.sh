@@ -110,7 +110,7 @@ baseline_run() {
   require_services
   step "baseline $BASELINE_MODEL: searching, all 69 train claims"
   uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split train \
-    --model "$BASELINE_MODEL" 2>&1 | tee -a "$LOG_DIR/baseline-$BASELINE_MODEL.log"
+    --model "$BASELINE_MODEL" 2>&1 | tee -a "$LOG_DIR/baseline-${BASELINE_MODEL//:/-}.log"
   unload "$BASELINE_MODEL"
 }
 
@@ -150,7 +150,7 @@ case "${1:-}" in
       b="$(bench_name "$m")"
       step "verifier $b: replaying $baseline, first $limit train claims"
       uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split train \
-        --model "$b" --replay "$baseline" --limit "$limit" 2>&1 | tee "$LOG_DIR/verifier-$b.log"
+        --model "$b" --replay "$baseline" --limit "$limit" 2>&1 | tee "$LOG_DIR/verifier-${b//:/-}.log"
       unload "$b"
     done ;;
 
@@ -161,7 +161,7 @@ case "${1:-}" in
       step "writer $b: one draft in en, es and ca"
       # Nothing of it is stored by the script itself: the log is the record.
       uv run python ../scripts/try_writer_model.py --model "$b" \
-        --language en --language es --language ca 2>&1 | tee "$LOG_DIR/writer-$b.log"
+        --language en --language es --language ca 2>&1 | tee "$LOG_DIR/writer-${b//:/-}.log"
       unload "$b"
     done ;;
 
@@ -172,10 +172,10 @@ case "${1:-}" in
       # The planted-defect benchmark first: it holds the 95% format gate,
       # so a model that fails it is read as failing before the drafts.
       step "reviewer $b: the writing benchmark (planted defects)"
-      uv run python -m src.evaluation.cli writing run --model "$b" 2>&1 | tee "$LOG_DIR/writing-$b.log"
+      uv run python -m src.evaluation.cli writing run --model "$b" 2>&1 | tee "$LOG_DIR/writing-${b//:/-}.log"
       step "reviewer $b: the seeded drafts"
       uv run python ../scripts/try_reviewer_model.py --model "$b" \
-        --json "$LOG_DIR/reviewer-$b.json" 2>&1 | tee "$LOG_DIR/reviewer-$b.log"
+        --json "$LOG_DIR/reviewer-${b//:/-}.json" 2>&1 | tee "$LOG_DIR/reviewer-${b//:/-}.log"
       unload "$b"
     done ;;
 
