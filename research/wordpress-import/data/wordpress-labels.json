@@ -1,0 +1,3073 @@
+{
+ "source_id": "wordpress:inspiringnews.ai",
+ "import": "inspiringnews-buenasnoticias.WordPress.2026-11-03",
+ "written_at": "2026-11-17T12:04:56+00:00",
+ "how": "research/wordpress-import/wordpress_import.ipynb, section 4 (TAG_TO_TOPIC, CATEGORY_TO_GROUP, the category fallbacks)",
+ "articles": {
+  "https://inspiringnews.ai/ciencia/innovadora-terapia-genica-transforma-la-vida-de-ninos-con-ceguera-congenita/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/celebrando-la-vida-ocho-cachorros-de-lobo-gris-indio-nacen-en-karnataka/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/fomentando-la-conciencia-un-recurso-pedagogico-para-ninos/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/la-conexion-social-un-pilar-fundamental-para-pacientes-con-demencia/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/un-anillo-de-bodas-perdido-y-la-generosidad-de-extranos-una-historia-de-esperanza-en-dubai/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "inspiration",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/innovador-dispositivo-transforma-aire-desertico-en-agua-potable/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "energy",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/descubrimiento-espanol-revela-claves-geneticas-del-osteosarcoma-en-jovenes/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/un-innovador-robot-revoluciona-la-restauracion-de-praderas-marinas/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/un-entrenamiento-hoy-ideas-brillantes-manana/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "fitness",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/un-joven-innovador-esta-transformando-la-seguridad-alimentaria-con-su-detector-de-pesticidas/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "research",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/kochi-estrena-el-primer-metro-acuatico-del-mundo-innovacion-en-transporte-urbano/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "cities",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/innovador-sistema-de-deteccion-temprana-del-cancer-de-pancreas/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "research",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/las-gafas-que-transforman-la-comunicacion-de-una-nina-sorda-de-10-anos/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "inspiration",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/la-iglesia-barroca-de-sant-sever-reabre-sus-puertas-tras-una-restauracion-ejemplar/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "entertainment",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/medio-ambiente/carreteras-autorreparables-hechas-con-aceite-de-cocina-reciclado/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/el-poder-del-bambu-como-pachgaon-transformo-su-futuro-a-traves-de-la-comunidad/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/un-robot-revolucionario-desmonta-desechos-electronicos-para-un-futuro-sostenible/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/revolucionando-la-comunicacion-un-dispositivo-que-devuelve-la-voz-a-pacientes-con-ela/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/una-corredora-desafia-las-probabilidades-y-completa-una-ultramaraton-de-430-km-tras-una-cirugia-cerebral/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "fitness",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/revolucion-en-diagnosticos-una-ia-que-lee-la-memoria-inmunologica/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/innovador-dedo-robotico-revoluciona-examenes-medicos-y-diagnosticos-tempranos/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "technology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/barcelona-se-rinde-ante-botero-la-mayor-exposicion-del-artista-colombiano-llega-al-palau-martorell/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "entertainment",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/sociedad/un-hallazgo-inesperado-en-via-laietana/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/cultura/descubre-la-deslumbrante-alfombra-floral-de-70-m%c2%b2-en-barcelona-una-exposicion-gratuita/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "entertainment",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/ciencia/recuperando-los-recuerdos-de-la-infancia-el-estudio-que-revela-que-los-bebes-si-procesan-recuerdos/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/reviviendo-los-fondos-marinos-un-proyecto-innovador-en-la-costa-catalana/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/el-hospital-universitario-vall-dhebron-pionero-en-el-trasplante-simultaneo-de-corazon-e-higado-en-ninos/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/astronautas-regresan-a-la-tierra-tras-nueve-meses-en-la-eei/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "space",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/un-descubrimiento-fascinante-40-nuevos-fosiles-de-pterosaurios-en-teruel/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "heritage",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/barcelona-brilla-en-el-photo-forum-fest-una-celebracion-de-la-fotografia/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "employment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/un-proyecto-internacional-para-proteger-a-los-milanos-reales-seguimiento-gps-para-conocer-sus-migraciones/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/la-emotiva-historia-de-hachiko-el-perro-que-nunca-olvido/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/salud/revolucionario-avance-en-la-lucha-contra-el-alzheimer-un-farmaco-reduce-el-riesgo-decadas-en-personas-con-predisposicion-genetica/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/revolucionario-microchip-para-la-prediccion-de-riesgos-ambientales-y-alimentarios/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/descubre-platfo-la-nueva-plataforma-digital-para-el-cine-espanol/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "entertainment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/nuevos-descubrimientos-en-argentina-revelan-los-secretos-de-la-regeneracion-de-raices-en-plantas/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "food",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/el-futuro-de-los-trasplantes-exito-en-el-primer-injerto-de-higado-de-cerdo-en-humanos/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/kenia-da-la-bienvenida-a-17-antilopes-bongo-un-paso-esperanzador-hacia-la-conservacion/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/estudio-del-clinic-un-avance-en-la-deteccion-del-cancer-de-colon-que-puede-salvar-vidas/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/cataluna-estrena-limites-de-velocidad-dinamicos-innovacion-en-seguridad-vial/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "technology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/revive-la-historia-la-exhibicion-inmersiva-del-titanic-llega-a-barcelona/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "arts",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/un-nuevo-horizonte-en-la-geologia-la-corteza-terrestre-se-forma-antes-de-lo-esperado/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "biology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/la-evolucion-de-minecraft-de-un-juego-de-codigos-a-una-pelicula-epica/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "entertainment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/descubriendo-un-jardin-oculto-ecosistemas-marinos-revelados-tras-el-desprendimiento-de-un-gigantesco-iceberg/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "research",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/una-luz-de-esperanza-celulas-madre-transforman-la-vision-en-pacientes-con-danos-corneales/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/innovador-sistema-de-dictado-en-euskera-para-ninos-y-jovenes-con-diversidad-funcional/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "education",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/puede-la-temporada-de-concepcion-influir-en-tu-gasto-energetico/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/la-ue-avanza-hacia-un-futuro-sin-contaminacion-por-pellets-de-plastico/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/un-nuevo-analisis-de-sangre-podria-detectar-el-parkinson-antes-de-que-aparezcan-los-sintomas/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/el-teatro-capitol-de-las-ramblas-regresa-a-la-vida-tras-siete-anos-de-cierre/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "arts",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/espana-lanza-un-llamado-global-para-la-ratificacion-del-tratado-de-los-oceanos/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/un-nuevo-horizonte-posible-vida-en-el-exoplaneta-k2-18b/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "biology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/melanie-barratt-la-primera-mujer-ciega-en-cruzar-el-canal-de-la-mancha-a-nado/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/cultura/lewis-capaldi-regala-734000-horas-de-terapia-gratuita-para-apoyar-la-salud-mental/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/luz-verde-para-el-primer-tratamiento-de-malaria-para-recien-nacidos/": {
+   "section": "Cultura",
+   "categories": [
+    "Ciencia",
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology",
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/la-ue-avanza-con-fuerza-hacia-los-objetivos-de-emisiones-para-2030-gracias-a-las-energias-renovables/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/la-campana-stop-killing-games-alcanza-mas-de-12-millones-de-firmas-para-proteger-los-videojuegos-en-la-ue/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Tecnología"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment",
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "technology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/revolucion-en-reino-unido-prohibicion-de-usar-acuerdos-de-confidencialidad-para-encubrir-mala-conducta-laboral/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "technology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/heroico-perro-rocky-salva-63-vidas-durante-deslizamiento-en-himachal/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/sociedad/un-pequeno-perro-se-convierte-en-heroe-al-salvar-a-excursionista-atrapado-en-glaciar-suizo/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/ciencia/revolucion-en-la-audicion-terapia-genetica-restaura-la-audicion-en-semanas/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia",
+    "Tecnología"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology",
+    "technology"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/un-fan-de-pokemon-logra-que-el-papa-firme-su-carta-de-popplio/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "entertainment",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/medio-ambiente/nuevas-especies-de-ranas-descubiertas-en-los-picos-remotos-de-los-andes/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/revolucionario-implante-del-mit-combate-la-hipoglucemia-en-diabetes-tipo-1/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia",
+    "Salud"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology",
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/rescate-inspirador-madre-e-hijo-perdidos-en-el-bosque-de-california/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Noticias destacadas"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "research",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/tatuaje-temporal-una-innovadora-solucion-para-detectar-drogas-en-bebidas/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia",
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "biology",
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/microsoft-impulsa-una-gran-iniciativa-de-compensacion-de-carbono-en-india/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/mas-del-90-de-la-nueva-capacidad-de-energia-renovable-es-ahora-mas-barata-que-los-combustibles-fosiles/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Noticias destacadas"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "energy",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/fundacion-once-y-escofet-1886-innovacion-en-accesibilidad-y-diseno-universal/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Noticias destacadas"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "cities",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/kew-gardens-presenta-un-jardin-de-6-500-plantas-para-inspirar-accion-climatica/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Noticias destacadas"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/amsterdam-construye-pequenas-escaleras-para-ayudar-a-los-gatos-a-salir-de-los-canales/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/sociedad/la-joven-prodigio-del-ajedrez-hace-historia-al-vencer-a-un-gran-maestro/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/cultura/medallas-de-oro-para-el-competidor-mas-longevo-en-los-juegos-de-trasplante/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Deporte",
+    "Salud",
+    "Superación"
+   ],
+   "topics_wordpress": [
+    "fitness",
+    "public_health",
+    "inspiration"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "fitness",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/spogomi-deporte-recoger-basura-mundial-japon/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Deportes",
+    "Innovación social",
+    "Japón",
+    "Medio ambiente",
+    "Noticias destacadas",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "sustainability",
+    "fitness",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/100000-tapas-de-plastico-convertidas-en-arte-el-proyecto-de-oscar-olivares/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "Arte",
+    "Reciclaje",
+    "Sociedad",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "sustainability",
+    "arts",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/sonrie-y-el-cerebro-te-sigue-la-ciencia-del-feedback-facial/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia",
+    "Salud"
+   ],
+   "tags": [
+    "Bienestar",
+    "Psicología",
+    "Salud",
+    "Salud mental"
+   ],
+   "topics_wordpress": [
+    "mental_health",
+    "public_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/chile-protege-el-54-por-ciento-de-su-oceano/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Biodiversidad",
+    "Chile",
+    "Conservación marina",
+    "Océanos"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/el-regreso-de-hannah-montana-y-lo-que-dice/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "Cine",
+    "Disney",
+    "Hannah Montana",
+    "Nostalgia",
+    "Televisión"
+   ],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "entertainment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/hay-una-razon-por-la-que-respondes-con-memes-la-psicologia-lo-explica/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "Comunicación",
+    "memes",
+    "Psicología",
+    "Redes sociales",
+    "Tecnología"
+   ],
+   "topics_wordpress": [
+    "entertainment",
+    "mental_health",
+    "technology"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/por-que-lloras-mas-con-disney-y-pixar-siendo-adulto/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Bienestar emocional",
+    "Cine",
+    "Disney",
+    "Pixar",
+    "Psicología"
+   ],
+   "topics_wordpress": [
+    "entertainment",
+    "mental_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "entertainment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/encuentran-fosiles-marinos-en-la-cima-del-everest/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "Everest",
+    "Fósiles",
+    "Geología",
+    "Himalaya",
+    "Planeta Tierra"
+   ],
+   "topics_wordpress": [
+    "research",
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/basura-en-el-mar-hoy-son-banadores-asi-funciona-fitplanet/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente",
+    "Sociedad"
+   ],
+   "tags": [
+    "Emprendimiento",
+    "Moda sostenible",
+    "Océanos"
+   ],
+   "topics_wordpress": [
+    "employment",
+    "sustainability",
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/lo-que-muestra-la-pelicula-project-hail-mary-sobre-la-ciencia-real/": {
+   "section": "Cultura",
+   "categories": [
+    "Ciencia",
+    "Cultura"
+   ],
+   "tags": [
+    "Astronomia",
+    "Ciencia ficción",
+    "Cine",
+    "Project Hail Mary"
+   ],
+   "topics_wordpress": [
+    "literature",
+    "space",
+    "entertainment"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "space",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/la-carga-cognitiva-como-empiezas-el-lunes-define-como-te-sientes-toda-la-semana/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Bienestar",
+    "Hábitos",
+    "Mindfulness",
+    "Productividad",
+    "Salud mental"
+   ],
+   "topics_wordpress": [
+    "mental_health",
+    "employment"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/uganda-vuelve-a-tener-rinocerontes-en-libertad-tras-43-anos/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Africa",
+    "Animales",
+    "Biodiversidad",
+    "Conservación"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/tu-ansiedad-podria-tener-que-ver-con-tu-alimentacion-el-papel-de-la-colina/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Alimentación",
+    "Ansiedad",
+    "Bienestar",
+    "Nutrición",
+    "Salud mental"
+   ],
+   "topics_wordpress": [
+    "mental_health",
+    "nutrition"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nutrition",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/hospital-del-mar-barcelona-uci-pacientes-playa/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Barcelona",
+    "Bienestar emocional",
+    "Hospital del Mar",
+    "Humanizacion UCI",
+    "Sanidad"
+   ],
+   "topics_wordpress": [
+    "medicine",
+    "mental_health",
+    "public_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/artemis-ii-mision-luna-nasa-vuelo-tripulado-2026/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "Artemis",
+    "Ciencia",
+    "Espacio",
+    "Exploración espacial",
+    "Luna",
+    "NASA"
+   ],
+   "topics_wordpress": [
+    "space",
+    "research"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "space",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/hawaii-perro-prestado-playa-turistas-refugios-adopcion/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Adopción",
+    "Animales",
+    "Hawái",
+    "Noticias destacadas",
+    "Sociedad",
+    "Solidaridad",
+    "Turismo"
+   ],
+   "topics_wordpress": [
+    "community",
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/ciencia-ciudadana-inaturalist-movil-investigacion/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "Biodiversidad",
+    "Ciencia",
+    "Ciencia ciudadana",
+    "iNaturalist",
+    "Medio ambiente"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "research",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/espana-protege-17-000-km%c2%b2-de-oceano-con-seis-nuevas-areas-marinas/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Conservación marina",
+    "España",
+    "Medio ambiente",
+    "Noticias destacadas",
+    "Océanos",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/cinco-usos-positivos-inteligencia-artificial-mundo/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [
+    "Ciencia",
+    "Futuro",
+    "IA",
+    "Innovacion",
+    "Inteligencia Artificial"
+   ],
+   "topics_wordpress": [
+    "technology",
+    "research"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "technology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/sant-jordi-mas-alla-de-las-rosas-iniciativas-solidarias/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Cultura",
+    "Flores",
+    "Libros",
+    "Sant Jordi",
+    "Solidaridad"
+   ],
+   "topics_wordpress": [
+    "literature",
+    "arts",
+    "nature",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "cities",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/sant-jordi-tradicion-catalana-que-inspiro-al-mundo/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "Cataluña",
+    "Libros",
+    "Sant Jordi",
+    "Tradición"
+   ],
+   "topics_wordpress": [
+    "literature",
+    "heritage"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "literature",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/sociedad/maraton-de-londres-recauda-millones-para-el-cancer-infantil/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Cáncer infantil",
+    "Investigación",
+    "Londres",
+    "Maratón"
+   ],
+   "topics_wordpress": [
+    "medicine",
+    "research",
+    "fitness"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/espana-trata-por-primera-vezla-piel-de-mariposa/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Enfermedades",
+    "España",
+    "Piel de mariposa"
+   ],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "medicine",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/cultura/museo-seul-recupera-obras-olvidadas/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Arte",
+    "Exposición",
+    "Historia",
+    "Museo"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "heritage"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "arts",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/amsterdam-prohibe-anuncios-de-vuelos-y-gasolina/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente",
+    "Sociedad"
+   ],
+   "tags": [
+    "Ámsterdam",
+    "Carne",
+    "Combustibles fósiles",
+    "Publicidad"
+   ],
+   "topics_wordpress": [
+    "food",
+    "energy"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/las-mujeres-la-ultima-vez-que-fuimos-a-la-luna/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "Astrounautas",
+    "Luna",
+    "Mujeres"
+   ],
+   "topics_wordpress": [
+    "space",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "space",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/destruir-ropa-sin-vender-sera-ilegal-en-europa/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Moda",
+    "Ropa",
+    "Vertedero"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/un-videojuego-que-ensena-sobre-anticonceptivos/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/tecnologia/la-ue-obliga-a-que-los-moviles-tengan-baterias-reemplazables/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [
+    "Batería",
+    "Móvil",
+    "Unión Europea"
+   ],
+   "topics_wordpress": [
+    "energy",
+    "technology"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/finlandia-mejora-el-sistema-inmune-de-los-ninos-con-parques/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Finlandia",
+    "Niños",
+    "Parques",
+    "Salud"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "public_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/noticias-negativas-esto-es-el-doomscrolling/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Doomscrolling",
+    "Noticias",
+    "Salud mental"
+   ],
+   "topics_wordpress": [
+    "mental_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/david-attenborough-cumple-100-anos/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "David Attenborough",
+    "Naturaleza"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "biology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/22-pacientes-transplantados-posan-con-sus-cicatrices/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Medicina",
+    "Salud",
+    "Transplantes"
+   ],
+   "topics_wordpress": [
+    "medicine",
+    "public_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/erin-brockovich-26-anos-consiguiendo-agua-limpia-eeuu/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Agua",
+    "EEUU",
+    "Erin Brockovich"
+   ],
+   "topics_wordpress": [
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/5-habitos-para-dejar-de-consumir-noticias-negativas/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Hábitos saludables",
+    "Noticias",
+    "Salud mental"
+   ],
+   "topics_wordpress": [
+    "fitness",
+    "mental_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/mundial-2026-5-campanas-de-la-fifa/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Deporte",
+    "FIFA",
+    "Mundial 2026",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "fitness",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/regla-3-30-300-que-es/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Bienestar emocional",
+    "Naturaleza",
+    "Salud mental"
+   ],
+   "topics_wordpress": [
+    "mental_health",
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/delfines-recogen-basura-del-oceano/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Basura",
+    "Colombia",
+    "Océanos"
+   ],
+   "topics_wordpress": [
+    "sustainability",
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/lo-que-tus-artistas-favoritos-hacen-por-el-mundo/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Artistas",
+    "Música"
+   ],
+   "topics_wordpress": [
+    "arts"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/barcelona-mas-alla-del-turismo-design-place/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Arte",
+    "Barcelona",
+    "Turismo"
+   ],
+   "topics_wordpress": [
+    "arts"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/siesta-nordica-bebes-escandinavos/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Bebés",
+    "Países nórdicos",
+    "Siesta nórdica"
+   ],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "nutrition",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/sheltersuit-el-abrigo-que-se-convierte-en-saco/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Diseño",
+    "Ética",
+    "Moda",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "cities",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/uci-en-acotea-con-jardin-king-college-hospital/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Hospital",
+    "Londres",
+    "Medicina"
+   ],
+   "topics_wordpress": [
+    "medicine"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/los-yanomami-del-amazonas-microbioma/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Microbioma",
+    "Salud intestinal"
+   ],
+   "topics_wordpress": [
+    "nutrition"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "biology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/buenas-noticias-de-la-semana-8-al-12-junio/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Biodiversidad",
+    "Innovación",
+    "Medicina",
+    "Soledad"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "technology",
+    "medicine",
+    "mental_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "inspiration",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/sagrada-familia-terminada-en-2026/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Arte",
+    "Barcelona",
+    "Gaudí"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "heritage"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "arts",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/sociedad/voluntarios-del-mundial-2026/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Mundial 2026",
+    "Voluntarios"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/kalu-putik-moda-con-materiales-reciclados/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Moda",
+    "Reciclaje"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/buenas-noticias-de-la-semana-15-al-19-de-junio/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [],
+   "topics_wordpress": [],
+   "wordpress_from": "none",
+   "closest_topic": "inspiration",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/bombardeo-de-poemas-en-barcelona/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Barcelona",
+    "Literatura",
+    "Poesía"
+   ],
+   "topics_wordpress": [
+    "literature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "literature",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/cultura/como-las-fiestas-de-pueblo-en-espana-estan-cambiando/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "España",
+    "Fiestas populares"
+   ],
+   "topics_wordpress": [
+    "heritage"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "entertainment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/the-show-that-grows-zapato-que-crece/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "Emprendimiento",
+    "Voluntario"
+   ],
+   "topics_wordpress": [
+    "employment",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "inspiration",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/love-barrio-plataforma-de-barcelona/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Barcelona",
+    "Barrios",
+    "Comunidad"
+   ],
+   "topics_wordpress": [
+    "cities",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "cities",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/asfalto-con-huesos-de-aceituna-proyecto-biochar/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Barcelona",
+    "Emisiones CO2",
+    "Medio ambiente"
+   ],
+   "topics_wordpress": [
+    "climate",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/la-generacion-z-deja-el-movil-para-socializar-en-persona/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Generación Z",
+    "Sociedad",
+    "Tecnología"
+   ],
+   "topics_wordpress": [
+    "community",
+    "technology"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/canal-de-youtube-dad-how-do-i/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Redes sociales",
+    "Tutoriales"
+   ],
+   "topics_wordpress": [
+    "education"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "technology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/parc-de-la-ciutadella-salsa-yoga-y-mas/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "Baile",
+    "Barcelona",
+    "Comunidad"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "arts",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/buenas-noticias-de-la-semana-3-de-julio/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Buenas noticias"
+   ],
+   "topics_wordpress": [
+    "inspiration"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/oscar-estivill-de-la-voz-positiva/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Buenas noticias",
+    "Periodismo"
+   ],
+   "topics_wordpress": [
+    "inspiration"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "inspiration",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/primer-mapa-mundial-de-red-de-hongos/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Ecosistema",
+    "Tierra",
+    "Vida"
+   ],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "biology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/por-que-los-talleres-de-ceramica-enganchan/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia",
+    "Sociedad"
+   ],
+   "tags": [
+    "Arte",
+    "Cerámica",
+    "Talleres"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "education"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/cinco-buenas-noticias-de-la-semana-06-10-julio/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [],
+   "topics_wordpress": [],
+   "wordpress_from": "none",
+   "closest_topic": "cities",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/prasiddhi-singh-la-nina-que-planto-200000-arboles/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/premios-princesa-de-girona-2026/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "2026",
+    "Premios Princesa de Girona"
+   ],
+   "topics_wordpress": [
+    "entertainment",
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/que-es-el-nunchi/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Arte",
+    "Cultura"
+   ],
+   "topics_wordpress": [
+    "arts"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/por-que-la-gente-es-mas-agresiva-en-internet/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "Psicología",
+    "Redes sociales",
+    "Salud mental"
+   ],
+   "topics_wordpress": [
+    "mental_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/buenas-noticias-de-esta-semana-13-17-julio/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Buenas noticias"
+   ],
+   "topics_wordpress": [
+    "inspiration"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/francisco-vera-fundador-de-guardianes-por-la-vida/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "América Latina",
+    "Medio ambiente"
+   ],
+   "topics_wordpress": [
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/feuerle-puig-house-cumple-10-anos/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Arte",
+    "Berlín",
+    "Museo"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "heritage"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "arts",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/la-odisea-5-cosas-que-homero-ya-sabia/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Cine",
+    "Literatura",
+    "Mitología"
+   ],
+   "topics_wordpress": [
+    "entertainment",
+    "literature",
+    "heritage"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "heritage",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/buenas-noticias-de-la-semana-20-24-julio/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Arquitectura",
+    "Medicina",
+    "Sociedad",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "medicine",
+    "community",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "inspiration",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/kandy-garcia-de-91-anos-ha-viajado-sola-a-70-paises/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Personas mayores",
+    "Reto",
+    "Viajar"
+   ],
+   "topics_wordpress": [
+    "community",
+    "inspiration"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/tecnologia/la-ia-ha-ganado-un-nobel-por-detectar-el-cancer/": {
+   "section": "Tecnología",
+   "categories": [
+    "Tecnología"
+   ],
+   "tags": [
+    "Inteligencia Artificial",
+    "Medicina",
+    "Tecnología"
+   ],
+   "topics_wordpress": [
+    "technology",
+    "medicine"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "technology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/del-fomo-al-jomo-cada-vez-mas-jovenes-alineados/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "JOMO",
+    "Jóvenes"
+   ],
+   "topics_wordpress": [
+    "mental_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/cinco-historias-positivas-27-31-de-julio/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [],
+   "topics_wordpress": [],
+   "wordpress_from": "none",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/joan-cedo-crea-un-cuerpo-de-bomberos-con-burros/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Animales",
+    "Bomberos"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/la-produccion-mundial-de-cerveza-cae-en-2026/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "2026",
+    "Cultura",
+    "Hábitos",
+    "Jóvenes",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/onlymarms-el-onlyfans-de-marmotas-para-investigar/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Animales",
+    "Biodiversidad",
+    "Ecosistema",
+    "Estudio"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "research"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/bordalo-ii-convierte-basura-en-animales-gigantes/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Animales",
+    "Basura",
+    "Reciclaje"
+   ],
+   "topics_wordpress": [
+    "sustainability",
+    "nature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/cinco-buenas-noticias-de-la-semana-3-7-agosto/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Animales",
+    "Ciencia",
+    "NASA",
+    "Solidaridad"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "research",
+    "space",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "food",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/aina-barca-primera-escuela-educacion-especial/": {
+   "section": "Sociedad",
+   "categories": [
+    "Buenas de la semana",
+    "Sociedad"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/cultura/spider-man-brand-new-day/": {
+   "section": "Cultura",
+   "categories": [
+    "Buenas de la semana",
+    "Cultura"
+   ],
+   "tags": [],
+   "topics_wordpress": [
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "entertainment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sin-categoria/cinco-buenas-noticias-especies-bebe/": {
+   "section": "Sin categoría",
+   "categories": [
+    "Sin categoría"
+   ],
+   "tags": [],
+   "topics_wordpress": [],
+   "wordpress_from": "none",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/colombia-protege-la-amazonia/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Biodiversidad",
+    "Medio ambiente",
+    "Noticias destacadas"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/cristina-zenato-tiburones-bahamas/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Animales",
+    "Medio ambiente"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/housing-first-finlandia-sinhogarismo/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Noticias destacadas",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "cities",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/terremoto-colombia-ayuda/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente",
+    "Sociedad"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/ninos-con-cancer-disneyland-paris-juegaterapia/": {
+   "section": "Salud",
+   "categories": [
+    "Salud"
+   ],
+   "tags": [
+    "Noticias destacadas",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/buenas-noticias-de-la-semana/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Animales",
+    "Lo más leído",
+    "Medio ambiente",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "sustainability",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "technology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/farmear-aura/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "entertainment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/nanoplasticos-flor-magnetica/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "Ciencia",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "research",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/toldos-crochet-combatir-calor/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Sociedad",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "community",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/francisco-vera-activista-climatico/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Medio ambiente",
+    "Noticias destacadas",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/buenas-noticias-de-la-semana-7-al-11-septiembre/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Sociedad",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "community",
+    "sustainability"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/ciencia/equal-earth-mapa-tom-patterson/": {
+   "section": "Ciencia",
+   "categories": [
+    "Ciencia"
+   ],
+   "tags": [
+    "Ciencia",
+    "Noticias destacadas",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "research",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sin-categoria/de-sisifo-al-quijote-como-se-convirtio-el-coyote-en-un-idolo-aspiracional/": {
+   "section": "Sin categoría",
+   "categories": [
+    "Cultura",
+    "Sin categoría"
+   ],
+   "tags": [
+    "Cine",
+    "Cultura",
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "entertainment",
+    "arts"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "entertainment",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/de-la-restriccion-de-las-redes-al-fin-de-la-caza-de-ballenas-las-5-buenas-noticias-del-14-al-18-de-septiembre/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Animales",
+    "Ciencia",
+    "Medio ambiente",
+    "Sociedad",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "sustainability",
+    "nature",
+    "research",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sociedad/educacion-especial-nepal-aina-barca/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/cultura/buscamos-solucionar-el-estres-de-una-vida-atareada-con-aun-mas-tareas-como-superar-el-fin-del-verano-sin-morir-entre-propositos/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura",
+    "Sociedad"
+   ],
+   "tags": [
+    "Barcelona",
+    "Noticias destacadas",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sin-categoria/las-5-buenas-noticias-del-21-al-25-de-septiembre/": {
+   "section": "Sin categoría",
+   "categories": [
+    "Buenas de la semana",
+    "Ciencia",
+    "Medio ambiente",
+    "Sin categoría"
+   ],
+   "tags": [
+    "Noticias destacadas"
+   ],
+   "topics_wordpress": [
+    "biology",
+    "nature"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/de-robert-pattinson-a-la-bola-negra-la-larga-sombra-de-lorca-en-el-arte/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Barcelona",
+    "Lo más leído",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "literature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/sin-categoria/tocar-hierba-y-mancharse-de-barro-mejora-nuestras-defensas/": {
+   "section": "Sin categoría",
+   "categories": [
+    "Salud",
+    "Sin categoría"
+   ],
+   "tags": [
+    "Ciencia",
+    "Lo más leído",
+    "Medio ambiente",
+    "Salud intestinal",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "research",
+    "sustainability",
+    "nutrition",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/buenas-noticias-de-la-semana-del-28-de-septiembre-al-02-de-octubre/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Arte",
+    "Ciencia",
+    "Medio ambiente",
+    "Noticias destacadas",
+    "Salud",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "sustainability",
+    "arts",
+    "research",
+    "public_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "medicine",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/los-otros-nobel-llevan-mas-de-45-anos-retando-a-la-academia-sueca/": {
+   "section": "Cultura",
+   "categories": [
+    "Ciencia",
+    "Cultura",
+    "Medio ambiente",
+    "Sociedad"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "inspiration",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/medio-ambiente/elvia-gomez-troya-la-exploradora-de-14-anos-que-llama-a-recuperar-el-lenguaje-secreto-de-la-naturaleza/": {
+   "section": "Medio ambiente",
+   "categories": [
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Noticias destacadas",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/las-cinco-buenas-noticias-del-5-al-9-de-octubre/": {
+   "section": "Cultura",
+   "categories": [
+    "Buenas de la semana",
+    "Ciencia",
+    "Cultura"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Noticias destacadas"
+   ],
+   "topics_wordpress": [
+    "biology",
+    "entertainment"
+   ],
+   "wordpress_from": "category",
+   "closest_topic": "climate",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/diccionario-para-no-perderse-con-los-seis-descubrimientos-del-nobel-2026/": {
+   "section": "Cultura",
+   "categories": [
+    "Ciencia",
+    "Cultura",
+    "Medio ambiente"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Noticias destacadas",
+    "Premios Nobel",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "research",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "biology",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/salud/jaime-lafita-el-hombre-que-lucha-a-pedaladas-contra-la-ela/": {
+   "section": "Salud",
+   "categories": [
+    "Salud",
+    "Sociedad"
+   ],
+   "tags": [
+    "ELA",
+    "Lo más leído",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "medicine",
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "fitness",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/las-cinco-buenas-noticias-del-12-al-16-de-octubre/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Animales",
+    "Ciencia",
+    "Medio ambiente",
+    "Salud"
+   ],
+   "topics_wordpress": [
+    "nature",
+    "research",
+    "sustainability",
+    "public_health"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/charlotte-perriand-la-mujer-olvidada-por-el-mundo-del-diseno-que-ya-pensaba-en-pisos-diminutos/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Diseño",
+    "Francia",
+    "Le Corbusier",
+    "Lo más leído",
+    "perriand",
+    "Vivienda social"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "cities"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "sustainability",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/por-que-estamos-obsesionados-con-jane-austen/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Arte",
+    "Jane Austen",
+    "Lo más leído"
+   ],
+   "topics_wordpress": [
+    "arts",
+    "literature"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/buenas-de-la-semana/las-5-buenas-noticias-del-19-de-octubre-al-23-de-octubre/": {
+   "section": "Buenas de la semana",
+   "categories": [
+    "Buenas de la semana"
+   ],
+   "tags": [
+    "Animales",
+    "Ciencia",
+    "Medio ambiente",
+    "Sostenibilidad"
+   ],
+   "topics_wordpress": [
+    "sustainability",
+    "nature",
+    "research"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "nature",
+   "topic_from": "classifier"
+  },
+  "https://inspiringnews.ai/cultura/el-movimiento-olivia-rodrigo-de-nina-disney-a-estrella-del-activismo/": {
+   "section": "Cultura",
+   "categories": [
+    "Cultura"
+   ],
+   "tags": [
+    "Activismo",
+    "Olivia Rodrigo",
+    "Sociedad",
+    "Sororidad"
+   ],
+   "topics_wordpress": [
+    "community",
+    "entertainment"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "community",
+   "topic_from": "WordPress"
+  },
+  "https://inspiringnews.ai/sociedad/la-vida-detras-de-la-linea-de-ayuda-psicologica-en-el-accidente-de-urda/": {
+   "section": "Sociedad",
+   "categories": [
+    "Sociedad"
+   ],
+   "tags": [
+    "Lo más leído",
+    "Noticias destacadas",
+    "Sociedad"
+   ],
+   "topics_wordpress": [
+    "community"
+   ],
+   "wordpress_from": "tags",
+   "closest_topic": "mental_health",
+   "topic_from": "classifier"
+  }
+ }
+}
