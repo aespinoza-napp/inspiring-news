@@ -17,7 +17,6 @@
 #   ./scripts/check.sh backend    backend only
 #   ./scripts/check.sh inference  inference only - real models, no mocks
 #   ./scripts/check.sh frontend   frontend only
-#   ./scripts/check.sh labeller   the fact labeller - stdlib only, no venv
 #   ./scripts/check.sh livecheck  the live-conversation listener, no models
 #   ./scripts/check.sh slow       the slow model-stack tests, only
 #   ./scripts/check.sh graph      the graph against a real Neo4j - fails,
@@ -142,7 +141,7 @@ run_lake() {
 }
 
 # Builds the frontend and needs Chrome, so not part of `all` (like graph,
-# which needs Neo4j). Standard library only, like the labeller.
+# which needs Neo4j). Standard library only.
 run_e2e() {
   step "Frontend end to end (built, headless Chrome, stub backend)"
   if (cd "$ROOT" && python scripts/e2e.py); then
@@ -163,17 +162,6 @@ run_livecheck() {
   fi
 }
 
-# Plain `python`, not uv: the labeller has no dependencies on purpose, so
-# the test must not lean on a virtualenv either.
-run_labeller() {
-  step "Fact labeller tests (standard library only)"
-  if (cd "$ROOT" && python -m unittest -q labeller/test_app.py); then
-    pass "labeller tests"
-  else
-    fail "labeller tests"
-  fi
-}
-
 case "$TARGET" in
   fast)      run_fast ;;
   slow)      run_slow ;;
@@ -182,13 +170,12 @@ case "$TARGET" in
   backend)   run_backend ;;
   inference) run_inference ;;
   frontend)  run_frontend ;;
-  labeller)  run_labeller ;;
   livecheck) run_livecheck ;;
   e2e)       run_e2e ;;
   lake)      run_lake ;;
-  all)       run_backend; run_inference; run_frontend; run_labeller; run_livecheck ;;
+  all)       run_backend; run_inference; run_frontend; run_livecheck ;;
   *)
-    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | labeller | livecheck | e2e | lake" >&2
+    echo "Unknown target '$TARGET'. Use: all | fast | slow | graph | gcp | backend | inference | frontend | livecheck | e2e | lake" >&2
     exit 2
     ;;
 esac

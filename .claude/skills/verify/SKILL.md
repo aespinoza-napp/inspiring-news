@@ -13,9 +13,8 @@ and slow tests are excluded by a marker.
 
 | Changed | Run |
 |---|---|
-| Anything under `backend/` | `./scripts/check.sh` (backend, inference, typecheck, labeller) |
+| Anything under `backend/` | `./scripts/check.sh` (backend, inference, typecheck, livecheck) |
 | Frontend pages, components, proxies | `./scripts/check.sh frontend`, then `e2e` |
-| `labeller/` only | `./scripts/check.sh labeller` |
 | Graph code | add `./scripts/check.sh graph` (fails if Neo4j is down) |
 | `deploy/gcp/` | `./scripts/check.sh gcp` (Docker only) |
 | Lake writes, lineage | add `./scripts/check.sh lake` (read-only) |

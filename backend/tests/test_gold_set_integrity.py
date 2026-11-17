@@ -5,9 +5,10 @@ marker and were counted as human (audit 2026-10-16). These read the committed
 files, so a save that breaks one fails here, in seconds, not in the results.
 
 Not checked on purpose: whether `custom_en_es.jsonl` has the current labels.
-It is derived, `labeller/app.py join` rewrites it, and a test would fail on
-every save during a review (audit 2026-10-28, N8). Its ids are held to the
-set, which only changes when a fact is added.
+It was derived by `labeller/app.py join`, and a test would have failed on
+every save during a review (audit 2026-10-28, N8). The labeller was removed
+on 2026-11-17 (last at 0f31dc6) and the set is frozen as it stood; its ids
+are held to the set.
 """
 
 import json
@@ -142,4 +143,4 @@ def test_the_joined_file_holds_the_same_facts():
 
     ids = {json.loads(line)["id"] for line in joined.read_text(encoding="utf-8").splitlines() if line.strip()}
 
-    assert ids == set(FACTS), "run: python labeller/app.py join"
+    assert ids == set(FACTS), "the joined file and the facts differ: the set is frozen, so one of them was edited by hand"

@@ -77,7 +77,7 @@ def called_targets(workflow: dict) -> dict[str, list[str]]:
 def test_the_case_list_is_read_correctly():
     """Guards the parser above, so the next test cannot pass vacuously."""
 
-    assert {"all", "fast", "backend", "frontend", "labeller", "inference"} <= check_targets()
+    assert {"all", "fast", "backend", "frontend", "inference"} <= check_targets()
 
 
 def test_every_target_the_workflow_calls_exists_in_check_sh(workflow):
@@ -116,7 +116,8 @@ def test_the_workflow_runs_the_ci_targets_and_none_of_the_local_ones(workflow):
 
     called = {target for targets in called_targets(workflow).values() for target in targets}
 
-    assert called == {"backend", "frontend", "labeller", "e2e"}
+    # The labeller's job went with the labeller (2026-11-17).
+    assert called == {"backend", "frontend", "e2e"}
     assert called.isdisjoint(LOCAL_ONLY)
 
 

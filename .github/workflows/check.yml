@@ -113,20 +113,3 @@ jobs:
 
       - name: ./scripts/check.sh e2e
         run: ./scripts/check.sh e2e
-
-  labeller:
-    name: labeller (./scripts/check.sh labeller)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-
-      # Plain Python, no uv and no install step: the labeller is standard
-      # library only by design, and its tests must prove that on a bare
-      # interpreter.
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: ./scripts/check.sh labeller
-        run: ./scripts/check.sh labeller
