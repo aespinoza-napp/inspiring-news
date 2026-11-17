@@ -221,6 +221,7 @@ export interface ThresholdOverrides {
   edition?: Edition;
   /** Restate each claim as a standalone, checkable statement before searching it (backend restatement.py). */
   claim_restatement?: "off" | "standalone";
+  opinion_claims?: "attribution" | "as_written";
   devastation_min_score?: number;
   topic_classifier_threshold?: number;
   entity_threshold?: number;

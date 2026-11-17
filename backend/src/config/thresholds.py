@@ -336,8 +336,30 @@ class PipelineThresholds(BaseModel):
     # pages, chosen by words alone, judged on their passages, a shorter
     # answer - and whether that is worth the seconds is measured on the
     # tuning half, as the excerpt was: docs/decisions/performance.md.
-    verifier_answer: Literal["full", "compact", "per_source"] = Field(
+    verifier_answer: Literal["full", "compact", "per_source", "minicheck"] = Field(
         default_factory=lambda: settings.VERIFIER_ANSWER,
+    )
+
+    # MiniCheck's support probability above which a source supports the
+    # claim, under `verifier_answer: minicheck` (settings has why).
+    grounding_min_support: float = Field(
+        default_factory=lambda: settings.GROUNDING_MIN_SUPPORT,
+        ge=0.0,
+        le=1.0,
+    )
+
+    # Whether MiniCheck reads a Spanish claim or source in English
+    # translation (settings.GROUNDING_TRANSLATE has why). Per-run: it
+    # changes what the model reads, and replay measures it.
+    grounding_translate: bool = Field(
+        default_factory=lambda: settings.GROUNDING_TRANSLATE,
+    )
+
+    # What decides an article's topic group (settings.TOPIC_GROUP_CLASSIFIER
+    # has why). Per-run: it changes the topic an article is filed under and
+    # whether admission finds it on topic.
+    topic_group_classifier: Literal["embedding", "iptc"] = Field(
+        default_factory=lambda: settings.TOPIC_GROUP_CLASSIFIER,
     )
 
     # Whether a source is compared with the claim's sentence before it is
@@ -353,6 +375,13 @@ class PipelineThresholds(BaseModel):
     # one without are two conditions to compare.
     claim_restatement: Literal["off", "standalone"] = Field(
         default_factory=lambda: settings.CLAIM_RESTATEMENT,
+    )
+
+    # How an opinion someone is reported saying is judged, under
+    # `claim_restatement: standalone` (settings.OPINION_CLAIMS has why).
+    # Per-run because it changes verdicts; replay measures it.
+    opinion_claims: Literal["attribution", "as_written"] = Field(
+        default_factory=lambda: settings.OPINION_CLAIMS,
     )
 
     # What the web search asks: from the sentence's words, or from the
@@ -494,8 +523,12 @@ class ThresholdOverrides(BaseModel):
     query_kinds: Optional[tuple[str, ...]] = Field(None)
     verifier_excerpt: Optional[Literal["head", "passages"]] = Field(None)
     verifier_excerpt_chars: Optional[int] = Field(None, ge=200, le=8000)
-    verifier_answer: Optional[Literal["full", "compact", "per_source"]] = Field(None)
+    verifier_answer: Optional[Literal["full", "compact", "per_source", "minicheck"]] = Field(None)
+    grounding_min_support: Optional[float] = Field(None, ge=0.0, le=1.0)
+    grounding_translate: Optional[bool] = Field(None)
+    topic_group_classifier: Optional[Literal["embedding", "iptc"]] = Field(None)
     claim_restatement: Optional[Literal["off", "standalone"]] = Field(None)
+    opinion_claims: Optional[Literal["attribution", "as_written"]] = Field(None)
     query_plan: Optional[Literal["sentence", "checkable", "questions"]] = Field(None)
     evidence_undated: Optional[Literal["drop", "keep"]] = Field(None)
     search_science_engines: Optional[Literal["keep", "drop"]] = Field(None)

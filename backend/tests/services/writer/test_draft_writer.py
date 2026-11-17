@@ -184,3 +184,23 @@ def test_a_busy_draft_refuses_a_second_generation(tmp_path, draft_store):
 
     with pytest.raises(DraftBusy):
         writer.start(draft_store, draft.id, article, wait=True)
+
+
+def test_a_written_draft_carries_the_articles_entities_and_is_fact_checked(tmp_path, draft_store):
+    """Fetch -> check -> entities -> draft -> check the draft -> review -> publish (2026-11-17)."""
+
+    from src.services.writer.draft_fact_check import DraftFactChecker
+    from tests.services.writer.test_draft_fact_check import StubGrounding
+
+    lake, article_id = published_lake(tmp_path)
+    writer = make_writer(lake, llm=FakeLLMClient(answer(body="Voluntaris van plantar arbres [1].")))
+    writer.checker = DraftFactChecker(StubGrounding([0.9]))
+
+    draft = start(writer, draft_store, article_id)
+
+    assert draft.error is None
+    assert draft.check is not None and draft.check.error is None
+    assert [sentence.supported for sentence in draft.check.sentences] == [True]
+    # Whatever the analysed article's record holds: an article only has
+    # entities once its own check passed.
+    assert isinstance(draft.metadata.entities, dict)

@@ -21,6 +21,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from .decisions import UnknownCheckpoint, decision_models
 from .embeddings import embedding_model
 from .entities import entity_model
+from .grounding import grounding_model
 from .models import (
     DecisionRequest,
     DecisionResponse,
@@ -28,6 +29,9 @@ from .models import (
     EmbeddingResponse,
     EntitiesRequest,
     EntitiesResponse,
+    GroundingRequest,
+    GroundingResponse,
+    GroundingScoreOut,
     HealthResponse,
     SentimentRequest,
     SentimentResponse,
@@ -198,3 +202,26 @@ def decisions(request: DecisionRequest):
         raise HTTPException(status_code=422, detail={"invalidQuestion": str(error)})
 
     return DecisionResponse(checkpoint=request.checkpoint, answers=result["answers"])
+
+
+@app.post("/grounding", response_model=GroundingResponse)
+def grounding(request: GroundingRequest):
+    """
+    MiniCheck's support score for each (document, claim) pair, in input
+    order (src/grounding.py). Not behind require_warm, like /decisions:
+    it needs none of the warm-up models, and its own loads on the first
+    request (that one waits, ~30 s on a CPU for Flan-T5-Large).
+    """
+
+    scores = grounding_model.score_many(
+        [(pair.document, pair.claim) for pair in request.pairs],
+        languages=[(pair.documentLanguage, pair.claimLanguage) for pair in request.pairs] if request.translate else None,
+    )
+
+    return GroundingResponse(
+        model=grounding_model.name,
+        scores=[
+            GroundingScoreOut(support=score.support, chunk=score.chunk, chunks=score.chunks, translated=list(score.translated))
+            for score in scores
+        ],
+    )

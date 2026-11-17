@@ -14,11 +14,10 @@ frontend's /evaluation page:
    <model>/<key>/metrics.json), passed through as written, so this file
    does not have to change every time the metrics gain a key.
 
-Nothing here imports labeller/: the labeller imports nothing from the
-backend, on purpose, and the dependency stays one-way in the other
-direction too. The topic groups are therefore declared twice, and
-tests/services/test_evaluation_summary.py holds this copy to the
-labeller's.
+This module never imported labeller/, which imported nothing from the
+backend either, until the labeller was removed on 2026-11-17: the set it
+wrote is read as it was frozen, and tests/services/test_evaluation_summary.py
+pins the groups, labels and skip reasons it used.
 
 Every file is read on every call. The set is a few hundred small files
 at most (150 facts is the target), so a cache would cost more in
@@ -41,9 +40,9 @@ EVALUATION_PATH = Path("data/evaluation")
 # evidence. The page draws its rows in this order.
 LABELS = ("TRUE", "PARTIALLY_TRUE", "MISLEADING", "FALSE", "UNVERIFIED")
 
-# labeller/app.py's TOPIC_GROUPS - balance is steered over these five
-# groups, not the 23 topics (too thin at 150 facts). The backend's one
-# definition is src/config/topics.py; held to the labeller's by a test.
+# The five groups the set was balanced over, not the 23 topics (too thin at
+# 150 facts). The one definition is src/config/topics.py; a test pins the
+# five the frozen set used (the labeller held a copy until 2026-11-17).
 TOPIC_GROUPS = _TOPIC_GROUPS
 GROUP_OF = _GROUP_OF
 

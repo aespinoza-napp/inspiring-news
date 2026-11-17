@@ -234,7 +234,10 @@ class AnalysisService:
 
         report_phase("enriching", {})
 
-        article = self.enrichment_pipeline.process(news, thresholds)
+        # Fetch -> check -> entities (2026-11-17): the article-level entity
+        # pass waits for the check (_entities_if_verified). Each claim's
+        # sentence still has its own, which the search needs.
+        article = self.enrichment_pipeline.process(news, thresholds, article_entities=False)
 
         topics = [topic.model_dump() for topic in (article.topics or [])]
         sentiment = self._build_sentiment(article)
@@ -257,7 +260,10 @@ class AnalysisService:
 
         report = self._check(article, report_phase, thresholds, verify=verify, remember=remember)
 
-        # Layer 3, and the report attached back onto layer 2.
+        article = self._entities_if_verified(article, report, report_phase, thresholds)
+
+        # Layer 3, and the report attached back onto layer 2 - with the
+        # entities, when the check let them be extracted.
         storage = self._store_verified(
             run, raw, processed, article, report, report_phase
         )
@@ -298,6 +304,41 @@ class AnalysisService:
                 "claimsNotChecked": report.claims_not_checked,
             },
         }
+
+    def _entities_if_verified(
+        self,
+        article: EnrichedArticle,
+        report: FactCheckReport,
+        report_phase: OnPhase,
+        thresholds: PipelineThresholds,
+    ) -> EnrichedArticle:
+        """
+        The article's entities, extracted only once it checked out: the
+        order the newsroom asked for on 2026-11-17 (fetch -> fact-check ->
+        entities -> draft -> fact-check the draft -> review -> publish).
+        "Checked out" is the lake's own editorial rule
+        (DataLakeRepository.is_publishable): admitted, not an import, and no
+        FALSE or MISLEADING overall. A Devastating-edition article, published
+        unchecked by request, passes it, as it is published. One that does
+        not pass keeps no entities: nothing will be written from it.
+        """
+
+        if not DataLakeRepository.is_publishable(report):
+            report_phase("article_entities_skipped", {"reason": "not_verified", "verdict": report.overall_verdict})
+            return article
+
+        report_phase("article_entities", {})
+
+        try:
+            entities = self.enrichment_pipeline.entities_of(article.body, thresholds)
+        except Exception:  # noqa: BLE001 - one weak signal, never the analysis
+            logger.warning("Extracting the entities of %s failed", article.url, exc_info=True)
+            report_phase("article_entities_skipped", {"reason": "failed"})
+            return article
+
+        report_phase("article_entities_extracted", {"entities": entities})
+
+        return article.model_copy(update={"entities": entities})
 
     def _check(
         self,

@@ -9,7 +9,7 @@ export type DraftLanguage = "ca" | "es" | "en";
 
 export type DraftStatus = "draft" | "approved" | "published";
 
-export type DraftBusy = "generating" | "reviewing" | "rewriting" | "publishing";
+export type DraftBusy = "generating" | "checking" | "reviewing" | "rewriting" | "publishing";
 
 // `restored` is a person putting an earlier revision's text back
 // (POST /drafts/{id}/restore); its `model` is the one that wrote that text.
@@ -42,6 +42,32 @@ export interface DraftMetadata {
   keywords: string[];
   topic: string | null;
   tags: string[];
+  /** The analysed article's entities by label, present when its own check passed (2026-11-17). */
+  entities?: Record<string, string[]>;
+}
+
+/** One cited sentence of the draft against the sources it cites (backend draft_fact_check.py). */
+export interface DraftSentenceCheck {
+  text: string;
+  sources: number[];
+  support: number;
+  supported: boolean;
+  bestSource: number | null;
+  translated: boolean;
+}
+
+/**
+ * The draft's own fact-check: the second check of the pipeline, before
+ * review and approval (fetch -> check -> entities -> draft -> this ->
+ * review -> publish). Cleared whenever the text changes.
+ */
+export interface DraftCheck {
+  checkedAt: string;
+  model: string | null;
+  threshold: number;
+  sentences: DraftSentenceCheck[];
+  uncited: string[];
+  error: string | null;
 }
 
 export interface DraftContent {
@@ -117,6 +143,8 @@ export interface ArticleDraft {
   factChecks: DraftFactCheck[];
   metadata: DraftMetadata;
   review: DraftReview | null;
+  /** The draft's own fact-check of `content`; absent on drafts from before 17 Nov 2026. */
+  check?: DraftCheck | null;
   revisions: DraftRevision[];
   status: DraftStatus;
   busy: DraftBusy | null;
@@ -149,6 +177,7 @@ export const LANGUAGES: { code: DraftLanguage; label: string }[] = [
 /** What the page says while a background step runs. */
 export const BUSY_LABEL: Record<DraftBusy, string> = {
   generating: "Writing the article…",
+  checking: "Fact-checking the draft against its sources…",
   reviewing: "Reviewing…",
   rewriting: "Rewriting…",
   publishing: "Publishing…",

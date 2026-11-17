@@ -38,7 +38,14 @@ set, their text fetched once and frozen (56 could be extracted).
 split~\cite{schlichtkrull2023averitec}, every verifier reading the
 evidence one earlier run had kept, so that verifiers differ by their
 reading alone; the hosted model was also asked with no evidence at all,
-to measure what it already knows. \emph{Review}: the 36 planted-defect
+to measure what it already knows. MiniCheck's Flan-T5
+model~\cite{tang2024minicheck}, a 770-million-parameter classifier
+trained only to decide whether a document supports a sentence, is a
+contender of this phase on the same evidence. Because it has no
+contradiction class, it can answer only \textsc{true} or
+\textsc{unverified}. On a split where most claims are refuted, it is
+therefore read by class (precision and recall on supported claims), not by
+accuracy alone. \emph{Review}: the 36 planted-defect
 texts of Subsection~\ref{subsec:benchmark-writing}. Extraction and
 writing were not compared: both need a reference made by a person (a
 body copied by hand; readers judging blind) that does not exist yet.
@@ -63,7 +70,14 @@ runs it, an XLM-RoBERTa model fine-tuned for the task
 
 \paragraph{Resources.} Every contender is reported with what it needs in
 order to be used: parameters, size on disk, memory once loaded and at
-its peak, the processor cores it kept busy, and where it runs. Each
+its peak, the processor cores it kept busy, where it runs, and whether it
+can be self-hosted. A self-hosted contender runs on hardware the newsroom
+holds, so no article, claim or source leaves the machine and nothing is
+billed per call. An open-weight model served by a provider could be
+self-hosted but is not. A model whose weights are unpublished, such as
+Claude, cannot be. Each verification contender is thus read on four measures
+together: its hit rate, its time per claim, its resources, and whether it
+is self-hosted. Each
 local model was measured in a process of its own, without a GPU, on the
 machine the comparison ran on (an Intel Core Ultra~7 165U with 64~GB,
 not the laptop of Section~\ref{sec:setup}); for the models served by Ollama the figures are

@@ -551,7 +551,36 @@ are CSS modules beside each component; `globals.css` is untouched (its
   analysed article's language (`en`/`es`), and nothing checks Catalan
   output but a person and the review.
 
-## Review
+## Checked twice: the article, then the draft (2026-11-17)
+
+The order the newsroom asked for: **fetch -> fact-check the article -> only if it checks
+out, extract its entities -> write the draft with them -> fact-check the draft -> review ->
+publish.**
+
+- **The article's entities wait for its check.** `AnalysisService._entities_if_verified`
+  runs the article-level entity pass only when the lake's own rule would publish the article
+  (`DataLakeRepository.is_publishable`: admitted, not an import, no FALSE or MISLEADING
+  overall; a Devastating-edition article, published unchecked by request, passes). Phases
+  `article_entities` / `article_entities_extracted` / `article_entities_skipped`. The
+  check itself still knows the article's subjects: claim selection reads the names
+  `ClaimExtractor` already finds in every sentence (`fact_checker.sentence_entities`), and
+  every claim keeps its own entities for the search. The response's `entities` is empty
+  for an article that did not check out (cache schema 16).
+- **The draft carries them** in `metadata.entities`, read from the analysed article's
+  processed record (`AnalysedArticle.entities`).
+- **The draft is checked against its own sources** (`services/writer/draft_fact_check.py`).
+  Every prose sentence citing [n] is scored by MiniCheck against the excerpt of each source
+  it cites (the text the writer saw), its support the best of them; a Spanish draft or source
+  is read in English translation. Below 0.5 a sentence is unsupported: listed, not removed.
+  A sentence citing nothing is listed apart. It runs after writing, at the start of every
+  review when the text has none, before a rewrite's own review, and on `POST
+  /drafts/{id}/check` (busy `checking`). An edit, restore or rewrite clears it with the
+  review. **Approval needs it** for the current text (409 otherwise, or when its model could
+  not be reached); unsupported sentences do not block, the person decides, as with the review.
+  `DraftCheckPanel` on `/drafts/[id]`.
+
+Not measured: whether the draft check's unsupported sentences are the ones a person would
+flag. The planted-defect texts of the writing benchmark are the obvious first test.
 
 **Built 2026-10-15.** `POST /drafts/{id}/review` (`src/api/review_routes.py`)
 runs `DraftReviewer.review` (`src/services/corrector/draft_reviewer.py`) in

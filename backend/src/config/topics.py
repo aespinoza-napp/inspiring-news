@@ -307,9 +307,9 @@ TOPICS = {
 # ingestion discovers from the sources of up to three groups
 # (src/services/ingestion_service.py, each source YAML's `groups`), and
 # the evaluation balances its labelled facts over them, because 23 topics
-# are too thin at 150 facts. labeller/ keeps its own copy - it imports
-# nothing from backend/ - and tests/evaluation/test_harness_dataset.py
-# holds the two equal and every topic above to exactly one group.
+# are too thin at 150 facts. tests/evaluation/test_harness_dataset.py pins
+# the five the frozen set used (labeller/ kept a copy until it was removed
+# on 2026-11-17) and holds every topic above to exactly one group.
 TOPIC_GROUPS = {
     "society": ["education", "community", "employment", "cities"],
     "science": ["space", "technology", "research", "biology"],

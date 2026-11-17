@@ -464,6 +464,14 @@ ANALYZE_RESPONSE_SHAPE = {
         "topics", "sentiment", "quality", "claims", "validity",
         "factCheck", "cached",
     },
+    # 16: the same keys. `entities` is filled only when the article's own
+    # check passed, extracted after it (2026-11-17); a v15 entry has them
+    # for an article that did not check out.
+    16: {
+        "url", "storage", "thresholds", "title", "keywords", "entities",
+        "topics", "sentiment", "quality", "claims", "validity",
+        "factCheck", "cached",
+    },
 }
 
 
@@ -492,6 +500,8 @@ def test_the_analyze_response_shape_matches_the_cache_schema_version():
 
     enrichment = Mock()
     enrichment.process.return_value = article
+    # Since 2026-11-17 the article's entities come after its check.
+    enrichment.entities_of.return_value = article.entities if article is not None else {}
 
     fact_checker = Mock()
     fact_checker.run.return_value = FactCheckReport(

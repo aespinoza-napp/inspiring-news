@@ -13,7 +13,6 @@ from src.container import (
     get_enrichment_service,
     get_graph_reader,
     get_graph_writer,
-    get_labelling_batch,
     get_ingestion_service,
     get_reader_index,
     get_selection_service,
@@ -1328,54 +1327,6 @@ def graph_sync(edition: Edition = EDITION_QUERY):
         lake=get_datalake_repository() if settings.LAKE_ENABLED else None,
         **({"edition": edition} if edition != DEFAULT_EDITION else {}),
     ).run(), edition)
-
-
-# ---------------------------------------------------------------------
-# Labelling batch
-#
-# The day's articles and claims for labeller/ to show. Built on a
-# background thread (discovery over every source, then extraction and
-# claim selection: a minute or two); the labeller polls GET. Behind the
-# storage key: one run sends requests to every configured source.
-# ---------------------------------------------------------------------
-
-
-class LabellingBatchRequest(BaseModel):
-    articles: int = Field(default=10, ge=1, le=30)
-    claimsPerArticle: int = Field(default=3, ge=1, le=3)
-    exclude: list[str] = Field(default_factory=list, max_length=5000)
-    preferTopics: list[str] = Field(default_factory=list, max_length=50)
-    languages: list[str] | None = None
-    seed: str | None = Field(default=None, max_length=40)
-    requestId: str | None = Field(default=None, max_length=64)
-
-
-@router.post("/labelling/batch", status_code=202, dependencies=[Depends(require_storage_key)])
-def start_labelling_batch(request: LabellingBatchRequest):
-
-    from src.services.labelling_batch import BatchRequest
-
-    started = get_labelling_batch().start(BatchRequest(
-        articles=request.articles,
-        claims_per_article=request.claimsPerArticle,
-        exclude=request.exclude,
-        prefer_topics=request.preferTopics,
-        languages=request.languages,
-        seed=request.seed,
-        request_id=request.requestId,
-    ))
-
-    if not started:
-        raise HTTPException(status_code=409, detail="A labelling batch is already being built.")
-
-    return {"started": True, "requestId": request.requestId}
-
-
-@router.get("/labelling/batch", dependencies=[Depends(require_storage_key)])
-def labelling_batch_state():
-    """Whether a batch is being built, and the last one built."""
-
-    return get_labelling_batch().state()
 
 
 # ---------------------------------------------------------------------

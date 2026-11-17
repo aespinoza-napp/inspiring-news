@@ -2,9 +2,9 @@
 The labelled sets the harness runs over, loaded into one row shape.
 
 Two formats, one loader, because they are one format on purpose: the
-labeller writes every custom fact with x-fact's ten keys first, in
-x-fact's order (`labeller/test_app.py` pins it), and adds its own after
-them. What tells them apart is the custom set's own `id`; x-fact has no
+labeller wrote every custom fact with x-fact's ten keys first, in
+x-fact's order, and added its own after them (it was removed on 2026-11-17,
+last at 0f31dc6; the set is frozen as it wrote it). What tells them apart is the custom set's own `id`; x-fact has no
 id, so one is derived here.
 
 Three inputs are accepted:
@@ -40,8 +40,8 @@ AVERITEC = "averitec"
 
 # The five groups, as the labeller balances them. The backend's copy
 # lives in src/config/topics.py (ingestion selects sources by them too);
-# tests/evaluation/test_harness_dataset.py holds it equal to
-# labeller/app.py's, which imports nothing from backend/.
+# tests/evaluation/test_harness_dataset.py pins the five the frozen set was
+# labelled over (the labeller's own copy went with it on 2026-11-17).
 TOPIC_GROUPS = _TOPIC_GROUPS
 
 GROUP_OF = _GROUP_OF
@@ -326,7 +326,7 @@ def select_rows(dataset: Dataset, split: str | None = None, sample: str | None =
     if not rows:
         raise DatasetError(
             f"{dataset.path}: no rows in {' / '.join(names)} - is the split frozen? "
-            "python labeller/app.py split"
+            "data/evaluation/split.json holds it; the labeller that froze it was removed on 2026-11-17 (git show 0f31dc6:labeller/app.py)"
         )
 
     selection = hashlib.sha256(
@@ -376,7 +376,7 @@ def recheck_ids(dataset: Dataset) -> list[str]:
 
     if not manifest.exists():
         raise DatasetError(
-            f"{manifest}: no split manifest - freeze the split first: python labeller/app.py split"
+            f"{manifest}: no split manifest. The set is frozen as committed in split.json; the labeller that froze it was removed on 2026-11-17 (git show 0f31dc6:labeller/app.py)"
         )
 
     return list(json.loads(manifest.read_text(encoding="utf-8")).get(RECHECK) or [])

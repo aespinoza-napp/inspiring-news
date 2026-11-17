@@ -610,16 +610,20 @@ def factcheck_section(runs: list[str], limit: int) -> tuple[list[str], list[dict
         f"AVeriTeC dev, the first {limit} claims. Every replay reads the evidence the knowledge-store run kept; "
         "closed-book reads none (what the model already knows). "
         f"Always answering {majority[0]} gets {majority[1]} of {len(gold)} here.", "",
-        "| Run | Model | Mode | Right | Accuracy [95% CI] | UNVERIFIED | Median s / claim | Median model s | Tokens in / out |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Run | Model | Mode | Right | Accuracy [95% CI] | TRUE answers right | UNVERIFIED | Median s / claim | Median model s | Tokens in / out | Self-hosted |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
 
     for f in found:
         right = round(f["accuracy"]["mean"] * f["claims"])
         tokens = f"{f['promptTokens']:,} / {f['completionTokens']:,}" if f["promptTokens"] else "-"
+        # A verifier that cannot say FALSE (MiniCheck) is read by its TRUEs.
+        trues = [gold for gold, verdict in f["verdicts"].values() if verdict == "TRUE"]
+        true_right = f"{sum(1 for gold in trues if gold == 'TRUE')}/{len(trues)}"
+        hosted = self_hosting(f["model"], {"runsOn": "this machine" if not f["model"].startswith("claude") else ""})
         lines.append(
             f"| {f['label']} `{Path(f['run']).name}` | {f['model']} | {f['mode']} | {right}/{f['claims']} | {_interval(f['accuracy'])} | "
-            f"{f['unverified']} | {f['medianSeconds']} | {f['medianLlmSeconds']} | {tokens} |"
+            f"{true_right} | {f['unverified']} | {f['medianSeconds']} | {f['medianLlmSeconds']} | {tokens} | {hosted} |"
         )
 
     lines += ["", "| Claim | Gold | " + " | ".join(f"{f['model']} {f['mode']}" for f in found) + " |", "|---|---|" + "---|" * len(found)]
@@ -638,6 +642,24 @@ def review_section() -> list[str]:
 
     body = path.read_text(encoding="utf-8").split("\n", 1)[1]
     return ["", "# Review: the corrector as editor over 36 planted-defect texts", body]
+
+
+def self_hosting(name: str, model: dict) -> str:
+    """
+    Whether the contender runs on hardware we hold, and whether it could:
+    the dimension asked for on 2026-11-17 beside quality, time and memory.
+    "yes": runs here, nothing leaves the machine. "no, open weights": served
+    by someone else (Groq's qwen) but could run here. "no": the vendor's
+    servers only (Claude), its weights unpublished.
+    """
+
+    if str(model.get("runsOn", "")).startswith("this machine"):
+        return "yes"
+
+    if name.startswith("claude") or model.get("model") == "not published":
+        return "no"
+
+    return "no, open weights"
 
 
 def resources_section() -> list[str]:
@@ -664,16 +686,16 @@ def resources_section() -> list[str]:
         f"Measured {data['measuredAt'][:10]} on {machine['cpu']}, {machine['threads']} threads, {machine['ramGb']} GB RAM, no GPU used. "
         "Each local model in a process of its own: memory once loaded and at its peak over 100 sentences, above the bare interpreter; "
         "cores is CPU time over wall time while it worked. Ollama models: the file's size and the memory Ollama reports once loaded.", "",
-        "| Model | What it is | Runs on | Parameters | On disk | RAM loaded | RAM peak | Load s | Cores used |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Model | What it is | Runs on | Self-hosted | Parameters | On disk | RAM loaded | RAM peak | Load s | Cores used |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
 
     for name, m in data["models"].items():
         if "error" in m:
-            lines.append(f"| {name} | not measured: {m['error']} | | | | | | | |")
+            lines.append(f"| {name} | not measured: {m['error']} | | | | | | | | |")
             continue
         lines.append(
-            f"| {name} | {m['model']} | {m['runsOn']} | {params(m['parameters'])} | {mb(m['diskMb'])} | {mb(m['loadedMb'])} | {mb(m['peakMb'])} | "
+            f"| {name} | {m['model']} | {m['runsOn']} | {self_hosting(name, m)} | {params(m['parameters'])} | {mb(m['diskMb'])} | {mb(m['loadedMb'])} | {mb(m['peakMb'])} | "
             f"{m['loadSeconds'] if m['loadSeconds'] is not None else 'n/a'} | {m['coresUsed'] if m['coresUsed'] is not None else 'n/a'} |"
         )
 
@@ -682,7 +704,15 @@ def resources_section() -> list[str]:
         "- The embedding model is shared: the topic classifiers (untrained and trained) and the pipeline's duplicate search all use the one loaded bge-m3; "
         "the trained classifier adds 7 x 1,024 weights to it. Its folder on disk holds several copies of the weights (about 2.3 GB is the one loaded).",
         "- Claude needs nothing held locally and cannot be run without the network and a plan; its size is not published.",
+        "- Self-hosted: whether it runs on hardware we hold, so no article, claim or source leaves the machine and nothing is billed per call. "
+        "Every local model here is open-weight; Claude is the only contender that cannot be self-hosted at all.",
         "- An Ollama figure is Ollama's own report (`/api/ps`), not a measurement of the process; gemma4's is lower than its file, as reported.",
+    ]
+
+    lines += [
+        f"- {name}: {m['note']}."
+        for name, m in data["models"].items()
+        if m.get("note") and not name.startswith("claude")
     ]
 
     return lines

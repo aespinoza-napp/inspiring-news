@@ -67,6 +67,10 @@ class ClaimExtractor(BaseProcessor):
     # here at all", which is all _score needs.
     QUOTED_SPAN = re.compile(r"[\"“«]([^\"”»]{3,300})[\"”»]")
 
+    # The longest a quotation of several sentences is kept whole for
+    # (_inside_quote): past it, an opening mark never closed is a stray.
+    MAX_QUOTED_SENTENCE = 600
+
     def __init__(self, min_confidence: float | None = None):
 
         self.entity_extractor = EntityExtractor()
@@ -248,7 +252,7 @@ class ClaimExtractor(BaseProcessor):
             merged: list[str] = []
 
             for piece in pieces:
-                if merged and self.ABBREVIATION.search(merged[-1]):
+                if merged and (self.ABBREVIATION.search(merged[-1]) or self._inside_quote(merged[-1])):
                     merged[-1] = f"{merged[-1]} {piece}"
                 else:
                     merged.append(piece)
@@ -256,6 +260,28 @@ class ClaimExtractor(BaseProcessor):
             sentences.extend(merged)
 
         return sentences
+
+    def _inside_quote(self, text: str) -> bool:
+        """
+        Whether `text` ends inside a quotation it opened, so the next
+        piece is still the quote. A quotation of several sentences is one
+        claim: on 2026-11-17 «Los nenúfares gigantes revelan sus secretos
+        poco a poco. Es extraordinario. Creemos que lo sabemos todo...»,
+        confesó Magdalena al diario The Guardian was cut after
+        "extraordinario.", and the claim began mid-quote with a closing »
+        and no opening one - the restater called it an opinion and the
+        verifier read it without what it was about. Bounded, so a stray
+        opening mark joins a few sentences, not the rest of the paragraph.
+        """
+
+        if len(text) > self.MAX_QUOTED_SENTENCE:
+            return False
+
+        if text.count("«") > text.count("»") or text.count("“") > text.count("”"):
+            return True
+
+        # Straight quotes open and close with the same mark.
+        return text.count('"') % 2 == 1
 
     ##########################################################
 

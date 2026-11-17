@@ -9,8 +9,11 @@ from src.models.core.claim import Claim
 from src.models.fact_checker.evidence import Evidence, EvidenceStance
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.claim_selector import ArticleContext
+from src.services.fact_checker.restatement import speaker_names
 from src.services.fact_checker.terms import claim_terms
 from src.services.fact_checker.verification import excerpts, per_source
+from src.processors.nlp.language import LanguageDetector
+from src.services.inference_client import InferenceClient, InferenceUnavailable
 from src.services.llms import LLMClient, LLMUnavailableError
 
 logger = getLogger(__name__)
@@ -185,6 +188,13 @@ COMPACT_STATED_SYSTEM_PROMPT = (
     + "- Judge the claim about the article's subject."
 )
 
+# MiniCheck reads no prompt: this is what the harness records in the
+# prompt's place (verifierPromptSha256), so a run says which verifier ran.
+GROUNDING_INSTRUCTIONS = (
+    "MiniCheck (inference/ /grounding): each source's excerpt scored against "
+    "the claim; above grounding_min_support it supports, else silent. No contradicts."
+)
+
 # A source's turn is skipped when the claim's deadline leaves less than
 # this for its call (fact_checker's MIN_STAGE_SECONDS, for one source).
 _MIN_CALL_SECONDS = 2.0
@@ -195,6 +205,9 @@ def system_prompt(thresholds: PipelineThresholds) -> str:
 
     if thresholds.verifier_answer == "per_source":
         return per_source.PER_SOURCE_SYSTEM_PROMPT
+
+    if thresholds.verifier_answer == "minicheck":
+        return GROUNDING_INSTRUCTIONS
 
     stated = thresholds.verifier_rules == "stated"
 
@@ -256,9 +269,13 @@ class LLMVerificationResult(BaseModel):
 
 class LLMVerifier:
 
-    def __init__(self, client: LLMClient | None = None):
+    def __init__(self, client: LLMClient | None = None, grounding: InferenceClient | None = None):
 
         self.client = client or LLMClient()
+
+        # MiniCheck's server, made on first use: only `verifier_answer:
+        # minicheck` reaches it.
+        self._grounding = grounding
 
     def verify(
         self,
@@ -290,6 +307,9 @@ class LLMVerifier:
 
         if thresholds.verifier_answer == "per_source":
             return self._verify_per_source(claim, evidence, context, thresholds, language, timeout)
+
+        if thresholds.verifier_answer == "minicheck":
+            return self._verify_grounded(claim, evidence, context, thresholds, language)
 
         compact = thresholds.verifier_answer == "compact"
 
@@ -340,6 +360,22 @@ class LLMVerifier:
         excerpt = self._excerpter(claim, context, thresholds, language)
         article = self._article_block(context)
 
+        # An opinion someone said: asked whether they said it, and held to
+        # a quote that names them before it can contradict (per_source.py).
+        speaker = context.attributed_to if context is not None else None
+        names = speaker_names(speaker)
+
+        def ask(item: Evidence) -> tuple[str, str]:
+
+            if speaker:
+                return per_source.PER_SOURCE_ATTRIBUTION_PROMPT, per_source.attribution_prompt(
+                    article, claim.text, speaker, item, excerpt(item.content or item.snippet),
+                )
+
+            return per_source.PER_SOURCE_SYSTEM_PROMPT, per_source.prompt(
+                article, claim.text, item, excerpt(item.content or item.snippet),
+            )
+
         ends_at = None if timeout is None else time.monotonic() + timeout
 
         answers: list[per_source.SourceAnswer] = []
@@ -360,8 +396,7 @@ class LLMVerifier:
 
             try:
                 answer = self.client.complete_json(
-                    per_source.PER_SOURCE_SYSTEM_PROMPT,
-                    per_source.prompt(article, claim.text, item, excerpt(item.content or item.snippet)),
+                    *ask(item),
                     max_tokens=per_source.PER_SOURCE_MAX_ANSWER_TOKENS,
                     **limits,
                 )
@@ -372,14 +407,20 @@ class LLMVerifier:
 
             stance = per_source.stance_of(answer)
 
+            quote = (
+                self._validate_quote(answer.get("quote"), item)
+                if stance in (EvidenceStance.SUPPORTS, EvidenceStance.CONTRADICTS)
+                else None
+            )
+
+            if speaker:
+                stance = per_source.held_to_speaker(stance, quote, names)
+                quote = quote if stance in (EvidenceStance.SUPPORTS, EvidenceStance.CONTRADICTS) else None
+
             answers.append(per_source.SourceAnswer(
                 index=index,
                 stance=stance,
-                quote=(
-                    self._validate_quote(answer.get("quote"), item)
-                    if stance in (EvidenceStance.SUPPORTS, EvidenceStance.CONTRADICTS)
-                    else None
-                ),
+                quote=quote,
                 call=self._last_call(),
             ))
 
@@ -414,6 +455,99 @@ class LLMVerifier:
                 for answer in answers
                 if answer.stance is not None
             ],
+            call=call,
+        )
+
+    def _verify_grounded(
+        self,
+        claim: Claim,
+        evidence: list[Evidence],
+        context: ArticleContext | None,
+        thresholds: PipelineThresholds,
+        language: str | None,
+    ) -> LLMVerificationResult:
+        """
+        MiniCheck (Tang et al., EMNLP 2024): every source's excerpt - the
+        same one the chat verifier is shown - scored against the claim in
+        one request, then the verdict by per_source's rule. Supported above
+        `grounding_min_support`, otherwise silent: the model has no class
+        for a contradiction, so it never makes a claim FALSE. That is the
+        honest limit Glockner et al. (EMNLP 2022) describe for most
+        misinformation, where no page states the opposite: absent support
+        is UNVERIFIED, not refuted.
+
+        The claim is scored as written, without the article's headline:
+        MiniCheck reads a document and a sentence, nothing else. A claim
+        whose subject only the headline names is the restater's job
+        (`claim_restatement`).
+        """
+
+        if not evidence:
+            return LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="No evidence to judge the claim against.",
+            )
+
+        excerpt = self._excerpter(claim, context, thresholds, language)
+
+        if self._grounding is None:
+            self._grounding = InferenceClient()
+
+        started = time.perf_counter()
+
+        # Each text's language, so the service can read a Spanish one in
+        # English: MiniCheck was trained on English alone. The claim's is the
+        # run's when it has one (a short sentence detects badly); each
+        # source's is detected from its own excerpt, since a Spanish claim's
+        # evidence is often an English page.
+        documents = [excerpt(item.content or item.snippet) for item in evidence]
+        claim_language = language or LanguageDetector.detect(claim.text)
+
+        try:
+            answer = self._grounding.grounding(
+                [(document, claim.text) for document in documents],
+                languages=[(LanguageDetector.detect(document, fallback=claim_language), claim_language) for document in documents],
+                translate=thresholds.grounding_translate,
+            )
+        except InferenceUnavailable as exc:
+            logger.warning("MiniCheck unreachable while verifying claim: %s", exc)
+            return LLMVerificationResult(
+                verdict=Verdict.UNVERIFIED,
+                confidence=0.0,
+                explanation="The grounding model was unreachable; verdict could not be produced.",
+                llm_unreachable=True,
+            )
+
+        call = {
+            "model": f"minicheck:{answer.get('model')}",
+            "wait": 0.0,
+            "seconds": round(time.perf_counter() - started, 3),
+            "promptTokens": None,
+            "completionTokens": None,
+            "calls": 1,
+        }
+
+        answers = [
+            per_source.SourceAnswer(
+                index=index,
+                stance=(
+                    EvidenceStance.SUPPORTS
+                    if score["support"] > thresholds.grounding_min_support
+                    else EvidenceStance.SILENT
+                ),
+            )
+            for index, score in enumerate(answer.get("scores") or [])
+        ]
+
+        verdict, confidence, cited = per_source.verdict_from(answers, evidence)
+
+        return LLMVerificationResult(
+            verdict=verdict,
+            confidence=confidence,
+            explanation=per_source.explanation(answers, evidence, language),
+            cited_evidence=cited,
+            assessments=[EvidenceAssessment(index=answer.index, stance=answer.stance) for answer in answers],
             call=call,
         )
 

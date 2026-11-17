@@ -5,6 +5,12 @@ from src.processors.nlp.classifier import TopicClassifier
 from src.processors.nlp.sentiment import SentimentAnalyzer
 from src.processors.nlp.quality import QualityAnalyzer
 from src.processors.nlp.embeddings import EmbeddingProcessor
+from src.processors.nlp.iptc_topics import IptcTopicClassifier, lead as iptc_lead
+from src.config.topics import GROUP_OF, TOPICS
+
+# A TopicPrediction carries the topic's display name ("Mental Health"), not its
+# id: the group of each name, for ordering by the IPTC classifier's group.
+GROUP_OF_NAME = {TOPICS[topic].name: group for topic, group in GROUP_OF.items() if topic in TOPICS}
 
 from src.config.thresholds import PipelineThresholds
 from src.models.core.enriched_article import EnrichedArticle
@@ -28,9 +34,22 @@ class NewsEnrichmentPipeline:
 
         self.embedding = EmbeddingProcessor()
 
+        self.iptc = IptcTopicClassifier()
+
     ####################################################
 
-    def process(self, article, thresholds: PipelineThresholds | None = None):
+    def entities_of(self, text: str, thresholds: PipelineThresholds | None = None) -> dict:
+        """
+        The article's entities, apart from the rest of the enrichment: since
+        2026-11-17 they are extracted only after the article's check passed
+        (AnalysisService), for the draft and the graph.
+        """
+
+        thresholds = thresholds or PipelineThresholds()
+
+        return self.entities.process(text, thresholds.entity_threshold)
+
+    def process(self, article, thresholds: PipelineThresholds | None = None, article_entities: bool = True):
 
         # Thresholds arrive per call, not per construction: this pipeline
         # is a long-lived singleton (it holds GLiNER, the topic
@@ -52,6 +71,15 @@ class NewsEnrichmentPipeline:
         # hardcoded 0.5 for every article ever analysed.
         sentiment = self.sentiment.process(article.content)
 
+        topics = self.topics.process(
+            article.content,
+            thresholds.topic_classifier_threshold,
+            embedding=embedding,
+            edition=thresholds.edition,
+        )
+
+        topics, iptc_topic = self._iptc_group(article, topics, thresholds)
+
         return EnrichedArticle(
 
             id=article.id,
@@ -70,19 +98,19 @@ class NewsEnrichmentPipeline:
 
             keywords=self.keywords.process(article.content, language),
 
+            # The article-level pass; `article_entities=False` leaves it for
+            # after the check (entities_of). Each claim's sentence still gets
+            # its own entities below, which the search needs either way.
             entities=self.entities.process(
                 article.content,
                 thresholds.entity_threshold,
-            ),
+            ) if article_entities else {},
 
             # The article's vector, computed above for storage: the
             # classifier would otherwise embed the same text again.
-            topics=self.topics.process(
-                article.content,
-                thresholds.topic_classifier_threshold,
-                embedding=embedding,
-                edition=thresholds.edition,
-            ),
+            topics=topics,
+
+            iptc_topic=iptc_topic,
 
             claims=self.claims.process(
                 article.content,
@@ -106,3 +134,27 @@ class NewsEnrichmentPipeline:
 
             embedding_dimension=len(embedding),
         )
+
+    ####################################################
+
+    def _iptc_group(self, article, topics, thresholds: PipelineThresholds):
+        """
+        Under `topic_group_classifier: iptc`, the group comes from the MN-DS
+        classifier and the 23 topics are ordered with that group's first, the
+        rest after in their own order: the topic shown and the group agree.
+        An article the classifier reads as off the mission (politics, sport...)
+        keeps its topics as they were, with the category recorded. Positive
+        edition only: the IPTC table maps onto its five groups.
+        """
+
+        if thresholds.topic_group_classifier != "iptc" or thresholds.edition != "positive" or not self.iptc.available:
+            return topics, None
+
+        vector = self.embedding.service.encode(iptc_lead(article.title, article.content))
+        best = self.iptc.predict(vector)[0]
+
+        if best.group and topics:
+            topics = sorted(topics, key=lambda topic: GROUP_OF_NAME.get(topic.topic) != best.group)
+
+        return topics, best.as_dict()
+

@@ -88,7 +88,6 @@ _graph_clients: dict = {}
 _graph_writers: dict = {}
 _graph_readers: dict = {}
 
-_labelling_batch = None
 _wordpress_import = None
 
 _reader_index = None
@@ -473,43 +472,6 @@ def get_graph_reader(edition: str = "positive"):
     return _graph_readers[edition]
 
 
-def get_labelling_batch():
-    """
-    Backs /labelling/batch. A singleton like the probe: the batch is built
-    on a background thread and the labeller polls this one object for it.
-    Borrows the enrichment pipeline's extractor and a ClaimSelector over
-    its own EmbeddingService - the same selection the fact-checker makes,
-    without opening Qdrant.
-    """
-
-    global _labelling_batch
-
-    if _labelling_batch is None:
-        with _lock:
-            if _labelling_batch is None:
-                from src.repositories.source_repository import SourceRepository
-                from src.services.embeddings.service import EmbeddingService
-                from src.services.fact_checker.claim_selector import ClaimSelector
-                from src.services.labelling_batch import LabellingBatch
-                from src.services.scraper.extractor import ExtractorService
-
-                sources = SourceRepository().list()
-                pipeline = get_enrichment_pipeline()
-
-                _labelling_batch = LabellingBatch(
-                    sources=sources,
-                    extractor=ExtractorService(sources=sources),
-                    enrichment=pipeline,
-                    selector=ClaimSelector(EmbeddingService()),
-                    claim_extractor=pipeline.claims,
-                    # The rounds' own screen: its descriptions are embedded
-                    # once for both.
-                    screen=get_ingestion_service().screen,
-                )
-
-    return _labelling_batch
-
-
 def get_wordpress_import():
     """
     Backs /imports/wordpress (services/imports/wordpress_import.py). Runs in
@@ -720,6 +682,27 @@ def get_article_writer():
     return _article_writer
 
 
+_draft_fact_checker = None
+
+
+def get_draft_fact_checker():
+    """
+    The draft's own fact-check (services/writer/draft_fact_check.py): each
+    cited sentence against its sources' excerpts, by MiniCheck in inference/.
+    Shared by generation, review, rewrite and POST /drafts/{id}/check.
+    """
+
+    global _draft_fact_checker
+
+    if _draft_fact_checker is None:
+        with _lock:
+            if _draft_fact_checker is None:
+                from src.services.writer.draft_fact_check import DraftFactChecker
+                _draft_fact_checker = DraftFactChecker()
+
+    return _draft_fact_checker
+
+
 def get_draft_writer():
     """
     Backs POST /drafts: the analysed article (through the reader's index
@@ -746,6 +729,8 @@ def get_draft_writer():
                     # (docs/decisions/trends.md). Nothing is built until one is.
                     ledger=trend_ledger,
                     angles=AngleFinder(),
+                    # The draft's own fact-check, before its review (2026-11-17).
+                    checker=get_draft_fact_checker(),
                 )
 
     return _draft_writer
@@ -773,6 +758,7 @@ def get_draft_rewriter():
                 _draft_rewriter = DraftRewriter(
                     writer=get_article_writer(),
                     reviewer=get_draft_reviewer(),
+                    checker=get_draft_fact_checker(),
                 )
 
     return _draft_rewriter

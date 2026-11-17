@@ -450,7 +450,34 @@ class Settings(BaseSettings):
     # model's time a claim 27 -> 21 s - and claims with one altered detail
     # 60 -> 13%: it rarely catches a changed figure. `full` was the
     # default before; `thorough.json` keeps it for the harness.
-    VERIFIER_ANSWER: Literal["full", "compact", "per_source"] = "per_source"
+    #
+    # `minicheck` (2026-11-17) asks no chat model: each source's excerpt is
+    # scored against the claim by MiniCheck (Tang et al., EMNLP 2024), a
+    # 0.4-0.8B classifier in inference/ (/grounding), and a source above
+    # GROUNDING_MIN_SUPPORT supports the claim, else it is silent. It has
+    # no "contradicts": a claim it judges is TRUE or UNVERIFIED, and FALSE
+    # only comes from the altered-detail check before it (independence.py).
+    VERIFIER_ANSWER: Literal["full", "compact", "per_source", "minicheck"] = "per_source"
+
+    # GROUNDING_MIN_SUPPORT (2026-11-17): MiniCheck's support probability
+    # above which a source supports the claim. 0.5 is the authors'
+    # threshold, untuned here.
+    GROUNDING_MIN_SUPPORT: float = 0.5
+
+    # GROUNDING_TRANSLATE (2026-11-17): MiniCheck was trained on English
+    # only, so a Spanish claim or source is read in English translation
+    # first (inference/src/translation.py, OPUS-MT es-en). False sends the
+    # text as it is, as the first MiniCheck runs did.
+    GROUNDING_TRANSLATE: bool = True
+
+    # TOPIC_GROUP_CLASSIFIER (2026-11-17): what decides an article's group.
+    # `embedding` is the 23 topics' own similarity, as always. `iptc` asks a
+    # classifier trained on MN-DS (hand-labelled IPTC news topics, English,
+    # and its Spanish translation; processors/nlp/iptc_topics.py) for the
+    # group, and the 23 topics are ordered with that group's first, so the
+    # topic and the group agree. Decided by the rule written before its run
+    # (data/evaluation/experiments/topics_iptc/rule.md).
+    TOPIC_GROUP_CLASSIFIER: Literal["embedding", "iptc"] = "embedding"
 
     # EVIDENCE_INDEPENDENCE (2026-11-03): a page repeating the claim's
     # sentence word for word is not evidence, and one carrying that sentence
@@ -475,6 +502,18 @@ class Settings(BaseSettings):
     # names back); the code default stays `off` so the suite and the
     # evaluation's numbers do not move.
     CLAIM_RESTATEMENT: Literal["off", "standalone"] = "off"
+
+    # OPINION_CLAIMS (2026-11-17): what is checked when the restater calls a
+    # claim an opinion and names who said it. `attribution` asks each source
+    # whether that person said it, and a "contradicts" counts only with a
+    # quote that names them (verification/per_source.py). Built for
+    # "Creemos que lo sabemos todo, pero ... todavía quedan muchísimas cosas
+    # por descubrir», confesó Magdalena al diario The Guardian", FALSE at 69%
+    # because two pages about the waterlily's natural range were read as
+    # contradicting it. `as_written` judges the sentence like a fact, as
+    # before. Only the per-source verifier reads it; only under
+    # CLAIM_RESTATEMENT=standalone is there an opinion to read.
+    OPINION_CLAIMS: Literal["attribution", "as_written"] = "attribution"
 
     # QUERY_PLAN (2026-11-04): what the web search asks. `sentence` builds
     # the three queries from the claim sentence's words, as every run did

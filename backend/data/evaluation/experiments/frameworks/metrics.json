@@ -375,6 +375,67 @@
       "medianLlmSeconds": null,
       "promptTokens": 8774,
       "completionTokens": 1614
+    },
+    {
+      "run": "data/evaluation/runs/averitec_dev/minicheck-ft5/8e197a3af9e3",
+      "model": "minicheck-ft5",
+      "mode": "replay",
+      "label": "replay-store-minicheck-serial",
+      "gitCommit": "0f31dc69a3c00831dfa2744882d7d55d73b0adc1-dirty",
+      "claims": 10,
+      "accuracy": {
+        "mean": 0.1,
+        "low": 0.0,
+        "high": 0.3,
+        "n": 10
+      },
+      "unverified": 9,
+      "verdicts": {
+        "averitec-dev-0243": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0164": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0096": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0072": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0175": [
+          "TRUE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0404": [
+          "MISLEADING",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0368": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0012": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0379": [
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "averitec-dev-0290": [
+          "TRUE",
+          "TRUE"
+        ]
+      },
+      "medianSeconds": 13.5049,
+      "medianLlmSeconds": 4.831,
+      "promptTokens": null,
+      "completionTokens": null
     }
   ],
   "standard": {

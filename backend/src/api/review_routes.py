@@ -18,8 +18,9 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Path
 
 from src.api.routes import require_storage_key
-from src.container import get_draft_reviewer, get_draft_store
+from src.container import get_draft_fact_checker, get_draft_reviewer, get_draft_store
 from src.models.writer.draft import ArticleDraft
+from src.services.writer.draft_fact_check import check_and_attach
 from src.services.writer.draft_store import DRAFT_ID, DraftBusy, DraftNotFound, revise
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,14 @@ def review_draft(draft_id: str = Path(pattern=DRAFT_ID_PATTERN)):
         if draft is None:
             # Deleted after it was claimed; nothing to review.
             return
+
+        # Check, then review (2026-11-17): the draft's own fact-check of this
+        # text first, when it has none (an edit or a restore cleared it).
+        if draft.check is None:
+            check_and_attach(store, draft_id, get_draft_fact_checker())
+            draft = store.get(draft_id)
+            if draft is None:
+                return
 
         read = draft.content.model_copy(deep=True)
 
@@ -134,3 +143,29 @@ def accept_correction(draft_id: str = Path(pattern=DRAFT_ID_PATTERN)):
         raise HTTPException(status_code=404, detail=NOT_FOUND)
     except DraftBusy as exc:
         raise HTTPException(status_code=409, detail=str(exc))
+
+
+@router.post("/{draft_id}/check", status_code=202)
+def check_draft(draft_id: str = Path(pattern=DRAFT_ID_PATTERN)):
+    """
+    The draft's own fact-check of its current text (2026-11-17,
+    services/writer/draft_fact_check.py): each cited sentence against the
+    excerpts of the sources it cites, by MiniCheck. 202 with the draft busy
+    "checking"; 404 for an unknown draft, 409 while another step runs. It
+    also runs by itself after writing, at the start of a review, and before
+    a rewrite's review.
+    """
+
+    store = get_draft_store()
+
+    def work() -> None:
+        check_and_attach(store, draft_id, get_draft_fact_checker())
+
+    try:
+        claimed = store.run_in_background(draft_id, "checking", work)
+    except DraftNotFound:
+        raise HTTPException(status_code=404, detail=NOT_FOUND)
+    except DraftBusy as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+    return dump(claimed)

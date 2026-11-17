@@ -42,25 +42,26 @@ A seeded sample (seed 2026) of 300 test sentences each from CoNLL-2003 (en) and 
 
 AVeriTeC dev, the first 10 claims. Every replay reads the evidence the knowledge-store run kept; closed-book reads none (what the model already knows). Always answering FALSE gets 7 of 10 here.
 
-| Run | Model | Mode | Right | Accuracy [95% CI] | UNVERIFIED | Median s / claim | Median model s | Tokens in / out |
-|---|---|---|---|---|---|---|---|---|
-| knowledge-store `49e4c76106c6` | llama3.2:3b-bench | full | 4/10 | 0.40 [0.10, 0.70] | 2 | 149.4752 | 73.449 | 21,304 / 1,545 |
-| replay-store-ollama `6ecdeb9012dc` | llama3.2:3b-bench | replay | 4/10 | 0.40 [0.10, 0.70] | 2 | 70.8175 | 41.3825 | 21,304 / 1,545 |
-| replay-store `6c8959f38dc4` | claude-headless:sonnet | replay | 5/10 | 0.50 [0.20, 0.80] | 3 | 37.5764 | 21.713 | 57,279 / 1,752 |
-| closed-book `f04afdc96a6d` | claude-headless:sonnet | closed_book | 7/10 | 0.70 [0.40, 1.00] | 2 | 3.9683 | None | 8,774 / 1,614 |
+| Run | Model | Mode | Right | Accuracy [95% CI] | TRUE answers right | UNVERIFIED | Median s / claim | Median model s | Tokens in / out | Self-hosted |
+|---|---|---|---|---|---|---|---|---|---|---|
+| knowledge-store `49e4c76106c6` | llama3.2:3b-bench | full | 4/10 | 0.40 [0.10, 0.70] | 1/4 | 2 | 149.4752 | 73.449 | 21,304 / 1,545 | yes |
+| replay-store-ollama `6ecdeb9012dc` | llama3.2:3b-bench | replay | 4/10 | 0.40 [0.10, 0.70] | 1/4 | 2 | 70.8175 | 41.3825 | 21,304 / 1,545 | yes |
+| replay-store `6c8959f38dc4` | claude-headless:sonnet | replay | 5/10 | 0.50 [0.20, 0.80] | 1/1 | 3 | 37.5764 | 21.713 | 57,279 / 1,752 | no |
+| closed-book `f04afdc96a6d` | claude-headless:sonnet | closed_book | 7/10 | 0.70 [0.40, 1.00] | 1/1 | 2 | 3.9683 | None | 8,774 / 1,614 | no |
+| replay-store-minicheck-serial `8e197a3af9e3` | minicheck-ft5 | replay | 1/10 | 0.10 [0.00, 0.30] | 1/1 | 9 | 13.5049 | 4.831 | - | yes |
 
-| Claim | Gold | llama3.2:3b-bench full | llama3.2:3b-bench replay | claude-headless:sonnet replay | claude-headless:sonnet closed_book |
-|---|---|---|---|---|---|
-| averitec-dev-0243 | FALSE | FALSE | FALSE | FALSE | FALSE |
-| averitec-dev-0164 | FALSE | TRUE | TRUE | UNVERIFIED | FALSE |
-| averitec-dev-0072 | FALSE | FALSE | FALSE | FALSE | FALSE |
-| averitec-dev-0096 | FALSE | TRUE | TRUE | FALSE | UNVERIFIED |
-| averitec-dev-0175 | TRUE | FALSE | FALSE | FALSE | UNVERIFIED |
-| averitec-dev-0404 | MISLEADING | UNVERIFIED | UNVERIFIED | FALSE | FALSE |
-| averitec-dev-0368 | FALSE | TRUE | TRUE | UNVERIFIED | FALSE |
-| averitec-dev-0012 | FALSE | UNVERIFIED | UNVERIFIED | FALSE | FALSE |
-| averitec-dev-0290 | TRUE | TRUE | TRUE | TRUE | TRUE |
-| averitec-dev-0379 | FALSE | FALSE | FALSE | UNVERIFIED | FALSE |
+| Claim | Gold | llama3.2:3b-bench full | llama3.2:3b-bench replay | claude-headless:sonnet replay | claude-headless:sonnet closed_book | minicheck-ft5 replay |
+|---|---|---|---|---|---|---|
+| averitec-dev-0243 | FALSE | FALSE | FALSE | FALSE | FALSE | UNVERIFIED |
+| averitec-dev-0164 | FALSE | TRUE | TRUE | UNVERIFIED | FALSE | UNVERIFIED |
+| averitec-dev-0072 | FALSE | FALSE | FALSE | FALSE | FALSE | UNVERIFIED |
+| averitec-dev-0096 | FALSE | TRUE | TRUE | FALSE | UNVERIFIED | UNVERIFIED |
+| averitec-dev-0175 | TRUE | FALSE | FALSE | FALSE | UNVERIFIED | UNVERIFIED |
+| averitec-dev-0404 | MISLEADING | UNVERIFIED | UNVERIFIED | FALSE | FALSE | UNVERIFIED |
+| averitec-dev-0368 | FALSE | TRUE | TRUE | UNVERIFIED | FALSE | UNVERIFIED |
+| averitec-dev-0012 | FALSE | UNVERIFIED | UNVERIFIED | FALSE | FALSE | UNVERIFIED |
+| averitec-dev-0290 | TRUE | TRUE | TRUE | TRUE | TRUE | TRUE |
+| averitec-dev-0379 | FALSE | FALSE | FALSE | UNVERIFIED | FALSE | UNVERIFIED |
 
 # Review: the corrector as editor over 36 planted-defect texts
 
@@ -123,23 +124,26 @@ AVeriTeC dev, the first 10 claims. Every replay reads the evidence the knowledge
 
 Measured 2026-11-11 on Intel(R) Core(TM) Ultra 7 165U, 14 threads, 65.3 GB RAM, no GPU used. Each local model in a process of its own: memory once loaded and at its peak over 100 sentences, above the bare interpreter; cores is CPU time over wall time while it worked. Ollama models: the file's size and the memory Ollama reports once loaded.
 
-| Model | What it is | Runs on | Parameters | On disk | RAM loaded | RAM peak | Load s | Cores used |
-|---|---|---|---|---|---|---|---|---|
-| embedding (bge-m3) | BAAI/bge-m3 | this machine, CPU | 568 M | 4.6 GB | 710 MB | 2.1 GB | 6.9 | 10.5 |
-| gliner | urchade/gliner_small-v2.1 | this machine, CPU | 153 M | 611 MB | 1.1 GB | 1.7 GB | 6.2 | 12.0 |
-| xlmr-ner | Davlan/xlm-roberta-base-ner-hrl | this machine, CPU | 277 M | 1.1 GB | 735 MB | 1.1 GB | 4.5 | 12.0 |
-| spacy-sm en | en_core_web_sm | this machine, CPU | n/a | 15 MB | 310 MB | 313 MB | 1.4 | 1.0 |
-| spacy-sm es | es_core_news_sm | this machine, CPU | n/a | 16 MB | 320 MB | 323 MB | 1.2 | 1.0 |
-| tfidf-logreg | trained here on SIB-200 (en) | this machine, CPU | 345,261 | 4 MB | 140 MB | 221 MB | 6.5 | 11.0 |
-| llama3.2:3b-bench | llama 3.2B Q4_K_M | this machine, CPU | 3.2B | 2.0 GB | 4.1 GB | n/a | 4.0 | n/a |
-| qwen3.5:4b-bench | qwen35 4.2B Q4_K_M | this machine, CPU | 4.2B | 3.3 GB | 3.7 GB | n/a | 4.1 | n/a |
-| phi4-mini:bench | phi3 3.8B Q4_K_M | this machine, CPU | 3.8B | 2.5 GB | 4.8 GB | n/a | 5.1 | n/a |
-| granite3.3:8b-bench | granite 8.2B Q4_K_M | this machine, CPU | 8.2B | 4.9 GB | 7.9 GB | n/a | 10.4 | n/a |
-| gemma4:e4b-bench | gemma4 7.5B Q4_K_M | this machine, CPU | 7.5B | 6.6 GB | 2.1 GB | n/a | 9.8 | n/a |
-| qwen3.5:9b-bench | qwen35 9.0B Q4_K_M | this machine, CPU | 9.0B | 6.6 GB | 6.7 GB | n/a | 9.1 | n/a |
-| claude-headless:haiku | not published | Anthropic's servers, through the claude.ai subscription | n/a | n/a | n/a | n/a | n/a | n/a |
-| claude-headless:sonnet | not published | Anthropic's servers, through the claude.ai subscription | n/a | n/a | n/a | n/a | n/a | n/a |
+| Model | What it is | Runs on | Self-hosted | Parameters | On disk | RAM loaded | RAM peak | Load s | Cores used |
+|---|---|---|---|---|---|---|---|---|---|
+| embedding (bge-m3) | BAAI/bge-m3 | this machine, CPU | yes | 568 M | 4.6 GB | 710 MB | 2.1 GB | 6.9 | 10.5 |
+| gliner | urchade/gliner_small-v2.1 | this machine, CPU | yes | 153 M | 611 MB | 1.1 GB | 1.7 GB | 6.2 | 12.0 |
+| xlmr-ner | Davlan/xlm-roberta-base-ner-hrl | this machine, CPU | yes | 277 M | 1.1 GB | 735 MB | 1.1 GB | 4.5 | 12.0 |
+| spacy-sm en | en_core_web_sm | this machine, CPU | yes | n/a | 15 MB | 310 MB | 313 MB | 1.4 | 1.0 |
+| spacy-sm es | es_core_news_sm | this machine, CPU | yes | n/a | 16 MB | 320 MB | 323 MB | 1.2 | 1.0 |
+| tfidf-logreg | trained here on SIB-200 (en) | this machine, CPU | yes | 345,261 | 4 MB | 140 MB | 221 MB | 6.5 | 11.0 |
+| llama3.2:3b-bench | llama 3.2B Q4_K_M | this machine, CPU | yes | 3.2B | 2.0 GB | 4.1 GB | n/a | 4.0 | n/a |
+| qwen3.5:4b-bench | qwen35 4.2B Q4_K_M | this machine, CPU | yes | 4.2B | 3.3 GB | 3.7 GB | n/a | 4.1 | n/a |
+| phi4-mini:bench | phi3 3.8B Q4_K_M | this machine, CPU | yes | 3.8B | 2.5 GB | 4.8 GB | n/a | 5.1 | n/a |
+| granite3.3:8b-bench | granite 8.2B Q4_K_M | this machine, CPU | yes | 8.2B | 4.9 GB | 7.9 GB | n/a | 10.4 | n/a |
+| gemma4:e4b-bench | gemma4 7.5B Q4_K_M | this machine, CPU | yes | 7.5B | 6.6 GB | 2.1 GB | n/a | 9.8 | n/a |
+| qwen3.5:9b-bench | qwen35 9.0B Q4_K_M | this machine, CPU | yes | 9.0B | 6.6 GB | 6.7 GB | n/a | 9.1 | n/a |
+| claude-headless:haiku | not published | Anthropic's servers, through the claude.ai subscription | no | n/a | n/a | n/a | n/a | n/a | n/a |
+| claude-headless:sonnet | not published | Anthropic's servers, through the claude.ai subscription | no | n/a | n/a | n/a | n/a | n/a | n/a |
+| minicheck-ft5 | lytang/MiniCheck-Flan-T5-Large | this machine, CPU | yes | 783 M | 6.3 GB | 429 MB | 3.5 GB | 6.6 | 11.9 |
 
 - The embedding model is shared: the topic classifiers (untrained and trained) and the pipeline's duplicate search all use the one loaded bge-m3; the trained classifier adds 7 x 1,024 weights to it. Its folder on disk holds several copies of the weights (about 2.3 GB is the one loaded).
 - Claude needs nothing held locally and cannot be run without the network and a plan; its size is not published.
+- Self-hosted: whether it runs on hardware we hold, so no article, claim or source leaves the machine and nothing is billed per call. Every local model here is open-weight; Claude is the only contender that cannot be self-hosted at all.
 - An Ollama figure is Ollama's own report (`/api/ps`), not a measurement of the process; gemma4's is lower than its file, as reported.
+- minicheck-ft5: on disk counts the cache's two copies of the weights, the published pytorch_model.bin and the model.safetensors transformers fetched from the repo's conversion on first load (3.1 GB each); one is loaded.

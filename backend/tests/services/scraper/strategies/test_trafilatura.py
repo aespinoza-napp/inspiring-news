@@ -25,6 +25,9 @@ def _mock_response(text: str, *, redirect_to: str | None = None) -> Mock:
 
     response = Mock()
     response.text = text
+    # With no charset in its headers the fetcher decodes the bytes itself
+    # (fetcher.decoded).
+    response.content = text.encode("utf-8")
     response.raise_for_status = Mock()
     # A real Response has this; a bare Mock returns a truthy Mock for it,
     # which the redirect loop reads as "this is a redirect" and follows

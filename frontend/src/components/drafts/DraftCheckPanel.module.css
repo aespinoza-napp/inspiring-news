@@ -1,0 +1,63 @@
+/* The draft's own fact-check (DraftCheckPanel.tsx). Same frame as the
+   review panel below it. */
+
+.panel {
+  margin-top: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* globals.css gives every button a 1rem top margin, for forms. */
+.action {
+  margin-top: 0;
+}
+
+.meta {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 70ch;
+}
+
+.note,
+.summary {
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+}
+
+.warn {
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--misleading) 12%, transparent);
+  font-size: 0.85rem;
+}
+
+.subhead {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.list li {
+  overflow-wrap: anywhere;
+}
+
+.score {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+}

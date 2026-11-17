@@ -29,7 +29,18 @@ class Response:
     @property
     def text(self):
         self.read = True
+        # What requests does with no charset in the header: ISO-8859-1.
+        if "charset=" not in self.headers.get("content-type", ""):
+            return self.content.decode("latin-1")
         return self._text
+
+    @property
+    def content(self):
+        self.read = True
+        return self._text if isinstance(self._text, bytes) else self._text.encode("utf-8")
+
+    encoding = "ISO-8859-1"
+    apparent_encoding = "windows-1252"
 
     def raise_for_status(self):
         pass
@@ -123,3 +134,21 @@ def test_a_file_counts_as_no_content_not_as_an_error():
     assert outcome == Outcome.NO_CONTENT
     assert status == 200
     assert "application/pdf" in message
+
+
+def test_a_page_with_no_charset_is_read_as_utf8_when_it_is(served):
+
+    # radiomatik.com, 2026-11-17: bare `text/plain`, read as Latin-1, gave
+    # the verifier "muchÃsimas cosas por descubrir".
+    queue, _ = served
+    queue.append(Response(content_type="text/plain", text="<p>muchísimas cosas por descubrir</p>"))
+
+    assert "muchísimas" in Fetcher().get("https://radiomatik.com/a").html
+
+
+def test_a_page_with_no_charset_that_is_not_utf8_is_read_by_its_bytes(served):
+
+    queue, _ = served
+    queue.append(Response(content_type="text/html", text="<p>Espa\xf1a</p>".encode("latin-1")))
+
+    assert "España" in Fetcher().get("https://example.es/a").html

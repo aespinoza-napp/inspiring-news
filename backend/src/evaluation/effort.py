@@ -152,7 +152,7 @@ def render_section(section: dict) -> list[str]:
         ]
     else:
         lines += [
-            "No effort estimate: pass `--minutes-per-fact`, the median `python labeller/app.py stats` prints.",
+            "No effort estimate: pass `--minutes-per-fact`, a person's median minutes per fact (the labeller's `stats` printed it until it was removed on 2026-11-17).",
             "",
         ]
 

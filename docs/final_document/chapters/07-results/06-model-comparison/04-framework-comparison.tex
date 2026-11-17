@@ -124,22 +124,45 @@ upper bound, and seven of the ten labels being \emph{Refuted}, always
 answering so scores seven too. The baseline, deterministic on fixed
 evidence, repeated its verdicts of 5~November on all ten.
 
+MiniCheck's Flan-T5 model~\cite{tang2024minicheck}, run on 17~November
+on the same evidence, was right on one claim and never wrong with a
+definite verdict. It answered \textsc{true} once, correctly, and
+\textsc{unverified} nine times. It has no way to answer \textsc{false},
+so the seven refuted claims were beyond it and its ceiling here was two.
+Of the two supported claims it confirmed the one whose sources state it.
+The other's five sources, articles of 2018 about other bills, do not
+state it, and both other verifiers called that claim false: the miss is
+the evidence's, not the reading's. Its support scores were far apart.
+Every source of the nine claims it did not confirm scored below 0.2;
+four of the five of the one it did scored 0.80 to 0.96, so the 0.5
+threshold decided nothing here. Its \textsc{true} was right once in
+once, where the baseline's was right once in four. It took 4.8~s a claim
+for its five sources, against 41.4~s of model time for the baseline and
+21.7~s for the hosted model, and it runs on this machine. On ten claims
+none of these differences is shown to hold. They suggest a division of
+labour, MiniCheck for support and a language model only for
+contradiction, that has not been built or measured.
+
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}lccccc@{}}
 \toprule
-AVeriTeC dev, 10 claims & Right & Wrong and definite & Not verified & Median s \\
+AVeriTeC dev, 10 claims & Right & Wrong and definite & Not verified & Median s & Self-hosted \\
 \midrule
-\texttt{llama3.2:3b}, replayed & 4 & 4 & 2 & 70.8 \\
-Claude Sonnet, replayed & 5 & 2 & 3 & 37.6 \\
-Claude Sonnet, no evidence & 7 & 1 & 2 & 4.0 \\
-Always \emph{Refuted} & 7 & 3 & 0 & --- \\
+\texttt{llama3.2:3b}, replayed & 4 & 4 & 2 & 70.8 & yes \\
+Claude Sonnet, replayed & 5 & 2 & 3 & 37.6 & no \\
+Claude Sonnet, no evidence & 7 & 1 & 2 & 4.0 & no \\
+MiniCheck-FT5, replayed & 1 & 0 & 9 & 13.5 & yes \\
+Always \emph{Refuted} & 7 & 3 & 0 & --- & --- \\
 \bottomrule
 \end{tabular}
-\caption[The verifier on the same evidence]{Two verifiers on the
+\caption[The verifier on the same evidence]{Three verifiers on the
 evidence one run had kept for the first ten claims of AVeriTeC's
-development split, and the hosted model with none.}
+development split, and the hosted model with none. MiniCheck cannot
+answer \textsc{false}; its row was run on a busier machine (load 3.5 to
+5) one claim at a time, and most of its 13.5~s is the ranking of the
+sources, which every verifier pays.}
 \label{tab:frameworks-verifier}
 \end{table}
 
@@ -181,6 +204,8 @@ TF-IDF + logistic regression & 0.3 M & 4 MB & 0.1 GB & 0.2 GB & 11.0 \\
 \texttt{gemma4:e4b} & 7.5 B & 6.6 GB & 2.1 GB & --- & --- \\
 \texttt{qwen3.5:9b} & 9.0 B & 6.6 GB & 6.7 GB & --- & --- \\
 \midrule
+MiniCheck-FT5 & 783 M & 3.1 GB & 0.4 GB & 3.5 GB & 11.9 \\
+\midrule
 Claude Haiku, Sonnet & not published & none & none & --- & --- \\
 \bottomrule
 \end{tabular}
@@ -193,7 +218,11 @@ above the bare interpreter; cores is processor time over elapsed time.
 The second block is Ollama's own report once the model is loaded
 (4-bit quantised files); \texttt{gemma4:e4b}'s figure is lower than its
 file and is given as reported. Peak memory and cores were not measured
-for those models.}
+for those models. MiniCheck-FT5 (17~November) was measured as the first
+block was; its weights are mapped from disk as they are read, so its
+memory once loaded is low and its peak is the figure to plan for. Every
+model in the table runs on this machine except Claude, which cannot be
+self-hosted.}
 \label{tab:frameworks-resources}
 \end{table}
 

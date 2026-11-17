@@ -342,3 +342,173 @@ def test_the_stage_note_says_why_the_stated_rules_took_a_false_back():
     assert check.verdict == Verdict.UNVERIFIED
     assert check.raw_verdict == Verdict.FALSE
     assert check.stage_note == "LLM verdict FALSE recalibrated to UNVERIFIED: no source it cited states otherwise."
+
+
+# ----------------------------------------------------------------------
+# An opinion someone said: checked as their having said it (2026-11-17)
+# ----------------------------------------------------------------------
+
+
+def test_an_opinion_is_not_contradicted_by_a_fact_about_its_story():
+
+    from src.services.fact_checker.claim_selector import ArticleContext
+
+    # The run of 2026-11-17: two pages on the waterlily's natural range
+    # "contradicted" Magdalena's opinion, one page reported his words.
+    evidence = [
+        create_evidence(
+            url="https://carlosmagdalena.com/victoria", domain="carlosmagdalena.com", relevance_score=0.6,
+            content="The natural range of known Victoria waterlilies does not extend to the Inírida River.",
+        ),
+        create_evidence(
+            url="https://ecoticias.com/nenufar", domain="ecoticias.com", relevance_score=0.6,
+            content="«Creemos que lo sabemos todo, pero no es así», confesó Magdalena a The Guardian.",
+        ),
+        create_evidence(
+            url="https://petapixel.com/selfie", domain="petapixel.com", relevance_score=0.6,
+            content="The natural range of the Victoria amazonica does not extend to the Inírida River.",
+        ),
+    ]
+
+    answers = [
+        {"stance": "contradicts", "quote": "The natural range of known Victoria waterlilies does not extend to the Inírida River."},
+        {"stance": "supports", "quote": "«Creemos que lo sabemos todo, pero no es así», confesó Magdalena a The Guardian."},
+        {"stance": "contradicts", "quote": "The natural range of the Victoria amazonica does not extend to the Inírida River."},
+    ]
+
+    claim = create_claim(text="«Creemos que lo sabemos todo, pero no es así», confesó Magdalena al diario The Guardian.")
+    said = ArticleContext(title="La Victoria colombiana", attributed_to="Carlos Magdalena, horticultor de Kew")
+
+    client = FakeLLMClient(responses=list(answers))
+    result = LLMVerifier(client=client).verify(claim, evidence, context=said, thresholds=PER_SOURCE, language="es")
+
+    assert all(system == per_source.PER_SOURCE_ATTRIBUTION_PROMPT for system, _ in client.calls)
+    assert "said by Carlos Magdalena" in client.calls[0][1]
+
+    assert result.verdict == Verdict.TRUE
+    assert [a.stance for a in result.assessments] == [
+        EvidenceStance.SILENT, EvidenceStance.SUPPORTS, EvidenceStance.SILENT,
+    ]
+
+    # The same answers, judged as a fact (opinion_claims: as_written): FALSE, as it was.
+    as_written = LLMVerifier(client=FakeLLMClient(responses=list(answers))).verify(
+        claim, evidence, context=ArticleContext(title="La Victoria colombiana"), thresholds=PER_SOURCE, language="es",
+    )
+    assert as_written.verdict == Verdict.FALSE
+
+
+def test_a_denial_that_names_the_speaker_still_contradicts():
+
+    names = {"magdalena"}
+
+    assert per_source.held_to_speaker(EvidenceStance.CONTRADICTS, "Magdalena never said this.", names) == EvidenceStance.CONTRADICTS
+    assert per_source.held_to_speaker(EvidenceStance.CONTRADICTS, None, names) == EvidenceStance.SILENT
+    assert per_source.held_to_speaker(EvidenceStance.SUPPORTS, None, names) == EvidenceStance.SUPPORTS
+
+
+# ----------------------------------------------------------------------
+# MiniCheck (verifier_answer: minicheck, 2026-11-17)
+# ----------------------------------------------------------------------
+
+
+MINICHECK = PipelineThresholds(verifier_answer="minicheck")
+
+
+class StubGrounding:
+
+    def __init__(self, supports=None, raises=None):
+        self.supports = supports or []
+        self.raises = raises
+        self.pairs = []
+
+    def grounding(self, pairs, languages=None, translate=True):
+        self.pairs.append(pairs)
+        self.languages = languages
+        self.translate = translate
+        if self.raises:
+            raise self.raises
+        return {"model": "lytang/MiniCheck-Flan-T5-Large", "scores": [
+            {"support": support, "chunk": 0, "chunks": 1} for support in self.supports
+        ]}
+
+
+def test_minicheck_supports_above_its_threshold_and_never_contradicts():
+
+    grounding = StubGrounding([0.93, 0.12, 0.51])
+    client = FakeLLMClient(responses=[])
+
+    result = LLMVerifier(client=client, grounding=grounding).verify(
+        create_claim(), sources("a.org", "b.org", "c.org"), thresholds=MINICHECK, language="en",
+    )
+
+    # One request for every source, and no chat model asked.
+    assert len(grounding.pairs) == 1 and len(grounding.pairs[0]) == 3
+    assert client.calls == []
+
+    assert result.verdict == Verdict.TRUE
+    assert [a.stance for a in result.assessments] == [
+        EvidenceStance.SUPPORTS, EvidenceStance.SILENT, EvidenceStance.SUPPORTS,
+    ]
+    assert result.call["model"].startswith("minicheck:")
+
+
+def test_minicheck_with_no_support_is_unverified_not_false():
+
+    result = LLMVerifier(client=FakeLLMClient(responses=[]), grounding=StubGrounding([0.02, 0.4])).verify(
+        create_claim(), sources("a.org", "b.org"), thresholds=MINICHECK,
+    )
+
+    assert result.verdict == Verdict.UNVERIFIED
+
+
+def test_minicheck_threshold_is_per_run():
+
+    thresholds = PipelineThresholds(verifier_answer="minicheck", grounding_min_support=0.95)
+
+    result = LLMVerifier(client=FakeLLMClient(responses=[]), grounding=StubGrounding([0.93])).verify(
+        create_claim(), sources("a.org"), thresholds=thresholds,
+    )
+
+    assert result.verdict == Verdict.UNVERIFIED
+
+
+def test_minicheck_unreachable_is_not_checked():
+
+    from src.services.inference_client import InferenceUnavailable
+
+    result = LLMVerifier(
+        client=FakeLLMClient(responses=[]), grounding=StubGrounding(raises=InferenceUnavailable("down")),
+    ).verify(create_claim(), sources("a.org"), thresholds=MINICHECK)
+
+    assert result.llm_unreachable and result.verdict == Verdict.UNVERIFIED
+
+
+def test_minicheck_has_its_own_entry_in_the_record():
+
+    assert system_prompt(MINICHECK) != system_prompt(PER_SOURCE)
+
+
+def test_minicheck_is_told_each_texts_language_so_spanish_is_translated():
+
+    evidence = sources("a.es", "b.org")
+    evidence[0] = evidence[0].model_copy(update={"content": "El ayuntamiento aprobó el presupuesto, y la mayoría de los vecinos lo celebró en la plaza de la ciudad."})
+    grounding = StubGrounding([0.9, 0.1])
+
+    LLMVerifier(client=FakeLLMClient(responses=[]), grounding=grounding).verify(
+        create_claim(text="El ayuntamiento aprobó el presupuesto el martes."), evidence, thresholds=MINICHECK, language="es",
+    )
+
+    assert grounding.languages[0] == ("es", "es")
+    assert grounding.languages[1][1] == "es"
+    assert grounding.translate is True
+
+
+def test_minicheck_translation_can_be_turned_off_per_run():
+
+    grounding = StubGrounding([0.9])
+
+    LLMVerifier(client=FakeLLMClient(responses=[]), grounding=grounding).verify(
+        create_claim(), sources("a.org"), thresholds=PipelineThresholds(verifier_answer="minicheck", grounding_translate=False),
+    )
+
+    assert grounding.translate is False

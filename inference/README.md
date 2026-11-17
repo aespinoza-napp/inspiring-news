@@ -45,6 +45,13 @@ uv run uvicorn src.main:app --port 8001
   them); 404 for any other name. Loaded on first use, not at warm-up.
   The questions are the backend's (`backend/src/config/decisions.py`);
   `docs/decisions/laya.md`.
+- `POST /grounding` - `{"pairs": [{"document", "claim"}, ...]}` →
+  `{"model", "scores": [{"support", "chunk", "chunks"}, ...]}`, in input order.
+  MiniCheck (Tang et al., EMNLP 2024): the probability that the document
+  supports the claim, from its best chunk. No "contradicted" class; English
+  only. Loaded on the first request (`GROUNDING_MODEL`, Flan-T5-Large by
+  default, ~3 GB). The backend reaches it under `verifier_answer: minicheck`.
+  `src/grounding.py`, `docs/decisions/evaluation.md` ("MiniCheck").
 - `GET /healthz` - 200 only once all three models are loaded; 503
   ("warming_up") until then. Every other route returns 503 the same way
   while warming up, rather than blocking on the model load.

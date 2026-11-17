@@ -57,5 +57,21 @@ class Settings(BaseSettings):
     DECISION_MAX_LOADED: int = 4
     DECISION_BATCH_SIZE: int = 16
 
+    # MiniCheck (src/grounding.py, 2026-11-17): does a document support a
+    # claim. Flan-T5-Large (770M, MIT) is the paper's best, 74.7 balanced
+    # accuracy on LLM-AggreFact against GPT-4's 75.3; the RoBERTa-Large
+    # and DeBERTa-v3-Large ones (355M) score 72.7 and 72.6 and are faster.
+    # Loaded on its first request only. Chunk sizes are the authors'.
+    GROUNDING_MODEL: str = "lytang/MiniCheck-Flan-T5-Large"
+    GROUNDING_CHUNK_TOKENS: int = 400
+    GROUNDING_CHUNK_WORDS: int = 500
+    GROUNDING_BATCH_SIZE: int = 8
+
+    # Into English before MiniCheck reads a pair (src/translation.py,
+    # 2026-11-17): one OPUS-MT model per source language, loaded on first
+    # use. Spanish is the one other language the pipeline supports.
+    TRANSLATION_MODELS: dict[str, str] = {"es": "Helsinki-NLP/opus-mt-es-en"}
+    TRANSLATION_BATCH_SIZE: int = 8
+
 
 settings = Settings()

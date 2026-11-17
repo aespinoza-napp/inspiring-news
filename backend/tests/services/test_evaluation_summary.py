@@ -1,4 +1,3 @@
-import ast
 import json
 from pathlib import Path
 
@@ -16,7 +15,6 @@ from src.services.evaluation_summary import (
     evaluation_summary,
 )
 
-LABELLER = Path(__file__).resolve().parents[3] / "labeller" / "app.py"
 
 
 def fact(number: int, label="TRUE", topic="space", note=None, **extra) -> dict:
@@ -228,27 +226,18 @@ def test_an_oversized_report_is_refused_not_shipped(tmp_path, monkeypatch):
 
 
 # ---------------------------------------------------------------------
-# Held to the labeller, which this module may not import
+# The values the frozen set was labelled with. They were held to the
+# labeller's copies until it was removed on 2026-11-17 (last at 0f31dc6).
 # ---------------------------------------------------------------------
 
 
-def _labeller_constant(name: str):
-    tree = ast.parse(LABELLER.read_text(encoding="utf-8"))
-    for node in tree.body:
-        if isinstance(node, ast.Assign) and any(
-            isinstance(t, ast.Name) and t.id == name for t in node.targets
-        ):
-            return ast.literal_eval(node.value)
-    raise AssertionError(f"{name} not found in {LABELLER}")
+def test_topic_groups_are_the_five_the_set_was_labelled_over():
+    assert list(TOPIC_GROUPS) == ["society", "science", "environment", "culture", "health"]
 
 
-def test_topic_groups_match_the_labellers():
-    assert TOPIC_GROUPS == _labeller_constant("TOPIC_GROUPS")
-
-
-def test_labels_and_skip_reasons_match_the_labellers():
-    assert list(LABELS) == list(_labeller_constant("LABELS"))
-    assert list(SKIP_REASONS) == list(_labeller_constant("SKIP_REASONS"))
+def test_labels_and_skip_reasons_are_the_ones_the_set_used():
+    assert list(LABELS) == ["TRUE", "PARTIALLY_TRUE", "MISLEADING", "FALSE", "UNVERIFIED"]
+    assert list(SKIP_REASONS) == ["opinion", "prediction", "trivial", "fragment", "duplicate", "other"]
 
 
 # ---------------------------------------------------------------------

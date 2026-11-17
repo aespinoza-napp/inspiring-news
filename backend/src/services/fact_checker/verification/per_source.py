@@ -41,6 +41,7 @@ from dataclasses import dataclass
 from src.models.fact_checker.evidence import Evidence, EvidenceStance
 from src.models.fact_checker.fact_check import Verdict
 from src.services.fact_checker.outlets import outlet_of
+from src.services.fact_checker.terms import TOKEN, fold
 
 PER_SOURCE_SYSTEM_PROMPT = (
     "You check one claim from a news article against one source. The "
@@ -60,6 +61,34 @@ PER_SOURCE_SYSTEM_PROMPT = (
     "- unrelated: the source is about a different event or subject, even if "
     "it shares a place, a date or a figure with the claim.\n"
     "- Judge the claim about its article's subject when the article is given."
+)
+
+# An opinion someone is reported saying (restatement kind "opinion" with a
+# speaker, `opinion_claims: attribution`, 2026-11-17). The only thing in it
+# a source can confirm or deny is that they said it: "Creemos que lo sabemos
+# todo, pero ... todavía quedan muchísimas cosas por descubrir», confesó
+# Magdalena al diario The Guardian" came back FALSE at 69% because the 3B
+# marked two pages "contradicts" for a sentence about the waterlily's
+# natural range - true, about the same story, and nothing to do with
+# whether Magdalena said it.
+PER_SOURCE_ATTRIBUTION_PROMPT = (
+    "You check one quotation from a news article against one source. The "
+    "claim reports what a person said; it is an opinion, so it cannot be "
+    "true or false as a fact. What you check is only whether the person "
+    "said it.\n\n"
+    "Respond with ONLY a JSON object:\n"
+    '{"stance": "supports" | "contradicts" | "silent" | "unrelated", '
+    '"quote": "<the sentence of the source that reports the person saying it, '
+    'or denying it, copied word for word; empty otherwise>"}\n\n'
+    "- supports: the source reports this person saying this, or the same "
+    "thing in other words (in any language).\n"
+    "- contradicts: the source says this person did not say it, or reports "
+    "them saying the opposite.\n"
+    "- silent: the source is about the same story or person but does not "
+    "report this statement. A fact about the subject - a place, a figure, "
+    "a discovery - is silent: it neither confirms nor denies that the "
+    "person said it.\n"
+    "- unrelated: the source is about a different subject."
 )
 
 # A stance and one sentence: ~15-60 tokens. This only stops a loop.
@@ -92,6 +121,31 @@ def prompt(article_block: str, claim: str, item: Evidence, excerpt: str) -> str:
     """
 
     return f"{article_block}Claim:\n{claim}\n\nSource: {item.title} ({item.domain or item.url})\n{excerpt}"
+
+
+def attribution_prompt(article_block: str, claim: str, speaker: str, item: Evidence, excerpt: str) -> str:
+
+    return (
+        f"{article_block}Claim (said by {speaker}):\n{claim}\n\n"
+        f"Source: {item.title} ({item.domain or item.url})\n{excerpt}"
+    )
+
+
+def held_to_speaker(stance: EvidenceStance | None, quote: str | None, names: set[str]) -> EvidenceStance | None:
+    """
+    An attribution is contradicted only by a sentence about the person: a
+    source denying a quote names who did not say it. A "contradicts" with
+    no checked quote naming the speaker is the 3B's stray answer (the
+    waterlily's natural range, 2026-11-17), and becomes silent. Applied
+    without a model; a support is left as the model read it.
+    """
+
+    if stance != EvidenceStance.CONTRADICTS or not names:
+        return stance
+
+    words = set(TOKEN.findall(fold(quote or "")))
+
+    return stance if names & words else EvidenceStance.SILENT
 
 
 def stance_of(answer) -> EvidenceStance | None:

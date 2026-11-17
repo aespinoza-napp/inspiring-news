@@ -26,7 +26,7 @@ from tests.services.test_analysis_service import FakeAdmission, admitted
 def service(admission, graph=None):
 
     enrichment = Mock()
-    enrichment.process.side_effect = lambda news, thresholds=None: create_article(
+    enrichment.process.side_effect = lambda news, thresholds=None, article_entities=True: create_article(
         url=news.url, source_id=news.source_id, claims=[create_claim(), create_claim()],
     )
 

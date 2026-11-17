@@ -99,6 +99,10 @@ def approve_draft(draft_id: str = Path(pattern=ID_PATTERN)):
     """
     The text as it stands is ready to publish. Not gated on a review: the
     panel warns when the current text has none, and the person decides.
+    Gated on the draft's own fact-check of this text (2026-11-17): fetch ->
+    check -> entities -> draft -> check the draft -> review -> publish. A
+    check that ran shows its unsupported sentences, and the person decides;
+    a check that never ran, or could not reach its model, is a 409.
     Approving an approved draft changes nothing.
     """
 
@@ -111,6 +115,17 @@ def approve_draft(draft_id: str = Path(pattern=ID_PATTERN)):
 
         if not draft.content.title.strip() or not draft.content.body.strip():
             raise HTTPException(status_code=422, detail="There is nothing to approve: the draft has no title or no body.")
+
+        if draft.status != "approved":
+
+            if draft.check is None:
+                raise HTTPException(status_code=409, detail=(
+                    "This text has not been fact-checked: check it (POST /drafts/{id}/check, or review it, "
+                    "which checks first) before approving."
+                ))
+
+            if draft.check.error:
+                raise HTTPException(status_code=409, detail=f"The draft's fact-check did not run: {draft.check.error}")
 
         draft.status = "approved"
 

@@ -96,6 +96,10 @@ class AnalysedArticle:
     # Evidence page text by URL, from the processed record's fact-check.
     pages: dict[str, str] = field(default_factory=dict)
 
+    # The article's entities by label, from the processed record: present
+    # only when its own check passed (AnalysisService, 2026-11-17).
+    entities: dict[str, list[str]] = field(default_factory=dict)
+
 
 def _claim(view: dict) -> CheckedClaim:
 
@@ -208,6 +212,11 @@ class AnalysedArticles:
             embedding=tuple(float(value) for value in embedding) if embedding else None,
             pages=pages,
             keywords=article.keywords or tuple(str(keyword) for keyword in enriched.get("keywords") or []),
+            entities={
+                str(label): [str(value) for value in values]
+                for label, values in (enriched.get("entities") or {}).items()
+                if isinstance(values, list)
+            },
         )
 
     def _processed(self, article_id: str) -> dict | None:

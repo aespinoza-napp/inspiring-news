@@ -41,6 +41,21 @@ logger = getLogger(__name__)
 OnPhase = Callable[[str, dict], None]
 
 
+def sentence_entities(article: EnrichedArticle) -> dict[str, list[str]]:
+    """Every claim sentence's entities, merged by label, in first-seen order."""
+
+    merged: dict[str, list[str]] = {}
+
+    for claim in article.claims or []:
+        for label, values in (claim.entities or {}).items():
+            bucket = merged.setdefault(label, [])
+            for value in values:
+                if value not in bucket:
+                    bucket.append(value)
+
+    return merged
+
+
 def _noop(phase: str, data: dict) -> None:
     pass
 
@@ -252,7 +267,11 @@ class FactChecker:
             lead=(article.body or "")[:400],
             body=article.body or "",
             keywords=article.keywords or [],
-            entities=article.entities or {},
+            # The article's own entities, or - when they are not extracted
+            # yet, since 2026-11-17 only after the check passes - the names
+            # found in its sentences (ClaimExtractor), so the claims chosen
+            # still favour the article's subjects.
+            entities=article.entities or sentence_entities(article),
         )
 
     def _check_claim(
@@ -317,6 +336,15 @@ class FactChecker:
             working = working_claim(claim, restatement)
 
             phase("claim_restated", {"restatement": restatement.model_dump()})
+
+            # An opinion someone said is checked as their having said it
+            # (per_source.py): a fact about the story is not its contradiction.
+            if (
+                restatement.kind == "opinion"
+                and restatement.speaker
+                and thresholds.opinion_claims == "attribution"
+            ):
+                context = dataclasses.replace(context or ArticleContext(), attributed_to=restatement.speaker)
 
         # `query_plan: questions` - the questions the claim is searched by
         # (questions.py), written from what is searched: the restatement,

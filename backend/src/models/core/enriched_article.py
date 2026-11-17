@@ -32,6 +32,11 @@ class EnrichedArticle(BaseModel):
 
     topics: Optional[list[TopicPrediction]] = None
 
+    # The article's IPTC Media Topic and the group it reads as, under
+    # `topic_group_classifier: iptc` (processors/nlp/iptc_topics.py,
+    # 2026-11-17): {"category", "probability", "group"}. None otherwise.
+    iptc_topic: Optional[dict] = None
+
     claims: Optional[list[Claim]] = None
 
     sentiment: SentimentResult

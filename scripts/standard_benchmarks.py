@@ -208,6 +208,7 @@ LOCAL_MODELS = {
     "spacy-sm en": "en_core_web_sm",
     "spacy-sm es": "es_core_news_sm",
     "tfidf-logreg": None,
+    "minicheck-ft5": "lytang/MiniCheck-Flan-T5-Large",
 }
 
 
@@ -268,6 +269,14 @@ def resources_one(name: str) -> dict:
         nlp = spacy.load(LOCAL_MODELS[name])
         disk = _disk_mb(Path(nlp.path))
         run = lambda: [nlp(t) for t in sentences]
+    elif name.startswith("minicheck"):
+        # A support score per (document, claim): each sentence against
+        # its own first half, the shape of the verifier's request.
+        from src.grounding import grounding_model
+        grounding_model.load()
+        parameters = sum(p.numel() for p in grounding_model._model.parameters())
+        disk = _hf_disk_mb(LOCAL_MODELS[name])
+        run = lambda: grounding_model.score_many([(t, " ".join(t.split()[: max(3, len(t.split()) // 2)])) for t in sentences])
     else:
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.linear_model import LogisticRegression
@@ -311,9 +320,28 @@ def _ollama(path: str, body: dict | None = None) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
-def resources() -> None:
+def resources(only: list[str] | None = None) -> None:
+    """
+    Every model, or with `only` just those (`resources --only minicheck-ft5`),
+    merged into the file as it stands: a new contender gets its row without
+    re-measuring the rest (2026-11-17, MiniCheck).
+    """
 
     import subprocess
+
+    if only:
+        data = json.loads(RESOURCES.read_text(encoding="utf-8"))
+        for name in only:
+            result = subprocess.run([sys.executable, __file__, "resources-one", name], capture_output=True, text=True)
+            try:
+                data["models"][name] = json.loads(result.stdout.strip().splitlines()[-1])
+            except (ValueError, IndexError):
+                data["models"][name] = {"error": (result.stderr.strip().splitlines() or ["no output"])[-1][:200]}
+            data["models"][name]["measuredAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+            print(name, data["models"][name], flush=True)
+        RESOURCES.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        print(f"written {RESOURCES}")
+        return
 
     found: dict = {}
 
@@ -381,7 +409,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if sys.argv[1:2] == ["resources"]:
-        resources()
+        resources(sys.argv[3:] if sys.argv[2:3] == ["--only"] else None)
         sys.exit(0)
 
     which = sys.argv[1:] or ["topics", "entities"]

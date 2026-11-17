@@ -148,6 +148,18 @@
       "loadSeconds": null,
       "coresUsed": null,
       "note": "nothing to hold locally but the `claude` CLI process per call; needs the network and a plan"
+    },
+    "minicheck-ft5": {
+      "model": "lytang/MiniCheck-Flan-T5-Large",
+      "runsOn": "this machine, CPU",
+      "parameters": 783150080,
+      "diskMb": 6269.7,
+      "loadedMb": 429.3,
+      "peakMb": 3535.0,
+      "loadSeconds": 6.6,
+      "coresUsed": 11.9,
+      "measuredAt": "2026-11-17T10:45:31+0100",
+      "note": "on disk counts the cache's two copies of the weights, the published pytorch_model.bin and the model.safetensors transformers fetched from the repo's conversion on first load (3.1 GB each); one is loaded"
     }
   }
 }

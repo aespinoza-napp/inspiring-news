@@ -432,6 +432,15 @@ class DataLakeRepository:
         ).topic
 
     @staticmethod
+    def is_publishable(report: FactCheckReport | None) -> bool:
+        """
+        The editorial decision, public since 2026-11-17: AnalysisService asks
+        it too, to extract an article's entities only once it checked out.
+        """
+
+        return DataLakeRepository._is_publishable(report)
+
+    @staticmethod
     def _is_publishable(report: FactCheckReport | None) -> bool:
 
         if report is None or not report.validation_passed:

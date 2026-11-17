@@ -11,6 +11,11 @@ from src.services.fact_checker.verification.llm_verification import LLMVerificat
 _DEFINITIVE = (Verdict.TRUE, Verdict.PARTIALLY_TRUE, Verdict.FALSE, Verdict.MISLEADING)
 
 
+# Verifiers whose verdict is counted from per-source stances
+# (per_source.verdict_from): the per-source chat model and MiniCheck.
+STANCE_VERIFIERS = ("per_source", "minicheck")
+
+
 def holds_to_stances(thresholds: PipelineThresholds) -> bool:
     """
     Whether a verdict must stand on what its cited sources state: the
@@ -18,7 +23,7 @@ def holds_to_stances(thresholds: PipelineThresholds) -> bool:
     from the stances (verification/per_source.py).
     """
 
-    return thresholds.verifier_rules == "stated" or thresholds.verifier_answer == "per_source"
+    return thresholds.verifier_rules == "stated" or thresholds.verifier_answer in STANCE_VERIFIERS
 
 
 def below_evidence_floor(evidence: list, thresholds: PipelineThresholds) -> bool:
@@ -145,7 +150,7 @@ class ConfidenceScorer:
         # discards the only part worth reading. Not for the per-source
         # verifier, whose TRUE already counted the contradicting outlets
         # and found them fewer (per_source.verdict_from).
-        elif verdict == Verdict.TRUE and contradicting and thresholds.verifier_answer != "per_source":
+        elif verdict == Verdict.TRUE and contradicting and thresholds.verifier_answer not in STANCE_VERIFIERS:
             verdict = Verdict.PARTIALLY_TRUE
 
         # Corroborated by one outlet only. Not wrong, but not confirmed

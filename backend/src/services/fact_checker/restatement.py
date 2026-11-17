@@ -176,7 +176,7 @@ def validate(
     kind = answer.get("kind") if answer.get("kind") in ("fact", "attributed", "opinion") else "fact"
     checkable = _text(answer.get("checkable"))
     standalone = _text(answer.get("standalone")) or checkable
-    speaker = _text(answer.get("speaker")) or None
+    speaker = _speaker(answer.get("speaker"))
     questions = [_text(question) for question in answer.get("questions") or [] if _text(question)][:MAX_QUESTIONS]
 
     restatement = ClaimRestatement(
@@ -195,6 +195,14 @@ def validate(
         restatement = restatement.model_copy(update={"kind": kind})
 
     if kind == "opinion":
+        # Said by someone, an opinion still has one thing to check: that
+        # they said it. The sentence carries who and where ("confesó
+        # Magdalena al diario The Guardian"), so it is what is searched,
+        # and the verifier is asked about the attribution alone
+        # (verification/per_source.py, `opinion_claims`).
+        if speaker:
+            return _refused(restatement, claim, f"An opinion: what is checked is that {speaker} said it, not the opinion itself.")
+
         return _refused(restatement, claim, "An opinion, with nothing factual to check: checked as written.")
 
     # Nothing the article does not say. A figure the model wrote is the
@@ -320,6 +328,49 @@ _NOT_A_NAME = {fold(word) for language in ("en", "es") for word in lexicon_for(l
 
 def _text(value) -> str:
     return " ".join(str(value).split()) if isinstance(value, str) else ""
+
+
+# What the 3B writes for "nobody" when it writes a string anyway: on
+# 2026-11-17 a sentence with no speaker came back with speaker "null".
+_NO_SPEAKER = {"null", "none", "nadie", "n/a", "ninguno", "desconocido", "unknown"}
+
+
+def _speaker(value) -> str | None:
+    """
+    Who is speaking, or None: the model's "null" is nobody, and a part it
+    repeated once is enough ("Magdalena, Magdalena, investigadora" on
+    2026-11-17).
+    """
+
+    text = _text(value)
+
+    if fold(text) in _NO_SPEAKER:
+        return None
+
+    parts = list(dict.fromkeys(part.strip() for part in text.split(",") if part.strip()))
+
+    return ", ".join(parts) or None
+
+
+def speaker_names(speaker: str | None) -> set[str]:
+    """
+    The words that name the speaker - capitalised words of the part
+    before the first comma, "Carlos Moedas" of "Carlos Moedas, mayor of
+    Lisbon" - folded, for asking whether a source's sentence is about
+    them. The role and the outlet after the comma ("al diario The
+    Guardian") do not name the person.
+    """
+
+    if not speaker:
+        return set()
+
+    name = speaker.split(",")[0]
+
+    return {
+        fold(word)
+        for word in TOKEN.findall(name)
+        if word[:1].isupper() and len(word) >= 3 and fold(word) not in _NOT_A_NAME
+    }
 
 
 def _numbers(text: str) -> set[str]:

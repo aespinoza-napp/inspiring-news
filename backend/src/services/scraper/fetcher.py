@@ -99,7 +99,7 @@ class Fetcher:
                     response.close()
                     raise NotAPage(url, response.status_code, kind)
 
-                html = response.text
+                html = decoded(response)
 
                 if html.lstrip()[:len(PDF_MAGIC)] == PDF_MAGIC:
                     raise NotAPage(url, response.status_code, "a PDF")
@@ -111,6 +111,32 @@ class Fetcher:
             url = requests.compat.urljoin(url, response.headers["location"])
 
         raise BlockedURL(f"Too many redirects starting at {url!r}.")
+
+
+def decoded(response: requests.Response) -> str:
+    """
+    The body as text. With no charset in its content-type, requests takes
+    a text/* page for ISO-8859-1, as HTTP/1.1 once said: on 2026-11-17
+    radiomatik.com, served as bare `text/plain`, reached the verifier as
+    "muchÃsimas cosas por descubrir" - the very sentence that confirmed
+    the claim - and the 3B called the page silent. A body that decodes as
+    UTF-8 is UTF-8 (Latin-1 text almost never does); otherwise what the
+    bytes look like, then what requests assumed.
+    """
+
+    content_type = (response.headers.get("content-type") or "").lower()
+
+    if "charset=" in content_type:
+        return response.text
+
+    body = response.content
+
+    try:
+        return body.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+
+    return body.decode(response.apparent_encoding or response.encoding or "latin-1", errors="replace")
 
 
 def classify(exc: Exception) -> tuple[Outcome, int | None, str]:

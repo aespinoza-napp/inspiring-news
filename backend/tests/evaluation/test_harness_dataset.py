@@ -5,7 +5,6 @@ The committed files are read, never written (invariant 9 is about
 data/raw and data/processed; the same courtesy holds here).
 """
 
-import ast
 import json
 from pathlib import Path
 
@@ -26,7 +25,6 @@ from tests.evaluation.support import custom_row, write_jsonl, xfact_row
 
 BACKEND = Path(__file__).resolve().parents[2]
 EVALUATION = BACKEND / "data" / "evaluation"
-LABELLER = BACKEND.parent / "labeller" / "app.py"
 
 
 def test_the_committed_pilot_loads_with_64_unique_ids():
@@ -183,22 +181,14 @@ def test_the_dataset_hash_changes_when_a_label_does(tmp_path):
     assert load_dataset(directory).sha256 != before
 
 
-def test_the_topic_groups_match_the_labellers_copy():
+def test_the_topic_groups_are_the_ones_the_set_was_labelled_with():
     """
-    Copied, because the labeller imports nothing from backend/ and backend
-    nothing from it. Read with ast, not imported, for the same reason.
+    The labeller held its own copy, compared here until it was removed on
+    2026-11-17 (last at 0f31dc6). The set is frozen as it was labelled, so the
+    five groups it was balanced over stay pinned.
     """
 
-    tree = ast.parse(LABELLER.read_text(encoding="utf-8"))
-
-    labeller_groups = next(
-        ast.literal_eval(node.value)
-        for node in tree.body
-        if isinstance(node, ast.Assign)
-        and getattr(node.targets[0], "id", None) == "TOPIC_GROUPS"
-    )
-
-    assert TOPIC_GROUPS == labeller_groups
+    assert list(TOPIC_GROUPS) == ["society", "science", "environment", "culture", "health"]
 
 
 def test_every_topic_belongs_to_exactly_one_group():

@@ -401,3 +401,24 @@ def test_the_audit_counts_the_sources_with_no_date_anywhere():
     assert result["held"] is True
     assert result["undatedAnywhere"] == 1
     assert result["refusedForTheirText"] == 1
+
+
+def test_a_balanced_sample_has_as_many_of_each_label_and_every_prefix_is_balanced():
+
+    from collections import Counter
+
+    from src.evaluation.averitec import balanced
+
+    rows = (
+        [{"id": f"f{i}", "label": "FALSE", "claimTypes": ["Numerical Claim" if i % 2 else "Quote Verification"]} for i in range(10)]
+        + [{"id": f"t{i}", "label": "TRUE", "claimTypes": ["Causal Claim"]} for i in range(4)]
+        + [{"id": f"u{i}", "label": "UNVERIFIED"} for i in range(3)]
+        + [{"id": f"m{i}", "label": "MISLEADING"} for i in range(5)]
+    )
+
+    picked = balanced(rows)
+
+    assert Counter(row["label"] for row in picked) == {"FALSE": 3, "TRUE": 3, "UNVERIFIED": 3, "MISLEADING": 3}
+    assert [row["label"] for row in picked[:4]] == ["FALSE", "TRUE", "UNVERIFIED", "MISLEADING"]
+    # Both of FALSE's claim types are in it, not only the first.
+    assert {row["claimTypes"][0] for row in picked if row["label"] == "FALSE"} == {"Numerical Claim", "Quote Verification"}

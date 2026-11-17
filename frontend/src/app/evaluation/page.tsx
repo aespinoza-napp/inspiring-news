@@ -110,8 +110,8 @@ export default function EvaluationPage() {
         <div className="eval-empty">
           <p>
             The backend found no <code>data/evaluation/manual/</code> or{" "}
-            <code>data/evaluation/queue/</code> folder. Label a fact with{" "}
-            <code>python labeller/app.py</code> and refresh.
+            <code>data/evaluation/queue/</code> folder. The set is frozen as committed
+            (the labeller was removed on 17 Nov 2026).
           </p>
         </div>
       )}

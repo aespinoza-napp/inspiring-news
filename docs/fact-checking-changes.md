@@ -474,3 +474,82 @@ also reads the 900 characters before the sentence (`ArticleContext.body`,
 verbs and "the + noun". `CLAIM_RESTATEMENT=standalone` is set in the app's `backend/.env`, the code default stays `off` (one more model
 call per claim); `thorough.json` keeps `off`. Not measured on AVeriTeC yet: compare by
 replay or on 10 train claims before trusting a figure.
+
+## 16. An opinion someone said is checked as their saying it (2026-11-17)
+
+Found on Inspiring News' "La increíble historia detrás de la Victoria colombiana" (job
+`bc84fe6f`): "Creemos que lo sabemos todo, pero la realidad es que no es así: todavía quedan
+muchísimas cosas por descubrir y proteger», confesó Magdalena al diario The Guardian" came
+back **FALSE at 69%**. Magdalena said it; radiomatik.com, one of the five sources, quotes him
+saying it. Three faults, one under the other:
+
+- **The claim began mid-quote.** The splitter cut «Los nenúfares gigantes revelan sus secretos
+  poco a poco. Es extraordinario. Creemos...» after each full stop, so the claim had a closing
+  `»` and no opening one. A quotation now stays whole while a `«`, `“` or `"` it opened is
+  unclosed, up to 600 characters (`ClaimExtractor._inside_quote`).
+- **An opinion was judged as a fact.** The restater called it an opinion and it was checked as
+  written. Two pages on the waterlily's natural range ("does not extend to the Inírida River")
+  were marked `contradicts`. With **`opinion_claims: attribution`** (the default, a threshold;
+  `as_written` is the old behaviour) an opinion the restater gives a speaker is asked about
+  per source with `PER_SOURCE_ATTRIBUTION_PROMPT` (did this person say it?). A `contradicts`
+  counts only with a checked quote that names the speaker (`per_source.held_to_speaker`,
+  no model). This needs `claim_restatement: standalone` and the per-source verifier, so
+  `thorough.json` and every harness run with restatement `off` are unchanged. The restater's
+  speaker `"null"` is now nobody, and a repeated part is dropped ("Magdalena, Magdalena,
+  investigadora").
+- **The source that settled it was mojibake.** radiomatik.com serves bare `text/plain`.
+  requests decodes that as ISO-8859-1, so the verifier read "muchÃsimas cosas por descubrir"
+  and answered `silent`. A page whose header has no charset is now decoded as UTF-8 when its
+  bytes are UTF-8, and otherwise by what the bytes look like (`fetcher.decoded`). This touches
+  every page fetched without a charset, articles as well as evidence.
+
+Replayed with llama3.2:3b on the job's five sources, fetched again, one run per cell:
+
+| claim text | `as_written` | `attribution` |
+|---|---|---|
+| cut mid-quote (as the job had it), Latin-1 pages | FALSE | UNVERIFIED |
+| cut mid-quote, UTF-8 pages | TRUE | UNVERIFIED |
+| whole quote, UTF-8 pages (what the app now does) | **FALSE** (carlosmagdalena.com, natural range) | **TRUE** (radiomatik.com) |
+
+One claim, a noisy 3B, one try each: this is a diagnosis, not a measurement. The rule that
+holds whatever the model says is the speaker check: a page that does not name the speaker can
+no longer make a quotation FALSE. Not measured on AVeriTeC, which has few quoted opinions, or
+on the custom set's train half yet.
+
+## 17. MiniCheck as another verifier, and four measures for every approach (2026-11-17)
+
+- **`verifier_answer: minicheck`.** Each source's excerpt is scored by MiniCheck
+  (Tang, Laban & Durrett, EMNLP 2024) in `inference/` (`POST /grounding`,
+  Flan-T5-Large by default). Above `grounding_min_support` (0.5, the authors')
+  a source supports the claim; otherwise it is silent. No chat model is asked,
+  and the verdict can only be TRUE or UNVERIFIED, since MiniCheck has no
+  contradiction class. Off: the default stays `per_source`.
+- **Why that asymmetry is acceptable:** Glockner, Hou & Gurevych (EMNLP 2022)
+  found professional fact-checkers refuted only 20 of 75 false claims with a
+  source stating the opposite. Absent support is UNVERIFIED, not FALSE.
+- **Every approach is reported with four measures:** hit rate (beside
+  always-Refuted), time per claim, resources, and self-hosting (a new column of
+  the resources table). AVeriTeC dev stays the common set; fixed evidence for
+  verifiers. `docs/decisions/evaluation.md`, "MiniCheck, and what a verifier can
+  refute" and "One benchmark for every approach".
+- **First reading** (10 AVeriTeC dev claims, the store run's evidence, `8e197a3af9e3`):
+  1 of 10 right, none wrong with a definite verdict, 9 UNVERIFIED (ceiling 2). Its one
+  TRUE was right, where the 3B was right on 1 of its 4 TRUEs on the same evidence. Its
+  request took 4.8 s a claim, against the 3B's 41.4 s of model time. Ten claims decide
+  nothing; not adopted, and the default is unchanged.
+
+## 18. Checked twice, the labeller gone, a balanced benchmark (2026-11-17)
+
+- **Order:** fetch -> check the article -> entities only if it checked out -> draft (with the
+  entities) -> check the draft against its sources (MiniCheck) -> review -> publish.
+  `docs/decisions/writing.md`, "Checked twice". Claim selection reads the sentences' entities
+  instead of the article-level pass, which now runs after the check: verdicts can differ from
+  before for articles whose subjects only that pass found. Not measured; the harness builds
+  its claims without an article and is unaffected.
+- **MiniCheck reads Spanish in English translation** (`grounding_translate`, on): no
+  detectable gain on 21 Spanish train claims. `docs/decisions/evaluation.md`, "Spanish".
+- **The labeller and `/labelling/batch` were removed**; the custom set is frozen as it stood
+  (last commit with the tool: `0f31dc6`).
+- **`cli averitec balance`:** 35 claims per label on dev, spread over claim types.
+- **Model loads in `inference/` are serialised** (`src/loading.py`): two at once could leave
+  a model with meta tensors (7 of 24 inference tests failed in one run on 17 Nov, then passed).

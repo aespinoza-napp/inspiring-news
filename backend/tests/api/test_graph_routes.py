@@ -105,59 +105,6 @@ def test_graph_endpoints_are_behind_the_storage_key(graph, monkeypatch):
 
 
 # ----------------------------------------------------------------------
-# /labelling/batch lives beside the graph routes: both are thin views over
-# one container singleton.
-
-
-class FakeBatch:
-
-    def __init__(self, running=False):
-        self.running = running
-        self.requests = []
-
-    def start(self, request):
-        if self.running:
-            return False
-        self.requests.append(request)
-        return True
-
-    def state(self):
-        return {"running": self.running, "batch": None, "error": None}
-
-
-def test_a_labelling_batch_is_started_with_what_the_labeller_sent(monkeypatch):
-
-    fake = FakeBatch()
-    monkeypatch.setattr(routes, "get_labelling_batch", lambda: fake)
-
-    response = client.post("/labelling/batch", json={
-        "articles": 8, "claimsPerArticle": 2, "exclude": ["https://a/"],
-        "preferTopics": ["medicine"], "languages": ["es"], "requestId": "r1",
-    })
-
-    assert response.status_code == 202
-    request = fake.requests[0]
-    assert (request.articles, request.claims_per_article, request.exclude) == (8, 2, ["https://a/"])
-    assert (request.prefer_topics, request.languages, request.request_id) == (["medicine"], ["es"], "r1")
-
-
-def test_a_second_labelling_batch_while_one_runs_is_a_409(monkeypatch):
-
-    monkeypatch.setattr(routes, "get_labelling_batch", lambda: FakeBatch(running=True))
-
-    assert client.post("/labelling/batch", json={}).status_code == 409
-
-
-def test_labelling_batch_is_behind_the_storage_key(monkeypatch):
-
-    monkeypatch.setattr(routes, "get_labelling_batch", lambda: FakeBatch())
-    monkeypatch.setattr(settings, "STORAGE_API_KEY", SecretStr("secret"))
-
-    assert client.get("/labelling/batch").status_code == 401
-    assert client.post("/labelling/batch", json={}).status_code == 401
-
-
-# ----------------------------------------------------------------------
 # Two editions, two graphs (docs/decisions/editions.md)
 # ----------------------------------------------------------------------
 

@@ -92,6 +92,8 @@ def make_service(extract_return, article, report, cache=None, admission=None) ->
 
     enrichment_pipeline = Mock()
     enrichment_pipeline.process.return_value = article
+    # Since 2026-11-17 the article's entities come after its check.
+    enrichment_pipeline.entities_of.return_value = article.entities if article is not None else {}
 
     fact_checker = Mock()
     fact_checker.run.return_value = report
@@ -446,6 +448,8 @@ def test_analyze_reports_phases_in_order():
 
     enrichment_pipeline = Mock()
     enrichment_pipeline.process.return_value = article
+    # Since 2026-11-17 the article's entities come after its check.
+    enrichment_pipeline.entities_of.return_value = article.entities if article is not None else {}
 
     service = AnalysisService(
         fact_checker=fact_checker,
@@ -465,6 +469,9 @@ def test_analyze_reports_phases_in_order():
         "enriched",
         "validating",
         "fact_check_done",
+        # Checked out: the article's entities after its check (2026-11-17).
+        "article_entities",
+        "article_entities_extracted",
         "done",
     ]
 
@@ -534,6 +541,8 @@ def _enrichment_returning(article):
 
     pipeline = Mock()
     pipeline.process.return_value = article
+    # Since 2026-11-17 the article's entities come after its check.
+    pipeline.entities_of.return_value = article.entities if article is not None else {}
     return pipeline
 
 
@@ -617,6 +626,8 @@ def test_analyze_reports_the_persist_phases_after_the_fact_check(tmp_path):
         "enriched",
         "storing",
         "stored_layer",
+        "article_entities",
+        "article_entities_extracted",
         "storing",
         "stored_layer",
         "storing",
@@ -994,6 +1005,8 @@ def test_admission_phases_come_between_enrichment_and_the_fact_check(repository)
         "validating",
         "validated",
         "skipped",
+        # Rejected at admission: it did not check out, so no entities.
+        "article_entities_skipped",
         "done",
     ]
 
@@ -1203,3 +1216,40 @@ def test_a_devastating_analysis_goes_into_its_own_graph_and_never_the_positive_o
 
     without.graph.write_analysis.assert_not_called()
     assert "graph_storing" not in phases
+
+
+def test_an_article_that_does_not_check_out_gets_no_entities():
+    """Fetch -> check -> entities only if verified (2026-11-17)."""
+
+    from src.models.fact_checker.fact_check_report import FactCheckReport
+
+    article = create_article()
+    false_report = FactCheckReport(
+        article_id=str(article.id), overall_verdict=Verdict.FALSE, overall_confidence=0.9,
+        claim_checks=[], claims_total=0, claims_selected=0, validation_passed=True,
+    )
+
+    service = make_service(make_news(), article, false_report)
+    events = []
+
+    result = service.analyze("https://example.com/false", on_phase=lambda phase, data: events.append((phase, data)))
+
+    assert ("article_entities_skipped", {"reason": "not_verified", "verdict": Verdict.FALSE}) in events
+    assert result["entities"] == {}
+    service.enrichment_pipeline.entities_of.assert_not_called()
+    # Enriched without the article-level pass, which waits for the check.
+    assert service.enrichment_pipeline.process.call_args.kwargs.get("article_entities") is False
+
+
+def test_the_check_still_reads_the_articles_subjects_from_its_sentences():
+
+    from src.models.core.claim import Claim
+    from src.services.fact_checker.fact_checker import FactChecker, sentence_entities
+
+    article = create_article(entities={}, claims=[
+        Claim(text="Ana Pérez led the project.", entities={"PERSON": ["Ana Pérez"]}, confidence=0.9),
+        Claim(text="Ana Pérez visited Lima.", entities={"PERSON": ["Ana Pérez"], "LOC": ["Lima"]}, confidence=0.9),
+    ])
+
+    assert sentence_entities(article) == {"PERSON": ["Ana Pérez"], "LOC": ["Lima"]}
+    assert FactChecker._context(article).entities == {"PERSON": ["Ana Pérez"], "LOC": ["Lima"]}

@@ -23,7 +23,7 @@ export const CURRENT_PHASE_LABELS: Record<string, string> = {
   initialized: "Models ready",
   scraping: "Fetching the article…",
   scraped: "Article fetched",
-  enriching: "Extracting keywords, entities & topics…",
+  enriching: "Extracting keywords, topics & claims…",
   enriched: "Enrichment complete",
   validating: "Checking topic & positivity…",
   validated: "Validation complete",
@@ -43,6 +43,11 @@ export const CURRENT_PHASE_LABELS: Record<string, string> = {
   verifying: "Checking the claim…",
   claim_checked: "Claim checked",
   fact_check_done: "Fact-check complete",
+  // Since 2026-11-17 the article's entities wait for its check: extracted
+  // only when it checked out (backend AnalysisService).
+  article_entities: "Checked out: extracting the article's entities…",
+  article_entities_extracted: "Entities extracted",
+  article_entities_skipped: "Entities not extracted — the article did not check out",
   storing: "Storing…",
   stored_layer: "Stored",
   stored: "All layers stored",

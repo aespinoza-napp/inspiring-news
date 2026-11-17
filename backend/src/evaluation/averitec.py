@@ -234,6 +234,52 @@ def import_split(raw_path: Path, split: str, target: Path) -> dict:
 # ----------------------------------------------------------------------
 
 
+LABEL_ORDER = ("FALSE", "TRUE", "UNVERIFIED", "MISLEADING")
+
+
+def balanced(rows: list[dict], per_label: int | None = None) -> list[dict]:
+    """
+    The same number of claims per label, so answering FALSE to everything
+    scores a quarter, not the 61% it gets on dev (2026-11-17): AVeriTeC is
+    real claims, checked by 50 fact-checking organisations, but they mostly
+    pick false ones. Within a label, the claims are taken round-robin over
+    their first claim type (event, numerical, quote, causal, position), each
+    type in the rows' own SHA-256 order, so every kind of claim is in it.
+    Labels are interleaved FALSE, TRUE, UNVERIFIED, MISLEADING, so any
+    prefix is balanced too: `--limit 8` is two of each.
+
+    `per_label` defaults to the smallest label's count (35 on dev).
+    """
+
+    by_label: dict[str, list[dict]] = {label: [] for label in LABEL_ORDER}
+    for row in rows:
+        if row.get("label") in by_label:
+            by_label[row["label"]].append(row)
+
+    size = min(len(found) for found in by_label.values()) if per_label is None else per_label
+
+    def spread(found: list[dict]) -> list[dict]:
+        by_type: dict[str, list[dict]] = {}
+        for row in found:
+            by_type.setdefault((row.get("claimTypes") or ["(none)"])[0], []).append(row)
+        queues = sorted(by_type.values(), key=len, reverse=True)
+        out: list[dict] = []
+        while len(out) < size and any(queues):
+            for queue in queues:
+                if queue and len(out) < size:
+                    out.append(queue.pop(0))
+        return out
+
+    picked = {label: spread(found) for label, found in by_label.items()}
+
+    return [
+        picked[label][index]
+        for index in range(size)
+        for label in LABEL_ORDER
+        if index < len(picked[label])
+    ]
+
+
 def predicted_class(record: dict) -> str | None:
     """AVeriTeC's class for a record, or None when it gave no answer at all."""
 

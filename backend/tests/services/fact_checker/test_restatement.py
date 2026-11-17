@@ -287,3 +287,87 @@ def test_an_opinion_without_a_figure_is_still_one():
     restated = validate({**ANSWER, "kind": "opinion", "checkable": claim.text}, claim, CONTEXT, "en")
 
     assert not restated.used and restated.kind == "opinion"
+
+
+# ----------------------------------------------------------------------
+# An opinion someone said (2026-11-17)
+# ----------------------------------------------------------------------
+
+
+MAGDALENA = Claim(
+    text=(
+        "«Los nenúfares gigantes revelan sus secretos poco a poco. Creemos que lo sabemos todo, "
+        "pero la realidad es que no es así», confesó Magdalena al diario The Guardian."
+    ),
+    entities={"PERSON": ["Magdalena"]},
+    confidence=0.6,
+)
+
+VICTORIA = ArticleContext(
+    title="La increíble historia detrás de la Victoria colombiana",
+    lead="Carlos Magdalena, horticultor de Kew, descubrió un nenúfar gigante en el río Inírida.",
+)
+
+
+def test_an_opinion_said_by_someone_is_checked_as_their_saying_it():
+
+    restated = validate(
+        {"kind": "opinion", "speaker": "Magdalena, Magdalena, investigadora", "checkable": MAGDALENA.text},
+        MAGDALENA, VICTORIA, "es",
+    )
+
+    assert restated.kind == "opinion" and not restated.used
+    assert restated.speaker == "Magdalena, investigadora"
+    assert "Magdalena" in restated.note and "said it" in restated.note
+
+
+def test_a_null_speaker_is_nobody():
+
+    restated = validate({**ANSWER, "speaker": "null"}, SAMUDA, CONTEXT, "en")
+
+    assert restated.speaker is None
+
+
+def test_the_speakers_name_is_the_part_before_the_role():
+
+    from src.services.fact_checker.restatement import speaker_names
+
+    assert speaker_names("Carlos Moedas, mayor of Lisbon") == {"carlos", "moedas"}
+    assert speaker_names("Magdalena, al diario The Guardian") == {"magdalena"}
+    assert speaker_names(None) == set()
+
+
+def test_the_pipeline_asks_the_verifier_about_the_attribution(repository):
+
+    captured = []
+
+    class Recording(FakeVerifier):
+
+        def verify(self, claim, evidence, context=None, **kwargs):
+            captured.append(context)
+            return super().verify(claim, evidence, context=context, **kwargs)
+
+    def checker(opinion_claims):
+
+        return FactChecker(
+            repository,
+            claim_selector=ClaimSelector(embeddings=FakeEmbeddingService(vectors={MAGDALENA.text: [1.0] + [0.0] * 7})),
+            evidence_retriever=FakeEvidenceRetriever({MAGDALENA.text: [create_evidence()]}),
+            ranker=FakeRanker(),
+            verifier=Recording({
+                MAGDALENA.text: LLMVerificationResult(verdict=Verdict.UNVERIFIED, confidence=0.0, explanation=""),
+            }),
+            confidence_scorer=ConfidenceScorer(),
+            restater=ClaimRestater(StubClient({"kind": "opinion", "speaker": "Carlos Magdalena", "checkable": MAGDALENA.text})),
+        ).check_claim(
+            MAGDALENA,
+            thresholds=PipelineThresholds(claim_restatement="standalone", opinion_claims=opinion_claims),
+            context=VICTORIA,
+            language="es",
+        )
+
+    checker("attribution")
+    checker("as_written")
+
+    assert captured[0].attributed_to == "Carlos Magdalena"
+    assert captured[1].attributed_to is None

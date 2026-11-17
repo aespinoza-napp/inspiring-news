@@ -16,6 +16,7 @@ from collections import defaultdict
 from gliner import GLiNER
 
 from .config import settings
+from .loading import LOADING
 
 DEFAULT_LABELS = [
     "person",
@@ -93,8 +94,9 @@ class EntityModel:
 
     def load(self) -> None:
 
-        if self._model is None:
-            self._model = GLiNER.from_pretrained(settings.GLINER_MODEL)
+        with LOADING:
+            if self._model is None:
+                self._model = GLiNER.from_pretrained(settings.GLINER_MODEL)
 
     @property
     def loaded(self) -> bool:

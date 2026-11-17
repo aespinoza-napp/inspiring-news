@@ -78,6 +78,7 @@ def revise(
     draft.revisions.append(DraftRevision(content=content, reason=reason, model=model, at=now()))
     draft.content = content
     draft.review = None
+    draft.check = None
 
 
 class DraftStore:

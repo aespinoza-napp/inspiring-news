@@ -208,6 +208,30 @@ def cmd_averitec_import(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_averitec_balance(args: argparse.Namespace) -> int:
+
+    from collections import Counter
+
+    from src.evaluation import averitec
+
+    source = Path(f"data/evaluation/averitec/averitec_{args.split}.jsonl")
+    target = Path(args.out or f"data/evaluation/averitec/averitec_{args.split}_balanced.jsonl")
+
+    rows = [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines() if line.strip()]
+    picked = averitec.balanced(rows, args.per_label)
+
+    target.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in picked), encoding="utf-8")
+
+    print(json.dumps({
+        "written": str(target),
+        "claims": len(picked),
+        "labels": Counter(row["label"] for row in picked),
+        "claimTypes": Counter((row.get("claimTypes") or ["(none)"])[0] for row in picked),
+    }, indent=2))
+
+    return 0
+
+
 def cmd_averitec_audit(args: argparse.Namespace) -> int:
 
     from src.evaluation.knowledge_store import KnowledgeStore, audit
@@ -682,6 +706,15 @@ def parser() -> argparse.ArgumentParser:
     importing.add_argument("--out", help="default: data/evaluation/averitec/averitec_<split>.jsonl")
     importing.set_defaults(handler=cmd_averitec_import)
 
+    balancing = benchmark_commands.add_parser(
+        "balance",
+        help="the same number of claims per label, spread over claim types, labels interleaved (2026-11-17)",
+    )
+    balancing.add_argument("--split", required=True, choices=("dev", "train"))
+    balancing.add_argument("--per-label", type=int, help="default: the smallest label's count (35 on dev)")
+    balancing.add_argument("--out", help="default: data/evaluation/averitec/averitec_<split>_balanced.jsonl")
+    balancing.set_defaults(handler=cmd_averitec_balance)
+
     auditing = benchmark_commands.add_parser(
         "audit-store",
         help="what the knowledge store holds that breaks the temporal rule, per claim",
@@ -714,7 +747,7 @@ def parser() -> argparse.ArgumentParser:
     report.add_argument(
         "--minutes-per-fact",
         type=float,
-        help="a person's median minutes per fact (python labeller/app.py stats), for the effort estimate",
+        help="a person's median minutes per fact, for the effort estimate (the labeller that timed it was removed on 2026-11-17)",
     )
     _report_options(report)
     report.set_defaults(handler=cmd_report)

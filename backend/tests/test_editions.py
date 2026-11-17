@@ -582,6 +582,8 @@ def test_a_devastating_analysis_is_published_and_can_be_written_from(tmp_path):
     extractor.extract.return_value = news
     enrichment = Mock()
     enrichment.process.return_value = article
+    # Since 2026-11-17 the article's entities come after its check.
+    enrichment.entities_of.return_value = article.entities if article is not None else {}
     admission = Mock()
     admission.admit.return_value = Mock(passed=True, topic_ok=True, positive_ok=True, duplicate=False, impact_score=0.7, impact_reasons=[])
 

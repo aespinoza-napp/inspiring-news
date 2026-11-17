@@ -15,6 +15,7 @@ from textblob import TextBlob
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from .config import settings
+from .loading import LOADING
 
 
 @dataclass
@@ -38,13 +39,14 @@ class SentimentModel:
 
     def load(self) -> None:
 
-        if self._model is None:
-            self._model = AutoModelForSequenceClassification.from_pretrained(
-                settings.SENTIMENT_MODEL
-            )
-            self._tokenizer = AutoTokenizer.from_pretrained(
-                settings.SENTIMENT_MODEL
-            )
+        with LOADING:
+            if self._model is None:
+                self._tokenizer = AutoTokenizer.from_pretrained(
+                    settings.SENTIMENT_MODEL
+                )
+                self._model = AutoModelForSequenceClassification.from_pretrained(
+                    settings.SENTIMENT_MODEL
+                )
 
     @property
     def loaded(self) -> bool:

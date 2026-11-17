@@ -189,3 +189,31 @@ def test_an_abbreviation_does_not_end_a_sentence():
         "¿Hay alternativa?",
         "2025 was a record year.",
     ]
+
+
+def test_a_quotation_of_several_sentences_is_one_sentence():
+
+    # Inspiring News' Victoria colombiana article, 2026-11-17: cut after
+    # "Es extraordinario.", the claim began mid-quote and was checked
+    # without what it was about.
+    sentences = ClaimExtractor()._split_sentences(
+        "Las espinas eran distintas. «Los nenúfares gigantes revelan sus secretos poco a poco. "
+        "Es extraordinario. Creemos que lo sabemos todo, pero no es así», confesó Magdalena "
+        "al diario The Guardian. Después vino la floración."
+    )
+
+    assert sentences == [
+        "Las espinas eran distintas.",
+        "«Los nenúfares gigantes revelan sus secretos poco a poco. Es extraordinario. Creemos que "
+        "lo sabemos todo, pero no es así», confesó Magdalena al diario The Guardian.",
+        "Después vino la floración.",
+    ]
+
+
+def test_a_quotation_mark_never_closed_does_not_swallow_the_paragraph():
+
+    long_sentence = "El estudio midió " + "muchas cosas distintas " * 30 + "en el río."
+    sentences = ClaimExtractor()._split_sentences(f"«Un aviso sin cierre. {long_sentence} Otra frase.")
+
+    # Joined while the quote could still be open, then cut past the bound.
+    assert sentences[-1] == "Otra frase."

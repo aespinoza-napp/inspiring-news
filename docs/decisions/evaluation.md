@@ -1653,6 +1653,158 @@ binds them to it, and dev is never tuned on. That run does not exist yet, so the
 defaults still name the custom set's. The train knowledge store is 63 GB and is not
 downloaded: on train, only `web`.
 
+## MiniCheck, and what a verifier can refute (2026-11-17)
+
+Two papers decide how a verifier other than the chat model is read here.
+
+**Glockner, Hou & Gurevych, "Missing Counter-Evidence Renders NLP Fact-Checking
+Unrealistic for Misinformation" (EMNLP 2022, pp. 5916-5936).** Evidence for a
+realistic fact-check must be *unleaked* ("must not contain information that only
+existed after the claim was verified") and *sufficient* ("to justify the verdict
+from a human perspective"). Of the 16 datasets with real-world misinformation it
+surveys, none meets both; X-Fact and MultiFC, both used here once, meet neither.
+In MultiFC, 69.7% of 16,244 misinformation claims carry leaked evidence. Trained
+on PolitiFact's claims, a BERT model scores 59.3 micro-F1 where the evidence leaked
+and 25.9 where it did not. The second finding matters more for this project. Of 75
+false claims whose refutation the authors traced, professional fact-checkers refuted
+only 20 (26.7%) with *global counter-evidence*, a source stating something
+incompatible with the claim. The rest were refuted through the claimant's own
+source (46.7%), by showing that source was not credible (18.7%), or by asserting
+that nothing trusted supports the claim (6.7%). A verifier that reads only pages
+found by searching the claim's content can, at best, refute the first group.
+
+What it already accounts for here: the AVeriTeC temporal gate (`retrieval/temporal.py`)
+is the *unleaked* criterion, and `verdictLeak` on X-Fact was its first form.
+What it adds: it is why "silent never contradicts" (`per_source.py`), why a claim
+nothing supports is UNVERIFIED rather than FALSE, and why a FALSE from a page that
+does not address the claim's own source is suspect. It is also the case against
+reading "the 3B answers FALSE to everything" as a skill. Always-Refuted gets 61.0% on
+AVeriTeC dev because fact-checkers mostly pick false claims (under 10% of
+PolitiFact's 2021 picks were true, in the same paper).
+
+**Tang, Laban & Durrett, "MiniCheck: Efficient Fact-Checking of LLMs on Grounding
+Documents" (EMNLP 2024, pp. 8818-8847).** Small models trained for one question:
+does this document support this sentence? The training data is synthetic. Claims
+are decomposed into atomic facts, and documents are written so that an unsupported
+example lacks what one fact needs (C2D and D2C, about 14K examples), plus 21K from
+ANLI. On LLM-AggreFact (10 datasets in the paper, 11 since; balanced accuracy,
+threshold 0.5 untuned), MiniCheck-FT5 (Flan-T5-Large, 770M) scores 74.7 against
+GPT-4's 75.3; MiniCheck-RoBERTa and MiniCheck-DeBERTa (355M) score 72.7 and 72.6.
+The authors price the 13K-example test set at $0.24 for FT5 (at $0.8 a GPU-hour)
+against $107 of GPT-4 calls, hence "400x cheaper". Two limits apply here. **There is
+no contradiction class** ("as contradictions are rare in our benchmark"), and **the
+models were trained on English only**. Bespoke-MiniCheck-7B (4.7 GB in Ollama) came
+later, and its card says CC BY-NC 4.0. The three small checkpoints are MIT, and the
+authors' code is Apache-2.0.
+
+**What was built.** `inference/src/grounding.py` (`POST /grounding`) serves MiniCheck,
+reimplemented from the authors' `minicheck/inference.py` rather than installed (their
+package pulls vLLM for the 7B). It chunks a document into 400 tokens (RoBERTa,
+DeBERTa) or 500 words (Flan-T5), sentence by sentence, joins each chunk to the claim
+with the tokenizer's eos, and scores the document by its best chunk.
+`GROUNDING_MODEL` picks the checkpoint (Flan-T5-Large by default), loaded on its
+first request only. In the backend, `verifier_answer: minicheck` sends every source's
+excerpt (the same excerpt the chat verifier is shown) in one request. A source whose
+score is above `grounding_min_support` (0.5, the authors' threshold) supports the
+claim; otherwise it is silent. The verdict follows `per_source.verdict_from`. No chat
+model is asked, so a MiniCheck run can only answer TRUE or UNVERIFIED. FALSE still
+comes from the altered-detail check before the verifier (`independence.py`), which
+asks no model. `data/evaluation/thresholds/averitec_store_minicheck.json` is the store
+condition with it.
+
+**How to read it on AVeriTeC.** Most dev claims are Refuted, so a verifier that cannot
+say FALSE has a ceiling of the Supported and Not-Enough-Evidence shares, and it will
+lose to always-Refuted on accuracy by construction. That says what the benchmark
+rewards, not that the model reads badly. Read it by class: precision and recall on
+Supported, against the 3B's and Claude's on the same evidence. Its natural place in the
+pipeline is beside the chat model, not instead of it: MiniCheck for support (fast,
+calibrated by training), the chat model asked only whether something contradicts. Not
+built yet: measure the parts first.
+
+**The first reading (17 Nov, 10 dev claims, store evidence, run `8e197a3af9e3`).** The
+same 10 claims and evidence as the frameworks comparison (`49e4c76106c6`), one claim at a
+time. It was **1 of 10 right, 0 wrong with a definite verdict, 9 UNVERIFIED**; the ceiling
+was 2, since 7 are Refuted and 1 Conflicting. Its one TRUE (0290) was right. On the same
+evidence the 3B said TRUE 4 times, right once, and Sonnet once, right. The other
+Supported claim (0175, "Wisconsin Republicans have not passed a single bill in 6
+months") has five 2018 sources about other bills, and none says it. MiniCheck left it
+UNVERIFIED, where the 3B and Sonnet both said FALSE: the evidence's miss, not the
+reading's. Support scores were far apart: every source of the 9 unconfirmed claims under
+0.2, four of 0290's five at 0.80-0.96. The 0.5 threshold decided nothing here. Verdicts
+were identical across two runs (`d9e00597492b`, two claims at once, and the serial one).
+
+Time, on a busy machine (load 3.5-5): MiniCheck's request 4.8 s a claim for five
+excerpts at the median, against the 3B's 41.4 s of model time and Sonnet's 21.7 s on the
+same evidence; 13.5 s a claim in all, mostly ranking. With two claims at once its
+request waited behind the other claim's embeddings (`INFERENCE_MAX_CONCURRENCY=1`), and
+the recorded seconds (10-17 s) include that wait. Resources: 783 M parameters, 3.1 GB of
+weights (the cache holds two copies, the published `.bin` and the safetensors
+transformers fetched on first load), 3.5 GB peak, 11.9 cores, self-hosted. Ten claims
+show no difference in accuracy. Together they suggest the division of labour above.
+
+## One benchmark for every approach (2026-11-17)
+
+Every approach to fact-checking (the pipeline's verifiers, MiniCheck, a hosted model,
+the speed profiles) is compared on **AVeriTeC dev**, already the benchmark since
+5 Nov. It was built to answer both of Glockner's criteria: its evidence is limited to
+what was published before the claim, and annotators justified each verdict with
+question-and-answer evidence. Two forms, as before:
+
+- **Fixed evidence** (the knowledge-store run `49e4c76106c6`, `cli run --replay`).
+  Every verifier reads the same sources, so they differ by their reading alone. This
+  is the form for comparing verifiers, MiniCheck included.
+- **The whole pipeline** (`web`), for an approach that changes what is searched or
+  kept. Two searched runs differ by the web alone (see above), so compare on the
+  same claims and say so.
+
+Each contender is reported with **four measures**, none alone:
+
+| Measure | What | Where it comes from |
+|---|---|---|
+| Hit rate | accuracy with its interval, macro-F1, per-class F1, beside always-Refuted on the same claims | `cli report` (`evaluation/averitec.py`) |
+| Time | median seconds per claim, and the verifier's own seconds | the record's `latency` (`llmCall` holds MiniCheck's request) |
+| Resources | parameters, disk, RAM loaded and peak, cores, where it runs | `scripts/standard_benchmarks.py resources [--only NAME]`, `resources.json` |
+| Self-hosting | yes (runs here; no claim or source leaves the machine, nothing billed per call), no but open weights (Groq's qwen), no (Claude) | `frameworks.self_hosting`, the resources table's column |
+
+Runs stay at 10 claims at a time until the user says otherwise (`experiments/averitec/protocol.md`): the frameworks comparison's
+first 10 dev claims are the shared screen, and no figure on 10 claims is a result.
+Two other sets would add what AVeriTeC cannot. **LLM-AggreFact** (MiniCheck's own,
+`lytang/LLM-AggreFact` on Hugging Face) tests a verifier on given documents, with no
+retrieval, in balanced accuracy: whether the 3B reads a document as well as a model
+trained for it. **The custom set** remains the only Spanish and constructive-news
+evidence. Neither MiniCheck nor AVeriTeC says anything about Spanish.
+
+### Spanish: translated before MiniCheck reads it (2026-11-17)
+
+MiniCheck was trained on English only. A text the backend detects as Spanish (claim or
+source) is now translated to English first in `inference/` (`src/translation.py`,
+Helsinki-NLP OPUS-MT es-en, Apache-2.0, ~300 MB, loaded on first use), the usual
+"translate-test" way to run an English-only classifier; `grounding_translate` turns it off
+per run. On the custom set's 21 Spanish **train** claims, on fixed evidence (`cc053417c0cb`):
+
+| | right | TRUE said (right) | TRUE found | wrong & definite | verifier s/claim |
+|---|---|---|---|---|---|
+| MiniCheck, translated (`7c6d49284c4c`) | 9 | 7 (6) | 6 of 13 | 1 | 13.1 |
+| MiniCheck, as is (`90654e84cb05`) | 8 | 5 (5) | 5 of 13 | 0 | 8.5 |
+| llama3.2:3b on the same evidence | 10 | 13 (8) | 8 of 13 | 8 | 42.7 |
+
+One claim apart, and the support scores do not separate true claims better translated
+(AUC 0.59 against 0.62 as is): **no detectable gain** on these claims. Their limit is the
+evidence: the best support among a true claim's sources has a median of 0.03. Kept on by
+default as the standard method, and because the draft check reads Spanish drafts against
+their own Spanish and English sources, where support exists to be found.
+
+### The balanced sample (2026-11-17)
+
+AVeriTeC stays the one solid set of real claims across kinds of news, but its dev split is
+61% Refuted, because fact-checkers mostly pick false claims (Glockner et al., above), so it
+rewards answering FALSE. `cli averitec balance --split dev|train` writes
+`averitec_<split>_balanced.jsonl`: the same number per label (dev 35 x 4 = 140; train 184 x 4
+= 736), within a label round-robin over the five claim types (event/property, numerical,
+quote, causal, position), and labels interleaved so any `--limit` is balanced (8 is two of
+each). On it, always-Refuted scores 25%. Report the full split's figures beside it: the
+balanced one says how well each class is told apart, the full one what a run would meet.
+
 ## Where it runs
 
 The harness needs `inference/`, SearXNG and the LLM, like any analysis.

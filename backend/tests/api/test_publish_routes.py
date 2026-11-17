@@ -9,8 +9,16 @@ from pydantic import SecretStr
 
 from src.config.settings import settings
 from src.main import app
-from src.models.writer.draft import DraftContent, DraftMetadata
+from src.models.writer.draft import DraftCheck, DraftContent, DraftMetadata, DraftSentenceCheck
 from tests.factories import create_draft
+
+
+def checked(**kwargs):
+    """A draft whose current text has been fact-checked, as approval needs (2026-11-17)."""
+
+    return create_draft(check=DraftCheck(checked_at="2026-11-17T10:00:00+00:00", sentences=[
+        DraftSentenceCheck(text="The meadow has doubled since 2015.", sources=[1], support=0.9, supported=True, best_source=1),
+    ]), **kwargs)
 
 client = TestClient(app)
 
@@ -85,7 +93,7 @@ def test_the_channels_are_not_under_drafts_because_the_id_route_would_take_them(
 
 def test_approve_moves_a_draft_to_approved(publishers, draft_store):
 
-    draft = draft_store.save(create_draft())
+    draft = draft_store.save(checked())
 
     response = client.post(f"/drafts/{draft.id}/approve")
 
@@ -100,9 +108,29 @@ def test_approve_moves_a_draft_to_approved(publishers, draft_store):
 def test_approve_does_not_require_a_review(publishers, draft_store):
     """The panel warns; the person decides."""
 
-    draft = draft_store.save(create_draft())
+    draft = draft_store.save(checked())
 
     assert draft.review is None
+    assert client.post(f"/drafts/{draft.id}/approve").status_code == 200
+
+
+def test_approve_needs_the_drafts_own_fact_check(publishers, draft_store):
+    """Fetch -> check -> entities -> draft -> check the draft -> review -> publish."""
+
+    unchecked = draft_store.save(create_draft())
+    failed = draft_store.save(create_draft(check=DraftCheck(checked_at="2026-11-17T10:00:00+00:00", error="down")))
+
+    assert client.post(f"/drafts/{unchecked.id}/approve").status_code == 409
+    assert client.post(f"/drafts/{failed.id}/approve").status_code == 409
+
+
+def test_an_unsupported_sentence_does_not_block_approval(publishers, draft_store):
+    """The check lists it; the person decides, as with the review."""
+
+    draft = draft_store.save(create_draft(check=DraftCheck(checked_at="2026-11-17T10:00:00+00:00", sentences=[
+        DraftSentenceCheck(text="Fish counts rose.", sources=[2], support=0.1, supported=False, best_source=2),
+    ])))
+
     assert client.post(f"/drafts/{draft.id}/approve").status_code == 200
 
 
@@ -320,8 +348,14 @@ def test_after_unpublishing_an_edit_sends_it_back_to_draft(publishers, draft_sto
     assert edited.status_code == 200
     assert edited.json()["status"] == "draft"
 
-    # Publishing the new text takes a new approval.
+    # Publishing the new text takes a new check and a new approval.
     assert publish(draft.id).status_code == 409
+    assert client.post(f"/drafts/{draft.id}/approve").status_code == 409
+
+    def recheck(current):
+        current.check = DraftCheck(checked_at="2026-11-17T10:00:00+00:00")
+
+    draft_store.update(draft.id, recheck)
     client.post(f"/drafts/{draft.id}/approve")
     assert publish(draft.id).status_code == 200
     assert client.get(f"/reader/stories/{draft.id}").json()["content"]["title"] == "Edited"

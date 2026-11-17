@@ -14,7 +14,9 @@ class ClaimRestatement(BaseModel):
     # "fact": the sentence asserts something checkable itself.
     # "attributed": someone is reported saying it; what is checked is the
     #   fact inside the quote, not whether they said it.
-    # "opinion": nothing factual to check; searched as written.
+    # "opinion": nothing factual to check; searched as written. Said by a
+    #   `speaker`, what is judged is that they said it (`opinion_claims`,
+    #   verification/per_source.py, 2026-11-17).
     kind: Literal["fact", "attributed", "opinion"] = "fact"
 
     # Who is speaking, for "attributed": name and role, from the article.

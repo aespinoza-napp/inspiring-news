@@ -31,7 +31,10 @@ class AnalysisCache:
     existed has no age to judge, so with a TTL it counts as expired.
     """
 
-    SCHEMA_VERSION = 15
+    # 16 (2026-11-17): `entities` is the article's only when its check
+    # passed - extracted after it, no longer in the enrichment - so an entry
+    # from before would show entities for an article that did not check out.
+    SCHEMA_VERSION = 16
 
     def __init__(self, directory: Path | None = None, ttl_hours: float | None = None):
 

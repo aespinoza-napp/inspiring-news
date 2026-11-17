@@ -27,6 +27,7 @@ from src.services.reader.views import excerpt
 from src.services.scraper.article_stats import comparable_url
 from src.services.writer.analysed_article import AnalysedArticle, AnalysedArticles
 from src.services.writer.article_writer import ArticleWriter
+from src.services.writer.draft_fact_check import check_and_attach
 from src.services.writer.draft_store import DraftStore, new_draft_id, now, revise
 from src.services.writer.related_news import RatedDomains, RelatedNewsFinder
 
@@ -192,9 +193,14 @@ class DraftWriter:
         writer: ArticleWriter,
         ledger=None,
         angles=None,
+        checker=None,
     ):
 
         self.articles = articles
+
+        # The draft's own fact-check (draft_fact_check.py), run on the first
+        # version before anyone reviews it. None: not checked here (a test).
+        self.checker = checker
         self.related = related
         self.writer = writer
 
@@ -365,7 +371,12 @@ class DraftWriter:
 
         def record_article(current: ArticleDraft) -> None:
             revise(current, written.content, "generated", model=written.model)
-            current.metadata = written.metadata
+            current.metadata = written.metadata.model_copy(update={"entities": dict(article.entities)})
             current.model = written.model
 
         store.update(draft_id, record_article)
+
+        # Fetch -> check -> entities -> draft -> check the draft -> review
+        # -> publish (2026-11-17): the draft is checked as soon as it exists.
+        if self.checker is not None:
+            check_and_attach(store, draft_id, self.checker)

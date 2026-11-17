@@ -540,8 +540,14 @@ function summarizeJob(job: AnalysisJob): PartialResult {
   const enrichedEvent = job.events.find((event) => event.phase === "enriched");
   const scrapedEvent = job.events.find((event) => event.phase === "scraped");
 
+  // Since 2026-11-17 an article's entities come after its check, and only
+  // when it checked out: from their own event, else (an older run) the
+  // enrichment's.
+  const entitiesEvent = job.events.find((event) => event.phase === "article_entities_extracted");
   const entities =
-    (enrichedEvent?.data.entities as Record<string, string[]>) ?? {};
+    (entitiesEvent?.data.entities as Record<string, string[]>) ??
+    (enrichedEvent?.data.entities as Record<string, string[]>) ??
+    {};
 
   // The same fold the Live screen uses, rather than a second pass over
   // the same events that matches the same phase literals. It already

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { TraceLink } from "@/components/TraceLink";
 import { useCallback, useEffect, useState } from "react";
+import { DraftCheckPanel } from "@/components/drafts/DraftCheckPanel";
 import { DraftEditor } from "@/components/drafts/DraftEditor";
 import { DraftReviewPanel } from "@/components/drafts/DraftReviewPanel";
 import { DraftTrendPanel } from "@/components/drafts/DraftTrendPanel";
@@ -112,6 +113,8 @@ export default function DraftPage({ params }: { params: { id: string } }) {
       <DraftTrendPanel draft={draft} onChange={setDraft} />
 
       <DraftEditor draft={draft} onChange={setDraft} />
+
+      <DraftCheckPanel draft={draft} onChange={setDraft} />
 
       <DraftReviewPanel draft={draft} onChange={setDraft} />
 

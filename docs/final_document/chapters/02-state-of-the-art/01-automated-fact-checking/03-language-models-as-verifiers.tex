@@ -23,7 +23,7 @@ The same models \emph{hallucinate}: they produce fluent statements that
 are unsupported by, or contradict, their input or the world
 \cite{ji2023hallucination}. For a verifier this is the central risk:
 a verdict whose explanation sounds right and rests on nothing. Three
-lines of work address it.
+lines of work address it, and a fourth replaces the general model.
 
 \begin{itemize}
     \item \textbf{Citation.} Asking the model to cite the sources each
@@ -41,7 +41,25 @@ lines of work address it.
     \cite{guo2017calibration}, so it cannot be taken at face value.
 \end{itemize}
 
-The verifier of this work takes the first and the last of these into
+A fourth line asks whether a general model is needed at all.
+MiniCheck trains small models for one question, whether a document
+supports a sentence, on synthetic examples written so that each
+unsupported sentence differs from a supported one by a single missing
+fact \cite{tang2024minicheck}. On LLM-AggreFact, a benchmark the same
+work assembles from ten datasets of model-written claims checked against
+their grounding documents, its 770-million-parameter Flan-T5 model
+reaches a balanced accuracy of 74.7\%, against 75.3\% for GPT-4, at a
+cost the authors put at about 400 times lower. Two properties matter for
+this work. The model is binary: supported or unsupported, with no class
+for a contradiction, which its authors drop as rare in their benchmark.
+And it was trained on English alone. A verifier built on it can confirm a
+claim but never refute one, which is the asymmetry the previous
+subsection argues real misinformation imposes anyway. Absent support is
+\textsc{unverified}, and a \textsc{false} has to come from elsewhere.
+This work compares it with its own verifier on the same evidence
+(Subsection~\ref{subsec:benchmark-frameworks}).
+
+The verifier of this work takes the first and the third of these into
 its design rather than its evaluation. It reduces the model's task to
 a closed classification over five verdicts, requires it to cite the
 evidence it used and to quote the passage each source supports or

@@ -60,6 +60,12 @@ class ArticleContext:
     # None, the app's case: an article is checked against today's web.
     evidence_before: date | None = None
 
+    # Who said the claim, when it is an opinion they are reported saying
+    # (restatement kind "opinion" with a speaker, `opinion_claims:
+    # attribution`, 2026-11-17): set per claim by FactChecker, read by the
+    # per-source verifier alone, which then asks whether they said it.
+    attributed_to: str | None = None
+
     def thesis(self) -> str:
         return f"{self.title}. {self.lead}".strip()
 

@@ -16,7 +16,6 @@ in `docs/decisions/`, linked below — read those when you open that area.
 ./scripts/check.sh slow      # the whole data/raw corpus, minutes
 ./scripts/check.sh graph     # the graph against a real Neo4j; fails if it is down
 ./scripts/check.sh gcp       # deploy/gcp/ applied to Floci (local GCP emulator); Docker only
-./scripts/check.sh labeller  # the fact labeller, plain python
 ./scripts/check.sh livecheck # the live-conversation listener, no models
 ./scripts/check.sh e2e       # built frontend in headless Chrome, stub backend
 ./scripts/check.sh lake      # the lake's lineage holds together (read-only)
@@ -50,12 +49,13 @@ src.main:app --port 8001`.
 - `deploy/gcp/` — Terraform for the Google Cloud VM, its secrets,
   network, snapshots and alerts; `vm/bootstrap.sh` is what the VM runs
   on boot. Checked against Floci by `./scripts/check.sh gcp`.
-- `labeller/` — the tool for hand-labelling the custom validation set:
-  `python labeller/app.py`, standard library only, nothing from
-  `backend/`. One file per fact in `backend/data/evaluation/manual/`;
-  `join` merges them. Its Today tab gets the day's articles and claims
-  from the backend's `POST /labelling/batch` over HTTP and keeps them in
-  `backend/data/evaluation/queue/`. See `labeller/README.md`.
+- **No labeller since 2026-11-17.** The hand-labelled custom set is
+  frozen as it stood: one file per fact in `backend/data/evaluation/manual/`,
+  its joined file, `split.json` and the daily batches in `queue/`, all
+  read as they are. The tool that wrote them (`labeller/`) and the
+  backend's `/labelling/batch` were removed; the last commit with them is
+  `0f31dc6`. New evaluation is on published sets
+  (`docs/decisions/evaluation.md`, "One benchmark for every approach").
 - `livecheck/` — listens to a conversation playing on this machine: words,
   who asks and who answers, whether it was answered, whether it is true, a
   report. Its own venv; reaches the fact-checker over `POST /verify-claim`.
@@ -95,6 +95,8 @@ src.main:app --port 8001`.
 | Which model verifies, writes and reviews, how each was chosen, and what each costs in time | `docs/decisions/evaluation.md` ("Choosing the models"), `scripts/try_reviewer_model.py` |
 | Every change ever made to fact-checking, by date, with a summary | `docs/fact-checking-changes.md` |
 | Where a claim's seconds go; the speed switches, the claim deadline, the 22 Oct contest | `docs/decisions/performance.md` ("The 20-second fact-check"), `backend/data/evaluation/experiments/speed/` |
+| The topic group from a classifier trained on MN-DS (hand-labelled IPTC news topics, English + its Spanish translation): the rule, the run, the switch (`topic_group_classifier`) | `backend/data/evaluation/experiments/topics_iptc/`, `scripts/train_iptc_topics.py`, `backend/src/processors/nlp/iptc_topics.py` |
+| MiniCheck as a verifier (`verifier_answer: minicheck`, `inference/` `/grounding`); why absent support is UNVERIFIED (Glockner et al. 2022); the four measures every approach is compared on (hit rate, time, resources, self-hosting) | `docs/decisions/evaluation.md` ("MiniCheck", "One benchmark for every approach"), `inference/src/grounding.py` |
 | Why the verifier asks one source at a time; comparing verifiers on one run's evidence (`--replay`) | `docs/decisions/evaluation.md` ("The verifier's FALSE", "Replay"), `backend/data/evaluation/experiments/verifier/` |
 | What goes wrong in each part (what to look for, queries, search results, ranking, verification), found by checking claims by hand against the pipeline | `docs/troubleshooting/fact-checking/`, `backend/data/evaluation/experiments/claude-search/` |
 | An agent per part of fact-checking against Claude's blind checks on 20 train claims: one experiment file per part and batch; what to search for a claim | `scripts/troubleshoot.sh`, `backend/src/evaluation/troubleshoot.py`, `docs/troubleshooting/fact-checking/README.md` ("Running it"), `/what-to-search`, `/troubleshoot-fact-check` |
@@ -173,6 +175,11 @@ the declared exception, deliberately.
 The code invites several confident wrong conclusions. It is cheaper to
 write them down than to have each be rediscovered.
 
+- **An article is checked twice since 2026-11-17, and its entities wait.**
+  Fetch -> fact-check -> entities only if it checked out -> draft (with them) ->
+  the draft checked against its own sources by MiniCheck -> review -> publish;
+  approval needs the draft's check. `docs/decisions/writing.md`, "Checked twice".
+  The response's `entities` is empty for an article that did not check out.
 - **Ingestion runs only when someone asks.** `/discover` (`POST
   /ingest/rounds`) reads the sources of up to three topic groups and
   lists candidates best first, twenty shown (forty on request); a person
@@ -204,11 +211,10 @@ write them down than to have each be rediscovered.
   the last step of the extraction cascade reports `unavailable` and the
   cascade keeps the previous step's answer. The Docker image installs
   both. `docs/decisions/scraping.md`.
-- **The graph is written by the pipeline and the sync, not the
-  labeller.** Every finished analysis lands in Neo4j (fail-soft, after
-  the lake). Hand-labelled facts only get there through `POST
-  /graph/sync` (the Sync button on `/graph`): the labeller imports
-  nothing from `backend/`. The lake is the record, the graph a view that
+- **The graph is written by the pipeline and the sync.** Every finished
+  analysis lands in Neo4j (fail-soft, after the lake). The frozen
+  hand-labelled facts only get there through `POST /graph/sync` (the Sync
+  button on `/graph`). The lake is the record, the graph a view that
   sync rebuilds. `docs/decisions/graph.md`.
 - **`TopicPrediction.probability` carries no signal.** It is a softmax
   over raw cosine similarities across 23 topics, so it comes back

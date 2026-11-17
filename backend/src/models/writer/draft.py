@@ -31,7 +31,7 @@ Language = Literal["ca", "es", "en"]
 # not a status: a draft being rewritten is still a draft.
 DraftStatus = Literal["draft", "approved", "published"]
 
-Busy = Literal["generating", "reviewing", "rewriting", "publishing"]
+Busy = Literal["generating", "checking", "reviewing", "rewriting", "publishing"]
 
 # Why a revision exists. `edited` is a person; `restored` is a person
 # putting an earlier revision's text back (POST /drafts/{id}/restore),
@@ -101,6 +101,59 @@ class DraftMetadata(CamelModel):
     topic: str | None = None
 
     tags: list[str] = Field(default_factory=list)
+
+    # The analysed article's entities, by label (PERSON, ORG, LOC...):
+    # extracted only once that article's own check passed (2026-11-17,
+    # AnalysisService), and carried into the draft for its tags and names.
+    entities: dict[str, list[str]] = Field(default_factory=dict)
+
+
+class DraftSentenceCheck(CamelModel):
+    """One cited sentence of the draft against the sources it cites."""
+
+    text: str
+
+    # The [n] it cites, 1-based into `ArticleDraft.sources`.
+    sources: list[int] = Field(default_factory=list)
+
+    # MiniCheck's support for the sentence from its best cited source, 0-1.
+    support: float = 0.0
+
+    supported: bool = False
+
+    # Which cited source gave the support.
+    best_source: int | None = None
+
+    # Read in English translation: the sentence, a source, or both.
+    translated: bool = False
+
+
+class DraftCheck(CamelModel):
+    """
+    The draft's own fact-check (services/writer/draft_fact_check.py,
+    2026-11-17): every cited sentence held to the excerpts of the sources it
+    cites, before review. The second check of the pipeline; the first is the
+    analysed article's (fetch -> check -> entities -> draft -> this ->
+    review -> publish).
+    """
+
+    checked_at: str
+
+    model: str | None = None
+
+    threshold: float = 0.5
+
+    sentences: list[DraftSentenceCheck] = Field(default_factory=list)
+
+    # Sentences of prose that cite nothing: not checked, and listed.
+    uncited: list[str] = Field(default_factory=list)
+
+    # Set when the check could not run (the grounding model unreachable).
+    error: str | None = None
+
+    @property
+    def unsupported(self) -> list[DraftSentenceCheck]:
+        return [sentence for sentence in self.sentences if not sentence.supported]
 
 
 class DraftContent(CamelModel):
@@ -251,6 +304,10 @@ class ArticleDraft(CamelModel):
     # The latest review of `content`; cleared whenever `content` changes,
     # so a review never describes text it did not read.
     review: DraftReview | None = None
+
+    # The draft's own fact-check of `content`, which review and approval
+    # wait for; cleared with the review whenever `content` changes.
+    check: DraftCheck | None = None
 
     # Oldest first. The last entry's content is `content`.
     revisions: list[DraftRevision] = Field(default_factory=list)

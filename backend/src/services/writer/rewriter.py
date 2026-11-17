@@ -63,6 +63,7 @@ from src.services.writer.article_writer import (
     source_lines,
 )
 from src.services.writer.draft_checks import check, repair_citations
+from src.services.writer.draft_fact_check import check_and_attach
 from src.services.writer.draft_store import DraftStore, revise
 
 logger = logging.getLogger(__name__)
@@ -350,10 +351,14 @@ class Rewritten:
 
 class DraftRewriter:
 
-    def __init__(self, writer: ArticleWriter, reviewer: DraftReviewer):
+    def __init__(self, writer: ArticleWriter, reviewer: DraftReviewer, checker=None):
 
         self.writer = writer
         self.reviewer = reviewer
+
+        # The draft's own fact-check, run on each kept rewrite before its
+        # review (draft_fact_check.py). None: not checked here (a test).
+        self.checker = checker
 
     @property
     def model(self) -> str:
@@ -593,6 +598,10 @@ class DraftRewriter:
         next rewrite is then refused, the draft keeps this text with a
         review that proposes nothing; reviewing it again proposes one.
         """
+
+        # The draft's own fact-check comes before its review (2026-11-17).
+        if self.checker is not None:
+            check_and_attach(store, draft_id, self.checker)
 
         draft = store.get(draft_id)
 

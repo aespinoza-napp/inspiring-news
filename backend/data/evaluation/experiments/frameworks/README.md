@@ -33,7 +33,7 @@ never charged. The real cost is a share of the plan, logged beside it.
 | Phase | Input | Contenders | Command |
 |---|---|---|---|
 | Topics | the 58 articles of the 20 Oct topics experiment, text frozen once in `topics/articles.jsonl` (56 extracted; two ESA pages give nothing) | embedding classifier (the pipeline's), `llama3.2:3b-bench`, `qwen3.5:4b-bench`, Claude Haiku, Claude Sonnet | `frameworks topics-fetch`, then `frameworks topics --model <m>` |
-| Fact-checking | AVeriTeC dev, the first 10 claims, the evidence kept by the knowledge-store run `49e4c76106c6` | `llama3.2:3b-bench` replayed, Claude Sonnet replayed, Claude Sonnet closed-book | `cli run --dataset data/evaluation/averitec/averitec_dev.jsonl --replay data/evaluation/runs/averitec_dev/llama3.2-3b-bench/49e4c76106c6 --thresholds data/evaluation/thresholds/averitec_store.json --model <m> --limit 10 --label replay-store` (and `--closed-book` instead of `--replay`) |
+| Fact-checking | AVeriTeC dev, the first 10 claims, the evidence kept by the knowledge-store run `49e4c76106c6` | `llama3.2:3b-bench` replayed, Claude Sonnet replayed, Claude Sonnet closed-book; MiniCheck-FT5 replayed (added 17 Nov, `--thresholds data/evaluation/thresholds/averitec_store_minicheck.json --model minicheck-ft5`; needs `inference/` serving `/grounding`) | `cli run --dataset data/evaluation/averitec/averitec_dev.jsonl --replay data/evaluation/runs/averitec_dev/llama3.2-3b-bench/49e4c76106c6 --thresholds data/evaluation/thresholds/averitec_store.json --model <m> --limit 10 --label replay-store` (and `--closed-book` instead of `--replay`) |
 | Review | the 36 planted-defect texts (`writing/texts_en_es.jsonl`), the corrector's own prompt | the five local runs already made, Claude Sonnet | `cli writing run --model claude-headless:sonnet`, then `cli writing report --run ...` (copied to `review/`: the committed `writing/reports/` was left as it was) |
 | Scraping | - | not run | needs a hand-copied body per page as the reference |
 | Writing | - | not run | needs human readers judging blind; `check_article.py` checks the contract, not quality |
@@ -63,6 +63,12 @@ refused as unreachable.
 - **Time is not like for like.** Local seconds are this machine's CPU (Intel Core Ultra 7 165U, 14 threads,
   no GPU, one model call at a time); Claude's are a network round trip plus
   ~1-2 s of CLI start-up per call, on Anthropic's hardware.
+- **MiniCheck cannot say FALSE** (no contradiction class), so on these 10, 7
+  Refuted and 1 Conflicting, its ceiling is 2. Read its row by its TRUEs (the
+  report's "TRUE answers right") and by what it left UNVERIFIED, not by accuracy
+  beside always-Refuted. Its timing is from one claim at a time on a busy
+  machine; two at once, its request queues behind the other claim's ranking in
+  `inference/` (one request at a time).
 - **The person is missing.** No phase has a timed human run yet. The
   labeller records `activeSeconds` per fact; labelling the topic set and ten
   claims with it would give the manual column.
@@ -111,3 +117,15 @@ disk, memory once loaded and at peak, cores used, and where it runs.
 (the `--with` lines of the script's docstring; Ollama must be up for its
 models). Each local model is measured in a process of its own. Rerun it
 when a model is added: a contender without its row is not comparable.
+
+## Self-hosting (2026-11-17)
+
+The fourth measure beside quality, time and resources: whether a contender
+runs on hardware we hold. The resources table's `Self-hosted` column
+(`frameworks.self_hosting`) reads "yes" for everything run on this machine
+(Ollama's models, the `inference/` models, MiniCheck), "no, open weights" for
+an open model a provider serves (the Groq-hosted qwen of 11 Nov), and "no"
+for Claude. Add a contender's row with
+`scripts/standard_benchmarks.py resources --only <name>`, which merges it into
+`resources.json` without re-measuring the rest.
+`docs/decisions/evaluation.md`, "One benchmark for every approach".

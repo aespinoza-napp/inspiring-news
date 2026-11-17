@@ -104,3 +104,32 @@ class DecisionResponse(BaseModel):
     checkpoint: str
     answers: dict[str, dict] | None = None
     answersPerState: list[dict[str, dict]] | None = None
+
+
+class GroundingPair(BaseModel):
+    document: str
+    claim: str
+    # Each text's language, as the backend detected it ("en", "es"). A
+    # text in another language than English is translated before
+    # MiniCheck reads it, when `translate` asks for it (src/translation.py).
+    documentLanguage: str | None = None
+    claimLanguage: str | None = None
+
+
+class GroundingRequest(BaseModel):
+    # MiniCheck (src/grounding.py): each document against its claim.
+    pairs: list[GroundingPair]
+    translate: bool = True
+
+
+class GroundingScoreOut(BaseModel):
+    support: float
+    chunk: int
+    chunks: int
+    # Which of the two texts were read in English translation.
+    translated: list[str] = []
+
+
+class GroundingResponse(BaseModel):
+    model: str
+    scores: list[GroundingScoreOut]

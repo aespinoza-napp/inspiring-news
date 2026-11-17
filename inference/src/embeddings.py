@@ -15,6 +15,7 @@ from typing import Iterable
 from sentence_transformers import SentenceTransformer
 
 from .config import settings
+from .loading import LOADING
 
 
 class EmbeddingModel:
@@ -24,8 +25,9 @@ class EmbeddingModel:
 
     def load(self) -> None:
 
-        if self._model is None:
-            self._model = SentenceTransformer(settings.EMBEDDING_MODEL)
+        with LOADING:
+            if self._model is None:
+                self._model = SentenceTransformer(settings.EMBEDDING_MODEL)
 
     @property
     def loaded(self) -> bool:

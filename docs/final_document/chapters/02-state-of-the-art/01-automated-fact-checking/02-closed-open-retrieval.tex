@@ -38,6 +38,26 @@ any system that searches today's web for yesterday's claims, as this
 one does, and the evaluation flags such cases rather than counting them
 (Sections~\ref{sec:rq-metrics} and~\ref{subsec:pilot-time}).
 
+The same work names a second, less visible problem: the counter-evidence
+an evidence-based verifier needs often does not exist. Leaked evidence
+must be \emph{unleaked}, holding nothing that only existed after the
+claim was checked, and it must also be \emph{sufficient} to justify the
+verdict to a person. Of 75 false claims from PolitiFact and Snopes whose
+refutation the authors traced, professional fact-checkers refuted only
+20 (26.7\%) with what they call global counter-evidence, a source stating
+something incompatible with the claim. The rest were refuted by finding the
+claimant's own source and showing that it did not say what was claimed
+(46.7\%), by showing that the source was not credible, such as satire
+(18.7\%), or by asserting that no trusted evidence supports the claim
+(6.7\%) \cite{glockner2022missing}. Misinformation tends to spread where
+credible information is scarce, so the page that would contradict it is
+usually the fact-check itself. A system that retrieves by the claim's
+content alone can therefore only refute the minority of claims that
+have global counter-evidence. For the rest, the honest answer when
+nothing supports a claim is \textsc{unverified}, not \textsc{false}.
+This is the reading this work gives to an absence of support
+(Section~\ref{sec:design-fact-checking}).
+
 The system built here works in the open setting by necessity: the
 claims of constructive news are recent and specific, and no corpus
 holds their evidence. Why that rules out FEVER as its benchmark is

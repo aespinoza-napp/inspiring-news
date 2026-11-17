@@ -158,6 +158,45 @@ class InferenceClient:
 
         return self._decide({"checkpoint": checkpoint, "states": states, "questions": questions})["answersPerState"]
 
+    def grounding(
+        self,
+        pairs: list[tuple[str, str]],
+        languages: list[tuple[str | None, str | None]] | None = None,
+        translate: bool = True,
+    ) -> dict:
+        """
+        MiniCheck's support score for each (document, claim) pair, in
+        input order: `{"model": ..., "scores": [{"support", "chunk",
+        "chunks", "translated"}, ...]}` (inference/src/grounding.py).
+        `languages` is each pair's (document, claim) language; with
+        `translate`, a text not in English is read in English translation,
+        since MiniCheck was trained on English only. Raises
+        InferenceUnavailable, as a decision does: a score that silently came
+        back empty would read as "not supported".
+        """
+
+        if not pairs:
+            return {"model": None, "scores": []}
+
+        languages = languages or [(None, None)] * len(pairs)
+
+        body = {
+            "translate": translate,
+            "pairs": [
+                {"document": document, "claim": claim, "documentLanguage": document_language, "claimLanguage": claim_language}
+                for (document, claim), (document_language, claim_language) in zip(pairs, languages)
+            ],
+        }
+
+        try:
+            with INFERENCE.permit():
+                response = self._client.post("/grounding", json=body)
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise InferenceUnavailable(f"Grounding request failed: {exc}") from exc
+
+        return response.json()
+
     def _decide(self, body: dict) -> dict:
 
         try:

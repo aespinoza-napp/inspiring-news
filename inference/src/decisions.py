@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import settings
+from .loading import LOADING
 
 logger = getLogger(__name__)
 
@@ -87,11 +88,12 @@ class DecisionModels:
         import laya  # imported here so the service starts without loading torch twice
 
         started = time.perf_counter()
-        if folder is None:
-            repo, subfolder = BUILT_IN[name]
-            agent = laya.load(repo, subfolder=subfolder, device=settings.DECISION_DEVICE)
-        else:
-            agent = laya.load(str(folder), device=settings.DECISION_DEVICE)
+        with LOADING:
+            if folder is None:
+                repo, subfolder = BUILT_IN[name]
+                agent = laya.load(repo, subfolder=subfolder, device=settings.DECISION_DEVICE)
+            else:
+                agent = laya.load(str(folder), device=settings.DECISION_DEVICE)
         logger.info("Loaded decision checkpoint %s in %.1f s", name, time.perf_counter() - started)
 
         self._agents[name] = agent
