@@ -1,0 +1,895 @@
+{
+  "evaluatedAt": "2026-11-17T17:22:56+0100",
+  "summary": {
+    "all": {
+      "articles": 56,
+      "iptcRight": 30,
+      "embeddingRight": 46,
+      "iptcGroupAccuracy": 0.536,
+      "embeddingGroupAccuracy": 0.821,
+      "difference95": [
+        -0.446,
+        -0.125
+      ]
+    },
+    "en": {
+      "articles": 36,
+      "iptcRight": 20,
+      "embeddingRight": 29,
+      "iptcGroupAccuracy": 0.556,
+      "embeddingGroupAccuracy": 0.806,
+      "difference95": [
+        -0.417,
+        -0.083
+      ]
+    },
+    "es": {
+      "articles": 20,
+      "iptcRight": 10,
+      "embeddingRight": 17,
+      "iptcGroupAccuracy": 0.5,
+      "embeddingGroupAccuracy": 0.85,
+      "difference95": [
+        -0.65,
+        -0.05
+      ]
+    }
+  },
+  "adoptedByTheRule": false,
+  "iptcCategoriesPredicted": {
+    "society": 6,
+    "human interest": 6,
+    "science and technology": 20,
+    "lifestyle and leisure": 1,
+    "environment": 9,
+    "religion and belief": 2,
+    "disaster, accident and emergency incident": 3,
+    "health": 6,
+    "weather": 1,
+    "sport": 1,
+    "education": 1
+  },
+  "medianSeconds": 4.103,
+  "rows": [
+    {
+      "url": "https://lacarabuenadelmundo.com/noticias/sociedad/romper-el-circulo-de-la-pobreza-hereditaria/",
+      "language": "es",
+      "gold": "community",
+      "goldGroup": "society",
+      "iptc": "society",
+      "iptcTop3": [
+        "society",
+        "education",
+        "economy, business and finance"
+      ],
+      "iptcGroup": "society",
+      "embeddingGroup": "society",
+      "seconds": 2.426
+    },
+    {
+      "url": "https://inspiringnews.ai/cultura/bordalo-ii-convierte-basura-en-animales-gigantes/",
+      "language": "es",
+      "gold": "arts",
+      "goldGroup": "culture",
+      "iptc": "human interest",
+      "iptcTop3": [
+        "human interest",
+        "environment",
+        "arts, culture, entertainment and media"
+      ],
+      "iptcGroup": "culture",
+      "embeddingGroup": "environment",
+      "seconds": 5.763
+    },
+    {
+      "url": "https://www.20minutos.es/musica/entrevista-paco-pastor-formula-v-fuimos-primer-grupo-que-cruzo-charco-alli-se-nos-respetaba-espana-hubo-un-momento-que-no_7034554_0.html",
+      "language": "es",
+      "gold": "inspiration",
+      "goldGroup": "culture",
+      "iptc": "society",
+      "iptcTop3": [
+        "society",
+        "science and technology",
+        "arts, culture, entertainment and media"
+      ],
+      "iptcGroup": "society",
+      "embeddingGroup": "culture",
+      "seconds": 6.495
+    },
+    {
+      "url": "https://www.elmundo.es/ciencia/2026/09/21/6ab11a2cfc6c83a6348b457e.html",
+      "language": "es",
+      "gold": "climate",
+      "goldGroup": "environment",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "disaster, accident and emergency incident",
+        "sport"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "environment",
+      "seconds": 3.962
+    },
+    {
+      "url": "https://www.eldebate.com/ciencia/20260928/este-tipo-sangre-tienes-probabilidades-llegar-100-anos-cns_462034.html",
+      "language": "es",
+      "gold": "research",
+      "goldGroup": "science",
+      "iptc": "society",
+      "iptcTop3": [
+        "society",
+        "human interest",
+        "science and technology"
+      ],
+      "iptcGroup": "society",
+      "embeddingGroup": "science",
+      "seconds": 2.221
+    },
+    {
+      "url": "https://www.diariodenavarra.es/noticias/vivir/2026/09/29/pasos-hay-dar-dia-velocidad-cuidar-salud-836935-108.html",
+      "language": "es",
+      "gold": "fitness",
+      "goldGroup": "health",
+      "iptc": "lifestyle and leisure",
+      "iptcTop3": [
+        "lifestyle and leisure",
+        "health",
+        "society"
+      ],
+      "iptcGroup": "none",
+      "embeddingGroup": "health",
+      "seconds": 4.682
+    },
+    {
+      "url": "https://www.smithsonianmag.com/smart-news/in-a-first-sea-turtles-were-spotted-nesting-on-the-us-west-coast-scientists-say-the-super-el-nino-could-have-brought-them-there-180989574/",
+      "language": "en",
+      "gold": "nature",
+      "goldGroup": "environment",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "human interest",
+        "politics"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "environment",
+      "seconds": 4.387
+    },
+    {
+      "url": "https://www.agenciasinc.es/Noticias/Starship-ameriza-con-exito-tras-su-primer-viaje-alrededor-de-la-Tierra",
+      "language": "es",
+      "gold": "space",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "politics",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 5.336
+    },
+    {
+      "url": "https://www.abc.es/sevilla/ciudad/nuevos-barrios-norte-sevilla-uniran-carretera-verde-20260930174134-nts.html",
+      "language": "es",
+      "gold": "cities",
+      "goldGroup": "society",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "disaster, accident and emergency incident",
+        "science and technology"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "society",
+      "seconds": 4.605
+    },
+    {
+      "url": "https://www.smithsonianmag.com/smart-news/mri-scans-might-reveal-signs-of-alzheimers-disease-seven-years-before-a-telltale-marker-appears-in-the-brain-180989570/",
+      "language": "en",
+      "gold": "medicine",
+      "goldGroup": "health",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "health",
+        "society"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "health",
+      "seconds": 4.434
+    },
+    {
+      "url": "https://www.theguardian.com/technology/2026/sep/28/ai-godfathers-warn-of-runaway-intelligence-explosion",
+      "language": "en",
+      "gold": "technology",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "education",
+        "politics"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 3.678
+    },
+    {
+      "url": "https://reasonstobecheerful.world/nairobi-libraries-civic-hubs/",
+      "language": "en",
+      "gold": "cities",
+      "goldGroup": "society",
+      "iptc": "religion and belief",
+      "iptcTop3": [
+        "religion and belief",
+        "education",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "none",
+      "embeddingGroup": "society",
+      "seconds": 4.194
+    },
+    {
+      "url": "https://www.goodnewsnetwork.org/korean-drone-rescue-program-helps-mozambique-achieve-zero-fatalities-during-worst-flood-in-decades/",
+      "language": "en",
+      "gold": "community",
+      "goldGroup": "society",
+      "iptc": "disaster, accident and emergency incident",
+      "iptcTop3": [
+        "disaster, accident and emergency incident",
+        "environment",
+        "politics"
+      ],
+      "iptcGroup": "none",
+      "embeddingGroup": "society",
+      "seconds": 3.569
+    },
+    {
+      "url": "https://e360.yale.edu/features/julian-aguon-interview",
+      "language": "en",
+      "gold": "climate",
+      "goldGroup": "environment",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "science and technology",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "environment",
+      "seconds": 4.352
+    },
+    {
+      "url": "https://theconversation.com/why-do-some-chimpanzee-mothers-carry-their-dead-infants-for-months-292509",
+      "language": "en",
+      "gold": "nature",
+      "goldGroup": "environment",
+      "iptc": "human interest",
+      "iptcTop3": [
+        "human interest",
+        "environment",
+        "health"
+      ],
+      "iptcGroup": "culture",
+      "embeddingGroup": "environment",
+      "seconds": 3.598
+    },
+    {
+      "url": "https://www.nationalgeographic.com/animals/article/striped-mullet-fish-migration",
+      "language": "en",
+      "gold": "nature",
+      "goldGroup": "environment",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "human interest",
+        "arts, culture, entertainment and media"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "environment",
+      "seconds": 4.339
+    },
+    {
+      "url": "https://www.france24.com/es/salud/20261001-octubre-rosa-equidad-y-detecci%C3%B3n-temprana-los-grandes-desaf%C3%ADos-ante-el-c%C3%A1ncer-de-mama-en-latinoam%C3%A9rica",
+      "language": "es",
+      "gold": "public_health",
+      "goldGroup": "health",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "society",
+        "health"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "health",
+      "seconds": 4.616
+    },
+    {
+      "url": "https://news.mit.edu/2026/governor-healey-mit-president-kornbluth-kick-festivities-mit-future-fest",
+      "language": "en",
+      "gold": "education",
+      "goldGroup": "society",
+      "iptc": "human interest",
+      "iptcTop3": [
+        "human interest",
+        "arts, culture, entertainment and media",
+        "science and technology"
+      ],
+      "iptcGroup": "culture",
+      "embeddingGroup": "environment",
+      "seconds": 4.778
+    },
+    {
+      "url": "https://muyinteresante.okdiario.com/salud/muertes-por-ebola-congo.html",
+      "language": "es",
+      "gold": "public_health",
+      "goldGroup": "health",
+      "iptc": "health",
+      "iptcTop3": [
+        "health",
+        "science and technology",
+        "religion and belief"
+      ],
+      "iptcGroup": "health",
+      "embeddingGroup": "health",
+      "seconds": 4.418
+    },
+    {
+      "url": "https://www.theguardian.com/us-news/2026/sep/28/dengue-fever-cases-florida-counties",
+      "language": "en",
+      "gold": "public_health",
+      "goldGroup": "health",
+      "iptc": "disaster, accident and emergency incident",
+      "iptcTop3": [
+        "disaster, accident and emergency incident",
+        "health",
+        "science and technology"
+      ],
+      "iptcGroup": "none",
+      "embeddingGroup": "health",
+      "seconds": 4.234
+    },
+    {
+      "url": "https://www.carbonbrief.org/concerning-low-sea-ice-persists-as-antarctic-hits-third-lowest-winter-peak",
+      "language": "en",
+      "gold": "climate",
+      "goldGroup": "environment",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "science and technology",
+        "weather"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "environment",
+      "seconds": 4.042
+    },
+    {
+      "url": "https://news.mit.edu/2026/unmasking-zombie-cells-aging-tissue-ai-powered-barcode-0921",
+      "language": "en",
+      "gold": "medicine",
+      "goldGroup": "health",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "health",
+        "society"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 4.164
+    },
+    {
+      "url": "https://theconversation.com/arctic-infrastructure-was-built-on-frozen-ground-drones-and-digital-twins-can-help-spot-the-permafrost-thaw-coming-292097",
+      "language": "en",
+      "gold": "climate",
+      "goldGroup": "environment",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "disaster, accident and emergency incident",
+        "science and technology"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "science",
+      "seconds": 5.28
+    },
+    {
+      "url": "https://www.newscientist.com/article/2591599-brain-area-discovered-that-may-be-critical-for-viable-pregnancies/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+      "language": "en",
+      "gold": "biology",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "health",
+        "society"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 5.887
+    },
+    {
+      "url": "https://news.mongabay.com/2026/10/mangroves-keep-waves-at-bay-a-new-study-helps-scientists-predict-how/",
+      "language": "en",
+      "gold": "climate",
+      "goldGroup": "environment",
+      "iptc": "weather",
+      "iptcTop3": [
+        "weather",
+        "environment",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "environment",
+      "seconds": 4.639
+    },
+    {
+      "url": "https://www.20minutos.es/salud/por-que-nos-mareamos-levantarnos-sofa-como-evitarlo-cardiologo_7034452_0.html",
+      "language": "es",
+      "gold": "medicine",
+      "goldGroup": "health",
+      "iptc": "health",
+      "iptcTop3": [
+        "health",
+        "science and technology",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "health",
+      "embeddingGroup": "health",
+      "seconds": 5.699
+    },
+    {
+      "url": "https://www.positive.news/environment/winners-of-bird-photographer-of-the-year-announced/",
+      "language": "en",
+      "gold": "arts",
+      "goldGroup": "culture",
+      "iptc": "human interest",
+      "iptcTop3": [
+        "human interest",
+        "environment",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "culture",
+      "embeddingGroup": "environment",
+      "seconds": 5.498
+    },
+    {
+      "url": "https://e360.yale.edu/digest/china-industry-peak-fossil-fuels",
+      "language": "en",
+      "gold": "energy",
+      "goldGroup": "environment",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "science and technology",
+        "economy, business and finance"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "environment",
+      "seconds": 4.38
+    },
+    {
+      "url": "https://elpais.com/economia/negocios/entrevistas-afterwork/2026-10-05/ignacio-calvo-de-mora-bodegas-benjamin-de-rothschild-vega-sicilia-mi-querida-suegra-dice-que-tengo-gusto-de-champan-y-bolsillo-de-cerveza.html",
+      "language": "es",
+      "gold": "food",
+      "goldGroup": "environment",
+      "iptc": "sport",
+      "iptcTop3": [
+        "sport",
+        "society",
+        "economy, business and finance"
+      ],
+      "iptcGroup": "none",
+      "embeddingGroup": "environment",
+      "seconds": 4.331
+    },
+    {
+      "url": "https://www.goodnewsnetwork.org/flourishing-sycamore-gap-tree-has-ring-of-new-shoots-already-3-feet-tall/",
+      "language": "en",
+      "gold": "nature",
+      "goldGroup": "environment",
+      "iptc": "human interest",
+      "iptcTop3": [
+        "human interest",
+        "arts, culture, entertainment and media",
+        "environment"
+      ],
+      "iptcGroup": "culture",
+      "embeddingGroup": "science",
+      "seconds": 5.672
+    },
+    {
+      "url": "https://www.europapress.es/portaltic/sector/noticia-openai-anadira-marca-agua-invisible-texto-chatgpt-codex-ue-cumplir-ley-ia-20261006103525.html",
+      "language": "es",
+      "gold": "technology",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "politics",
+        "education"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 6.194
+    },
+    {
+      "url": "https://www.newscientist.com/article/2591415-ai-finds-bafflingly-complex-but-beautiful-symmetrical-venn-diagram/?utm_campaign=RSS|NSNS&utm_content=home&utm_medium=RSS&utm_source=NSNS",
+      "language": "en",
+      "gold": "research",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "lifestyle and leisure",
+        "society"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 6.733
+    },
+    {
+      "url": "https://www.esa.int/ESA_Multimedia/Images/2026/08/Roman_lifts_off_on_a_mission_to_survey_the_infrared_sky",
+      "language": "en",
+      "gold": "space",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "society",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 6.869
+    },
+    {
+      "url": "https://www.agenciasinc.es/Noticias/La-obesidad-activa-un-mecanismo-que-altera-la-relajacion-del-corazon",
+      "language": "es",
+      "gold": "medicine",
+      "goldGroup": "health",
+      "iptc": "society",
+      "iptcTop3": [
+        "society",
+        "health",
+        "science and technology"
+      ],
+      "iptcGroup": "society",
+      "embeddingGroup": "health",
+      "seconds": 6.647
+    },
+    {
+      "url": "https://www.nationalgeographic.com/health/article/can-cartilage-regrow-osteoarthritis-treatment",
+      "language": "en",
+      "gold": "medicine",
+      "goldGroup": "health",
+      "iptc": "health",
+      "iptcTop3": [
+        "health",
+        "science and technology",
+        "sport"
+      ],
+      "iptcGroup": "health",
+      "embeddingGroup": "health",
+      "seconds": 4.408
+    },
+    {
+      "url": "https://www.positive.news/environment/meet-the-14-year-old-uncovering-londons-lost-history/",
+      "language": "en",
+      "gold": "heritage",
+      "goldGroup": "culture",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "arts, culture, entertainment and media",
+        "society"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "environment",
+      "seconds": 2.126
+    },
+    {
+      "url": "https://www.theguardian.com/society/2026/oct/08/teenager-first-person-testicular-tissue-transplant-uk-cancer-chemotherapy-fertility",
+      "language": "en",
+      "gold": "medicine",
+      "goldGroup": "health",
+      "iptc": "health",
+      "iptcTop3": [
+        "health",
+        "society",
+        "human interest"
+      ],
+      "iptcGroup": "health",
+      "embeddingGroup": "health",
+      "seconds": 0.992
+    },
+    {
+      "url": "https://www.carbonbrief.org/analysis-wind-and-solar-save-uk-from-gas-imports-worth-5-9bn-during-hormuz-crisis",
+      "language": "en",
+      "gold": "energy",
+      "goldGroup": "environment",
+      "iptc": "environment",
+      "iptcTop3": [
+        "environment",
+        "economy, business and finance",
+        "science and technology"
+      ],
+      "iptcGroup": "environment",
+      "embeddingGroup": "environment",
+      "seconds": 1.203
+    },
+    {
+      "url": "https://www.goodnewsnetwork.org/strangers-showed-up-to-mans-destroyed-house-to-put-up-a-tarp-having-seen-his-televised-plea/",
+      "language": "en",
+      "gold": "community",
+      "goldGroup": "society",
+      "iptc": "disaster, accident and emergency incident",
+      "iptcTop3": [
+        "disaster, accident and emergency incident",
+        "environment",
+        "human interest"
+      ],
+      "iptcGroup": "none",
+      "embeddingGroup": "society",
+      "seconds": 0.859
+    },
+    {
+      "url": "https://www.smithsonianmag.com/smart-news/raised-in-apartheid-south-africa-2026-nobel-peace-prize-winner-navi-pillay-is-one-of-the-worlds-leading-human-rights-jurists-180989667/",
+      "language": "en",
+      "gold": "inspiration",
+      "goldGroup": "culture",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "society",
+        "religion and belief"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "culture",
+      "seconds": 1.103
+    },
+    {
+      "url": "https://www.agenciasinc.es/Noticias/Los-espanoles-tendran-mas-vinculos-sociales-para-2050-pero-la-tecnologia-podria-acentuar-la-soledad",
+      "language": "es",
+      "gold": "cities",
+      "goldGroup": "society",
+      "iptc": "society",
+      "iptcTop3": [
+        "society",
+        "education",
+        "politics"
+      ],
+      "iptcGroup": "society",
+      "embeddingGroup": "health",
+      "seconds": 0.876
+    },
+    {
+      "url": "https://www.eldiario.es/cultura/musica/judeline-ciudades-son-adquisitivo-no_128_13569652.html",
+      "language": "es",
+      "gold": "entertainment",
+      "goldGroup": "culture",
+      "iptc": "human interest",
+      "iptcTop3": [
+        "human interest",
+        "religion and belief",
+        "labour"
+      ],
+      "iptcGroup": "culture",
+      "embeddingGroup": "culture",
+      "seconds": 1.125
+    },
+    {
+      "url": "https://e360.yale.edu/features/germany-us-climate-data",
+      "language": "en",
+      "gold": "research",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "politics",
+        "environment"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 0.862
+    },
+    {
+      "url": "https://www.esa.int/Science_Exploration/Space_Science/Juice/Successful_Earth_flyby_improves_Juice_s_course_to_Jupiter",
+      "language": "en",
+      "gold": "space",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "lifestyle and leisure",
+        "sport"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 0.987
+    },
+    {
+      "url": "https://www.lavanguardia.com/launi/20260925/11643637/nuevas-evidencias-sobre-como-hormonas-alteran-animo-mujeres.html",
+      "language": "es",
+      "gold": "mental_health",
+      "goldGroup": "health",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "society",
+        "health"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "health",
+      "seconds": 0.994
+    },
+    {
+      "url": "https://theconversation.com/chatbots-as-oracles-how-ai-is-giving-new-life-to-the-ancient-practice-of-seeking-answers-from-inscrutable-sources-289279",
+      "language": "en",
+      "gold": "technology",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "society",
+        "politics"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 2.136
+    },
+    {
+      "url": "https://www.nationalgeographic.com/health/article/arfid-avoidant-restrictive-eating-disorder",
+      "language": "en",
+      "gold": "mental_health",
+      "goldGroup": "health",
+      "iptc": "society",
+      "iptcTop3": [
+        "society",
+        "health",
+        "lifestyle and leisure"
+      ],
+      "iptcGroup": "society",
+      "embeddingGroup": "health",
+      "seconds": 0.667
+    },
+    {
+      "url": "https://www.20minutos.es/andalucia/sevilla/andalucia-reduce-cerca-seis-puntos-abandono-escolar-temprano-con-proyectos-voluntariado-como-las-hadas-madrinas_7047054_0.html",
+      "language": "es",
+      "gold": "education",
+      "goldGroup": "society",
+      "iptc": "education",
+      "iptcTop3": [
+        "education",
+        "science and technology",
+        "society"
+      ],
+      "iptcGroup": "society",
+      "embeddingGroup": "culture",
+      "seconds": 1.741
+    },
+    {
+      "url": "https://e360.yale.edu/digest/data-centers-battery-storage",
+      "language": "en",
+      "gold": "energy",
+      "goldGroup": "environment",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "economy, business and finance",
+        "environment"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "environment",
+      "seconds": 1.768
+    },
+    {
+      "url": "https://news.mit.edu/2026/new-cell-collection-device-could-improve-early-cancer-detection-0924",
+      "language": "en",
+      "gold": "medicine",
+      "goldGroup": "health",
+      "iptc": "health",
+      "iptcTop3": [
+        "health",
+        "science and technology",
+        "environment"
+      ],
+      "iptcGroup": "health",
+      "embeddingGroup": "health",
+      "seconds": 1.36
+    },
+    {
+      "url": "https://www.goodnewsnetwork.org/inches-below-the-forest-floor-archeologists-in-germany-unearthed-a-roman-temple-to-the-war-god/",
+      "language": "en",
+      "gold": "heritage",
+      "goldGroup": "culture",
+      "iptc": "religion and belief",
+      "iptcTop3": [
+        "religion and belief",
+        "education",
+        "science and technology"
+      ],
+      "iptcGroup": "none",
+      "embeddingGroup": "culture",
+      "seconds": 1.857
+    },
+    {
+      "url": "https://news.mit.edu/2026/3-questions-best-path-forward-for-ai-academia-1008",
+      "language": "en",
+      "gold": "education",
+      "goldGroup": "society",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "education",
+        "health"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 1.844
+    },
+    {
+      "url": "https://muyinteresante.okdiario.com/ciencia/jason-wright-y-la-busqueda-de-tecnofirmas-rastros-de-tecnologia-extraterrestre.html",
+      "language": "es",
+      "gold": "research",
+      "goldGroup": "science",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "education",
+        "politics"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "science",
+      "seconds": 1.144
+    },
+    {
+      "url": "https://www.who.int/news/item/12-10-2026-who-pandemic-hub-sets-ambitious-goal-to-detect-new-outbreaks-within-24-hours",
+      "language": "en",
+      "gold": "public_health",
+      "goldGroup": "health",
+      "iptc": "health",
+      "iptcTop3": [
+        "health",
+        "science and technology",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "health",
+      "embeddingGroup": "health",
+      "seconds": 1.739
+    },
+    {
+      "url": "https://www.xatakaciencia.com/clima/gonzalez-aleman-hemos-tenido-proceso-formacion-ciclon-tropical-algo-que-meteorolgo-nunca-se-habia-visto-mediterraneo",
+      "language": "es",
+      "gold": "climate",
+      "goldGroup": "environment",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "weather",
+        "disaster, accident and emergency incident"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "environment",
+      "seconds": 2.337
+    },
+    {
+      "url": "https://www.newscientist.com/article/2593437-dinosaur-named-new-species-102-years-after-fossil-found-on-isle-of-wight/",
+      "language": "en",
+      "gold": "nature",
+      "goldGroup": "environment",
+      "iptc": "science and technology",
+      "iptcTop3": [
+        "science and technology",
+        "arts, culture, entertainment and media",
+        "politics"
+      ],
+      "iptcGroup": "science",
+      "embeddingGroup": "environment",
+      "seconds": 0.728
+    }
+  ]
+}

@@ -436,6 +436,67 @@ fine. The definition stays in the experiment module so the run can be
 repeated; `src/config/topics.py` keeps 23 topics. A narrower wording
 would need a rule of its own, written before it is measured.
 
+## topics_iptc: a topic classifier trained on MN-DS, in English and Spanish (2026-11-17, not adopted)
+
+`cd inference && uv run python ../scripts/train_iptc_topics.py all --mnds
+<train.jsonl> --cache <dir>` (MN-DS from Hugging Face's `textminr/mn-ds`;
+about four hours on the dev laptop's CPU, most of it bge-m3; the cache
+lives in `backend/data/cache/iptc_mnds/`, gitignored, because the first
+run, in `/tmp`, was lost to a reboot). Asked for by the author: the
+topics from a classifier trained on a published dataset, in both of the
+app's languages. MN-DS (Petukhova & Fachada, *Data* 2023): 10,917 English
+news articles, each labelled by hand with one of 17 IPTC first-level
+topics; its Spanish half is the same articles translated by OPUS-MT,
+since no hand-labelled bilingual set covers Environment. bge-m3 embeds
+each article's title and first 80 words; logistic regression learns the
+17 topics, and a table fixed before the run maps them to the five groups.
+The rule (`data/evaluation/experiments/topics_iptc/rule.md`): adopt as
+the group classifier if, on the app's 56 labelled articles, it gets at
+least as many right as today's embedding classifier, and in neither
+language more than 2 fewer.
+
+On MN-DS's held-out fifth (2,111 articles in each language; trained on
+the other 8,806 and their translations, C = 10 by 5-fold
+cross-validation; `train.json`):
+
+| | Accuracy, 17 topics | Macro-F1, 17 topics | Group accuracy |
+|---|---|---|---|
+| English | 0.760 | 0.765 | 0.825 |
+| Spanish (translated) | 0.737 | 0.745 | 0.810 |
+
+That is at the level of the paper's TF-IDF baseline (F1 0.774) and below
+its DistilBERT (0.844), on a different split.
+
+On the app's 56 labelled articles (`app.json`):
+
+| | Articles | MN-DS classifier | Embedding classifier | Difference, 95% |
+|---|---|---|---|---|
+| All | 56 | 30 (0.54) | 46 (0.82) | −0.45 to −0.13 |
+| English | 36 | 20 | 29 | −0.42 to −0.08 |
+| Spanish | 20 | 10 | 17 | −0.65 to −0.05 |
+
+**Not adopted:** it fails both conditions. The cause is the taxonomy,
+not the language (Spanish is not worse than English beyond noise):
+
+- **Research goes to science, whatever it is about.** 10 of its 26
+  errors went to science and technology, 8 of them environment or health
+  stories: two climate stories, data centres' batteries, a new dinosaur
+  species, a brain marker years before dementia, zombie cells, breast
+  cancer in Latin America, hormones and mood.
+- **Constructive stories land in hard-news topics with no group.** 7 went
+  to topics the table maps to none. A flood in Mozambique with no deaths
+  and dengue in Florida went to disaster; Nairobi's libraries as civic
+  hubs and a Roman temple went to religion.
+- Each classifier got right 5 articles the other missed.
+
+An article took 4.1 s at the median for its bge-m3 vector, on a CPU
+shared with the Docker stack. The switch stays
+(`topic_group_classifier: iptc`, default `embedding`), with the weights
+in `backend/data/models/iptc_topics.npz` (66 KB), so the run can be
+repeated. The 23 topics are unchanged. A different mapping table would
+need a rule of its own, and the 56 articles cannot be both where a table
+is tuned and where it is judged.
+
 ## trends: five trending rounds labelled blind (from 2026-10-26)
 
 `uv run python -m src.evaluation.experiments trends run` (once a day),

@@ -1,0 +1,30 @@
+{
+  "trainedAt": "2026-11-17T17:19:41+0100",
+  "data": "MN-DS (textminr/mn-ds mirror) + its OPUS-MT en-es translation",
+  "trainArticles": {
+    "en": 8806,
+    "es": 8806
+  },
+  "C": 10.0,
+  "cvMacroF1": 0.8268,
+  "heldOut": {
+    "en": {
+      "articles": 2111,
+      "accuracy": 0.7598,
+      "macroF1": 0.7646,
+      "groupAccuracy": 0.8247
+    },
+    "es": {
+      "articles": 2111,
+      "accuracy": 0.7366,
+      "macroF1": 0.7447,
+      "groupAccuracy": 0.81
+    }
+  },
+  "paperLevel1F1": {
+    "tfidfLogisticRegression": 0.774,
+    "distilbert": 0.844
+  },
+  "trainSeconds": 261.7,
+  "model": "backend/data/models/iptc_topics.npz"
+}
