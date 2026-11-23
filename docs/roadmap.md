@@ -502,7 +502,7 @@ was changed; the numbers are in `docs/decisions/retrieval.md` and
 
 Fixed:
 - [x] A re-analysed URL was rejected as a duplicate of itself (and its earlier copy counted as evidence for its own claims) — `docs/decisions/incidents.md`
-- [x] Neo4j password committed in `docker-compose.yml` — moved to `backend/.env`. **The old value is still in git history and must be rotated by hand.**
+- [x] Neo4j password committed in `docker-compose.yml` — moved to `backend/.env`. The old value is still in git history. **Verified rotated on 2026-11-23:** it was the default `password`, and both databases run on a 64-character generated one (`scripts/init_env.sh`) and refuse the old one.
 - [x] Job history was lost on restart or failure — every job event is now journalled to disk as it happens, and `/live` shows runs in progress
 
 Also fixed (Sep 21, second pass — `docs/decisions/concurrency.md`, `docs/decisions/retrieval.md`):
