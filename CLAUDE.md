@@ -42,6 +42,13 @@ src.main:app --port 8001`.
   nothing about topics, thresholds or scoring. See `inference/README.md`.
 - `frontend/` — Next.js 14 (App Router + TypeScript) UI. See
   `frontend/CLAUDE.md`.
+- `universe/` — Inspiring News Universe, the readers' 3D news universe, a
+  separate Astro + three.js app over the backend's `/map` and `/account` routes
+  (`docs/decisions/news-map.md`, "The universe";
+  `python scripts/preview_universe.py` to look at it). `MAP_SOURCE=graph`
+  reads the positive graph's WordPress import instead of the lake
+  ("Reading from the graph"), and `MAP_IMAGES_DIR` serves its downloaded
+  photos ("Photos, and names without the sources").
 - `docker/` — compose (Neo4j, SearXNG, inference, backend) and the three
   Dockerfiles; `docker-compose.prod.yml` (+ Ollama, + the frontend) and
   `docker-compose.gcp.yml` (+ Caddy: `/healthz`, and the site over HTTPS
@@ -106,6 +113,7 @@ src.main:app --port 8001`.
 | Trending: the signals (Google Trends, r/UpliftingNews...), the lens on /discover, the checked positive angle, the TikTok embed; why TikTok is never scraped | `docs/decisions/trends.md` |
 | Where the time goes; what made it faster; the model's hardware, threads and the dev laptop's integrated GPU | `docs/decisions/performance.md`, `scripts/bench_ollama.py`, `scripts/ollama_igpu.sh` |
 | Laya: typed decisions in `inference/` (`/decisions`), what was fine-tuned, what was adopted (nothing yet) | `docs/decisions/laya.md`, `backend/data/evaluation/experiments/laya/` |
+| The readers' app: the news map, search, Today, For you, accounts; its layout, renderer, threat model and budget | `docs/decisions/news-map.md` |
 | Ready-to-paste `/goal` prompts for the harness, CI and the integration test | `docs/goals.md` |
 | The two editions (Positive / Devastating): what the switch changes, its sources, and why the Devastating one is not fact-checked | `docs/decisions/editions.md`, `backend/src/config/editions.py` |
 

@@ -1,0 +1,106 @@
+% ============================================================
+% Chapter 5: Development
+%   Section: The News Map, an App for Readers
+% Included from chapters/05-development/development.tex
+% Source: docs/decisions/news-map.md (built 2026-10-29 on
+% feature/news-map, on top of the plan, at the author's request).
+% ============================================================
+
+\section{The News Map, an App for Readers}
+\label{sec:dev-news-map}
+
+The reader view shows one checked article at a time. On 29~October~2026
+the author asked for a second way in, for readers: the news as one
+enormous graph, in which every published article is a point joined to
+the people, places and topics it names, and the topics sit in sections,
+so the whole reads as a cloud. Around it, a search, a page for the
+day's news, a selection built from a reader's interests, and accounts
+to keep them. It reads only what the reader view already shows anyone:
+published articles, their titles, outlets, topics, names and verdicts,
+never a body or a scraped page.
+
+\paragraph{A place that never moves.} The map is a disc. The five topic
+groups are sectors of it, and each of the 23 topics is an anchor in its
+group's sector, on one of two rings. An article sits at its main
+topic's anchor, is pulled a short fixed distance towards a second topic
+only when that topic's confidence ties the first, and is moved within
+its topic's cluster by its own embedding, projected on a fixed random
+basis. Its position therefore depends on the article and a layout
+version alone: a newly published article moves no other one, which a
+test holds. Three measurements shaped this. A confidence-weighted mean
+of the anchors, the first design, put nearly every article near the
+centre, because the classifier's confidences are compressed (the first
+article read had three topics within 0.023 of each other, in three
+groups). A pull expressed as a share of the distance carried that
+article past a neighbouring anchor. And the first way of squashing the
+projection into a cluster made rings and crescents when drawn at 3,000
+articles; fitted to the projections of the 139 hand-labelled claims, a
+hyperbolic tangent keeps clusters as clouds.
+
+\paragraph{Drawing it.} The points are drawn on the graphics card in a
+single call, whatever their number. The library was chosen by
+measurement rather than by name: the same synthetic points were drawn
+by regl and by sigma.js, a graph library, along the same pan and zoom
+in a headless browser, on the laptop's integrated GPU and in software
+(Table~\ref{tab:news-map-renderers}). On the GPU both were limited by
+the measurement's own read-back; without a GPU, regl was about sixteen
+times faster, and sigma.js could not draw 50,000 points.
+
+\begin{table}[h]
+  \centering
+  \caption{Milliseconds per frame, median / 95th percentile, of the same
+  synthetic points drawn by each library (29~October~2026, the
+  machine shared with a model benchmark).}
+  \label{tab:news-map-renderers}
+  \begin{tabular}{lrr}
+    \hline
+    & regl & sigma.js \\
+    \hline
+    Integrated GPU, 10,000 points & 8.8 / 14.1 & 14.2 / 23.0 \\
+    Integrated GPU, 50,000 points & 10.4 / 19.9 & 15.1 / 25.7 \\
+    Software, 10,000 points & 19.9 / 36.6 & 324.6 / 543.6 \\
+    Software, 50,000 points & 33.5 / 61.9 & did not finish \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\paragraph{Search, the day, and what a reader follows.} A search finds
+names (folded for case, accents and punctuation, then by character
+trigrams), words in titles and topic keywords in English and Spanish,
+and, when asked, meaning: the query is embedded and compared with the
+vectors of published articles only. That last part costs a call to the
+inference service, which the fact-checking pipeline shares, so it is
+limited per visitor and cached. The day's page brightens one day's
+articles on the map, the day being Madrid's. A reader's interests,
+saved stories and the connections they draw between stories are kept
+in their own database, never in the lake or the graph, which a sync
+rebuilds; a reader's connection is drawn on their map alone.
+
+\paragraph{For you, explained.} Each published article is scored in
+four parts --- a followed topic, followed names, nearness in meaning to
+the saved stories, and freshness --- with weights that sum to one, so
+the parts shown beside a story add up to its score. The weights are
+reasoned, not fitted: there is no labelled set of what readers wanted.
+Within the first ten, at most seven come from a topic the reader
+follows and three from any other, and ``not interested'' lowers, for
+that reader alone, the part that counted most.
+
+\paragraph{Accounts.} Passwords are kept as argon2id hashes and session
+tokens as their SHA-256, so a copy of the database opens nothing.
+Signing in is limited per name and per client and takes the same work
+whether or not the name exists. Every change a signed-in reader makes
+carries a token only their own page can read, and a reader can export
+or delete everything kept about them at once.
+
+\paragraph{Its budget.} Measured in a headless browser on the laptop's
+integrated GPU with synthetic maps placed by the real layout, a map of
+10,000 stories is drawn from a warm cache in 373~ms, reaches the browser
+as 354~KB, and finds the point under the pointer in 0.1~ms; 50,000
+stories take 499~ms and 1.77~MB. The first measurement found the
+payload uncompressed (2.09~MB at 10,000), because the frontend's proxy
+undid the backend's compression; it is compressed again there now.
+\pending{Whether panning and zooming hold 60 frames a second: measured
+under load on 29~October, dropped frames fell as the map grew (7.2\% at
+2,000 stories, 0.8\% at 50,000), which points at the machine rather
+than the drawing. The run on an idle machine goes here
+(\texttt{scripts/bench\_news\_map.py}).}

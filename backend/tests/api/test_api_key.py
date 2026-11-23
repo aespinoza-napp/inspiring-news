@@ -56,6 +56,49 @@ OPEN_ENDPOINTS = {
     # anyone (src/api/publish_routes.py, "Public").
     ("GET", "/reader/stories"),
     ("GET", "/reader/stories/{story_id}"),
+    # The readers' news map: the same published articles as /reader, as
+    # points - title, outlet, day, topics, entities, verdict and place -
+    # and their related articles; no body, lineage or scraped page
+    # (src/services/news_map/index.py; src/api/map_routes.py).
+    ("GET", "/map/articles"),
+    ("GET", "/map/entities"),
+    ("GET", "/map/articles/{article_id}/links"),
+    # A story's photo, downloaded from the site that shows it to anyone; only
+    # a file the images manifest lists (news_map/graph_source.py).
+    ("GET", "/map/images/{name}"),
+    # Searching those same articles and their names. The part that costs
+    # (embedding the query in inference/) is limited per client
+    # (src/services/news_map/search.py).
+    ("GET", "/map/search"),
+    # Reader accounts: a reader has no key. The session cookie is the
+    # capability; without one these give only the chance to make an
+    # account or sign in, both limited per client, and the state changes
+    # check a CSRF token (src/api/account_routes.py).
+    ("POST", "/account/register"),
+    ("POST", "/account/login"),
+    ("GET", "/account/me"),
+    ("POST", "/account/logout"),
+    ("POST", "/account/password"),
+    ("GET", "/account/export"),
+    ("POST", "/account/delete"),
+    # What a reader follows, saves and connects: the same standing, signed
+    # in only, every change with the CSRF token (N6).
+    ("GET", "/account/interests"),
+    ("POST", "/account/interests/set"),
+    ("POST", "/account/interests/follow"),
+    ("POST", "/account/interests/unfollow"),
+    ("GET", "/account/saved"),
+    ("POST", "/account/saved/add"),
+    ("POST", "/account/saved/remove"),
+    ("GET", "/account/connections"),
+    ("POST", "/account/connections/add"),
+    ("POST", "/account/connections/remove"),
+    # For you: ranks the published stories for the profile it is sent and
+    # stores nothing; limited per visitor. Its account side, what a reader
+    # hid and lowered, is signed in like the rest of /account (N7).
+    ("POST", "/map/for-you"),
+    ("GET", "/account/feed"),
+    ("POST", "/account/not-interested"),
 }
 
 # What was open until 2026-10-02, with a body each would accept: the

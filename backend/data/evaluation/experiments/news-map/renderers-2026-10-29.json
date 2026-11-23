@@ -1,0 +1,161 @@
+{
+  "measuredAt": "2026-10-29T14:11:25",
+  "results": [
+    {
+      "backend": "intel-vulkan",
+      "renderer": "regl",
+      "count": 10000,
+      "frames": 180,
+      "gpu": "ANGLE (Intel, Vulkan 1.3.255 (Intel(R) Graphics (MTL) (0x00007D45)), Intel open-source Mesa driver)",
+      "litPixels": 31148,
+      "firstFrameMs": 148.7,
+      "frameMs": {
+        "median": 8.8,
+        "p95": 14.1,
+        "max": 18.1
+      },
+      "emptyFrameMs": {
+        "median": 10.3,
+        "p95": 17,
+        "max": 18.6
+      },
+      "gridBuildMs": 11.9,
+      "pickMs": {
+        "median": 0,
+        "p95": 0.1,
+        "max": 0.4
+      },
+      "loadAverage": 12.875
+    },
+    {
+      "backend": "intel-vulkan",
+      "renderer": "sigma",
+      "count": 10000,
+      "frames": 180,
+      "gpu": "ANGLE (Intel, Vulkan 1.3.255 (Intel(R) Graphics (MTL) (0x00007D45)), Intel open-source Mesa driver)",
+      "litPixels": 56153,
+      "firstFrameMs": 351.6,
+      "frameMs": {
+        "median": 14.2,
+        "p95": 23,
+        "max": 35.8
+      },
+      "loadAverage": 13.375
+    },
+    {
+      "backend": "intel-vulkan",
+      "renderer": "regl",
+      "count": 50000,
+      "frames": 180,
+      "gpu": "ANGLE (Intel, Vulkan 1.3.255 (Intel(R) Graphics (MTL) (0x00007D45)), Intel open-source Mesa driver)",
+      "litPixels": 51310,
+      "firstFrameMs": 212.8,
+      "frameMs": {
+        "median": 10.4,
+        "p95": 19.9,
+        "max": 41.3
+      },
+      "emptyFrameMs": {
+        "median": 8.6,
+        "p95": 12.7,
+        "max": 19.4
+      },
+      "gridBuildMs": 19.4,
+      "pickMs": {
+        "median": 0,
+        "p95": 0.1,
+        "max": 0.6
+      },
+      "loadAverage": 13.42529296875
+    },
+    {
+      "backend": "intel-vulkan",
+      "renderer": "sigma",
+      "count": 50000,
+      "frames": 180,
+      "gpu": "ANGLE (Intel, Vulkan 1.3.255 (Intel(R) Graphics (MTL) (0x00007D45)), Intel open-source Mesa driver)",
+      "litPixels": 68487,
+      "firstFrameMs": 397.8,
+      "frameMs": {
+        "median": 15.1,
+        "p95": 25.7,
+        "max": 37.6
+      },
+      "loadAverage": 13.39111328125
+    },
+    {
+      "backend": "swiftshader",
+      "renderer": "regl",
+      "count": 10000,
+      "frames": 180,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "litPixels": 31164,
+      "firstFrameMs": 248.8,
+      "frameMs": {
+        "median": 19.9,
+        "p95": 36.6,
+        "max": 78.1
+      },
+      "emptyFrameMs": {
+        "median": 4,
+        "p95": 9,
+        "max": 9.8
+      },
+      "gridBuildMs": 15.6,
+      "pickMs": {
+        "median": 0,
+        "p95": 0.1,
+        "max": 0.5
+      },
+      "loadAverage": 13.61279296875
+    },
+    {
+      "backend": "swiftshader",
+      "renderer": "sigma",
+      "count": 10000,
+      "frames": 180,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "litPixels": 56091,
+      "firstFrameMs": 1762.6,
+      "frameMs": {
+        "median": 324.6,
+        "p95": 543.6,
+        "max": 734
+      },
+      "loadAverage": 17.2470703125
+    },
+    {
+      "backend": "swiftshader",
+      "renderer": "regl",
+      "count": 50000,
+      "frames": 180,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "litPixels": 51297,
+      "firstFrameMs": 203.3,
+      "frameMs": {
+        "median": 33.5,
+        "p95": 61.9,
+        "max": 79.3
+      },
+      "emptyFrameMs": {
+        "median": 3.8,
+        "p95": 6.6,
+        "max": 7
+      },
+      "gridBuildMs": 12.6,
+      "pickMs": {
+        "median": 0,
+        "p95": 0.1,
+        "max": 0.3
+      },
+      "loadAverage": 18.43310546875
+    },
+    {
+      "renderer": "sigma",
+      "count": 50000,
+      "backend": "swiftshader",
+      "error": "timed out",
+      "loadAverage": 13.84375
+    }
+  ]
+}

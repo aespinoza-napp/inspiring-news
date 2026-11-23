@@ -194,6 +194,18 @@ class ReaderIndex:
             "lake": {"analysed": analysed, "publishable": len(published)},
         }
 
+    def published(self) -> list[_Entry]:
+        """
+        The current run of every published article, newest first. What
+        another view of the same articles builds on (the news map,
+        src/services/news_map/), so which run is current and whether it
+        is published are decided here only.
+        """
+
+        with self._lock:
+            self._refresh()
+            return list(self._feed)
+
     def article(self, article_id: str) -> dict | None:
         """
         One article's reader payload, or None when there is no published

@@ -97,6 +97,25 @@ class Settings(BaseSettings):
     # write entirely; the /graph read endpoints still answer.
     GRAPH_ENABLED: bool = True
 
+    # Where the news map's articles come from (docs/decisions/news-map.md,
+    # "Reading from the graph"): "lake" - the published articles, as
+    # /reader shows them - or "graph" - the positive graph's articles of
+    # MAP_GRAPH_SOURCE_ID, checked or not. Added 2026-11-17 to show the
+    # WordPress import, which the lake stores but never publishes.
+    # Deployment, not a run: listed in NON_THRESHOLD_SETTINGS.
+    MAP_SOURCE: Literal["lake", "graph"] = "lake"
+    MAP_GRAPH_SOURCE_ID: str = "wordpress:inspiringnews.ai"
+    # With MAP_SOURCE=graph, optionally: the WordPress labels the research
+    # notebook writes (research/wordpress-import/data/wordpress-labels.json),
+    # shown on each story and used to place the ones our classifier gave no
+    # topic. Empty: none.
+    MAP_GRAPH_LABELS: str = ""
+    # With MAP_SOURCE=graph, optionally: the folder scripts/wordpress_images.py
+    # (main worktree) downloads the import's photos into, with its
+    # manifest.json - backend/data/imports/<export>/images. Served under
+    # /map/images/; empty, each story shows the photo the graph links to.
+    MAP_IMAGES_DIR: str = ""
+
     # Documentary, not load-bearing: the model itself now loads inside
     # inference/ (inference/src/config.py's own SENTIMENT_MODEL), not
     # here. Kept so a human reading .env still sees what's running.
@@ -109,6 +128,19 @@ class Settings(BaseSettings):
 
     # Qdrant settings
     QDRANT_PATH: Path = Path("data/vector_db")
+
+    # Reader accounts (src/services/accounts/): their own SQLite file, never
+    # the lake or the graph, which sync rebuilds (docs/decisions/news-map.md,
+    # "Accounts").
+    USERS_DB_PATH: Path = Path("data/users.db")
+    # The session cookie's Secure flag: on everywhere there is HTTPS. Off
+    # only for plain-HTTP development on another host than localhost.
+    ACCOUNT_COOKIE_SECURE: bool = True
+    # How many argon2id hashes (64 MiB, three passes each) may run at
+    # once: a login or a registration waits for one rather than letting
+    # a burst of them take the machine's memory. A concurrency ceiling,
+    # so a setting and never a threshold (CLAUDE.md, invariant 12).
+    ACCOUNT_HASH_CONCURRENCY: int = 2
 
     # Still load-bearing: VectorRepository sizes the Qdrant collection
     # from this, independent of which embedding model actually produces

@@ -46,7 +46,9 @@ or it is run on Windows.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
+import re
 import os
 import shutil
 import signal
@@ -179,6 +181,62 @@ RESTATED_JOB = {
     ],
 }
 
+
+def map_frame() -> tuple[list, list]:
+    """The backend's frame in its shape: five sectors, 23 anchors (backend/src/services/news_map/layout.py)."""
+
+    import math
+
+    sizes = [("society", "Society", 4), ("science", "Science", 4), ("environment", "Environment", 5),
+             ("culture", "Culture", 5), ("health", "Health", 5)]
+    slot = 2 * math.pi / (23 + 0.6 * 5)
+    groups, topics, cursor, index = [], [], 0.0, 0
+    for key, name, size in sizes:
+        start = cursor
+        for _ in range(size):
+            angle = math.pi / 2 - (cursor + 0.5) * slot
+            radius = 0.88 if index % 2 == 0 else 0.6
+            topics.append({"key": f"{key}{index}", "name": f"{name} topic {index}", "group": key,
+                           "x": round(radius * math.cos(angle), 4), "y": round(radius * math.sin(angle), 4)})
+            cursor += 1
+            index += 1
+        groups.append({"key": key, "name": name, "angle": math.pi / 2 - (start + cursor) / 2 * slot, "span": size * slot})
+        cursor += 0.6
+    return groups, topics
+
+
+MAP_GROUPS, MAP_TOPICS = map_frame()
+MAP_ETAG = '"map-e2e-1"'
+MAP = {
+    "layout": 1, "groups": MAP_GROUPS, "topics": MAP_TOPICS, "day": None, "count": 2,
+    "sources": ["El País", "BBC"], "entities": [{"k": "person:ada lovelace", "n": "Ada Lovelace", "t": "person"}],
+    "articles": {
+        "id": [ARTICLE_ID, "00000000000000aa"],
+        "title": ["Las renovables superan al carbón", "Volunteers plant 40,000 trees"],
+        "lang": ["es", "en"], "day": ["2026-10-01", "2026-10-02"], "src": [0, 1], "g": [2, 2],
+        "t": [[10], [9]], "e": [[0], [0]], "v": ["TRUE", "UNVERIFIED"],
+        "x": [MAP_TOPICS[10]["x"], MAP_TOPICS[9]["x"]], "y": [MAP_TOPICS[10]["y"], MAP_TOPICS[9]["y"]],
+        "approx": [None, None],
+    },
+}
+MAP_ENTITIES = {"layout": 1, "count": 1, "entities": [
+    {"k": "person:ada lovelace", "n": "Ada Lovelace", "t": "person", "c": 2, "x": 0.1, "y": -0.5}]}
+MAP_LINKS = {"id": ARTICLE_ID, "title": "Las renovables superan al carbón", "x": 0, "y": 0,
+             "topics": [{"key": "energy", "name": "Energy", "confidence": 0.6}],
+             "entities": [{"key": "person:ada lovelace", "name": "Ada Lovelace", "type": "person", "articles": 2}],
+             "related": [{"id": "00000000000000aa", "title": "Volunteers plant 40,000 trees", "x": 0, "y": 0,
+                          "score": 1.3, "via": [{"kind": "entity", "via": "Ada Lovelace", "weight": 1.0}]}]}
+
+MAP_FOR_YOU = {"weights": {"topic": 0.35, "entity": 0.25, "nearness": 0.2, "freshness": 0.2}, "coldStart": False,
+               "considered": 2, "items": [{
+                   "id": ARTICLE_ID, "title": "Las renovables superan al carbón", "source": "El País", "day": "2026-10-01",
+                   "verdict": "TRUE", "x": 0, "y": 0, "score": 0.42, "mainPart": "topic",
+                   "parts": {"topic": 0.35, "entity": 0.0, "nearness": 0.0, "freshness": 0.07},
+                   "reasons": ["you follow Energy"]}]}
+MAP_SEARCH = {"query": "renovables", "semantic": "used", "results": [
+    {"kind": "article", "id": ARTICLE_ID, "title": "Las renovables superan al carbón", "x": 0, "y": 0,
+     "reason": "in the title"}]}
+
 HELD_SECONDS = 3.0
 
 
@@ -190,6 +248,9 @@ class Stub(BaseHTTPRequestHandler):
 
     job_polls = 0
     slow_polls: list[float] = []
+    # Every other GET that reached the stub, so a check can say a proxy
+    # forwarded nothing.
+    paths: list[str] = []
     lock = threading.Lock()
 
     def do_POST(self):
@@ -202,6 +263,9 @@ class Stub(BaseHTTPRequestHandler):
 
         if path == "/analyze/jobs/batch":
             return self._json(202, {"jobs": [{"url": "https://example.org/a", "jobId": "slow2", "reused": False}]})
+
+        if path == "/map/for-you":
+            return self._json(200, MAP_FOR_YOU)
 
         return self._json(404, {"detail": "Not found"})
 
@@ -233,9 +297,20 @@ class Stub(BaseHTTPRequestHandler):
             self._held_poll()
             return self._json(200, {"jobs": [{"jobId": "slow2", "url": "https://example.org/a", "status": "running", "events": []}]})
 
+        if path == "/map/articles" and self.headers.get("If-None-Match") == MAP_ETAG:
+            self.send_response(304)
+            self.send_header("ETag", MAP_ETAG)
+            self.end_headers()
+            return None
+
+        with Stub.lock:
+            Stub.paths.append(path)
+
         routes = {
             "/reader/articles": FEED, f"/reader/articles/{ARTICLE_ID}": ARTICLE,
             "/reader/stories": STORIES, f"/reader/stories/{STORY_ID}": STORY,
+            "/map/articles": MAP, "/map/entities": MAP_ENTITIES, f"/map/articles/{ARTICLE_ID}/links": MAP_LINKS,
+            "/map/search": MAP_SEARCH,
         }
 
         if path in routes:
@@ -254,6 +329,8 @@ class Stub(BaseHTTPRequestHandler):
         data = json.dumps(body).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
+        if body is MAP:
+            self.send_header("ETag", MAP_ETAG)
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
@@ -365,18 +442,30 @@ class Browser:
     One page, attached in flat mode; events are read and dropped.
     """
 
-    def __init__(self, chrome: str, profile: str, extra: list[str] | None = None):
+    def __init__(self, chrome: str, profile: str, extra: list[str] | None = None, gpu: bool = False):
 
         to_chrome_r, self._to_chrome = os.pipe()
         self._from_chrome, from_chrome_w = os.pipe()
 
         def wire():
-            os.dup2(to_chrome_r, 3)
-            os.dup2(from_chrome_w, 4)
+            # Copied above 10 first, then onto 3 and 4. os.pipe() gives
+            # close-on-exec descriptors, and in a fresh process the first
+            # one is fd 3 itself: dup2(3, 3) is a no-op that leaves the
+            # flag set, so Chrome started without its pipe ("Remote
+            # debugging pipe file descriptors are not open") - every
+            # Browser failed on the dev laptop on 29 Oct. dup2 from a
+            # different descriptor always makes an inheritable one.
+            reader = fcntl.fcntl(to_chrome_r, fcntl.F_DUPFD, 10)
+            writer = fcntl.fcntl(from_chrome_w, fcntl.F_DUPFD, 10)
+            os.dup2(reader, 3)
+            os.dup2(writer, 4)
 
         self.process = subprocess.Popen(
-            [chrome, "--headless=new", "--disable-gpu", "--no-sandbox", "--remote-debugging-pipe",
-             f"--user-data-dir={profile}", *(extra or []), "about:blank"],
+            # The GPU stays off for the checks, whose answers do not depend
+            # on it; the map renderer benchmark turns it on
+            # (scripts/bench_map_renderers.py).
+            [chrome, "--headless=new", *([] if gpu else ["--disable-gpu"]), "--no-sandbox",
+             "--remote-debugging-pipe", f"--user-data-dir={profile}", *(extra or []), "about:blank"],
             preexec_fn=wire, close_fds=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         os.close(to_chrome_r)
@@ -436,6 +525,10 @@ class Browser:
         return False
 
     def close(self):
+        # Chrome's helper processes can still be writing the profile as it
+        # exits, so every profile here is a TemporaryDirectory that ignores
+        # cleanup errors: under load (29 Oct, load average ~16) the
+        # deletion raced them and failed a check that had passed.
 
         self.process.terminate()
         try:
@@ -463,6 +556,45 @@ START_JOB = """
   return true;
 })(%s)
 """
+
+
+def page_width(chrome: str, url: str, width: int = 375) -> tuple[int, str]:
+    """How wide a page lays out on a phone-sized screen, and its text: wider than the screen is a sideways scroll."""
+
+    import tempfile
+
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
+        browser = Browser(chrome, profile)
+        try:
+            browser.send("Emulation.setDeviceMetricsOverride",
+                         {"width": width, "height": 812, "deviceScaleFactor": 2, "mobile": True}, browser.session)
+            browser.send("Page.navigate", {"url": url}, browser.session)
+            browser.until("document.readyState === 'complete' && document.body.innerText.includes('of 2 articles')", timeout=30)
+            return browser.evaluate("document.documentElement.scrollWidth"), browser.evaluate("document.body.innerText")
+        finally:
+            browser.close()
+
+
+def for_you_with_interests(chrome: str, base: str) -> tuple[bool, str]:
+    """A signed-out reader who chose before: their interests in localStorage, their stories ranked."""
+
+    import tempfile
+
+    chosen = json.dumps([{"kind": "topic", "key": "energy", "label": "Energy"},
+                         {"kind": "group", "key": "science", "label": "Science"},
+                         {"kind": "group", "key": "health", "label": "Health"}])
+
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
+        browser = Browser(chrome, profile)
+        try:
+            browser.send("Page.navigate", {"url": f"{base}/for-you"}, browser.session)
+            browser.until("document.readyState === 'complete'")
+            browser.evaluate(f"localStorage.setItem('inspiring-news:interests', {json.dumps(chosen)})")
+            browser.send("Page.reload", {}, browser.session)
+            shown = browser.until("document.body.innerText.includes('Because you follow Energy')", timeout=30)
+            return shown, "" if shown else browser.evaluate("document.body.innerText.slice(0, 300)")
+        finally:
+            browser.close()
 
 
 def leave_while_polling(chrome: str, base: str, bulk: bool = False) -> tuple[bool, str]:
@@ -750,6 +882,55 @@ def run(checks: Checks, chrome: str, base: str, tiktok: Connections) -> None:
         "What is checked" in page and SAMUDA_CHECKED in page and "Reported speech" in page
         and page.index("What is checked") < page.index("Searched on SearXNG"),
     )
+
+
+    print("The news map")
+    page = dom(chrome, f"{base}/map")
+    checks.check("the map draws its stories and says how many", "The news map" in page and "2 of 2 articles" in page and "<canvas" in page)
+
+    page = dom(chrome, f"{base}/map?view=list")
+    checks.check("the list view lists every story", "Las renovables superan al carbón" in page and "Volunteers plant 40,000 trees" in page)
+
+    status, _ = get(f"{base}/api/map/articles", headers={"If-None-Match": MAP_ETAG})
+    checks.check("an unchanged map is a 304 through the proxy", status == 304, f"got {status}")
+
+    before = len(Stub.paths)
+    status, _ = get(f"{base}/api/map/storage/raw")
+    checks.check("the map proxy forwards only its own routes", status == 404 and len(Stub.paths) == before,
+                 f"got {status}, {len(Stub.paths) - before} request(s) forwarded")
+
+    page = dom(chrome, f"{base}/map?q=renovables")
+    checks.check("a shared search opens with its results", "in the title" in page and "Las renovables superan al carbón" in page)
+
+    print("The day's news")
+    page = dom(chrome, f"{base}/today?day=2026-10-01")
+    checks.check("a day shows its stories by section", "Las renovables superan al carbón" in page and "Environment" in page and "1 story on this day" in page)
+
+    page = dom(chrome, f"{base}/today?day=2026-10-05")
+    checks.check(
+        "an empty day falls back to the latest day before it, and says so",
+        # Whether en-GB puts a comma after the weekday varies by ICU version.
+        "Nothing was published on" in page and "5 October 2026" in page and "Volunteers plant 40,000 trees" in page,
+    )
+    counts = [int(n) for n in re.findall(r"· (\d+)</span></h2>", page)]
+    checks.check("the sections' counts add up to the day's total", sum(counts) == 1 and "1 story on this day" in page, f"sections {counts}")
+
+    print("For you")
+    page = dom(chrome, f"{base}/for-you")
+    checks.check("on a first visit, For you asks what to follow", "Choose at least 3" in page and "Show my stories" in page)
+    ok, detail = for_you_with_interests(chrome, base)
+    checks.check("with interests kept in the browser, the stories come with their reasons", ok, detail)
+
+    print("Reader accounts")
+    page = dom(chrome, f"{base}/account")
+    checks.check("signed out, the account page offers both forms and says what it keeps",
+                 "Create an account" in page and "What an account keeps" in page and "argon2id" in page)
+    before = len(Stub.paths)
+    status, _ = get(f"{base}/api/account/users")
+    checks.check("the account proxy forwards only its own routes", status == 404 and len(Stub.paths) == before, f"got {status}")
+
+    width, text = page_width(chrome, f"{base}/map")
+    checks.check("the map fits a 375 px screen", width <= 375 and "2 of 2 articles" in text, f"laid out {width} px wide")
 
     print("A story from a trend")
     tiktok.reset()

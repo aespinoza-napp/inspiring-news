@@ -832,6 +832,22 @@ The author's request on Oct 26 (`docs/decisions/trends.md`; goals in `docs/goals
 
 ---
 
+## 🗺️ News map — the readers' app (added Oct 29) · 96h, on top of the plan
+
+The author's request on Oct 29: an app for readers where the news reads as one enormous graph, with search, the day's news, a For you section and accounts (`docs/decisions/news-map.md`; goals in `docs/goals.md`, "News map"). Built on `feature/news-map` on Oct 29, alongside the model benchmark.
+
+- [x] **N1 · The map's data** (12h) — `src/services/news_map/`: a position per story from its topics and its embedding alone (a new story moves no other, a test), five sectors and 23 anchors with the radii searched (closest pair 0.287), Madrid's day with a naive time read in its source's zone; `/map/articles` (columns, gzip, ETag), `/map/entities`, `/map/articles/{id}/links` (the graph's weights, from the lake). 10k: under 200 ms and 1 MB.
+- [x] **N2 · The cloud** (16h) — `/map`: regl, chosen over sigma.js by a measured spike (as fast on the Intel GPU, ~16x faster in software, where sigma could not draw 50k); pan, zoom, pinch, keys, labels by zoom, filters that dim, the panel, a list view. The clusters' squash changed to tanh after screenshots at 3,000 stories showed crescents. e2e: draws, lists, 304, proxy allowlist, 375 px.
+- [x] **N3 · Search** (10h) — `/map/search`: names (folded, trigram), words in en and es, meaning against the published stories' vectors only; 200 characters, 30 a minute with meaning per visitor, an hour's cache, still answers with `inference/` down. A type-ahead without embeddings; `?q=` shared (e2e).
+- [x] **N4 · Today** (6h) — `/today`: the day's stories bright on the map and by section; an empty day falls back and says so (e2e); Madrid's boundary in summer and winter (tests).
+- [x] **N5 · Reader accounts** (14h) — `src/services/accounts/`, its own SQLite file; argon2id, hashed session tokens, CSRF, sign-in limits, no-store, export and delete. Checked in Chrome through the real proxy (HttpOnly, Secure, Lax; 403 without the token). Threat model in `news-map.md`.
+- [x] **N6 · Interests and connections** (10h) — follow sections, topics and names; save; connect two stories or a story and a name with a note, drawn dashed for that reader only (a test: never in the shared links); `localStorage` when signed out, offered at sign-in.
+- [x] **N7 · For you** (12h) — `POST /map/for-you`, stateless: topic, names, nearness to saved stories, freshness; parts that add up to the score (a test); 7 of 10 from a followed topic, 3 from another, one an hour per outlet; "not interested" lowers that part for that reader. e2e: chooser, then ranked stories with reasons.
+- [ ] 🟡 **N8 · Rendering budget** (10h) — `scripts/bench_news_map.py` on the Intel GPU: warm first paint 373 ms at 10k and 499 ms at 50k, 354 KB over the wire at 10k (2.09 MB before the proxy's gzip, this goal's finding), picks 0.1 ms. **Frames not settled**: measured under load (average 16), drops fell as the map grew (7.2% at 2k, 0.8% at 50k); the run on an idle machine is left.
+- [ ] 🟡 **N9 · The write-up** (6h) — `news-map.md` one document; this section; `chapters/05-development/11-news-map.tex`; a line in `CLAUDE.md`. **The thesis was not built**: this machine has no LaTeX.
+
+---
+
 ## Delivered outside the plan
 
 Real work that is in the repo but not in any sprint above, so the plan does not under-report what exists:

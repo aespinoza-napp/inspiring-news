@@ -320,4 +320,156 @@ On top of the goal rules above:
 
 ```
 /goal Prepare an approved draft for publishing on WordPress, an Instagram carousel, Instagram Stories and TikTok, saved so each can be posted correctly. Read the "Publishing and grounding" section of docs/goals.md first, and docs/decisions/writing.md "Publishing" and backend/src/services/publishing/social.py: TikTok and Instagram post media with a caption, never an article, and their APIs need app review, so this goal builds the package each one needs and saves it; posting stays a person's step except for WordPress. One package per channel, built from the published snapshot's allowlist (services/publishing/story.py) so a package carries nothing the public page would not, under DRAFTS_PATH/published/<draft id>/<channel>/ with a manifest.json (channel, draft id, revision, publishedAt, files with sizes and sha256, the caption, the link back to /reader/stories/<id>, and the disclosure). WordPress: the post as WordPress takes it - title, excerpt (subtitle), slug and tags from the draft's metadata, Gutenberg-block HTML of the body with each [n] as a link to its source and the sources listed at the end, the AI disclosure as its own block, a featured image when the analysed article has image_url (linked, never downloaded and re-hosted without its credit) - written as post.json (the REST API's /wp/v2/posts body) and post.xml (a one-item WXR the site's importer reads, round-tripped through our own services/imports/wordpress.py parser in a test); and, only when WORDPRESS_URL, WORDPRESS_USER and WORDPRESS_APP_PASSWORD are set, sent through the REST API as status "draft" (never "publish": the site's own editor publishes), the post's id and edit link kept in the PublishRecord. Instagram: a carousel of 1080x1350 PNG cards (cover with the title, 3-8 cards of the story's key points with the source named on each, a last card with the link), rendered with Pillow and fonts committed to the repo, the text never smaller than 32 px and cut only at a sentence; caption.txt under 2,200 characters with at most 30 hashtags from the tags and topic, the sources named, the link said as "link in bio" since captions do not link. Instagram Stories: the same story as 1080x1920 frames inside the 250 px safe areas top and bottom, the last with the link for the link sticker written in the manifest. TikTok: a photo post of the same 1080x1920 frames (TikTok's photo mode) plus caption.txt within its limit, and a still-to-video MP4 only if ffmpeg is on the PATH (reported as skipped otherwise, never required). A card states only sentences of the approved body, each with its citation's source named, so a package never says what the review did not read; numbers checked against the body by the grounding module's figures(). The four channels replace the unavailable ones in social.py's place: each available, packages built in the background (run_in_background "publishing", as writing.md foresaw), all or none as publishing is now, unpublish removing the package; GET /drafts/{id}/packages/{channel} lists the files and serves a zip, behind STORAGE_API_KEY. frontend: PublishPanel lists the four with what each will produce, a preview of the cards and the caption with a copy button, and a download per channel; npx tsc passes. Tests with tmp_path and no network: the snapshot allowlist holds in every package, image sizes and safe areas, caption limits, the WXR round-trip, the REST call faked and refused without the three settings, all-or-none when one channel fails, a Spanish and an English draft (and a stored Catalan one still packages). Then one live trial on an approved draft: the four packages built, the cards looked at by Claude (Read the PNGs) and by the author, WordPress sent as a draft only if the author has set its keys; recorded in docs/decisions/writing.md "Publishing". Follow the goal rules in docs/goals.md and the "Publishing and grounding" rules (worktree, owned files, contract, merge after P1). Done when ./scripts/check.sh passes after rebasing on P1 and the trial is recorded.
+## News map: the readers' app (added 2026-10-29)
+
+Asked for on 2026-10-29 by the author: an app for readers where the news
+feels like one enormous graph. Each article is a point, joined to its
+entities and topics. The topics sit in sections, so the whole reads as a
+cloud of points. Around it: search for an article or an entity, a page
+for the day's news, a "For you" section built from a reader's
+interests, and accounts so a reader can keep interests and make
+connections of their own. The rendering has to stay fast as the cloud
+grows. Nine goals, about 96 h on top of the plan.
+
+Where they stand on 2026-10-29, on `feature/news-map`: **N1-N7 done**,
+each checked as its "Done when" asks (`./scripts/check.sh` and its e2e
+target, which first ran on this machine that day after a fix to
+`e2e.py`'s DevTools pipe). **N8 measured but not settled**: first paint,
+payload and picking are inside budget, but the frames were measured
+under the model benchmark's load and need an idle run. **N9 written but
+the thesis not built**: there is no LaTeX here. Deviations, each with
+its reason in `docs/decisions/news-map.md`:
+
+- N1 places an article by its main topic, not a weighted mean.
+- N4 builds the day's cards from the map's fields, not `ReaderCard`.
+- N7's diversity cap is split (7 of 10 from a followed topic, 3 from
+  any other), because the goal's two sentences contradicted each other.
+- N8's budget runs in its own script rather than in e2e, and counts
+  dropped frames rather than comparing a p95 with exactly 16.7 ms.
+
+The prompts below stay as the record of what was asked.
+
+What it starts from, read on 29 Oct:
+- **Data.** The public reader routes (`GET /reader/articles[/{id}]`),
+  which are open on purpose and only ever show publishable articles.
+  Each article's topics and entities are in the lake (and in Neo4j,
+  through `GraphSync`). Its bge-m3 vector is in Qdrant. The relatedness
+  weights of `GET /graph/related` are in `docs/decisions/graph.md`.
+- **Frontend.** The newsroom's `/graph` page is an SVG force layout
+  (`GraphCanvas.tsx`) built for a few hundred nodes; it is the console,
+  not this app. The frontend has no dependency beyond Next.js and React.
+- **How much there is.** This stack's lake holds **2 publishable
+  articles** (the graph: 112 entities, 28 claims). The map is designed
+  and measured on synthetic data at 2k, 10k and 50k articles (N8). It
+  needs analysed articles before a reader sees anything of use.
+
+```
+N1 Map data ── N2 The cloud ──┬── N3 Search
+                              ├── N4 Today
+                              └── N8 Rendering budget
+N5 Accounts ── N6 Interests and connections ── N7 For you (needs N1)
+N9 The write-up (after any of them)
+```
+
+N5 needs nothing from N1-N4 and can run beside them. N7 needs N1's data
+and N6's interests.
+
+Two decisions are taken here so that no goal re-opens them, and a third
+is left to N2's measurement:
+
+- **One frontend, a public section of it.** The app lives in `frontend/`
+  under its own routes (`/map`, `/today`, `/for-you`, `/account`), open
+  the way `/reader` is. It shares the reader's components, proxies and
+  the Caddy rule that serves `/reader` without the password. A second
+  Next.js app would duplicate all three.
+- **Reader accounts never touch the lake or the graph.** "The lake is
+  the record, the graph a view that sync rebuilds" (`graph.md`). A
+  reader's interests in Neo4j would be wiped by the next sync, or would
+  make sync something that has to protect them. They live in their own
+  SQLite file on the backend's data volume (`users.db`), which is
+  standard library and backed up with the volume.
+- **The renderer is measured, not picked.** N2 compares WebGL points
+  through `regl` against sigma.js/graphology at 10k points on the dev
+  laptop's integrated GPU, and keeps the one that meets N8's budget.
+  Both are free.
+
+Rules every news-map goal follows, on top of the goal rules above:
+
+- **Public data only.** Every route the app calls returns what
+  `/reader` may: publishable articles, their topics, entities, verdicts
+  and sources. Never a scraped body, the article's own text, an
+  unpublished draft, the query console or a job. A route the app adds is
+  listed in `tests/api/test_api_key.py::OPEN_ENDPOINTS` with its reason,
+  and Caddy's public rule (`docker/caddy/`) gains it, with the
+  password test extended to it.
+- **Free and private.** Open-source libraries, no paid service, no
+  third-party analytics, fonts or tiles. Nothing about a reader leaves
+  the server. A reader's data is never written to logs, the lake,
+  Neo4j or `/metrics`.
+- **Positions are stable.** An article's place on the map is a function
+  of the article and a layout version alone. A new article never moves
+  an old one. When the layout changes, its version changes.
+- **A public route that costs CPU is bounded.** Embedding a search
+  query reaches `inference/`. Such routes cap the input, are limited per
+  client and are cached, because a public page must not be a way to load
+  the server (`deployment.md`, "The front door").
+- Tests use synthetic articles and tmp paths. Only N8's measurement runs
+  a real browser, through `./scripts/check.sh e2e` (headless Chrome,
+  stub backend).
+- Work on `feature/news-map` off `dev`. Each goal records what it built
+  and measured in `docs/decisions/news-map.md`. Commit when the author
+  says so; never push.
+
+### N1 · The map's data: stable positions and a compact payload · 12h
+
+```
+/goal Give the map its data. A layout module in backend/src/services/news_map/ (no __init__.py) places every publishable article in 2D. The five topic groups (TOPIC_GROUPS) are sectors of a disc in a fixed order. Each of the 23 topics is an anchor inside its group's sector, fixed by src/config/topics.py's order. An article sits at the confidence-weighted mean of its topics' anchors, plus an offset from its bge-m3 vector projected on a fixed 2D basis, so similar stories cluster within a topic. The basis is fitted once with numpy PCA on the vectors in Qdrant, saved with a LAYOUT_VERSION and never refitted silently. An article with no vector, or no topic above the confidence floor, goes to its group's rim and says so. Open routes, publishable articles only: GET /map/articles (id, title, language, published day, group, topics, top 5 entities, verdict, x, y, layout version), compact (positions rounded to 1e-4, short keys, ETag, gzip) and paged by published day; GET /map/entities (the entities of more than one article, each at the mean of its articles' positions, with its article count); GET /map/articles/{id}/links (its entities, topics and related articles, with the weights of /graph/related, computed from the lake when Neo4j is down, as /reader is). Tests on synthetic articles: adding an article moves no other; the same input gives the same positions; an article of two groups lies between them; nothing outside /reader's fields is in any response; 10k synthetic articles serialise in under 200 ms and under 1 MB gzipped. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh passes and docs/decisions/news-map.md describes the layout as built.
+```
+
+### N2 · The cloud: sections, points and what joins them · 16h
+
+```
+/goal Draw the map at /map, public like /reader. First a spike: the same 10k synthetic points from N1 through regl (one instanced draw call) and through sigma.js/graphology, measured on the dev laptop's integrated GPU in Chrome for frame time while panning and zooming, first paint, and hover picking. Keep the one that meets N8's budget; record both sets of numbers and the choice in docs/decisions/news-map.md. Then the view: the five group sectors labelled and tinted, topic labels at their anchors, each article a point coloured by group and sized by recency. Pan and zoom by mouse, touch and keyboard. Clicking a group or topic label zooms to it. Hovering a point shows a card (title, outlet, day, verdict). Clicking a point opens a side panel with its topics, its entities and its related articles, draws the lines to them, and links to /reader/<id>. An entity's point appears only when it has more than one article on screen. Lines are drawn only for the selected article, never all at once. Filters for language, group and verdict. A list view with the same articles and the same filters, readable by keyboard and screen reader, because the canvas is not. The empty state says how many articles there are and that the map fills as articles are published. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh passes (typecheck and the e2e target opening /map against the stub backend) and the page works on a 375 px screen.
+```
+
+### N3 · Search: an article or an entity · 10h
+
+```
+/goal Search the map. GET /map/search?q= (open) returns articles and entities in one list, each with its kind, the reason it matched and its position. Entities by name: case-, accent- and space-folded, prefix first, then trigram similarity. Articles by title and topic keywords in en and es (src/config/lexicons.py; both languages stay complete), then by meaning: the query embedded through inference/ and searched in Qdrant over publishable articles only. The semantic part is bounded: queries over 200 characters are refused, each client gets at most 30 searches a minute (429 with retry-after), results are cached by folded query for an hour, and when inference/ is down the search still answers by name and keyword and says the semantic part was unavailable. On /map: a search box with suggestions as you type (name and keyword only, no embedding per keystroke). Choosing an article flies the camera to it and opens its panel. Choosing an entity highlights all its articles and dims the rest. The URL keeps the query, so a search can be shared. Tests: "Barça" finds "barca"; a Spanish query finds the Spanish article; the 31st search in a minute is refused; inference down still answers; no unpublished article is ever returned. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh passes.
+```
+
+### N4 · Today · 6h
+
+```
+/goal Add /today, public: the day's news. The day is Europe/Madrid's (the publication's), by each article's publication time, else the day it was published here. At the top, the map with today's articles at full colour and the rest dimmed, using N2's view and N1's /map/articles?day=. Below, the day's articles as cards (ReaderCard) grouped by topic group, with each group's count. A day with nothing published shows the latest day that has articles and says which day it is, never an empty page. Previous and next day links; the URL keeps the day. Tests: the Madrid day boundary (an article published at 22:30 UTC on the 28th is the 29th's in summer time, 00:30 in Madrid, and the 28th's in winter time, 23:30: test both), the empty-day fallback, and the group counts summing to the day's total. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh passes and the e2e target opens /today.
+```
+
+### N5 · Reader accounts · 14h
+
+```
+/goal Let readers register. backend/src/services/accounts/ (no __init__.py) over a SQLite file (settings.USERS_DB_PATH, default data/users.db; stdlib sqlite3, migrations numbered in code). Register with a username and password (email optional, stored only if given; no confirmation mail, since no free mail service is configured, and the page says so). Passwords hashed with argon2id (argon2-cffi), never logged. Sessions are a random token in an httpOnly, Secure, SameSite=Lax cookie, stored hashed, expiring after 30 days idle. Every state-changing route checks a CSRF token. Login is limited per username and per client (5 failures in 15 minutes, then 429 with retry-after). Routes under /account: register, login, logout, me, change password, export (everything held about the reader, as JSON) and delete (removes every row, at once). The account routes are open in the API key sense, with the session as their capability, each listed in OPEN_ENDPOINTS with why, and in Caddy's public rule. Frontend: /account with register, sign in, export and delete, plus a sign-in link in the app's header. A short privacy note on the page says what is kept and why. Tests: a password is never stored or logged in clear; a wrong CSRF token is refused; the 6th failed login is limited; export returns everything; after delete, the session and every row are gone; nothing about a reader reaches the lake, Neo4j or /metrics. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh passes and docs/decisions/news-map.md has an "Accounts" section, threat model included.
+```
+
+### N6 · Interests and a reader's own connections · 10h
+
+```
+/goal Let a reader say what interests them and join things themselves. A first-visit choice on /for-you: groups, topics, and entities found through N3's search, at least three in all. Signed in, the choices are kept in users.db. Signed out, they are kept in localStorage, wrapped in try/catch so the page works without it, and offered for import at sign-up. Follow or unfollow a topic or entity from the map's side panel. Save an article. A personal connection: link two articles, or an article and an entity, with an optional note of up to 280 characters. It is drawn on the map as a dashed line for that reader only, listed on /account, and removable. Routes under /account/interests, /account/saved and /account/connections, session-protected and CSRF-checked, with at most 500 connections a reader. Personal connections never enter the shared graph, the related-articles weights or another reader's view (a test), and export and delete (N5) include them. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh passes.
+```
+
+### N7 · For you · 12h
+
+```
+/goal Fill /for-you with the articles that fit a reader's interests. Each publishable article is scored in parts, each shown beside it: a followed topic (its confidence), a followed entity (2 / articles mentioning it, as /graph/related counts a shared entity), nearness to the reader's saved articles (bge-m3 cosine to their mean vector, from Qdrant), and freshness (halving every 3 days). The weights sum to 1, live in src/config/, and are recorded with each list. They are reasoned, not fitted, since there is no labelled set to fit them against, and the decision record says so. Diversity: at most 3 of the first 10 from one topic, and one article an hour from one outlet. An article the reader saved or hid is never offered again. Signed out, it works from localStorage's interests through a POST that stores nothing. Each card says why it is there ("because you follow Climate"), and "not interested" hides it and lowers that reason's weight for this reader only. The page shows the list and the map with the list's articles highlighted. Tests on synthetic readers: a Climate follower's top 10 is mostly Climate but not only; a followed entity brings its articles; the diversity caps hold; a hidden article never returns; the parts shown sum to the score. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh passes and docs/decisions/news-map.md has a "For you" section with the weights and why.
+```
+
+### N8 · Rendering budget · 10h
+
+```
+/goal Make the map fast and prove it. Synthetic datasets at 2k, 10k and 50k articles with their entities (scripts/news_map_fixture.py, deterministic by seed, served by the e2e stub backend). The budget, on the dev laptop (Core Ultra 7 165U, Intel Arc integrated GPU, Chrome): at 10k, first paint under 1.5 s from a warm cache, the payload under 1 MB gzipped, panning and zooming at 60 fps (frame time p95 under 16.7 ms), hover picking under 4 ms; at 50k, at least 30 fps and first paint under 3 s. The techniques, each kept only if it measurably helps and recorded with its numbers: positions as typed arrays (N1's compact payload decoded in a Web Worker), one instanced draw call for the points, GPU picking or a quadtree, labels by level of detail with collision culling, culling to the viewport, lines only for the selection, entity points only past a zoom level, and loading by day (today first, older days behind it). A performance test in the e2e target (scripts/e2e.py) loads each dataset headless, pans and zooms on a script, and fails over budget, with numbers written to backend/data/evaluation/experiments/news-map/. The e2e script needs a POSIX machine; this one is. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh e2e passes at 2k and 10k within budget, the 50k numbers are recorded, and docs/decisions/news-map.md has the table.
+```
+
+### N9 · The write-up · 6h · after any of N1-N8
+
+```
+/goal Write the news map into the record. docs/decisions/news-map.md, as each goal left it, made one document: what the app is, the layout and why positions are stable, the renderer's choice with N2's numbers, the rendering table from N8, the accounts' threat model, and For you's weights and why they are reasoned rather than fitted. docs/roadmap.md gets a "News map" phase with N1-N8 ticked as each was verified, and how. The thesis gets a section in docs/final_document/chapters/05-development/ in the style of its neighbours, with the figures the numbers support and \pending where a goal is not done. The root CLAUDE.md gets one line in its navigation table pointing at news-map.md. Follow the goal rules and the news-map rules in docs/goals.md. Done when ./scripts/check.sh passes and the thesis builds.
 ```

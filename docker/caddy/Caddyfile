@@ -27,7 +27,13 @@
 	# secret, and no password crosses the network for it. Everything
 	# else the reader page links to (the operator pages) still asks for
 	# the password below.
-	@reader path /reader /reader/* /api/reader/* /_next/static/* /favicon.ico
+	# The readers' news map and the day's news (docs/decisions/news-map.md)
+	# are the same kind of page: their one proxy, /api/map/*, forwards only
+	# the backend's four /map routes, open by design like /reader's. A
+	# reader's account is too (/account): its proxy forwards only the seven
+	# account routes, whose capability is the session cookie, not the
+	# password (src/api/account_routes.py).
+	@reader path /reader /reader/* /api/reader/* /map /map/* /today /for-you /api/map/* /account /api/account/* /_next/static/* /favicon.ico
 	handle @reader {
 		reverse_proxy frontend:3000
 	}

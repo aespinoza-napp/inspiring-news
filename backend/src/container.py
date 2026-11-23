@@ -91,6 +91,10 @@ _graph_readers: dict = {}
 _wordpress_import = None
 
 _reader_index = None
+_map_index = None
+_map_search = None
+_account_service = None
+_reader_data = None
 
 _selection_service = None
 
@@ -520,6 +524,115 @@ def get_reader_index():
                 )
 
     return _reader_index
+
+
+def get_map_index():
+    """
+    Backs /map/*: the news map's view of the published articles
+    (src/services/news_map/index.py). Built on the reader's index, so
+    which articles are published is decided in one place, and a singleton
+    for the same reason: it is a cache of each record's place and links.
+    Source countries are read once, here, for the zone a naive
+    publication time is in.
+
+    With MAP_SOURCE=graph, the positive graph's articles of
+    MAP_GRAPH_SOURCE_ID instead (src/services/news_map/graph_source.py):
+    the WordPress import, which the lake never publishes.
+    """
+
+    global _map_index
+
+    if _map_index is None:
+        with _lock:
+            if _map_index is None:
+                from src.repositories.source_repository import SourceRepository
+                from src.services.news_map.index import MapIndex
+                from src.services.reader.views import SourceNames
+
+                sources = SourceRepository().list()
+
+                if settings.MAP_SOURCE == "graph":
+                    from src.services.news_map.graph_source import GraphMapIndex
+
+                    _map_index = GraphMapIndex(
+                        get_graph_client(),
+                        settings.MAP_GRAPH_SOURCE_ID,
+                        {source.id: source.country for source in sources},
+                        labels_path=settings.MAP_GRAPH_LABELS,
+                        images_dir=settings.MAP_IMAGES_DIR,
+                    )
+
+                    return _map_index
+
+                _map_index = MapIndex(
+                    get_datalake_repository(),
+                    get_reader_index(),
+                    SourceNames(sources),
+                    {source.id: source.country for source in sources},
+                )
+
+    return _map_index
+
+
+def get_map_search():
+    """
+    Backs /map/search (src/services/news_map/search.py). A singleton
+    because it holds the per-client limits and the cache: one per request
+    would limit nothing. Meaning is embedded through the same
+    EmbeddingService as the pipeline, so it shares inference/'s permit.
+    """
+
+    global _map_search
+
+    if _map_search is None:
+        with _lock:
+            if _map_search is None:
+                from src.services.embeddings.service import EmbeddingService
+                from src.services.news_map.search import MapSearch
+
+                _map_search = MapSearch(get_map_index(), embed=lambda text: EmbeddingService().encode(text))
+
+    return _map_search
+
+
+def get_account_service():
+    """
+    Backs /account/*: reader accounts (src/services/accounts/). A
+    singleton because it holds the sign-in limits and the hashing ceiling;
+    the accounts themselves are in their own SQLite file
+    (settings.USERS_DB_PATH), never the lake or the graph.
+    """
+
+    global _account_service
+
+    if _account_service is None:
+        with _lock:
+            if _account_service is None:
+                from src.services.accounts.service import AccountService
+                from src.services.accounts.store import AccountStore
+
+                _account_service = AccountService(AccountStore(settings.USERS_DB_PATH))
+
+    return _account_service
+
+
+def get_reader_data():
+    """
+    Backs /account/interests, /saved and /connections: what a reader
+    follows, saves and connects (src/services/accounts/reader_data.py), in
+    the accounts' own database, checked against the published map.
+    """
+
+    global _reader_data
+
+    if _reader_data is None:
+        with _lock:
+            if _reader_data is None:
+                from src.services.accounts.reader_data import ReaderData
+
+                _reader_data = ReaderData(get_account_service().store, get_map_index())
+
+    return _reader_data
 
 
 def get_draft_store():
