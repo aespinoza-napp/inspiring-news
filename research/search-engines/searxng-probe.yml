@@ -1,0 +1,27 @@
+# A throwaway SearXNG with the full default roster, to try every engine on
+# its own, including those the project's allowlist leaves out. Same timeouts
+# as docker/searxng/settings.yml, and its Wikipedia override, so Wikipedia
+# answers a list and not only the infobox the backend never reads.
+use_default_settings: true
+general:
+  instance_name: "engine probe"
+search:
+  safe_search: 1
+  formats: [html, json]
+server:
+  limiter: false
+outgoing:
+  request_timeout: 3.0
+  max_request_timeout: 6.0
+engines:
+  - name: wikipedia
+    display_type: ["infobox", "list"]
+  # Inactive upstream since 2026.11 (a proof-of-work CAPTCHA); loaded here only to be measured.
+  - name: startpage
+    inactive: false
+  - name: startpage news
+    inactive: false
+  - name: mojeek
+    inactive: false
+  - name: mojeek news
+    inactive: false
