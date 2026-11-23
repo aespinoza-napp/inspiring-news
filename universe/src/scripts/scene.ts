@@ -105,9 +105,12 @@ void main() {
 // colour none of the five sections uses, and a diamond, not a star.
 export const KINDS = [
   { key: "place", label: "Places", one: "Place", color: "#2f6aa8", types: ["city", "country", "location"] },
-  { key: "company", label: "Companies", one: "Company", color: "#7650c8", types: ["company", "organization"] },
+  { key: "company", label: "Organisations", one: "Organisation", color: "#7650c8", types: ["company", "organization"] },
   { key: "person", label: "People", one: "Person", color: "#c04a86", types: ["person"] },
   { key: "brand", label: "Brands", one: "Brand", color: "#6f8a1c", types: ["product"] },
+  // Real stories name events too (17 Nov: the WordPress import, 115 of
+  // them): a brown no section and no other kind uses.
+  { key: "event", label: "Events", one: "Event", color: "#8b5e3c", types: ["event"] },
 ] as const;
 
 export type KindKey = (typeof KINDS)[number]["key"];
@@ -598,6 +601,29 @@ export class UniverseScene {
   }
 
   // Where a map point is on screen (CSS pixels), or null behind the camera.
+  // A story on screen where it is now: risen or sunk by the focus, as it is
+  // drawn. What a photo floating over it is placed by.
+  projectStory(index: number): { x: number; y: number; distance: number } | null {
+    if (!this.data || index < 0 || index >= this.data.count) return null;
+    const p = this.position(index);
+    const distance = p.distanceTo(this.camera.position);
+    p.project(this.camera);
+    if (p.z > 1) return null;
+    return { x: (p.x * 0.5 + 0.5) * this.host.clientWidth, y: (-p.y * 0.5 + 0.5) * this.host.clientHeight, distance };
+  }
+
+  // How far the camera is from what it looks at: near enough, the stories'
+  // photos float over them.
+  get viewDistance(): number {
+    return this.camera.position.distanceTo(this.controls.target);
+  }
+
+  // How bright a story is drawn now, 0.06 sunk to ~2.5 in focus: a photo
+  // follows its story's emphasis, so a sunk story shows none.
+  emphasisOf(index: number): number {
+    return this.emphasis[index] ?? 1;
+  }
+
   project(x: number, y: number, z = 0): { x: number; y: number; distance: number } | null {
     const p = this.world(x, y, z);
     const distance = p.distanceTo(this.camera.position);

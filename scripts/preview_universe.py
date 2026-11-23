@@ -1,13 +1,24 @@
 """
-Look at the News Universe (universe/) with no published stories of your
+Look at Inspiring News Universe (universe/) with no published stories of your
 own: the built site, served the way production serves it - static files,
 with /api/map and /api/account passed to a backend - here the e2e stub,
 serving a synthetic universe of `--count` stories placed by the real
 layout (scripts/news_map_fixture.py), depth included.
 
     python scripts/preview_universe.py [--count 5000] [--port 4321] [--build]
+    python scripts/preview_universe.py --backend http://127.0.0.1:8010
 
-Then open http://127.0.0.1:4321/. Ctrl-C stops it. A story's links and
+Then open http://127.0.0.1:4321/. Ctrl-C stops it.
+
+`--backend` passes /api/map and /api/account to a real backend instead of
+the stub, with no synthetic stories: what that backend's map holds. Run
+with MAP_SOURCE=graph, that is the WordPress import read from the graph
+(docs/decisions/news-map.md, "Reading from the graph"):
+
+    cd backend && MAP_SOURCE=graph uv run uvicorn src.main:app --port 8010
+
+with MAP_IMAGES_DIR set, its photos too (/api/map/images/ is passed on like
+the rest of /api/map). Without --backend, a story's links and
 the search are answered here from the synthetic map, as the backend
 answers them (shared names weigh 2 over how many stories name them, a
 shared topic 0.3; names, then words in titles); For you answers the
@@ -180,6 +191,7 @@ def main(argv=None) -> int:
     parser.add_argument("--count", type=int, default=5000)
     parser.add_argument("--port", type=int, default=4321)
     parser.add_argument("--build", action="store_true", help="npm run build first")
+    parser.add_argument("--backend", help="a real backend's URL instead of the stub and synthetic stories")
     args = parser.parse_args(argv)
 
     if args.build or not (UNIVERSE / "dist" / "index.html").exists():
@@ -187,6 +199,17 @@ def main(argv=None) -> int:
         if subprocess.run(["npm", "run", "build"], cwd=UNIVERSE, stdout=subprocess.DEVNULL).returncode:
             print("npm run build failed.", file=sys.stderr)
             return 1
+
+    if args.backend:
+        site = ThreadingHTTPServer(("127.0.0.1", args.port), handler_for(args.backend.rstrip("/")))
+        print(f"\nOpen http://127.0.0.1:{args.port}/  (map from {args.backend})  Ctrl-C stops it.")
+        try:
+            site.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            site.server_close()
+        return 0
 
     print(f"Placing {args.count} synthetic stories...")
     made = subprocess.run(["uv", "run", "python", "../scripts/news_map_fixture.py", str(args.count)],

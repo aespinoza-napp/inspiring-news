@@ -2,7 +2,7 @@
 // (search, modes, the legend, the story panel, the list, For you and the
 // account), wired to the backend's /map and /account routes.
 
-import { account, api, madridToday, NO_GROUP, type Interest, type Links, type SearchResult, type Universe } from "./data";
+import { account, api, madridToday, NO_GROUP, photoUrl, type Interest, type Links, type Photo, type SearchResult, type Universe } from "./data";
 import { GROUP_COLORS, KINDS, kindOf, UniverseScene, type KindKey, type NetworkNode } from "./scene";
 
 // Not "today": at the 30-60 stories a day the newsroom publishes, one day
@@ -11,10 +11,14 @@ type Mode = "universe" | "week" | "foryou";
 
 const WEEK_DAYS = 7;
 
-// The names drawn above the galaxy: in two stories at least, the most
-// named first, at most this many, and the biggest labelled in space.
-const MAX_NODES = 300;
-const LABELLED_NODES = 14;
+// The names drawn above the galaxy: in two stories at least (or in any,
+// when the reader asks for every name), the most named first, at most this
+// many, and the biggest labelled in space - few or many, as the reader
+// chooses (17 Nov: "I want to see more entities"). All of them are one
+// Points and one LineSegments, so two thousand cost what three hundred do.
+const MAX_NODES = 2000;
+const LABELS_FEW = 14;
+const LABELS_MANY = 60;
 
 // A name whose stories are this much about one topic floats over it;
 // below, over the centre. And how far names of one topic scatter (map
@@ -39,6 +43,16 @@ function scatter(key: string): [number, number, number] {
   return [next(), next(), next()];
 }
 
+// Photos floating over the stories (20 Nov: "the photography is so
+// important in the news"): always the selected story's and its connected
+// ones'; the stories in view nearest the camera, a few from afar and more
+// near the island; and every story in focus when the focus is this small
+// (a name's stories, For you).
+const FAR_PHOTOS = 8;
+const NEAR_PHOTOS = 18;
+const NEAR_VIEW = 12;
+const ALL_PHOTOS_UNDER = 24;
+
 const READER_BASE = import.meta.env.PUBLIC_READER_BASE ?? "";
 const LOCAL_INTERESTS = "inspiring-news:interests";
 const MIN_CHOICES = 3;
@@ -47,6 +61,23 @@ const $ = <T extends HTMLElement = HTMLElement>(selector: string) => document.qu
 
 function escape(text: string): string {
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+// A story's WordPress labels, beside ours: its categories and tags as the
+// site has them, the topics of ours they point to, and, when our classifier
+// gave it no topic, that its place comes from them.
+function wordpressLabels(wp: NonNullable<Links["wordpress"]>): string {
+  const chip = (text: string, extra = "") => `<span class="chip static${extra}">${escape(text)}</span>`;
+  return `
+    <p class="hud-label">On the WordPress site</p>
+    <div class="chips">${wp.categories.map((c) => chip(c, " category")).join("")}${wp.tags.map((t) => chip(`#${t}`)).join("")}</div>
+    ${wp.topics.length ? `<p class="muted small">Its labels point to ${wp.topics.map((t) => escape(t.name)).join(", ")}.</p>` : ""}
+    ${wp.topicFrom === "WordPress" ? `<p class="muted small">Placed by these labels: our classifier gave it no topic.</p>` : ""}`;
+}
+
+// A story's thumbnail in a list: decorative, its title follows it.
+function thumb(src: string | null | undefined): string {
+  return src ? `<img class="thumb" src="${escape(src)}" alt="" loading="lazy" decoding="async" />` : `<span class="thumb none" aria-hidden="true"></span>`;
 }
 
 function verdictText(verdict: string | null): string {
@@ -77,13 +108,15 @@ interface State {
   section: number | null;
   strong: Set<number> | null;
   selected: number;
+  // The selected story's connected ones, for their photos in space.
+  related: number[];
   user: { username: string } | null;
   csrf: string | null;
   interests: Interest[];
 }
 
 export function start(): void {
-  const state: State = { data: null, mode: "universe", section: null, strong: null, selected: -1, user: null, csrf: null, interests: [] };
+  const state: State = { data: null, mode: "universe", section: null, strong: null, selected: -1, related: [], user: null, csrf: null, interests: [] };
 
   let scene: UniverseScene;
   try {
@@ -128,6 +161,8 @@ export function start(): void {
   const kindsOn = new Set<KindKey>(KINDS.map((k) => k.key));
   let networkOn = true;
   let nodeLabels: { element: HTMLElement; node: number }[] = [];
+  let minStories = 2;
+  let labelledNodes = LABELS_FEW;
 
   function buildNetwork(data: Universe): void {
     const stories = new Map<number, number[]>();
@@ -147,7 +182,7 @@ export function start(): void {
     stories.forEach((named, ref) => {
       const entity = data.entities[ref];
       const kind = entity ? kindOf(entity.t) : null;
-      if (!kind || named.length < 2) return;
+      if (!kind || named.length < minStories) return;
 
       const byTopic = new Map<number, number>();
       for (const i of named) {
@@ -195,7 +230,7 @@ export function start(): void {
     scene.setNetworkVisible(networkOn);
     const host = $("#labels");
     nodeLabels.forEach((l) => l.element.remove());
-    nodeLabels = nodes.slice(0, LABELLED_NODES).map((node, i) => {
+    nodeLabels = nodes.slice(0, labelledNodes).map((node, i) => {
       const element = document.createElement("div");
       element.className = "space-label node";
       element.style.setProperty("--tint", KINDS.find((k) => k.key === node.kind)!.color);
@@ -225,6 +260,25 @@ export function start(): void {
     }
   }
 
+  // How many names, and how many labelled: two small switches under the kinds.
+  function pressOnly(selector: string, pressed: HTMLElement): void {
+    document.querySelectorAll<HTMLButtonElement>(selector).forEach((b) => b.setAttribute("aria-pressed", String(b === pressed)));
+  }
+  document.querySelectorAll<HTMLButtonElement>("[data-min-stories]").forEach((button) =>
+    button.addEventListener("click", () => {
+      minStories = Number(button.dataset.minStories);
+      pressOnly("[data-min-stories]", button);
+      if (state.data) buildNetwork(state.data);
+    }),
+  );
+  document.querySelectorAll<HTMLButtonElement>("[data-labels]").forEach((button) =>
+    button.addEventListener("click", () => {
+      labelledNodes = button.dataset.labels === "many" ? LABELS_MANY : LABELS_FEW;
+      pressOnly("[data-labels]", button);
+      applyNetwork();
+    }),
+  );
+
   const networkButton = $("#network-button");
   networkButton.addEventListener("click", () => {
     networkOn = !networkOn;
@@ -252,6 +306,7 @@ export function start(): void {
     const n = nodes[node];
     if (!data || !n) return;
     state.selected = -1;
+    state.related = [];
     scene.mark(-1);
     scene.setLinks(-1, []);
     state.strong = new Set(n.stories);
@@ -270,7 +325,7 @@ export function start(): void {
       <p class="hud-label" style="color:${kind.color}">${kind.one}</p>
       <h2>${escape(n.name)}</h2>
       <p class="muted">Named in ${n.stories.length} stories${n.stories.length > newest.length ? `; the ${newest.length} newest` : ""}:</p>
-      <ol class="related">${newest.map((i) => `<li><button type="button" class="link" data-story="${data.ids[i]}">${escape(data.titles[i])}</button><span class="muted"> · ${escape(data.sources[data.sourceOf[i]])}${data.days[i] ? ` · ${data.days[i]}` : ""}</span></li>`).join("")}</ol>`;
+      <ol class="related with-thumbs">${newest.map((i) => `<li>${thumb(data.thumbs[i])}<div><button type="button" class="link" data-story="${data.ids[i]}">${escape(data.titles[i])}</button><span class="muted"> · ${escape(data.sources[data.sourceOf[i]])}${data.days[i] ? ` · ${data.days[i]}` : ""}</span></div></li>`).join("")}</ol>`;
     panel.querySelector(".close")!.addEventListener("click", () => {
       panel.hidden = true;
       scene.highlightNode(-1);
@@ -280,7 +335,131 @@ export function start(): void {
     panel.querySelectorAll<HTMLButtonElement>("[data-story]").forEach((b) => b.addEventListener("click", () => void select(data.indexOf.get(b.dataset.story!)!)));
   }
 
+  // ---- photos in space ----------------------------------------------------
+
+  type PhotoKind = "selected" | "related" | "near";
+  const photoLayer = $("#photos");
+  const floating = new Map<number, { element: HTMLButtonElement; kind: PhotoKind }>();
+  let photosOn = true;
+  let photoFrame = 0;
+
+  function inFocus(i: number): boolean {
+    return (!state.strong || state.strong.has(i)) && (state.section === null || state.data!.group[i] === state.section);
+  }
+
+  // Which stories show their photo now, and how.
+  function wantedPhotos(): Map<number, PhotoKind> {
+    const data = state.data;
+    const wanted = new Map<number, PhotoKind>();
+    if (!data || !photosOn) return wanted;
+
+    if (state.selected >= 0 && data.images[state.selected]) wanted.set(state.selected, "selected");
+    for (const i of state.related) if (data.thumbs[i] && !wanted.has(i)) wanted.set(i, "related");
+
+    const focus = state.strong && state.section === null ? state.strong : null;
+    if (focus && focus.size <= ALL_PHOTOS_UNDER) {
+      for (const i of focus) if (data.thumbs[i] && !wanted.has(i)) wanted.set(i, "near");
+      return wanted;
+    }
+
+    const seen: { i: number; d: number }[] = [];
+    for (let i = 0; i < data.count; i++) {
+      if (!data.thumbs[i] || wanted.has(i) || !inFocus(i)) continue;
+      const p = scene.projectStory(i);
+      if (p && !underHud(p.x, p.y - 40)) seen.push({ i, d: p.distance });
+    }
+    seen.sort((a, b) => a.d - b.d);
+    for (const { i } of seen.slice(0, scene.viewDistance < NEAR_VIEW ? NEAR_PHOTOS : FAR_PHOTOS)) wanted.set(i, "near");
+    return wanted;
+  }
+
+  // The panels over the scene, measured with each choice of photos: a photo
+  // whose story is under one is not drawn through the glass.
+  let hud: DOMRect[] = [];
+  function measureHud(): void {
+    hud = [".top", ".legend", "#panel", ".status"]
+      .map((selector) => document.querySelector<HTMLElement>(selector))
+      .filter((element): element is HTMLElement => Boolean(element) && !element!.hidden)
+      .map((element) => element.getBoundingClientRect());
+  }
+  function underHud(x: number, y: number): boolean {
+    if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return true;
+    return hud.some((r) => x > r.left - 24 && x < r.right + 24 && y > r.top - 24 && y < r.bottom + 24);
+  }
+
+  function syncPhotos(): void {
+    const data = state.data;
+    if (!data) return;
+    measureHud();
+    const wanted = wantedPhotos();
+    for (const [i, shown] of floating) {
+      if (wanted.get(i) !== shown.kind) {
+        shown.element.remove();
+        floating.delete(i);
+      }
+    }
+    for (const [i, kind] of wanted) {
+      if (floating.has(i)) continue;
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = `space-photo ${kind}`;
+      element.tabIndex = -1;
+      element.title = data.titles[i];
+      const src = kind === "selected" ? data.images[i] : data.thumbs[i];
+      element.innerHTML = `<img src="${escape(src!)}" alt="" decoding="async" />`;
+      if (kind !== "selected" && data.group[i] !== NO_GROUP) element.style.setProperty("--tint", GROUP_COLORS[data.group[i]]);
+      element.addEventListener("click", () => (i === state.selected ? openPhoto(data.images[i]!, data.titles[i], null) : void select(i)));
+      element.addEventListener("pointerenter", () => {
+        const box = element.getBoundingClientRect();
+        showTooltip(i, { x: box.right - 8, y: box.top });
+      });
+      element.addEventListener("pointerleave", () => showTooltip(-1, null));
+      photoLayer.appendChild(element);
+      floating.set(i, { element, kind });
+    }
+  }
+
+  function placePhotos(): void {
+    for (const [i, shown] of floating) {
+      const p = scene.projectStory(i);
+      const emphasis = scene.emphasisOf(i);
+      if (!p || emphasis < 0.2 || underHud(p.x, p.y - 40)) {
+        shown.element.style.opacity = "0";
+        continue;
+      }
+      // Nearer is larger and on top; the selected one stays readable at any distance.
+      const scale = shown.kind === "selected" ? 1 : Math.max(0.55, Math.min(1.35, 7 / p.distance));
+      shown.element.style.opacity = "1";
+      shown.element.style.zIndex = String(shown.kind === "selected" ? 9999 : Math.round(5000 - p.distance * 100));
+      shown.element.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, calc(-100% - 10px)) scale(${scale.toFixed(3)})`;
+    }
+  }
+
+  const photosButton = $("#photos-button");
+  function setPhotos(on: boolean): void {
+    photosOn = on;
+    photosButton.setAttribute("aria-pressed", String(on));
+    photosButton.textContent = on ? "on" : "off";
+    syncPhotos();
+  }
+  photosButton.addEventListener("click", () => setPhotos(!photosOn));
+
+  // ---- a photo, large ------------------------------------------------------
+
+  function openPhoto(src: string, alt: string, caption: string | null): void {
+    const image = $<HTMLImageElement>("#photo-large");
+    image.src = src;
+    image.alt = alt;
+    $("#photo-caption").textContent = caption ?? "";
+    $("#photo-caption").hidden = !caption;
+    open("#photo-overlay");
+  }
+
   scene.onFrame = () => {
+    // Which photos float is decided every few frames (a pass over every
+    // story when near); where they are, every frame, as the island turns.
+    if (photoFrame++ % 12 === 0) syncPhotos();
+    placePhotos();
     for (const label of nodeLabels) {
       const p = networkOn ? scene.projectNode(label.node) : null;
       label.element.style.opacity = p ? "1" : "0";
@@ -307,6 +486,8 @@ export function start(): void {
       makeLabels(data);
       makeLegend(data);
       buildNetwork(data);
+      // A map with no photos (the lake's, the synthetic preview) has no switch for them.
+      if (!data.images.some(Boolean)) photosButton.closest("p")!.hidden = true;
       $("#loading").classList.add("gone");
       setTimeout(() => $("#loading").remove(), 1200);
       const shared = new URLSearchParams(window.location.search);
@@ -443,7 +624,9 @@ export function start(): void {
       tip.hidden = true;
       return;
     }
-    tip.innerHTML = `<strong>${escape(data.titles[index])}</strong><span>${escape(data.sources[data.sourceOf[index]])}${data.days[index] ? ` · ${data.days[index]}` : ""} · ${verdictText(data.verdicts[index])}</span>`;
+    const photo = data.images[index] ?? data.thumbs[index];
+    tip.classList.toggle("with-photo", Boolean(photo));
+    tip.innerHTML = `${photo ? `<img src="${escape(photo)}" alt="" decoding="async" />` : ""}<strong>${escape(data.titles[index])}</strong><span>${escape(data.sources[data.sourceOf[index]])}${data.days[index] ? ` · ${data.days[index]}` : ""} · ${verdictText(data.verdicts[index])}</span>`;
     tip.style.left = `${Math.min(screen.x + 16, window.innerWidth - 320)}px`;
     tip.style.top = `${screen.y + 16}px`;
     tip.hidden = false;
@@ -453,6 +636,7 @@ export function start(): void {
     const data = state.data;
     const panel = $("#panel");
     state.selected = index;
+    state.related = [];
     scene.mark(index);
     const url = new URL(window.location.href);
 
@@ -469,8 +653,10 @@ export function start(): void {
     scene.flyTo(data.positions[index * 3], data.positions[index * 3 + 1], data.positions[index * 3 + 2], 3.2);
 
     panel.hidden = false;
+    const hero = data.images[index];
     panel.innerHTML = `
       <button type="button" class="close" aria-label="Close">×</button>
+      ${hero ? `<figure class="photo-hero"><button type="button" class="photo-open" aria-label="Open the photo"><img id="panel-photo" src="${escape(hero)}" alt="" decoding="async" /></button><figcaption id="panel-photo-caption" hidden></figcaption></figure>` : ""}
       <p class="hud-label" style="color:${data.group[index] === NO_GROUP ? "#8a90a6" : GROUP_COLORS[data.group[index]]}">${data.group[index] === NO_GROUP ? "Not placed" : escape(data.groups[data.group[index]].name)}</p>
       <h2>${escape(data.titles[index])}</h2>
       <p class="muted">${escape(data.sources[data.sourceOf[index]])}${data.days[index] ? ` · ${data.days[index]}` : ""}</p>
@@ -478,6 +664,12 @@ export function start(): void {
       <p><a class="primary-link" href="${READER_BASE}/reader/${data.ids[index]}">Read the story and its checks →</a></p>
       <div id="panel-links"><p class="muted">Tracing its connections…</p></div>`;
     panel.querySelector(".close")!.addEventListener("click", () => void select(-1));
+    let main: Photo | null = hero ? { src: hero, thumb: data.thumbs[index], full: null, alt: null, caption: null, featured: true } : null;
+    panel.querySelector(".photo-open")?.addEventListener("click", () => {
+      // main's addresses are resolved already (photoUrl), once.
+      if (main) openPhoto(main.full ?? main.src, main.alt ?? data.titles[index], main.caption);
+    });
+    syncPhotos();
 
     let links: Links;
     try {
@@ -488,6 +680,20 @@ export function start(): void {
     }
     if (state.selected !== index) return;
 
+    // The photos, as served: the main one's alt and caption, and the rest of the post's.
+    const photos = (links.photos ?? [])
+      .map((photo) => ({ ...photo, src: photoUrl(photo.src)!, thumb: photoUrl(photo.thumb), full: photoUrl(photo.full) }))
+      .filter((photo) => photo.src);
+    if (main && photos[0]) {
+      main = photos[0];
+      $<HTMLImageElement>("#panel-photo").alt = main.alt ?? "";
+      const caption = $("#panel-photo-caption");
+      caption.textContent = main.caption ?? "";
+      caption.hidden = !main.caption;
+    }
+    state.related = links.related.map((r) => data.indexOf.get(r.id)).filter((j): j is number => j !== undefined);
+    syncPhotos();
+
     scene.setLinks(
       index,
       links.related.map((r) => {
@@ -497,12 +703,22 @@ export function start(): void {
     );
 
     const followed = (kind: string, key: string) => state.interests.some((i) => i.kind === kind && i.key === key);
+    const gallery = photos.slice(main ? 1 : 0);
     $("#panel-links").innerHTML = `
+      ${gallery.length ? `<p class="hud-label">Its photos</p><div class="gallery">${gallery.map((photo, g) => `<button type="button" class="gallery-photo" data-photo="${g}" aria-label="${escape(photo.alt ?? photo.caption ?? "A photo of the story")}"><img src="${escape(photo.thumb ?? photo.src)}" alt="" loading="lazy" decoding="async" /></button>`).join("")}</div>` : ""}
       <p class="hud-label">Topics</p>
       <div class="chips">${links.topics.map((t) => `<button type="button" class="chip" data-follow="topic" data-key="${escape(t.key)}" data-label="${escape(t.name)}" aria-pressed="${followed("topic", t.key)}">${followed("topic", t.key) ? "✓ " : "+ "}${escape(t.name)}</button>`).join("")}</div>
       ${links.entities.length ? `<p class="hud-label">Names</p><div class="chips">${links.entities.map((e) => `<button type="button" class="chip" data-entity="${escape(e.key)}">${escape(e.name)}${e.articles > 1 ? ` · ${e.articles}` : ""}</button>`).join("")}</div>` : ""}
+      ${links.wordpress ? wordpressLabels(links.wordpress) : ""}
       <p class="hud-label">Connected</p>
-      ${links.related.length ? `<ol class="related">${links.related.map((r) => `<li><button type="button" class="link" data-story="${r.id}">${escape(r.title)}</button><span class="muted"> ${escape(r.via.slice(0, 2).map((v) => (v.kind === "entity" ? `both name ${v.via}` : v.kind === "topic" ? `both about ${v.via}` : v.kind === "claim" ? "the same claim" : "a shared source")).join("; "))}</span></li>`).join("")}</ol>` : `<p class="muted">Nothing else published shares a claim, a source, a name or a topic with it yet.</p>`}`;
+      ${links.related.length ? `<ol class="related with-thumbs">${links.related.map((r) => `<li>${thumb(photoUrl(r.thumb))}<div><button type="button" class="link" data-story="${r.id}">${escape(r.title)}</button><span class="muted"> ${escape(r.via.slice(0, 2).map((v) => (v.kind === "entity" ? `both name ${v.via}` : v.kind === "topic" ? `both about ${v.via}` : v.kind === "claim" ? "the same claim" : "a shared source")).join("; "))}</span></div></li>`).join("")}</ol>` : `<p class="muted">Nothing else published shares a claim, a source, a name or a topic with it yet.</p>`}`;
+
+    $("#panel-links").querySelectorAll<HTMLButtonElement>("[data-photo]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const photo = gallery[Number(b.dataset.photo)];
+        openPhoto(photo.full ?? photo.src, photo.alt ?? data.titles[index], photo.caption);
+      }),
+    );
 
     $("#panel-links").querySelectorAll<HTMLButtonElement>("[data-story]").forEach((b) =>
       b.addEventListener("click", () => {
@@ -604,7 +820,7 @@ export function start(): void {
       if ((!state.strong || state.strong.has(i)) && (state.section === null || data.group[i] === state.section)) shown.push(i);
     }
     $("#list").innerHTML = shown
-      .map((i) => `<li><a href="${READER_BASE}/reader/${data.ids[i]}">${escape(data.titles[i])}</a><span class="muted"> · ${escape(data.sources[data.sourceOf[i]])}${data.days[i] ? ` · ${data.days[i]}` : ""} · ${data.group[i] === NO_GROUP ? "" : escape(data.groups[data.group[i]].name)}</span></li>`)
+      .map((i) => `<li>${thumb(data.thumbs[i])}<div><a href="${READER_BASE}/reader/${data.ids[i]}">${escape(data.titles[i])}</a><span class="muted"> · ${escape(data.sources[data.sourceOf[i]])}${data.days[i] ? ` · ${data.days[i]}` : ""} · ${data.group[i] === NO_GROUP ? "" : escape(data.groups[data.group[i]].name)}</span></div></li>`)
       .join("");
     open("#list-overlay");
   }
@@ -617,7 +833,7 @@ export function start(): void {
       <p class="hud-label">For you</p>
       <h2>Your stories</h2>
       <p class="muted">Following ${escape(state.interests.map((i) => i.label).join(", "))}. <button type="button" class="link" id="change-interests">Change</button></p>
-      <ol class="related">${items.map((item) => `<li><button type="button" class="link" data-story="${item.id}">${escape(item.title)}</button><span class="muted"> because ${escape(item.reasons.join("; ") || "it is new")}</span></li>`).join("")}</ol>`;
+      <ol class="related with-thumbs">${items.map((item) => `<li>${thumb(state.data!.thumbs[state.data!.indexOf.get(item.id) ?? -1])}<div><button type="button" class="link" data-story="${item.id}">${escape(item.title)}</button><span class="muted"> because ${escape(item.reasons.join("; ") || "it is new")}</span></div></li>`).join("")}</ol>`;
     panel.querySelector(".close")!.addEventListener("click", () => (panel.hidden = true));
     $("#change-interests").addEventListener("click", openChooser);
     panel.querySelectorAll<HTMLButtonElement>("[data-story]").forEach((b) => b.addEventListener("click", () => void select(state.data!.indexOf.get(b.dataset.story!)!)));
@@ -766,5 +982,6 @@ export function start(): void {
     } else if (event.key === "h") scene.home();
     else if (event.key === "m") motionButton.click();
     else if (event.key === "l") openList();
+    else if (event.key === "p") setPhotos(!photosOn);
   });
 }

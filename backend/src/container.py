@@ -524,6 +524,10 @@ def get_map_index():
     for the same reason: it is a cache of each record's place and links.
     Source countries are read once, here, for the zone a naive
     publication time is in.
+
+    With MAP_SOURCE=graph, the positive graph's articles of
+    MAP_GRAPH_SOURCE_ID instead (src/services/news_map/graph_source.py):
+    the WordPress import, which the lake never publishes.
     """
 
     global _map_index
@@ -536,6 +540,19 @@ def get_map_index():
                 from src.services.reader.views import SourceNames
 
                 sources = SourceRepository().list()
+
+                if settings.MAP_SOURCE == "graph":
+                    from src.services.news_map.graph_source import GraphMapIndex
+
+                    _map_index = GraphMapIndex(
+                        get_graph_client(),
+                        settings.MAP_GRAPH_SOURCE_ID,
+                        {source.id: source.country for source in sources},
+                        labels_path=settings.MAP_GRAPH_LABELS,
+                        images_dir=settings.MAP_IMAGES_DIR,
+                    )
+
+                    return _map_index
 
                 _map_index = MapIndex(
                     get_datalake_repository(),

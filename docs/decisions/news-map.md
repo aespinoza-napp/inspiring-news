@@ -545,6 +545,9 @@ The model benchmark was running (load average 14-16 on 14 threads):
 
 ## The universe: the map as its own 3D app (2026-10-29)
 
+Named **Inspiring News Universe** since 2026-11-20 (the author); "The News
+Universe" before.
+
 Asked for by the author after seeing `/map`: keep the distribution, but
 make it feel like a metaverse. That means 3D, in motion, and a separate
 app with an interface of its own; they suggested Astro. Built as
@@ -682,3 +685,121 @@ to health, environment and good news, keeping the metaverse. So:
   agrees with the map's. And every custom shader wrote three.js's linear
   colours as they were, so the sky blue came out navy. Each now ends in
   `colorspace_fragment`.
+
+## Reading from the graph (2026-11-17)
+
+Asked for by the author: the universe showing the 187 posts of the
+WordPress import (`inspiringnews-buenasnoticias.WordPress.2026-11-03.xml`,
+`source_id = wordpress:inspiringnews.ai`), read from the **positive**
+graph, with their entities and no fact-check. The Devastating graph is not
+read yet. The lake's map can never show them: an import is stored in the
+lake but never publishable, and `MapIndex` sits on what the reader
+publishes.
+
+- **A setting, not a second app.** `MAP_SOURCE=graph` swaps `MapIndex` for
+  `GraphMapIndex` (`backend/src/services/news_map/graph_source.py`), which
+  reads `NEO4J_URI`'s articles of `MAP_GRAPH_SOURCE_ID` (the import by
+  default) in one Cypher read. Everything after the read is the lake
+  map's: `place`, `ranked_entities`, the payloads, links, search and For
+  you. `MAP_SOURCE=lake` (the default) is the map as it was.
+- **What the graph does not hold is left out, not made up.**
+  - The graph keeps no embedding, so every story sits at its topic's
+    anchor with the offset its id gives (`approx: "no_vector"`), and
+    search answers by name and word only.
+  - No verdict: the import was not checked, and the universe says "not
+    checked".
+  - No evidence pages, because a claim node is shared by every article with
+    the same sentence, so its CHECKED_AGAINST pages may be another
+    article's.
+  - Names are ranked by the title, then by mentions in the article's claims
+    (its sentences), since the graph keeps no body.
+- **Read every 30 s at most**, outside the index's lock, so a request
+  during a read gets the last one. If Neo4j is down before the first read,
+  every `/map/*` route answers 503 naming `MAP_SOURCE=graph` (an empty map
+  would read as "nothing was imported"). After that, the last read is
+  served.
+- **More names, and the WordPress labels (17 Nov, later the same day).**
+  Asked for by the author: "watch more entities", and "use our labels but
+  also take into consideration the ones provided by WordPress".
+  - Every name of a story leaves the server, up to 40, not the lake map's
+    five (`MapIndex.top_entities`). The universe then draws every name two
+    stories share, or every name at all ("Names in: any"), up to 2,000. It
+    labels 14 or 60 ("Labels: few / many"). Events are a kind of their own,
+    and "Companies" now reads "Organisations", since most are institutions
+    (ONU, NASA, OMS).
+  - `MAP_GRAPH_LABELS` points at the research notebook's
+    `wordpress-labels.json` (`research/wordpress-import/` in the main
+    worktree). It holds each post's WordPress section, categories and tags,
+    and the topics of ours they point to through the notebook's explicit
+    mapping. Our classifier's topics still decide where a story goes. The
+    20 stories it gave no topic go to their closest WordPress topic
+    (`approx: "wordpress_topic"`) instead of the rim. Every story's panel
+    shows its WordPress labels beside ours.
+- **What it looks like, measured on the real graph on 17 Nov:**
+  - 187 stories, every one placed: 167 by our topics and 20 by WordPress.
+    Environment has 62, Health 43, Culture 31, Society 29 and Science 22.
+  - 198 names that two stories or more share, and 2,062 in all, led by
+    España (39), Barcelona (35) and Estados Unidos (29).
+  - "Inspiring News" and "Fuentes" are among them, as the graph has them.
+    "Fuentes" was the heading of a post's list of sources, read as a
+    person's surname; since 20 Nov that list is no longer the post's text
+    ("Photos, and names without the sources", below).
+  - Connected stories are mostly joined by shared topics, because a post
+    carries anywhere from 0 to all 23 topics and the shared names are
+    mostly places.
+
+Run it:
+
+```bash
+cd backend && MAP_SOURCE=graph \
+  MAP_GRAPH_LABELS=../../inspiring-news/research/wordpress-import/data/wordpress-labels.json \
+  MAP_IMAGES_DIR=../../inspiring-news/backend/data/imports/inspiringnews-buenasnoticias.WordPress.2026-11-03/images \
+  uv run uvicorn src.main:app --port 8010
+python scripts/preview_universe.py --backend http://127.0.0.1:8010   # http://127.0.0.1:4321/
+```
+
+## Photos, and names without the sources (2026-11-20)
+
+Asked for by the author, four things at once: the name (Inspiring News
+Universe), names that are the story's and not its sources' ("Fuentes"),
+the dump keeping its photos, and the photos in the universe, "to be more
+easy to imagine everything and give more context. The photography is so
+important in the news and articles."
+
+- **The import (main worktree, `services/imports/`; its
+  `docs/decisions/storage.md`, "Imports").** A post's closing list of
+  sources is cut from its text before anything reads it and kept beside it
+  (`source_list`); its photos are kept (`images`), and the featured one is
+  the graph's `Article.image_url` / `image_alt`. An unverified import keeps
+  its names in spite of the rule of 17 Nov, which would have left the
+  graph's posts with none. `scripts/wordpress_images.py` downloads every
+  photo in three sizes (full, 768 px, 150 px) with a `manifest.json`. The
+  187 posts were imported again on 20 Nov.
+- **Served by the map, or linked.** With `MAP_IMAGES_DIR`, the backend
+  serves the downloaded files (`GET /map/images/{name}`, open like the
+  map, only a name the manifest lists and the folder holds, cached a week).
+  Without it, a story shows the photo the graph links to, on the site. The
+  columns carry each story's photo (`img`, the 768 px one) and its
+  thumbnail (`thumb`); a story's links carry every photo of the post, its
+  alt and caption (`photos`), and each related story's thumbnail.
+- **Only the graph's stories.** The lake map's stories are other outlets'
+  articles: their photos are theirs, and showing them on a public page is
+  a decision nobody has taken. `MapArticle.image` stays None there.
+- **In the universe:**
+  - The selected story's photo floats over it, larger, with a stem down
+    to its seed; its connected stories' thumbnails over theirs. Near the
+    island (camera under 12 units from what it looks at) the 18 stories in
+    view nearest the camera show theirs as round bubbles, and a focus of 24
+    stories or fewer (a name's, For you) shows every one. They follow the
+    focus: a sunk story shows none. "Photos on/off" in the legend, or P.
+  - The panel opens on the photo, edge to edge, with its caption; the
+    post's other photos below it; any of them opens large (the original).
+  - The hover card, the connected list, a name's stories, For you and the
+    list all show each story's thumbnail.
+  - A map with no photo at all (the lake's, the synthetic preview) hides the
+    switch and shows the interface as it was.
+
+`tests/services/news_map/test_graph_source.py` covers the read, the
+placing, the ranking, the refresh, Neo4j down, the 503, every name sent,
+and the WordPress labels (closest topic, links, a missing file), against
+`RecordingGraphClient`.

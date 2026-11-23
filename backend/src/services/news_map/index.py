@@ -84,6 +84,14 @@ class MapArticle:
     vector: np.ndarray | None
     # Depth in the 3D universe (layout version 2).
     z: float = 0.0
+    # Its photo (2026-11-20): `image` to show it at about 768 px, `thumb` at
+    # 150, each an address or a path under the map ("/images/<file>", served
+    # by GET /map/images/{name}). None: no photo. Only the graph's stories
+    # have one so far (news_map/graph_source.py); the lake map's are other
+    # outlets' articles, whose photos are theirs.
+    image: str | None = None
+    thumb: str | None = None
+    image_alt: str | None = None
 
 
 def _proper_name(name: str) -> bool:
@@ -221,6 +229,10 @@ def build_article(entry, exploitation: dict, processed: dict | None, names, coun
 
 
 class MapIndex:
+
+    # How many of an article's names leave the server, in the map's columns
+    # and in its links. GraphMapIndex sends more (news_map/graph_source.py).
+    top_entities: int = TOP_ENTITIES
 
     def __init__(self, lake, reader, names, countries: dict[str, str] | None = None):
 
@@ -453,6 +465,8 @@ class MapIndex:
         columns: dict[str, list] = {
             "id": [], "title": [], "lang": [], "day": [], "src": [], "g": [],
             "t": [], "e": [], "v": [], "x": [], "y": [], "z": [], "approx": [],
+            # Each story's photo and its thumbnail, or None (2026-11-20).
+            "img": [], "thumb": [],
         }
 
         for article in articles:
@@ -463,12 +477,14 @@ class MapIndex:
             columns["src"].append(source_ref(article.source))
             columns["g"].append(GROUP_ORDER.index(article.group) if article.group else -1)
             columns["t"].append([topic_index[key] for key, _ in article.topics])
-            columns["e"].append([entity_ref(entity) for entity in article.entities[:TOP_ENTITIES]])
+            columns["e"].append([entity_ref(entity) for entity in article.entities[: self.top_entities]])
             columns["v"].append(article.verdict)
             columns["x"].append(round(article.x, 4))
             columns["y"].append(round(article.y, 4))
             columns["z"].append(round(article.z, 4))
             columns["approx"].append(article.approximate)
+            columns["img"].append(article.image)
+            columns["thumb"].append(article.thumb)
 
         return {
             **frame(),
@@ -511,6 +527,22 @@ class MapIndex:
             })
 
         return {"layout": LAYOUT_VERSION, "count": len(rows), "entities": rows}
+
+    def photos(self, article: MapArticle) -> list[dict]:
+        """
+        A story's photos for its panel, the main one first: here only the one
+        its MapArticle carries. GraphMapIndex adds those in the post's text.
+        """
+
+        if not article.image:
+            return []
+
+        return [{"src": article.image, "thumb": article.thumb, "full": article.image, "alt": article.image_alt, "caption": None, "featured": True}]
+
+    def image_path(self, name: str):
+        """The file GET /map/images/{name} serves, or None: this map serves none."""
+
+        return None
 
     def links(self, article_id: str, limit: int = 10) -> dict | None:
         """
@@ -576,12 +608,14 @@ class MapIndex:
             ],
             "entities": [
                 {"key": e.key, "name": e.name, "type": e.type, "articles": entity_counts.get(e.key, 1)}
-                for e in article.entities[:TOP_ENTITIES]
+                for e in article.entities[: self.top_entities]
             ],
+            "photos": self.photos(article),
             "related": [
                 {
                     "id": other,
                     "title": by_id[other].title,
+                    "thumb": by_id[other].thumb or by_id[other].image,
                     "x": round(by_id[other].x, 4),
                     "y": round(by_id[other].y, 4),
                     "score": round(score, 4),

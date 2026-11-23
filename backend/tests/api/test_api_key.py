@@ -63,6 +63,9 @@ OPEN_ENDPOINTS = {
     ("GET", "/map/articles"),
     ("GET", "/map/entities"),
     ("GET", "/map/articles/{article_id}/links"),
+    # A story's photo, downloaded from the site that shows it to anyone; only
+    # a file the images manifest lists (news_map/graph_source.py).
+    ("GET", "/map/images/{name}"),
     # Searching those same articles and their names. The part that costs
     # (embedding the query in inference/) is limited per client
     # (src/services/news_map/search.py).

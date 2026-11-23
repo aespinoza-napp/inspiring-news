@@ -17,8 +17,10 @@ from __future__ import annotations
 
 import gzip
 import re
+from contextlib import contextmanager
 
 from fastapi import APIRouter, Header, HTTPException, Path, Query, Request, Response
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from src.container import get_map_index, get_map_search
@@ -29,6 +31,26 @@ from src.services.rate_limit import RateLimited, RateLimiter
 router = APIRouter(prefix="/map")
 
 DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+@contextmanager
+def graph_reachable():
+    """
+    With MAP_SOURCE=graph the map reads Neo4j (news_map/graph_source.py).
+    Down before its first read, that is a 503, as /graph/* answers: an
+    empty map would read as "nothing was imported". Once read, the index
+    serves its last read and never raises this.
+    """
+
+    from src.database.neo4j_client import GraphUnavailable
+
+    try:
+        yield
+    except GraphUnavailable as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"The news map reads the graph (MAP_SOURCE=graph), and Neo4j is not reachable: {exc}",
+        )
 
 
 def _send(tag: str, body: bytes, if_none_match: str | None, accept_encoding: str | None) -> Response:
@@ -63,7 +85,8 @@ def map_articles(
 
     index = get_map_index()
 
-    tag, body = index.payload("articles", lambda: index.articles_document(day), day or "")
+    with graph_reachable():
+        tag, body = index.payload("articles", lambda: index.articles_document(day), day or "")
 
     return _send(tag, body, if_none_match, accept_encoding)
 
@@ -78,7 +101,8 @@ def map_entities(
 
     index = get_map_index()
 
-    tag, body = index.payload("entities", lambda: index.entities_document(limit), str(limit))
+    with graph_reachable():
+        tag, body = index.payload("entities", lambda: index.entities_document(limit), str(limit))
 
     return _send(tag, body, if_none_match, accept_encoding)
 
@@ -94,12 +118,32 @@ def map_article_links(
     /graph/related, computed from the lake).
     """
 
-    links = get_map_index().links(article_id, limit)
+    with graph_reachable():
+        links = get_map_index().links(article_id, limit)
 
     if links is None:
         raise HTTPException(status_code=404, detail="No published article with this id.")
 
     return links
+
+
+@router.get("/images/{name}")
+def map_image(name: str = Path(max_length=128)):
+    """
+    A story's photo, downloaded from its own site (scripts/wordpress_images.py,
+    MAP_IMAGES_DIR): only a file the images manifest lists, by its name, so
+    nothing else in the folder - nor outside it - can be asked for. Open,
+    like the map: the photos are of posts the site shows anyone. A file's
+    name is its attachment and size, so it never changes: cached a week.
+    """
+
+    with graph_reachable():
+        path = get_map_index().image_path(name)
+
+    if path is None or not path.is_file():
+        raise HTTPException(status_code=404, detail="No such photo.")
+
+    return FileResponse(path, headers={"Cache-Control": "public, max-age=604800, immutable"})
 
 
 def client_of(request: Request) -> str:
@@ -132,7 +176,8 @@ def map_search(
     """
 
     try:
-        return get_map_search().search(q, client_of(request), semantic=semantic)
+        with graph_reachable():
+            return get_map_search().search(q, client_of(request), semantic=semantic)
     except RateLimited as limited:
         raise HTTPException(
             status_code=429,
@@ -180,4 +225,5 @@ def map_for_you(body: ForYouRequest, request: Request):
         [item.model_dump() for item in body.interests], body.saved, body.hidden, body.factors,
     )
 
-    return rank(get_map_index().search_context(), profile, body.limit)
+    with graph_reachable():
+        return rank(get_map_index().search_context(), profile, body.limit)

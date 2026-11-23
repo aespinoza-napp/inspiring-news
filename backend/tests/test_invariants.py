@@ -205,6 +205,9 @@ NON_THRESHOLD_SETTINGS = {
     # above: a caller setting one member alone de-normalises the score.
     "RANKING_LEXICAL_WEIGHT",
     "PERTINENCE_SEMANTIC_WEIGHT", "PERTINENCE_LEXICAL_WEIGHT",
+    # Where the news map reads its articles: deployment, like LAKE_PATH
+    # (src/services/news_map/graph_source.py).
+    "MAP_SOURCE", "MAP_GRAPH_SOURCE_ID", "MAP_GRAPH_LABELS", "MAP_IMAGES_DIR",
 }
 
 # These two files are where the thresholds are defined and defaulted, so

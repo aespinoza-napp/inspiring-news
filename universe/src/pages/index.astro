@@ -1,6 +1,7 @@
 ---
-// The News Universe: every checked story as a star in a 3D galaxy of
-// sections and topics (docs/decisions/news-map.md, "The universe").
+// Inspiring News Universe (the name since 20 Nov; "The News Universe"
+// before): every story as a seed on a floating island of sections and
+// topics, with its photo (docs/decisions/news-map.md, "The universe").
 import "../styles/universe.css";
 ---
 
@@ -10,23 +11,24 @@ import "../styles/universe.css";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
-    <title>The News Universe</title>
-    <meta name="description" content="Every checked, positive story on a floating island of sections and topics, with the people, places and companies that join them, in three dimensions." />
+    <title>Inspiring News Universe</title>
+    <meta name="description" content="Inspiring News Universe: every positive story on a floating island of sections and topics, with its photos and the people, places and organisations that join them, in three dimensions." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body>
     <div id="space" aria-hidden="true"></div>
     <div id="labels" aria-hidden="true"></div>
+    <div id="photos" aria-hidden="true"></div>
 
     <div id="loading" class="loading" role="status">
       <div class="loading-orbit"><span></span><span></span><span></span></div>
-      <p>Entering the universe…</p>
+      <p>Entering Inspiring News Universe…</p>
     </div>
 
     <header class="hud top">
-      <a class="brand" href="/" aria-label="The News Universe, home">
+      <a class="brand" href="/" aria-label="Inspiring News Universe, home">
         <span class="brand-mark"></span>
-        <span class="brand-name">News <strong>Universe</strong></span>
+        <span class="brand-name">Inspiring News <strong>Universe</strong></span>
       </a>
 
       <div class="search" role="search">
@@ -53,6 +55,20 @@ import "../styles/universe.css";
         <button type="button" id="network-button" class="switch" aria-pressed="true" title="Show or hide the names and their threads">on</button>
       </p>
       <ul id="kinds"></ul>
+      <div class="names-tools" role="group" aria-label="Which names are drawn">
+        <span>Names in</span>
+        <button type="button" class="switch" data-min-stories="2" aria-pressed="true" title="Names two stories or more share">2+ stories</button>
+        <button type="button" class="switch" data-min-stories="1" aria-pressed="false" title="Every name of every story">any</button>
+      </div>
+      <div class="names-tools" role="group" aria-label="How many names are labelled">
+        <span>Labels</span>
+        <button type="button" class="switch" data-labels="few" aria-pressed="true">few</button>
+        <button type="button" class="switch" data-labels="many" aria-pressed="false">many</button>
+      </div>
+      <p class="hud-label connections-label">
+        Photos
+        <button type="button" id="photos-button" class="switch" aria-pressed="true" title="Show or hide the stories' photos floating over them (P)">on</button>
+      </p>
       <div class="legend-tools">
         <button type="button" id="home-button" class="ghost" title="The whole universe (H)">⌂ Whole view</button>
         <button type="button" id="motion-button" class="ghost" aria-pressed="true" title="Motion on or off (M)">◐ Motion</button>
@@ -66,7 +82,7 @@ import "../styles/universe.css";
 
     <footer class="hud status">
       <span id="status" aria-live="polite">—</span>
-      <span class="hint">Drag to turn · scroll to zoom · click a star</span>
+      <span class="hint">Drag to turn · scroll to zoom · click a story or its photo</span>
     </footer>
 
     <div id="list-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="list-title" hidden>
@@ -85,6 +101,14 @@ import "../styles/universe.css";
         <div id="chooser"></div>
         <button type="button" id="chooser-done" class="primary" disabled>Show my stories</button>
       </div>
+    </div>
+
+    <div id="photo-overlay" class="overlay photo-overlay" role="dialog" aria-modal="true" aria-label="A story's photo" hidden>
+      <figure class="photo-card">
+        <button type="button" class="close" data-close aria-label="Close">×</button>
+        <img id="photo-large" alt="" />
+        <figcaption id="photo-caption"></figcaption>
+      </figure>
     </div>
 
     <div id="account-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="account-title" hidden>

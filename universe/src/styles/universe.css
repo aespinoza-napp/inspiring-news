@@ -1,7 +1,7 @@
-/* The News Universe: light glass over a sunlit floating island (the
+/* Inspiring News Universe: light glass over a sunlit floating island (the
    author, 29 Oct: closer to health, environment and good news, fewer
-   lights, still a metaverse). System fonts only: the project uses no
-   third-party fonts. */
+   lights, still a metaverse), and the stories' photos over it (20 Nov).
+   System fonts only: the project uses no third-party fonts. */
 
 :root {
   --sky: linear-gradient(180deg, #d6ecfb 0%, #e8f5ef 50%, #fbf4e3 100%);
@@ -101,6 +101,78 @@ button {
   text-shadow: 0 0 4px #fff;
   padding: 0.1rem 0.4rem;
   border-left: 1px solid var(--line);
+}
+
+/* ---- photos in space (20 Nov) ---- */
+
+#photos {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.space-photo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 58px;
+  height: 58px;
+  padding: 0;
+  border: 3px solid #fff;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(23, 48, 42, 0.22), 0 0 0 1.5px color-mix(in oklch, var(--tint, #ffffff) 70%, #fff);
+  transform-origin: 50% 100%;
+  pointer-events: auto;
+  transition: opacity 0.35s;
+  will-change: transform, opacity;
+}
+
+.space-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 11px;
+}
+
+/* A stem down to its story. */
+.space-photo::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 2px;
+  height: 7px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(23, 48, 42, 0.2);
+}
+
+.space-photo.near {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.space-photo.near img {
+  border-radius: 50%;
+}
+
+.space-photo.selected {
+  width: 210px;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  border-width: 4px;
+  border-radius: 16px;
+  box-shadow: 0 14px 34px rgba(23, 48, 42, 0.3);
+  cursor: zoom-in;
+}
+
+.space-photo:hover {
+  box-shadow: 0 10px 26px rgba(23, 48, 42, 0.32), 0 0 0 2px var(--accent);
 }
 
 /* ---- the heads-up display ---- */
@@ -399,6 +471,105 @@ button {
   line-height: 1.35;
 }
 
+/* The story's photo, edge to edge at the top of its panel. */
+.photo-hero {
+  margin: -0.4rem -1.1rem 0.2rem;
+}
+
+.photo-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: var(--line);
+  cursor: zoom-in;
+}
+
+.photo-hero img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.photo-hero figcaption {
+  padding: 0.35rem 1.1rem 0;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.photo-hero + .hud-label {
+  margin-top: 0.7rem;
+}
+
+/* Over a photo, the close button needs its own ground. */
+.panel > .close {
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 2px 8px rgba(23, 48, 42, 0.15);
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 0.4rem;
+}
+
+.gallery-photo {
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--line);
+  cursor: zoom-in;
+}
+
+.gallery-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.gallery-photo:hover img {
+  transform: scale(1.06);
+}
+
+/* A list of stories, each with its photo. */
+.thumb {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--line);
+}
+
+.thumb.none {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(31, 143, 99, 0.12), rgba(47, 116, 181, 0.12));
+}
+
+.related.with-thumbs,
+#list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.related.with-thumbs li,
+#list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+#list li + li {
+  margin-top: 0.5rem;
+}
+
 .close {
   position: absolute;
   top: 0.5rem;
@@ -459,6 +630,34 @@ button {
   color: var(--accent);
 }
 
+.chip.static {
+  cursor: default;
+  color: var(--muted);
+}
+
+.chip.static.category {
+  color: inherit;
+  font-weight: 600;
+}
+
+.small {
+  font-size: 0.8rem;
+  margin: 0.35rem 0 0;
+}
+
+.names-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.names-tools span {
+  min-width: 4.2rem;
+}
+
 .chip.section {
   color: var(--tint);
   font-weight: 700;
@@ -496,6 +695,21 @@ button {
 .tooltip strong {
   display: block;
   margin-bottom: 0.2rem;
+}
+
+.tooltip.with-photo {
+  width: 17rem;
+  padding-top: 0.45rem;
+}
+
+.tooltip img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  margin-bottom: 0.5rem;
+  border-radius: 9px;
+  background: var(--line);
 }
 
 .tooltip span {
@@ -564,8 +778,39 @@ button {
 }
 
 #list {
-  padding-left: 1.4rem;
   line-height: 1.5;
+}
+
+/* ---- a photo, large ---- */
+
+.photo-card {
+  position: relative;
+  margin: 0;
+  max-width: min(64rem, 100%);
+  padding: 0.6rem;
+  background: var(--glass-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--glow);
+}
+
+.photo-card img {
+  display: block;
+  max-width: 100%;
+  max-height: 80vh;
+  margin: 0 auto;
+  border-radius: 10px;
+}
+
+.photo-card figcaption {
+  padding: 0.5rem 0.3rem 0.1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.photo-card .close {
+  background: rgba(255, 255, 255, 0.88);
+  z-index: 1;
 }
 
 .form {
@@ -653,6 +898,11 @@ button {
   .panel {
     animation: none;
   }
+
+  .space-photo,
+  .gallery-photo img {
+    transition: none;
+  }
 }
 
 /* ---- a phone ---- */
@@ -714,5 +964,26 @@ button {
     left: 14px;
     width: auto;
     max-height: 55vh;
+    background: var(--glass-strong);
+  }
+
+  /* The legend and an open story share the bottom of a phone: the story wins
+     (with its photo it fills the panel, and the legend showed through). */
+  body:has(#panel:not([hidden])) .legend {
+    display: none;
+  }
+
+  .space-photo.selected {
+    width: 140px;
+  }
+
+  .space-photo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .space-photo.near {
+    width: 36px;
+    height: 36px;
   }
 }

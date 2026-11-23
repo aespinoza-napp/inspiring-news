@@ -39,6 +39,10 @@ export interface MapDocument {
     y: number[];
     z?: number[];
     approx: (string | null)[];
+    // Each story's photo and its thumbnail (20 Nov): an address, or a path
+    // under the map ("/images/<file>"); absent from a backend before them.
+    img?: (string | null)[];
+    thumb?: (string | null)[];
   };
 }
 
@@ -59,10 +63,22 @@ export interface Universe {
   entitiesOf: number[][];
   entities: { k: string; n: string; t: string }[];
   verdicts: (string | null)[];
+  // Each story's photo at about 768 px and at 150, ready for an <img src>.
+  images: (string | null)[];
+  thumbs: (string | null)[];
   indexOf: Map<string, number>;
 }
 
 export const NO_GROUP = 255;
+
+// A photo as the backend names it, as the browser asks for it: a path under
+// the map goes through this app's /api/map, like every map route; an
+// address on the site as it is. Anything else is no photo.
+export function photoUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("/images/")) return `/api/map${path}`;
+  return /^https?:\/\//.test(path) ? path : null;
+}
 
 export function decode(document: MapDocument): Universe {
   const a = document.articles;
@@ -97,8 +113,20 @@ export function decode(document: MapDocument): Universe {
     entitiesOf: a.e,
     entities: document.entities,
     verdicts: a.v,
+    images: a.id.map((_, i) => photoUrl(a.img?.[i])),
+    thumbs: a.id.map((_, i) => photoUrl(a.thumb?.[i]) ?? photoUrl(a.img?.[i])),
     indexOf,
   };
+}
+
+export interface Photo {
+  src: string;
+  thumb: string | null;
+  // The original, to open the photo; older backends send none.
+  full?: string | null;
+  alt: string | null;
+  caption: string | null;
+  featured: boolean;
 }
 
 export interface Links {
@@ -106,7 +134,18 @@ export interface Links {
   title: string;
   topics: { key: string; name: string; confidence: number }[];
   entities: { key: string; name: string; type: string; articles: number }[];
-  related: { id: string; title: string; x: number; y: number; score: number; via: { kind: string; via: string; weight: number }[] }[];
+  // The story's own WordPress labels, when the map reads the graph with
+  // MAP_GRAPH_LABELS set (backend news_map/graph_source.py).
+  wordpress?: {
+    section: string | null;
+    categories: string[];
+    tags: string[];
+    topics: { key: string; name: string }[];
+    topicFrom: string | null;
+  };
+  // The story's photos, the main one first (20 Nov); absent before them.
+  photos?: Photo[];
+  related: { id: string; title: string; thumb?: string | null; x: number; y: number; score: number; via: { kind: string; via: string; weight: number }[] }[];
 }
 
 export interface SearchResult {
