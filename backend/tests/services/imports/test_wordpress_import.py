@@ -28,7 +28,9 @@ def service(admission, graph=None):
     enrichment = Mock()
     enrichment.process.side_effect = lambda news, thresholds=None, article_entities=True: create_article(
         url=news.url, source_id=news.source_id, claims=[create_claim(), create_claim()],
+        entities={}, image_url=news.image_url, image_alt=news.image_alt,
     )
+    enrichment.entities_of.return_value = {"person": ["Olga Moraga"], "organization": ["Colegio Oficial de Psicología"]}
 
     fact_checker = Mock()
     fact_checker.run.return_value = FactCheckReport(article_id="a", validation_passed=True, overall_verdict=Verdict.TRUE)
@@ -159,6 +161,8 @@ def test_the_import_keeps_a_snapshot_and_a_line_per_post(tmp_path):
     # Unverified, and kept out of the corpus, every time.
     for call in analysis.analyze_news.call_args_list:
         assert call.kwargs["verify"] is False and call.kwargs["remember"] is False
+        # Its names all the same: what joins its posts in the graph.
+        assert call.kwargs["unchecked_entities"] is True
 
     assert state["summary"] == {
         "imported": 2, "failed": 1, "passedFilters": 1, "rejected": 1,
@@ -222,3 +226,104 @@ def test_the_lake_keeps_the_post_as_read_and_never_publishes_it(tmp_path):
 
     (served,) = made.lake.list(DataLayer.EXPLOITATION)
     assert served["publishable"] is False
+
+
+# ---------------------------------------------------------------------------
+# Names, sources and photos (2026-11-20)
+# ---------------------------------------------------------------------------
+
+def test_an_unverified_import_keeps_its_names_though_it_never_checks_out():
+    """
+    The 17 Nov rule keeps an article's names for after its check; an
+    unverified import never checks out, and would have none in the graph.
+    """
+
+    graph = Mock()
+    made = service(FakeAdmission(admitted()), graph)
+    events = []
+
+    result = made.analyze_news(
+        news(), on_phase=lambda phase, data: events.append((phase, data)),
+        verify=False, remember=False, unchecked_entities=True,
+    )
+
+    assert ("article_entities", {"reason": "import"}) in events
+    assert result["entities"]["person"] == ["Olga Moraga"]
+    assert graph.write_analysis.call_args.args[0].entities["person"] == ["Olga Moraga"]
+
+
+def test_a_rejected_import_keeps_its_names_too():
+
+    made = service(FakeAdmission(admitted(passed=False, positive_ok=False)), Mock())
+
+    result = made.analyze_news(news(), verify=False, remember=False, unchecked_entities=True)
+
+    assert result["validity"]["isValid"] is False and result["entities"]["person"] == ["Olga Moraga"]
+
+
+def test_without_the_switch_the_rule_of_17_nov_holds():
+
+    made = service(FakeAdmission(admitted()), Mock())
+    events = []
+
+    result = made.analyze_news(news(), on_phase=lambda phase, data: events.append(phase), verify=False, remember=False)
+
+    assert "article_entities_skipped" in events and result["entities"] == {}
+    made.enrichment_pipeline.entities_of.assert_not_called()
+
+
+def photographed():
+
+    from src.services.imports.wordpress import parse
+    from tests.services.imports.test_wordpress import METADATA, STORY, attachment
+
+    (post,) = parse(export(
+        attachment(267, "https://inspiringnews.ai//wp-content/uploads/2025/02/tmpnjt92rgc.png", alt="Monos", metadata=METADATA),
+        item(250, "Monos que bromean", STORY + "<p><strong>Fuentes:</strong></p><p>NPR.</p>", meta={"_thumbnail_id": "267"}),
+    )).posts
+
+    return post
+
+
+def test_the_post_s_photos_and_sources_go_with_it_and_its_text_has_neither():
+
+    post = photographed()
+    made = to_news(post, "wordpress:inspiringnews.ai")
+
+    assert made.image_url == "https://inspiringnews.ai/wp-content/uploads/2025/02/tmpnjt92rgc.png"
+    assert made.image_alt == "Monos"
+    assert made.metadata["images"] == post.images
+    assert made.metadata["source_list"] == [{"text": "NPR", "url": None}]
+    assert "Fuentes" not in made.content and "NPR" not in made.content
+
+
+def test_the_lake_and_the_graph_keep_the_photo(tmp_path):
+
+    from src.models.storage.lineage import DataLayer
+    from src.repositories.lake_backend import JsonFileLakeBackend
+
+    graph = Mock()
+    made = service(FakeAdmission(admitted()), graph)
+    made.lake = DataLakeRepository(backend=JsonFileLakeBackend(tmp_path))
+
+    made.analyze_news(to_news(photographed(), "wordpress:inspiringnews.ai"), verify=False, remember=False, unchecked_entities=True)
+
+    (raw,) = made.lake.list(DataLayer.RAW)
+    assert raw["article"]["image_url"].endswith("/tmpnjt92rgc.png")
+    assert raw["article"]["metadata"]["images"][0]["sizes"]["medium_large"]["width"] == 768
+
+    (processed,) = made.lake.list(DataLayer.PROCESSED)
+    assert processed["article"]["image_url"].endswith("/tmpnjt92rgc.png")
+
+    article = graph.write_analysis.call_args.args[0]
+    props = GraphWriter(RecordingGraphClient()).analysis_statements(article, graph.write_analysis.call_args.args[1])[0][1]["props"]
+    assert props["image_url"].endswith("/tmpnjt92rgc.png") and props["image_alt"] == "Monos"
+
+
+def test_the_import_s_line_counts_names_sources_and_photos():
+
+    from src.services.imports.wordpress_import import outcome
+
+    line = outcome(photographed(), {"validity": {"isValid": True}, "entities": {"person": ["A", "B"], "city": ["C"]}})
+
+    assert (line["entities"], line["sourcesListed"], line["images"]) == (3, 1, 1)

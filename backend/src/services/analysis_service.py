@@ -186,6 +186,7 @@ class AnalysisService:
         verify: bool = True,
         remember: bool = True,
         extractor: str = "supplied",
+        unchecked_entities: bool = False,
     ) -> dict:
         """
         An article already in hand - its text from a file, not fetched - through
@@ -201,6 +202,10 @@ class AnalysisService:
         searches, so an imported article remembered there would be found as
         evidence for itself when the same text is verified later
         (services/imports/, 2026-11-03).
+
+        `unchecked_entities=True` extracts the article's entities although it
+        will not check out (_entities_if_verified): for an unverified import,
+        whose names the graph and the readers' universe show.
         """
 
         report_phase = on_phase or _noop
@@ -209,6 +214,7 @@ class AnalysisService:
         result = self._analyse_news(
             news.url, news, report_phase, thresholds,
             verify=verify, remember=remember, extractor=extractor,
+            unchecked_entities=unchecked_entities,
         )
 
         final = {**result, "cached": False}
@@ -225,6 +231,7 @@ class AnalysisService:
         verify: bool = True,
         remember: bool = True,
         extractor: str | None = None,
+        unchecked_entities: bool = False,
     ) -> dict:
 
         # Layer 1, immediately: what was extracted is worth keeping even
@@ -260,7 +267,7 @@ class AnalysisService:
 
         report = self._check(article, report_phase, thresholds, verify=verify, remember=remember)
 
-        article = self._entities_if_verified(article, report, report_phase, thresholds)
+        article = self._entities_if_verified(article, report, report_phase, thresholds, unchecked_entities)
 
         # Layer 3, and the report attached back onto layer 2 - with the
         # entities, when the check let them be extracted.
@@ -311,6 +318,7 @@ class AnalysisService:
         report: FactCheckReport,
         report_phase: OnPhase,
         thresholds: PipelineThresholds,
+        unchecked: bool = False,
     ) -> EnrichedArticle:
         """
         The article's entities, extracted only once it checked out: the
@@ -321,13 +329,24 @@ class AnalysisService:
         FALSE or MISLEADING overall. A Devastating-edition article, published
         unchecked by request, passes it, as it is published. One that does
         not pass keeps no entities: nothing will be written from it.
+
+        `unchecked`: an unverified import (services/imports/), which never
+        checks out, keeps its entities all the same. Nothing is written from
+        it either - never publishable, so never drafted - but its names are
+        what the graph and the readers' universe join its posts by: without
+        them, the import of 2026-11-20 would have none (it ran on 3 Nov,
+        before this rule, with them).
         """
 
-        if not DataLakeRepository.is_publishable(report):
+        if unchecked:
+            report_phase("article_entities", {"reason": "import"})
+
+        elif not DataLakeRepository.is_publishable(report):
             report_phase("article_entities_skipped", {"reason": "not_verified", "verdict": report.overall_verdict})
             return article
 
-        report_phase("article_entities", {})
+        else:
+            report_phase("article_entities", {})
 
         try:
             entities = self.enrichment_pipeline.entities_of(article.body, thresholds)

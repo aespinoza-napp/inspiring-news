@@ -70,7 +70,7 @@ src.main:app --port 8001`.
 | Claude Code in this repo: the skills (`/verify`, `/debug-verdict`, `/fact-check-change`, `/iterate-fact-check`, `/audit`, `/commit`, `/write-constructive-article`, `/write-devastating-article`) and hooks | `.claude/skills/`, `.claude/hooks/` |
 | The thesis defence: likely questions, the structural gaps, what to do next | `docs/thesis-defense-brief.md` (3 Nov), `docs/audit-2026-10-28.md` |
 | One article's journey across every stage (round → job → lake → reader → draft) | `/trace` (`frontend/CLAUDE.md`), `GET /trace`, `backend/src/services/trace.py` |
-| Bringing in a WordPress export unverified, to compare on the same articles (lake + graph, not the reader) | `scripts/import_wordpress.py`, `backend/src/services/imports/`, `POST /imports/wordpress` |
+| Bringing in a WordPress export unverified, to compare on the same articles (lake + graph, not the reader); its list of sources cut from the text, its photos kept and downloaded | `scripts/import_wordpress.py`, `scripts/wordpress_images.py`, `backend/src/services/imports/`, `POST /imports/wordpress`, `docs/decisions/storage.md` ("Imports") |
 | Pipeline stages, entry points, container | `backend/CLAUDE.md` |
 | What decides whether an article is checked at all | `backend/src/services/admission/README.md` |
 | Why the models live in their own service | `docs/decisions/inference.md` |
@@ -179,7 +179,9 @@ write them down than to have each be rediscovered.
   Fetch -> fact-check -> entities only if it checked out -> draft (with them) ->
   the draft checked against its own sources by MiniCheck -> review -> publish;
   approval needs the draft's check. `docs/decisions/writing.md`, "Checked twice".
-  The response's `entities` is empty for an article that did not check out.
+  The response's `entities` is empty for an article that did not check out -
+  except an unverified WordPress import, which keeps them (2026-11-20,
+  `unchecked_entities`: the graph joins its posts by them).
 - **Ingestion runs only when someone asks.** `/discover` (`POST
   /ingest/rounds`) reads the sources of up to three topic groups and
   lists candidates best first, twenty shown (forty on request); a person

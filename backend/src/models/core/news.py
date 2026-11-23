@@ -28,7 +28,11 @@ class News(BaseModel):
 
     content: str
 
+    # The article's lead photo: a fetched page's (the extraction cascade's
+    # lead_image), or an imported post's featured one with its alt text.
     image_url: Optional[str] = None
+
+    image_alt: Optional[str] = None
 
     claims: list[Claim] = []
 

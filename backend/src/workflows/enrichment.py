@@ -96,6 +96,10 @@ class NewsEnrichmentPipeline:
             
             published_at=article.published_at,
 
+            image_url=article.image_url,
+
+            image_alt=article.image_alt,
+
             keywords=self.keywords.process(article.content, language),
 
             # The article-level pass; `article_entities=False` leaves it for

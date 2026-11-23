@@ -75,6 +75,10 @@ than one overwriting the other.
   MATCH (a:Article {source_id: "wordpress:inspiringnews.ai"})
   RETURN a.admitted, a.topic_ok, a.positive_ok, a.duplicate, count(*)
   ```
+- **An article's photo** (2026-11-20): `image_url` and `image_alt`, a link to
+  its lead photo - a fetched page's lead image, an imported post's featured
+  one - never the bytes. Written by every analysis since; an article written
+  before has none until it is analysed again.
 - Cache hits are not re-written - they were written when computed.
 - `AnalysisService.graph` has **no default**, like `lake`: Neo4j Community
   has one database, so a default would have every test writing into the

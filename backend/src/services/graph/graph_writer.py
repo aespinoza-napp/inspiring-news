@@ -338,6 +338,10 @@ class GraphWriter:
             "sentiment_label": sentiment.label if sentiment else None,
             "sentiment_polarity": sentiment.polarity if sentiment else None,
             "content_hash": hashlib.sha256(article.body.encode("utf-8")).hexdigest(),
+            # Its lead photo, a link to it (the page's, or an imported post's
+            # featured one): what the readers' universe shows of a story.
+            "image_url": article.image_url,
+            "image_alt": article.image_alt,
         }
 
         statements: list[Statement] = [

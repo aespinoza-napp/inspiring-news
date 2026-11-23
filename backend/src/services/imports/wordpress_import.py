@@ -62,6 +62,15 @@ def source_id(export: Export) -> str:
 
 
 def to_news(post: Post, source: str) -> News:
+    """
+    The post as the pipeline takes it. Its text has no list of sources
+    (services/imports/wordpress.py): the list goes in the metadata, item by
+    item, so the entities are the story's and the sources stay attached.
+    The featured photo is the article's image, as a fetched page's lead
+    image is, and every photo is in the metadata.
+    """
+
+    featured = post.images[0] if post.images else {}
 
     return News(
         source_id=source,
@@ -71,6 +80,8 @@ def to_news(post: Post, source: str) -> News:
         published_at=datetime.fromisoformat(post.published_at) if post.published_at else None,
         language=post.language,
         content=post.text,
+        image_url=post.image_url,
+        image_alt=featured.get("alt"),
         metadata={
             "imported_from": source,
             "wp_id": post.wp_id,
@@ -78,6 +89,8 @@ def to_news(post: Post, source: str) -> News:
             "categories": post.categories,
             "tags": post.tags,
             "sources": post.sources,
+            "source_list": post.source_list,
+            "images": post.images,
             "content_hash": post.content_hash,
         },
     )
@@ -108,6 +121,9 @@ def outcome(post: Post, result: dict) -> dict:
         "duplicate": validity.get("isDuplicate"),
         "impactScore": validity.get("impactScore"),
         "topics": [topic.get("topic") for topic in (result.get("topics") or [])][:3],
+        "entities": sum(len(names) for names in (result.get("entities") or {}).values()),
+        "sourcesListed": len(post.source_list),
+        "images": len(post.images),
         "claims": fact_check.get("claimsTotal", 0),
         "factChecked": fact_check.get("claimsChecked", 0) > 0,
         "runId": storage.get("runId"),
@@ -223,6 +239,10 @@ class WordPressImport:
                             # check searches; an unverified one never does.
                             remember=verify,
                             extractor="wordpress_export",
+                            # Unverified, it never checks out, and its names
+                            # would wait for a check that never comes; they
+                            # are what joins its posts in the graph.
+                            unchecked_entities=not verify,
                         )
                     except Exception as exc:
                         logger.warning("Import of %s failed", post.url, exc_info=True)

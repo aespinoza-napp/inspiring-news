@@ -24,6 +24,12 @@ class EnrichedArticle(BaseModel):
 
     published_at: Optional[datetime] = None
 
+    # The article's lead photo, carried from News so the graph keeps it
+    # (Article.image_url): until 2026-11-20 it stopped at the raw record.
+    image_url: Optional[str] = None
+
+    image_alt: Optional[str] = None
+
     #################################################
 
     keywords: Optional[list[str]] = None

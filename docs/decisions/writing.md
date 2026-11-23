@@ -565,7 +565,10 @@ publish.**
   check itself still knows the article's subjects: claim selection reads the names
   `ClaimExtractor` already finds in every sentence (`fact_checker.sentence_entities`), and
   every claim keeps its own entities for the search. The response's `entities` is empty
-  for an article that did not check out (cache schema 16).
+  for an article that did not check out (cache schema 16). One exception, 2026-11-20: an
+  unverified WordPress import (`analyze_news(unchecked_entities=True)`) keeps them. It
+  never checks out, nothing is drafted from it, and its names are what the graph and
+  the readers' universe join its posts by (`docs/decisions/storage.md`, "Imports").
 - **The draft carries them** in `metadata.entities`, read from the analysed article's
   processed record (`AnalysedArticle.entities`).
 - **The draft is checked against its own sources** (`services/writer/draft_fact_check.py`).

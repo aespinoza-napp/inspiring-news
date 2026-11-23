@@ -123,6 +123,34 @@ remembered in the vector store. `data/imports/<id>/snapshot.jsonl` is the posts
 as read, with each text's sha256: two runs worked on the same data when those
 agree. Git ignores `backend/data/imports/`: the export holds private posts.
 
+**Since 2026-11-20, asked for by the author**, three things changed. Each one
+means an import before that date and one after it did not read the same text:
+their content hashes differ for the 104 posts that list their sources.
+
+- **A post's list of sources is not its text.** "Fuentes:" and the outlets
+  after it, "Fuente original: <link>", or an untitled run of links to other
+  sites closing the post (`wordpress.split_sources`) are cut before anything
+  reads the text, and kept as `source_list` in the raw record's metadata,
+  item by item with its link. Read as text, the outlets were among the
+  story's names, and GLiNER read the heading "Fuentes" as a person's surname
+  in 5 posts. On the export of 2026-11-03, 104 of the 187 published posts list
+  sources, 433 items, 382 with a link. A sentence that starts "Fuentes de la
+  catedral resaltan..." is the story's own (no colon), and so is a heading
+  followed by a paragraph.
+- **The photos.** Every post's featured photo (its `_thumbnail_id`, an
+  attachment of the same export) and those in its text, with alt text,
+  caption and the sizes WordPress made, are `images` in the metadata, and the
+  featured one is the article's `image_url` and `image_alt`, which the
+  processed record and the graph's Article now keep (until then a fetched
+  page's lead image stopped at the raw record). The export holds no image
+  bytes: `scripts/wordpress_images.py` downloads them into
+  `data/imports/<file name>/images/` with a `manifest.json` (897 files, 319 MB
+  for 187 posts in three sizes, 2026-11-20).
+- **An unverified import keeps its entities** (`unchecked_entities`): the
+  rule of 17 Nov (`docs/decisions/writing.md`, "Checked twice") would
+  otherwise give it none, since it never checks out, and its names are what
+  joins its posts in the graph. A verified import follows the rule.
+
 ## The job journal
 
 The lake keeps *results*. Everything a run does on the way — the queries it
