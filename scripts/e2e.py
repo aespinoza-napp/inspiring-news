@@ -380,9 +380,15 @@ def get(url: str, headers: dict | None = None) -> tuple[int, str]:
 def dom(chrome: str, url: str, lang: str = "en", extra: list[str] | None = None) -> str:
     """The page after its scripts ran, as headless Chrome renders it."""
 
+    # On Linux Chrome ignores --lang and takes its language from the locale,
+    # so "the browser's language" was the machine's: the Spanish feed check
+    # passed on a laptop in es_ES and failed on every CI run (English) from
+    # the job's first, 2026-11-03, to 2026-11-23. --accept-lang sets the
+    # header and navigator.languages; LANGUAGE is what Linux Chrome reads.
     result = subprocess.run(
         [chrome, "--headless=new", "--disable-gpu", "--no-sandbox", f"--lang={lang}",
-         "--virtual-time-budget=8000", *(extra or []), "--dump-dom", url],
+         f"--accept-lang={lang}", "--virtual-time-budget=8000", *(extra or []), "--dump-dom", url],
+        env={**os.environ, "LANGUAGE": lang},
         # The DOM is UTF-8 whatever the platform: on Windows text=True alone
         # decoded it as cp1252 and failed on the first accented byte.
         capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90,
