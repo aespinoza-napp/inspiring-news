@@ -341,7 +341,7 @@ def test_the_catalogue_lists_the_trend_signals_and_the_lenss_limits(monkeypatch)
     body = client.get("/ingest/sources").json()
 
     assert {signal["id"] for signal in body["signals"]} >= {"google_trends_es", "uplifting_news"}
-    assert body["trending"] == {"perTrend": 2, "maxPerTrend": 5, "maxTrendAgeHours": 72, "maxArticleAgeDays": 7}
+    assert body["trending"] == {"perTrend": 2, "maxPerTrend": 5, "maxTrendAgeHours": 72, "maxArticleAgeDays": 7, "maxCandidates": 20}
 
 
 # ----------------------------------------------------------------------

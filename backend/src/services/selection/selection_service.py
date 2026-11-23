@@ -61,6 +61,14 @@ MAX_SELECTED = 20
 LISTED = 20
 MAX_LISTED = 40
 
+# The most a trending round keeps, shown or in reserve, with no topic group,
+# one or three (2026-11-23, by the author's request): the best 20 of what
+# the signals bring. The groups only order what fits them first, so they
+# never change how many there are. Before, a round found 46-54 on 17 Nov,
+# showed 20 and kept the rest for "more", up to MAX_LISTED.
+# `totals.candidates` still counts everything found.
+TRENDING_MAX = 20
+
 StartJob = Callable[[str], tuple[str, bool]]
 
 
@@ -159,6 +167,9 @@ class SelectionService:
         # Best first already; `totals.candidates` keeps counting all found.
         found = discovered["candidates"]
         listed = max(1, min(listed, MAX_LISTED))
+
+        if trending:
+            found = found[:TRENDING_MAX]
 
         round_ = {
             "id": uuid.uuid4().hex[:16],

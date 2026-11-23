@@ -639,6 +639,8 @@ export interface TrendingLimits {
   maxPerTrend: number;
   maxTrendAgeHours: number;
   maxArticleAgeDays: number;
+  /** The most a trending round keeps, with no topic, one or three; absent from a backend before 2026-11-23. */
+  maxCandidates?: number;
 }
 
 /** A TikTok video a person gave with a seed: shown only through TikTok's own player, after a click. */

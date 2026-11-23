@@ -323,6 +323,8 @@ export default function DiscoverPage() {
   const signals: TrendSignal[] = catalogue?.signals ?? [];
   const signalsOn = signals.filter((signal) => !signalsOff.has(signal.id));
   const maxPerTrend = catalogue?.trending?.maxPerTrend ?? FALLBACK_MAX_PER_TREND;
+  // A trending round keeps its best 20, shown or in reserve, whatever its topics (2026-11-23).
+  const trendingMax = catalogue?.trending?.maxCandidates ?? 20;
 
   const loadRecent = useCallback(async () => {
     try {
@@ -779,7 +781,8 @@ export default function DiscoverPage() {
         right now, and the articles that explain it. The articles found come
         best first, by how squarely they fit those topics and how{" "}
         {devastating ? "devastating" : "positive"} they read - you say which counts more - and by their source; the{" "}
-        {listed} best shown, up to {maxListed} if you ask for more. Choose up
+        {listed} best shown, up to {maxListed} if you ask for more ({trendingMax} at most when trending, with
+        one topic or three). Choose up
         to {maxSelected} of them, yourself or from the AI&apos;s proposal, and
         send them to analysis.
       </p>

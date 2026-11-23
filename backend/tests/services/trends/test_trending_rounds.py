@@ -33,12 +33,13 @@ def trend_round(urls=("https://elpais.com/madrid/2026-10-26/metro-reabre",)):
 
 class FakeTrending:
 
-    def __init__(self):
+    def __init__(self, urls=None):
         self.calls = []
+        self.urls = urls
 
     def discover(self, **asked):
         self.calls.append(asked)
-        return trend_round()
+        return trend_round(self.urls) if self.urls else trend_round()
 
 
 class FakeIngestion:
@@ -60,15 +61,34 @@ class TellingSelector:
         return AISelection(picks=[], scored=[], model="fake", calls=1)
 
 
-def service(tmp_path, ledger=None, selector=None):
+def service(tmp_path, ledger=None, selector=None, found=None):
 
     return SelectionService(
         ingestion=FakeIngestion(),
         selector=selector,
         rounds=SelectionRounds(tmp_path / "rounds"),
-        trending=FakeTrending(),
+        trending=FakeTrending(found),
         ledger=ledger,
     )
+
+
+@pytest.mark.parametrize("groups", [[], ["nature"], ["nature", "health", "science"]])
+@pytest.mark.parametrize("listed", [20, 10, 40])
+def test_a_trending_round_keeps_at_most_twenty_whatever_its_groups(tmp_path, groups, listed):
+
+    urls = [f"https://example.org/news/2026-11-23/story-{n}" for n in range(52)]
+    selection = service(tmp_path, found=urls)
+
+    round_ = selection.create_round(groups, None, 2, listed=listed, trending=True)
+
+    assert len(round_["candidates"]) == min(listed, 20)
+    assert len(round_["candidates"]) + len(round_["reserve"]) == 20
+    assert [c["url"] for c in round_["candidates"] + round_["reserve"]] == urls[:20]
+
+    shown = selection.show_more(round_["id"])
+
+    assert len(shown["candidates"]) == 20 and shown["reserve"] == []
+    assert round_["totals"]["candidates"] == 52
 
 
 def test_a_trending_round_is_made_by_the_lens_with_what_was_asked(tmp_path):

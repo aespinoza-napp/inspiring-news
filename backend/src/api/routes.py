@@ -640,7 +640,7 @@ def ingestion_sources(edition: Edition = Query(default=DEFAULT_EDITION)):
     from src.config.editions import EDITION_NAMES, EDITIONS, group_names_of, groups_of, topics_of
     from src.services.ingestion_service import MAX_GROUPS
     from src.services.selection.ranking import DEFAULT_TOPIC_EMPHASIS
-    from src.services.selection.selection_service import LISTED, MAX_LISTED, MAX_SELECTED
+    from src.services.selection.selection_service import LISTED, MAX_LISTED, MAX_SELECTED, TRENDING_MAX
     from src.services.trends.trending import MAX_ARTICLE_AGE, MAX_PER_TREND, MAX_TREND_AGE, PER_TREND
 
     service = get_ingestion_service()
@@ -698,6 +698,8 @@ def ingestion_sources(edition: Edition = Query(default=DEFAULT_EDITION)):
             "maxPerTrend": MAX_PER_TREND,
             "maxTrendAgeHours": int(MAX_TREND_AGE.total_seconds() // 3600),
             "maxArticleAgeDays": MAX_ARTICLE_AGE.days,
+            # The most a trending round keeps, whatever its groups: no "more".
+            "maxCandidates": TRENDING_MAX,
         },
         "lastRun": service.last_run,
     }

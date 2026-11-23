@@ -191,6 +191,13 @@ per trend; a "Trending" line on each candidate (name, signal, searches,
 since when, whether its TikTok video goes with the story); the trends read
 and what became of each; virality in the rank line instead of the rating.
 
+**At most 20 a round** (2026-11-23, the author's request): a trending round
+keeps the best 20 of what the signals bring, shown or in reserve, with no
+topic group, one or three (`selection_service.TRENDING_MAX`). The groups only
+order what fits them first, so they never change the count. Until then a
+round kept everything as reserve and "more" showed up to 40: on 17 Nov rounds
+found 46-54 articles. `totals.candidates` still counts all that was found.
+
 ### The lens, run (2026-10-26)
 
 **On the 07:10 Spanish feed, with bge-m3's real screen**
