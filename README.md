@@ -128,7 +128,7 @@ method and results are in [`docs/decisions/evaluation.md`](docs/decisions/evalua
 | NLP and models | GLiNER, XLM-RoBERTa sentiment, BAAI bge-m3 embeddings, yake; LLMs via Ollama (llama3.2, Qwen3.5) or any OpenAI-compatible endpoint |
 | Retrieval and storage | SearXNG metasearch, Qdrant vector store, Neo4j graph, a three-layer JSON data lake |
 | Scraping | Trafilatura, BeautifulSoup, Playwright (Chromium) as the last resort |
-| Front end | Next.js 14 (App Router), TypeScript, hand-written CSS, no UI library |
+| Front end | Next.js 14 (App Router), TypeScript, hand-written CSS, no UI library; the universe in Astro 7 + three.js |
 | Infrastructure | Docker Compose (development, production, Google Cloud layer), Terraform, Caddy, GitHub Actions |
 | Evaluation | A custom harness: bootstrap intervals, Cohen's κ, paired comparisons, stage attribution |
 
@@ -138,8 +138,8 @@ method and results are in [`docs/decisions/evaluation.md`](docs/decisions/evalua
 |---|---|
 | [`backend/`](backend/) | The pipeline, the job API, storage, the evaluation harness (`src/evaluation/`) |
 | [`inference/`](inference/) | The model server: entities, sentiment, embeddings |
-| [`frontend/`](frontend/) | The newsroom (Discover, Analyze, Live, Write, Reader) and the lab tools per stage |
-| [`labeller/`](labeller/) | A dependency-free app for hand-labelling the validation set |
+| [`frontend/`](frontend/) | The newsroom (Discover, Analyze, Live, Write, Reader), the readers' map, Today, For you and Account pages, and the lab tools per stage |
+| [`universe/`](universe/) | **Inspiring News Universe**, the readers' 3D news universe (Astro + three.js); how to run it is in [`universe/README.md`](universe/README.md) |
 | [`docker/`](docker/), [`deploy/gcp/`](deploy/gcp/) | Compose stacks and the Google Cloud Terraform |
 | [`scripts/`](scripts/) | `check.sh` (the definition of done), `dev.sh` (start everything), `init_env.sh` (settings from `.env_global`), `stack.sh` (what to run per activity), model trials |
 | [`docs/decisions/`](docs/decisions/) | Why each part is the way it is |
@@ -157,7 +157,6 @@ What has to be on the machine before anything runs:
 | Node.js + npm | 22 (what `docker/frontend.Dockerfile` builds with) | The frontend dev server |
 | bash, curl | any | `scripts/*.sh`; on Windows, Git Bash or WSL |
 | Python + [uv](https://docs.astral.sh/uv/) | Python 3.12+ | Only to run the backend or the tests outside Docker (`./scripts/check.sh`) |
-| Python | 3.x, standard library only | Only for the labeller (`python labeller/app.py`) |
 
 Optional: `make` (a thin wrapper over the scripts); Playwright with
 Chromium, for the last step of the extraction cascade outside Docker
@@ -212,6 +211,19 @@ dependency is down. To run the pieces without Docker, see
 ./scripts/check.sh            # every test suite and the frontend typecheck
 ./scripts/check.sh fast       # the invariants only, in seconds
 ```
+
+### Inspiring News Universe
+
+The readers' 3D universe is its own app in [`universe/`](universe/). To look
+at it with synthetic stories, without starting anything else:
+
+```bash
+cd universe && npm ci && cd ..        # once
+python3 scripts/preview_universe.py   # then open http://127.0.0.1:4321/
+```
+
+To see the real stories and their photos, read from the graph, see
+[`universe/README.md`](universe/README.md).
 
 ## Status and what is next
 
