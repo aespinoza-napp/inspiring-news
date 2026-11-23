@@ -237,6 +237,10 @@ services:
       # tests/test_deployment_config.py fails for a committed folder left out.
       - ../backend/data/trends:/app/data/trends:ro
       - ../backend/data/evaluation:/app/data/evaluation:ro
+      # The IPTC topic classifier's weights (66 KB, processors/nlp/iptc_topics.py),
+      # read only when TOPIC_GROUP_CLASSIFIER=iptc. Without the mount the
+      # switch would find no model inside the container.
+      - ../backend/data/models:/app/data/models:ro
       # model-cache moved to the `inference` service above - the
       # transformer models live there now, not here.
     depends_on:
