@@ -553,3 +553,26 @@ on the custom set's train half yet.
 - **`cli averitec balance`:** 35 claims per label on dev, spread over claim types.
 - **Model loads in `inference/` are serialised** (`src/loading.py`): two at once could leave
   a model with meta tensors (7 of 24 inference tests failed in one run on 17 Nov, then passed).
+
+## 19. The search engines measured again: Yandex and PrivacyWall in, five out (2026-11-23)
+
+- **Why:** measured each engine on its own on the pinned SearXNG 2026.11.2, with the
+  `proposition` queries of 26 train claims (18 AVeriTeC train, 8 of the custom set's train
+  half in Spanish). `scripts/probe_search_engines.py`, `research/search-engines/search-engines.ipynb`.
+  In practice the allowlist was only DuckDuckGo and Yahoo, and 71% of Yahoo's top 10 is also in DuckDuckGo's. Google
+  ("access denied"), Yep (HTTP error) and Brave ("too many requests" after 5 queries) refused
+  this machine. Startpage and Mojeek are `inactive: true` upstream since 2026.11, because they
+  now answer with a proof-of-work CAPTCHA, so they never loaded at all.
+- **Added:** Yandex (25 of 26 answered, 5.9 on-topic results per query, 2-7% of its pages
+  shared with any other engine: the one independent index left) and PrivacyWall (26 of 26,
+  7.4 on-topic, about half its pages shared with DuckDuckGo or Yahoo).
+- **Removed:** Google, Yep, Brave, Startpage, Mojeek. **Kept:** DuckDuckGo, Yahoo, Bing News,
+  Wikipedia and the four scholarly engines.
+- **The stack ran from a deleted folder until that morning:** the containers had been started from the
+  `../inspiring-news-map` worktree, with SearXNG 2026.9.8 and the allowlist from before 3 Nov
+  (Bing, which reads only a query's first word). Anything searched through the stack from
+  the morning of 23 Nov back to when it was started used that.
+- **Not measured: what it does to verdicts.** Searched runs before and after this change do
+  not compare. Compare by replay, or search both sides again on train
+  (`/fact-check-change`). PubMed still times out on every search, so a search
+  waits the full 3 s.

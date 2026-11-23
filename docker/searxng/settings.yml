@@ -80,14 +80,36 @@ use_default_settings:
     # DuckDuckGo CAPTCHA'd this machine in September: if it does again,
     # the source probe on /scraper says so, and three other web engines
     # still answer.
+    #
+    # 2026-11-23: re-measured on the pinned 2026.11.2, each engine on its
+    # own, on the proposition queries of 26 train claims (18 AVeriTeC in
+    # English, 8 of the custom set in Spanish; scripts/probe_search_engines.py,
+    # research/search-engines/). Answered = the best result holds 35% of the
+    # query's words (search.MIN_QUERY_COVERAGE); on-topic = how many of the
+    # top 10 do, per query:
+    #
+    #   privacywall  26/26 answered, 7.4 on-topic  -> added
+    #   yandex       25/26,          5.9           -> added (its own index:
+    #                                                 2-7% of its pages are
+    #                                                 any other engine's)
+    #   duckduckgo   20/26,          5.5  (6 CAPTCHAs)
+    #   yahoo        26/26,          4.9  (71% of its top 10 is DuckDuckGo's)
+    #   bing news    12/26,          1.4  (parsing error on 14)
+    #   brave         5/26 then "too many requests"  -> removed
+    #   google        0/26 "access denied"           -> removed
+    #   yep           0/26 HTTP error                -> removed
+    #   startpage, mojeek: `inactive: true` upstream since 2026.11 (a
+    #   proof-of-work CAPTCHA), so never loaded here; switched on to be
+    #   measured, CAPTCHA and "access denied"         -> removed
+    #
+    # The allowlist was DuckDuckGo and Yahoo in practice, one index family:
+    # Yandex is the independent one now. Searched runs before and after this
+    # change do not compare (docs/fact-checking-changes.md, 23 Nov).
     keep_only:
       - duckduckgo
-      - startpage
-      - mojeek
       - yahoo
-      - google
-      - brave
-      - yep
+      - privacywall
+      - yandex
       - bing news
       - wikipedia
       - arxiv
@@ -103,19 +125,15 @@ use_default_settings:
 # two engines that happen to be on by default (brave, bing news), so a
 # single rate-limit suspension on brave took the whole search to zero.
 engines:
-  # The four web engines added 2026-11-03 (above): on explicitly, since
-  # some ship `disabled: true` and the fact-checker has no preferences.
+  # The web engines: on explicitly, since some ship `disabled: true` and
+  # the fact-checker has no preferences. PrivacyWall and Yandex both do.
   - name: duckduckgo
-    disabled: false
-  - name: startpage
-    disabled: false
-  - name: mojeek
     disabled: false
   - name: yahoo
     disabled: false
-  - name: google
+  - name: privacywall
     disabled: false
-  - name: yep
+  - name: yandex
     disabled: false
 
   # By default Wikipedia only fills the infobox, which SearxngClient never

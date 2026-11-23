@@ -275,7 +275,12 @@ write them down than to have each be rediscovered.
   `docs/fact-checking-changes.md` (14).
 - **The search changed on 2026-11-03** (engines, SearXNG 2026.11.2, and an
   answer whose best result holds under 35% of the query's words now counts
-  as failed): searched runs either side are not comparable.
+  as failed): searched runs either side are not comparable. **And again on
+  2026-11-23**: Yandex and PrivacyWall in; Google, Yep, Brave, Startpage and
+  Mojeek out, all refusing this machine (`research/search-engines/`,
+  `docs/fact-checking-changes.md` (19)). Until that morning the Docker stack had
+  run from a deleted worktree, with 2026.9.8 and the pre-3 Nov list: check
+  `docker inspect` (`com.docker.compose.project.working_dir`) before trusting a run.
 - **The Devastating edition is not fact-checked, by request.** Since
   2026-10-30 an admitted article of that edition is stored and published
   with no claim selection, search or model (`fact_check_skipped`); its
