@@ -36,8 +36,10 @@ ALLOWED_DATASET = re.compile(r"--dataset\s+(?:\S*/)?data/evaluation/manual(?=\s|
 
 # AVeriTeC is not the custom set: its dev split is public, is the split published
 # figures are reported on, and shares no claim with the half sealed here.
-# Exempted at the author's choice, 2026-11-05 (src/evaluation/averitec.py).
-AVERITEC_DATASET = re.compile(r"--dataset\s+(?:\S*/)?data/evaluation/averitec/averitec_(?:dev|train)\.jsonl(?=\s|$)")
+# Exempted at the author's choice, 2026-11-05 (src/evaluation/averitec.py); its
+# balanced samples (cli averitec balance, 17 Nov) are the same splits' claims,
+# added to the exemption at the author's choice on 2026-11-23.
+AVERITEC_DATASET = re.compile(r"--dataset\s+(?:\S*/)?data/evaluation/averitec/averitec_(?:dev|train)(?:_balanced)?\.jsonl(?=\s|$)")
 
 TOKENS = ("manual-test", "--split test", "--split=test", "custom_en_es.jsonl", "evaluation/manual/")
 

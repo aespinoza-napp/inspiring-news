@@ -77,8 +77,16 @@ curl -s -m 5 -o /dev/null "$INFERENCE_URL/" || {
   exit 1
 }
 
+# THRESHOLDS: a thresholds file for every model. The defaults moved after
+# 29 Oct (restatement on in backend/.env, undated sources dropped, the
+# independence check), so a replay today with none would not pair with
+# that day's local runs: experiments/models/thresholds-29oct.json puts
+# back what the pipeline did then (2026-11-23).
+thresholds=()
+[[ -n "${THRESHOLDS:-}" ]] && thresholds=(--thresholds "$THRESHOLDS")
+
 for m in "${MODELS[@]}"; do
   printf '\n\033[1m==> verifier %s (Groq): replaying %s, first %s train claims\033[0m\n' "$m" "$baseline" "$limit"
   uv run python -m src.evaluation.cli run --dataset data/evaluation/manual --split train \
-    --model "$m" --replay "$baseline" --limit "$limit" 2>&1 | tee "$LOG_DIR/verifier-groq-${m//\//-}.log" || true
+    --model "$m" --replay "$baseline" --limit "$limit" "${thresholds[@]}" 2>&1 | tee "$LOG_DIR/verifier-groq-${m//\//-}.log" || true
 done

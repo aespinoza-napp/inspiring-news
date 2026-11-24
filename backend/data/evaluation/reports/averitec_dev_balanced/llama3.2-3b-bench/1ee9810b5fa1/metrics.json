@@ -1,0 +1,1000 @@
+{
+  "run": {
+    "key": "1ee9810b5fa1",
+    "model": "llama3.2:3b-bench",
+    "provider": "localhost:11434",
+    "dataset": {
+      "path": "data/evaluation/averitec/averitec_dev_balanced.jsonl",
+      "stem": "averitec_dev_balanced",
+      "sha256": "68a894e2c4148a456437141c4d329bb8340d26ef3d15ae6eb2c93f0456f2260e",
+      "rows": 140,
+      "kinds": [
+        "averitec"
+      ]
+    },
+    "harnessVersion": 1,
+    "thresholdsHash": "d0deef88b2e7",
+    "thresholdsOverridden": {
+      "evidence_undated": "keep"
+    },
+    "corpus": {
+      "mode": "none",
+      "points": 0
+    },
+    "mode": "full",
+    "label": "knowledge-store",
+    "gitCommits": [
+      "d8842946744cc4bafb00aecfc18ed4719ddc6195-dirty"
+    ],
+    "records": 20,
+    "notRun": 120
+  },
+  "bootstrap": {
+    "seed": 2026,
+    "resamples": 10000,
+    "level": 0.95
+  },
+  "outcomes": {
+    "error": {
+      "count": 0,
+      "ids": []
+    },
+    "searchUnavailable": {
+      "count": 0,
+      "ids": []
+    },
+    "llmUnreachable": {
+      "count": 0,
+      "ids": []
+    },
+    "scored": {
+      "count": 20,
+      "ids": null
+    }
+  },
+  "flags": {
+    "temporalLeak": {
+      "flagged": [],
+      "clear": 2,
+      "undetermined": 18
+    },
+    "verdictLeak": {
+      "flagged": [],
+      "clear": 20,
+      "notApplicable": 0
+    },
+    "newerUncitedSources": {
+      "sources": 0,
+      "claims": 0
+    },
+    "invalidOutput": []
+  },
+  "metrics": {
+    "scored": {
+      "accuracy": 0.2,
+      "macroF1": 0.17570664629488159,
+      "coverage": 0.9,
+      "selectiveAccuracy": 0.16666666666666666,
+      "kappa": -0.06666666666666665,
+      "n": 20,
+      "goldClasses": [
+        "TRUE",
+        "MISLEADING",
+        "FALSE",
+        "UNVERIFIED"
+      ],
+      "perClass": {
+        "TRUE": {
+          "precision": 0.16666666666666666,
+          "recall": 0.2,
+          "f1": 0.1818181818181818,
+          "support": 5,
+          "predicted": 6
+        },
+        "PARTIALLY_TRUE": {
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "support": 0,
+          "predicted": 0
+        },
+        "MISLEADING": {
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 5,
+          "predicted": 0
+        },
+        "FALSE": {
+          "precision": 0.16666666666666666,
+          "recall": 0.4,
+          "f1": 0.23529411764705882,
+          "support": 5,
+          "predicted": 12
+        },
+        "UNVERIFIED": {
+          "precision": 0.5,
+          "recall": 0.2,
+          "f1": 0.28571428571428575,
+          "support": 5,
+          "predicted": 2
+        }
+      },
+      "confusion": {
+        "TRUE": {
+          "TRUE": 1,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 4,
+          "UNVERIFIED": 0
+        },
+        "PARTIALLY_TRUE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 0,
+          "UNVERIFIED": 0
+        },
+        "MISLEADING": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 4,
+          "UNVERIFIED": 1
+        },
+        "FALSE": {
+          "TRUE": 3,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 2,
+          "UNVERIFIED": 0
+        },
+        "UNVERIFIED": {
+          "TRUE": 2,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 2,
+          "UNVERIFIED": 1
+        }
+      },
+      "ci": {
+        "accuracy": {
+          "low": 0.05,
+          "high": 0.4,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.029411764705882353,
+          "high": 0.3290083874458874,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.75,
+          "high": 1.0,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.0,
+          "high": 0.35294117647058826,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": -0.29251700680272114,
+          "high": 0.16350472304288485,
+          "undefinedResamples": 0
+        }
+      }
+    },
+    "scoredUnflagged": {
+      "accuracy": 0.2,
+      "macroF1": 0.17570664629488159,
+      "coverage": 0.9,
+      "selectiveAccuracy": 0.16666666666666666,
+      "kappa": -0.06666666666666665,
+      "n": 20,
+      "goldClasses": [
+        "TRUE",
+        "MISLEADING",
+        "FALSE",
+        "UNVERIFIED"
+      ],
+      "perClass": {
+        "TRUE": {
+          "precision": 0.16666666666666666,
+          "recall": 0.2,
+          "f1": 0.1818181818181818,
+          "support": 5,
+          "predicted": 6
+        },
+        "PARTIALLY_TRUE": {
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "support": 0,
+          "predicted": 0
+        },
+        "MISLEADING": {
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 5,
+          "predicted": 0
+        },
+        "FALSE": {
+          "precision": 0.16666666666666666,
+          "recall": 0.4,
+          "f1": 0.23529411764705882,
+          "support": 5,
+          "predicted": 12
+        },
+        "UNVERIFIED": {
+          "precision": 0.5,
+          "recall": 0.2,
+          "f1": 0.28571428571428575,
+          "support": 5,
+          "predicted": 2
+        }
+      },
+      "confusion": {
+        "TRUE": {
+          "TRUE": 1,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 4,
+          "UNVERIFIED": 0
+        },
+        "PARTIALLY_TRUE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 0,
+          "UNVERIFIED": 0
+        },
+        "MISLEADING": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 4,
+          "UNVERIFIED": 1
+        },
+        "FALSE": {
+          "TRUE": 3,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 2,
+          "UNVERIFIED": 0
+        },
+        "UNVERIFIED": {
+          "TRUE": 2,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 2,
+          "UNVERIFIED": 1
+        }
+      },
+      "ci": {
+        "accuracy": {
+          "low": 0.05,
+          "high": 0.4,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.029411764705882353,
+          "high": 0.3290083874458874,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.75,
+          "high": 1.0,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.0,
+          "high": 0.35294117647058826,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": -0.29251700680272114,
+          "high": 0.16350472304288485,
+          "undefinedResamples": 0
+        }
+      }
+    }
+  },
+  "breakdowns": {
+    "language": {
+      "en": {
+        "n": 20,
+        "accuracy": 0.2,
+        "macroF1": 0.17570664629488159,
+        "coverage": 0.9,
+        "selectiveAccuracy": 0.16666666666666666,
+        "kappa": -0.06666666666666665,
+        "goldClasses": [
+          "TRUE",
+          "MISLEADING",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.05,
+            "high": 0.4,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.029411764705882353,
+            "high": 0.3290083874458874,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.75,
+            "high": 1.0,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.0,
+            "high": 0.35294117647058826,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.29251700680272114,
+            "high": 0.16350472304288485,
+            "undefinedResamples": 0
+          }
+        }
+      }
+    }
+  },
+  "retrieval": {
+    "claims": {
+      "total": 20,
+      "searched": 20,
+      "withReferences": 19,
+      "searchUnavailable": 0,
+      "errors": 0,
+      "selfLinksRemoved": 0,
+      "referencesUnavailable": 1
+    },
+    "gold": {
+      "linkRecall@candidates": {
+        "n": 19,
+        "value": 0.1053,
+        "low": 0.0,
+        "high": 0.2632
+      },
+      "linkRecall@ranked": {
+        "n": 19,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "linkRecall@cited": {
+        "n": 19,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "domainRecall@candidates": {
+        "n": 19,
+        "value": 0.2632,
+        "low": 0.1053,
+        "high": 0.4737
+      },
+      "domainRecall@ranked": {
+        "n": 19,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "domainRecall@cited": {
+        "n": 19,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "linkMRR": {
+        "n": 19,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "domainMRR": {
+        "n": 19,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      }
+    },
+    "goldFree": {
+      "hasEvidence": {
+        "n": 20,
+        "value": 1.0,
+        "low": 1.0,
+        "high": 1.0
+      },
+      "candidates": {
+        "n": 20,
+        "value": 20.55,
+        "low": 19.4,
+        "high": 21.65
+      },
+      "ranked": {
+        "n": 20,
+        "value": 4.8,
+        "low": 4.6,
+        "high": 4.95
+      },
+      "gateCut": {
+        "n": 20,
+        "value": 0.02,
+        "low": 0.0,
+        "high": 0.05
+      },
+      "uniqueDomains": {
+        "n": 20,
+        "value": 4.8,
+        "low": 4.6,
+        "high": 4.95
+      },
+      "ratedShare": {
+        "n": 20,
+        "value": 0.04,
+        "low": 0.01,
+        "high": 0.08
+      },
+      "corpusShare": {
+        "n": 20,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "verdictLeak": {
+        "n": 0,
+        "value": null,
+        "low": null,
+        "high": null
+      },
+      "retrievalSeconds": {
+        "n": 20,
+        "value": 13.7739,
+        "low": 11.865,
+        "high": 15.716
+      },
+      "rankingSeconds": {
+        "n": 20,
+        "value": 10.4629,
+        "low": 9.5515,
+        "high": 11.353
+      }
+    },
+    "medians": {
+      "candidates": 20.5,
+      "ranked": 5.0,
+      "retrievalSeconds": 13.356,
+      "rankingSeconds": 10.93
+    },
+    "queriesPerClaim": 3.0,
+    "foundBy": {
+      "proposition": 56,
+      "anchor": 45,
+      "refutation": 13
+    },
+    "referencesCut": {
+      "evidence_retrieval: a fact-check with no date to show it predates the claim (temporal cutoff)": 1,
+      "evidence_retrieval: published on or after the claim's date (temporal cutoff)": 1
+    },
+    "groups": {
+      "dataset": {
+        "averitec": {
+          "claims": 20,
+          "withReferences": 19,
+          "linkRecall@ranked": 0.0,
+          "domainRecall@ranked": 0.0,
+          "hasEvidence": 1.0
+        }
+      },
+      "language": {
+        "en": {
+          "claims": 20,
+          "withReferences": 19,
+          "linkRecall@ranked": 0.0,
+          "domainRecall@ranked": 0.0,
+          "hasEvidence": 1.0
+        }
+      }
+    },
+    "bootstrap": {
+      "seed": 2026,
+      "resamples": 10000
+    }
+  },
+  "attribution": {
+    "wrong": 16,
+    "oracle": false,
+    "trace": {
+      "judged": 16,
+      "stages": {
+        "retrieval": {
+          "count": 0,
+          "share": 0.0,
+          "ids": []
+        },
+        "ranking": {
+          "count": 0,
+          "share": 0.0,
+          "ids": []
+        },
+        "reasoning": {
+          "count": 16,
+          "share": 1.0,
+          "ids": [
+            "averitec-dev-0025",
+            "averitec-dev-0026",
+            "averitec-dev-0047",
+            "averitec-dev-0096",
+            "averitec-dev-0115",
+            "averitec-dev-0156",
+            "averitec-dev-0164",
+            "averitec-dev-0175",
+            "averitec-dev-0186",
+            "averitec-dev-0259",
+            "averitec-dev-0281",
+            "averitec-dev-0288",
+            "averitec-dev-0368",
+            "averitec-dev-0404",
+            "averitec-dev-0428",
+            "averitec-dev-0498"
+          ]
+        },
+        "aggregation": {
+          "count": 0,
+          "share": 0.0,
+          "ids": []
+        }
+      },
+      "rankingCuts": {}
+    },
+    "reference": {
+      "judged": 15,
+      "stages": {
+        "retrieval": {
+          "count": 12,
+          "share": 0.8,
+          "ids": [
+            "averitec-dev-0025",
+            "averitec-dev-0026",
+            "averitec-dev-0047",
+            "averitec-dev-0115",
+            "averitec-dev-0156",
+            "averitec-dev-0175",
+            "averitec-dev-0186",
+            "averitec-dev-0288",
+            "averitec-dev-0368",
+            "averitec-dev-0404",
+            "averitec-dev-0428",
+            "averitec-dev-0498"
+          ]
+        },
+        "ranking": {
+          "count": 3,
+          "share": 0.2,
+          "ids": [
+            "averitec-dev-0164",
+            "averitec-dev-0259",
+            "averitec-dev-0281"
+          ]
+        },
+        "reasoning": {
+          "count": 0,
+          "share": 0.0,
+          "ids": []
+        },
+        "aggregation": {
+          "count": 0,
+          "share": 0.0,
+          "ids": []
+        }
+      },
+      "rankingCuts": {
+        "evidence_retrieval: a fact-check with no date to show it predates the claim (temporal cutoff)": 2,
+        "evidence_retrieval: published on or after the claim's date (temporal cutoff)": 1
+      }
+    },
+    "noReference": [
+      "averitec-dev-0096"
+    ],
+    "bothJudged": 15,
+    "disagreements": [
+      {
+        "id": "averitec-dev-0025",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0026",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0047",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0115",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0156",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0164",
+        "trace": "reasoning",
+        "reference": "ranking"
+      },
+      {
+        "id": "averitec-dev-0175",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0186",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0259",
+        "trace": "reasoning",
+        "reference": "ranking"
+      },
+      {
+        "id": "averitec-dev-0281",
+        "trace": "reasoning",
+        "reference": "ranking"
+      },
+      {
+        "id": "averitec-dev-0288",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0368",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0404",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0428",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0498",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      }
+    ],
+    "byLanguage": {
+      "en": {
+        "reasoning": 16
+      }
+    }
+  },
+  "effort": {
+    "scored": 20,
+    "usable": {
+      "count": 3,
+      "share": 0.15,
+      "low": 0.0,
+      "high": 0.3,
+      "ids": [
+        "averitec-dev-0072",
+        "averitec-dev-0243",
+        "averitec-dev-0290"
+      ]
+    },
+    "confidentlyWrong": {
+      "count": 15,
+      "share": 0.75,
+      "low": 0.55,
+      "high": 0.9,
+      "ids": [
+        "averitec-dev-0025",
+        "averitec-dev-0026",
+        "averitec-dev-0047",
+        "averitec-dev-0096",
+        "averitec-dev-0115",
+        "averitec-dev-0156",
+        "averitec-dev-0164",
+        "averitec-dev-0175",
+        "averitec-dev-0186",
+        "averitec-dev-0259",
+        "averitec-dev-0281",
+        "averitec-dev-0288",
+        "averitec-dev-0368",
+        "averitec-dev-0428",
+        "averitec-dev-0498"
+      ]
+    },
+    "rightButUnsupported": 0,
+    "minutesPerFact": null,
+    "estimate": null
+  },
+  "averitec": {
+    "rows": 140,
+    "records": 20,
+    "complete": false,
+    "all": {
+      "n": 20,
+      "accuracy": 0.2,
+      "accuracyCi": {
+        "low": 0.05,
+        "high": 0.4
+      },
+      "macroF1": 0.17570664629488159,
+      "macroF1Ci": {
+        "low": 0.0294,
+        "high": 0.3292
+      },
+      "f1": {
+        "Supported": 0.18181818181818182,
+        "Refuted": 0.23529411764705882,
+        "Not Enough Evidence": 0.2857142857142857,
+        "Conflicting Evidence/Cherrypicking": 0.0
+      }
+    },
+    "scored": {
+      "n": 20,
+      "accuracy": 0.2,
+      "accuracyCi": {
+        "low": 0.05,
+        "high": 0.4
+      },
+      "macroF1": 0.17570664629488159,
+      "macroF1Ci": {
+        "low": 0.0294,
+        "high": 0.3292
+      },
+      "f1": {
+        "Supported": 0.18181818181818182,
+        "Refuted": 0.23529411764705882,
+        "Not Enough Evidence": 0.2857142857142857,
+        "Conflicting Evidence/Cherrypicking": 0.0
+      }
+    },
+    "alwaysRefuted": {
+      "accuracy": 0.25,
+      "macroF1": 0.1
+    },
+    "predicted": {
+      "Supported": 6,
+      "Refuted": 12,
+      "Not Enough Evidence": 2,
+      "Conflicting Evidence/Cherrypicking": 0,
+      "None": 0
+    },
+    "confusion": {
+      "Supported": {
+        "Supported": 1,
+        "Refuted": 4,
+        "Not Enough Evidence": 0,
+        "Conflicting Evidence/Cherrypicking": 0,
+        "None": 0
+      },
+      "Refuted": {
+        "Supported": 3,
+        "Refuted": 2,
+        "Not Enough Evidence": 0,
+        "Conflicting Evidence/Cherrypicking": 0,
+        "None": 0
+      },
+      "Not Enough Evidence": {
+        "Supported": 2,
+        "Refuted": 2,
+        "Not Enough Evidence": 1,
+        "Conflicting Evidence/Cherrypicking": 0,
+        "None": 0
+      },
+      "Conflicting Evidence/Cherrypicking": {
+        "Supported": 0,
+        "Refuted": 4,
+        "Not Enough Evidence": 1,
+        "Conflicting Evidence/Cherrypicking": 0,
+        "None": 0
+      }
+    },
+    "temporal": {
+      "claims": 20,
+      "sources": 96,
+      "datedBeforeTheClaim": 29,
+      "undated": 67,
+      "undatedAnywhere": 41,
+      "late": [],
+      "lateInText": [],
+      "factCheckInEvidence": [],
+      "livingInEvidence": [],
+      "claimsWithoutEvidence": 0,
+      "refusedAsLate": 16,
+      "refusedAsUndated": 0,
+      "refusedAsLiving": 10,
+      "refusedAsFactCheck": 37,
+      "refusedForTheirText": 40,
+      "held": true
+    },
+    "published": [
+      {
+        "system": "ClaimCheck (Qwen3-4B)",
+        "accuracy": 0.764,
+        "n": 500,
+        "evidence": "web, before the claim"
+      },
+      {
+        "system": "PASS-FC (GPT-4o)",
+        "accuracy": 0.72,
+        "n": 500,
+        "evidence": "web"
+      },
+      {
+        "system": "DEFAME (GPT-4o)",
+        "accuracy": 0.705,
+        "n": 500,
+        "evidence": "web"
+      },
+      {
+        "system": "GPT-4o + web search",
+        "accuracy": 0.746,
+        "n": 500,
+        "evidence": "web, leaks"
+      },
+      {
+        "system": "GPT-4o mini + web search",
+        "accuracy": 0.704,
+        "n": 500,
+        "evidence": "web, leaks"
+      },
+      {
+        "system": "Papelo (GPT-4o mini)",
+        "accuracy": 0.415,
+        "n": 500,
+        "evidence": "web"
+      },
+      {
+        "system": "HerO (Llama 3.1 70B)",
+        "accuracy": 0.752,
+        "n": 500,
+        "evidence": "knowledge store"
+      },
+      {
+        "system": "InFact (GPT-4o)",
+        "accuracy": 0.724,
+        "n": 500,
+        "evidence": "knowledge store"
+      },
+      {
+        "system": "GPT-4o",
+        "accuracy": 0.532,
+        "n": 500,
+        "evidence": "none"
+      },
+      {
+        "system": "Qwen3-4B",
+        "accuracy": 0.52,
+        "n": 500,
+        "evidence": "none"
+      },
+      {
+        "system": "GPT-4o mini",
+        "accuracy": 0.468,
+        "n": 500,
+        "evidence": "none"
+      }
+    ]
+  },
+  "responseTime": {
+    "claims": 20,
+    "stages": {
+      "entities": {
+        "claims": 20,
+        "median": 0.6695,
+        "p90": 0.8234,
+        "max": 1.2383,
+        "share": 0.01
+      },
+      "retrieval": {
+        "claims": 20,
+        "median": 13.3559,
+        "p90": 19.349,
+        "max": 21.0943,
+        "share": 0.2254
+      },
+      "search": {
+        "claims": 20,
+        "median": 1.4565,
+        "p90": 2.125,
+        "max": 3.389,
+        "share": 0.0244
+      },
+      "pages": {
+        "claims": 20,
+        "median": 0.0,
+        "p90": 0.0,
+        "max": 0.0,
+        "share": 0.0
+      },
+      "ranking": {
+        "claims": 20,
+        "median": 10.9299,
+        "p90": 12.9489,
+        "max": 14.1258,
+        "share": 0.1712
+      },
+      "llm": {
+        "claims": 20,
+        "median": 37.7954,
+        "p90": 46.0371,
+        "max": 54.3093,
+        "share": 0.5934
+      },
+      "llmWait": {
+        "claims": 20,
+        "median": 0.0,
+        "p90": 0.0,
+        "max": 0.0,
+        "share": 0.0
+      },
+      "llmCall": {
+        "claims": 20,
+        "median": 37.779,
+        "p90": 46.0165,
+        "max": 54.275,
+        "share": 0.5928
+      },
+      "secondLook": {
+        "claims": 0,
+        "median": null,
+        "p90": null,
+        "max": null,
+        "share": 0.0
+      },
+      "total": {
+        "claims": 20,
+        "median": 66.6737,
+        "p90": 77.3343,
+        "max": 86.1135,
+        "share": null
+      }
+    }
+  },
+  "usage": {
+    "units": 20,
+    "llmCalls": 96,
+    "failedCalls": 0,
+    "unitsWithoutCalls": 0,
+    "promptTokens": 41904,
+    "completionTokens": 3362,
+    "usageMissing": 0,
+    "promptTokensPerUnit": 2095.2,
+    "completionTokensPerUnit": 168.1,
+    "llmSeconds": 724.46,
+    "callLatency": {
+      "median": 7.129,
+      "p90": 10.173,
+      "max": 17.729
+    },
+    "unitLatency": {
+      "median": 66.674,
+      "p90": 77.334,
+      "total": 1222.07
+    },
+    "completionTokensPerSecond": 4.6,
+    "cost": null
+  }
+}

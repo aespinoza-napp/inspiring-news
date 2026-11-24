@@ -83,3 +83,48 @@ confidently wrong; qwen3.8-27b, gemma4, granite and the 3B held back.
 fact011 (UNVERIFIED): the 3B said TRUE; gemma4 and the three Groq models
 were right. Next: the same 20 claims as the table above, so the Groq rows
 pair with the local ones (~35 min on the free plan's rate limit).
+
+## Groq, 2026-11-23: the 20-claim screen
+
+The first 20 train claims, replays of `cc053417c0cb` like every row above, on
+the free plan (1,000 requests a day, 8,000 tokens a minute, read from the
+key's headers that morning; no error, no claim unreachable). The defaults
+had moved since 29 Oct (restatement on in `backend/.env`, undated sources
+dropped, the independence check), so every run of this screen takes
+`thresholds-29oct.json`, which puts back what the pipeline did then. The
+3B replayed with it as a control gave back 19 of its 20 verdicts (fact010:
+UNVERIFIED on 29 Oct, TRUE now), so the Groq rows pair with the local ones
+to one claim. Kappa and the interval are `cli report --compare` against
+the control; the local rows' kappa is from their own 29 Oct reports.
+
+| Model | Where | Run | Right of 20 | Wrong and definite | Kappa | Model s a claim (median) | Cost per 100 claims, if paid |
+|---|---|---|---|---|---|---|---|
+| `granite3.3:8b` | local | `91d96d61a714` | **12** | 8 | **0.26** | 204.0 | 0 |
+| `llama3.2:3b`, 29 Oct | local | `cc053417c0cb` | 11 | 6 | -0.01 | 62.5 | 0 |
+| `llama3.2:3b`, control | local | `e9c6c7df528d` | 10 | 7 | -0.21 | 32.9 | 0 |
+| `openai/gpt-oss-120b` | Groq | `736f01c12376` | 10 | **3** | 0.20 (+0.41 [+0.09, +0.71]) | 3.9 | $0.064 |
+| `openai/gpt-oss-20b` | Groq | `04b7eafb280a` | 9 | **3** | 0.16 (+0.37 [+0.08, +0.62]) | **2.7** | $0.031 |
+| `gemma4:e4b` | local | `62b4e6620665` | 9 | 5 | 0.18 | 177.5 | 0 |
+| `qwen3.5:9b` | local | `b9f985189177` | 7 | 7 | -0.00 | 224.8 | 0 |
+| `qwen/qwen3.8-27b` | Groq | `7cb5ce25a012` | 5 | 6 | 0.06 (+0.26 [+0.04, +0.47]) | 2.9 | $0.215 |
+
+Accuracy cannot tell them apart on 20 claims (gpt-oss-120b against the
+control: +0 points [-30, +30]; one claim is 5 points). What separates them
+is how they are wrong: both gpt-oss models hold back where the 3B guesses
+(coverage 50% against 85%), so they are confidently wrong 3 times to its 7,
+and agree with the labels beyond chance where the 3B does not. Prices are
+29 Oct's (`prices.json`); on 23 Nov groq.com/pricing showed no table and
+third-party listings gave the same figures. Local seconds are this laptop's
+CPU on different days and loads; Groq's are a network round trip.
+
+`qwen/qwen3.8-27b` fell from 4 of 5 in the smoke run to 5 of 20, with
+UNVERIFIED on true claims the others found (fact015, fact020, fact063) and
+2,536 completion tokens in all: it is a preview model and may have changed
+under the same name. Not looked into further.
+
+**Decision: `openai/gpt-oss-120b` enters the verifier comparison on
+AVeriTeC** (`docs/decisions/evaluation.md`, "One benchmark for every
+approach"): right as often as the 3B, wrong and definite half as often,
+about ten times faster at the model, and open weights (Apache 2.0). The 20b
+is close behind and cheaper; one hosted contender is enough for that
+comparison.

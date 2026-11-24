@@ -1,5 +1,79 @@
 # Last chat - 23 Nov 2026
 
+## Summary: everything done and changed in this session
+
+One long session on 23 Nov, from the map worktree to the first AVeriTeC
+verifier batch. The plan's artifact followed it from v49 to v54
+(<https://claude.ai/artifact/9CP4FAmRWxLL8w5LkoEcLP>; its `#decisions`
+section is this summary). The plan stands at **915 of 1,060 hours (86%)**,
+from 910 in the morning.
+
+### What was asked, and what was done
+
+| # | Asked | Done | Where |
+|---|---|---|---|
+| 1 | Why `../inspiring-news-map` looks like this folder | It was a git worktree of this repo, on `feature/news-map` since 29 Oct | the sections below |
+| 2 | Merge it into this repo, under `universe/` | Both folders' pending work committed, then the map branch merged (85 files): `/map`, `/account`, the readers' pages, the 3D universe | `efbaac5`, `e10b588`, `7027d8a`, `add3400`, `1a1d182` |
+| 3-4 | Commit, push, merge, move to `dev` | Pushed over SSH; `dev` and `main` moved together; an e2e fix on the way (Chrome's language) | `9d697b5` |
+| 5-6 | How to run the universe; the artifact with only what is open, then the weighted roadmap back | README and `universe/README.md` run instructions; artifact v49, v50 | `29bd212` |
+| 7 | `main` to `dev`, delete `../inspiring-news-map`, how a story links to its entities | Done; the folder and its worktree removed; entities explained (GLiNER, after the check, `MENTIONS` in Neo4j) | in the chat |
+| 8 | Each task on demand in the artifact, the order to do them, how close; test web search engines | Artifact v51: 37 ordered steps, the finish line, 217 tasks on demand. 32 engines probed one at a time on 26 train queries | `scripts/probe_search_engines.py`, `research/search-engines/`, `1d1c7d0` |
+| 9 | Recreate the Docker stack from this folder | It had been running from the deleted worktree (SearXNG 2026.9.8, the old engine list). Recreated: every container's working directory is this folder | `./scripts/dev.sh restart` |
+| 10 | The leaked Neo4j password; Yandex and PrivacyWall in, Google, Yep, Brave, Startpage and Mojeek out; what Claude and other LLMs search with; trends at most 20 | Neo4j already refuses the leaked `password` (64-character one in use). The allowlist changed and documented. Claude and Le Chat search Brave's index, Gemini Google's, ChatGPT began on Bing. A trending round keeps 20, whatever its topics. Artifact v52, v53 | `0daff6e`, `d0d4c6f`, `924eaf3`, `docs/fact-checking-changes.md` (19) |
+| 11 | Would more engines improve the results? | Probably not: of the 32, only DuckDuckGo News found an annotator's page the list misses (1 claim of 18). The levers are the queries and the verifier | memory only |
+| 12 | Groq's 20-claim screen | gpt-oss-120b 10 of 20 like the 3B, wrong and definite 3 to 7, kappa +0.41 [+0.09, +0.71], 3.9 s of model a claim; it enters the AVeriTeC comparison. gpt-oss-20b 9, qwen3.8-27b 5 | `experiments/models/results.md` |
+| 13 | Every verifier on AVeriTeC's balanced dev sample | Claims 1-10: gpt-oss-120b 4, the 3B 3, the 9B 3, MiniCheck 2 (always-Refuted 3). Every audit Held. Stopped there at your request | `experiments/verifier/averitec-balanced.md` |
+| 14 | The web condition | Not run: the script is ready, and it is the plan's next step after claims 11-40 | `scripts/bench_averitec_web.sh` |
+
+### Decisions you made today
+
+- The map comes into this repo, as `universe/`; `dev` and `main` move together.
+- The engine allowlist: Yandex and PrivacyWall in; Google, Yep, Brave,
+  Startpage and Mojeek out. Brave's API (Claude's index) stays future work:
+  it needs a card, and the project uses no paid service.
+- Trending: at most 20 a round, with no topic, one or three.
+- gpt-oss-120b is the Groq contender (by the screen).
+- The sealed-test-half hook also exempts AVeriTeC's balanced samples
+  (`.claude/hooks/sealed_test_half.py`); the custom set's test half stays sealed.
+- Stop after the verifiers' first ten claims; the rest are next steps.
+
+### Found on the way (traps)
+
+- **The 9B thinks unless told not to.** Without
+  `LLM_REASONING_EFFORT='{"qwen3.5:9b-bench":"none"}'` it spent all 160 tokens of
+  every per-source answer reasoning: 35 of 35 calls cut, run `4a0ccd41dd20` void.
+  `bench_averitec_verifiers.sh` sets it, and the test-half step warns of it.
+- **The defaults moved since 29 Oct.** `backend/.env` turns restatement on and
+  undated sources are dropped by default, so a replay that should pair with an
+  older run pins them (`experiments/models/thresholds-29oct.json`).
+- **Another session's `check.sh` used this session's `inference/`** and slowed
+  the runs; time is only comparable on a quiet machine.
+- The balanced sample's store run gives back `49e4c76106c6`'s evidence and
+  verdicts on the claims they share (9 of 9).
+
+### Changed and not committed (this session's part)
+
+`scripts/bench_groq.sh` (a `THRESHOLDS` option), `scripts/bench_averitec_verifiers.sh`
+and `scripts/bench_averitec_web.sh` (new), `.claude/hooks/sealed_test_half.py`,
+`backend/data/evaluation/thresholds/averitec_web_restatement.json` and
+`experiments/models/thresholds-29oct.json` (new), `experiments/models/results.md`,
+`experiments/verifier/averitec-balanced.md` (new), the reports under
+`reports/averitec_dev_balanced/` and `reports/manual-train/` (the three Groq models),
+`docs/roadmap.md` (Groq done), and this file. The news-map and photo changes in the
+same working tree (`graph_source.py`, `map_routes.py`, `optimize_map_photos.py`,
+`docs/decisions/storage.md` and others) are another session's.
+
+### Next
+
+1. `scripts/bench_averitec_verifiers.sh 20`, `30`, `40`: claims 11-40, about 45
+   minutes a batch on a quiet machine, `inference/` on the host first.
+2. `scripts/bench_averitec_web.sh 10 20 30 40`: the four search plans on the same
+   40 claims, about 6 hours.
+3. The engines' effect on verdicts (a train searched run, by replay) and PubMed's
+   3-second timeout, both left open.
+
+---
+
 **Question:** why does `../inspiring-news-map` look almost the same as this
 folder? It should also have the interface. Isn't the best way just to put the
 map inside this repo?
