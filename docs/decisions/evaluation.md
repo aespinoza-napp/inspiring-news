@@ -1805,6 +1805,43 @@ quote, causal, position), and labels interleaved so any `--limit` is balanced (8
 each). On it, always-Refuted scores 25%. Report the full split's figures beside it: the
 balanced one says how well each class is told apart, the full one what a run would meet.
 
+**The first 40, on fixed evidence (24 Nov;
+`backend/data/evaluation/experiments/verifier/averitec-balanced.md`):**
+
+| Verifier | Accuracy | Model seconds a claim | Self-hosted |
+|---|---|---|---|
+| `openai/gpt-oss-120b`, on Groq | 45.0% [30, 60] | 3.2 | no |
+| `qwen3.5:9b` | 32.5% | 109.2 | yes |
+| MiniCheck | 27.5% | 4.7 | yes |
+| `llama3.2:3b` | 25.0% | 25.8 | yes |
+
+- **gpt-oss-120b is the only verifier distinguishable from the 3B:** +20 points
+  [+5, +35], paired.
+- **The 3B is level with always-Refuted** (10 of 40 each), as it was on the full
+  split's first 100 (54% against 58%).
+- **No verifier here can answer Conflicting**, so the ceiling is 75%, and 50% for
+  MiniCheck.
+
+**The whole pipeline in the web condition, on the same 40 claims (24 Nov;
+`backend/data/evaluation/experiments/averitec/web-balanced.md`):** the 3B with each
+plan that changes what is searched, sharing one search cache. Right of 40:
+
+| Plan | Right of 40 | Against plain, paired |
+|---|---|---|
+| The checkable plan | 15 | +10 points [0, +22.5] |
+| Questions before the search | 12 | +2.5 points |
+| Plain | 11 | |
+| Restatement | 10 | |
+
+- **The checkable plan is a candidate to try on train.** Dev is not tuned on, and
+  its interval starts at 0.
+- **Restatement was never applied**, so it was not measured. It reads the claim's
+  article, and AVeriTeC's claims come without one: every claim was "checked as
+  written".
+- **The web does no better than the knowledge store** (11 against 10). The
+  annotators' own source was among the search results for at most 8% of claims,
+  and never among the sources ranked for the model.
+
 ## Where it runs
 
 The harness needs `inference/`, SearXNG and the LLM, like any analysis.

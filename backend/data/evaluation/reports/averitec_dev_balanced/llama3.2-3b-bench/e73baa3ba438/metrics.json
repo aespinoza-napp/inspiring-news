@@ -1,0 +1,1341 @@
+{
+  "run": {
+    "key": "e73baa3ba438",
+    "model": "llama3.2:3b-bench",
+    "provider": "localhost:11434",
+    "dataset": {
+      "path": "data/evaluation/averitec/averitec_dev_balanced.jsonl",
+      "stem": "averitec_dev_balanced",
+      "sha256": "68a894e2c4148a456437141c4d329bb8340d26ef3d15ae6eb2c93f0456f2260e",
+      "rows": 140,
+      "kinds": [
+        "averitec"
+      ]
+    },
+    "harnessVersion": 1,
+    "thresholdsHash": "ec68a11e7b82",
+    "thresholdsOverridden": {
+      "evidence_fetch_candidates": 30,
+      "query_plan": "checkable",
+      "search_science_engines": "drop",
+      "checkable_terms": "finding_closing",
+      "checkable_figures": "counted"
+    },
+    "corpus": {
+      "mode": "none",
+      "points": 0
+    },
+    "mode": "full",
+    "label": "web-gate",
+    "gitCommits": [
+      "0163ff2bf81ac36743271116e146a75350e399ed-dirty"
+    ],
+    "records": 40,
+    "notRun": 100
+  },
+  "bootstrap": {
+    "seed": 2026,
+    "resamples": 10000,
+    "level": 0.95
+  },
+  "outcomes": {
+    "error": {
+      "count": 0,
+      "ids": []
+    },
+    "searchUnavailable": {
+      "count": 0,
+      "ids": []
+    },
+    "llmUnreachable": {
+      "count": 0,
+      "ids": []
+    },
+    "scored": {
+      "count": 40,
+      "ids": null
+    }
+  },
+  "flags": {
+    "temporalLeak": {
+      "flagged": [],
+      "clear": 30,
+      "undetermined": 10
+    },
+    "verdictLeak": {
+      "flagged": [
+        "averitec-dev-0175",
+        "averitec-dev-0481"
+      ],
+      "clear": 38,
+      "notApplicable": 0
+    },
+    "newerUncitedSources": {
+      "sources": 0,
+      "claims": 0
+    },
+    "invalidOutput": []
+  },
+  "metrics": {
+    "scored": {
+      "accuracy": 0.375,
+      "macroF1": 0.3146616541353383,
+      "coverage": 0.725,
+      "selectiveAccuracy": 0.3448275862068966,
+      "kappa": 0.16666666666666666,
+      "n": 40,
+      "goldClasses": [
+        "TRUE",
+        "MISLEADING",
+        "FALSE",
+        "UNVERIFIED"
+      ],
+      "perClass": {
+        "TRUE": {
+          "precision": 0.3333333333333333,
+          "recall": 0.3,
+          "f1": 0.3157894736842105,
+          "support": 10,
+          "predicted": 9
+        },
+        "PARTIALLY_TRUE": {
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "support": 0,
+          "predicted": 0
+        },
+        "MISLEADING": {
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 10,
+          "predicted": 0
+        },
+        "FALSE": {
+          "precision": 0.35,
+          "recall": 0.7,
+          "f1": 0.4666666666666667,
+          "support": 10,
+          "predicted": 20
+        },
+        "UNVERIFIED": {
+          "precision": 0.45454545454545453,
+          "recall": 0.5,
+          "f1": 0.47619047619047616,
+          "support": 10,
+          "predicted": 11
+        }
+      },
+      "confusion": {
+        "TRUE": {
+          "TRUE": 3,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 5,
+          "UNVERIFIED": 2
+        },
+        "PARTIALLY_TRUE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 0,
+          "UNVERIFIED": 0
+        },
+        "MISLEADING": {
+          "TRUE": 1,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 6,
+          "UNVERIFIED": 3
+        },
+        "FALSE": {
+          "TRUE": 2,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 7,
+          "UNVERIFIED": 1
+        },
+        "UNVERIFIED": {
+          "TRUE": 3,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 2,
+          "UNVERIFIED": 5
+        }
+      },
+      "ci": {
+        "accuracy": {
+          "low": 0.225,
+          "high": 0.525,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.18769345238095242,
+          "high": 0.4258370098039216,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.575,
+          "high": 0.85,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.17857142857142858,
+          "high": 0.5185185185185185,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": -0.004184100418410028,
+          "high": 0.3397046046915726,
+          "undefinedResamples": 0
+        }
+      }
+    },
+    "scoredUnflagged": {
+      "accuracy": 0.3684210526315789,
+      "macroF1": 0.3134920634920635,
+      "coverage": 0.7105263157894737,
+      "selectiveAccuracy": 0.3333333333333333,
+      "kappa": 0.16406966086159486,
+      "n": 38,
+      "goldClasses": [
+        "TRUE",
+        "MISLEADING",
+        "FALSE",
+        "UNVERIFIED"
+      ],
+      "perClass": {
+        "TRUE": {
+          "precision": 0.3333333333333333,
+          "recall": 0.3333333333333333,
+          "f1": 0.3333333333333333,
+          "support": 9,
+          "predicted": 9
+        },
+        "PARTIALLY_TRUE": {
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "support": 0,
+          "predicted": 0
+        },
+        "MISLEADING": {
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 10,
+          "predicted": 0
+        },
+        "FALSE": {
+          "precision": 0.3333333333333333,
+          "recall": 0.6666666666666666,
+          "f1": 0.4444444444444444,
+          "support": 9,
+          "predicted": 18
+        },
+        "UNVERIFIED": {
+          "precision": 0.45454545454545453,
+          "recall": 0.5,
+          "f1": 0.47619047619047616,
+          "support": 10,
+          "predicted": 11
+        }
+      },
+      "confusion": {
+        "TRUE": {
+          "TRUE": 3,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 4,
+          "UNVERIFIED": 2
+        },
+        "PARTIALLY_TRUE": {
+          "TRUE": 0,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 0,
+          "UNVERIFIED": 0
+        },
+        "MISLEADING": {
+          "TRUE": 1,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 6,
+          "UNVERIFIED": 3
+        },
+        "FALSE": {
+          "TRUE": 2,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 6,
+          "UNVERIFIED": 1
+        },
+        "UNVERIFIED": {
+          "TRUE": 3,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 2,
+          "UNVERIFIED": 5
+        }
+      },
+      "ci": {
+        "accuracy": {
+          "low": 0.21052631578947367,
+          "high": 0.5263157894736842,
+          "undefinedResamples": 0
+        },
+        "macroF1": {
+          "low": 0.18253608158326853,
+          "high": 0.4308286836866224,
+          "undefinedResamples": 0
+        },
+        "coverage": {
+          "low": 0.5526315789473685,
+          "high": 0.8421052631578947,
+          "undefinedResamples": 0
+        },
+        "selectiveAccuracy": {
+          "low": 0.16129032258064516,
+          "high": 0.5185185185185185,
+          "undefinedResamples": 0
+        },
+        "kappa": {
+          "low": -0.01029159519725558,
+          "high": 0.3460934566501992,
+          "undefinedResamples": 0
+        }
+      }
+    }
+  },
+  "breakdowns": {
+    "language": {
+      "en": {
+        "n": 40,
+        "accuracy": 0.375,
+        "macroF1": 0.3146616541353383,
+        "coverage": 0.725,
+        "selectiveAccuracy": 0.3448275862068966,
+        "kappa": 0.16666666666666666,
+        "goldClasses": [
+          "TRUE",
+          "MISLEADING",
+          "FALSE",
+          "UNVERIFIED"
+        ],
+        "ci": {
+          "accuracy": {
+            "low": 0.225,
+            "high": 0.525,
+            "undefinedResamples": 0
+          },
+          "macroF1": {
+            "low": 0.18769345238095242,
+            "high": 0.4258370098039216,
+            "undefinedResamples": 0
+          },
+          "coverage": {
+            "low": 0.575,
+            "high": 0.85,
+            "undefinedResamples": 0
+          },
+          "selectiveAccuracy": {
+            "low": 0.17857142857142858,
+            "high": 0.5185185185185185,
+            "undefinedResamples": 0
+          },
+          "kappa": {
+            "low": -0.004184100418410028,
+            "high": 0.3397046046915726,
+            "undefinedResamples": 0
+          }
+        }
+      }
+    }
+  },
+  "retrieval": {
+    "claims": {
+      "total": 40,
+      "searched": 40,
+      "withReferences": 39,
+      "searchUnavailable": 0,
+      "errors": 0,
+      "selfLinksRemoved": 0,
+      "referencesUnavailable": 1
+    },
+    "gold": {
+      "linkRecall@candidates": {
+        "n": 39,
+        "value": 0.0513,
+        "low": 0.0,
+        "high": 0.1282
+      },
+      "linkRecall@ranked": {
+        "n": 39,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "linkRecall@cited": {
+        "n": 39,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "domainRecall@candidates": {
+        "n": 39,
+        "value": 0.2821,
+        "low": 0.1538,
+        "high": 0.4359
+      },
+      "domainRecall@ranked": {
+        "n": 39,
+        "value": 0.0256,
+        "low": 0.0,
+        "high": 0.0769
+      },
+      "domainRecall@cited": {
+        "n": 39,
+        "value": 0.0256,
+        "low": 0.0,
+        "high": 0.0769
+      },
+      "linkMRR": {
+        "n": 39,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "domainMRR": {
+        "n": 39,
+        "value": 0.0256,
+        "low": 0.0,
+        "high": 0.0769
+      }
+    },
+    "goldFree": {
+      "hasEvidence": {
+        "n": 40,
+        "value": 0.95,
+        "low": 0.875,
+        "high": 1.0
+      },
+      "candidates": {
+        "n": 40,
+        "value": 69.4,
+        "low": 66.0,
+        "high": 72.475
+      },
+      "ranked": {
+        "n": 40,
+        "value": 3.475,
+        "low": 2.9494,
+        "high": 3.975
+      },
+      "gateCut": {
+        "n": 38,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "uniqueDomains": {
+        "n": 40,
+        "value": 3.475,
+        "low": 2.9494,
+        "high": 3.975
+      },
+      "ratedShare": {
+        "n": 38,
+        "value": 0.0855,
+        "low": 0.0316,
+        "high": 0.1553
+      },
+      "corpusShare": {
+        "n": 38,
+        "value": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "verdictLeak": {
+        "n": 0,
+        "value": null,
+        "low": null,
+        "high": null
+      },
+      "retrievalSeconds": {
+        "n": 40,
+        "value": 40.1333,
+        "low": 35.3355,
+        "high": 44.9842
+      },
+      "rankingSeconds": {
+        "n": 40,
+        "value": 9.5922,
+        "low": 7.7376,
+        "high": 11.438
+      }
+    },
+    "medians": {
+      "candidates": 74.0,
+      "ranked": 4.0,
+      "retrievalSeconds": 38.388,
+      "rankingSeconds": 9.508
+    },
+    "queriesPerClaim": 2.95,
+    "foundBy": {
+      "proposition": 77,
+      "anchor": 47,
+      "specifics": 21,
+      "refutation": 7
+    },
+    "referencesCut": {
+      "evidence_retrieval: rewritten continually: its date is not its text's (temporal cutoff)": 1,
+      "evidence_retrieval: cut by pre-rank funnel (rank 8 of 47, top 5 kept)": 1
+    },
+    "groups": {
+      "dataset": {
+        "averitec": {
+          "claims": 40,
+          "withReferences": 39,
+          "linkRecall@ranked": 0.0,
+          "domainRecall@ranked": 0.0256,
+          "hasEvidence": 0.95
+        }
+      },
+      "language": {
+        "en": {
+          "claims": 40,
+          "withReferences": 39,
+          "linkRecall@ranked": 0.0,
+          "domainRecall@ranked": 0.0256,
+          "hasEvidence": 0.95
+        }
+      }
+    },
+    "bootstrap": {
+      "seed": 2026,
+      "resamples": 10000
+    }
+  },
+  "attribution": {
+    "wrong": 25,
+    "oracle": false,
+    "trace": {
+      "judged": 25,
+      "stages": {
+        "retrieval": {
+          "count": 0,
+          "share": 0.0,
+          "ids": []
+        },
+        "ranking": {
+          "count": 1,
+          "share": 0.04,
+          "ids": [
+            "averitec-dev-0290"
+          ]
+        },
+        "reasoning": {
+          "count": 24,
+          "share": 0.96,
+          "ids": [
+            "averitec-dev-0047",
+            "averitec-dev-0060",
+            "averitec-dev-0068",
+            "averitec-dev-0096",
+            "averitec-dev-0115",
+            "averitec-dev-0142",
+            "averitec-dev-0148",
+            "averitec-dev-0155",
+            "averitec-dev-0156",
+            "averitec-dev-0164",
+            "averitec-dev-0175",
+            "averitec-dev-0235",
+            "averitec-dev-0259",
+            "averitec-dev-0281",
+            "averitec-dev-0288",
+            "averitec-dev-0306",
+            "averitec-dev-0324",
+            "averitec-dev-0354",
+            "averitec-dev-0366",
+            "averitec-dev-0368",
+            "averitec-dev-0394",
+            "averitec-dev-0404",
+            "averitec-dev-0406",
+            "averitec-dev-0428"
+          ]
+        },
+        "aggregation": {
+          "count": 0,
+          "share": 0.0,
+          "ids": []
+        }
+      },
+      "rankingCuts": {
+        "evidence_retrieval: published on or after the claim's date (temporal cutoff)": 22,
+        "evidence_retrieval: a fact-check with no date to show it predates the claim (temporal cutoff)": 10,
+        "evidence_retrieval: its text states a date on or after the claim's (temporal cutoff)": 8,
+        "evidence_retrieval: no date to show it predates the claim (temporal cutoff)": 4,
+        "evidence_retrieval: rewritten continually: its date is not its text's (temporal cutoff)": 3,
+        "evidence_retrieval: same domain as a higher-ranked source (tiktok.com)": 2,
+        "evidence_retrieval: cut by pre-rank funnel (rank 16 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 17 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 18 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 19 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 20 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 21 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 22 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 23 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 24 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 25 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 26 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 27 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 28 of 29, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 29 of 29, top 5 kept)": 1,
+        "evidence_retrieval: same domain as a higher-ranked source (aol.com)": 1,
+        "evidence_retrieval: same domain as a higher-ranked source (sportingnews.com)": 1,
+        "evidence_retrieval: same domain as a higher-ranked source (linkedin.com)": 1,
+        "evidence_retrieval: same domain as a higher-ranked source (youtube.com)": 1,
+        "evidence_retrieval: same domain as a higher-ranked source (google.com)": 1,
+        "evidence_retrieval: same domain as a higher-ranked source (cambridge.org)": 1
+      }
+    },
+    "reference": {
+      "judged": 24,
+      "stages": {
+        "retrieval": {
+          "count": 17,
+          "share": 0.7083333333333334,
+          "ids": [
+            "averitec-dev-0047",
+            "averitec-dev-0068",
+            "averitec-dev-0115",
+            "averitec-dev-0155",
+            "averitec-dev-0156",
+            "averitec-dev-0175",
+            "averitec-dev-0235",
+            "averitec-dev-0259",
+            "averitec-dev-0281",
+            "averitec-dev-0288",
+            "averitec-dev-0306",
+            "averitec-dev-0354",
+            "averitec-dev-0366",
+            "averitec-dev-0394",
+            "averitec-dev-0404",
+            "averitec-dev-0406",
+            "averitec-dev-0428"
+          ]
+        },
+        "ranking": {
+          "count": 6,
+          "share": 0.25,
+          "ids": [
+            "averitec-dev-0142",
+            "averitec-dev-0148",
+            "averitec-dev-0164",
+            "averitec-dev-0290",
+            "averitec-dev-0324",
+            "averitec-dev-0368"
+          ]
+        },
+        "reasoning": {
+          "count": 1,
+          "share": 0.041666666666666664,
+          "ids": [
+            "averitec-dev-0060"
+          ]
+        },
+        "aggregation": {
+          "count": 0,
+          "share": 0.0,
+          "ids": []
+        }
+      },
+      "rankingCuts": {
+        "evidence_retrieval: published on or after the claim's date (temporal cutoff)": 5,
+        "evidence_retrieval: same domain as a higher-ranked source (cdc.gov)": 4,
+        "evidence_retrieval: same domain as a higher-ranked source (opcw.org)": 2,
+        "evidence_retrieval: its text states a date on or after the claim's (temporal cutoff)": 2,
+        "evidence_retrieval: same domain as a higher-ranked source (cnbc.com)": 1,
+        "evidence_retrieval: no date to show it predates the claim (temporal cutoff)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 8 of 47, top 5 kept)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 26 of 51, top 5 kept)": 1
+      }
+    },
+    "noReference": [
+      "averitec-dev-0096"
+    ],
+    "bothJudged": 24,
+    "disagreements": [
+      {
+        "id": "averitec-dev-0047",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0068",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0115",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0142",
+        "trace": "reasoning",
+        "reference": "ranking"
+      },
+      {
+        "id": "averitec-dev-0148",
+        "trace": "reasoning",
+        "reference": "ranking"
+      },
+      {
+        "id": "averitec-dev-0155",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0156",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0164",
+        "trace": "reasoning",
+        "reference": "ranking"
+      },
+      {
+        "id": "averitec-dev-0175",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0235",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0259",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0281",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0288",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0306",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0324",
+        "trace": "reasoning",
+        "reference": "ranking"
+      },
+      {
+        "id": "averitec-dev-0354",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0366",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0368",
+        "trace": "reasoning",
+        "reference": "ranking"
+      },
+      {
+        "id": "averitec-dev-0394",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0404",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0406",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0428",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      }
+    ],
+    "byLanguage": {
+      "en": {
+        "reasoning": 24,
+        "ranking": 1
+      }
+    }
+  },
+  "effort": {
+    "scored": 40,
+    "usable": {
+      "count": 9,
+      "share": 0.225,
+      "low": 0.1,
+      "high": 0.35,
+      "ids": [
+        "averitec-dev-0012",
+        "averitec-dev-0025",
+        "averitec-dev-0072",
+        "averitec-dev-0166",
+        "averitec-dev-0243",
+        "averitec-dev-0255",
+        "averitec-dev-0280",
+        "averitec-dev-0283",
+        "averitec-dev-0463"
+      ]
+    },
+    "confidentlyWrong": {
+      "count": 19,
+      "share": 0.475,
+      "low": 0.325,
+      "high": 0.625,
+      "ids": [
+        "averitec-dev-0060",
+        "averitec-dev-0068",
+        "averitec-dev-0115",
+        "averitec-dev-0142",
+        "averitec-dev-0148",
+        "averitec-dev-0155",
+        "averitec-dev-0156",
+        "averitec-dev-0164",
+        "averitec-dev-0175",
+        "averitec-dev-0259",
+        "averitec-dev-0281",
+        "averitec-dev-0288",
+        "averitec-dev-0324",
+        "averitec-dev-0354",
+        "averitec-dev-0366",
+        "averitec-dev-0368",
+        "averitec-dev-0394",
+        "averitec-dev-0406",
+        "averitec-dev-0428"
+      ]
+    },
+    "rightButUnsupported": 0,
+    "minutesPerFact": null,
+    "estimate": null
+  },
+  "averitec": {
+    "rows": 140,
+    "records": 40,
+    "complete": false,
+    "all": {
+      "n": 40,
+      "accuracy": 0.375,
+      "accuracyCi": {
+        "low": 0.225,
+        "high": 0.525
+      },
+      "macroF1": 0.3146616541353383,
+      "macroF1Ci": {
+        "low": 0.1877,
+        "high": 0.426
+      },
+      "f1": {
+        "Supported": 0.3157894736842105,
+        "Refuted": 0.4666666666666667,
+        "Not Enough Evidence": 0.47619047619047616,
+        "Conflicting Evidence/Cherrypicking": 0.0
+      }
+    },
+    "scored": {
+      "n": 40,
+      "accuracy": 0.375,
+      "accuracyCi": {
+        "low": 0.225,
+        "high": 0.525
+      },
+      "macroF1": 0.3146616541353383,
+      "macroF1Ci": {
+        "low": 0.1877,
+        "high": 0.426
+      },
+      "f1": {
+        "Supported": 0.3157894736842105,
+        "Refuted": 0.4666666666666667,
+        "Not Enough Evidence": 0.47619047619047616,
+        "Conflicting Evidence/Cherrypicking": 0.0
+      }
+    },
+    "alwaysRefuted": {
+      "accuracy": 0.25,
+      "macroF1": 0.1
+    },
+    "predicted": {
+      "Supported": 9,
+      "Refuted": 20,
+      "Not Enough Evidence": 11,
+      "Conflicting Evidence/Cherrypicking": 0,
+      "None": 0
+    },
+    "confusion": {
+      "Supported": {
+        "Supported": 3,
+        "Refuted": 5,
+        "Not Enough Evidence": 2,
+        "Conflicting Evidence/Cherrypicking": 0,
+        "None": 0
+      },
+      "Refuted": {
+        "Supported": 2,
+        "Refuted": 7,
+        "Not Enough Evidence": 1,
+        "Conflicting Evidence/Cherrypicking": 0,
+        "None": 0
+      },
+      "Not Enough Evidence": {
+        "Supported": 3,
+        "Refuted": 2,
+        "Not Enough Evidence": 5,
+        "Conflicting Evidence/Cherrypicking": 0,
+        "None": 0
+      },
+      "Conflicting Evidence/Cherrypicking": {
+        "Supported": 1,
+        "Refuted": 6,
+        "Not Enough Evidence": 3,
+        "Conflicting Evidence/Cherrypicking": 0,
+        "None": 0
+      }
+    },
+    "temporal": {
+      "claims": 40,
+      "sources": 139,
+      "datedBeforeTheClaim": 139,
+      "undated": 0,
+      "undatedAnywhere": 0,
+      "late": [],
+      "lateInText": [],
+      "factCheckInEvidence": [],
+      "livingInEvidence": [],
+      "claimsWithoutEvidence": 2,
+      "refusedAsLate": 538,
+      "refusedAsUndated": 166,
+      "refusedAsLiving": 97,
+      "refusedAsFactCheck": 343,
+      "refusedForTheirText": 231,
+      "held": true
+    },
+    "published": [
+      {
+        "system": "ClaimCheck (Qwen3-4B)",
+        "accuracy": 0.764,
+        "n": 500,
+        "evidence": "web, before the claim"
+      },
+      {
+        "system": "PASS-FC (GPT-4o)",
+        "accuracy": 0.72,
+        "n": 500,
+        "evidence": "web"
+      },
+      {
+        "system": "DEFAME (GPT-4o)",
+        "accuracy": 0.705,
+        "n": 500,
+        "evidence": "web"
+      },
+      {
+        "system": "GPT-4o + web search",
+        "accuracy": 0.746,
+        "n": 500,
+        "evidence": "web, leaks"
+      },
+      {
+        "system": "GPT-4o mini + web search",
+        "accuracy": 0.704,
+        "n": 500,
+        "evidence": "web, leaks"
+      },
+      {
+        "system": "Papelo (GPT-4o mini)",
+        "accuracy": 0.415,
+        "n": 500,
+        "evidence": "web"
+      },
+      {
+        "system": "HerO (Llama 3.1 70B)",
+        "accuracy": 0.752,
+        "n": 500,
+        "evidence": "knowledge store"
+      },
+      {
+        "system": "InFact (GPT-4o)",
+        "accuracy": 0.724,
+        "n": 500,
+        "evidence": "knowledge store"
+      },
+      {
+        "system": "GPT-4o",
+        "accuracy": 0.532,
+        "n": 500,
+        "evidence": "none"
+      },
+      {
+        "system": "Qwen3-4B",
+        "accuracy": 0.52,
+        "n": 500,
+        "evidence": "none"
+      },
+      {
+        "system": "GPT-4o mini",
+        "accuracy": 0.468,
+        "n": 500,
+        "evidence": "none"
+      }
+    ]
+  },
+  "responseTime": {
+    "claims": 40,
+    "stages": {
+      "entities": {
+        "claims": 40,
+        "median": 0.5302,
+        "p90": 3.0466,
+        "max": 4.9482,
+        "share": 0.0153
+      },
+      "retrieval": {
+        "claims": 40,
+        "median": 38.3875,
+        "p90": 59.0695,
+        "max": 83.9312,
+        "share": 0.4927
+      },
+      "search": {
+        "claims": 40,
+        "median": 3.808,
+        "p90": 6.0885,
+        "max": 13.082,
+        "share": 0.0467
+      },
+      "pages": {
+        "claims": 40,
+        "median": 2.4675,
+        "p90": 10.1124,
+        "max": 20.165,
+        "share": 0.0511
+      },
+      "ranking": {
+        "claims": 40,
+        "median": 9.5083,
+        "p90": 17.4429,
+        "max": 21.7971,
+        "share": 0.1178
+      },
+      "llm": {
+        "claims": 36,
+        "median": 29.6367,
+        "p90": 61.5494,
+        "max": 80.5853,
+        "share": 0.3742
+      },
+      "llmWait": {
+        "claims": 36,
+        "median": 0.0,
+        "p90": 12.538,
+        "max": 19.302,
+        "share": 0.0389
+      },
+      "llmCall": {
+        "claims": 36,
+        "median": 25.318,
+        "p90": 52.8605,
+        "max": 64.9,
+        "share": 0.3352
+      },
+      "secondLook": {
+        "claims": 0,
+        "median": null,
+        "p90": null,
+        "max": null,
+        "share": 0.0
+      },
+      "total": {
+        "claims": 40,
+        "median": 79.0533,
+        "p90": 118.4485,
+        "max": 147.2894,
+        "share": null
+      }
+    }
+  },
+  "usage": {
+    "units": 40,
+    "llmCalls": 132,
+    "failedCalls": 0,
+    "unitsWithoutCalls": 4,
+    "promptTokens": 54992,
+    "completionTokens": 4095,
+    "usageMissing": 0,
+    "promptTokensPerUnit": 1527.6,
+    "completionTokensPerUnit": 113.8,
+    "llmSeconds": 1092.1,
+    "callLatency": {
+      "median": 5.467,
+      "p90": 18.149,
+      "max": 33.669
+    },
+    "unitLatency": {
+      "median": 79.053,
+      "p90": 118.448,
+      "total": 3258.04
+    },
+    "completionTokensPerSecond": 3.7,
+    "cost": null
+  },
+  "comparison": {
+    "baseline": {
+      "key": "840326b34ddb",
+      "model": "llama3.2:3b-bench",
+      "provider": "localhost:11434",
+      "directory": "data/evaluation/runs/averitec_dev_balanced/llama3.2-3b-bench/840326b34ddb"
+    },
+    "candidate": {
+      "key": "e73baa3ba438",
+      "model": "llama3.2:3b-bench",
+      "provider": "localhost:11434"
+    },
+    "sameDataset": true,
+    "claims": {
+      "paired": 40,
+      "onlyInBaseline": 0,
+      "onlyInCandidate": 0,
+      "setApartOnEitherSide": 0,
+      "goldDiffers": []
+    },
+    "discordant": {
+      "onlyA": 1,
+      "onlyB": 5
+    },
+    "difference": {
+      "accuracy": {
+        "a": 0.275,
+        "b": 0.375,
+        "difference": 0.09999999999999998,
+        "low": 0.0,
+        "high": 0.22499999999999998,
+        "undefinedResamples": 0
+      },
+      "macroF1": {
+        "a": 0.22810924369747898,
+        "b": 0.3146616541353383,
+        "difference": 0.08655241043785933,
+        "low": -0.009711606450736926,
+        "high": 0.18729018180588436,
+        "undefinedResamples": 0
+      },
+      "coverage": {
+        "a": 0.825,
+        "b": 0.725,
+        "difference": -0.09999999999999998,
+        "low": -0.25,
+        "high": 0.025000000000000022,
+        "undefinedResamples": 0
+      },
+      "selectiveAccuracy": {
+        "a": 0.2727272727272727,
+        "b": 0.3448275862068966,
+        "difference": 0.07210031347962387,
+        "low": -0.04599555061179071,
+        "high": 0.20303301101688193,
+        "undefinedResamples": 0
+      },
+      "kappa": {
+        "a": 0.03333333333333336,
+        "b": 0.16666666666666666,
+        "difference": 0.1333333333333333,
+        "low": -0.005787018944573817,
+        "high": 0.28642760776248233,
+        "undefinedResamples": 0
+      }
+    },
+    "retrieval": {
+      "pairedClaims": 40,
+      "onlyInBaseline": 0,
+      "onlyInCandidate": 0,
+      "differences": {
+        "linkRecall@candidates": {
+          "pairs": 39,
+          "baseline": 0.0769,
+          "candidate": 0.0513,
+          "difference": -0.0256,
+          "low": -0.1282,
+          "high": 0.0513,
+          "onlyBaseline": 2,
+          "onlyCandidate": 1
+        },
+        "linkRecall@ranked": {
+          "pairs": 39,
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "linkRecall@cited": {
+          "pairs": 39,
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "domainRecall@candidates": {
+          "pairs": 39,
+          "baseline": 0.3077,
+          "candidate": 0.2821,
+          "difference": -0.0256,
+          "low": -0.1282,
+          "high": 0.0513,
+          "onlyBaseline": 2,
+          "onlyCandidate": 1
+        },
+        "domainRecall@ranked": {
+          "pairs": 39,
+          "baseline": 0.0513,
+          "candidate": 0.0256,
+          "difference": -0.0256,
+          "low": -0.0769,
+          "high": 0.0,
+          "onlyBaseline": 1,
+          "onlyCandidate": 0
+        },
+        "domainRecall@cited": {
+          "pairs": 39,
+          "baseline": 0.0256,
+          "candidate": 0.0256,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "linkMRR": {
+          "pairs": 39,
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0,
+          "onlyBaseline": 0,
+          "onlyCandidate": 0
+        },
+        "domainMRR": {
+          "pairs": 39,
+          "baseline": 0.0321,
+          "candidate": 0.0256,
+          "difference": -0.0064,
+          "low": -0.0192,
+          "high": 0.0,
+          "onlyBaseline": 1,
+          "onlyCandidate": 0
+        },
+        "hasEvidence": {
+          "pairs": 40,
+          "baseline": 0.95,
+          "candidate": 0.95,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "candidates": {
+          "pairs": 40,
+          "baseline": 69.525,
+          "candidate": 69.4,
+          "difference": -0.125,
+          "low": -3.9756,
+          "high": 4.3
+        },
+        "ranked": {
+          "pairs": 40,
+          "baseline": 3.375,
+          "candidate": 3.475,
+          "difference": 0.1,
+          "low": -0.275,
+          "high": 0.475
+        },
+        "gateCut": {
+          "pairs": 38,
+          "baseline": 0.0053,
+          "candidate": 0.0,
+          "difference": -0.0053,
+          "low": -0.0158,
+          "high": 0.0
+        },
+        "uniqueDomains": {
+          "pairs": 40,
+          "baseline": 3.375,
+          "candidate": 3.475,
+          "difference": 0.1,
+          "low": -0.275,
+          "high": 0.475
+        },
+        "ratedShare": {
+          "pairs": 38,
+          "baseline": 0.1114,
+          "candidate": 0.0855,
+          "difference": -0.0259,
+          "low": -0.0719,
+          "high": 0.0193
+        },
+        "corpusShare": {
+          "pairs": 38,
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "difference": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "verdictLeak": {
+          "pairs": 0,
+          "baseline": null,
+          "candidate": null,
+          "difference": null,
+          "low": null,
+          "high": null
+        },
+        "retrievalSeconds": {
+          "pairs": 40,
+          "baseline": 38.1694,
+          "candidate": 40.1333,
+          "difference": 1.9639,
+          "low": -4.949,
+          "high": 8.7067
+        },
+        "rankingSeconds": {
+          "pairs": 40,
+          "baseline": 7.7249,
+          "candidate": 9.5922,
+          "difference": 1.8673,
+          "low": -0.3383,
+          "high": 3.9924
+        }
+      }
+    }
+  }
+}
