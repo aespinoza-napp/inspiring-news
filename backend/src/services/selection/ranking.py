@@ -205,13 +205,30 @@ class Standing:
     kept: int = 0
 
 
-def news_part(reading: Reading | None) -> float | None:
-    """The candidate's own part, in [0, 1]; None when nothing was read."""
+def news_part(reading: Reading | None, lowered: float = 0.0) -> float | None:
+    """
+    The candidate's own part, in [0, 1]; None when nothing was read.
+    `lowered` comes off the reading before it is scaled: the person's
+    feedback, a share of how much nearer the story comes to what they
+    rejected than to what they chose (feedback.py, 2026-11-24), so a story
+    like the rejected ones reads less positive. 0: the reading as it is.
+    """
 
     if reading is None:
         return None
 
-    return _scaled(reading.impact - reading.off, NEWS_RANGE)
+    return _scaled(reading.impact - reading.off - lowered, NEWS_RANGE)
+
+
+def _lean(reading: Reading | None, feedback) -> tuple[float | None, float]:
+    """(the candidate's lean under `feedback`, what comes off its reading); (None, 0) without."""
+
+    if feedback is None or reading is None:
+        return None, 0.0
+
+    lean = feedback.lean(reading.vector)
+
+    return lean, 0.0 if lean is None else feedback.weight * lean
 
 
 def topic_part(fit: float | None, bounds: tuple[float, float] = TOPIC_RANGE) -> float | None:
@@ -284,16 +301,21 @@ def rank(
     standing: Standing,
     fit: float | None = None,
     emphasis: float | None = None,
+    feedback=None,
 ) -> dict:
     """
     The score and its parts, as the round records them: `reliability` is
     the configured rating itself, the others in [0, 1]. `fit` is the
     candidate's group_fit for the round's groups (None in a round over
     every topic, where the topic part is the same for all). `emphasis`,
-    per call: the round's topic emphasis (None, the default).
+    per call: the round's topic emphasis (None, the default). `feedback`,
+    per call: the person's rejected and chosen stories of the round's
+    edition (feedback.Feedback; None, none), which lower the story part
+    of what is like the rejected ones; its `lean` is recorded.
     """
 
-    news = news_part(reading)
+    lean, lowered = _lean(reading, feedback)
+    news = news_part(reading, lowered)
     topic = topic_part(fit)
     record = record_part(standing)
 
@@ -310,6 +332,10 @@ def rank(
     # Only on a repost, so every round recorded before keeps its shape.
     if standing.reposts:
         ranked["repostFactor"] = REPOST_FACTOR
+
+    # Likewise only with feedback.
+    if lean is not None:
+        ranked["lean"] = round(lean, 4)
 
     return ranked
 
@@ -378,15 +404,17 @@ def trend_rank(
     fit: float | None = None,
     virality: float | None = None,
     emphasis: float | None = None,
+    feedback=None,
 ) -> dict:
     """
     A trend article's score and its parts, as the round records them.
     `standing` is its signal's (record from this round's screen; its
     reliability is not used). `virality` is in [0, 1], None for a trend a
-    person typed, which counts as UNREAD.
+    person typed, which counts as UNREAD. `feedback` as in `rank`.
     """
 
-    news = news_part(reading)
+    lean, lowered = _lean(reading, feedback)
+    news = news_part(reading, lowered)
     topic = topic_part(fit)
     record = record_part(standing)
     weighted = trend_weights(emphasis)
@@ -398,13 +426,18 @@ def trend_rank(
         + weighted["virality"] * (UNREAD if virality is None else virality)
     )
 
-    return {
+    ranked = {
         "score": round(total, 3),
         "news": None if news is None else round(news, 3),
         "topic": None if topic is None else round(topic, 3),
         "record": round(record, 3),
         "virality": None if virality is None else round(virality, 3),
     }
+
+    if lean is not None:
+        ranked["lean"] = round(lean, 4)
+
+    return ranked
 
 
 def described_trending(asked: float | None, applied: float | None) -> dict:

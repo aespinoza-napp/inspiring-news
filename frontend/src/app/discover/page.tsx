@@ -10,10 +10,14 @@ import { safeHref } from "@/lib/links";
 import {
   Candidate,
   CandidateRank,
+  FeedbackSummary,
   CandidateRound,
   CandidateRoundSummary,
   IngestSource,
   IngestSourcesResponse,
+  PickReason,
+  Rejection,
+  RoundComparison,
   RoundTrend,
   ScoredCandidate,
   TopicGroup,
@@ -60,11 +64,34 @@ const OFF_MISSION: Record<string, string> = {
   advisory: "a media advisory",
   promotion: "a promotion",
   shopping: "shopping",
+  // What the person taught the ranking (backend selection/feedback.py).
+  rejected: "you marked it not for us before",
+  blocked_site: "from a site you blocked",
+  like_rejected: "clearly like the stories you marked not for us",
 };
+
+// A link's site as the backend names it (request_stats.domain_of): no www.
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+// A lean this small either way says nothing worth showing.
+const LEAN_SHOWN = 0.02;
 
 // While the AI selection runs, the round is re-read this often. On the
 // production CPU model a selection is minutes; on a GPU, seconds.
 const POLL_MS = 2000;
+
+// The most a person records, and the AI picks, to compare the two, when the
+// backend does not say (one older than 2026-11-24): its cap then.
+const FALLBACK_COMPARED = 5;
+
+// A note on one of your picks: the backend keeps this much.
+const NOTE_CHARS = 300;
 
 function errorOf(data: unknown, status: number): string {
   const body = data as { error?: string; detail?: unknown } | null;
@@ -120,6 +147,14 @@ function RankLine({ rank, place, tone }: { rank: CandidateRank; place: number | 
         <span title={`How much nearer its title and summary come to ${tone} than to anything off-mission`}>
           story {rank.news === null ? "not read" : Math.round(rank.news * 100)}
         </span>
+        {rank.lean !== undefined && Math.abs(rank.lean) >= LEAN_SHOWN && (
+          <span
+            className={rank.lean > 0 ? "rank-lean is-down" : "rank-lean"}
+            title={`How much nearer it comes to the stories you marked not for us than to those you chose: ${rank.lean.toFixed(3)}. Its story part is lowered (or raised) by a share of it.`}
+          >
+            {rank.lean > 0 ? " · like what you marked not for us" : " · like what you chose"}
+          </span>
+        )}
         {rank.topic !== undefined && rank.topic !== null && (
           <>
             {" · "}
@@ -269,6 +304,246 @@ function EmphasisControl({
   );
 }
 
+// A candidate's picture: the copy kept with the round when it is a compared
+// pick (backend src/services/selection/photos.py), else the feed's link.
+function photoOf(round: CandidateRound, candidate: Candidate): string | undefined {
+  const kept = round.photos?.[candidate.url]?.file;
+  if (kept) return `/api/ingest/rounds/${round.id}/photos/${kept}`;
+  return safeHref(candidate.image);
+}
+
+// Another site's picture: no referrer sent, nothing shown if it fails.
+function CandidatePhoto({ src, large }: { src: string | undefined; large?: boolean }) {
+  // The source that failed, not a flag: a link that would not load gives
+  // way to the kept copy once the choice is recorded.
+  const [failed, setFailed] = useState<string | null>(null);
+  if (!src || failed === src) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className={large ? "candidate-photo is-large" : "candidate-photo"}
+      src={src}
+      alt=""
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(src)}
+    />
+  );
+}
+
+// Why this one and not another: buttons that can be on together, from the
+// backend's list for the edition (src/services/selection/reasons.py). Read
+// only once the choice is recorded or sent.
+function ReasonChips({
+  offered,
+  given,
+  onToggle,
+  title,
+}: {
+  offered: PickReason[];
+  given: string[];
+  onToggle?: (id: string) => void;
+  title: string;
+}) {
+  const shown = onToggle ? offered : offered.filter((reason) => given.includes(reason.id));
+  if (shown.length === 0) return null;
+  return (
+    <div className="reason-chips" role="group" aria-label={title}>
+      {shown.map((reason) => {
+        const on = given.includes(reason.id);
+        return onToggle ? (
+          <button
+            type="button"
+            key={reason.id}
+            className={on ? "reason-chip is-on" : "reason-chip"}
+            aria-pressed={on}
+            title={reason.hint}
+            onClick={() => onToggle(reason.id)}
+          >
+            {reason.label}
+          </button>
+        ) : (
+          <span key={reason.id} className="reason-chip is-on is-read" title={reason.hint}>
+            {reason.label}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+// A candidate marked not for us: why (buttons, several at once), whether
+// its whole site is blocked, and Undo. It stays in this round's list -
+// the person and the AI keep choosing from the same one - and teaches
+// every later round.
+function RejectedMark({
+  mark,
+  host,
+  offered,
+  busy,
+  onChange,
+}: {
+  mark: Rejection;
+  host: string;
+  offered: PickReason[];
+  busy: boolean;
+  onChange: (change: { reasons?: string[]; site?: boolean; undo?: boolean }) => void;
+}) {
+  return (
+    <div className="rejected-mark">
+      <div className="rejected-head">
+        <span className="rejected-badge">Not for us</span>
+        <span className="stats-muted">Left out of later rounds, and stories like it ranked lower.</span>
+      </div>
+      <ReasonChips
+        offered={offered}
+        given={mark.reasons}
+        title="Why it is not for us"
+        onToggle={
+          busy
+            ? undefined
+            : (id) =>
+                onChange({
+                  reasons: mark.reasons.includes(id) ? mark.reasons.filter((code) => code !== id) : [...mark.reasons, id],
+                  site: mark.site,
+                })
+        }
+      />
+      <div className="rejected-actions">
+        <button
+          type="button"
+          className={mark.site ? "reason-chip is-on" : "reason-chip"}
+          aria-pressed={mark.site}
+          disabled={busy}
+          onClick={() => onChange({ reasons: mark.reasons, site: !mark.site })}
+          title="Leave out every article from this site in later rounds of this edition"
+        >
+          Never from {host}
+        </button>
+        <button type="button" className="button-link" disabled={busy} onClick={() => onChange({ undo: true })}>
+          Undo
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function share(value: number | null): string {
+  return value === null ? "–" : `${Math.round(value * 100)}%`;
+}
+
+// Your recorded choice against the AI's: who chose what, side by side, with
+// the photos and what each said about it (docs/decisions/selection.md,
+// "The person against the AI").
+function ComparisonPanel({
+  round,
+  comparison,
+  tone,
+  offered,
+}: {
+  round: CandidateRound;
+  comparison: RoundComparison;
+  tone: string;
+  offered: PickReason[];
+}) {
+  const byUrl = new Map(round.candidates.map((candidate) => [candidate.url, candidate]));
+  const scored = new Map((round.aiSelection?.scored ?? []).map((item) => [item.url, item]));
+  const notes = round.personSelection?.notes ?? {};
+  const reasons = round.personSelection?.reasons ?? {};
+  const label = (id: string) => offered.find((reason) => reason.id === id)?.label ?? id;
+  const tally = Object.entries(comparison.reasons ?? {}).sort((a, b) => b[1].picks - a[1].picks);
+  const pickedRejected = new Set(comparison.aiPickedRejected ?? []);
+
+  const columns: { title: string; urls: string[]; hint: string }[] = [
+    { title: "Both chose", urls: comparison.both, hint: "Chosen by you and by the AI." },
+    { title: "Only you", urls: comparison.personOnly, hint: "The AI's score says how far it was from choosing them." },
+    { title: "Only the AI", urls: comparison.aiOnly, hint: "Its reason is from the title and summary alone." },
+  ];
+
+  return (
+    <div className="compare-panel">
+      <div className="section-label">You and the AI</div>
+      <p className="claims-note">
+        You chose {comparison.person}, the AI {comparison.ai} (at most {comparison.aiLimit ?? round.personSelection?.limit}{" "}
+        each, from the same {comparison.over}): <strong>{comparison.both.length} in common</strong>. Of the AI&apos;s
+        picks you chose {share(comparison.precision)}; of yours it chose {share(comparison.recall)}; overlap{" "}
+        {share(comparison.jaccard)}; Cohen&apos;s kappa over all {comparison.over}{" "}
+        {comparison.kappa === null ? "undefined" : comparison.kappa.toFixed(2)}.{" "}
+        {comparison.blind
+          ? "Blind: you chose before seeing any AI proposal."
+          : "Not blind: the AI's proposal was on the page when you chose, which inflates agreement."}{" "}
+        <span className="stats-muted">
+          ({comparison.aiModel ?? "the AI"}, picks at {comparison.aiMinScore ?? "–"}/10 or more, scoring {tone})
+        </span>
+      </p>
+      {pickedRejected.size > 0 && (
+        <p className="claims-note">
+          <strong>
+            The AI chose {pickedRejected.size} you marked not for us.
+          </strong>{" "}
+          They are marked below.
+        </p>
+      )}
+      {tally.length > 0 && (
+        <p className="claims-note">
+          Your reasons, and how many of those picks the AI chose too:{" "}
+          {tally.map(([id, row], index) => (
+            <span key={id}>
+              {index > 0 && " · "}
+              {label(id)} {row.aiAlso} of {row.picks}
+            </span>
+          ))}
+          .
+        </p>
+      )}
+      <div className="compare-grid">
+        {columns.map((column) => (
+          <div className="compare-column" key={column.title}>
+            <h3 className="compare-title">
+              {column.title} <span className="stats-muted">{column.urls.length}</span>
+            </h3>
+            <p className="claims-note">{column.hint}</p>
+            {column.urls.length === 0 && <p className="stats-muted">None.</p>}
+            <ul className="compare-list">
+              {column.urls.map((url) => {
+                const candidate = byUrl.get(url);
+                const ai = scored.get(url);
+                const href = safeHref(url);
+                return (
+                  <li key={url} className="compare-card">
+                    {candidate && <CandidatePhoto src={photoOf(round, candidate)} large />}
+                    <div className="compare-card-body">
+                      <div className="candidate-title">
+                        {href ? (
+                          <a href={href} target="_blank" rel="noopener noreferrer">
+                            {candidate?.title ?? url}
+                          </a>
+                        ) : (
+                          candidate?.title ?? url
+                        )}
+                      </div>
+                      {candidate && <div className="candidate-meta">{candidate.sourceName} · {candidate.language}</div>}
+                      {pickedRejected.has(url) && <span className="rejected-badge">You: not for us</span>}
+                      <div className="candidate-ai">
+                        <span className="ai-score" title="The AI's score, 0-10">
+                          {ai?.score === null || ai?.score === undefined ? "AI: not scored" : `AI ${ai.score}/10`}
+                        </span>
+                        {ai?.reason && <span className="candidate-reason">{ai.reason}</span>}
+                      </div>
+                      <ReasonChips offered={offered} given={reasons[url] ?? []} title="Your reasons" />
+                      {notes[url] && <p className="compare-note">You: {notes[url]}</p>}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // The round id lives in the URL, so a reload - or coming back from Live -
 // returns to the same candidates and the same AI proposal.
 function roundFromUrl(): string | null {
@@ -308,15 +583,27 @@ export default function DiscoverPage() {
 
   const [round, setRound] = useState<CandidateRound | null>(null);
   const [chosen, setChosen] = useState<Set<string>>(new Set());
+  // Why each pick, said before your choice is recorded or sent: reasons
+  // (several at once) and a note, both optional.
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [reasons, setReasons] = useState<Record<string, string[]>>({});
   const [recent, setRecent] = useState<CandidateRoundSummary[]>([]);
+  // What the person taught the ranking in this edition (backend selection/feedback.py).
+  const [teaching, setTeaching] = useState<FeedbackSummary | null>(null);
+  // The candidate whose "not for us" is being saved.
+  const [marking, setMarking] = useState<string | null>(null);
 
   const [busy, setBusy] = useState<
-    "discovering" | "refreshing" | "more" | "starting-ai" | "queueing" | null
+    "discovering" | "refreshing" | "more" | "starting-ai" | "queueing" | "recording" | null
   >(null);
   const [error, setError] = useState<string | null>(null);
 
   const maxGroups = catalogue?.maxGroups ?? 3;
   const maxSelected = catalogue?.maxSelected ?? 20;
+  const compared = catalogue?.compared ?? FALLBACK_COMPARED;
+  // The backend's list for the edition; none from one older than 2026-11-24.
+  const offered: PickReason[] = catalogue?.pickReasons ?? [];
+  const rejectReasons: PickReason[] = catalogue?.rejectReasons ?? [];
   const listed = catalogue?.listed ?? 20;
   const maxListed = catalogue?.maxListed ?? 40;
   const defaultEmphasis = catalogue?.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS;
@@ -332,6 +619,15 @@ export default function DiscoverPage() {
       setRecent(data.rounds);
     } catch {
       // The list is a convenience; the page works without it.
+    }
+  }, []);
+
+  const loadTeaching = useCallback(async (which: string) => {
+    try {
+      setTeaching(await call<FeedbackSummary>(`/api/ingest/feedback?edition=${which}`));
+    } catch {
+      // Also a convenience: rejecting works without the list.
+      setTeaching(null);
     }
   }, []);
 
@@ -381,11 +677,12 @@ export default function DiscoverPage() {
     })();
 
     loadRecent();
+    loadTeaching(edition);
 
     return () => {
       cancelled = true;
     };
-  }, [ready, edition, loadRecent]);
+  }, [ready, edition, loadRecent, loadTeaching]);
 
   // A round named in the URL, once: it opens in its own edition, which
   // becomes the page's.
@@ -406,7 +703,9 @@ export default function DiscoverPage() {
         setPerSource(saved.perSource);
         setEmphasis(emphasisOf(saved, catalogueRef.current?.topicEmphasis ?? FALLBACK_TOPIC_EMPHASIS));
         restoreTrending(saved, catalogueRef.current?.signals ?? []);
-        setChosen(new Set(saved.queued?.urls ?? []));
+        setChosen(new Set(saved.queued?.urls ?? saved.personSelection?.urls ?? []));
+        setNotes({});
+        setReasons({});
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not reopen that round.");
       }
@@ -436,7 +735,11 @@ export default function DiscoverPage() {
 
         if (latest.aiSelection?.status === "done") {
           // The proposal arrives ticked; the editor can still change it.
-          setChosen(new Set((latest.aiSelection.picks ?? []).map((pick) => pick.url)));
+          // Against a recorded choice the person's ticks stay: the
+          // comparison below shows the AI's beside them.
+          if (!latest.personSelection) {
+            setChosen(new Set((latest.aiSelection.picks ?? []).map((pick) => pick.url)));
+          }
           loadRecent();
           return;
         }
@@ -511,6 +814,15 @@ export default function DiscoverPage() {
 
   const queued = round?.queued ?? null;
   const locked = queued !== null;
+  const marks: Record<string, Rejection> = round?.rejected ?? {};
+
+  // Your own choice, recorded to compare with the AI's, and the comparison
+  // once both exist (null until then).
+  const personSelection = round?.personSelection ?? null;
+  const comparison = round?.comparison ?? null;
+  const mine = useMemo(() => new Set(personSelection?.urls ?? []), [personSelection]);
+  const canRecord =
+    !!round && !personSelection && chosen.size > 0 && chosen.size <= compared && aiStatus !== "running";
 
   // How many more the round can show: what is ranked below, up to maxListed in all.
   const more = round
@@ -593,7 +905,7 @@ export default function DiscoverPage() {
   }
 
   function toggleCandidate(url: string) {
-    if (locked) return;
+    if (locked || marks[url]) return;
     setChosen((current) => {
       const next = new Set(current);
       if (next.has(url)) next.delete(url);
@@ -635,6 +947,8 @@ export default function DiscoverPage() {
       );
       setRound(created);
       setChosen(new Set());
+      setNotes({});
+      setReasons({});
       writeRoundToUrl(created.id);
       loadRecent();
     } catch (err) {
@@ -685,11 +999,91 @@ export default function DiscoverPage() {
     try {
       const state = await post<CandidateRound["aiSelection"]>(
         `/api/ingest/rounds/${round.id}/ai-selection`,
-        { limit: 5 }
+        { limit: compared }
       );
       setRound({ ...round, aiSelection: state });
     } catch (err) {
       setError(err instanceof Error ? err.message : "The AI selection could not start.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function toggleReason(url: string, id: string) {
+    setReasons((current) => {
+      const given = current[url] ?? [];
+      return { ...current, [url]: given.includes(id) ? given.filter((code) => code !== id) : [...given, id] };
+    });
+  }
+
+  // Not for us: marks a candidate (or changes why, or takes it back). The
+  // round keeps its list; every later round of the edition learns from it.
+  async function markNotForUs(url: string, change: { reasons?: string[]; site?: boolean; undo?: boolean }) {
+    if (!round) return;
+    setMarking(url);
+    setError(null);
+    try {
+      const result = await post<{ rejected: Record<string, Rejection> }>(`/api/ingest/rounds/${round.id}/reject`, {
+        url,
+        reasons: change.reasons ?? [],
+        site: change.site ?? false,
+        undo: change.undo ?? false,
+      });
+      setRound((current) => (current && current.id === round.id ? { ...current, rejected: result.rejected } : current));
+      setChosen((current) => {
+        const next = new Set(current);
+        next.delete(url);
+        return next;
+      });
+      loadTeaching(edition);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not mark it.");
+    } finally {
+      setMarking(null);
+    }
+  }
+
+  // Takes back a rejection or a blocked site from the list of what the
+  // ranking learned; the open round is re-read, since its mark goes too.
+  async function forget(target: { url?: string; host?: string }) {
+    setError(null);
+    try {
+      setTeaching(await post<FeedbackSummary>("/api/ingest/feedback/forget", { edition, ...target }));
+      if (round) setRound(await call<CandidateRound>(`/api/ingest/rounds/${round.id}`));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not take it back.");
+    }
+  }
+
+  // Why each of `urls` was chosen, as the backend takes it: the notes
+  // written and the reasons given, for those urls only.
+  function whyOf(urls: string[]) {
+    const keptNotes: Record<string, string> = {};
+    const keptReasons: Record<string, string[]> = {};
+    for (const url of urls) {
+      const note = notes[url]?.trim();
+      if (note) keptNotes[url] = note;
+      if (reasons[url]?.length) keptReasons[url] = reasons[url];
+    }
+    return { notes: keptNotes, reasons: keptReasons };
+  }
+
+  // Your own choice of at most `compared`, recorded on the round before the
+  // AI is asked, so the two can be compared; nothing is sent to analysis.
+  // The backend says whether it was blind and keeps the picks' photos.
+  async function record() {
+    if (!round || !canRecord) return;
+    setBusy("recording");
+    setError(null);
+    try {
+      const urls = candidates.map((candidate) => candidate.url).filter((url) => chosen.has(url));
+      await post(`/api/ingest/rounds/${round.id}/person-selection`, { urls, ...whyOf(urls) });
+      // Re-read: the record, the photos kept and, if the AI had already
+      // chosen, the comparison.
+      setRound(await call<CandidateRound>(`/api/ingest/rounds/${round.id}`));
+      loadRecent();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not record your choice.");
     } finally {
       setBusy(null);
     }
@@ -702,7 +1096,12 @@ export default function DiscoverPage() {
     try {
       // In the candidates' order on screen, so the jobs start in it too.
       const urls = candidates.map((candidate) => candidate.url).filter((url) => chosen.has(url));
-      const result = await post<CandidateRound["queued"]>(`/api/ingest/rounds/${round.id}/queue`, { urls });
+      // Why each is sent: once a choice is recorded, what it says for its
+      // picks; otherwise what was given on the page.
+      const why = round.personSelection
+        ? { notes: round.personSelection.notes ?? {}, reasons: round.personSelection.reasons ?? {} }
+        : whyOf(urls);
+      const result = await post<CandidateRound["queued"]>(`/api/ingest/rounds/${round.id}/queue`, { urls, ...why });
       setRound({ ...round, queued: result });
       // Into the dock in the corner (components/FollowingDock.tsx), which
       // opens and follows each pick from any page - the "Sent to
@@ -730,6 +1129,8 @@ export default function DiscoverPage() {
   function startOver() {
     setRound(null);
     setChosen(new Set());
+    setNotes({});
+    setReasons({});
     writeRoundToUrl(null);
   }
 
@@ -745,8 +1146,14 @@ export default function DiscoverPage() {
       setEmphasis(emphasisOf(saved, defaultEmphasis));
       restoreTrending(saved, signals);
       setChosen(
-        new Set(saved.queued?.urls ?? (saved.aiSelection?.picks ?? []).map((pick) => pick.url))
+        new Set(
+          saved.queued?.urls ??
+            saved.personSelection?.urls ??
+            (saved.aiSelection?.picks ?? []).map((pick) => pick.url)
+        )
       );
+      setNotes({});
+      setReasons({});
       writeRoundToUrl(saved.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not reopen that round.");
@@ -784,7 +1191,8 @@ export default function DiscoverPage() {
         {listed} best shown, up to {maxListed} if you ask for more ({trendingMax} at most when trending, with
         one topic or three). Choose up
         to {maxSelected} of them, yourself or from the AI&apos;s proposal, and
-        send them to analysis.
+        send them to analysis. To measure the AI against you, record your own {compared} first, then
+        let the AI choose its {compared} from the same list.
       </p>
 
       {error && (
@@ -1092,6 +1500,34 @@ export default function DiscoverPage() {
             </details>
           )}
 
+          {round.feedback && round.feedback.status !== "off" && (
+            <p className="claims-note feedback-note">
+              {round.feedback.status === "unavailable" ? (
+                <>
+                  What you taught the ranking could not be read ({round.feedback.error}): nothing was lowered.
+                  The articles you marked not for us and the sites you blocked are still left out.
+                </>
+              ) : round.feedback.lowered ? (
+                <>
+                  Ordered with what you taught it: {round.feedback.rejected} marked not for us and{" "}
+                  {round.feedback.chosen} chosen. Stories like the ones you marked read{" "}
+                  {Math.round(round.feedback.weight * 100)}% of their lean less {tone}.{" "}
+                  {round.feedback.leavesOut
+                    ? "Those clearly like them are left out."
+                    : `Leaving out stories that are clearly like them starts at ${round.feedback.leaveOutMinimum.rejected} marked and ${round.feedback.leaveOutMinimum.chosen} chosen.`}
+                </>
+              ) : (
+                <>
+                  {round.feedback.rejected} marked not for us so far
+                  {round.feedback.blockedSites > 0 && `, ${round.feedback.blockedSites} sites blocked`}: those articles are left
+                  out. Lowering stories like them starts at {round.feedback.lowerMinimum.rejected} marked and{" "}
+                  {round.feedback.lowerMinimum.chosen} chosen (you have {round.feedback.chosen} chosen).
+                </>
+              )}
+              {round.feedback.leftOut > 0 && ` ${round.feedback.leftOut} left out of this round: see "left out" below.`}
+            </p>
+          )}
+
           {round.screen?.status === "unavailable" && (
             <p className="claims-note">
               The mission screen could not run ({round.screen.error}), so nothing was left out
@@ -1147,6 +1583,26 @@ export default function DiscoverPage() {
               </button>
               {round.candidates.length > 0 && (
                 <>
+                  {!personSelection && (
+                    <button
+                      type="button"
+                      className="button-secondary"
+                      onClick={record}
+                      disabled={busy !== null || !canRecord}
+                      title={
+                        chosen.size > compared
+                          ? `At most ${compared} to compare with the AI: untick ${chosen.size - compared}.`
+                          : aiStatus === "done"
+                            ? "Records your choice to compare with the AI's. Not blind: its proposal is already on the page."
+                            : `Records your choice of up to ${compared}, blind, before the AI is asked. Nothing is sent to analysis.`
+                      }
+                    >
+                      {busy === "recording" && <span className="spinner" aria-hidden="true" />}
+                      {busy === "recording"
+                        ? "Recording, and keeping the photos…"
+                        : `Record my ${chosen.size === 1 ? "pick" : "picks"}${aiStatus === "done" ? "" : " (blind)"}`}
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="button-secondary"
@@ -1160,21 +1616,30 @@ export default function DiscoverPage() {
                       ? "The AI is reading the list…"
                       : aiStatus === "done"
                         ? "Ask the AI again"
-                        : "Let the AI choose"}
+                        : personSelection
+                          ? `Now let the AI choose its ${compared}`
+                          : "Let the AI choose"}
                   </button>
                   <span className="discover-count" aria-live="polite">
                     {chosen.size} / {maxSelected} chosen
+                    {!personSelection && chosen.size > compared && (
+                      <span className="stats-muted"> · at most {compared} to compare with the AI</span>
+                    )}
                   </span>
                   {chosen.size > 0 && (
                     <button type="button" className="button-link" onClick={() => setChosen(new Set())}>
                       Clear
                     </button>
                   )}
+                  {/* Not while the AI reads the list: its picks would land on a
+                      round recorded as chosen by you alone (the backend
+                      answers 409 too). */}
                   <button
                     type="button"
                     className="discover-analyse"
                     onClick={analyse}
-                    disabled={busy !== null || chosen.size === 0}
+                    disabled={busy !== null || chosen.size === 0 || aiStatus === "running"}
+                    title={aiStatus === "running" ? "Wait for the AI to finish reading the list." : undefined}
                   >
                     {busy === "queueing" && <span className="spinner" aria-hidden="true" />}
                     {`Analyse ${chosen.size} ${chosen.size === 1 ? "article" : "articles"}`}
@@ -1184,14 +1649,36 @@ export default function DiscoverPage() {
             </div>
           )}
 
+          {!locked && !personSelection && round.candidates.length > 0 && aiStatus !== "done" && (
+            <p className="claims-note">
+              To compare yourself with the AI: tick up to {compared} you would publish, say why with
+              the buttons under each (several at once: {offered.slice(0, 4).map((reason) => reason.label.toLowerCase()).join(", ")}
+              …) and a note if you like, and <strong>Record my picks (blind)</strong> before asking the AI. Then let the AI
+              choose its {compared} from the same list. Both are kept with the round, photos included.
+            </p>
+          )}
+
+          {personSelection && (
+            <p className="claims-note">
+              Your {personSelection.urls.length} recorded {when(personSelection.at)},{" "}
+              {personSelection.blind ? "blind" : "after the AI's proposal (not blind)"}.
+              {!comparison && aiStatus !== "running" && ` Let the AI choose its ${compared} to compare.`}
+              {round.photos &&
+                Object.values(round.photos).some((photo) => photo.error) &&
+                ` ${Object.values(round.photos).filter((photo) => photo.error).length} photo(s) could not be kept; their links remain.`}
+            </p>
+          )}
+
           {round.aiSelection?.status === "done" && (
             <p className="claims-note">
               The AI proposed {round.aiSelection.picks?.length ?? 0} of{" "}
               {round.candidates.length - unscored}, scoring each from its title and summary
               against the publication&apos;s idea of {tone} ({round.aiSelection.model},{" "}
               {round.aiSelection.calls} {round.aiSelection.calls === 1 ? "call" : "calls"},{" "}
-              {Math.round((round.aiSelection.elapsedMs ?? 0) / 1000)} s). Its picks are ticked;
-              change them freely.
+              {Math.round((round.aiSelection.elapsedMs ?? 0) / 1000)} s).{" "}
+              {personSelection
+                ? "Your ticks are kept; its picks are marked below."
+                : "Its picks are ticked; change them freely."}
               {(round.aiSelection.notes ?? []).map((note) => ` ${note}`)}
               {unscored > 0 &&
                 ` The ${unscored} shown since have no AI score: ask the AI again to include them.`}
@@ -1203,6 +1690,8 @@ export default function DiscoverPage() {
               The AI selection failed: {round.aiSelection.error}
             </div>
           )}
+
+          {comparison && <ComparisonPanel round={round} comparison={comparison} tone={tone} offered={offered} />}
 
           {round.candidates.length === 0 ? (
             <p className="claims-note">
@@ -1217,19 +1706,31 @@ export default function DiscoverPage() {
                 const on = chosen.has(candidate.url);
                 const href = safeHref(candidate.url);
                 const full = !on && chosen.size >= maxSelected;
+                const photo = photoOf(round, candidate);
+                const mark = marks[candidate.url];
+                const picked = mine.has(candidate.url) || (queued?.urls ?? []).includes(candidate.url);
                 return (
-                  <li key={candidate.url} className={on ? "candidate is-chosen" : "candidate"}>
+                  <li
+                    key={candidate.url}
+                    className={mark ? "candidate is-rejected" : on ? "candidate is-chosen" : "candidate"}
+                  >
                     <label className="candidate-check">
                       <input
                         type="checkbox"
                         checked={on}
-                        disabled={locked || full}
+                        disabled={locked || full || Boolean(mark)}
                         onChange={() => toggleCandidate(candidate.url)}
                         aria-label={`Choose: ${candidate.title ?? candidate.url}`}
                       />
                     </label>
                     <div className="candidate-body">
+                      <CandidatePhoto src={photo} />
                       <div className="candidate-title">
+                        {mine.has(candidate.url) && (
+                          <span className="pick-badge" title="In the choice you recorded to compare with the AI">
+                            Your pick
+                          </span>
+                        )}{" "}
                         {href ? (
                           <a href={href} target="_blank" rel="noopener noreferrer">
                             {candidate.title ?? candidate.url}
@@ -1282,6 +1783,60 @@ export default function DiscoverPage() {
                           </span>
                           {scored.reason && <span className="candidate-reason">{scored.reason}</span>}
                         </div>
+                      )}
+                      {mark ? (
+                        <RejectedMark
+                          mark={mark}
+                          host={hostOf(candidate.url)}
+                          offered={rejectReasons}
+                          busy={marking === candidate.url}
+                          onChange={(change) => markNotForUs(candidate.url, change)}
+                        />
+                      ) : (
+                        !on &&
+                        !picked &&
+                        rejectReasons.length > 0 && (
+                          <button
+                            type="button"
+                            className="button-link not-for-us"
+                            disabled={marking === candidate.url}
+                            onClick={() => markNotForUs(candidate.url, {})}
+                            title="Nothing here for us: it will not come back, and stories like it will rank lower in later rounds"
+                          >
+                            Not for us
+                          </button>
+                        )
+                      )}
+                      {on && !personSelection && !locked && (
+                        <ReasonChips
+                          offered={offered}
+                          given={reasons[candidate.url] ?? []}
+                          onToggle={(id) => toggleReason(candidate.url, id)}
+                          title={`Why you chose: ${candidate.title ?? candidate.url}`}
+                        />
+                      )}
+                      {(personSelection?.reasons?.[candidate.url] ?? queued?.reasons?.[candidate.url]) && (
+                        <ReasonChips
+                          offered={offered}
+                          given={personSelection?.reasons?.[candidate.url] ?? queued?.reasons?.[candidate.url] ?? []}
+                          title="Why you chose it"
+                        />
+                      )}
+                      {on && !personSelection && !locked && (
+                        <input
+                          type="text"
+                          className="candidate-note"
+                          value={notes[candidate.url] ?? ""}
+                          maxLength={NOTE_CHARS}
+                          placeholder="Anything else? (optional, kept with your choice)"
+                          aria-label={`Why you chose: ${candidate.title ?? candidate.url}`}
+                          onChange={(event) =>
+                            setNotes((current) => ({ ...current, [candidate.url]: event.target.value }))
+                          }
+                        />
+                      )}
+                      {personSelection?.notes?.[candidate.url] && (
+                        <p className="compare-note">You: {personSelection.notes[candidate.url]}</p>
                       )}
                     </div>
                   </li>
@@ -1378,6 +1933,7 @@ export default function DiscoverPage() {
                   <th>AI</th>
                   <th className="stats-number">Analysed</th>
                   <th>Chosen by</th>
+                  <th title="Your recorded choice against the AI's: how many it also chose">You vs AI</th>
                   <th />
                 </tr>
               </thead>
@@ -1404,6 +1960,21 @@ export default function DiscoverPage() {
                     <td className="stats-number">{summary.queued || <span className="stats-muted">–</span>}</td>
                     <td>{summary.selectedBy ?? <span className="stats-muted">–</span>}</td>
                     <td>
+                      {summary.personPicks ? (
+                        <>
+                          {typeof summary.bothPicked === "number"
+                            ? `${summary.bothPicked} of your ${summary.personPicks} in common`
+                            : `your ${summary.personPicks}, AI not asked`}
+                          {summary.personBlind === false && <span className="stats-muted"> · not blind</span>}
+                        </>
+                      ) : (
+                        <span className="stats-muted">–</span>
+                      )}
+                      {(summary.rejected ?? 0) > 0 && (
+                        <span className="stats-muted">{` · ${summary.rejected} not for us`}</span>
+                      )}
+                    </td>
+                    <td>
                       {summary.id === round?.id ? (
                         <span className="stats-muted">open</span>
                       ) : (
@@ -1418,6 +1989,65 @@ export default function DiscoverPage() {
             </table>
           </div>
         </>
+      )}
+
+      {/* ---------------- What you taught the ranking ---------------- */}
+
+      {teaching && (teaching.rejected.length > 0 || teaching.blockedSites.length > 0) && (
+        <section className="teaching" aria-labelledby="teaching-title">
+          <h2 id="teaching-title">What you taught the ranking</h2>
+          <p className="claims-note">
+            {teaching.rejected.length} marked not for us, {teaching.blockedSites.length} sites blocked and{" "}
+            {teaching.chosen} chosen in this edition. A marked article never comes back, and nothing from a blocked site is
+            offered. From {teaching.lowerMinimum.rejected} marked and {teaching.lowerMinimum.chosen} chosen, stories like the
+            marked ones rank lower; from {teaching.leaveOutMinimum.rejected} and {teaching.leaveOutMinimum.chosen}, those
+            clearly like them are left out. Take back any you marked by mistake.
+          </p>
+          {teaching.blockedSites.length > 0 && (
+            <ul className="teaching-list">
+              {teaching.blockedSites.map((site) => (
+                <li key={site.host}>
+                  <span>
+                    <strong>{site.host}</strong> <span className="stats-muted">· blocked {when(site.at)}</span>
+                  </span>
+                  <button type="button" className="button-link" onClick={() => forget({ host: site.host })}>
+                    Unblock
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <details>
+            <summary>{teaching.rejected.length} marked not for us</summary>
+            <ul className="teaching-list">
+              {teaching.rejected.map((item) => {
+                const href = safeHref(item.url);
+                return (
+                  <li key={item.url}>
+                    <span>
+                      {href ? (
+                        <a href={href} target="_blank" rel="noopener noreferrer">
+                          {item.title ?? item.url}
+                        </a>
+                      ) : (
+                        item.title ?? item.url
+                      )}{" "}
+                      <span className="stats-muted">
+                        · {item.sourceName ?? item.host}
+                        {item.reasons.length > 0 &&
+                          ` · ${item.reasons.map((id) => rejectReasons.find((reason) => reason.id === id)?.label ?? id).join(", ")}`}
+                        {item.note && ` · "${item.note}"`}
+                      </span>
+                    </span>
+                    <button type="button" className="button-link" onClick={() => forget({ url: item.url })}>
+                      Take back
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
+        </section>
       )}
     </>
   );

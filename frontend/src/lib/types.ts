@@ -605,6 +605,12 @@ export interface IngestSourcesResponse {
   groups: TopicGroup[];
   maxGroups: number;
   maxSelected: number;
+  /** The most a person records, and the AI picks, to compare the two (5); absent before 2026-11-24. */
+  compared?: number;
+  /** Why a person may say they chose a story, in this edition (several at once); absent before 2026-11-24. */
+  pickReasons?: PickReason[];
+  /** Why a person may say a story is not for us (selection/feedback.py learns from those). */
+  rejectReasons?: PickReason[];
   /** Candidates a round shows, best first, and the most it shows when asked for more. */
   listed: number;
   maxListed: number;
@@ -748,6 +754,12 @@ export interface CandidateRank {
   reliability?: number;
   /** A trending round's in reliability's place: the trend's place among its signal's, 0-1; null for a seed. */
   virality?: number | null;
+  /**
+   * How much nearer the story comes to what the person marked not for us
+   * than to what they chose (backend selection/feedback.py); a share of it
+   * was taken off `news`. Absent without feedback.
+   */
+  lean?: number;
 }
 
 /** One article a round found, before anything about it is fetched. */
@@ -762,6 +774,12 @@ export interface Candidate {
   /** In a trending round: the signal's title, or a news search's. */
   titleFrom: "feed" | "url" | "signal" | "search";
   summary: string | null;
+  /**
+   * The picture its feed (or trend signal) gives it, a link; null when it
+   * gives none, absent on rounds before 2026-11-24. Never fetched by the
+   * backend unless the story is a compared pick (`CandidateRound.photos`).
+   */
+  image?: string | null;
   publishedAt: string | null;
   method: string | null;
   /** Absent on rounds made before the ranking (2026-10-06). */
@@ -860,6 +878,128 @@ export interface QueuedSelection {
   aiKept: number;
   aiDropped: number;
   userAdded: number;
+  /** Why each was sent, when the page said (2026-11-24). */
+  notes?: Record<string, string>;
+  reasons?: Record<string, string[]>;
+}
+
+/** A candidate marked not for us: why, and whether its whole site was blocked. */
+export interface Rejection {
+  at: string;
+  reasons: string[];
+  note: string | null;
+  site: boolean;
+}
+
+/** What a round records of the feedback it was ranked with (backend selection/feedback.py). */
+export interface RoundFeedback {
+  /** off: nothing taught yet; unavailable: inference/ could not be reached, nothing lowered. */
+  status: "off" | "ok" | "unavailable";
+  rejected: number;
+  chosen: number;
+  blockedSites: number;
+  /** Whether stories like the rejected ones were lowered: needs `lowerMinimum`. */
+  lowered: boolean;
+  /** The share of the lean taken off, 0 when not lowered. */
+  weight: number;
+  /** Whether clearly-like ones could be left out: needs `leaveOutMinimum`. */
+  leavesOut: boolean;
+  leaveOutLean: number;
+  weights: { rejected: number; chosen: number; weight: number }[];
+  lowerMinimum: { rejected: number; chosen: number };
+  leaveOutMinimum: { rejected: number; chosen: number };
+  /** Left out of this round: marked before, a blocked site's, or clearly like the rejected. */
+  leftOut: number;
+  error?: string;
+}
+
+/** GET /ingest/feedback: what the person taught the ranking in one edition. */
+export interface FeedbackSummary {
+  edition: Edition;
+  rejected: {
+    url: string;
+    host: string;
+    title: string | null;
+    sourceName: string | null;
+    reasons: string[];
+    note: string | null;
+    roundId: string;
+    at: string;
+  }[];
+  blockedSites: { host: string; url: string | null; roundId: string; at: string }[];
+  chosen: number;
+  weights: RoundFeedback["weights"];
+  leaveOutLean: number;
+  lowerMinimum: RoundFeedback["lowerMinimum"];
+  leaveOutMinimum: RoundFeedback["leaveOutMinimum"];
+}
+
+/** One reason offered for a pick (backend src/services/selection/reasons.py). */
+export interface PickReason {
+  /** What is stored: "positive", "trending", "diversity"... */
+  id: string;
+  label: string;
+  hint: string;
+}
+
+/**
+ * A person's own choice of at most five, recorded to compare with the AI's
+ * (POST /ingest/rounds/{id}/person-selection; docs/decisions/selection.md,
+ * "The person against the AI"). Nothing is sent to analysis by it.
+ */
+export interface PersonSelection {
+  at: string;
+  urls: string[];
+  /** The most that could be recorded, and the AI's cap against it: 5. */
+  limit: number;
+  /** Worked out by the backend: no AI proposal was on the page when it was made. */
+  blind: boolean;
+  /** The candidates it was chosen from, in the ranking's order. */
+  shown: string[];
+  /** url -> why, for the picks the person wrote one for. */
+  notes: Record<string, string>;
+  /** url -> the reasons given for it (PickReason ids); absent on records before the reasons. */
+  reasons?: Record<string, string[]>;
+}
+
+/** The person's recorded choice against the AI's finished one; null until both exist. */
+export interface RoundComparison {
+  blind: boolean;
+  /** How many candidates both chose from. */
+  over: number;
+  person: number;
+  ai: number;
+  both: string[];
+  personOnly: string[];
+  aiOnly: string[];
+  /** Of the AI's picks, the share the person chose. */
+  precision: number | null;
+  /** Of the person's picks, the share the AI chose. */
+  recall: number | null;
+  jaccard: number | null;
+  /** Cohen's, over every candidate shown, chosen or not by each. */
+  kappa: number | null;
+  /** The AI's 0-10 for each of the person's picks. */
+  aiScores: Record<string, number | null>;
+  /** Reason id -> the person's picks given it, and how many of those the AI chose too. */
+  reasons?: Record<string, { picks: number; aiAlso: number }>;
+  /** What the person marked not for us, and which of it the AI chose. */
+  rejected?: string[];
+  aiPickedRejected?: string[];
+  aiLimit: number | null;
+  aiMinScore: number | null;
+  aiModel: string | null;
+  at: string;
+}
+
+/** What became of a compared pick's photo: kept (`file`) or why not (`error`). */
+export interface KeptPhoto {
+  image: string;
+  file?: string;
+  contentType?: string;
+  bytes?: number;
+  keptAt?: string;
+  error?: string;
 }
 
 /** POST /ingest/rounds, GET /ingest/rounds/{id} */
@@ -903,9 +1043,20 @@ export interface CandidateRound {
     /** A trending round's trends, and its links that were not articles. */
     trends?: number;
     notArticles?: number;
+    /** Left out by what the person taught the ranking. */
+    learned?: number;
   };
   aiSelection: AISelectionState | null;
   queued: QueuedSelection | null;
+  /** Absent on rounds before 2026-11-24, and until a person records one. */
+  personSelection?: PersonSelection | null;
+  comparison?: RoundComparison | null;
+  /** Candidate url -> its kept photo, for the compared picks that had one. */
+  photos?: Record<string, KeptPhoto>;
+  /** Candidate url -> marked not for us (2026-11-24). */
+  rejected?: Record<string, Rejection>;
+  /** How what the person taught the ranking applied to this round; absent before 2026-11-24. */
+  feedback?: RoundFeedback;
 }
 
 /** GET /ingest/rounds */
@@ -922,6 +1073,12 @@ export interface CandidateRoundSummary {
   aiPicks: number;
   queued: number;
   selectedBy: QueuedSelection["selectedBy"] | null;
+  /** The person's recorded choice (0 when none), whether blind, and how many the AI also chose. */
+  personPicks?: number;
+  personBlind?: boolean | null;
+  bothPicked?: number | null;
+  /** How many of its candidates the person marked not for us. */
+  rejected?: number;
 }
 
 export interface IngestSourceRun {

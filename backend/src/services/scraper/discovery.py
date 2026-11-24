@@ -65,9 +65,10 @@ class DiscoveryResult:
     # strategy knows (the RSS feed); the others have none.
     published: dict[str, datetime] = field(default_factory=dict)
 
-    # URL -> {"title", "summary"} from the feed item, for the URLs whose
-    # strategy reads a feed. What the candidate list shows and the AI
-    # selection reads before any article page is fetched.
+    # URL -> {"title", "summary", "image"} from the feed item, for the URLs
+    # whose strategy reads a feed. What the candidate list shows and the AI
+    # selection reads before any article page is fetched; the image is a
+    # link only (rss.entry_image).
     details: dict[str, dict] = field(default_factory=dict)
 
     # Items the strategy found but dropped as older than max_age.
@@ -164,9 +165,9 @@ class DiscoveryService:
                 result.error = None
                 result.published = {item.url: item.published for item in items if item.published is not None}
                 result.details = {
-                    item.url: {"title": item.title, "summary": item.summary}
+                    item.url: {"title": item.title, "summary": item.summary, "image": item.image}
                     for item in items
-                    if item.title or item.summary
+                    if item.title or item.summary or item.image
                 }
                 result.stale = stale
                 return result

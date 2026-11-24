@@ -113,12 +113,48 @@ are split by mode:
   then runs the AI on that round and records its picks marked `blind`.
   This is the number to report as AI-editor agreement.
 
-The protocol for a blind round: on `/discover`, pick topics, find
-articles, tick your own choice without pressing *Let the AI choose*,
-send it to analysis, copy the round id from the page's URL (`?round=`),
-and run `blind-ai`. Every round also keeps the AI's score and reason for
-each candidate, so a threshold other than 6/10 can be studied afterwards
-without asking the model again.
+The protocol for a blind round since 2026-11-24, all on `/discover`: pick
+topics, find articles, tick at most five you would publish (why, with
+the reason buttons under each - several at once - and a note if you
+like), press **Record my picks (blind)** before anything else,
+then **Now let the AI choose its 5**. Nothing has to be sent to analysis;
+the round keeps both choices, the comparison and both sides' photos
+(`docs/decisions/selection.md`, "The person against the AI"). Then
+
+```bash
+uv run python -m src.evaluation.experiments selection --backend http://127.0.0.1:8000
+```
+
+reads the rounds from the running backend (its lake is a Docker volume)
+and writes every compared round whole into the result, so it can be
+committed. A recorded choice is the editor's side wherever one exists;
+older rounds still count by what was sent. Kappa is reported beside
+precision, recall and Jaccard, and, per reason the editor gave, how many
+of those picks the AI chose too.
+
+The protocol before it, still read: tick your own choice without pressing
+*Let the AI choose*, send it to analysis, copy the round id from the
+page's URL (`?round=`), and run `blind-ai`. Every round also keeps the
+AI's score and reason for each candidate, so a threshold other than 6/10
+can be studied afterwards without asking the model again.
+
+## feedback: does what a person rejects teach the ranking?
+
+```bash
+uv run python -m src.evaluation.experiments feedback
+```
+
+Needs `inference/`. The hand-labelled candidates of 6, 9 and 13 Oct
+(`ranking/`, `alignment/`, `emphasis/reserve-labels.json`) the screen keeps:
+one day's "not worth offering" play what a person marked not for us, its
+"clearly positive" what they chose, and the rule
+(`src/services/selection/feedback.py`) runs on the other days - with all
+of a day, and with 3 to 40 drawn at random 200 times (seeded). Reported:
+what nearness to one marked story would leave out, the AUC of the story
+part with a share of the lean taken off, and what leaving out over a lean
+would cost. First run 2026-11-24 (`feedback/20261124T121248Z/`); the
+reading is in `docs/decisions/selection.md`, "What you reject teaches the
+ranking".
 
 ## admission
 

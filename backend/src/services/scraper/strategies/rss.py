@@ -8,7 +8,7 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import feedparser
 from logging import getLogger
@@ -236,6 +236,10 @@ class DiscoveredLink:
     # The feed's own summary, as plain text and cut to SUMMARY_CHARS.
     summary: str | None = None
 
+    # The picture the feed gives the item, as a link (entry_image): what
+    # /discover shows beside the title. Never fetched here.
+    image: str | None = None
+
 
 class RSSDiscoveryStrategy(DiscoveryStrategy):
     """Discover article URLs from an RSS feed."""
@@ -384,6 +388,7 @@ class RSSDiscoveryStrategy(DiscoveryStrategy):
                     published=_entry_time(entry),
                     title=_plain(getattr(entry, "title", None)),
                     summary=_plain(getattr(entry, "summary", None), SUMMARY_CHARS),
+                    image=entry_image(entry, link),
                 )
 
         return list(items.values())
@@ -553,6 +558,97 @@ def _entry_time(entry) -> datetime | None:
 
 _TAGS = re.compile(r"<[^>]+>")
 _SPACES = re.compile(r"\s+")
+
+# The first <img> of a summary or a content block, and a size attribute
+# of 1 (a tracking pixel, which feedburner-era feeds still append).
+_IMG = re.compile(r"<img\b[^>]*>", re.IGNORECASE)
+_SRC = re.compile(r"""\bsrc\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
+_PIXEL = re.compile(r"""\b(?:width|height)\s*=\s*["']?1["'\s/>]""", re.IGNORECASE)
+
+# What a media:content with neither a medium nor a type is taken for an
+# image by: its link's ending.
+IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif")
+
+# A link longer than this is not kept: it is a data URI or worse.
+MAX_IMAGE_LINK = 2000
+
+
+def entry_image(entry, link: str | None = None) -> str | None:
+    """
+    The picture a feed item gives its article, as an absolute http(s)
+    link, or None. Added 2026-11-24, so a person choosing on /discover
+    sees the story's photo and the round keeps where it was
+    (docs/decisions/selection.md, "The person against the AI").
+
+    Read where feeds put it, in this order: media:content marked as an
+    image (or, with no medium or type, ending like one), media:thumbnail,
+    an image enclosure, an image of its own (`image`, a string from a
+    sitemap's <image:loc> or a dict from feedparser), else the first <img>
+    of its summary or content that is not a 1-pixel tracker. A relative
+    link is read against the article's. Only the link: nothing is fetched.
+    """
+
+    found: list[str] = []
+
+    for media in _items(entry, "media_content"):
+        kind = str(media.get("medium") or media.get("type") or "").lower()
+        url = media.get("url")
+        if kind.startswith("image") or (not kind and _looks_like_image(url)):
+            found.append(url)
+
+    found += [media.get("url") for media in _items(entry, "media_thumbnail")]
+
+    enclosures = [
+        *_items(entry, "enclosures"),
+        *(item for item in _items(entry, "links") if item.get("rel") == "enclosure"),
+    ]
+
+    for enclosure in enclosures:
+        if str(enclosure.get("type") or "").lower().startswith("image/"):
+            found.append(enclosure.get("href") or enclosure.get("url"))
+
+    own = getattr(entry, "image", None)
+    found.append(own.get("href") or own.get("url") if isinstance(own, dict) else own)
+
+    blocks = [getattr(entry, "summary", None), *(item.get("value") for item in _items(entry, "content"))]
+
+    for block in blocks:
+        for tag in _IMG.findall(str(block or "")):
+            source = _SRC.search(tag)
+            if source and not _PIXEL.search(tag):
+                found.append(html.unescape(source.group(1)))
+
+    for url in found:
+        image = _web_link(url, link)
+        if image:
+            return image
+
+    return None
+
+
+def _items(entry, name: str) -> list[dict]:
+    """A list-of-dicts feed field, [] when absent or of another shape."""
+
+    value = getattr(entry, name, None)
+
+    return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
+
+
+def _looks_like_image(url) -> bool:
+
+    return isinstance(url, str) and urlsplit(url).path.lower().endswith(IMAGE_SUFFIXES)
+
+
+def _web_link(url, base: str | None) -> str | None:
+    """`url` made absolute against `base`, when that is an http(s) link of sane length."""
+
+    if not isinstance(url, str) or not url.strip() or len(url) > MAX_IMAGE_LINK:
+        return None
+
+    absolute = urljoin(base or "", url.strip())
+    parts = urlsplit(absolute)
+
+    return absolute if parts.scheme in ("http", "https") and parts.netloc else None
 
 
 def _plain(value, limit: int | None = None) -> str | None:

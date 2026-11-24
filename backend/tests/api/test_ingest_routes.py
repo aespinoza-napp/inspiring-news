@@ -127,9 +127,12 @@ def test_the_groups_and_their_source_counts_are_listed(monkeypatch):
 
 class FakeSelection:
 
-    def __init__(self):
+    def __init__(self, rounds=None):
+        from src.services.selection.rounds import SelectionRounds
         self.calls = []
         self.emphases = []
+        self.ai_running = False
+        self.rounds = rounds or SelectionRounds()
 
     def create_round(self, groups, source_ids, per_source, listed=20, topic_emphasis=None, **trending):
         self.calls.append(("create", groups, source_ids, per_source, listed, *([trending] if trending else [])))
@@ -156,10 +159,35 @@ class FakeSelection:
         self.calls.append(("ai", round_id, limit, min_score, scorer))
         return {"status": "running"}
 
-    def queue(self, round_id, urls, start_job):
-        self.calls.append(("queue", round_id, urls))
+    def queue(self, round_id, urls, start_job, notes=None, reasons=None):
+        from src.services.selection.selection_service import SelectionBusy
+        self.calls.append(("queue", round_id, urls) + ((notes, reasons) if notes or reasons else ()))
+        if self.ai_running:
+            raise SelectionBusy(round_id)
         job_id, _ = start_job(urls[0])
         return {"jobs": [{"url": urls[0], "jobId": job_id}]}
+
+    def reject(self, round_id, url, reasons=None, note=None, site=False, undo=False):
+        from src.services.selection.selection_service import InvalidSelection
+        self.calls.append(("reject", round_id, url, reasons, note, site, undo))
+        self.get(round_id)
+        if reasons and "boring" in reasons:
+            raise InvalidSelection("Not a reason offered in this edition: boring")
+        return {"rejected": {} if undo else {url: {"reasons": reasons or []}}, "counts": {"rejected": 1, "chosen": 0, "blockedSites": int(site)}}
+
+    def forget(self, edition, url=None, host=None):
+        self.calls.append(("forget", edition, url, host))
+        return url == "https://news.example/1" or host == "news.example"
+
+    def record_person_selection(self, round_id, urls, notes=None, reasons=None):
+        from src.services.selection.selection_service import COMPARED, InvalidSelection, SelectionBusy
+        self.calls.append(("person", round_id, urls, notes, reasons))
+        self.get(round_id)
+        if self.ai_running:
+            raise SelectionBusy(round_id)
+        if len(urls) > COMPARED:
+            raise InvalidSelection(f"At most {COMPARED} articles to compare with the AI.")
+        return {"urls": urls, "blind": True}
 
 
 def use_selection(monkeypatch):
@@ -255,6 +283,133 @@ def test_a_queued_selection_becomes_ingestion_jobs(monkeypatch):
         "/ingest/rounds/0123456789abcdef/queue",
         json={"urls": [f"https://news.example/{i}" for i in range(21)]},
     ).status_code == 422
+
+
+def test_a_round_is_not_sent_while_the_ai_reads_it(monkeypatch):
+
+    selection, started = use_selection(monkeypatch)
+    selection.ai_running = True
+
+    response = client.post("/ingest/rounds/0123456789abcdef/queue", json={"urls": ["https://news.example/1"]})
+
+    assert response.status_code == 409
+    assert started == []
+
+
+def test_a_persons_own_choice_is_recorded_to_compare_with_the_ai(monkeypatch):
+
+    selection, started = use_selection(monkeypatch)
+
+    response = client.post(
+        "/ingest/rounds/0123456789abcdef/person-selection",
+        json={
+            "urls": ["https://news.example/1"],
+            "notes": {"https://news.example/1": "a cure"},
+            "reasons": {"https://news.example/1": ["positive", "trending"]},
+        },
+    )
+
+    assert response.status_code == 200 and response.json()["blind"] is True
+    assert selection.calls[-1] == (
+        "person", "0123456789abcdef", ["https://news.example/1"],
+        {"https://news.example/1": "a cure"}, {"https://news.example/1": ["positive", "trending"]},
+    )
+    assert started == []
+
+    too_many = [f"https://news.example/{i}" for i in range(6)]
+    assert client.post("/ingest/rounds/0123456789abcdef/person-selection", json={"urls": too_many}).status_code == 422
+    assert client.post("/ingest/rounds/0123456789abcdef/person-selection", json={"urls": []}).status_code == 422
+    assert client.post("/ingest/rounds/fedcba9876543210/person-selection", json={"urls": ["x"]}).status_code == 404
+
+    selection.ai_running = True
+    assert client.post("/ingest/rounds/0123456789abcdef/person-selection", json={"urls": ["x"]}).status_code == 409
+
+
+def test_why_each_was_sent_goes_with_the_queue(monkeypatch):
+
+    selection, _ = use_selection(monkeypatch)
+
+    client.post("/ingest/rounds/0123456789abcdef/queue", json={
+        "urls": ["https://news.example/1"],
+        "reasons": {"https://news.example/1": ["diversity"]},
+    })
+
+    assert selection.calls[-1] == ("queue", "0123456789abcdef", ["https://news.example/1"], None, {"https://news.example/1": ["diversity"]})
+
+
+def test_a_candidate_marked_not_for_us_goes_to_the_service_with_why(monkeypatch):
+
+    selection, started = use_selection(monkeypatch)
+
+    response = client.post("/ingest/rounds/0123456789abcdef/reject", json={
+        "url": "https://news.example/1", "reasons": ["no_impact", "politics"], "note": "a campaign", "site": True,
+    })
+
+    assert response.status_code == 200 and response.json()["counts"]["blockedSites"] == 1
+    assert selection.calls[-1] == ("reject", "0123456789abcdef", "https://news.example/1", ["no_impact", "politics"], "a campaign", True, False)
+    assert started == []
+
+    client.post("/ingest/rounds/0123456789abcdef/reject", json={"url": "https://news.example/1", "undo": True})
+    assert selection.calls[-1][-1] is True
+
+    assert client.post("/ingest/rounds/0123456789abcdef/reject", json={"url": "x", "reasons": ["boring"]}).status_code == 422
+    assert client.post("/ingest/rounds/0123456789abcdef/reject", json={}).status_code == 422
+    assert client.post("/ingest/rounds/fedcba9876543210/reject", json={"url": "x"}).status_code == 404
+
+
+def test_what_the_ranking_learned_is_listed_and_can_be_taken_back(monkeypatch, tmp_path):
+
+    from src.services.selection.feedback import SelectionFeedback
+
+    selection, _ = use_selection(monkeypatch)
+    selection.feedback = SelectionFeedback(lambda: tmp_path)
+
+    listed = client.get("/ingest/feedback?edition=devastating").json()
+    assert listed["edition"] == "devastating" and listed["rejected"] == [] and listed["weights"][0]["weight"] == 0.5
+
+    assert client.post("/ingest/feedback/forget", json={"url": "https://news.example/1"}).status_code == 200
+    assert selection.calls[-1] == ("forget", "positive", "https://news.example/1", None)
+    assert client.post("/ingest/feedback/forget", json={"host": "elsewhere.example"}).status_code == 404
+    assert client.post("/ingest/feedback/forget", json={}).status_code == 422
+
+
+def test_the_catalogue_offers_the_reasons_of_its_edition(monkeypatch):
+
+    use_ingestion(monkeypatch)
+
+    positive = [reason["id"] for reason in client.get("/ingest/sources").json()["pickReasons"]]
+    devastating = [reason["id"] for reason in client.get("/ingest/sources?edition=devastating").json()["pickReasons"]]
+
+    assert positive[:4] == ["positive", "solution", "topic", "trending"] and "diversity" in positive
+    assert devastating[:2] == ["harm", "accountability"] and "positive" not in devastating
+
+    rejecting = [reason["id"] for reason in client.get("/ingest/sources").json()["rejectReasons"]]
+    assert rejecting[0] == "no_impact" and "politics" in rejecting
+    assert client.get("/ingest/sources?edition=devastating").json()["rejectReasons"][0]["id"] == "no_harm"
+    assert {"label", "hint"} <= set(client.get("/ingest/sources").json()["pickReasons"][0])
+
+
+def test_a_kept_photo_is_served_with_the_type_its_bytes_proved(monkeypatch, tmp_path):
+
+    from src.services.selection.rounds import SelectionRounds
+
+    selection, _ = use_selection(monkeypatch)
+    selection.rounds = SelectionRounds(tmp_path)
+
+    folder = tmp_path / "photos" / "0123456789abcdef"
+    folder.mkdir(parents=True)
+    (folder / "00112233445566ff.jpg").write_bytes(b"\xff\xd8\xff\xe0 a photo")
+
+    response = client.get("/ingest/rounds/0123456789abcdef/photos/00112233445566ff.jpg")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/jpeg"
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.content.startswith(b"\xff\xd8\xff")
+
+    assert client.get("/ingest/rounds/0123456789abcdef/photos/ffffffffffffffff.jpg").status_code == 404
+    assert client.get("/ingest/rounds/0123456789abcdef/photos/00112233445566ff.svg").status_code == 422
+    assert client.get("/ingest/rounds/0123456789abcdef/photos/..%2Fsecret.jpg").status_code in (404, 422)
 
 
 def test_an_unknown_or_malformed_round_id(monkeypatch):

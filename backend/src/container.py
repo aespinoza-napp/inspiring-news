@@ -314,6 +314,7 @@ def get_selection_service():
     if _selection_service is None:
         with _lock:
             if _selection_service is None:
+                from src.services.selection.photos import PhotoKeeper
                 from src.services.selection.selection_service import SelectionService
                 from src.services.trends.ledger import trend_ledger
                 from src.services.trends.trending import TrendingDiscovery
@@ -322,6 +323,9 @@ def get_selection_service():
                     ingestion=get_ingestion_service(),
                     trending=TrendingDiscovery(get_ingestion_service(), get_trend_service()),
                     ledger=trend_ledger,
+                    # The photos of a compared round's picks, copied beside
+                    # its file (src/services/selection/photos.py).
+                    photos=PhotoKeeper(),
                 )
 
     return _selection_service

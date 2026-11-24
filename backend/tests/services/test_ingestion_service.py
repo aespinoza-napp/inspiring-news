@@ -1149,3 +1149,33 @@ def test_a_reposters_candidate_is_marked_and_ranked_after_an_equal_original():
     assert second["source"] == "20minutos" and second["repost"] is True
     assert second["rank"]["repostFactor"] == REPOST_FACTOR
     assert second["rank"]["score"] < first["rank"]["score"]
+
+
+def test_what_the_person_rejected_lowers_a_like_story_in_the_real_order():
+    """
+    selection/feedback.py, 2026-11-24: given the person's rejected and chosen
+    stories, a candidate like the rejected ones reads less positive and goes
+    down; the call after, with none, orders as before.
+    """
+
+    import numpy as np
+
+    from src.services.selection.feedback import Feedback
+
+    # The roadmap reads more positive (0.53 against 0.42) and leads at
+    # emphasis 0. Like what the person rejected, it falls behind.
+    roadmap, ebola = np.array([1.0, 0.0]), np.array([0.0, 1.0])
+    screen = FakeScreen(**HEALTH_SCREEN, vectors={"hypertension-roadmap": roadmap, "ebola-contacts": ebola})
+    ingestion = health_service(screen)
+    taught = Feedback(rejected=roadmap, chosen=ebola, rejected_count=3, chosen_count=3)
+
+    before = ingestion.discover_candidates(["health"], per_source=2, topic_emphasis=0.0)
+    lowered = ingestion.discover_candidates(["health"], per_source=2, topic_emphasis=0.0, feedback=taught)
+    again = ingestion.discover_candidates(["health"], per_source=2, topic_emphasis=0.0)
+
+    assert slugs(before) == ["hypertension-roadmap", "ebola-contacts"]
+    assert slugs(lowered) == ["ebola-contacts", "hypertension-roadmap"]
+    assert {c["url"].rsplit("/", 1)[1]: c["rank"]["lean"] for c in lowered["candidates"]} == {
+        "hypertension-roadmap": 1.0, "ebola-contacts": -1.0,
+    }
+    assert slugs(again) == slugs(before) and "lean" not in again["candidates"][0]["rank"]

@@ -5,7 +5,7 @@ measures verdicts; these measure what decides which articles get one.
 
     cd backend
     uv run python -m src.evaluation.experiments discovery [--group environment --group health,science] [--per-source 3]
-    uv run python -m src.evaluation.experiments selection
+    uv run python -m src.evaluation.experiments selection [--backend http://127.0.0.1:8000]
     uv run python -m src.evaluation.experiments blind-ai --round <round id>
     uv run python -m src.evaluation.experiments admission [--backend http://127.0.0.1:8000] \
         [--topic-min 0.30,0.35,0.40,0.45] [--impact-min 0.10,0.20,0.25,0.30]
@@ -13,6 +13,7 @@ measures verdicts; these measure what decides which articles get one.
     uv run python -m src.evaluation.experiments emphasis [--emphasis 0,0.3,0.6,1]
     uv run python -m src.evaluation.experiments sources [--backend http://127.0.0.1:8000] [--last]
     uv run python -m src.evaluation.experiments topics24
+    uv run python -m src.evaluation.experiments feedback   (src/evaluation/feedback_experiment.py)
     uv run python -m src.evaluation.experiments trends run|report   (src/evaluation/trend_experiments.py)
 
 Each writes `result.json` and `report.md` to
@@ -25,9 +26,15 @@ What each costs, and what it needs:
   real network, no model, nothing stored. RQ: how much does narrowing to
   topics save, and what does it still find?
 - **selection** only reads the candidate rounds recorded by /discover
-  (`data/lake/stats/selection/`): how far the editor's final picks agree
-  with the AI's proposal, and how well the AI's score separates what was
-  picked from what was not.
+  (`data/lake/stats/selection/`, or with `--backend` the running
+  backend's, whose lake is the Docker volume): how far the editor's picks
+  agree with the AI's proposal, and how well the AI's score separates what
+  was picked from what was not. The editor's picks are the choice recorded
+  for the comparison (at most five, since 2026-11-24), else what was sent
+  to analysis. Every compared round is written out whole - each shown
+  candidate with its title, link and photo link, both sides' picks, the
+  person's notes and the AI's scores and reasons - so the result.json
+  keeps them in git when the lake does not.
 - **blind-ai** runs the AI selection on a round the editor has already
   sent to analysis, so the agreement is measured without the editor
   having seen the AI's picks first (an anchored editor agrees more).
@@ -467,13 +474,51 @@ def load_rounds(folder: Path) -> list[dict]:
     return rounds
 
 
+def load_rounds_from(call: Callable[..., dict], limit: int = 200) -> list[dict]:
+    """Every round a running backend holds, in full: its lake may be a Docker volume."""
+
+    summaries = call(f"/ingest/rounds?limit={limit}")["rounds"]
+
+    return [call(f"/ingest/rounds/{summary['id']}") for summary in summaries]
+
+
 def _blind(round_: dict) -> bool:
-    """The AI scored after the editor had chosen: its proposal cannot have anchored them."""
+    """
+    The AI's proposal cannot have anchored the editor: their recorded
+    choice says it was made with none on the page (2026-11-24), or, for a
+    round compared by what was sent, the AI scored after it was sent.
+    """
+
+    person = round_.get("personSelection")
+
+    if person:
+        return bool(person.get("blind"))
 
     ai = round_.get("aiSelection") or {}
     queued = round_.get("queued") or {}
 
     return bool(ai.get("blind")) or bool(ai.get("startedAt") and queued.get("at") and ai["startedAt"] >= queued["at"])
+
+
+def _editor_picks(round_: dict) -> tuple[list[str], list[str], str] | None:
+    """
+    (the editor's picks, the list they chose from, where the picks come
+    from): the choice recorded for the comparison when there is one, else
+    what was sent to analysis, over the round's shown candidates.
+    """
+
+    person = round_.get("personSelection")
+
+    if person and person.get("urls"):
+        shown = person.get("shown") or [candidate["url"] for candidate in round_.get("candidates") or []]
+        return list(person["urls"]), list(shown), "recorded"
+
+    queued = round_.get("queued") or {}
+
+    if queued.get("urls"):
+        return list(queued["urls"]), [candidate["url"] for candidate in round_.get("candidates") or []], "sent"
+
+    return None
 
 
 def selection_experiment(rounds: list[dict]) -> dict:
@@ -485,18 +530,24 @@ def selection_experiment(rounds: list[dict]) -> dict:
     Blind and assisted rounds are kept apart.
     """
 
+    from src.services.selection.selection_service import kappa
+
     per_round = []
+    records = []
     pooled = defaultdict(lambda: {"picked": [], "skipped": []})
+    # mode -> reason -> the editor's picks given it, and how many the AI chose too.
+    by_reason = defaultdict(lambda: defaultdict(lambda: {"picks": 0, "aiAlso": 0}))
 
     for round_ in rounds:
 
         ai = round_.get("aiSelection") or {}
-        queued = round_.get("queued") or {}
+        editor = _editor_picks(round_)
 
-        if ai.get("status") != "done" or not queued.get("urls"):
+        if ai.get("status") != "done" or editor is None:
             continue
 
-        final = set(queued["urls"])
+        picks, shown, picked_by = editor
+        final = set(picks)
         proposed = {pick["url"] for pick in ai.get("picks") or []}
         kept = final & proposed
         mode = "blind" if _blind(round_) else "assisted"
@@ -508,6 +559,7 @@ def selection_experiment(rounds: list[dict]) -> dict:
         per_round.append({
             "id": round_["id"],
             "mode": mode,
+            "editor": picked_by,
             "groups": round_.get("groups"),
             "candidates": len(round_.get("candidates") or []),
             "proposed": len(proposed),
@@ -516,7 +568,16 @@ def selection_experiment(rounds: list[dict]) -> dict:
             "precision": rounded(len(kept) / len(proposed)) if proposed else None,
             "recall": rounded(len(kept) / len(final)) if final else None,
             "jaccard": rounded(len(kept) / len(final | proposed)) if final | proposed else None,
+            "kappa": kappa(list(dict.fromkeys(shown + sorted(proposed - set(shown)))), final, proposed),
         })
+
+        if picked_by == "recorded":
+            records.append(_compared_round(round_, mode))
+
+            for url, codes in ((round_.get("personSelection") or {}).get("reasons") or {}).items():
+                for code in codes:
+                    by_reason[mode][code]["picks"] += 1
+                    by_reason[mode][code]["aiAlso"] += url in proposed
 
     summary = {}
 
@@ -529,7 +590,14 @@ def selection_experiment(rounds: list[dict]) -> dict:
             "precision": interval([row["precision"] for row in rows if row["precision"] is not None]),
             "recall": interval([row["recall"] for row in rows if row["recall"] is not None]),
             "jaccard": interval([row["jaccard"] for row in rows if row["jaccard"] is not None]),
+            "kappa": interval([row["kappa"] for row in rows if row["kappa"] is not None]),
             "aucAiScore": rounded(auc(pooled[mode]["picked"], pooled[mode]["skipped"])),
+            # For each reason the editor gave (2026-11-24, reasons.py): their
+            # picks given it, and the share the AI chose too.
+            "byReason": {
+                code: {**row, "aiShare": rounded(row["aiAlso"] / row["picks"])}
+                for code, row in sorted(by_reason[mode].items(), key=lambda item: -item[1]["picks"])
+            },
             "scoredPicked": len(pooled[mode]["picked"]),
             "scoredSkipped": len(pooled[mode]["skipped"]),
         }
@@ -539,6 +607,64 @@ def selection_experiment(rounds: list[dict]) -> dict:
         "roundsUsable": len(per_round),
         "summary": summary,
         "rounds": per_round,
+        # The compared rounds whole: what the lake holds, kept in git.
+        "compared": records,
+    }
+
+
+def _compared_round(round_: dict, mode: str) -> dict:
+    """
+    One compared round as a record that stands on its own: every candidate
+    the person chose from, in the ranking's order, with what each side
+    made of it.
+    """
+
+    person = round_.get("personSelection") or {}
+    ai = round_.get("aiSelection") or {}
+    photos = round_.get("photos") or {}
+    mine = set(person.get("urls") or [])
+    theirs = {pick["url"] for pick in ai.get("picks") or []}
+    scored = {item["url"]: item for item in ai.get("scored") or []}
+    notes = person.get("notes") or {}
+    by_url = {candidate["url"]: candidate for candidate in round_.get("candidates") or []}
+    shown = person.get("shown") or list(by_url)
+
+    return {
+        "id": round_["id"],
+        "startedAt": round_.get("startedAt"),
+        "edition": round_.get("edition") or "positive",
+        "lens": round_.get("lens"),
+        "groups": round_.get("groups"),
+        "mode": mode,
+        "personAt": person.get("at"),
+        "aiAt": ai.get("startedAt"),
+        "aiModel": ai.get("model"),
+        "aiScorer": ai.get("scorer") or "llm",
+        "aiLimit": ai.get("limit"),
+        "aiMinScore": ai.get("minScore"),
+        "comparison": round_.get("comparison"),
+        "candidates": [
+            {
+                "place": place,
+                "url": url,
+                "title": (by_url.get(url) or {}).get("title"),
+                "sourceName": (by_url.get(url) or {}).get("sourceName"),
+                "language": (by_url.get(url) or {}).get("language"),
+                "image": (by_url.get(url) or {}).get("image"),
+                "photo": (photos.get(url) or {}).get("file"),
+                "rankScore": ((by_url.get(url) or {}).get("rank") or {}).get("score"),
+                "person": url in mine,
+                "personNote": notes.get(url),
+                "personReasons": (person.get("reasons") or {}).get(url, []),
+                # Marked not for us (selection/feedback.py), and why.
+                "personRejected": url in (round_.get("rejected") or {}),
+                "personRejectReasons": ((round_.get("rejected") or {}).get(url) or {}).get("reasons", []),
+                "ai": url in theirs,
+                "aiScore": (scored.get(url) or {}).get("score"),
+                "aiReason": (scored.get(url) or {}).get("reason"),
+            }
+            for place, url in enumerate(shown, start=1)
+        ],
     }
 
 
@@ -550,27 +676,46 @@ def selection_report(result: dict) -> str:
         return f"{value['mean']:.2f} [{value['low']:.2f}, {value['high']:.2f}]"
 
     summary = [
-        (mode, s["rounds"], ci(s["precision"]), ci(s["recall"]), ci(s["jaccard"]), s["aucAiScore"], f"{s['scoredPicked']} / {s['scoredSkipped']}")
+        (mode, s["rounds"], ci(s["precision"]), ci(s["recall"]), ci(s["jaccard"]), ci(s.get("kappa") or {"mean": None}), s["aucAiScore"], f"{s['scoredPicked']} / {s['scoredSkipped']}")
         for mode, s in result["summary"].items()
     ]
 
+    reasons = [
+        (mode, code, row["picks"], row["aiAlso"], row["aiShare"])
+        for mode, s in result["summary"].items()
+        for code, row in (s.get("byReason") or {}).items()
+    ]
+
     rounds = [
-        (row["id"], row["mode"], ", ".join(row["groups"] or []), row["candidates"], row["proposed"], row["final"], row["kept"], row["precision"], row["recall"])
+        (row["id"], row["mode"], row.get("editor", "sent"), ", ".join(row["groups"] or []), row["candidates"], row["proposed"], row["final"], row["kept"], row["precision"], row["recall"], row.get("kappa"))
         for row in result["rounds"]
     ]
 
     return "\n".join([
         "# Selection: the editor against the AI",
         "",
-        f"{result['roundsUsable']} of {result['roundsRead']} rounds had both an AI selection and a selection sent to analysis.",
-        "**Blind**: the AI scored after the editor chose (`blind-ai`); **assisted**: the editor saw the AI's picks first,",
-        "which inflates agreement. Means over rounds with 95% bootstrap intervals; AUC pooled over every scored candidate.",
+        f"{result['roundsUsable']} of {result['roundsRead']} rounds had both an AI selection and the editor's own picks.",
+        "The editor's picks are the choice recorded on /discover for the comparison (`recorded`, at most five, as the AI's),",
+        "else what was sent to analysis (`sent`). **Blind**: no AI proposal was on the page when the editor chose",
+        "(or the AI scored after, `blind-ai`); **assisted**: the editor saw the AI's picks first, which inflates agreement.",
+        "Precision: of the AI's picks, how many the editor chose; recall: of the editor's, how many the AI chose. Kappa is",
+        "Cohen's over every shown candidate, chosen or not by each. Means over rounds with 95% bootstrap intervals; AUC",
+        "pooled over every scored candidate.",
         "",
-        table(["Mode", "Rounds", "Precision", "Recall", "Jaccard", "AUC of AI score", "scored picked / skipped"], summary),
+        table(["Mode", "Rounds", "Precision", "Recall", "Jaccard", "Kappa", "AUC of AI score", "scored picked / skipped"], summary),
+        "",
+        "## Why the editor chose, and whether the AI chose the same",
+        "",
+        "Each reason the editor gave a recorded pick (several per pick), with how many of those picks the AI chose too.",
+        "",
+        table(["Mode", "Reason", "Editor's picks", "AI chose too", "Share"], reasons) if reasons else "No recorded pick gave a reason yet.",
         "",
         "## Per round",
         "",
-        table(["Round", "Mode", "Topics", "Candidates", "AI proposed", "Sent", "Kept", "Precision", "Recall"], rounds),
+        table(["Round", "Mode", "Editor's picks", "Topics", "Candidates", "AI proposed", "Editor", "Both", "Precision", "Recall", "Kappa"], rounds),
+        "",
+        f"{len(result.get('compared') or [])} compared rounds are in result.json whole (`compared`): every candidate shown,",
+        "both sides' picks, the editor's notes, the AI's scores and reasons, and each photo's link.",
         "",
     ])
 
@@ -580,6 +725,7 @@ def blind_ai(round_id: str, folder: Path, min_score: float | None = None) -> dic
 
     from src.services.selection.ai_selector import DEFAULT_MIN_SCORE, AISelector
     from src.services.selection.rounds import SelectionRounds
+    from src.services.selection.selection_service import COMPARED, MAX_SELECTED, compare
 
     rounds = SelectionRounds(folder)
     round_ = rounds.get(round_id)
@@ -587,21 +733,28 @@ def blind_ai(round_id: str, folder: Path, min_score: float | None = None) -> dic
     if round_ is None:
         raise SystemExit(f"No round {round_id} in {folder}")
 
-    if not round_.get("queued"):
-        raise SystemExit("That round has not been sent to analysis: choose first, then run the AI blind.")
+    if not round_.get("queued") and not round_.get("personSelection"):
+        raise SystemExit("That round has no choice of yours yet: record it on /discover (or send it), then run the AI blind.")
 
     started = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    selection = AISelector().select(round_["candidates"], round_["groups"], 20, min_score or DEFAULT_MIN_SCORE)
+
+    # Against a recorded choice (at most five), five; against what was sent, twenty.
+    limit = COMPARED if round_.get("personSelection") else MAX_SELECTED
+    selection = AISelector().select(round_["candidates"], round_["groups"], limit, min_score or DEFAULT_MIN_SCORE)
 
     round_["aiSelection"] = {
         "status": "done",
         "blind": True,
         "startedAt": started,
         "finishedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "limit": 20,
+        "limit": limit,
         "minScore": min_score or DEFAULT_MIN_SCORE,
         **selection.to_dict(),
     }
+
+    if round_.get("personSelection"):
+        round_["comparison"] = compare(round_)
+
     rounds.save(round_)
 
     return round_["aiSelection"]
@@ -1464,9 +1617,13 @@ def parser() -> argparse.ArgumentParser:
     discovery.add_argument("--per-source", type=int, default=3)
     discovery.add_argument("--no-baseline", action="store_true", help="skip the every-source, every-topic baseline")
 
-    commands.add_parser("selection", help="the editor's picks against the AI's, from the recorded rounds")
+    selection = commands.add_parser("selection", help="the editor's picks against the AI's, from the recorded rounds")
+    selection.add_argument(
+        "--backend",
+        help="read the rounds from this running backend (its lake may be a Docker volume) instead of data/lake",
+    )
 
-    blind = commands.add_parser("blind-ai", help="run the AI selection on a round already sent to analysis")
+    blind = commands.add_parser("blind-ai", help="run the AI selection on a round whose choice was already recorded or sent")
     blind.add_argument("--round", required=True)
     blind.add_argument("--min-score", type=float)
 
@@ -1494,6 +1651,8 @@ def parser() -> argparse.ArgumentParser:
 
     # The trending lens's (src/evaluation/trend_experiments.py).
     commands.add_parser("topics24", help="the labelled candidates re-screened with 23 topics and with internet_culture")
+
+    commands.add_parser("feedback", help="whether what a person rejects teaches the ranking, on the labelled candidates (needs inference/)")
 
     trends = commands.add_parser("trends", help="a day's trending and topic rounds to label, or the labelled days' report")
     trends.add_argument("action", choices=("run", "report"))
@@ -1524,7 +1683,8 @@ def main(argv: list[str] | None = None) -> int:
         name, report = "discovery", discovery_report(result)
 
     elif args.command == "selection":
-        result = selection_experiment(load_rounds(rounds_folder))
+        rounds = load_rounds_from(http_backend(args.backend)) if args.backend else load_rounds(rounds_folder)
+        result = selection_experiment(rounds)
         name, report = "selection", selection_report(result)
 
     elif args.command == "blind-ai":
@@ -1557,6 +1717,12 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit("The backend has no probe report yet: run without --last.")
         result = sources_experiment(probe, call("/scraper/freshness"))
         name, report = "sources", sources_report(result, load_history(EXPERIMENTS / "sources"))
+
+    elif args.command == "feedback":
+        from src.evaluation.feedback_experiment import run_feedback
+
+        result, report = run_feedback()
+        name = "feedback"
 
     elif args.command == "topics24":
         from src.evaluation.trend_experiments import run_topics24

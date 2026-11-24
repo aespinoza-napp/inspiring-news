@@ -388,6 +388,7 @@ class IngestionService:
         per_source: int = 3,
         topic_emphasis: float | None = None,
         edition: str = "positive",
+        feedback=None,
     ) -> dict:
         """
         Discovery without queueing: up to `per_source` new articles from
@@ -406,6 +407,10 @@ class IngestionService:
 
         `edition` (src/config/editions.py) chooses the groups' topics, the
         sources read and the mission screen, for this call only.
+
+        `feedback` (selection/feedback.Feedback, None: none), for this call
+        only: the person's rejected and chosen stories, which lower what is
+        like the rejected ones in the order (ranking.rank).
         """
 
         started = datetime.now(timezone.utc)
@@ -506,6 +511,9 @@ class IngestionService:
                     "title": feed_title or title_from_url(url),
                     "titleFrom": "feed" if feed_title else "url",
                     "summary": details.get("summary"),
+                    # The feed's picture, a link (rss.entry_image); None
+                    # from a section page, which fetches no article.
+                    "image": details.get("image"),
                     "publishedAt": published.isoformat(timespec="seconds") if published else None,
                     "method": result.method,
                     # Kept whole, so the weights can be refitted from the
@@ -547,6 +555,7 @@ class IngestionService:
             candidate["rank"] = ranking.rank(
                 reading, standing, fit,
                 emphasis=ranking.WITHOUT_TOPIC if applied is None else applied,
+                feedback=feedback,
             )
 
         vectors = {

@@ -69,6 +69,60 @@ def test_selection_agreement_and_the_ais_auc_are_kept_apart_by_mode():
     assert result["summary"]["blind"]["aucAiScore"] == 1.0
 
 
+def test_a_recorded_choice_is_the_editors_picks_and_its_round_is_kept_whole():
+    """
+    Since 2026-11-24 the editor can record up to five on /discover to
+    compare with the AI's five, without sending anything; that choice is
+    the editor's side, its own `blind` decides the mode, and the round is
+    written out whole for git.
+    """
+
+    scores = {"r1": 9, "r2": 7, "r3": 2, "r4": 1}
+    recorded = round_("r", proposed=["r1", "r2"], sent=["r4"], scores=scores)
+    recorded["candidates"] = [{"url": url, "title": url.upper(), "image": f"https://cdn.example/{url}.jpg"} for url in sorted(scores)]
+    recorded["personSelection"] = {
+        "at": "2026-11-24T10:00:00", "urls": ["r1", "r3"], "blind": True,
+        "shown": sorted(scores), "notes": {"r3": "underrated"},
+        "reasons": {"r1": ["positive", "trending"], "r3": ["positive", "diversity"]},
+    }
+    recorded["photos"] = {"r1": {"image": "https://cdn.example/r1.jpg", "file": "0011223344556677.jpg"}}
+
+    result = selection_experiment([recorded])
+
+    [row] = result["rounds"]
+    assert (row["mode"], row["editor"], row["final"], row["kept"]) == ("blind", "recorded", 2, 1)
+    assert (row["precision"], row["recall"]) == (0.5, 0.5)
+    assert row["kappa"] == 0.0
+
+    [whole] = result["compared"]
+    assert [c["url"] for c in whole["candidates"]] == ["r1", "r2", "r3", "r4"]
+    first, _, third, _ = whole["candidates"]
+    assert (first["person"], first["ai"], first["aiScore"], first["photo"]) == (True, True, 9, "0011223344556677.jpg")
+    assert (third["person"], third["ai"], third["personNote"], third["image"]) == (True, False, "underrated", "https://cdn.example/r3.jpg")
+    assert third["personReasons"] == ["positive", "diversity"]
+
+    # r1 (positive, trending) was the AI's too; r3 (positive, diversity) was not.
+    assert result["summary"]["blind"]["byReason"] == {
+        "positive": {"picks": 2, "aiAlso": 1, "aiShare": 0.5},
+        "trending": {"picks": 1, "aiAlso": 1, "aiShare": 1.0},
+        "diversity": {"picks": 1, "aiAlso": 0, "aiShare": 0.0},
+    }
+
+    report = experiments.selection_report(result)
+    assert "Kappa" in report and "| blind | trending | 1 | 1 |" in report
+
+
+def test_a_choice_recorded_after_the_ais_proposal_is_assisted():
+
+    later = round_("s", proposed=["s1"], sent=[], scores={"s1": 9, "s2": 1}, ai_started="2026-11-24T09:00:00")
+    later["queued"] = None
+    later["personSelection"] = {"at": "2026-11-24T10:00:00", "urls": ["s1"], "blind": False}
+
+    [row] = selection_experiment([later])["rounds"]
+
+    assert (row["mode"], row["editor"]) == ("assisted", "recorded")
+
+
 def test_round_labels_come_only_from_rounds_sent_to_analysis():
 
     sent = {"candidates": [{"url": "a"}, {"url": "b"}], "queued": {"urls": ["a"]}}
@@ -336,3 +390,36 @@ def test_source_health_joins_the_probe_with_time_to_reception_and_lines_up_the_w
     assert "| el_pais | up | degraded |" in report
     assert "## Week by week" in report
     assert "## Week by week" not in experiments.sources_report(result)
+
+
+def test_the_feedback_experiment_lowers_what_leans_to_the_rejected_on_other_days(monkeypatch):
+    """
+    src/evaluation/feedback_experiment.py on made-up rows: the bad lie toward
+    one direction, the good toward another, on every day. Lowering by the
+    lean must order the other days better than the story alone.
+    """
+
+    import numpy as np
+
+    from src.evaluation import feedback_experiment as fe
+
+    monkeypatch.setattr(fe, "DRAWS", 3)
+    rng = np.random.default_rng(1)
+
+    def row(day, hand, i):
+        lean = {0: np.array([1.0, 0.0]), 1: np.array([0.5, 0.5]), 2: np.array([0.0, 1.0])}[hand]
+        vector = np.concatenate([lean, rng.normal(0, 3.0, 30)])
+        # The story part alone gets a third of them backwards.
+        story = {0: -0.02, 1: 0.0, 2: 0.02}[hand] * (-1 if i % 3 == 0 else 1)
+        return {"url": f"https://x/{day}/{hand}/{i}", "day": day, "hand": hand, "v": vector / np.linalg.norm(vector), "story": story}
+
+    rows = [row(day, hand, i) for day, counts in (("6 Oct", (12, 6, 6)), ("9 Oct", (45, 10, 22)), ("13 Oct", (10, 6, 6)))
+            for hand, n in enumerate(counts) for i in range(n)]
+
+    result = fe.feedback_experiment(rows)
+    way = result["oneWay"][0]
+
+    assert way["aucLowered"]["0.5"][0] > way["aucStory"][0]
+    assert len(way["nearestNeighbour"]) == len(fe.FLOORS) * 2
+    assert [size["rejected"] for size in result["draws"]["sizes"]] == [3, 5, 10, 20, 40]
+    assert "Lowered by 0.5" in fe.feedback_report(result)

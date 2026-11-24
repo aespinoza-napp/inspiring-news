@@ -588,6 +588,180 @@ on "clearly positive" (0.805 against 0.782) and beat it on "worth offering
 at all" (+0.14). That is not the metric its rule named, so it is an
 option, not the default.
 
+## The person against the AI, five each (2026-11-24)
+
+Asked by the author: to evaluate the selection, record what *they* would
+choose beside what the AI would, at most five each so both choose under the
+same constraint, keep their own reasons, and keep the stories' photos (or
+at least their links) so a round can be looked at again later. RQ3's
+"editor vs the AI selection (blind rounds)" (`docs/decisions/evaluation.md`).
+
+**Your choice is its own record, not a queue.** `POST
+/ingest/rounds/{id}/person-selection {urls, notes?}` records at most
+`COMPARED` (5) of the round's shown candidates, once, with an optional
+line per pick saying why (`NOTE_CHARS`, 300), as the round's
+`personSelection`. Nothing is sent to analysis: the old blind protocol
+(choose, send, then `blind-ai`) cost a full analysis per pick - three
+minutes each on the production CPU - to measure a choice. Sending stays
+a separate, optional step, under `MAX_SELECTED` as before.
+
+- **`blind` is the backend's, not the page's:** true when no AI proposal
+  was on the page (none asked, or one that failed and showed nothing).
+  Recorded after the AI's picks, it is kept and marked not blind.
+- **The same list for both.** The record keeps the candidates it was
+  chosen from (`shown`), and `more` is refused from then on, so the AI
+  reads exactly that list. Against a recorded choice the AI is asked for
+  at most five whatever the request says.
+- **The comparison is kept with the round** (`comparison`, recomputed
+  when the AI finishes or the choice is recorded after it): the stories
+  both chose, only the person, only the AI; precision (of the AI's picks,
+  the share the person chose) and recall (of the person's, the share the
+  AI chose), as `src/evaluation/experiments.py selection` defines them;
+  Jaccard; Cohen's kappa over every shown candidate, chosen or not by
+  each; and the AI's 0-10 for each of the person's picks.
+- **Refused while the AI reads the round**, recording and sending alike
+  (409): the AI's picks would land on a choice recorded as made without
+  them. Found the same day: Analyse stayed enabled while the AI scored and
+  `queue` did not refuse, so a round sent meanwhile was saved as
+  `selectedBy: "user"` with the AI's picks beside it. The page disables
+  Analyse while the AI runs, and the AI is not started on a round being
+  sent either.
+
+**Photos.** Every candidate now carries its feed's picture as a link
+(`image`; `rss.entry_image`: media:content, media:thumbnail, an image
+enclosure, a sitemap's `<image:loc>`, Google Trends' `news_item_picture`,
+else the first non-pixel `<img>` of the summary). Nothing is fetched for
+it at discovery; a section page's candidate has none. `/discover` shows it
+from its link, with no referrer. When a choice is recorded, and when the
+AI finishes against one, the photos of both sides' picks (ten at most) are
+copied beside the round (`photos.py`: `lake/stats/selection/photos/<round
+id>/`, named by the link's hash) and recorded on it as `photos` - or why
+not. What is kept is decided by the first bytes (JPEG, PNG, GIF, WebP,
+AVIF; never SVG), 5 MB at most, every hop through the URL guard, 20 s for
+the batch; served by `GET /ingest/rounds/{id}/photos/{name}` with the type
+the bytes proved. Only the compared picks: copying all twenty to forty
+would be a request to every outlet per round for pictures nobody chose.
+
+Read from the live feeds the same day, items with a picture: El País 123
+of 125, elDiario 104/104, 20minutos 153/153, Xataka 12/12, BBC 11/11, the
+Guardian 16/16, Mongabay 22/22, MIT News 50/50, CNN's news sitemap 18/18,
+Reasons to be Cheerful 9/10, The Conversation 17/23, NASA 6/6 (its logo).
+**None from Good News Network (0/35) or Muy Interesante (0/12)**, whose
+feeds carry no picture at all, nor from a section page's candidates:
+their pictures are on the article page (`og:image`), and reading it would
+cost a request per candidate before anything is chosen - the same reason
+those candidates have no summary.
+
+**In git, not only in the lake.** The rounds live in the lake, which git
+ignores and Docker keeps in a volume. `experiments selection --backend
+http://127.0.0.1:8000` reads them from the running backend and writes
+every compared round whole into
+`data/evaluation/experiments/selection/<time>/result.json` (`compared`):
+each shown candidate with its title, link and photo link, both sides'
+picks, the notes and the AI's scores and reasons. The photos themselves
+stay in the lake.
+
+**Why each pick** (asked the same day: "why we choose this one instead of
+another"). Under a ticked story, buttons that can be on together, from one
+list per edition (`reasons.py`, offered by `GET /ingest/sources` as
+`pickReasons`): **Positive impact**, **Shows a solution** (in the
+Devastating edition **Serious harm** and **Holds power to account**
+instead), then **Fits the topic**, **Trending**, **Adds variety** (a
+subject, place, community or outlet the other picks do not cover),
+**Well sourced** (something a check can find), **For our readers**
+(15-30, `docs/decisions/writing.md`), **Original reporting** (not a
+repost, "Reposts, lower") and **Strong photo** (it can carry a carousel or
+a story). The first four were the author's; the rest are what the newsroom
+already weighs elsewhere. A note stays beside them. Stored as codes,
+`reasons: {url: [ids]}`, on the recorded choice and on what is sent to
+analysis; a code the edition does not offer is refused (422), so a page
+out of date cannot store words nobody defined. The comparison counts, for
+each reason, the person's picks given it and how many of those the AI
+chose too (`comparison.reasons`), and `experiments selection` pools it per
+mode ("Why the editor chose, and whether the AI chose the same"). The
+reasons are optional, and none is suggested from the ranking: a button
+lit by the page's own scores would put its opinion in the person's mouth.
+
+**Not built:** a person's 0-10 score per candidate like the AI's, and the
+AI giving its reasons from the same list (its prompt would change, and
+with it every AI selection measured so far). A binary pick of five, with
+reasons, is what was asked; kappa and the AUC of the AI's score against
+the person's picks come from it.
+
+## What you reject teaches the ranking (2026-11-24)
+
+Asked by the author: some stories that appear should never be chosen -
+nothing in them is positive impact - and saying so should change what the
+ranking offers next. On `/discover` every candidate has **Not for us**:
+with why (buttons, several at once: No positive impact - Not serious harm
+in the Devastating edition - Politics, Crime or conflict, Celebrity or
+gossip, Ads or shopping, Service page, Opinion, Off-topic, Old news;
+`reasons.reject_reasons_for`), **Never from this site**, and Undo. The
+round keeps its list - the person and the AI go on choosing from the same
+one - and the marked story can no longer be ticked. What was marked, and
+what the person recorded or sent (the chosen side), is kept per edition in
+`lake/stats/selection/feedback/examples.json` (`feedback.py`); the chosen
+side starts from every pick already in the rounds.
+
+What a later round of the same edition does with it (`create_round`):
+
+| | From | What |
+|---|---|---|
+| A marked article | the first | Never offered again (by host and path) |
+| A blocked site | the first | Its articles left out |
+| Stories like the marked ones | 3 marked and 3 chosen | Lowered: a share of the *lean* comes off the story's reading |
+| Stories clearly like them | 40 marked and 20 chosen | Left out: a lean over 0.08 |
+
+The *lean* is how much nearer a candidate's title and summary come to the
+average of the marked stories than to the average of the chosen ones
+(relevance feedback, Rocchio's two centroids; the screen's own bge-m3
+vectors, cosine). A quarter of it comes off the story's reading (impact
+minus nearest off-mission, before `NEWS_RANGE` scales it) from 3 + 3,
+half from 10 + 5 (`LEAN_WEIGHTS`). The four weights are untouched; each
+candidate's rank records its `lean`, and the round records how it applied
+(`feedback`: status, counts, the weight, how many left out). Everything
+left out is in the round's "left out" list with why (`rejected`,
+`blocked_site`, `like_rejected` with its lean). With `inference/` down
+nothing is lowered and the round says so; marked articles and blocked
+sites are still left out. The page lists every mark and blocked site of
+the edition and takes any back (`GET /ingest/feedback`, `POST
+/ingest/feedback/forget`), clearing the round's mark too.
+
+**Measured the same day** (`experiments feedback`;
+`data/evaluation/experiments/feedback/20261124T121248Z/`), on the
+hand-labelled candidates of 6, 9 and 13 Oct the screen keeps (0 not worth
+offering, 1 worth offering, 2 clearly positive; Claude's labels, not yet a
+person's): one day's 0s play what a person marked, its 2s what they chose,
+and the rule runs on the other days.
+
+- **Nearness to one marked story does not generalise.** No candidate of
+  another day came within 0.60 of any marked story: one bad story does not
+  resemble the next (an election piece, a horoscope, a crash). This was
+  the first idea, and it would have left out nothing but repeats.
+- **The lean does.** Telling the worth-offering from the rest (AUC of the
+  story part): alone 0.759; lowered by a quarter of the lean 0.784 with
+  3 + 3 examples; by half 0.807 with 10 + 5, 0.819 with 20 + 10, 0.824
+  with 40 + 20 (200 draws each). The clearly positive against the rest:
+  0.856 alone, 0.859 / 0.861 / 0.872 lowered. By half with only 3 or 5
+  marked, the clearly positive ranked a little worse (0.848), hence a
+  quarter until 10 + 5. All of one day as examples: 0.763 -> 0.791 on the
+  later days, 0.812 -> 0.872 on the earlier one.
+- **Leaving out is safe only with many examples.** Over a lean of 0.08
+  with 40 + 20: 14 of 73 not worth offering left out per draw, 2.4 of 44
+  worth offering, 0.1 of 22 clearly positive (1 at worst). With 10 + 5 the
+  same line would have lost 1.4 on average and up to 11 of 22. Moving
+  leaning stories after the rest instead of lowering them did worse with
+  few examples (the scratch comparison before the experiment).
+
+**What it cannot tell.** The labels are an AI's; the person's marks will
+not be a random sample of the 0s, and they will be few at first. It learns
+a direction from the averages, so a person who marks politics and
+horoscopes teaches "less like politics and horoscopes", not the reason
+they gave: the reasons are kept for reading back, not used. It shapes
+what is shown, so a blind round (above) still compares the person and the
+AI on one list, but that list now carries the person's past marks; each
+round records them.
+
 ## What was left out
 
 - **No age limit on a candidate dated nowhere** - no feed time and no

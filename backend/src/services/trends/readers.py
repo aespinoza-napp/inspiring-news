@@ -161,11 +161,14 @@ def read_google_trends(text: str, signal: TrendSignal) -> list[Trend]:
             if not url.lower().startswith(("http://", "https://")):
                 continue
 
+            picture = (_text(news, "news_item_picture") or "").strip()
+
             articles.append(TrendArticle(
                 url=url,
                 title=_text(news, "news_item_title"),
                 outlet=_text(news, "news_item_source"),
                 snippet=plain(_text(news, "news_item_snippet"), SNIPPET_CHARS),
+                image=picture if picture.lower().startswith(("http://", "https://")) else None,
             ))
 
         trends.append(Trend(

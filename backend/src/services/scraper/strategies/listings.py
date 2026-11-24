@@ -91,12 +91,17 @@ def news_sitemap_entries(xml: str) -> list[SimpleNamespace]:
 
         keywords = _text(news, "keywords") if news is not None else None
 
+        # Google's image extension (<image:image><image:loc>), the
+        # picture /discover shows beside the title (rss.entry_image).
+        image = next(iter(_children(url, "image")), None)
+
         entries.append(_entry(
             link=link,
             title=_text(news, "title") if news is not None else None,
             summary=None,
             published=_time(_text(news, "publication_date") if news is not None else None),
             keywords=[k.strip() for k in (keywords or "").split(",") if k.strip()],
+            image=_text(image, "loc") if image is not None else None,
         ))
 
     return entries
@@ -132,7 +137,7 @@ def json_feed_entries(body: str, spec: JsonFeed) -> list[SimpleNamespace]:
     return entries
 
 
-def _entry(link: str, title, summary, published: datetime | None, keywords=()) -> SimpleNamespace:
+def _entry(link: str, title, summary, published: datetime | None, keywords=(), image: str | None = None) -> SimpleNamespace:
 
     return SimpleNamespace(
         link=link,
@@ -140,6 +145,7 @@ def _entry(link: str, title, summary, published: datetime | None, keywords=()) -
         summary=summary or "",
         tags=[{"term": keyword} for keyword in keywords],
         published_parsed=published.utctimetuple() if published else None,
+        image=image,
     )
 
 

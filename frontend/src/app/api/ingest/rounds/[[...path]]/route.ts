@@ -9,7 +9,11 @@ const UNREACHABLE = `Could not reach the backend at ${BACKEND_URL}. Is it runnin
 // forwarded: like graph/[...path], this proxy names what it relays rather
 // than passing any path through with the storage key attached.
 const ROUND_ID = /^[0-9a-f]{16}$/;
-const ACTIONS = new Set(["ai-selection", "queue", "more"]);
+const ACTIONS = new Set(["ai-selection", "queue", "more", "person-selection", "reject"]);
+
+// A photo kept with a round (backend src/services/selection/photos.py):
+// the names it gives, nothing else.
+const PHOTO = /^[0-9a-f]{16}\.(jpg|png|gif|webp|avif)$/;
 
 // Every backend endpoint that costs CPU, starts a browser or writes data
 // takes the API key once STORAGE_API_KEY is set (backend
@@ -42,13 +46,44 @@ function notFound(path: string[]) {
   return NextResponse.json({ error: `Unknown round endpoint: ${path.join("/")}` }, { status: 404 });
 }
 
-// GET /api/ingest/rounds            -> the newest rounds
-// GET /api/ingest/rounds/<id>       -> one round, polled while its AI selection runs
+// A kept photo, relayed as the bytes and type the backend serves: the
+// browser never holds the key, so an <img> asks here.
+async function relayPhoto(url: string) {
+  let response: Response;
+
+  try {
+    response = await fetch(url, { cache: "no-store", headers: headers(false) });
+  } catch {
+    return NextResponse.json({ error: UNREACHABLE }, { status: 502 });
+  }
+
+  if (!response.ok) {
+    return NextResponse.json({ error: "No such photo." }, { status: response.status });
+  }
+
+  // The photo's own type, as packages/[[...path]] relays a file, and
+  // nothing else of the backend's response. Set one by one: a `headers:`
+  // here would read, to test_api_key.py, as a request sent without the key.
+  const relayed = new NextResponse(await response.arrayBuffer(), { status: 200 });
+  relayed.headers.set("Content-Type", response.headers.get("content-type") ?? "application/octet-stream");
+  relayed.headers.set("X-Content-Type-Options", "nosniff");
+  relayed.headers.set("Cache-Control", "private, max-age=604800");
+
+  return relayed;
+}
+
+// GET /api/ingest/rounds                       -> the newest rounds
+// GET /api/ingest/rounds/<id>                  -> one round, polled while its AI selection runs
+// GET /api/ingest/rounds/<id>/photos/<name>    -> a compared pick's kept photo
 export async function GET(
   request: NextRequest,
   { params }: { params: { path?: string[] } }
 ) {
   const path = params.path ?? [];
+
+  if (path.length === 3 && ROUND_ID.test(path[0]) && path[1] === "photos" && PHOTO.test(path[2])) {
+    return relayPhoto(`${BACKEND_URL}/ingest/rounds/${path[0]}/photos/${path[2]}`);
+  }
 
   if (path.length > 1 || (path.length === 1 && !ROUND_ID.test(path[0]))) {
     return notFound(path);
@@ -73,6 +108,8 @@ export async function GET(
 // POST /api/ingest/rounds/<id>/ai-selection  -> start the AI selection
 // POST /api/ingest/rounds/<id>/queue         -> send the chosen ones to analysis
 // POST /api/ingest/rounds/<id>/more          -> show the next ranked candidates, up to 40
+// POST /api/ingest/rounds/<id>/person-selection -> record a person's own five, to compare with the AI's
+// POST /api/ingest/rounds/<id>/reject           -> mark a candidate not for us (or take it back)
 export async function POST(
   request: NextRequest,
   { params }: { params: { path?: string[] } }

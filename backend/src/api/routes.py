@@ -302,6 +302,44 @@ class QueueRoundRequest(BaseModel):
     urls: list[str] = Field(min_length=1, max_length=20)
     forceRefresh: bool = False
     thresholds: ThresholdOverrides | None = None
+    # Why each was sent, optional, as with a recorded choice below.
+    notes: dict[str, str] | None = Field(default=None, max_length=20)
+    reasons: dict[str, list[str]] | None = Field(default=None, max_length=20)
+
+
+class RejectRequest(BaseModel):
+    url: str = Field(min_length=1, max_length=2000)
+    # From GET /ingest/sources' `rejectReasons`; an unknown one is a 422.
+    reasons: list[str] | None = Field(default=None, max_length=20)
+    note: str | None = Field(default=None, max_length=2000)
+    # Nothing more from this article's site, in this edition.
+    site: bool = False
+    # Takes the rejection back.
+    undo: bool = False
+
+
+class ForgetFeedbackRequest(BaseModel):
+    edition: Edition = DEFAULT_EDITION
+    # One of the two: a rejected article, or a blocked site.
+    url: str | None = Field(default=None, max_length=2000)
+    host: str | None = Field(default=None, max_length=300)
+
+    @model_validator(mode="after")
+    def one_of_the_two(self):
+        if not self.url and not self.host:
+            raise ValueError("Say which: the rejected article's url, or the blocked site's host.")
+        return self
+
+
+class PersonSelectionRequest(BaseModel):
+    # At most five (selection_service.COMPARED), checked by the service so
+    # the message says why; this bound only keeps the body small.
+    urls: list[str] = Field(min_length=1, max_length=20)
+    # url -> why this one, optional; cut to NOTE_CHARS by the service.
+    notes: dict[str, str] | None = Field(default=None, max_length=20)
+    # url -> the reasons given for it, from GET /ingest/sources' `pickReasons`
+    # (src/services/selection/reasons.py); an unknown one is a 422.
+    reasons: dict[str, list[str]] | None = Field(default=None, max_length=20)
 
 
 class SourceCheckRequest(BaseModel):
@@ -640,7 +678,8 @@ def ingestion_sources(edition: Edition = Query(default=DEFAULT_EDITION)):
     from src.config.editions import EDITION_NAMES, EDITIONS, group_names_of, groups_of, topics_of
     from src.services.ingestion_service import MAX_GROUPS
     from src.services.selection.ranking import DEFAULT_TOPIC_EMPHASIS
-    from src.services.selection.selection_service import LISTED, MAX_LISTED, MAX_SELECTED, TRENDING_MAX
+    from src.services.selection.reasons import reasons_for, reject_reasons_for
+    from src.services.selection.selection_service import COMPARED, LISTED, MAX_LISTED, MAX_SELECTED, TRENDING_MAX
     from src.services.trends.trending import MAX_ARTICLE_AGE, MAX_PER_TREND, MAX_TREND_AGE, PER_TREND
 
     service = get_ingestion_service()
@@ -675,6 +714,12 @@ def ingestion_sources(edition: Edition = Query(default=DEFAULT_EDITION)):
         ],
         "maxGroups": MAX_GROUPS,
         "maxSelected": MAX_SELECTED,
+        # The most a person records, and the AI picks, to compare the two.
+        "compared": COMPARED,
+        # Why a person may say they chose a story, in this edition (several at once).
+        "pickReasons": [reason.to_dict() for reason in reasons_for(edition)],
+        # And why a story is not for us (selection/feedback.py learns from those).
+        "rejectReasons": [reason.to_dict() for reason in reject_reasons_for(edition)],
         "listed": LISTED,
         "maxListed": MAX_LISTED,
         # Where /discover's positive-impact-or-topic control starts: one
@@ -862,15 +907,111 @@ def start_ai_selection(request: AISelectionRequest, round_id: str = ROUND_ID):
         raise HTTPException(status_code=422, detail=str(exc))
 
 
+@router.post("/ingest/rounds/{round_id}/person-selection", dependencies=[Depends(require_storage_key)])
+def record_person_selection(request: PersonSelectionRequest, round_id: str = ROUND_ID):
+    """
+    Records a person's own choice of at most five of the round's shown
+    candidates, with a note per pick if they like, to compare with the
+    AI's five (docs/decisions/selection.md, "The person against the AI").
+    Once per round; blind when no AI proposal had been made. Nothing is
+    sent to analysis. 409 while the AI reads the round. The photos of the
+    picks are copied beside the round before it answers.
+    """
+
+    from src.services.selection.selection_service import InvalidSelection, RoundNotFound, SelectionBusy
+
+    try:
+        return get_selection_service().record_person_selection(round_id, request.urls, request.notes, request.reasons)
+    except RoundNotFound:
+        raise HTTPException(status_code=404, detail="No such round.")
+    except SelectionBusy:
+        raise HTTPException(status_code=409, detail="The AI is choosing from this round; record your choice once it is done.")
+    except InvalidSelection as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+
+@router.post("/ingest/rounds/{round_id}/reject", dependencies=[Depends(require_storage_key)])
+def reject_candidate(request: RejectRequest, round_id: str = ROUND_ID):
+    """
+    Marks one of the round's shown candidates not for us, with why and,
+    with `site`, nothing more from its site; `undo` takes it back. The
+    round's list stays as it is; every later round of its edition leaves
+    the article out and lowers stories like it
+    (src/services/selection/feedback.py).
+    """
+
+    from src.services.selection.selection_service import InvalidSelection, RoundNotFound, SelectionBusy
+
+    try:
+        return get_selection_service().reject(
+            round_id, request.url, request.reasons, request.note, request.site, request.undo,
+        )
+    except RoundNotFound:
+        raise HTTPException(status_code=404, detail="No such round.")
+    except SelectionBusy:
+        raise HTTPException(status_code=409, detail="The AI is reading this round; mark it once it is done.")
+    except InvalidSelection as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+
+@router.get("/ingest/feedback", dependencies=[Depends(require_storage_key)])
+def selection_feedback(edition: Edition = Query(default=DEFAULT_EDITION)):
+    """
+    What the person taught the ranking in `edition`: every article marked
+    not for us, every site blocked, how many stories were chosen, and the
+    rule's constants (src/services/selection/feedback.py).
+    """
+
+    return get_selection_service().feedback.summary(edition)
+
+
+@router.post("/ingest/feedback/forget", dependencies=[Depends(require_storage_key)])
+def forget_feedback(request: ForgetFeedbackRequest):
+    """Takes back one rejection (`url`) or one blocked site (`host`). 404 when there was none."""
+
+    service = get_selection_service()
+
+    if not service.forget(request.edition, url=request.url, host=request.host):
+        raise HTTPException(status_code=404, detail="Nothing like that was rejected or blocked.")
+
+    return service.feedback.summary(request.edition)
+
+
+@router.get("/ingest/rounds/{round_id}/photos/{name}", dependencies=[Depends(require_storage_key)])
+def round_photo(round_id: str = ROUND_ID, name: str = Path(pattern=r"^[0-9a-f]{16}\.(jpg|png|gif|webp|avif)$")):
+    """
+    A photo kept with the round (src/services/selection/photos.py): one of
+    a compared pick's, as copied when the choice was recorded. Its type is
+    the one its bytes proved when it was kept, never the source's say.
+    """
+
+    from fastapi.responses import FileResponse
+
+    from src.services.selection.photos import MEDIA_TYPES
+
+    path = get_selection_service().rounds.photo_path(round_id, name)
+
+    if path is None or not path.is_file():
+        raise HTTPException(status_code=404, detail="No such photo.")
+
+    return FileResponse(
+        path,
+        media_type=MEDIA_TYPES[name.rsplit(".", 1)[1]],
+        headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, max-age=604800"},
+    )
+
+
 @router.post("/ingest/rounds/{round_id}/queue", dependencies=[Depends(require_storage_key)])
 def queue_round(request: QueueRoundRequest, round_id: str = ROUND_ID):
     """
     Sends up to 20 of the round's candidates to analysis, as ordinary
     jobs with purpose "ingestion" (follow them on /live), and records who
-    chose them and how far that matched the AI's proposal.
+    chose them and how far that matched the AI's proposal. 409 while the
+    AI reads the round: its picks would land on a selection recorded as
+    the person's alone.
     """
 
-    from src.services.selection.selection_service import InvalidSelection, RoundNotFound, edition_of
+    from src.services.selection.selection_service import InvalidSelection, RoundNotFound, SelectionBusy, edition_of
 
     # Analysed in the round's edition, whatever the request says: a
     # Devastating round's picks judged by the positive gate would all be
@@ -890,9 +1031,13 @@ def queue_round(request: QueueRoundRequest, round_id: str = ROUND_ID):
             start_job=lambda url: _start_job(
                 url, request.forceRefresh, thresholds, purpose="ingestion"
             ),
+            notes=request.notes,
+            reasons=request.reasons,
         )
     except RoundNotFound:
         raise HTTPException(status_code=404, detail="No such round.")
+    except SelectionBusy:
+        raise HTTPException(status_code=409, detail="The AI is choosing from this round; send it once it is done.")
     except InvalidSelection as exc:
         raise HTTPException(status_code=422, detail=str(exc))
 

@@ -54,6 +54,10 @@ class TrendArticle:
     # link); "search": found by searching the trend's name.
     found_by: str = "signal"
 
+    # The picture the signal gives it (Google's news_item_picture), a
+    # link; what /discover shows beside the title. Never fetched here.
+    image: str | None = None
+
     def to_dict(self) -> dict:
 
         return {
@@ -63,6 +67,7 @@ class TrendArticle:
             "snippet": self.snippet,
             "publishedAt": _iso(self.published),
             "foundBy": self.found_by,
+            "image": self.image,
         }
 
 

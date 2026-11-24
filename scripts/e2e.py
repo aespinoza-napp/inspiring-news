@@ -30,6 +30,15 @@ What it holds:
   verdict panel and the badge links to the guide, the guide, a story and
   a withdrawn story's real 404, the RSS feed and the sitemap (well-formed
   XML, absolute links), and an operator page still in English.
+- **You against the AI on /discover** (docs/decisions/selection.md, "The
+  person against the AI"): two picks ticked with a note and recorded blind
+  reach the backend as such, with two reasons pressed at once (why this
+  one and not another); a story marked not for us, with why, stays in the
+  list untickable and shows in what the ranking was taught; asked for its five, the AI reads the round
+  and **Analyse stays disabled while it does** (the 2026-11-24 bug: a
+  round sent meanwhile was recorded as the person's alone); the comparison
+  then shows, a kept photo relayed as an image through the rounds proxy
+  and a feed's picture shown from its own link.
 - **A story from a trend loads nothing from TikTok until the reader
   clicks** (docs/decisions/trends.md, "The story"): Chrome is told that
   tiktok.com is a local port that only counts connections - http, https
@@ -46,6 +55,7 @@ or it is run on Windows.
 from __future__ import annotations
 
 import argparse
+import base64
 import fcntl
 import json
 import re
@@ -237,6 +247,106 @@ MAP_SEARCH = {"query": "renovables", "semantic": "used", "results": [
     {"kind": "article", "id": ARTICLE_ID, "title": "Las renovables superan al carbón", "x": 0, "y": 0,
      "reason": "in the title"}]}
 
+# /discover: one round, compared with the AI (selection_service.py).
+ROUND_ID = "0a1b2c3d4e5f6071"
+KEPT_PHOTO = "00112233445566ff.png"
+# A 1x1 PNG: what a kept photo, and a feed's picture, are served as.
+PNG_1PX = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+)
+
+DISCOVER_CATALOGUE = {
+    "edition": "positive",
+    "sources": [{"id": "example", "name": "Example", "language": "en", "groups": ["health"]}],
+    "groups": [{"id": "health", "name": "Health", "topics": [{"id": "medicine", "name": "Medicine"}], "sources": 1}],
+    "maxGroups": 3, "maxSelected": 20, "compared": 5, "listed": 20, "maxListed": 40,
+    "topicEmphasis": 0.6, "signals": [],
+    "pickReasons": [
+        {"id": "positive", "label": "Positive impact", "hint": "A real change."},
+        {"id": "trending", "label": "Trending", "hint": "People are sharing it now."},
+        {"id": "diversity", "label": "Adds variety", "hint": "Something the other picks do not cover."},
+    ],
+    "rejectReasons": [
+        {"id": "no_impact", "label": "No positive impact", "hint": "Nothing in it makes things better."},
+        {"id": "politics", "label": "Politics", "hint": "Party politics."},
+    ],
+}
+
+
+def feedback_summary() -> dict:
+    """GET /ingest/feedback, from what the page marked."""
+
+    return {
+        "edition": "positive",
+        "rejected": [
+            {"url": url, "host": "news.example", "title": f"Story {url.rsplit('/', 1)[1]}", "sourceName": "Example",
+             "reasons": mark["reasons"], "note": None, "roundId": ROUND_ID, "at": "2026-11-24T10:05:00+00:00"}
+            for url, mark in Stub.round_rejected.items()
+        ],
+        "blockedSites": [], "chosen": 2,
+        "weights": [{"rejected": 10, "chosen": 5, "weight": 0.5}, {"rejected": 3, "chosen": 3, "weight": 0.25}],
+        "leaveOutLean": 0.08,
+        "lowerMinimum": {"rejected": 3, "chosen": 3}, "leaveOutMinimum": {"rejected": 40, "chosen": 20},
+    }
+
+
+def story(number: int) -> str:
+    return f"https://news.example/{number}"
+
+
+def discover_round(stage: str, port: int) -> dict:
+    """The round at each stage: open, recorded, the AI reading it, compared."""
+
+    round_ = {
+        "id": ROUND_ID, "startedAt": "2026-11-24T10:00:00+00:00", "groups": ["health"], "topics": ["medicine"],
+        "perSource": 1, "sources": [], "reserve": [],
+        "candidates": [
+            {
+                "url": story(n), "source": "example", "sourceName": "Example", "language": "en", "groups": ["health"],
+                "title": f"Story {n}", "titleFrom": "feed", "summary": "What changed, for whom.",
+                # The first one's picture is a link to another host, as a feed gives it.
+                "image": f"http://127.0.0.1:{port}/img/feed.png" if n == 1 else None,
+                "publishedAt": None, "method": "rss",
+            }
+            for n in range(1, 7)
+        ],
+        "totals": {"sources": 1, "discovered": 6, "alreadyStored": 0, "candidates": 6, "deferred": 0, "failed": 0},
+        "aiSelection": None, "queued": None, "personSelection": None, "comparison": None, "photos": {},
+        "rejected": dict(Stub.round_rejected),
+    }
+
+    if stage == "open":
+        return round_
+
+    round_["personSelection"] = {
+        "at": "2026-11-24T10:01:00+00:00", "urls": [story(1), story(2)], "limit": 5, "blind": True,
+        "shown": [story(n) for n in range(1, 7)], "notes": {story(1): "a cure that reaches people"},
+        "reasons": {story(1): ["positive", "diversity"]},
+    }
+    round_["photos"] = {story(2): {"image": "https://cdn.example/2.png", "file": KEPT_PHOTO, "contentType": "image/png", "bytes": len(PNG_1PX)}}
+
+    if stage == "recorded":
+        return round_
+
+    if stage == "running":
+        round_["aiSelection"] = {"status": "running", "startedAt": "2026-11-24T10:02:00+00:00", "limit": 5, "minScore": 6}
+        return round_
+
+    scored = [{"url": story(n), "score": score, "reason": "a change for many"} for n, score in zip(range(1, 7), (3, 9, 8, 2, 1, 0))]
+    round_["aiSelection"] = {
+        "status": "done", "startedAt": "2026-11-24T10:02:00+00:00", "finishedAt": "2026-11-24T10:03:00+00:00",
+        "limit": 5, "minScore": 6, "model": "stub", "calls": 1, "elapsedMs": 1000,
+        "picks": [scored[1], scored[2]], "scored": scored,
+    }
+    round_["comparison"] = {
+        "blind": True, "over": 6, "person": 2, "ai": 2, "both": [story(2)], "personOnly": [story(1)], "aiOnly": [story(3)],
+        "precision": 0.5, "recall": 0.5, "jaccard": 0.3333, "kappa": 0.25, "aiScores": {story(1): 3, story(2): 9},
+        "reasons": {"positive": {"picks": 1, "aiAlso": 0}, "diversity": {"picks": 1, "aiAlso": 0}},
+        "aiLimit": 5, "aiMinScore": 6, "aiModel": "stub", "at": "2026-11-24T10:03:00+00:00",
+    }
+    return round_
+
+
 HELD_SECONDS = 3.0
 
 
@@ -248,6 +358,12 @@ class Stub(BaseHTTPRequestHandler):
 
     job_polls = 0
     slow_polls: list[float] = []
+    # /discover's round: its stage, what was posted to it, and the AI's polls.
+    round_stage = "open"
+    round_posts: list[tuple[str, dict]] = []
+    ai_polls = 0
+    # What the page marked not for us: url -> the mark.
+    round_rejected: dict[str, dict] = {}
     # Every other GET that reached the stub, so a check can say a proxy
     # forwarded nothing.
     paths: list[str] = []
@@ -256,7 +372,29 @@ class Stub(BaseHTTPRequestHandler):
     def do_POST(self):
 
         path = self.path.split("?")[0]
-        self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+
+        if path.startswith(f"/ingest/rounds/{ROUND_ID}/"):
+            action = path.rsplit("/", 1)[1]
+            with Stub.lock:
+                Stub.round_posts.append((action, json.loads(body or b"{}")))
+                if action == "person-selection":
+                    Stub.round_stage = "recorded"
+                    return self._json(200, discover_round("recorded", self.server.server_address[1])["personSelection"])
+                if action == "ai-selection":
+                    Stub.round_stage, Stub.ai_polls = "running", 0
+                    return self._json(202, discover_round("running", self.server.server_address[1])["aiSelection"])
+                if action == "reject":
+                    asked = json.loads(body or b"{}")
+                    if asked.get("undo"):
+                        Stub.round_rejected.pop(asked["url"], None)
+                    else:
+                        Stub.round_rejected[asked["url"]] = {
+                            "at": "2026-11-24T10:05:00+00:00", "reasons": asked.get("reasons") or [],
+                            "note": None, "site": bool(asked.get("site")),
+                        }
+                    return self._json(200, {"rejected": dict(Stub.round_rejected), "counts": {"rejected": len(Stub.round_rejected), "chosen": 2, "blockedSites": 0}})
+            return self._json(409, {"detail": "The AI is choosing from this round; send it once it is done."})
 
         if path == "/analyze/jobs":
             return self._json(202, {"jobId": "slow1", "status": "queued", "reused": False})
@@ -296,6 +434,34 @@ class Stub(BaseHTTPRequestHandler):
         if path == "/analyze/jobs/batch":
             self._held_poll()
             return self._json(200, {"jobs": [{"jobId": "slow2", "url": "https://example.org/a", "status": "running", "events": []}]})
+
+        if path == "/ingest/sources":
+            return self._json(200, DISCOVER_CATALOGUE)
+
+        if path == "/ingest/rounds":
+            return self._json(200, {"rounds": []})
+
+        if path == "/ingest/feedback":
+            with Stub.lock:
+                return self._json(200, feedback_summary())
+
+        if path == f"/ingest/rounds/{ROUND_ID}":
+            with Stub.lock:
+                # The AI reads for two polls (four seconds), then has chosen.
+                if Stub.round_stage == "running":
+                    Stub.ai_polls += 1
+                    if Stub.ai_polls > 2:
+                        Stub.round_stage = "compared"
+                stage = Stub.round_stage
+            return self._json(200, discover_round(stage, self.server.server_address[1]))
+
+        if path in (f"/ingest/rounds/{ROUND_ID}/photos/{KEPT_PHOTO}", "/img/feed.png"):
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Content-Length", str(len(PNG_1PX)))
+            self.end_headers()
+            self.wfile.write(PNG_1PX)
+            return None
 
         if path == "/map/articles" and self.headers.get("If-None-Match") == MAP_ETAG:
             self.send_response(304)
@@ -678,6 +844,149 @@ def dock_follows(chrome: str, base: str) -> tuple[bool, str]:
             browser.close()
 
 
+# React keeps a controlled input's value in its own state: set through
+# the native setter and announced, as START_JOB does for the textarea.
+TYPE_NOTE = """
+(() => {
+  const input = document.querySelector('.candidate-note');
+  if (!input) return false;
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  setter.call(input, 'a cure that reaches people');
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  return true;
+})()
+"""
+
+
+def click_button(text: str) -> str:
+    return (
+        "(() => { const b = [...document.querySelectorAll('.discover-toolbar button')]"
+        f".find((b) => b.textContent.trim().startsWith({json.dumps(text)}) && !b.disabled);"
+        " if (b) b.click(); return !!b; })()"
+    )
+
+
+LOADED = "(img) => !!img && img.complete && img.naturalWidth > 0"
+
+
+def you_against_the_ai(chrome: str, base: str) -> tuple[bool, str]:
+    """Record two picks blind, ask the AI, see Analyse held while it reads, then the comparison with photos."""
+
+    import tempfile
+
+    with Stub.lock:
+        Stub.round_stage, Stub.ai_polls = "open", 0
+        Stub.round_posts.clear()
+        Stub.round_rejected.clear()
+
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
+
+        browser = Browser(chrome, profile)
+
+        try:
+            browser.send("Page.navigate", {"url": f"{base}/discover?round={ROUND_ID}"}, browser.session)
+            if not browser.until("document.querySelectorAll('.candidate-check input').length === 6", timeout=20):
+                return False, "the round never opened on /discover"
+
+            if not browser.until(f"({LOADED})(document.querySelector('.candidate-photo'))", timeout=10):
+                return False, "the feed's picture was not shown from its link"
+
+            browser.evaluate("document.querySelectorAll('.candidate-check input')[0].click()")
+            if not browser.until(TYPE_NOTE, timeout=5):
+                return False, "ticking a story offered no note"
+
+            # Why: two reasons on at once, pressed on the first pick's buttons.
+            for label in ("Positive impact", "Adds variety"):
+                pressed = browser.evaluate(
+                    "(() => { const b = [...document.querySelectorAll('.reason-chips button')]"
+                    f".find((b) => b.textContent.trim() === {json.dumps(label)}); if (b) b.click(); return !!b; }})()"
+                )
+                if not pressed:
+                    return False, f"no '{label}' button under a ticked story"
+            if not browser.until("document.querySelectorAll('.reason-chip[aria-pressed=\"true\"]').length === 2", timeout=5):
+                return False, "the two reasons were not both on"
+
+            browser.evaluate("document.querySelectorAll('.candidate-check input')[1].click()")
+
+            if not browser.until(click_button("Record my picks (blind)"), timeout=5):
+                return False, "no enabled 'Record my picks (blind)' with two ticked"
+            if not browser.until("document.querySelectorAll('.pick-badge').length === 2", timeout=10):
+                return False, "the recorded picks were not marked as yours"
+
+            posted = [body for action, body in Stub.round_posts if action == "person-selection"]
+            expected = {
+                "urls": [story(1), story(2)],
+                "notes": {story(1): "a cure that reaches people"},
+                "reasons": {story(1): ["positive", "diversity"]},
+            }
+            if posted != [expected]:
+                return False, f"the backend was sent {posted}, not {expected}"
+
+            if not browser.until("document.querySelectorAll('.reason-chip.is-read').length === 2", timeout=5):
+                return False, "the recorded reasons were not shown with the pick"
+
+            # Not for us: story 5, then why. It stays in the list, can no longer be ticked,
+            # and shows in what the ranking was taught.
+            browser.evaluate("document.querySelectorAll('.candidate')[4].querySelector('button.not-for-us').click()")
+            if not browser.until("!!document.querySelectorAll('.candidate')[4].querySelector('.rejected-badge')", timeout=5):
+                return False, "marking story 5 not for us showed no mark"
+            browser.evaluate(
+                "[...document.querySelectorAll('.candidate')[4].querySelectorAll('.rejected-mark .reason-chips button')]"
+                ".find((b) => b.textContent.trim() === 'No positive impact').click()"
+            )
+            if not browser.until(
+                "document.querySelectorAll('.candidate')[4].querySelector('.rejected-mark .reason-chip[aria-pressed=\"true\"]')?.textContent.includes('No positive impact')",
+                timeout=5,
+            ):
+                return False, "the reason for not for us was not kept"
+            rejects = [body for action, body in Stub.round_posts if action == "reject"]
+            if rejects != [
+                {"url": story(5), "reasons": [], "site": False, "undo": False},
+                {"url": story(5), "reasons": ["no_impact"], "site": False, "undo": False},
+            ]:
+                return False, f"not for us sent {rejects}"
+            if browser.evaluate("document.querySelectorAll('.candidate-check input')[4].disabled") is not True:
+                return False, "a story marked not for us could still be ticked"
+            if not browser.until("document.querySelector('.teaching')?.textContent.includes('1 marked not for us')", timeout=5):
+                return False, "what the ranking was taught was not listed"
+
+            if not browser.until(click_button("Now let the AI choose its 5"), timeout=5):
+                return False, "no 'Now let the AI choose its 5' once recorded"
+
+            # Only once the request that started the AI has answered: while it
+            # is in flight every button is disabled anyway, and a check looking
+            # then passed with the fix taken out (2026-11-24).
+            reading = (
+                "[...document.querySelectorAll('.discover-toolbar button')]"
+                ".some((b) => b.textContent.includes('The AI is reading the list'))"
+            )
+            if not browser.until(reading, timeout=5):
+                return False, "the AI was never shown reading the round"
+
+            if browser.evaluate("document.querySelector('.discover-analyse')?.disabled") is not True:
+                return False, "Analyse was enabled while the AI read the round"
+
+            if not browser.until("!!document.querySelector('.compare-panel')", timeout=20):
+                return False, "the comparison never appeared"
+
+            panel = browser.evaluate("document.querySelector('.compare-panel').textContent")
+            if "1 in common" not in panel or "Blind" not in panel or "Positive impact 0 of 1" not in panel:
+                return False, f"the comparison says: {panel[:300]}"
+
+            kept = f"document.querySelector('.compare-panel img[src=\"/api/ingest/rounds/{ROUND_ID}/photos/{KEPT_PHOTO}\"]')"
+            if not browser.until(f"({LOADED})({kept})", timeout=10):
+                return False, "the kept photo was not relayed as an image"
+
+            if not browser.until("document.querySelector('.discover-analyse')?.disabled === false", timeout=5):
+                return False, "Analyse stayed disabled once the AI was done"
+
+            ai_asked = [body for action, body in Stub.round_posts if action == "ai-selection"]
+            return ai_asked == [{"limit": 5}], f"the AI was asked {ai_asked}"
+
+        finally:
+            browser.close()
+
+
 HYDRATED = (
     "(() => { const b = document.querySelector('[data-testid=tiktok-load]');"
     " return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')); })()"
@@ -818,6 +1127,13 @@ def run(checks: Checks, chrome: str, base: str, tiktok: Connections) -> None:
 
     ok, detail = dock_follows(chrome, base)
     checks.check("a job sent from Analyze is followed in the corner dock, on every page", ok, detail)
+
+    print("Discover: you against the AI")
+    ok, detail = you_against_the_ai(chrome, base)
+    checks.check("recorded blind, Analyse held while the AI reads, then the comparison with its photos", ok, detail)
+    before = len(Stub.paths)
+    status, _ = get(f"{base}/api/ingest/rounds/{ROUND_ID}/photos/drawing.svg")
+    checks.check("the rounds proxy relays only a kept photo's name", status == 404 and len(Stub.paths) == before, f"got {status}")
 
     print("The reader")
     for lang, title in (("ca", "Articles verificats"), ("es", "Artículos verificados"), ("en", "Checked articles")):

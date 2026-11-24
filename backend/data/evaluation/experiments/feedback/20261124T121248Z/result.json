@@ -1,0 +1,747 @@
+{
+ "labelledBy": "Claude (AI), not yet checked by a person: 0 not worth offering, 1 worth offering, 2 clearly positive",
+ "candidates": {
+  "0": 231,
+  "1": 136,
+  "2": 64
+ },
+ "rule": {
+  "weights": [
+   [
+    10,
+    5,
+    0.5
+   ],
+   [
+    3,
+    3,
+    0.25
+   ]
+  ],
+  "leaveOutLean": 0.08,
+  "lowerMinimum": [
+   3,
+   3
+  ],
+  "leaveOutMinimum": [
+   40,
+   20
+  ]
+ },
+ "oneWay": [
+  {
+   "name": "6 Oct teaches 9 and 13 Oct",
+   "examples": {
+    "rejected": 32,
+    "chosen": 20
+   },
+   "candidates": {
+    "0": 199,
+    "1": 107,
+    "2": 44
+   },
+   "nearestNeighbour": [
+    {
+     "floor": 0.6,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.6,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.65,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.65,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.7,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.7,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.75,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.75,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.8,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.8,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    }
+   ],
+   "aucStory": [
+    0.7626,
+    0.7781
+   ],
+   "aucLowered": {
+    "0.25": [
+     0.7841,
+     0.7958
+    ],
+    "0.5": [
+     0.7907,
+     0.8011
+    ],
+    "1.0": [
+     0.7881,
+     0.8069
+    ]
+   },
+   "leaveOut": {
+    "0.0": [
+     183,
+     76,
+     24
+    ],
+    "0.02": [
+     161,
+     57,
+     13
+    ],
+    "0.04": [
+     138,
+     37,
+     6
+    ],
+    "0.06": [
+     108,
+     20,
+     3
+    ],
+    "0.08": [
+     78,
+     10,
+     0
+    ],
+    "0.1": [
+     46,
+     5,
+     0
+    ]
+   }
+  },
+  {
+   "name": "9 and 13 Oct teach 6 Oct",
+   "examples": {
+    "rejected": 199,
+    "chosen": 44
+   },
+   "candidates": {
+    "0": 32,
+    "1": 29,
+    "2": 20
+   },
+   "nearestNeighbour": [
+    {
+     "floor": 0.6,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.6,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.65,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.65,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.7,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.7,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.75,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.75,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.8,
+     "margin": null,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "floor": 0.8,
+     "margin": 0.0,
+     "leftOut": [
+      0,
+      0,
+      0
+     ]
+    }
+   ],
+   "aucStory": [
+    0.8119,
+    0.8762
+   ],
+   "aucLowered": {
+    "0.25": [
+     0.8514,
+     0.8848
+    ],
+    "0.5": [
+     0.8718,
+     0.8939
+    ],
+    "1.0": [
+     0.8881,
+     0.8939
+    ]
+   },
+   "leaveOut": {
+    "0.0": [
+     30,
+     15,
+     5
+    ],
+    "0.02": [
+     27,
+     8,
+     1
+    ],
+    "0.04": [
+     20,
+     3,
+     1
+    ],
+    "0.06": [
+     13,
+     2,
+     0
+    ],
+    "0.08": [
+     4,
+     1,
+     0
+    ],
+    "0.1": [
+     4,
+     0,
+     0
+    ]
+   }
+  }
+ ],
+ "draws": {
+  "pool": "9 Oct",
+  "candidates": {
+   "0": 73,
+   "1": 44,
+   "2": 22
+  },
+  "sizes": [
+   {
+    "rejected": 3,
+    "chosen": 3,
+    "draws": 200,
+    "aucStory": [
+     0.759,
+     0.8559
+    ],
+    "aucLowered": {
+     "0.25": {
+      "worth": 0.7844,
+      "worth5th": 0.7503,
+      "positive": 0.859,
+      "positive5th": 0.8298
+     },
+     "0.5": {
+      "worth": 0.7867,
+      "worth5th": 0.7336,
+      "positive": 0.8484,
+      "positive5th": 0.8011
+     },
+     "1.0": {
+      "worth": 0.7703,
+      "worth5th": 0.696,
+      "positive": 0.8073,
+      "positive5th": 0.7366
+     }
+    },
+    "leaveOut": {
+     "0.0": {
+      "mean": [
+       41.4,
+       14.7,
+       5.7
+      ],
+      "worstClearlyPositive": 17
+     },
+     "0.02": {
+      "mean": [
+       32.4,
+       9.7,
+       3.6
+      ],
+      "worstClearlyPositive": 14
+     },
+     "0.04": {
+      "mean": [
+       23.6,
+       6.3,
+       2.2
+      ],
+      "worstClearlyPositive": 11
+     },
+     "0.06": {
+      "mean": [
+       16.0,
+       3.7,
+       1.2
+      ],
+      "worstClearlyPositive": 8
+     },
+     "0.08": {
+      "mean": [
+       10.6,
+       2.0,
+       0.7
+      ],
+      "worstClearlyPositive": 7
+     },
+     "0.1": {
+      "mean": [
+       6.4,
+       1.1,
+       0.3
+      ],
+      "worstClearlyPositive": 4
+     }
+    }
+   },
+   {
+    "rejected": 5,
+    "chosen": 3,
+    "draws": 200,
+    "aucStory": [
+     0.759,
+     0.8559
+    ],
+    "aucLowered": {
+     "0.25": {
+      "worth": 0.7863,
+      "worth5th": 0.7536,
+      "positive": 0.8625,
+      "positive5th": 0.8357
+     },
+     "0.5": {
+      "worth": 0.7917,
+      "worth5th": 0.7421,
+      "positive": 0.8556,
+      "positive5th": 0.8116
+     },
+     "1.0": {
+      "worth": 0.7776,
+      "worth5th": 0.6936,
+      "positive": 0.8243,
+      "positive5th": 0.7502
+     }
+    },
+    "leaveOut": {
+     "0.0": {
+      "mean": [
+       59.0,
+       25.5,
+       10.4
+      ],
+      "worstClearlyPositive": 20
+     },
+     "0.02": {
+      "mean": [
+       51.1,
+       19.8,
+       7.8
+      ],
+      "worstClearlyPositive": 19
+     },
+     "0.04": {
+      "mean": [
+       41.7,
+       14.2,
+       5.4
+      ],
+      "worstClearlyPositive": 17
+     },
+     "0.06": {
+      "mean": [
+       31.8,
+       9.4,
+       3.3
+      ],
+      "worstClearlyPositive": 12
+     },
+     "0.08": {
+      "mean": [
+       22.5,
+       5.8,
+       1.9
+      ],
+      "worstClearlyPositive": 10
+     },
+     "0.1": {
+      "mean": [
+       14.5,
+       3.4,
+       1.0
+      ],
+      "worstClearlyPositive": 8
+     }
+    }
+   },
+   {
+    "rejected": 10,
+    "chosen": 5,
+    "draws": 200,
+    "aucStory": [
+     0.759,
+     0.8559
+    ],
+    "aucLowered": {
+     "0.25": {
+      "worth": 0.7937,
+      "worth5th": 0.7696,
+      "positive": 0.8637,
+      "positive5th": 0.8421
+     },
+     "0.5": {
+      "worth": 0.8074,
+      "worth5th": 0.7667,
+      "positive": 0.8612,
+      "positive5th": 0.824
+     },
+     "1.0": {
+      "worth": 0.8063,
+      "worth5th": 0.7527,
+      "positive": 0.8415,
+      "positive5th": 0.7882
+     }
+    },
+    "leaveOut": {
+     "0.0": {
+      "mean": [
+       64.3,
+       27.2,
+       10.6
+      ],
+      "worstClearlyPositive": 19
+     },
+     "0.02": {
+      "mean": [
+       57.2,
+       20.2,
+       7.7
+      ],
+      "worstClearlyPositive": 18
+     },
+     "0.04": {
+      "mean": [
+       47.6,
+       13.7,
+       4.8
+      ],
+      "worstClearlyPositive": 17
+     },
+     "0.06": {
+      "mean": [
+       36.0,
+       8.7,
+       2.6
+      ],
+      "worstClearlyPositive": 14
+     },
+     "0.08": {
+      "mean": [
+       25.1,
+       5.0,
+       1.4
+      ],
+      "worstClearlyPositive": 11
+     },
+     "0.1": {
+      "mean": [
+       15.7,
+       2.7,
+       0.6
+      ],
+      "worstClearlyPositive": 9
+     }
+    }
+   },
+   {
+    "rejected": 20,
+    "chosen": 10,
+    "draws": 200,
+    "aucStory": [
+     0.759,
+     0.8559
+    ],
+    "aucLowered": {
+     "0.25": {
+      "worth": 0.7991,
+      "worth5th": 0.7822,
+      "positive": 0.866,
+      "positive5th": 0.8497
+     },
+     "0.5": {
+      "worth": 0.8188,
+      "worth5th": 0.7934,
+      "positive": 0.8678,
+      "positive5th": 0.8432
+     },
+     "1.0": {
+      "worth": 0.8289,
+      "worth5th": 0.7885,
+      "positive": 0.8571,
+      "positive5th": 0.8218
+     }
+    },
+    "leaveOut": {
+     "0.0": {
+      "mean": [
+       63.2,
+       21.9,
+       7.7
+      ],
+      "worstClearlyPositive": 17
+     },
+     "0.02": {
+      "mean": [
+       55.2,
+       14.8,
+       4.6
+      ],
+      "worstClearlyPositive": 14
+     },
+     "0.04": {
+      "mean": [
+       44.1,
+       9.3,
+       2.5
+      ],
+      "worstClearlyPositive": 12
+     },
+     "0.06": {
+      "mean": [
+       31.4,
+       5.6,
+       1.1
+      ],
+      "worstClearlyPositive": 9
+     },
+     "0.08": {
+      "mean": [
+       19.5,
+       3.1,
+       0.5
+      ],
+      "worstClearlyPositive": 5
+     },
+     "0.1": {
+      "mean": [
+       10.7,
+       1.5,
+       0.1
+      ],
+      "worstClearlyPositive": 2
+     }
+    }
+   },
+   {
+    "rejected": 40,
+    "chosen": 20,
+    "draws": 200,
+    "aucStory": [
+     0.759,
+     0.8559
+    ],
+    "aucLowered": {
+     "0.25": {
+      "worth": 0.8008,
+      "worth5th": 0.7889,
+      "positive": 0.8673,
+      "positive5th": 0.8564
+     },
+     "0.5": {
+      "worth": 0.8242,
+      "worth5th": 0.8066,
+      "positive": 0.8717,
+      "positive5th": 0.8539
+     },
+     "1.0": {
+      "worth": 0.8409,
+      "worth5th": 0.8181,
+      "positive": 0.8675,
+      "positive5th": 0.8394
+     }
+    },
+    "leaveOut": {
+     "0.0": {
+      "mean": [
+       63.2,
+       18.4,
+       5.3
+      ],
+      "worstClearlyPositive": 13
+     },
+     "0.02": {
+      "mean": [
+       54.3,
+       11.5,
+       2.5
+      ],
+      "worstClearlyPositive": 7
+     },
+     "0.04": {
+      "mean": [
+       40.9,
+       6.8,
+       1.1
+      ],
+      "worstClearlyPositive": 3
+     },
+     "0.06": {
+      "mean": [
+       26.6,
+       4.1,
+       0.5
+      ],
+      "worstClearlyPositive": 2
+     },
+     "0.08": {
+      "mean": [
+       14.2,
+       2.4,
+       0.1
+      ],
+      "worstClearlyPositive": 1
+     },
+     "0.1": {
+      "mean": [
+       6.8,
+       1.0,
+       0.0
+      ],
+      "worstClearlyPositive": 1
+     }
+    }
+   }
+  ]
+ },
+ "seed": 20261124
+}

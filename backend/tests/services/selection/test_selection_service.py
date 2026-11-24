@@ -7,6 +7,7 @@ from src.services.llms import LLMUnavailableError
 from src.services.selection.ai_selector import AISelection, Scored
 from src.services.selection.rounds import SelectionRounds
 from src.services.selection.selection_service import (
+    COMPARED,
     LISTED,
     MAX_LISTED,
     MAX_SELECTED,
@@ -14,6 +15,7 @@ from src.services.selection.selection_service import (
     RoundNotFound,
     SelectionBusy,
     SelectionService,
+    kappa,
 )
 
 
@@ -332,3 +334,291 @@ def test_more_is_refused_once_sent_and_while_the_ai_reads_the_list(tmp_path, mon
 
     with pytest.raises(SelectionBusy):
         selection.show_more(reading["id"])
+
+
+
+# ----------------------------------------------------------------------
+# The person against the AI, five each (2026-11-24)
+# ----------------------------------------------------------------------
+
+
+def test_a_person_records_up_to_five_once_blind_and_nothing_is_sent(tmp_path):
+
+    selection = service(tmp_path, found=8)
+    round_ = selection.create_round(["health"])
+
+    recorded = selection.record_person_selection(
+        round_["id"],
+        urls(2, 4) + ["https://news.example/2"],
+        notes={"https://news.example/3": "  a cure that reaches people  ", "https://news.example/7": "not chosen"},
+    )
+
+    assert recorded["urls"] == urls(2, 4)
+    assert recorded["blind"] is True and recorded["limit"] == COMPARED
+    assert recorded["shown"] == urls(1, 8)
+    assert recorded["notes"] == {"https://news.example/3": "a cure that reaches people"}
+
+    on_disk = json.loads((tmp_path / f"{round_['id']}.json").read_text(encoding="utf-8"))
+    assert on_disk["personSelection"]["urls"] == urls(2, 4)
+    assert on_disk["queued"] is None and on_disk["comparison"] is None
+
+    with pytest.raises(InvalidSelection, match="already recorded"):
+        selection.record_person_selection(round_["id"], urls(5, 5))
+
+
+@pytest.mark.parametrize("chosen, message", [
+    ([], "at least one"),
+    ([f"https://news.example/{i}" for i in range(1, COMPARED + 2)], f"At most {COMPARED}"),
+    (["https://elsewhere.example/a"], "Not a candidate"),
+])
+def test_a_choice_that_breaks_a_rule_is_not_recorded(tmp_path, chosen, message):
+
+    selection = service(tmp_path, found=8)
+    round_ = selection.create_round(["health"])
+
+    with pytest.raises(InvalidSelection, match=message):
+        selection.record_person_selection(round_["id"], chosen)
+
+    assert selection.get(round_["id"]).get("personSelection") is None
+
+
+def test_a_choice_made_after_the_ais_proposal_is_not_blind(tmp_path):
+
+    selection = service(tmp_path, selector=FakeSelector(picks=urls(1, 2)))
+    round_ = selection.create_round(["health"])
+    selection.run_ai_selection(round_["id"], limit=5, min_score=6.0)
+
+    assert selection.record_person_selection(round_["id"], urls(1, 1))["blind"] is False
+
+
+def test_a_failed_ai_selection_showed_nothing_so_the_choice_is_still_blind(tmp_path):
+
+    selection = service(tmp_path, selector=FakeSelector(error=LLMUnavailableError("down")))
+    round_ = selection.create_round(["health"])
+    selection.run_ai_selection(round_["id"], limit=5, min_score=6.0)
+
+    assert selection.record_person_selection(round_["id"], urls(1, 1))["blind"] is True
+
+
+def test_nothing_is_recorded_or_sent_while_the_ai_reads_the_round(tmp_path, monkeypatch):
+    """
+    The 2026-11-24 bug: Analyse stayed enabled while the AI scored, and
+    the AI's picks then landed on a round saved as selectedBy "user".
+    """
+
+    selection = service(tmp_path)
+    round_ = selection.create_round(["health"])
+    monkeypatch.setattr("threading.Thread.start", lambda self: None)
+    selection.start_ai_selection(round_["id"])
+
+    with pytest.raises(SelectionBusy):
+        selection.queue(round_["id"], urls(1, 1), Jobs())
+
+    with pytest.raises(SelectionBusy):
+        selection.record_person_selection(round_["id"], urls(1, 1))
+
+    after = selection.get(round_["id"])
+    assert after["queued"] is None and after.get("personSelection") is None
+
+    # Another round is not held up by this one's AI.
+    other = selection.create_round(["health"])
+    assert selection.queue(other["id"], urls(1, 1), Jobs())["selectedBy"] == "user"
+
+
+def test_the_ai_is_not_started_on_a_round_being_sent(tmp_path, monkeypatch):
+
+    selection = service(tmp_path)
+    round_ = selection.create_round(["health"])
+    refused = []
+
+    def start_job(url):
+        try:
+            selection.start_ai_selection(round_["id"])
+        except SelectionBusy:
+            refused.append(url)
+        return "job-1", False
+
+    selection.queue(round_["id"], urls(1, 1), start_job)
+
+    assert refused == urls(1, 1)
+    assert selection.get(round_["id"])["aiSelection"] is None
+
+    # Once sent, the AI can read it (the blind-ai protocol).
+    monkeypatch.setattr("threading.Thread.start", lambda self: None)
+    assert selection.start_ai_selection(round_["id"])["status"] == "running"
+
+
+def test_against_a_recorded_choice_the_ai_is_asked_for_five_and_the_two_are_compared(tmp_path, monkeypatch):
+
+    ai = FakeSelector(picks=urls(3, 9))
+    selection = service(tmp_path, found=10, selector=ai)
+    round_ = selection.create_round(["health"])
+
+    selection.record_person_selection(round_["id"], urls(1, 4))
+
+    monkeypatch.setattr("threading.Thread.start", lambda self: None)
+    started = selection.start_ai_selection(round_["id"], limit=20)
+    assert started["limit"] == COMPARED
+
+    selection.run_ai_selection(round_["id"], limit=started["limit"], min_score=6.0)
+    assert ai.calls[0][2] == COMPARED
+
+    comparison = selection.get(round_["id"])["comparison"]
+
+    # The AI picked 3-7, the person 1-4: 3 and 4 in common.
+    assert comparison["both"] == urls(3, 4)
+    assert comparison["personOnly"] == urls(1, 2)
+    assert comparison["aiOnly"] == urls(5, 7)
+    assert (comparison["precision"], comparison["recall"]) == (0.4, 0.5)
+    assert comparison["jaccard"] == round(2 / 7, 4)
+    assert comparison["blind"] is True and comparison["over"] == 10
+    assert comparison["aiScores"] == {url: (8.0 if url in urls(3, 4) else None) for url in urls(1, 4)}
+    assert comparison["kappa"] == kappa(urls(1, 10), set(urls(1, 4)), set(urls(3, 7)))
+
+    listed = {summary["id"]: summary for summary in selection.list()}[round_["id"]]
+    assert (listed["personPicks"], listed["personBlind"], listed["bothPicked"]) == (4, True, 2)
+
+
+def test_the_list_is_not_widened_once_a_choice_is_recorded(tmp_path):
+
+    selection = service(tmp_path, found=LISTED + 5)
+    round_ = selection.create_round(["society"])
+    selection.record_person_selection(round_["id"], urls(1, 1))
+
+    with pytest.raises(InvalidSelection, match="same one"):
+        selection.show_more(round_["id"])
+
+
+def test_kappa_is_cohens_for_two_raters_choosing_some_of_a_list():
+
+    items = [str(i) for i in range(10)]
+
+    assert kappa(items, {"0", "1"}, {"0", "1"}) == 1.0
+    # Disjoint picks of 5 in 10: everything disagrees, below chance.
+    assert kappa(items, set(items[:5]), set(items[5:])) == -1.0
+    # Chance agreement is 1 when neither chose anything: undefined.
+    assert kappa(items, set(), set()) is None
+    assert kappa([], {"a"}, {"a"}) is None
+
+
+class FakePhotos:
+
+    def __init__(self):
+        self.asked = []
+
+    def keep(self, folder, candidates):
+        self.asked.append([candidate["url"] for candidate in candidates])
+        return {candidate["url"]: {"image": candidate["image"], "file": f"{i:016x}.jpg"} for i, candidate in enumerate(candidates)}
+
+
+def test_the_photos_of_both_sides_picks_are_kept_once_each(tmp_path, monkeypatch):
+
+    photos = FakePhotos()
+    selection = SelectionService(
+        ingestion=FakeIngestion(6),
+        selector=FakeSelector(picks=urls(2, 3)),
+        rounds=SelectionRounds(tmp_path),
+        photos=photos,
+    )
+
+    round_ = selection.create_round(["health"])
+    for candidate in round_["candidates"]:
+        if candidate["url"] != "https://news.example/1":
+            candidate["image"] = candidate["url"].replace("news.example", "cdn.example") + ".jpg"
+
+    selection.record_person_selection(round_["id"], urls(1, 2))
+
+    # The person's 1 has no picture, 2 has: only 2 is fetched.
+    assert photos.asked == [urls(2, 2)]
+
+    selection.run_ai_selection(round_["id"], limit=5, min_score=6.0)
+
+    # The AI's 2 and 3: 2 is already kept.
+    assert photos.asked == [urls(2, 2), urls(3, 3)]
+
+    on_disk = json.loads((tmp_path / f"{round_['id']}.json").read_text(encoding="utf-8"))
+    assert sorted(on_disk["photos"]) == urls(2, 3)
+
+
+
+# ----------------------------------------------------------------------
+# Why each pick (2026-11-24, reasons.py)
+# ----------------------------------------------------------------------
+
+
+def test_each_picks_reasons_are_kept_in_the_offered_order_and_only_for_picks(tmp_path):
+
+    selection = service(tmp_path, found=6)
+    round_ = selection.create_round(["health"])
+
+    recorded = selection.record_person_selection(
+        round_["id"],
+        urls(1, 2),
+        reasons={
+            "https://news.example/1": ["trending", "positive", "trending"],
+            "https://news.example/2": [],
+            "https://news.example/5": ["diversity"],
+        },
+    )
+
+    assert recorded["reasons"] == {"https://news.example/1": ["positive", "trending"]}
+
+
+def test_a_reason_nobody_defined_is_refused_and_nothing_is_recorded(tmp_path):
+
+    selection = service(tmp_path)
+    round_ = selection.create_round(["health"])
+
+    with pytest.raises(InvalidSelection, match="Not a reason"):
+        selection.record_person_selection(round_["id"], urls(1, 1), reasons={"https://news.example/1": ["vibes"]})
+
+    assert selection.get(round_["id"]).get("personSelection") is None
+
+
+def test_the_reasons_are_the_rounds_editions():
+
+    from src.services.selection.reasons import UnknownReason, cleaned, reasons_for
+
+    assert [reason.id for reason in reasons_for("devastating")][:2] == ["harm", "accountability"]
+    assert cleaned({"u": ["harm", "trending"]}, ["u"], "devastating") == {"u": ["harm", "trending"]}
+
+    with pytest.raises(UnknownReason):
+        cleaned({"u": ["positive"]}, ["u"], "devastating")
+
+
+def test_the_comparison_says_for_which_reasons_the_ai_chose_the_same(tmp_path):
+
+    selection = service(tmp_path, found=6, selector=FakeSelector(picks=urls(1, 1)))
+    round_ = selection.create_round(["health"])
+
+    selection.record_person_selection(round_["id"], urls(1, 2), reasons={
+        "https://news.example/1": ["positive", "trending"],
+        "https://news.example/2": ["positive", "diversity"],
+    })
+    selection.run_ai_selection(round_["id"], limit=5, min_score=6.0)
+
+    assert selection.get(round_["id"])["comparison"]["reasons"] == {
+        "positive": {"picks": 2, "aiAlso": 1},
+        "trending": {"picks": 1, "aiAlso": 1},
+        "diversity": {"picks": 1, "aiAlso": 0},
+    }
+
+
+def test_what_is_sent_keeps_why_too(tmp_path):
+
+    selection = service(tmp_path)
+    round_ = selection.create_round(["health"])
+
+    queued = selection.queue(
+        round_["id"], urls(1, 1), Jobs(),
+        notes={"https://news.example/1": " first of its kind "},
+        reasons={"https://news.example/1": ["original"]},
+    )
+
+    assert queued["notes"] == {"https://news.example/1": "first of its kind"}
+    assert queued["reasons"] == {"https://news.example/1": ["original"]}
+
+    other = selection.create_round(["health"])
+    with pytest.raises(InvalidSelection, match="Not a reason"):
+        selection.queue(other["id"], urls(1, 1), Jobs(), reasons={"https://news.example/1": ["nope"]})
+    assert selection.get(other["id"])["queued"] is None

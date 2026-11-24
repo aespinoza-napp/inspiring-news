@@ -225,6 +225,7 @@ class TrendingDiscovery:
         topic_emphasis: float | None = None,
         now: datetime | None = None,
         edition: str = "positive",
+        feedback=None,
     ) -> dict:
         """
         A round of candidates from what is trending: the signals in
@@ -241,6 +242,10 @@ class TrendingDiscovery:
         (TrendService.signals_for: the uplifting ones are never the
         Devastating edition's, nor the bleak ones the positive's), the
         screen and the groups' topics.
+
+        `feedback` (selection/feedback.Feedback, None: none), per call: the
+        person's rejected and chosen stories, which lower what is like the
+        rejected ones (ranking.trend_rank).
         """
 
         started = now or datetime.now(timezone.utc)
@@ -396,6 +401,7 @@ class TrendingDiscovery:
                 "title": item.title,
                 "titleFrom": item.title_from,
                 "summary": item.article.snippet,
+                "image": item.article.image,
                 "publishedAt": item.article.published.isoformat(timespec="seconds") if item.article.published else None,
                 "method": row.method,
                 "reading": (
@@ -420,6 +426,8 @@ class TrendingDiscovery:
                 reading, standings[source_id], fit,
                 virality=values.get(trend),
                 emphasis=ranking.WITHOUT_TOPIC if applied is None else applied,
+                # The person's rejected and chosen stories (selection/feedback.py), per call.
+                feedback=feedback,
             )
 
         vectors = {

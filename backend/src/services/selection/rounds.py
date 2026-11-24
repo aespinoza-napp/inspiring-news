@@ -89,6 +89,38 @@ class SelectionRounds:
 
         return rounds[:limit]
 
+    def folder(self) -> Path | None:
+        """Where the rounds are written; None when nothing is persisted (tests)."""
+
+        with self._lock:
+            return self._folder
+
+    def photo_folder(self, round_id: str) -> Path | None:
+        """
+        Where a round's kept photos go (photos.py), beside its file; None
+        when nothing is persisted (tests) or the id is not one of ours.
+        """
+
+        with self._lock:
+            folder = self._folder
+
+        if folder is None or not round_id.isalnum():
+            return None
+
+        return folder / "photos" / round_id
+
+    def photo_path(self, round_id: str, name: str) -> Path | None:
+        """A kept photo's file, when `name` is a name photos.py gives."""
+
+        from src.services.selection.photos import NAME
+
+        folder = self.photo_folder(round_id)
+
+        if folder is None or not NAME.match(name):
+            return None
+
+        return folder / name
+
     # ------------------------------------------------------------------
 
     def _path_locked(self, round_id: str) -> Path | None:
