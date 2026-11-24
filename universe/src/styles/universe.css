@@ -360,6 +360,52 @@ button {
   text-decoration: none;
 }
 
+/* The article on the web, and the newsroom's page beside it (2026-11-23). */
+.read-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  align-items: baseline;
+}
+
+.read-links:empty {
+  display: none;
+}
+
+.secondary-link {
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.primary-link:hover,
+.secondary-link:hover {
+  text-decoration: underline;
+}
+
+/* A section, a source or a verdict in a story's panel: a button to its
+   stories in the universe, looking like the text it was. */
+.concept {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+}
+
+.concept:hover,
+.concept:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.verdict.concept {
+  padding: 0.2rem 0.7rem;
+  border: 1px solid currentColor;
+}
+
 .legend {
   top: 92px;
   left: 14px;
@@ -605,6 +651,13 @@ button {
   color: #6d7c1c;
 }
 
+/* The graph's map shows every analysis, so a story can be FALSE or
+   MISLEADING (2026-11-23); the published map never had one. */
+.v-false,
+.v-misleading {
+  color: #a8382c;
+}
+
 .v-unverified,
 .v-none,
 .v-not_checked {
@@ -633,6 +686,23 @@ button {
 .chip.static {
   cursor: default;
   color: var(--muted);
+}
+
+/* A topic and, beside it, following it for For you. */
+.chip-pair {
+  display: inline-flex;
+}
+
+.chip-pair .chip:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.chip-pair .chip.follow {
+  margin-left: -1px;
+  padding: 0.28rem 0.55rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .chip.static.category {

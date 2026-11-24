@@ -701,13 +701,14 @@ publishes.
   reads `NEO4J_URI`'s articles of `MAP_GRAPH_SOURCE_ID` (the import by
   default) in one Cypher read. Everything after the read is the lake
   map's: `place`, `ranked_entities`, the payloads, links, search and For
-  you. `MAP_SOURCE=lake` (the default) is the map as it was.
+  you. `MAP_SOURCE=lake` (the default until 23 Nov) is the map as it was.
 - **What the graph does not hold is left out, not made up.**
   - The graph keeps no embedding, so every story sits at its topic's
     anchor with the offset its id gives (`approx: "no_vector"`), and
     search answers by name and word only.
   - No verdict: the import was not checked, and the universe says "not
-    checked".
+    checked". (Since 23 Nov a checked article shows the verdict the graph
+    recorded: "The whole graph", below.)
   - No evidence pages, because a claim node is shared by every article with
     the same sentence, so its CHECKED_AGAINST pages may be another
     article's.
@@ -803,3 +804,124 @@ important in the news and articles."
 placing, the ranking, the refresh, Neo4j down, the 503, every name sent,
 and the WordPress labels (closest topic, links, a missing file), against
 `RecordingGraphClient`.
+
+## The whole graph, by default (2026-11-23)
+
+Asked for by the author: "I don't want to use synthetic stories, I just
+want to use the full data based on the one provided by the knowledge
+graph". The universe a person opened with `python
+scripts/preview_universe.py` was the e2e stub's 5,000 made-up stories
+("Outlet 0", "Outlet 1"...), and a graph map needed a second backend
+started by hand with three settings.
+
+- **The graph is the default** (`MAP_SOURCE=graph`), and
+  `MAP_GRAPH_SOURCE_ID` empty, its new default, reads **every** article of
+  the positive graph: 200 nodes that day, 199 stories - the import's 187
+  posts and 12 the pipeline analysed (The Guardian, WHO, Gavi, El Mundo,
+  Positive News, an Inspiring News post checked on 17 Nov...); Gavi's two
+  nodes, one URL with a `utm_` query, are one story, the later analysis
+  kept. Their `source_id` is null,
+  `web` or a configured source's, so no one value named them all: the read
+  is `WHERE $source IS NULL OR a.source_id = $source`. The import's id
+  still narrows it to the import. `MAP_SOURCE=lake` is the published map.
+- **A checked article shows its verdict as the graph recorded it**
+  (`Article.overall_verdict`, worst claim wins), only one of Verdict's five
+  labels, since it becomes a CSS class in the universe; anything else, and
+  every import post, is "not checked". The universe gained a colour for
+  FALSE and MISLEADING, which the published map never showed. Of the 12,
+  6 are FALSE, 4 UNVERIFIED, 1 TRUE and 1 not checked (measured on the
+  stack that day), from a 3B verifier that answers FALSE to true claims
+  (CLAUDE.md): a reader sees what the pipeline concluded, not a checked
+  fact.
+- **Photos and labels stay the import's.** The other 12 have no photo in
+  the graph and no WordPress labels, so they show none: other outlets'
+  photos are still a decision nobody has taken.
+- **The Docker backend serves it.** `backend/.env` names the labels and the
+  photos relative to `backend/`; compose mounts the research labels and the
+  photos' folder read-only and points the settings at them
+  (`/app/research/wordpress-import/`, `/app/data/map-images`), not all of
+  `data/imports/`, which `POST /imports/wordpress` writes. A missing file or
+  folder is no labels or no downloaded photos, never an error.
+- **The preview reads a backend, never made-up stories by default.**
+  `scripts/preview_universe.py` passes the map to `http://127.0.0.1:8000`
+  (the stack's backend) unless told `--backend`, and stops with what to
+  start when nothing answers. `--synthetic` is the stub, for the map's
+  performance only.
+
+## A click stays in the universe; the article goes to the web (2026-11-23)
+
+Asked for by the author: "every time I click on something I would like to
+get clicked that concept inside the universe of Inspiring News. If you
+click to the article link it should be linked with the actual web in
+order to be consistent."
+
+- **Every concept is a way into the universe** (`universe/src/scripts/ui.ts`,
+  `showStories`): a name, a topic, the story's section, its source, its
+  verdict and each WordPress category or tag, in the story's panel or in
+  the search. A click lights that concept's stories, dims the rest, moves
+  the camera to them (the topic's or the section's anchor, a name's
+  diamond, else where its stories are, the whole view when they are spread
+  across it) and lists them in the panel, newest first. Before, only a name
+  did, without a list; a topic chip only followed the topic, and the rest
+  was text.
+- **Following a topic for For you** moved to the small "+" beside its chip.
+- **The article link is the article on the web**, where its outlet published
+  it, in a new tab: "Read it on inspiringnews.ai ↗", "...theguardian.com".
+  `links.url` (`index.web_address`: http(s) only, `utm_` parameters
+  dropped; two of the graph's came from a Substack newsletter). The
+  newsroom's `/reader/{id}` stays beside it as "Its checks" only when the
+  map is the lake's (`links.readerPage`): the graph's stories are mostly
+  not published, and that page would answer 404.
+- **The list's titles open the story in the universe**, not the reader page.
+- **The WordPress labels travel with the map** when the graph is read with
+  them: `labels` (each category and tag, `n` and `k`) and each story's as
+  indices in `articles.wp`, so a label's stories are found in the browser
+  like a name's. 177 that day, 8 categories and 169 tags, on the 187 posts.
+- **Checked in headless Chrome against the running stack:** the Guardian's
+  source showed its 1 story, the topic Mental Health 57, the category
+  Sociedad 52, the section Health 46, "not checked" 188; the links went to
+  theguardian.com and inspiringnews.ai, `target="_blank"`, `rel="noopener
+  noreferrer"`.
+
+## Photos that wait for the reader (2026-11-23)
+
+Asked for by the author: the page was slow to load "because of the
+photos"; their use should be optimised, and showing them or not should
+put "the interaction with the web" first.
+
+- **What was measured** (headless Chrome, no cache, against the stack):
+  the map's document is 210 KB and arrives in 0.4 s; the photos were the
+  site's PNGs, the 768 px one 212 KB at the median and up to 702 KB, the
+  thumbnail 20 KB. Eight thumbnails (230 KB) were asked for at 1.1 s, while
+  the universe was still being drawn, and new ones kept coming as the
+  island turned (76 in four minutes). The hover card asked for the 768 px
+  photo of every story the pointer crossed. And each photo request called
+  the map's refresh, so every one asked for while it read the graph (every
+  30 s) waited for Neo4j.
+- **Light copies.** `scripts/optimize_map_photos.py` makes WebP copies in
+  the four sizes the universe shows: 150 px (3.9 KB at the median; photos
+  in space, lists), 480 (17 KB; the hover card and the selected photo in
+  space, and what the document's `img` column now carries), 768 (35 KB; the
+  panel, by `srcset` where the screen needs it) and at most 1600 (94 KB; the
+  photo opened large). `served_photo` prefers them and falls back to the
+  PNGs, so a folder without them works as before.
+- **The interaction first.** The photos around (`near`) wait until the
+  universe is drawn and the browser idle (`whenIdle`: 0.4 s, then
+  `requestIdleCallback`, at most 1.5 s more), and none is added while the
+  reader drags, zooms or the camera flies (`UniverseScene.busy`, 350 ms of
+  glide included); those already up stay. The photo of the story a reader
+  clicked, and of its connected ones, come at once, the selected one with
+  `fetchpriority="high"`, the rest `low`. The hover card shows the 480 px
+  copy, and no photo at all with the photos off.
+- **Off when it would cost.** The switch is remembered in this browser
+  (`inspiring-news:photos`), and on a connection that asks to save data or is
+  slow (`navigator.connection`: `saveData`, 2g or 3g) the photos start off.
+- **The server.** A photo is looked up in the last read's manifest, never
+  waiting for a new read of the graph; and a WebP is served as
+  `image/webp`: the backend image's Python has no type for it, and the
+  site's own ten WebP files went out as `text/plain`.
+- **After** (the same measure): the universe drawn at 1.8 s; the first
+  photo asked for at 3.6 s; 10 thumbnails, 45 KB, in the first 20 s; a
+  pointer sweep over four stories 95 KB, where the 768 px PNGs were about
+  850 KB.
+

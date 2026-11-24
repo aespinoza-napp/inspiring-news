@@ -535,9 +535,10 @@ def get_map_index():
     Source countries are read once, here, for the zone a naive
     publication time is in.
 
-    With MAP_SOURCE=graph, the positive graph's articles of
-    MAP_GRAPH_SOURCE_ID instead (src/services/news_map/graph_source.py):
-    the WordPress import, which the lake never publishes.
+    With MAP_SOURCE=graph (the default since 2026-11-23), the positive
+    graph's articles instead (src/services/news_map/graph_source.py): all of
+    them, or MAP_GRAPH_SOURCE_ID's - the WordPress import, which the lake
+    never publishes, and every analysis the pipeline wrote.
     """
 
     global _map_index

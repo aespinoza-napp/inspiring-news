@@ -21,6 +21,10 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { NO_GROUP, type Universe } from "./data";
 
+// How long after the reader lets go the view counts as still moving: the
+// controls glide on (damping) for about that long.
+const SETTLE_MS = 350;
+
 // One map unit in world units, and the depth stretched so the galaxy has
 // some thickness without losing its disc.
 const R = 10;
@@ -226,6 +230,8 @@ export class UniverseScene {
   private easing = false;
 
   private flight: { from: THREE.Vector3; to: THREE.Vector3; fromTarget: THREE.Vector3; toTarget: THREE.Vector3; start: number; duration: number } | null = null;
+  private handling = false;
+  private settledAt = 0;
   private hoverIndex = -1;
   private pointerDirty = false;
   private motion: boolean;
@@ -257,9 +263,12 @@ export class UniverseScene {
     let resume = 0;
     this.controls.addEventListener("start", () => {
       this.controls.autoRotate = false;
+      this.handling = true;
       window.clearTimeout(resume);
     });
     this.controls.addEventListener("end", () => {
+      this.handling = false;
+      this.settledAt = performance.now();
       resume = window.setTimeout(() => (this.controls.autoRotate = this.motion), 8000);
     });
 
@@ -610,6 +619,13 @@ export class UniverseScene {
     p.project(this.camera);
     if (p.z > 1) return null;
     return { x: (p.x * 0.5 + 0.5) * this.host.clientWidth, y: (-p.y * 0.5 + 0.5) * this.host.clientHeight, distance };
+  }
+
+  // Whether the reader is moving the view (a drag, a pinch, the wheel, and
+  // the glide after it) or the camera is flying to something: the photos
+  // wait for it to settle, so the interaction comes first (2026-11-23).
+  get busy(): boolean {
+    return this.handling || this.flight !== null || performance.now() - this.settledAt < SETTLE_MS;
   }
 
   // How far the camera is from what it looks at: near enough, the stories'

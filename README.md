@@ -214,15 +214,16 @@ dependency is down. To run the pieces without Docker, see
 
 ### Inspiring News Universe
 
-The readers' 3D universe is its own app in [`universe/`](universe/). To look
-at it with synthetic stories, without starting anything else:
+The readers' 3D universe is its own app in [`universe/`](universe/). It shows
+every article of the knowledge graph: the WordPress import with its photos, and
+every analysis with its verdict. With the Docker stack running:
 
 ```bash
 cd universe && npm ci && cd ..        # once
 python3 scripts/preview_universe.py   # then open http://127.0.0.1:4321/
 ```
 
-To see the real stories and their photos, read from the graph, see
+The settings, and made-up stories for performance work, are in
 [`universe/README.md`](universe/README.md).
 
 ## Status and what is next

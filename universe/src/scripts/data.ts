@@ -25,6 +25,9 @@ export interface MapDocument {
   count: number;
   sources: string[];
   entities: { k: string; n: string; t: string }[];
+  // The WordPress categories and tags, when the map reads the graph with its
+  // labels (23 Nov); each story's in `articles.wp`.
+  labels?: Label[];
   articles: {
     id: string[];
     title: string[];
@@ -43,7 +46,13 @@ export interface MapDocument {
     // under the map ("/images/<file>"); absent from a backend before them.
     img?: (string | null)[];
     thumb?: (string | null)[];
+    wp?: number[][];
   };
+}
+
+export interface Label {
+  n: string;
+  k: "category" | "tag";
 }
 
 export interface Universe {
@@ -66,6 +75,9 @@ export interface Universe {
   // Each story's photo at about 768 px and at 150, ready for an <img src>.
   images: (string | null)[];
   thumbs: (string | null)[];
+  // The WordPress labels and each story's, as indices; empty without them.
+  labels: Label[];
+  labelsOf: number[][];
   indexOf: Map<string, number>;
 }
 
@@ -115,12 +127,16 @@ export function decode(document: MapDocument): Universe {
     verdicts: a.v,
     images: a.id.map((_, i) => photoUrl(a.img?.[i])),
     thumbs: a.id.map((_, i) => photoUrl(a.thumb?.[i]) ?? photoUrl(a.img?.[i])),
+    labels: document.labels ?? [],
+    labelsOf: a.id.map((_, i) => a.wp?.[i] ?? []),
     indexOf,
   };
 }
 
 export interface Photo {
   src: string;
+  // 480 px wide, when the photos were optimised (23 Nov); absent before.
+  small?: string | null;
   thumb: string | null;
   // The original, to open the photo; older backends send none.
   full?: string | null;
@@ -129,9 +145,18 @@ export interface Photo {
   featured: boolean;
 }
 
+// The article on the web: http(s) only, anything else no link.
+export function webUrl(url: string | null | undefined): string | null {
+  return url && /^https?:\/\//.test(url) ? url : null;
+}
+
 export interface Links {
   id: string;
   title: string;
+  // Where to read it (23 Nov): the article on the web, and whether the
+  // newsroom's reader page has it too; absent from a backend before them.
+  url?: string | null;
+  readerPage?: boolean;
   topics: { key: string; name: string; confidence: number }[];
   entities: { key: string; name: string; type: string; articles: number }[];
   // The story's own WordPress labels, when the map reads the graph with

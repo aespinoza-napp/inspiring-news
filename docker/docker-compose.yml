@@ -209,6 +209,12 @@ services:
       # (see CLAUDE.md's LLMClient note), so the container reaches it
       # through Docker's host gateway rather than its own localhost.
       - LLM_BASE_URL=http://host.docker.internal:11434/v1
+      # The news map's WordPress labels and downloaded photos (MAP_SOURCE=graph,
+      # the default): backend/.env names them relative to backend/ on the
+      # host; here they are the read-only mounts below. A missing file or
+      # folder is no labels or no downloaded photos, never an error.
+      - MAP_GRAPH_LABELS=/app/research/wordpress-import/wordpress-labels.json
+      - MAP_IMAGES_DIR=/app/data/map-images
     extra_hosts:
       # host.docker.internal resolves natively on Docker Desktop, but not
       # on plain Linux/WSL engines - this makes the LLM_BASE_URL above
@@ -241,6 +247,12 @@ services:
       # read only when TOPIC_GROUP_CLASSIFIER=iptc. Without the mount the
       # switch would find no model inside the container.
       - ../backend/data/models:/app/data/models:ro
+      # What the news map shows beside the graph (2026-11-23): the research
+      # notebook's WordPress labels (committed), and the import's photos,
+      # which git ignores and scripts/wordpress_images.py downloads. Only the
+      # photos' folder, not data/imports: POST /imports/wordpress writes there.
+      - ../research/wordpress-import/data:/app/research/wordpress-import:ro
+      - ../backend/data/imports/inspiringnews-buenasnoticias.WordPress.2026-11-03/images:/app/data/map-images:ro
       # model-cache moved to the `inference` service above - the
       # transformer models live there now, not here.
     depends_on:

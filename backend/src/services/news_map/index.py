@@ -23,6 +23,7 @@ import threading
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from logging import getLogger
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import numpy as np
 
@@ -92,6 +93,26 @@ class MapArticle:
     image: str | None = None
     thumb: str | None = None
     image_alt: str | None = None
+    # The article on the web, where its outlet published it (2026-11-23):
+    # the universe links a story to it, "to be consistent" (the author).
+    url: str | None = None
+
+
+def web_address(url) -> str | None:
+    """
+    An article's address as a reader may follow it: http(s) only, never
+    another scheme into an <a href>, and without the `utm_` parameters a
+    newsletter link carries (two of the graph's came from Substack).
+    """
+
+    if not isinstance(url, str) or not url.startswith(("https://", "http://")):
+        return None
+
+    parts = urlsplit(url)
+
+    kept = [(key, value) for key, value in parse_qsl(parts.query, keep_blank_values=True) if not key.lower().startswith("utm_")]
+
+    return urlunsplit(parts._replace(query=urlencode(kept)))
 
 
 def _proper_name(name: str) -> bool:
@@ -225,6 +246,7 @@ def build_article(entry, exploitation: dict, processed: dict | None, names, coun
         approximate=placement.approximate,
         sort_at=entry.sort_at,
         vector=vector,
+        url=shown.get("url") or None,
     )
 
 
@@ -233,6 +255,11 @@ class MapIndex:
     # How many of an article's names leave the server, in the map's columns
     # and in its links. GraphMapIndex sends more (news_map/graph_source.py).
     top_entities: int = TOP_ENTITIES
+
+    # Whether the newsroom's /reader/{id} holds every story of this map: the
+    # lake's map is the reader's published set, so it does. The universe
+    # offers "its checks" there beside the article on the web.
+    reader_pages: bool = True
 
     def __init__(self, lake, reader, names, countries: dict[str, str] | None = None):
 
@@ -600,6 +627,10 @@ class MapIndex:
         return {
             "id": article.id,
             "title": article.title,
+            # Where to read it: the article on the web, and whether the
+            # newsroom's reader page has it too (2026-11-23).
+            "url": web_address(article.url),
+            "readerPage": self.reader_pages,
             "x": round(article.x, 4),
             "y": round(article.y, 4),
             "topics": [

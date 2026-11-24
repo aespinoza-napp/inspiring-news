@@ -2,7 +2,7 @@
 // (search, modes, the legend, the story panel, the list, For you and the
 // account), wired to the backend's /map and /account routes.
 
-import { account, api, madridToday, NO_GROUP, photoUrl, type Interest, type Links, type Photo, type SearchResult, type Universe } from "./data";
+import { account, api, madridToday, NO_GROUP, photoUrl, webUrl, type Interest, type Links, type Photo, type SearchResult, type Universe } from "./data";
 import { GROUP_COLORS, KINDS, kindOf, UniverseScene, type KindKey, type NetworkNode } from "./scene";
 
 // Not "today": at the 30-60 stories a day the newsroom publishes, one day
@@ -55,6 +55,8 @@ const ALL_PHOTOS_UNDER = 24;
 
 const READER_BASE = import.meta.env.PUBLIC_READER_BASE ?? "";
 const LOCAL_INTERESTS = "inspiring-news:interests";
+// The reader's own Photos switch, kept in this browser (2026-11-23).
+const LOCAL_PHOTOS = "inspiring-news:photos";
 const MIN_CHOICES = 3;
 
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) => document.querySelector(selector) as T;
@@ -65,14 +67,51 @@ function escape(text: string): string {
 
 // A story's WordPress labels, beside ours: its categories and tags as the
 // site has them, the topics of ours they point to, and, when our classifier
-// gave it no topic, that its place comes from them.
-function wordpressLabels(wp: NonNullable<Links["wordpress"]>): string {
-  const chip = (text: string, extra = "") => `<span class="chip static${extra}">${escape(text)}</span>`;
+// gave it no topic, that its place comes from them. Each is a button to its
+// stories in the universe (23 Nov) when the map document lists it
+// (`labelOf` >= 0), else a plain label.
+function wordpressLabels(wp: NonNullable<Links["wordpress"]>, labelOf: (kind: "category" | "tag", name: string) => number): string {
+  const chip = (kind: "category" | "tag", name: string, extra = "") => {
+    const shown = kind === "tag" ? `#${name}` : name;
+    const ref = labelOf(kind, name);
+    return ref >= 0
+      ? `<button type="button" class="chip${extra}" data-wp="${ref}" title="Its stories in the universe">${escape(shown)}</button>`
+      : `<span class="chip static${extra}">${escape(shown)}</span>`;
+  };
   return `
     <p class="hud-label">On the WordPress site</p>
-    <div class="chips">${wp.categories.map((c) => chip(c, " category")).join("")}${wp.tags.map((t) => chip(`#${t}`)).join("")}</div>
-    ${wp.topics.length ? `<p class="muted small">Its labels point to ${wp.topics.map((t) => escape(t.name)).join(", ")}.</p>` : ""}
+    <div class="chips">${wp.categories.map((c) => chip("category", c, " category")).join("")}${wp.tags.map((t) => chip("tag", t)).join("")}</div>
+    ${wp.topics.length ? `<p class="muted small">Its labels point to ${wp.topics.map((t) => `<button type="button" class="link" data-topic="${escape(t.key)}">${escape(t.name)}</button>`).join(", ")}.</p>` : ""}
     ${wp.topicFrom === "WordPress" ? `<p class="muted small">Placed by these labels: our classifier gave it no topic.</p>` : ""}`;
+}
+
+// "www.theguardian.com" -> "theguardian.com", for "Read it on ...".
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "the web";
+  }
+}
+
+// Photos on by default, unless the reader turned them off in this browser
+// before, or the connection asks to save data or is slow.
+function photosByDefault(): boolean {
+  try {
+    const chosen = window.localStorage.getItem(LOCAL_PHOTOS);
+    if (chosen === "on" || chosen === "off") return chosen === "on";
+  } catch {
+    // No storage: the connection decides.
+  }
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  return !(connection?.saveData || ["slow-2g", "2g", "3g"].includes(connection?.effectiveType ?? ""));
+}
+
+// After the first frames, when the browser has nothing else to do (at most
+// 1.5 s later): what is not the universe itself waits for this.
+function whenIdle(run: () => void): void {
+  const idle = (window as Window & { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number }).requestIdleCallback;
+  window.setTimeout(() => (idle ? idle(run, { timeout: 1500 }) : run()), 400);
 }
 
 // A story's thumbnail in a list: decorative, its title follows it.
@@ -302,29 +341,87 @@ export function start(): void {
   }
 
   function selectNode(node: number): void {
-    const data = state.data;
     const n = nodes[node];
-    if (!data || !n) return;
+    if (!state.data || !n) return;
+    const kind = KINDS.find((k) => k.key === n.kind)!;
+    showStories(n.stories, { kind: kind.one, color: kind.color, name: n.name, note: `named ${n.name}`, lead: "Named in" }, false);
+    scene.highlightNode(node);
+    scene.flyToNode(node);
+  }
+
+  // ---- a concept, clicked -------------------------------------------------
+  //
+  // Asked for by the author (2026-11-23): "every time I click on something I
+  // would like to get clicked that concept inside the universe". A name, a
+  // topic, a section, a source, a verdict or a WordPress label, wherever it
+  // is clicked: its stories lit and the rest dimmed, the camera on them, and
+  // their list in the panel. Only the article's own link leaves, to the web.
+
+  interface Concept {
+    kind: string;
+    color: string;
+    name: string;
+    // For the status line: "12 of 199 stories · about Climate".
+    note: string;
+    // "Named in 12 stories", "About it: 12 stories".
+    lead: string;
+  }
+
+  function storiesWhere(test: (i: number) => boolean): number[] {
+    const found: number[] = [];
+    for (let i = 0; i < state.data!.count; i++) if (test(i)) found.push(i);
+    return found;
+  }
+
+  // The camera on a set of stories: one is flown to like a selected story,
+  // a group spread across the galaxy shows the whole view.
+  function flyToStories(stories: number[]): void {
+    const p = state.data!.positions;
+    if (!stories.length) return;
+    let x = 0;
+    let y = 0;
+    let z = 0;
+    for (const i of stories) {
+      x += p[i * 3];
+      y += p[i * 3 + 1];
+      z += p[i * 3 + 2];
+    }
+    x /= stories.length;
+    y /= stories.length;
+    z /= stories.length;
+    let spread = 0;
+    for (const i of stories) spread = Math.max(spread, Math.hypot(p[i * 3] - x, p[i * 3 + 1] - y));
+    if (stories.length === 1) scene.flyTo(x, y, z, 3.2);
+    else if (spread > 0.65) scene.home();
+    else scene.flyTo(x, y, z, Math.min(9, Math.max(3.5, 3 + spread * 9)));
+  }
+
+  function showStories(stories: number[], concept: Concept, fly = true): void {
+    const data = state.data!;
     state.selected = -1;
     state.related = [];
     scene.mark(-1);
     scene.setLinks(-1, []);
-    state.strong = new Set(n.stories);
+    scene.highlightNode(-1);
+    state.strong = new Set(stories);
     state.section = null;
+    $("#legend").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", "false"));
     refresh();
-    status(state.strong, `named ${n.name}`);
-    scene.highlightNode(node);
-    scene.flyToNode(node);
+    status(state.strong, concept.note);
+    if (fly) flyToStories(stories);
+    syncPhotos();
+    const url = new URL(window.location.href);
+    url.searchParams.delete("story");
+    window.history.replaceState(null, "", url);
 
-    const kind = KINDS.find((k) => k.key === n.kind)!;
-    const newest = [...n.stories].sort((a, b) => (data.days[b] ?? "").localeCompare(data.days[a] ?? "")).slice(0, 40);
+    const newest = [...stories].sort((a, b) => (data.days[b] ?? "").localeCompare(data.days[a] ?? "")).slice(0, 40);
     const panel = $("#panel");
     panel.hidden = false;
     panel.innerHTML = `
       <button type="button" class="close" aria-label="Close">×</button>
-      <p class="hud-label" style="color:${kind.color}">${kind.one}</p>
-      <h2>${escape(n.name)}</h2>
-      <p class="muted">Named in ${n.stories.length} stories${n.stories.length > newest.length ? `; the ${newest.length} newest` : ""}:</p>
+      <p class="hud-label" style="color:${concept.color}">${escape(concept.kind)}</p>
+      <h2>${escape(concept.name)}</h2>
+      <p class="muted">${escape(concept.lead)} ${stories.length} ${stories.length === 1 ? "story" : "stories"}${stories.length > newest.length ? `; the ${newest.length} newest` : ""}${stories.length ? ":" : "."}</p>
       <ol class="related with-thumbs">${newest.map((i) => `<li>${thumb(data.thumbs[i])}<div><button type="button" class="link" data-story="${data.ids[i]}">${escape(data.titles[i])}</button><span class="muted"> · ${escape(data.sources[data.sourceOf[i]])}${data.days[i] ? ` · ${data.days[i]}` : ""}</span></div></li>`).join("")}</ol>`;
     panel.querySelector(".close")!.addEventListener("click", () => {
       panel.hidden = true;
@@ -335,12 +432,86 @@ export function start(): void {
     panel.querySelectorAll<HTMLButtonElement>("[data-story]").forEach((b) => b.addEventListener("click", () => void select(data.indexOf.get(b.dataset.story!)!)));
   }
 
+  function focusEntity(key: string): void {
+    const data = state.data!;
+    // A name drawn in the network is flown to as if its diamond were clicked.
+    const node = nodes.findIndex((n) => n.key === key);
+    if (node >= 0) {
+      selectNode(node);
+      return;
+    }
+    const ref = data.entities.findIndex((e) => e.k === key);
+    const entity = data.entities[ref];
+    const kindKey = entity ? kindOf(entity.t) : null;
+    const kind = KINDS.find((k) => k.key === kindKey);
+    const name = entity?.n ?? key.split(":").slice(1).join(":");
+    showStories(storiesWhere((i) => data.entitiesOf[i].includes(ref)), { kind: kind?.one ?? "Name", color: kind?.color ?? "#587069", name, note: `named ${name}`, lead: "Named in" });
+  }
+
+  function focusTopic(key: string): void {
+    const data = state.data!;
+    const t = data.topics.findIndex((topic) => topic.key === key);
+    if (t < 0) return;
+    const topic = data.topics[t];
+    const g = data.groups.findIndex((group) => group.key === topic.group);
+    showStories(storiesWhere((i) => data.topicsOf[i].includes(t)), { kind: "Topic", color: g >= 0 ? GROUP_COLORS[g] : "#587069", name: topic.name, note: `about ${topic.name}`, lead: "About it:" }, false);
+    scene.flyTo(topic.x, topic.y, 0, 5);
+  }
+
+  function focusSection(g: number): void {
+    const data = state.data!;
+    const group = data.groups[g];
+    if (!group) return;
+    showStories(storiesWhere((i) => data.group[i] === g), { kind: "Section", color: GROUP_COLORS[g], name: group.name, note: `in ${group.name}`, lead: "In it:" }, false);
+    scene.flyTo(Math.cos(group.angle) * 0.74, Math.sin(group.angle) * 0.74, 0, 7);
+  }
+
+  function focusSource(s: number): void {
+    const data = state.data!;
+    const name = data.sources[s] ?? "";
+    showStories(storiesWhere((i) => data.sourceOf[i] === s), { kind: "Source", color: "#587069", name, note: `from ${name}`, lead: "Published by it:" });
+  }
+
+  function focusVerdict(verdict: string | null): void {
+    const data = state.data!;
+    const text = verdictText(verdict);
+    showStories(storiesWhere((i) => (data.verdicts[i] ?? null) === verdict), { kind: "Verdict", color: "#587069", name: text, note: text, lead: "With it:" });
+  }
+
+  function focusLabel(ref: number): void {
+    const data = state.data!;
+    const label = data.labels[ref];
+    if (!label) return;
+    const name = label.k === "tag" ? `#${label.n}` : label.n;
+    showStories(storiesWhere((i) => data.labelsOf[i].includes(ref)), { kind: label.k === "tag" ? "Tag on the site" : "Category on the site", color: "#587069", name, note: `labelled ${name} on the site`, lead: "Labelled with it:" });
+  }
+
+  function labelOf(kind: "category" | "tag", name: string): number {
+    return state.data!.labels.findIndex((label) => label.k === kind && label.n === name.trim());
+  }
+
+  // Every concept button under `root`, wherever it was drawn.
+  function bindConcepts(root: ParentNode): void {
+    root.querySelectorAll<HTMLButtonElement>("[data-topic]").forEach((b) => b.addEventListener("click", () => focusTopic(b.dataset.topic!)));
+    root.querySelectorAll<HTMLButtonElement>("[data-entity]").forEach((b) => b.addEventListener("click", () => focusEntity(b.dataset.entity!)));
+    root.querySelectorAll<HTMLButtonElement>("[data-wp]").forEach((b) => b.addEventListener("click", () => focusLabel(Number(b.dataset.wp))));
+    root.querySelectorAll<HTMLButtonElement>("[data-section]").forEach((b) => b.addEventListener("click", () => focusSection(Number(b.dataset.section))));
+    root.querySelectorAll<HTMLButtonElement>("[data-source]").forEach((b) => b.addEventListener("click", () => focusSource(Number(b.dataset.source))));
+    root.querySelectorAll<HTMLButtonElement>("[data-verdict]").forEach((b) => b.addEventListener("click", () => focusVerdict(b.dataset.verdict || null)));
+  }
+
   // ---- photos in space ----------------------------------------------------
 
   type PhotoKind = "selected" | "related" | "near";
   const photoLayer = $("#photos");
   const floating = new Map<number, { element: HTMLButtonElement; kind: PhotoKind }>();
-  let photosOn = true;
+  // Photos on, unless this reader turned them off here before, or the
+  // connection asks to save data or is slow (2026-11-23: "prioritise the
+  // interaction"); the switch, or P, turns them on.
+  let photosOn = photosByDefault();
+  // None float until the universe is drawn and the browser is idle: the
+  // first thing a reader gets is the universe to move, not photos to fetch.
+  let photosReady = false;
   let photoFrame = 0;
 
   function inFocus(i: number): boolean {
@@ -353,8 +524,17 @@ export function start(): void {
     const wanted = new Map<number, PhotoKind>();
     if (!data || !photosOn) return wanted;
 
+    // The ones a reader asked for by clicking, at once.
     if (state.selected >= 0 && data.images[state.selected]) wanted.set(state.selected, "selected");
     for (const i of state.related) if (data.thumbs[i] && !wanted.has(i)) wanted.set(i, "related");
+
+    // The ones around, only once the universe is ready, and never while the
+    // reader moves it: those already up stay, new ones wait for it to settle.
+    if (!photosReady) return wanted;
+    if (scene.busy) {
+      for (const [i, shown] of floating) if (shown.kind === "near" && !wanted.has(i)) wanted.set(i, "near");
+      return wanted;
+    }
 
     const focus = state.strong && state.section === null ? state.strong : null;
     if (focus && focus.size <= ALL_PHOTOS_UNDER) {
@@ -406,7 +586,8 @@ export function start(): void {
       element.tabIndex = -1;
       element.title = data.titles[i];
       const src = kind === "selected" ? data.images[i] : data.thumbs[i];
-      element.innerHTML = `<img src="${escape(src!)}" alt="" decoding="async" />`;
+      // The selected story's photo is what the reader asked for; the rest can wait.
+      element.innerHTML = `<img src="${escape(src!)}" alt="" decoding="async" fetchpriority="${kind === "selected" ? "high" : "low"}" />`;
       if (kind !== "selected" && data.group[i] !== NO_GROUP) element.style.setProperty("--tint", GROUP_COLORS[data.group[i]]);
       element.addEventListener("click", () => (i === state.selected ? openPhoto(data.images[i]!, data.titles[i], null) : void select(i)));
       element.addEventListener("pointerenter", () => {
@@ -436,13 +617,21 @@ export function start(): void {
   }
 
   const photosButton = $("#photos-button");
-  function setPhotos(on: boolean): void {
+  function setPhotos(on: boolean, chosen = true): void {
     photosOn = on;
     photosButton.setAttribute("aria-pressed", String(on));
     photosButton.textContent = on ? "on" : "off";
+    if (chosen) {
+      try {
+        window.localStorage.setItem(LOCAL_PHOTOS, on ? "on" : "off");
+      } catch {
+        // Kept for this visit only.
+      }
+    }
     syncPhotos();
   }
   photosButton.addEventListener("click", () => setPhotos(!photosOn));
+  setPhotos(photosOn, false);
 
   // ---- a photo, large ------------------------------------------------------
 
@@ -490,6 +679,10 @@ export function start(): void {
       if (!data.images.some(Boolean)) photosButton.closest("p")!.hidden = true;
       $("#loading").classList.add("gone");
       setTimeout(() => $("#loading").remove(), 1200);
+      whenIdle(() => {
+        photosReady = true;
+        syncPhotos();
+      });
       const shared = new URLSearchParams(window.location.search);
       const mode = shared.get("mode") as Mode | null;
       if (mode === "week" || mode === "foryou") setMode(mode);
@@ -624,7 +817,9 @@ export function start(): void {
       tip.hidden = true;
       return;
     }
-    const photo = data.images[index] ?? data.thumbs[index];
+    // The 480 px copy (`images`), never the panel's 768 px: the pointer
+    // crosses many stories. None with the photos off.
+    const photo = photosOn ? (data.images[index] ?? data.thumbs[index]) : null;
     tip.classList.toggle("with-photo", Boolean(photo));
     tip.innerHTML = `${photo ? `<img src="${escape(photo)}" alt="" decoding="async" />` : ""}<strong>${escape(data.titles[index])}</strong><span>${escape(data.sources[data.sourceOf[index]])}${data.days[index] ? ` · ${data.days[index]}` : ""} · ${verdictText(data.verdicts[index])}</span>`;
     tip.style.left = `${Math.min(screen.x + 16, window.innerWidth - 320)}px`;
@@ -656,14 +851,17 @@ export function start(): void {
     const hero = data.images[index];
     panel.innerHTML = `
       <button type="button" class="close" aria-label="Close">×</button>
-      ${hero ? `<figure class="photo-hero"><button type="button" class="photo-open" aria-label="Open the photo"><img id="panel-photo" src="${escape(hero)}" alt="" decoding="async" /></button><figcaption id="panel-photo-caption" hidden></figcaption></figure>` : ""}
-      <p class="hud-label" style="color:${data.group[index] === NO_GROUP ? "#8a90a6" : GROUP_COLORS[data.group[index]]}">${data.group[index] === NO_GROUP ? "Not placed" : escape(data.groups[data.group[index]].name)}</p>
+      ${hero ? `<figure class="photo-hero"><button type="button" class="photo-open" aria-label="Open the photo"><img id="panel-photo" src="${escape(hero)}" alt="" decoding="async" fetchpriority="high" /></button><figcaption id="panel-photo-caption" hidden></figcaption></figure>` : ""}
+      ${data.group[index] === NO_GROUP
+        ? `<p class="hud-label" style="color:#8a90a6">Not placed</p>`
+        : `<p class="hud-label"><button type="button" class="concept" data-section="${data.group[index]}" style="color:${GROUP_COLORS[data.group[index]]}" title="The section in the universe">${escape(data.groups[data.group[index]].name)}</button></p>`}
       <h2>${escape(data.titles[index])}</h2>
-      <p class="muted">${escape(data.sources[data.sourceOf[index]])}${data.days[index] ? ` · ${data.days[index]}` : ""}</p>
-      <p><span class="verdict v-${(data.verdicts[index] ?? "none").toLowerCase()}">${verdictText(data.verdicts[index])}</span></p>
-      <p><a class="primary-link" href="${READER_BASE}/reader/${data.ids[index]}">Read the story and its checks →</a></p>
+      <p class="muted"><button type="button" class="concept" data-source="${data.sourceOf[index]}" title="Its stories in the universe">${escape(data.sources[data.sourceOf[index]])}</button>${data.days[index] ? ` · ${data.days[index]}` : ""}</p>
+      <p><button type="button" class="verdict concept v-${(data.verdicts[index] ?? "none").toLowerCase()}" data-verdict="${data.verdicts[index] ?? ""}" title="Every story with it, in the universe">${verdictText(data.verdicts[index])}</button></p>
+      <p class="read-links" id="panel-read"></p>
       <div id="panel-links"><p class="muted">Tracing its connections…</p></div>`;
     panel.querySelector(".close")!.addEventListener("click", () => void select(-1));
+    bindConcepts(panel);
     let main: Photo | null = hero ? { src: hero, thumb: data.thumbs[index], full: null, alt: null, caption: null, featured: true } : null;
     panel.querySelector(".photo-open")?.addEventListener("click", () => {
       // main's addresses are resolved already (photoUrl), once.
@@ -680,13 +878,34 @@ export function start(): void {
     }
     if (state.selected !== index) return;
 
+    // The article itself, on the web where it was published (23 Nov: "if you
+    // click to the article link it should be linked with the actual web");
+    // the newsroom's reader page beside it only when it has the story.
+    const web = webUrl(links.url);
+    const reader = links.readerPage !== false;
+    $("#panel-read").innerHTML = [
+      web ? `<a class="primary-link" href="${escape(web)}" target="_blank" rel="noopener noreferrer">Read it on ${escape(hostOf(web))} ↗</a>` : "",
+      reader ? `<a class="${web ? "secondary-link" : "primary-link"}" href="${READER_BASE}/reader/${data.ids[index]}">${web ? "Its checks →" : "Read the story and its checks →"}</a>` : "",
+    ]
+      .filter(Boolean)
+      .join("");
+
     // The photos, as served: the main one's alt and caption, and the rest of the post's.
     const photos = (links.photos ?? [])
       .map((photo) => ({ ...photo, src: photoUrl(photo.src)!, thumb: photoUrl(photo.thumb), full: photoUrl(photo.full) }))
       .filter((photo) => photo.src);
     if (main && photos[0]) {
       main = photos[0];
-      $<HTMLImageElement>("#panel-photo").alt = main.alt ?? "";
+      const image = $<HTMLImageElement>("#panel-photo");
+      // The panel's own size, 768 px, where the screen needs it: the 480 px
+      // one it opened with (already in the cache from the hover) stays on a
+      // plain screen or a phone.
+      const small = photoUrl(photos[0].small);
+      if (small && main.src !== small) {
+        image.sizes = "(max-width: 640px) 100vw, 26rem";
+        image.srcset = `${small} 480w, ${main.src} 768w`;
+      }
+      image.alt = main.alt ?? "";
       const caption = $("#panel-photo-caption");
       caption.textContent = main.caption ?? "";
       caption.hidden = !main.caption;
@@ -707,9 +926,9 @@ export function start(): void {
     $("#panel-links").innerHTML = `
       ${gallery.length ? `<p class="hud-label">Its photos</p><div class="gallery">${gallery.map((photo, g) => `<button type="button" class="gallery-photo" data-photo="${g}" aria-label="${escape(photo.alt ?? photo.caption ?? "A photo of the story")}"><img src="${escape(photo.thumb ?? photo.src)}" alt="" loading="lazy" decoding="async" /></button>`).join("")}</div>` : ""}
       <p class="hud-label">Topics</p>
-      <div class="chips">${links.topics.map((t) => `<button type="button" class="chip" data-follow="topic" data-key="${escape(t.key)}" data-label="${escape(t.name)}" aria-pressed="${followed("topic", t.key)}">${followed("topic", t.key) ? "✓ " : "+ "}${escape(t.name)}</button>`).join("")}</div>
+      <div class="chips">${links.topics.map((t) => `<span class="chip-pair"><button type="button" class="chip" data-topic="${escape(t.key)}" title="The topic in the universe">${escape(t.name)}</button><button type="button" class="chip follow" data-follow="topic" data-key="${escape(t.key)}" data-label="${escape(t.name)}" aria-pressed="${followed("topic", t.key)}" aria-label="${followed("topic", t.key) ? "Stop following" : "Follow"} ${escape(t.name)}" title="${followed("topic", t.key) ? "Following: click to stop" : "Follow it in For you"}">${followed("topic", t.key) ? "✓" : "+"}</button></span>`).join("")}</div>
       ${links.entities.length ? `<p class="hud-label">Names</p><div class="chips">${links.entities.map((e) => `<button type="button" class="chip" data-entity="${escape(e.key)}">${escape(e.name)}${e.articles > 1 ? ` · ${e.articles}` : ""}</button>`).join("")}</div>` : ""}
-      ${links.wordpress ? wordpressLabels(links.wordpress) : ""}
+      ${links.wordpress ? wordpressLabels(links.wordpress, labelOf) : ""}
       <p class="hud-label">Connected</p>
       ${links.related.length ? `<ol class="related with-thumbs">${links.related.map((r) => `<li>${thumb(photoUrl(r.thumb))}<div><button type="button" class="link" data-story="${r.id}">${escape(r.title)}</button><span class="muted"> ${escape(r.via.slice(0, 2).map((v) => (v.kind === "entity" ? `both name ${v.via}` : v.kind === "topic" ? `both about ${v.via}` : v.kind === "claim" ? "the same claim" : "a shared source")).join("; "))}</span></div></li>`).join("")}</ol>` : `<p class="muted">Nothing else published shares a claim, a source, a name or a topic with it yet.</p>`}`;
 
@@ -726,7 +945,7 @@ export function start(): void {
         if (j !== undefined) void select(j);
       }),
     );
-    $("#panel-links").querySelectorAll<HTMLButtonElement>("[data-entity]").forEach((b) => b.addEventListener("click", () => focusEntity(b.dataset.entity!)));
+    bindConcepts($("#panel-links"));
     $("#panel-links").querySelectorAll<HTMLButtonElement>("[data-follow]").forEach((b) =>
       b.addEventListener("click", async () => {
         const item: Interest = { kind: b.dataset.follow as Interest["kind"], key: b.dataset.key!, label: b.dataset.label! };
@@ -734,18 +953,6 @@ export function start(): void {
         void select(index);
       }),
     );
-  }
-
-  function focusEntity(key: string): void {
-    const data = state.data!;
-    const ref = data.entities.findIndex((e) => e.k === key);
-    const strong = new Set<number>();
-    data.entitiesOf.forEach((refs, i) => refs.includes(ref) && strong.add(i));
-    state.strong = strong;
-    state.section = null;
-    refresh();
-    const name = data.entities[ref]?.n ?? key.split(":").slice(1).join(":");
-    status(strong, `the stories naming ${name}`);
   }
 
   // ---- search -------------------------------------------------------------
@@ -775,10 +982,8 @@ export function start(): void {
     input.setAttribute("aria-expanded", "false");
     const data = state.data!;
     if (result.kind === "article" && result.id && data.indexOf.has(result.id)) void select(data.indexOf.get(result.id)!);
-    if (result.kind === "entity" && result.key) {
-      focusEntity(result.key);
-      scene.flyTo(result.x, result.y, 0, 6);
-    }
+    // Flown to by focusEntity, like a name clicked anywhere else.
+    if (result.kind === "entity" && result.key) focusEntity(result.key);
   }
 
   input.addEventListener("input", () => {
@@ -820,8 +1025,15 @@ export function start(): void {
       if ((!state.strong || state.strong.has(i)) && (state.section === null || data.group[i] === state.section)) shown.push(i);
     }
     $("#list").innerHTML = shown
-      .map((i) => `<li>${thumb(data.thumbs[i])}<div><a href="${READER_BASE}/reader/${data.ids[i]}">${escape(data.titles[i])}</a><span class="muted"> · ${escape(data.sources[data.sourceOf[i]])}${data.days[i] ? ` · ${data.days[i]}` : ""} · ${data.group[i] === NO_GROUP ? "" : escape(data.groups[data.group[i]].name)}</span></div></li>`)
+      .map((i) => `<li>${thumb(data.thumbs[i])}<div><button type="button" class="link" data-story="${data.ids[i]}">${escape(data.titles[i])}</button><span class="muted"> · ${escape(data.sources[data.sourceOf[i]])}${data.days[i] ? ` · ${data.days[i]}` : ""} · ${data.group[i] === NO_GROUP ? "" : escape(data.groups[data.group[i]].name)}</span></div></li>`)
       .join("");
+    // A title opens the story in the universe, like everything else here.
+    $("#list").querySelectorAll<HTMLButtonElement>("[data-story]").forEach((b) =>
+      b.addEventListener("click", () => {
+        close("#list-overlay");
+        void select(data.indexOf.get(b.dataset.story!)!);
+      }),
+    );
     open("#list-overlay");
   }
 

@@ -45,10 +45,13 @@ src.main:app --port 8001`.
 - `universe/` — Inspiring News Universe, the readers' 3D news universe, a
   separate Astro + three.js app over the backend's `/map` and `/account` routes
   (`docs/decisions/news-map.md`, "The universe";
-  `python scripts/preview_universe.py` to look at it). `MAP_SOURCE=graph`
-  reads the positive graph's WordPress import instead of the lake
-  ("Reading from the graph"), and `MAP_IMAGES_DIR` serves its downloaded
-  photos ("Photos, and names without the sources").
+  `python scripts/preview_universe.py` to look at it, against the Docker
+  backend; `--synthetic` for made-up stories). Since 2026-11-23 the map reads
+  **every article of the positive graph** by default (`MAP_SOURCE=graph`,
+  `MAP_GRAPH_SOURCE_ID` empty): the WordPress import and every analysis, each
+  with the verdict the graph recorded ("Reading from the graph", "The whole
+  graph"); `MAP_SOURCE=lake` is the published articles' map. `MAP_IMAGES_DIR`
+  serves the import's downloaded photos ("Photos, and names without the sources").
 - `docker/` — compose (Neo4j, SearXNG, inference, backend) and the three
   Dockerfiles; `docker-compose.prod.yml` (+ Ollama, + the frontend) and
   `docker-compose.gcp.yml` (+ Caddy: `/healthz`, and the site over HTTPS
@@ -77,7 +80,7 @@ src.main:app --port 8001`.
 | Claude Code in this repo: the skills (`/verify`, `/debug-verdict`, `/fact-check-change`, `/iterate-fact-check`, `/audit`, `/commit`, `/write-constructive-article`, `/write-devastating-article`) and hooks | `.claude/skills/`, `.claude/hooks/` |
 | The thesis defence: likely questions, the structural gaps, what to do next | `docs/thesis-defense-brief.md` (3 Nov), `docs/audit-2026-10-28.md` |
 | One article's journey across every stage (round → job → lake → reader → draft) | `/trace` (`frontend/CLAUDE.md`), `GET /trace`, `backend/src/services/trace.py` |
-| Bringing in a WordPress export unverified, to compare on the same articles (lake + graph, not the reader); its list of sources cut from the text, its photos kept and downloaded | `scripts/import_wordpress.py`, `scripts/wordpress_images.py`, `backend/src/services/imports/`, `POST /imports/wordpress`, `docs/decisions/storage.md` ("Imports") |
+| Bringing in a WordPress export unverified, to compare on the same articles (lake + graph, not the reader); its list of sources cut from the text, its photos kept and downloaded | `scripts/import_wordpress.py`, `scripts/wordpress_images.py` (then `optimize_map_photos.py`, WebP), `backend/src/services/imports/`, `POST /imports/wordpress`, `docs/decisions/storage.md` ("Imports") |
 | Pipeline stages, entry points, container | `backend/CLAUDE.md` |
 | What decides whether an article is checked at all | `backend/src/services/admission/README.md` |
 | Why the models live in their own service | `docs/decisions/inference.md` |

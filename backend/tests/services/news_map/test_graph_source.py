@@ -62,8 +62,36 @@ def test_it_reads_only_the_source_it_was_given_from_the_positive_graph():
 
     assert [read["params"] for read in graph.reads_made] == [{"source": SOURCE}]
     assert graph.reads_made[0]["query"] == ARTICLES
-    assert "source_id: $source" in ARTICLES
+    assert "a.source_id = $source" in ARTICLES
     assert [a.id for a in articles] == [reader_id("https://inspiringnews.ai/medio-ambiente/lobos/")]
+
+
+@pytest.mark.parametrize("source_id", ["", None])
+def test_with_no_source_it_reads_every_article_of_the_graph(source_id):
+    """
+    The default since 2026-11-23 (MAP_GRAPH_SOURCE_ID empty): the import and
+    every analysis the pipeline wrote, whose source_id is null, "web" or a
+    configured source's - so no one value could name them all.
+    """
+
+    analysed = row("guardian", source_id=None, source="The Guardian", verdict="FALSE",
+                   url="https://www.theguardian.com/world/2026/oct/31/jamaica-beaches")
+    graph = RecordingGraphClient(reads=[result(row("lobos"), analysed)])
+
+    articles = GraphMapIndex(graph, source_id).articles()
+
+    assert [read["params"] for read in graph.reads_made] == [{"source": None}]
+    assert "$source IS NULL" in ARTICLES
+    assert {a.source for a in articles} == {"inspiringnews.ai", "The Guardian"}
+
+
+def test_the_settings_read_every_article_of_the_graph_by_default():
+
+    from src.config.settings import Settings
+
+    fields = Settings.model_fields
+    assert fields["MAP_SOURCE"].default == "graph"
+    assert fields["MAP_GRAPH_SOURCE_ID"].default == ""
 
 
 def test_an_article_is_placed_by_its_topic_with_no_vector_and_no_verdict():
@@ -77,6 +105,21 @@ def test_an_article_is_placed_by_its_topic_with_no_vector_and_no_verdict():
     assert article.verdict is None
     assert article.evidence == frozenset()
     assert article.day == "2025-02-26"
+
+
+def test_a_checked_article_shows_the_verdict_the_graph_recorded():
+
+    assert article_from_graph(row("lobos", verdict="FALSE"), {}).verdict == "FALSE"
+    assert article_from_graph(row("lobos", verdict="PARTIALLY_TRUE"), {}).verdict == "PARTIALLY_TRUE"
+    # Not checked (the import): no verdict, which the universe says as "not checked".
+    assert article_from_graph(row("lobos", verdict=None), {}).verdict is None
+
+
+def test_a_verdict_the_page_does_not_know_is_no_verdict():
+    """The label becomes a CSS class in the universe: only Verdict's own values pass."""
+
+    assert article_from_graph(row("lobos", verdict='TRUE" onmouseover="x'), {}).verdict is None
+    assert article_from_graph(row("lobos", verdict="true"), {}).verdict is None
 
 
 def test_an_article_with_no_topic_goes_on_the_rim():
@@ -243,6 +286,45 @@ def test_a_storys_links_carry_its_wordpress_labels(tmp_path):
     }
 
 
+def test_the_document_lists_every_wordpress_label_and_each_storys(tmp_path):
+    """So the universe can show a category's or a tag's stories when one is clicked (2026-11-23)."""
+
+    path = labels_file(tmp_path, {
+        "https://inspiringnews.ai/medio-ambiente/lobos/": {"categories": ["Medio ambiente"], "tags": ["Animales"]},
+        "https://inspiringnews.ai/medio-ambiente/tigres/": {"categories": ["Medio ambiente"], "tags": ["Animales", "Lo más leído", ""]},
+    })
+    index = GraphMapIndex(RecordingGraphClient(reads=[result(row("lobos"), row("tigres"), row("ballenas"))]), SOURCE,
+                          labels_path=path)
+
+    document = index.articles_document()
+
+    labels = [(label["k"], label["n"]) for label in document["labels"]]
+    assert sorted(labels) == [("category", "Medio ambiente"), ("tag", "Animales"), ("tag", "Lo más leído")]
+    by_id = dict(zip(document["articles"]["id"], document["articles"]["wp"]))
+    named = lambda refs: sorted(labels[r] for r in refs)
+    assert named(by_id[reader_id("https://inspiringnews.ai/medio-ambiente/lobos/")]) == [("category", "Medio ambiente"), ("tag", "Animales")]
+    assert len(by_id[reader_id("https://inspiringnews.ai/medio-ambiente/tigres/")]) == 3
+    assert by_id[reader_id("https://inspiringnews.ai/medio-ambiente/ballenas/")] == []
+
+
+def test_without_labels_the_document_is_the_lake_maps():
+
+    document = GraphMapIndex(RecordingGraphClient(reads=[result(row("lobos"))]), SOURCE).articles_document()
+
+    assert "labels" not in document
+    assert "wp" not in document["articles"]
+
+
+def test_a_graph_storys_links_go_to_the_web_and_never_to_a_reader_page():
+    """The import is never published: the newsroom's /reader/{id} would answer 404."""
+
+    url = "https://inspiringnews.ai/medio-ambiente/lobos/"
+    links = GraphMapIndex(RecordingGraphClient(reads=[result(row("lobos"))]), SOURCE).links(reader_id(url))
+
+    assert links["url"] == url
+    assert links["readerPage"] is False
+
+
 def test_a_missing_labels_file_is_no_labels_not_an_error(tmp_path):
 
     index = GraphMapIndex(RecordingGraphClient(reads=[result(row("suelto", topic=None))]), SOURCE,
@@ -307,9 +389,9 @@ def test_downloaded_photos_are_served_from_the_map_at_768_px_with_a_thumbnail(tm
     links = index.links(document["articles"]["id"][0])
     assert links["photos"] == [
         # Its original was listed but not downloaded: the site's, to open it.
-        {"src": "/images/7345-medium_large.png", "thumb": "/images/7345-thumbnail.png", "full": PHOTO,
+        {"src": "/images/7345-medium_large.png", "small": None, "thumb": "/images/7345-thumbnail.png", "full": PHOTO,
          "alt": "Ocho cachorros", "caption": None, "featured": True},
-        {"src": "/images/5814-full.png", "thumb": None, "full": "/images/5814-full.png",
+        {"src": "/images/5814-full.png", "small": None, "thumb": None, "full": "/images/5814-full.png",
          "alt": None, "caption": "Participantes del Spogomi 2025.", "featured": False},
     ]
 
@@ -379,6 +461,65 @@ def test_the_route_serves_a_listed_photo_and_nothing_else(tmp_path, monkeypatch)
     assert client.get("/map/images/secret.txt").status_code == 404
     assert client.get("/map/images/manifest.json").status_code == 404
     assert client.get("/map/images/..%2Fmanifest.json").status_code == 404
+
+
+WEBP_FILES = ("7345-medium_large.png", "7345-thumbnail.png", "7345-full.png", "7345-thumbnail.webp",
+              "7345-small.webp", "7345-medium_large.webp", "7345-full.webp")
+
+
+def webp_photos():
+    """The manifest after scripts/optimize_map_photos.py: the PNGs, and a WebP copy of each size."""
+
+    return {"https://inspiringnews.ai/medio-ambiente/lobos/": {"images": [
+        {"url": PHOTO, "featured": True, "alt": "Ocho cachorros", "caption": None, "files": {
+            "medium_large": "7345-medium_large.png", "thumbnail": "7345-thumbnail.png", "full": "7345-full.png",
+            "thumbnail_webp": "7345-thumbnail.webp", "small_webp": "7345-small.webp",
+            "medium_large_webp": "7345-medium_large.webp", "full_webp": "7345-full.webp"}},
+    ]}}
+
+
+def test_the_webp_copies_are_shown_before_the_pngs_and_the_map_carries_the_480_px_one(tmp_path):
+    """2026-11-23: 35 KB for the panel's photo instead of 212, 17 KB for the hover card's."""
+
+    folder = images_folder(tmp_path, webp_photos(), files=WEBP_FILES)
+    index = GraphMapIndex(RecordingGraphClient(reads=[result(row("lobos", image_url=PHOTO))]), SOURCE, images_dir=folder)
+
+    document = index.articles_document()
+
+    assert document["articles"]["img"] == ["/images/7345-small.webp"]
+    assert document["articles"]["thumb"] == ["/images/7345-thumbnail.webp"]
+
+    photo = index.links(document["articles"]["id"][0])["photos"][0]
+    assert (photo["src"], photo["small"], photo["thumb"], photo["full"]) == (
+        "/images/7345-medium_large.webp", "/images/7345-small.webp", "/images/7345-thumbnail.webp", "/images/7345-full.webp")
+
+
+def test_a_webp_photo_is_served_as_webp(tmp_path, monkeypatch):
+    """The backend image's Python guessed no type for .webp, and FileResponse sent text/plain."""
+
+    folder = images_folder(tmp_path, webp_photos(), files=WEBP_FILES)
+    index = GraphMapIndex(RecordingGraphClient(reads=[result(row("lobos"))]), SOURCE, images_dir=folder)
+    monkeypatch.setattr(map_routes, "get_map_index", lambda: index)
+
+    served = TestClient(app).get("/map/images/7345-small.webp")
+
+    assert served.status_code == 200
+    assert served.headers["content-type"] == "image/webp"
+
+
+def test_a_photo_never_waits_for_the_graph_to_be_read_again(tmp_path):
+    """Every photo asked for while a refresh read the graph used to wait for it."""
+
+    clock = Clock()
+    folder = images_folder(tmp_path, lobos_photos())
+    graph = RecordingGraphClient(reads=[result(row("lobos")), result(row("lobos"))])
+    index = GraphMapIndex(graph, SOURCE, clock=clock, images_dir=folder)
+
+    assert index.image_path("7345-thumbnail.png") is not None
+    clock.now += graph_source.REFRESH_SECONDS + 1
+
+    assert index.image_path("7345-thumbnail.png") is not None
+    assert len(graph.reads_made) == 1
 
 
 def test_the_related_stories_carry_their_thumbnails(tmp_path):

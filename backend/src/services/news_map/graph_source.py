@@ -1,15 +1,18 @@
 """
-The news map read from the positive graph instead of the lake: the
-articles of one `source_id`, checked or not. Asked for on 2026-11-17, to
-show the 187 posts of the WordPress import
+The news map read from the positive graph instead of the lake: every
+article the graph holds, checked or not, or those of one `source_id`.
+Asked for on 2026-11-17, to show the 187 posts of the WordPress import
 (inspiringnews-buenasnoticias.WordPress.2026-11-03.xml,
 `wordpress:inspiringnews.ai`), which the lake never publishes - an import
 is stored, never publishable - so the lake's map can never show them
 (docs/decisions/news-map.md, "Reading from the graph").
 
-Switched on by `MAP_SOURCE=graph`; `MAP_GRAPH_SOURCE_ID` names the set.
-Only `NEO4J_URI`, the positive graph: the Devastating edition's graph is
-not read, by request.
+The default since 2026-11-23, by the author's request ("I just want to use
+the full data based on the one provided by the knowledge graph"): the
+import and every analysis the pipeline wrote, 199 stories that day.
+`MAP_SOURCE=lake` is the published articles' map; `MAP_GRAPH_SOURCE_ID`
+narrows the graph to one set. Only `NEO4J_URI`, the positive graph: the
+Devastating edition's graph is not read, by request.
 
 Everything after the read is the lake map's own: `place` puts each
 article, `ranked_entities` orders its names, and MapIndex serves the
@@ -19,9 +22,12 @@ graph does not hold is left out rather than made up:
 - **No vector.** The graph keeps no embedding, so an article sits at its
   topic's anchor with the offset its id gives (`approx: "no_vector"`), and
   search by meaning answers by name and word only.
-- **No verdict.** The import was not checked; the universe says "not
-  checked". An article the graph says was checked shows no verdict either:
-  this map reads verdicts from nowhere.
+- **The verdict the graph recorded, and only that.** The import was not
+  checked, so its posts say "not checked". An article the pipeline
+  checked shows its `overall_verdict` as the graph holds it (worst claim
+  wins), and nothing else of the check: an article out of the graph shows
+  no verdict rather than a wrong one. Until 2026-11-23 the map read only
+  the import and showed no verdict at all.
 - **No evidence.** Claims are nodes shared by every article with the same
   sentence, so a claim's CHECKED_AGAINST pages may belong to another
   article's check. Related articles are joined by shared claims, names
@@ -86,11 +92,15 @@ TOP_ENTITIES = 40
 
 # One row per article; pattern comprehensions rather than CALL subqueries,
 # so the same text runs on Neo4j 4 and 5. Only what MapArticle needs.
+# `$source` null reads every article: the pipeline's analyses carry
+# `source_id` null, "web" or a configured source's id, never one value.
 ARTICLES = """
-MATCH (a:Article {source_id: $source})
+MATCH (a:Article)
+WHERE $source IS NULL OR a.source_id = $source
 RETURN a.id AS graph_id, a.url AS url, a.title AS title, a.language AS language,
        a.published_at AS published_at, a.analyzed_at AS analyzed_at, a.run_id AS run_id,
        a.source_id AS source_id, a.image_url AS image_url, a.image_alt AS image_alt,
+       a.overall_verdict AS verdict,
        [(a)-[:PUBLISHED_BY]->(s:Source) | coalesce(s.name, s.domain)][0] AS source,
        [(a)-[r:ABOUT]->(t:Topic) | {topic: t.name, confidence: r.confidence}] AS topics,
        [(a)-[:MENTIONS]->(e:Entity) | {name: e.name, type: e.type}] AS entities,
@@ -98,14 +108,28 @@ RETURN a.id AS graph_id, a.url AS url, a.title AS title, a.language AS language,
 """
 
 
+# The verdicts an article's node may hold (models/fact_checker/fact_check.py's
+# Verdict). Anything else is shown as no verdict: the label becomes a CSS
+# class in the universe, so it must be one the page knows.
+VERDICTS = frozenset({"TRUE", "PARTIALLY_TRUE", "FALSE", "MISLEADING", "UNVERIFIED"})
+
+
 # What a downloaded photo's file may be called (scripts/wordpress_images.py
 # names them "<attachment id>-<size>.<ext>"): nothing with a path in it.
 IMAGE_FILE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(?:png|jpe?g|webp|gif|avif)$")
 
 # The size a story is shown at, and the size of its thumbnail, by
-# WordPress's names: the first one downloaded of each list.
-SHOWN_SIZES = ("medium_large", "large", "full")
-THUMB_SIZES = ("thumbnail", "medium", "medium_large")
+# WordPress's names: the first one downloaded of each list. The WebP copies
+# scripts/optimize_map_photos.py makes come first (2026-11-23: the PNGs
+# made the universe slow to load, 212 KB at the median for the 768 px one
+# against 35 KB as WebP); without them, the PNGs as before.
+SHOWN_SIZES = ("medium_large_webp", "medium_large", "large", "full")
+THUMB_SIZES = ("thumbnail_webp", "thumbnail", "medium", "medium_large")
+# 480 px wide, for the hover card and the selected story's photo in space:
+# what the map document carries (`img`), so a pointer crossing stories asks
+# for 17 KB each, not the panel's 768 px.
+SMALL_SIZES = ("small_webp",)
+FULL_SIZES = ("full_webp", "full")
 
 
 def _web_address(url) -> str | None:
@@ -125,13 +149,16 @@ def served_photo(photo: dict) -> dict:
 
     shown = next((files[size] for size in SHOWN_SIZES if size in files), None)
     thumb = next((files[size] for size in THUMB_SIZES if size in files), None)
+    small = next((files[size] for size in SMALL_SIZES if size in files), None)
+    full = next((files[size] for size in FULL_SIZES if size in files), None)
     address = _web_address(photo.get("url"))
 
     return {
         "src": f"/images/{shown}" if shown else address,
+        "small": f"/images/{small}" if small else None,
         "thumb": f"/images/{thumb}" if thumb else None,
         # The original, for a reader who opens the photo: the copy, else the site's.
-        "full": f"/images/{files['full']}" if "full" in files else address,
+        "full": f"/images/{full}" if full else address,
         "alt": photo.get("alt"),
         "caption": photo.get("caption"),
         "featured": bool(photo.get("featured")),
@@ -211,7 +238,7 @@ def article_from_graph(row: dict, countries: dict[str, str], labels: dict | None
         language=row.get("language"),
         day=day.isoformat() if day else None,
         source=row.get("source") or "",
-        verdict=None,
+        verdict=row.get("verdict") if row.get("verdict") in VERDICTS else None,
         group=placement.group,
         topics=tuple((key, confidences.get(key, 0.0)) for key in placement.topics),
         entities=ranked_entities(dict(names), title, "\n".join(sorted(claims.values()))),
@@ -223,16 +250,20 @@ def article_from_graph(row: dict, countries: dict[str, str], labels: dict | None
         approximate="wordpress_topic" if from_wordpress else placement.approximate,
         sort_at=_timestamp(row.get("published_at") or row.get("analyzed_at")),
         vector=None,
-        image=main["src"],
+        # The 480 px copy when there is one: the map's columns carry the size
+        # the hover card and the photo in space show; the panel asks for its
+        # 768 px through the story's links.
+        image=main.get("small") or main["src"],
         thumb=main["thumb"],
         image_alt=main.get("alt") or row.get("image_alt"),
+        url=url,
     )
 
 
 class GraphMapIndex(MapIndex):
     """
-    MapIndex over the graph's articles of one source_id. Reads them all at
-    most every REFRESH_SECONDS, outside the index's lock, so a request
+    MapIndex over the graph's articles: all of them, or one source_id's.
+    Reads them all at most every REFRESH_SECONDS, outside the index's lock, so a request
     during a read is answered from the last one.
 
     Neo4j down: the last read is served and the next is tried after
@@ -243,13 +274,18 @@ class GraphMapIndex(MapIndex):
 
     top_entities = TOP_ENTITIES
 
-    def __init__(self, graph, source_id: str, countries: dict[str, str] | None = None, clock=time.monotonic,
+    # The import is never published and the analyses are not all: the
+    # newsroom's reader page would answer 404 for most of these stories.
+    reader_pages = False
+
+    def __init__(self, graph, source_id: str | None = None, countries: dict[str, str] | None = None, clock=time.monotonic,
                  labels_path: str | None = None, images_dir: str | None = None):
 
         super().__init__(lake=None, reader=None, names=None, countries=countries)
 
         self.graph = graph
-        self.source_id = source_id
+        # Empty or None: every article of the graph.
+        self.source_id = source_id or None
         self.clock = clock
         self.labels_path = labels_path or None
 
@@ -323,7 +359,11 @@ class GraphMapIndex(MapIndex):
     def image_path(self, name: str) -> Path | None:
         """A downloaded photo the manifest lists, or None: nothing else in the folder is served."""
 
-        self.refresh()
+        # The last read's list, not a fresh one: a refresh reads the graph,
+        # and every photo asked for while it ran waited on it (2026-11-23).
+        # A photo's name comes from a document of that same read.
+        if self._version is None:
+            self.refresh()
 
         if not self.images_dir or not IMAGE_FILE.match(name):
             return None
@@ -359,7 +399,7 @@ class GraphMapIndex(MapIndex):
             except GraphUnavailable:
                 if self._version is None:
                     raise
-                logger.warning("News map: Neo4j unreachable, serving the last read of %s", self.source_id, exc_info=True)
+                logger.warning("News map: Neo4j unreachable, serving the last read of %s", self.source_id or "the graph", exc_info=True)
                 self._fetched_at = self.clock()
                 return
 
@@ -403,6 +443,42 @@ class GraphMapIndex(MapIndex):
                     self._rebuild(articles)
 
             self._fetched_at = self.clock()
+
+    def articles_document(self, day: str | None = None) -> dict:
+        """
+        The lake map's columns, and with the WordPress labels loaded, every
+        category and tag as a table (`labels`, each its name `n` and kind
+        `k`) with each story's as indices into it (`wp`), so the universe
+        can show a label's stories when one is clicked (2026-11-23).
+        Without labels, the document is the lake map's.
+        """
+
+        document = super().articles_document(day)
+
+        with self._lock:
+            labels = dict(self._labels)
+
+        if not labels:
+            return document
+
+        table: dict[tuple[str, str], int] = {}
+
+        def ref(kind: str, name) -> int | None:
+            if not isinstance(name, str) or not name.strip():
+                return None
+            return table.setdefault((kind, name.strip()), len(table))
+
+        column = []
+
+        for article_id in document["articles"]["id"]:
+            own = labels.get(article_id) or {}
+            refs = [ref("category", c) for c in own.get("categories") or []] + [ref("tag", t) for t in own.get("tags") or []]
+            column.append(list(dict.fromkeys(r for r in refs if r is not None)))
+
+        document["labels"] = [{"n": name, "k": kind} for (kind, name) in table]
+        document["articles"]["wp"] = column
+
+        return document
 
     def links(self, article_id: str, limit: int = 10) -> dict | None:
         """The lake map's links, and the story's WordPress labels when there are any."""

@@ -145,7 +145,12 @@ their content hashes differ for the 104 posts that list their sources.
   page's lead image stopped at the raw record). The export holds no image
   bytes: `scripts/wordpress_images.py` downloads them into
   `data/imports/<file name>/images/` with a `manifest.json` (897 files, 319 MB
-  for 187 posts in three sizes, 2026-11-20).
+  for 187 posts in three sizes, 2026-11-20). `scripts/optimize_map_photos.py`
+  then makes WebP copies in the sizes the universe shows (150 px, 480, 768,
+  at most 1600), listed in the same manifest beside the PNGs: 1,312 copies in
+  59 s on 23 Nov, the 768 px and thumbnail sizes 82 MB as PNG and 12.5 MB as
+  WebP. Run it again after `wordpress_images.py`, which writes the manifest
+  anew (`docs/decisions/news-map.md`, "Photos that wait for the reader").
 - **An unverified import keeps its entities** (`unchecked_entities`): the
   rule of 17 Nov (`docs/decisions/writing.md`, "Checked twice") would
   otherwise give it none, since it never checks out, and its names are what

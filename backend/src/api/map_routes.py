@@ -143,7 +143,15 @@ def map_image(name: str = Path(max_length=128)):
     if path is None or not path.is_file():
         raise HTTPException(status_code=404, detail="No such photo.")
 
-    return FileResponse(path, headers={"Cache-Control": "public, max-age=604800, immutable"})
+    # Named, not guessed: the backend image's Python has no type for .webp,
+    # and FileResponse then sent the WebP copies as text/plain (2026-11-23).
+    return FileResponse(path, media_type=IMAGE_TYPES.get(path.suffix.lower(), "application/octet-stream"),
+                        headers={"Cache-Control": "public, max-age=604800, immutable"})
+
+
+# What a photo's extension is served as; graph_source.IMAGE_FILE admits no other.
+IMAGE_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
+               ".gif": "image/gif", ".avif": "image/avif"}
 
 
 def client_of(request: Request) -> str:

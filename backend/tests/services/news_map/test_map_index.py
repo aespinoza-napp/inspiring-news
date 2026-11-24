@@ -288,3 +288,36 @@ def test_ten_thousand_articles_serialise_fast_and_small(lake):
     assert len(body) < 1_000_000
     assert best < 0.2
     assert json.loads(gzip.decompress(body))["count"] == 10_000
+
+
+# ---------------------------------------------------------------------------
+# Where to read a story (2026-11-23)
+# ---------------------------------------------------------------------------
+
+
+def test_a_storys_links_carry_its_web_address_and_its_reader_page(lake):
+    """The universe links a story to the article on the web, and the lake's map to its checks too."""
+
+    put(lake, "one", title="One", checks=[])
+    index = make_index(lake)
+    article = index.articles()[0]
+
+    links = index.links(article.id)
+
+    assert links["url"] == "https://www.bbc.com/news/one-story-about-something-good"
+    assert links["readerPage"] is True
+
+
+@pytest.mark.parametrize("given, expected", [
+    ("https://www.earth.com/animals/mangroves/?utm_medium=email&utm_source=substack",
+     "https://www.earth.com/animals/mangroves/"),
+    ("https://example.org/a?id=7&utm_campaign=x", "https://example.org/a?id=7"),
+    ("http://example.org/a", "http://example.org/a"),
+    ("javascript:alert(1)", None),
+    ("", None),
+    (None, None),
+])
+def test_a_web_address_is_http_only_and_loses_its_newsletter_parameters(given, expected):
+
+    assert map_index.web_address(given) == expected
+

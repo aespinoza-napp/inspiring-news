@@ -16,48 +16,58 @@ packages once:
 cd universe && npm ci && cd ..
 ```
 
-### Without a backend: synthetic stories
+### The stories: every article of the knowledge graph
+
+The universe shows what the backend's map holds, and since 23 Nov that is
+**every article of the positive graph**: the 187 posts of the WordPress
+import, with their photos and WordPress labels, and every article the
+pipeline analysed, with its verdict. Start the Docker stack (Neo4j and the
+backend), then the universe, from the repository's root:
 
 ```bash
+./scripts/dev.sh docker              # once; the backend on port 8000
 python3 scripts/preview_universe.py
 ```
 
-Open http://127.0.0.1:4321/. This shows 5,000 made-up stories placed by the
-real layout (`--count` changes the number). Nothing else needs to be running.
-It builds `universe/dist` the first time, and `--build` rebuilds it after you
-change something. Ctrl-C stops it.
+Open http://127.0.0.1:4321/. It builds `universe/dist` the first time, and
+`--build` rebuilds it after you change something. Ctrl-C stops it. If the
+backend does not answer, it says so and stops: it never falls back to
+made-up stories.
 
-### With real stories: the WordPress import, from the graph
+- **The settings** (`backend/.env`, `backend/.env-example`):
+  - `MAP_SOURCE=graph`, the default, reads the graph. `lake` is the map of
+    published articles only.
+  - `MAP_GRAPH_SOURCE_ID`, empty by default, is every article.
+    `wordpress:inspiringnews.ai` is the import only.
+  - `MAP_GRAPH_LABELS` adds the research labels, and `MAP_IMAGES_DIR` serves
+    the photos. Both are optional. The photos are not in git:
+    `python3 scripts/wordpress_images.py <the export's .xml>` downloads them,
+    and `cd backend && uv run python ../scripts/optimize_map_photos.py
+    <the images folder>` makes the light WebP copies the universe prefers
+    (`docs/decisions/storage.md`, "Imports"). Docker mounts both and sets
+    its own paths (`docker/docker-compose.yml`).
+- **A backend on the host** instead: `cd backend && uv run uvicorn src.main:app
+  --port 8010` reads the same `backend/.env` (its relative paths work because
+  it runs from `backend/`), then `python3 scripts/preview_universe.py
+  --backend http://127.0.0.1:8010`.
+- **Made-up stories**, for the map's performance only:
+  `python3 scripts/preview_universe.py --synthetic` (5,000; `--count` changes it).
 
-Neo4j must be running (`./scripts/stack.sh analyse`, or `docker compose up
-neo4j` in `docker/`). In one terminal, start a backend that reads the graph:
+## Clicking
 
-```bash
-cd backend
-MAP_SOURCE=graph \
-MAP_GRAPH_LABELS=../research/wordpress-import/data/wordpress-labels.json \
-MAP_IMAGES_DIR=data/imports/inspiringnews-buenasnoticias.WordPress.2026-11-03/images \
-uv run uvicorn src.main:app --host 127.0.0.1 --port 8010
-```
+Everything you can click in a story's panel shows that concept in the
+universe: its section, its source, its verdict, a topic, a name, a WordPress
+category or tag. Its stories light up, the camera goes to them and the panel
+lists them. The "+" beside a topic follows it in For you. Only "Read it on
+... ↗" leaves the universe: it opens the article on the web, where it was
+published, in a new tab.
 
-In another, from the repository's root:
+## Photos
 
-```bash
-python3 scripts/preview_universe.py --backend http://127.0.0.1:8010
-```
-
-Open http://127.0.0.1:4321/: the 187 imported posts, with their photos.
-
-- **The settings:**
-  - `MAP_SOURCE=graph` reads the positive graph's WordPress import. Without
-    it, the backend serves the lake's analysed articles.
-  - `MAP_GRAPH_LABELS` adds the research labels. It is optional.
-  - `MAP_IMAGES_DIR` serves the photos. It is optional, and the folder is not
-    in git: `python3 scripts/wordpress_images.py <the export's .xml>`
-    downloads it (`docs/decisions/storage.md`, "Imports").
-- **The relative paths** work because the backend runs from `backend/`.
-- **The same settings** can go in `backend/.env` instead of on the command
-  line.
+The universe comes first: the floating photos appear once it is drawn and
+the browser is idle, and none is fetched while you drag, zoom or the camera
+flies. The switch (or P) turns them off, and this browser remembers your
+choice. On a slow connection or with data saving on, they start off.
 
 ## Keys
 

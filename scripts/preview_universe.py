@@ -1,27 +1,25 @@
 """
-Look at Inspiring News Universe (universe/) with no published stories of your
-own: the built site, served the way production serves it - static files,
-with /api/map and /api/account passed to a backend - here the e2e stub,
-serving a synthetic universe of `--count` stories placed by the real
-layout (scripts/news_map_fixture.py), depth included.
+Look at Inspiring News Universe (universe/): the built site, served the way
+production serves it - static files, with /api/map and /api/account passed
+to a backend. By default that is the Docker stack's backend on port 8000,
+whose map is every article of the knowledge graph (MAP_SOURCE=graph, the
+default since 2026-11-23): the WordPress import with its photos, and every
+analysis the pipeline wrote.
 
-    python scripts/preview_universe.py [--count 5000] [--port 4321] [--build]
+    ./scripts/dev.sh docker                          # once: the stack, Neo4j included
+    python scripts/preview_universe.py [--port 4321] [--build]
     python scripts/preview_universe.py --backend http://127.0.0.1:8010
 
-Then open http://127.0.0.1:4321/. Ctrl-C stops it.
+Then open http://127.0.0.1:4321/. Ctrl-C stops it. With no backend
+answering it says so and stops, rather than showing made-up stories.
 
-`--backend` passes /api/map and /api/account to a real backend instead of
-the stub, with no synthetic stories: what that backend's map holds. Run
-with MAP_SOURCE=graph, that is the WordPress import read from the graph
-(docs/decisions/news-map.md, "Reading from the graph"):
-
-    cd backend && MAP_SOURCE=graph uv run uvicorn src.main:app --port 8010
-
-with MAP_IMAGES_DIR set, its photos too (/api/map/images/ is passed on like
-the rest of /api/map). Without --backend, a story's links and
-the search are answered here from the synthetic map, as the backend
-answers them (shared names weigh 2 over how many stories name them, a
-shared topic 0.3; names, then words in titles); For you answers the
+`--synthetic` shows the e2e stub's synthetic universe instead, `--count`
+stories placed by the real layout (scripts/news_map_fixture.py), depth
+included: for the map's performance, never its content. Until 23 Nov that
+was the default, and the universe a person opened was made up. With it, a
+story's links and the search are answered here from the synthetic map, as
+the backend answers them (shared names weigh 2 over how many stories name
+them, a shared topic 0.3; names, then words in titles); For you answers the
 stub's canned result; accounts need the real backend.
 
 Not `astro dev`: Astro 7 started it as a background daemon when there was
@@ -32,6 +30,7 @@ this proxy are also what Caddy does in production.
 from __future__ import annotations
 
 import argparse
+import errno
 import json
 import subprocess
 import sys
@@ -185,13 +184,43 @@ def handler_for(backend: str, local: Local | None = None):
     return Universe
 
 
+def answers(backend: str) -> str | None:
+    """None when the backend's map answers; else what went wrong, in words."""
+
+    try:
+        with urllib.request.urlopen(backend + "/healthz", timeout=5):
+            pass
+    except urllib.error.HTTPError:
+        pass  # it answers; /healthz can be 503 with Ollama down, and the map does not need it
+    except (OSError, ValueError) as error:
+        return f"{backend} does not answer ({error})"
+
+    return None
+
+
+def bind(port: int, handler) -> ThreadingHTTPServer | None:
+    """The universe's server on `port`, or None, said why, when the port is taken."""
+
+    try:
+        return ThreadingHTTPServer(("127.0.0.1", port), handler)
+    except OSError as error:
+        if error.errno != errno.EADDRINUSE:
+            raise
+        print(f"Port {port} is already in use: the universe may already be running at "
+              f"http://127.0.0.1:{port}/ (open it), or pass --port {port + 1}.", file=sys.stderr)
+        return None
+
+
 def main(argv=None) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--count", type=int, default=5000)
+    parser.add_argument("--backend", default="http://127.0.0.1:8000",
+                        help="the backend whose map to show (default: the Docker stack's, http://127.0.0.1:8000)")
+    parser.add_argument("--synthetic", action="store_true",
+                        help="the e2e stub's made-up stories instead of a backend's: for performance, never content")
+    parser.add_argument("--count", type=int, default=5000, help="with --synthetic: how many stories")
     parser.add_argument("--port", type=int, default=4321)
     parser.add_argument("--build", action="store_true", help="npm run build first")
-    parser.add_argument("--backend", help="a real backend's URL instead of the stub and synthetic stories")
     args = parser.parse_args(argv)
 
     if args.build or not (UNIVERSE / "dist" / "index.html").exists():
@@ -200,9 +229,17 @@ def main(argv=None) -> int:
             print("npm run build failed.", file=sys.stderr)
             return 1
 
-    if args.backend:
-        site = ThreadingHTTPServer(("127.0.0.1", args.port), handler_for(args.backend.rstrip("/")))
-        print(f"\nOpen http://127.0.0.1:{args.port}/  (map from {args.backend})  Ctrl-C stops it.")
+    if not args.synthetic:
+        backend = args.backend.rstrip("/")
+        problem = answers(backend)
+        if problem:
+            print(f"{problem}.\nStart the stack (./scripts/dev.sh docker), pass --backend, "
+                  "or --synthetic for made-up stories.", file=sys.stderr)
+            return 1
+        site = bind(args.port, handler_for(backend))
+        if site is None:
+            return 1
+        print(f"\nOpen http://127.0.0.1:{args.port}/  (the map of {backend})  Ctrl-C stops it.")
         try:
             site.serve_forever()
         except KeyboardInterrupt:
@@ -220,8 +257,11 @@ def main(argv=None) -> int:
     stub = ThreadingHTTPServer(("127.0.0.1", 0), e2e.Stub)
     threading.Thread(target=stub.serve_forever, daemon=True).start()
 
-    site = ThreadingHTTPServer(("127.0.0.1", args.port), handler_for(f"http://127.0.0.1:{stub.server_address[1]}", Local(e2e.MAP)))
-    print(f"\nOpen http://127.0.0.1:{args.port}/  Ctrl-C stops it.")
+    site = bind(args.port, handler_for(f"http://127.0.0.1:{stub.server_address[1]}", Local(e2e.MAP)))
+    if site is None:
+        stub.shutdown()
+        return 1
+    print(f"\nOpen http://127.0.0.1:{args.port}/  ({args.count} synthetic stories)  Ctrl-C stops it.")
 
     try:
         site.serve_forever()

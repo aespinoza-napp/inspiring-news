@@ -98,13 +98,17 @@ class Settings(BaseSettings):
     GRAPH_ENABLED: bool = True
 
     # Where the news map's articles come from (docs/decisions/news-map.md,
-    # "Reading from the graph"): "lake" - the published articles, as
-    # /reader shows them - or "graph" - the positive graph's articles of
-    # MAP_GRAPH_SOURCE_ID, checked or not. Added 2026-11-17 to show the
-    # WordPress import, which the lake stores but never publishes.
-    # Deployment, not a run: listed in NON_THRESHOLD_SETTINGS.
-    MAP_SOURCE: Literal["lake", "graph"] = "lake"
-    MAP_GRAPH_SOURCE_ID: str = "wordpress:inspiringnews.ai"
+    # "Reading from the graph"): "graph" - the positive graph's articles,
+    # checked or not - or "lake" - the published articles, as /reader shows
+    # them. Added 2026-11-17 to show the WordPress import, which the lake
+    # stores but never publishes; the default since 2026-11-23, by the
+    # author's request, with every article the graph holds. Deployment, not
+    # a run: listed in NON_THRESHOLD_SETTINGS.
+    MAP_SOURCE: Literal["lake", "graph"] = "graph"
+    # Empty: every article of the graph. A source_id (the import's is
+    # "wordpress:inspiringnews.ai") narrows the map to that set, as it was
+    # from 17 to 23 Nov.
+    MAP_GRAPH_SOURCE_ID: str = ""
     # With MAP_SOURCE=graph, optionally: the WordPress labels the research
     # notebook writes (research/wordpress-import/data/wordpress-labels.json),
     # shown on each story and used to place the ones our classifier gave no
