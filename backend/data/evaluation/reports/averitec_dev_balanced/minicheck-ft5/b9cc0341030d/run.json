@@ -216,6 +216,118 @@
         },
         "completionTokensPerSecond": null
       }
+    },
+    {
+      "startedAt": "2026-11-24T17:08:35+01:00",
+      "gitCommit": "0163ff2bf81ac36743271116e146a75350e399ed",
+      "provider": "localhost:11434",
+      "limit": 30,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 10,
+      "settings": {
+        "LLM_BASE_URL": "http://localhost:11434/v1",
+        "LLM_TIMEOUT": 180.0,
+        "LLM_REASONING_EFFORT": null,
+        "LLM_REASONING_TOKENS": null,
+        "SEARXNG_URL": "http://localhost:8080",
+        "INFERENCE_URL": "http://localhost:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 1,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 1
+      },
+      "finishedAt": "2026-11-24T17:10:23+01:00",
+      "ran": 10,
+      "ok": 10,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 10,
+        "llmCalls": 0,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 10,
+        "promptTokens": null,
+        "completionTokens": null,
+        "usageMissing": 0,
+        "promptTokensPerUnit": null,
+        "completionTokensPerUnit": null,
+        "llmSeconds": 0,
+        "callLatency": {
+          "median": null,
+          "p90": null,
+          "max": null
+        },
+        "unitLatency": {
+          "median": 10.442,
+          "p90": 11.722,
+          "total": 108.33
+        },
+        "completionTokensPerSecond": null
+      }
+    },
+    {
+      "startedAt": "2026-11-24T17:39:24+01:00",
+      "gitCommit": "0163ff2bf81ac36743271116e146a75350e399ed",
+      "provider": "localhost:11434",
+      "limit": 40,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 10,
+      "settings": {
+        "LLM_BASE_URL": "http://localhost:11434/v1",
+        "LLM_TIMEOUT": 180.0,
+        "LLM_REASONING_EFFORT": null,
+        "LLM_REASONING_TOKENS": null,
+        "SEARXNG_URL": "http://localhost:8080",
+        "INFERENCE_URL": "http://localhost:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 1,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 1
+      },
+      "finishedAt": "2026-11-24T17:41:10+01:00",
+      "ran": 10,
+      "ok": 10,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 10,
+        "llmCalls": 0,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 10,
+        "promptTokens": null,
+        "completionTokens": null,
+        "usageMissing": 0,
+        "promptTokensPerUnit": null,
+        "completionTokensPerUnit": null,
+        "llmSeconds": 0,
+        "callLatency": {
+          "median": null,
+          "p90": null,
+          "max": null
+        },
+        "unitLatency": {
+          "median": 10.204,
+          "p90": 13.313,
+          "total": 106.38
+        },
+        "completionTokensPerSecond": null
+      }
     }
   ]
 }

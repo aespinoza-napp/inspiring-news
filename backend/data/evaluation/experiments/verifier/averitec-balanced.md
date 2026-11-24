@@ -109,9 +109,71 @@ quiet machine; claims 1-10's ran beside another session's `check.sh`.
 Reports: `cli report --compare` against the 3B, rewritten over the 20 in
 `reports/averitec_dev_balanced/`.
 
+## Claims 1-40: the four measures (24 Nov)
+
+`scripts/bench_averitec_verifiers.sh 30`, then `40`: ten new claims a batch,
+the same four runs resumed, so claims 1-20 were not run again. Labels of the
+40: ten of each. Always answering Refuted gets 10 (25.0%, macro-F1 0.100).
+Every run's temporal audit says **Held**; no invalid answer, nothing
+unreachable, 40 of 40 claims scored in each.
+
+| Verifier | Run | Right of 40 (by ten) | Accuracy [95% CI] | Macro-F1 | Kappa vs gold [95% CI] | Wrong and definite | UNVERIFIED | vs the 3B [95% CI] | Only it / only the 3B right | Model s a claim (median) | Whole claim s (median) | Resources | Self-hosted |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `llama3.2:3b` | `1ee9810b5fa1` | 10 (3, 1, 3, 3) | 25.0% [12.5, 40.0] | 0.228 | 0.000 [-0.176, +0.176] | 27 | 7 | | | 25.8 | 43.4 | 3.2B, 2.0 GB disk, 4.1 GB loaded | yes |
+| MiniCheck-FT5 | `b9cc0341030d` | 11 (2, 3, 3, 3) | 27.5% [15.0, 42.5] | 0.182 | +0.033 [-0.107, +0.174] | **9** | 27 | +2.5 pts [-12.5, +17.5] | 6 / 5 | 4.7 | 13.0 | 783M, 6.3 GB disk (two copies), 3.5 GB peak | yes |
+| `qwen3.5:9b` | `556aa1250597` | 13 (3, 2, 4, 4) | 32.5% [17.5, 47.5] | 0.275 | +0.100 [-0.072, +0.275] | 20 | 10 | +7.5 pts [-7.5, +22.5] | 6 / 3 | 109.2 | 118.5 | 9.0B, 6.6 GB disk, 6.7 GB loaded | yes |
+| `openai/gpt-oss-120b` | `f2980fd00e70` | **18 (4, 5, 5, 4)** | **45.0% [30.0, 60.0]** | **0.392** | **+0.267 [+0.079, +0.452]** | 13 | 15 | **+20.0 pts [+5.0, +35.0]** | 10 / 2 | **3.2** | **12.8** | 117B (5.1B active), Groq's servers | no; open weights, Apache 2.0 |
+
+Per-class F1, Supported / Refuted / Not Enough Evidence / Conflicting: the 3B
+0.190 / 0.250 / 0.471 / 0; MiniCheck 0.348 / 0 / 0.378 / 0; the 9B 0.400 /
+0.400 / 0.300 / 0; gpt-oss-120b 0.588 / 0.500 / 0.480 / 0. Kappa over the
+3B's: MiniCheck +0.033 [-0.167, +0.230], the 9B +0.100 [-0.095, +0.305],
+gpt-oss-120b +0.267 [+0.043, +0.494]. "Wrong and definite" is a wrong TRUE or
+FALSE; "UNVERIFIED" counts the claims each answered that way, right or wrong.
+gpt-oss-120b would cost $0.066 per 100 claims if paid (2,459 prompt and 492
+completion tokens a claim, at `prices.json`'s $0.15 and $0.60 per million).
+
+**What 40 claims say.**
+
+- **gpt-oss-120b is the one verifier distinguishable from the 3B**, and it
+  stayed so from 20 claims to 40: +20 points [+5, +35], right on 10 claims
+  the 3B got wrong and wrong on 2 it got right. It is also the only one whose
+  accuracy interval lies above always-Refuted's 25%. It is the fastest (3.2 s
+  of model a claim), and the only one that is not self-hosted: every claim and
+  its sources go to Groq.
+- **The 3B is no better than always answering Refuted**, 10 of 40 each, kappa
+  0.000. On claims 21-40 it answered FALSE 10 times and was right twice. This
+  agrees with the full split, where it scored 54.0% [44, 64] on the first 100
+  dev claims (`49e4c76106c6`), against always-Refuted's 58.0%. On both samples
+  its verdicts carry no information beyond the majority class.
+- **The 9B and MiniCheck are not distinguishable from the 3B.** The 9B is +7.5
+  points [-7.5, +22.5] at four times the 3B's model seconds (109 against 26).
+  MiniCheck is +2.5 [-12.5, +17.5]; it is the most cautious (UNVERIFIED to 27
+  of 40, wrong and definite 9), and the fastest self-hosted reader (4.7 s).
+- **No verifier here can answer Conflicting**, so all four score 0 on its 10
+  claims. The ceiling is 75% for the three chat models and 50% for MiniCheck,
+  which answers only TRUE or UNVERIFIED (see claims 1-20).
+- **Forty claims are still one sample, read once.** The intervals are 30
+  points wide. The result says gpt-oss-120b reads these sources better than
+  the 3B; it does not say by how much over the split, or anything about
+  Spanish.
+
+**Time.** Claims 21-30 ran at 17:01-17:32 and 31-40 at 17:32-18:00, back to
+back, on an otherwise quiet laptop: load 0.40 at the start, nothing else
+running. The high load during the run was the 9B's own `llama-server`. By
+batch, the 3B's store run took 7 minutes, MiniCheck 2, the 9B 20 and
+gpt-oss-120b 2. Groq refused 16 calls with 429 on claims 21-30 and none on
+31-40; each was waited out and answered (25 refused of 218 over the 40). The
+medians above mix days: gpt-oss-120b's claims 1-10 ran beside another
+session's `check.sh` (see claims 1-10).
+
+Reports: `cli report --compare` against the 3B, rewritten over the 40 in
+`reports/averitec_dev_balanced/`.
+
 ## Left
 
-Claims 21-40: `scripts/bench_averitec_verifiers.sh 30`, then `40`, about 36
-minutes a batch on a quiet machine (the 9B is 23 of them). Then the four
-measures on 40 claims, beside the 3B's full-split figure on the first 100 dev
-claims (`49e4c76106c6`: 54.0% [44, 64], macro-F1 0.339, always-Refuted 58.0%).
+The whole pipeline in AVeriTeC's web condition on the same 40 claims:
+`scripts/bench_averitec_web.sh 10 20 30 40` (four plans, a shared search
+cache, about 6 hours). Whether the pipeline should switch its verifier is the
+author's decision: the only contender that beat the 3B is the one that sends
+claims and sources off the machine.

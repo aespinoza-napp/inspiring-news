@@ -24,10 +24,11 @@
     "mode": "full",
     "label": "knowledge-store",
     "gitCommits": [
+      "0163ff2bf81ac36743271116e146a75350e399ed",
       "d8842946744cc4bafb00aecfc18ed4719ddc6195-dirty"
     ],
-    "records": 20,
-    "notRun": 120
+    "records": 40,
+    "notRun": 100
   },
   "bootstrap": {
     "seed": 2026,
@@ -48,19 +49,22 @@
       "ids": []
     },
     "scored": {
-      "count": 20,
+      "count": 40,
       "ids": null
     }
   },
   "flags": {
     "temporalLeak": {
       "flagged": [],
-      "clear": 2,
-      "undetermined": 18
+      "clear": 6,
+      "undetermined": 34
     },
     "verdictLeak": {
-      "flagged": [],
-      "clear": 20,
+      "flagged": [
+        "averitec-dev-0324",
+        "averitec-dev-0481"
+      ],
+      "clear": 38,
       "notApplicable": 0
     },
     "newerUncitedSources": {
@@ -71,12 +75,12 @@
   },
   "metrics": {
     "scored": {
-      "accuracy": 0.2,
-      "macroF1": 0.17570664629488159,
-      "coverage": 0.9,
-      "selectiveAccuracy": 0.16666666666666666,
-      "kappa": -0.06666666666666665,
-      "n": 20,
+      "accuracy": 0.25,
+      "macroF1": 0.22776610644257703,
+      "coverage": 0.825,
+      "selectiveAccuracy": 0.18181818181818182,
+      "kappa": 0.0,
+      "n": 40,
       "goldClasses": [
         "TRUE",
         "MISLEADING",
@@ -85,11 +89,11 @@
       ],
       "perClass": {
         "TRUE": {
-          "precision": 0.16666666666666666,
+          "precision": 0.18181818181818182,
           "recall": 0.2,
-          "f1": 0.1818181818181818,
-          "support": 5,
-          "predicted": 6
+          "f1": 0.1904761904761905,
+          "support": 10,
+          "predicted": 11
         },
         "PARTIALLY_TRUE": {
           "precision": null,
@@ -102,30 +106,30 @@
           "precision": null,
           "recall": 0.0,
           "f1": 0.0,
-          "support": 5,
+          "support": 10,
           "predicted": 0
         },
         "FALSE": {
-          "precision": 0.16666666666666666,
+          "precision": 0.18181818181818182,
           "recall": 0.4,
-          "f1": 0.23529411764705882,
-          "support": 5,
-          "predicted": 12
+          "f1": 0.25000000000000006,
+          "support": 10,
+          "predicted": 22
         },
         "UNVERIFIED": {
-          "precision": 0.5,
-          "recall": 0.2,
-          "f1": 0.28571428571428575,
-          "support": 5,
-          "predicted": 2
+          "precision": 0.5714285714285714,
+          "recall": 0.4,
+          "f1": 0.47058823529411764,
+          "support": 10,
+          "predicted": 7
         }
       },
       "confusion": {
         "TRUE": {
-          "TRUE": 1,
+          "TRUE": 2,
           "PARTIALLY_TRUE": 0,
           "MISLEADING": 0,
-          "FALSE": 4,
+          "FALSE": 8,
           "UNVERIFIED": 0
         },
         "PARTIALLY_TRUE": {
@@ -136,62 +140,62 @@
           "UNVERIFIED": 0
         },
         "MISLEADING": {
-          "TRUE": 0,
+          "TRUE": 1,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 7,
+          "UNVERIFIED": 2
+        },
+        "FALSE": {
+          "TRUE": 5,
           "PARTIALLY_TRUE": 0,
           "MISLEADING": 0,
           "FALSE": 4,
           "UNVERIFIED": 1
         },
-        "FALSE": {
+        "UNVERIFIED": {
           "TRUE": 3,
           "PARTIALLY_TRUE": 0,
           "MISLEADING": 0,
-          "FALSE": 2,
-          "UNVERIFIED": 0
-        },
-        "UNVERIFIED": {
-          "TRUE": 2,
-          "PARTIALLY_TRUE": 0,
-          "MISLEADING": 0,
-          "FALSE": 2,
-          "UNVERIFIED": 1
+          "FALSE": 3,
+          "UNVERIFIED": 4
         }
       },
       "ci": {
         "accuracy": {
-          "low": 0.05,
+          "low": 0.125,
           "high": 0.4,
           "undefinedResamples": 0
         },
         "macroF1": {
-          "low": 0.029411764705882353,
-          "high": 0.3290083874458874,
+          "low": 0.1077665441176471,
+          "high": 0.3328873506108725,
           "undefinedResamples": 0
         },
         "coverage": {
-          "low": 0.75,
-          "high": 1.0,
+          "low": 0.7,
+          "high": 0.925,
           "undefinedResamples": 0
         },
         "selectiveAccuracy": {
-          "low": 0.0,
-          "high": 0.35294117647058826,
+          "low": 0.06060606060606061,
+          "high": 0.3235294117647059,
           "undefinedResamples": 0
         },
         "kappa": {
-          "low": -0.29251700680272114,
-          "high": 0.16350472304288485,
+          "low": -0.17647058823529418,
+          "high": 0.1755984303852825,
           "undefinedResamples": 0
         }
       }
     },
     "scoredUnflagged": {
-      "accuracy": 0.2,
-      "macroF1": 0.17570664629488159,
-      "coverage": 0.9,
-      "selectiveAccuracy": 0.16666666666666666,
-      "kappa": -0.06666666666666665,
-      "n": 20,
+      "accuracy": 0.23684210526315788,
+      "macroF1": 0.2169902443736115,
+      "coverage": 0.8157894736842105,
+      "selectiveAccuracy": 0.16129032258064516,
+      "kappa": -0.016605166051660545,
+      "n": 38,
       "goldClasses": [
         "TRUE",
         "MISLEADING",
@@ -200,11 +204,11 @@
       ],
       "perClass": {
         "TRUE": {
-          "precision": 0.16666666666666666,
+          "precision": 0.18181818181818182,
           "recall": 0.2,
-          "f1": 0.1818181818181818,
-          "support": 5,
-          "predicted": 6
+          "f1": 0.1904761904761905,
+          "support": 10,
+          "predicted": 11
         },
         "PARTIALLY_TRUE": {
           "precision": null,
@@ -217,30 +221,30 @@
           "precision": null,
           "recall": 0.0,
           "f1": 0.0,
-          "support": 5,
+          "support": 9,
           "predicted": 0
         },
         "FALSE": {
-          "precision": 0.16666666666666666,
-          "recall": 0.4,
-          "f1": 0.23529411764705882,
-          "support": 5,
-          "predicted": 12
+          "precision": 0.15,
+          "recall": 0.3333333333333333,
+          "f1": 0.20689655172413793,
+          "support": 9,
+          "predicted": 20
         },
         "UNVERIFIED": {
-          "precision": 0.5,
-          "recall": 0.2,
-          "f1": 0.28571428571428575,
-          "support": 5,
-          "predicted": 2
+          "precision": 0.5714285714285714,
+          "recall": 0.4,
+          "f1": 0.47058823529411764,
+          "support": 10,
+          "predicted": 7
         }
       },
       "confusion": {
         "TRUE": {
-          "TRUE": 1,
+          "TRUE": 2,
           "PARTIALLY_TRUE": 0,
           "MISLEADING": 0,
-          "FALSE": 4,
+          "FALSE": 8,
           "UNVERIFIED": 0
         },
         "PARTIALLY_TRUE": {
@@ -251,51 +255,51 @@
           "UNVERIFIED": 0
         },
         "MISLEADING": {
-          "TRUE": 0,
+          "TRUE": 1,
           "PARTIALLY_TRUE": 0,
           "MISLEADING": 0,
-          "FALSE": 4,
-          "UNVERIFIED": 1
+          "FALSE": 6,
+          "UNVERIFIED": 2
         },
         "FALSE": {
+          "TRUE": 5,
+          "PARTIALLY_TRUE": 0,
+          "MISLEADING": 0,
+          "FALSE": 3,
+          "UNVERIFIED": 1
+        },
+        "UNVERIFIED": {
           "TRUE": 3,
           "PARTIALLY_TRUE": 0,
           "MISLEADING": 0,
-          "FALSE": 2,
-          "UNVERIFIED": 0
-        },
-        "UNVERIFIED": {
-          "TRUE": 2,
-          "PARTIALLY_TRUE": 0,
-          "MISLEADING": 0,
-          "FALSE": 2,
-          "UNVERIFIED": 1
+          "FALSE": 3,
+          "UNVERIFIED": 4
         }
       },
       "ci": {
         "accuracy": {
-          "low": 0.05,
-          "high": 0.4,
+          "low": 0.10526315789473684,
+          "high": 0.3684210526315789,
           "undefinedResamples": 0
         },
         "macroF1": {
-          "low": 0.029411764705882353,
-          "high": 0.3290083874458874,
+          "low": 0.09906759906759907,
+          "high": 0.3211200414830178,
           "undefinedResamples": 0
         },
         "coverage": {
-          "low": 0.75,
-          "high": 1.0,
+          "low": 0.6842105263157895,
+          "high": 0.9210526315789473,
           "undefinedResamples": 0
         },
         "selectiveAccuracy": {
-          "low": 0.0,
-          "high": 0.35294117647058826,
+          "low": 0.034482758620689655,
+          "high": 0.3,
           "undefinedResamples": 0
         },
         "kappa": {
-          "low": -0.29251700680272114,
-          "high": 0.16350472304288485,
+          "low": -0.20075364269538087,
+          "high": 0.1578062866396097,
           "undefinedResamples": 0
         }
       }
@@ -304,12 +308,12 @@
   "breakdowns": {
     "language": {
       "en": {
-        "n": 20,
-        "accuracy": 0.2,
-        "macroF1": 0.17570664629488159,
-        "coverage": 0.9,
-        "selectiveAccuracy": 0.16666666666666666,
-        "kappa": -0.06666666666666665,
+        "n": 40,
+        "accuracy": 0.25,
+        "macroF1": 0.22776610644257703,
+        "coverage": 0.825,
+        "selectiveAccuracy": 0.18181818181818182,
+        "kappa": 0.0,
         "goldClasses": [
           "TRUE",
           "MISLEADING",
@@ -318,28 +322,28 @@
         ],
         "ci": {
           "accuracy": {
-            "low": 0.05,
+            "low": 0.125,
             "high": 0.4,
             "undefinedResamples": 0
           },
           "macroF1": {
-            "low": 0.029411764705882353,
-            "high": 0.3290083874458874,
+            "low": 0.1077665441176471,
+            "high": 0.3328873506108725,
             "undefinedResamples": 0
           },
           "coverage": {
-            "low": 0.75,
-            "high": 1.0,
+            "low": 0.7,
+            "high": 0.925,
             "undefinedResamples": 0
           },
           "selectiveAccuracy": {
-            "low": 0.0,
-            "high": 0.35294117647058826,
+            "low": 0.06060606060606061,
+            "high": 0.3235294117647059,
             "undefinedResamples": 0
           },
           "kappa": {
-            "low": -0.29251700680272114,
-            "high": 0.16350472304288485,
+            "low": -0.17647058823529418,
+            "high": 0.1755984303852825,
             "undefinedResamples": 0
           }
         }
@@ -348,9 +352,9 @@
   },
   "retrieval": {
     "claims": {
-      "total": 20,
-      "searched": 20,
-      "withReferences": 19,
+      "total": 40,
+      "searched": 40,
+      "withReferences": 39,
       "searchUnavailable": 0,
       "errors": 0,
       "selfLinksRemoved": 0,
@@ -358,93 +362,93 @@
     },
     "gold": {
       "linkRecall@candidates": {
-        "n": 19,
-        "value": 0.1053,
-        "low": 0.0,
-        "high": 0.2632
+        "n": 39,
+        "value": 0.1026,
+        "low": 0.0256,
+        "high": 0.2051
       },
       "linkRecall@ranked": {
-        "n": 19,
-        "value": 0.0,
+        "n": 39,
+        "value": 0.0513,
         "low": 0.0,
-        "high": 0.0
+        "high": 0.1282
       },
       "linkRecall@cited": {
-        "n": 19,
-        "value": 0.0,
+        "n": 39,
+        "value": 0.0513,
         "low": 0.0,
-        "high": 0.0
+        "high": 0.1282
       },
       "domainRecall@candidates": {
-        "n": 19,
-        "value": 0.2632,
-        "low": 0.1053,
-        "high": 0.4737
+        "n": 39,
+        "value": 0.2821,
+        "low": 0.1538,
+        "high": 0.4359
       },
       "domainRecall@ranked": {
-        "n": 19,
-        "value": 0.0,
-        "low": 0.0,
-        "high": 0.0
+        "n": 39,
+        "value": 0.1026,
+        "low": 0.0256,
+        "high": 0.2051
       },
       "domainRecall@cited": {
-        "n": 19,
-        "value": 0.0,
+        "n": 39,
+        "value": 0.0769,
         "low": 0.0,
-        "high": 0.0
+        "high": 0.1795
       },
       "linkMRR": {
-        "n": 19,
-        "value": 0.0,
+        "n": 39,
+        "value": 0.0256,
         "low": 0.0,
-        "high": 0.0
+        "high": 0.0641
       },
       "domainMRR": {
-        "n": 19,
-        "value": 0.0,
-        "low": 0.0,
-        "high": 0.0
+        "n": 39,
+        "value": 0.0769,
+        "low": 0.0128,
+        "high": 0.1667
       }
     },
     "goldFree": {
       "hasEvidence": {
-        "n": 20,
+        "n": 40,
         "value": 1.0,
         "low": 1.0,
         "high": 1.0
       },
       "candidates": {
-        "n": 20,
-        "value": 20.55,
-        "low": 19.4,
-        "high": 21.65
+        "n": 40,
+        "value": 20.5,
+        "low": 19.575,
+        "high": 21.375
       },
       "ranked": {
-        "n": 20,
-        "value": 4.8,
-        "low": 4.6,
+        "n": 40,
+        "value": 4.825,
+        "low": 4.675,
         "high": 4.95
       },
       "gateCut": {
-        "n": 20,
-        "value": 0.02,
-        "low": 0.0,
-        "high": 0.05
+        "n": 40,
+        "value": 0.025,
+        "low": 0.005,
+        "high": 0.055
       },
       "uniqueDomains": {
-        "n": 20,
-        "value": 4.8,
-        "low": 4.6,
+        "n": 40,
+        "value": 4.825,
+        "low": 4.675,
         "high": 4.95
       },
       "ratedShare": {
-        "n": 20,
-        "value": 0.04,
-        "low": 0.01,
-        "high": 0.08
+        "n": 40,
+        "value": 0.05,
+        "low": 0.015,
+        "high": 0.09
       },
       "corpusShare": {
-        "n": 20,
+        "n": 40,
         "value": 0.0,
         "low": 0.0,
         "high": 0.0
@@ -456,29 +460,29 @@
         "high": null
       },
       "retrievalSeconds": {
-        "n": 20,
-        "value": 13.7739,
-        "low": 11.865,
-        "high": 15.716
+        "n": 40,
+        "value": 11.1583,
+        "low": 9.8896,
+        "high": 12.5263
       },
       "rankingSeconds": {
-        "n": 20,
-        "value": 10.4629,
-        "low": 9.5515,
-        "high": 11.353
+        "n": 40,
+        "value": 8.5109,
+        "low": 7.7241,
+        "high": 9.3479
       }
     },
     "medians": {
-      "candidates": 20.5,
+      "candidates": 22.0,
       "ranked": 5.0,
-      "retrievalSeconds": 13.356,
-      "rankingSeconds": 10.93
+      "retrievalSeconds": 9.687,
+      "rankingSeconds": 7.382
     },
-    "queriesPerClaim": 3.0,
+    "queriesPerClaim": 2.98,
     "foundBy": {
-      "proposition": 56,
-      "anchor": 45,
-      "refutation": 13
+      "proposition": 127,
+      "anchor": 76,
+      "refutation": 30
     },
     "referencesCut": {
       "evidence_retrieval: a fact-check with no date to show it predates the claim (temporal cutoff)": 1,
@@ -487,19 +491,19 @@
     "groups": {
       "dataset": {
         "averitec": {
-          "claims": 20,
-          "withReferences": 19,
-          "linkRecall@ranked": 0.0,
-          "domainRecall@ranked": 0.0,
+          "claims": 40,
+          "withReferences": 39,
+          "linkRecall@ranked": 0.0513,
+          "domainRecall@ranked": 0.1026,
           "hasEvidence": 1.0
         }
       },
       "language": {
         "en": {
-          "claims": 20,
-          "withReferences": 19,
-          "linkRecall@ranked": 0.0,
-          "domainRecall@ranked": 0.0,
+          "claims": 40,
+          "withReferences": 39,
+          "linkRecall@ranked": 0.0513,
+          "domainRecall@ranked": 0.1026,
           "hasEvidence": 1.0
         }
       }
@@ -510,10 +514,10 @@
     }
   },
   "attribution": {
-    "wrong": 16,
+    "wrong": 30,
     "oracle": false,
     "trace": {
-      "judged": 16,
+      "judged": 30,
       "stages": {
         "retrieval": {
           "count": 0,
@@ -526,23 +530,37 @@
           "ids": []
         },
         "reasoning": {
-          "count": 16,
+          "count": 30,
           "share": 1.0,
           "ids": [
+            "averitec-dev-0012",
             "averitec-dev-0025",
             "averitec-dev-0026",
             "averitec-dev-0047",
+            "averitec-dev-0060",
+            "averitec-dev-0068",
             "averitec-dev-0096",
             "averitec-dev-0115",
+            "averitec-dev-0148",
+            "averitec-dev-0155",
             "averitec-dev-0156",
             "averitec-dev-0164",
+            "averitec-dev-0166",
             "averitec-dev-0175",
             "averitec-dev-0186",
+            "averitec-dev-0235",
+            "averitec-dev-0255",
             "averitec-dev-0259",
             "averitec-dev-0281",
+            "averitec-dev-0283",
             "averitec-dev-0288",
+            "averitec-dev-0306",
+            "averitec-dev-0324",
+            "averitec-dev-0366",
             "averitec-dev-0368",
+            "averitec-dev-0394",
             "averitec-dev-0404",
+            "averitec-dev-0406",
             "averitec-dev-0428",
             "averitec-dev-0498"
           ]
@@ -556,39 +574,54 @@
       "rankingCuts": {}
     },
     "reference": {
-      "judged": 15,
+      "judged": 29,
       "stages": {
         "retrieval": {
-          "count": 12,
-          "share": 0.8,
+          "count": 21,
+          "share": 0.7241379310344828,
           "ids": [
             "averitec-dev-0025",
             "averitec-dev-0026",
             "averitec-dev-0047",
+            "averitec-dev-0068",
             "averitec-dev-0115",
+            "averitec-dev-0155",
             "averitec-dev-0156",
+            "averitec-dev-0166",
             "averitec-dev-0175",
             "averitec-dev-0186",
+            "averitec-dev-0235",
+            "averitec-dev-0255",
+            "averitec-dev-0283",
             "averitec-dev-0288",
+            "averitec-dev-0306",
+            "averitec-dev-0366",
             "averitec-dev-0368",
+            "averitec-dev-0394",
             "averitec-dev-0404",
             "averitec-dev-0428",
             "averitec-dev-0498"
           ]
         },
         "ranking": {
-          "count": 3,
-          "share": 0.2,
+          "count": 4,
+          "share": 0.13793103448275862,
           "ids": [
             "averitec-dev-0164",
             "averitec-dev-0259",
-            "averitec-dev-0281"
+            "averitec-dev-0281",
+            "averitec-dev-0406"
           ]
         },
         "reasoning": {
-          "count": 0,
-          "share": 0.0,
-          "ids": []
+          "count": 4,
+          "share": 0.13793103448275862,
+          "ids": [
+            "averitec-dev-0012",
+            "averitec-dev-0060",
+            "averitec-dev-0148",
+            "averitec-dev-0324"
+          ]
         },
         "aggregation": {
           "count": 0,
@@ -598,13 +631,14 @@
       },
       "rankingCuts": {
         "evidence_retrieval: a fact-check with no date to show it predates the claim (temporal cutoff)": 2,
-        "evidence_retrieval: published on or after the claim's date (temporal cutoff)": 1
+        "evidence_retrieval: published on or after the claim's date (temporal cutoff)": 1,
+        "evidence_retrieval: cut by pre-rank funnel (rank 9 of 11, top 5 kept)": 1
       }
     },
     "noReference": [
       "averitec-dev-0096"
     ],
-    "bothJudged": 15,
+    "bothJudged": 29,
     "disagreements": [
       {
         "id": "averitec-dev-0025",
@@ -622,7 +656,17 @@
         "reference": "retrieval"
       },
       {
+        "id": "averitec-dev-0068",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
         "id": "averitec-dev-0115",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0155",
         "trace": "reasoning",
         "reference": "retrieval"
       },
@@ -637,12 +681,27 @@
         "reference": "ranking"
       },
       {
+        "id": "averitec-dev-0166",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
         "id": "averitec-dev-0175",
         "trace": "reasoning",
         "reference": "retrieval"
       },
       {
         "id": "averitec-dev-0186",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0235",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0255",
         "trace": "reasoning",
         "reference": "retrieval"
       },
@@ -657,7 +716,22 @@
         "reference": "ranking"
       },
       {
+        "id": "averitec-dev-0283",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
         "id": "averitec-dev-0288",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0306",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0366",
         "trace": "reasoning",
         "reference": "retrieval"
       },
@@ -667,9 +741,19 @@
         "reference": "retrieval"
       },
       {
+        "id": "averitec-dev-0394",
+        "trace": "reasoning",
+        "reference": "retrieval"
+      },
+      {
         "id": "averitec-dev-0404",
         "trace": "reasoning",
         "reference": "retrieval"
+      },
+      {
+        "id": "averitec-dev-0406",
+        "trace": "reasoning",
+        "reference": "ranking"
       },
       {
         "id": "averitec-dev-0428",
@@ -684,42 +768,56 @@
     ],
     "byLanguage": {
       "en": {
-        "reasoning": 16
+        "reasoning": 30
       }
     }
   },
   "effort": {
-    "scored": 20,
+    "scored": 40,
     "usable": {
-      "count": 3,
-      "share": 0.15,
-      "low": 0.0,
-      "high": 0.3,
+      "count": 5,
+      "share": 0.125,
+      "low": 0.025,
+      "high": 0.2256,
       "ids": [
         "averitec-dev-0072",
         "averitec-dev-0243",
-        "averitec-dev-0290"
+        "averitec-dev-0280",
+        "averitec-dev-0290",
+        "averitec-dev-0463"
       ]
     },
     "confidentlyWrong": {
-      "count": 15,
-      "share": 0.75,
-      "low": 0.55,
-      "high": 0.9,
+      "count": 27,
+      "share": 0.675,
+      "low": 0.525,
+      "high": 0.825,
       "ids": [
         "averitec-dev-0025",
         "averitec-dev-0026",
         "averitec-dev-0047",
+        "averitec-dev-0060",
+        "averitec-dev-0068",
         "averitec-dev-0096",
         "averitec-dev-0115",
+        "averitec-dev-0148",
+        "averitec-dev-0155",
         "averitec-dev-0156",
         "averitec-dev-0164",
+        "averitec-dev-0166",
         "averitec-dev-0175",
         "averitec-dev-0186",
+        "averitec-dev-0235",
+        "averitec-dev-0255",
         "averitec-dev-0259",
         "averitec-dev-0281",
+        "averitec-dev-0283",
         "averitec-dev-0288",
+        "averitec-dev-0324",
+        "averitec-dev-0366",
         "averitec-dev-0368",
+        "averitec-dev-0394",
+        "averitec-dev-0406",
         "averitec-dev-0428",
         "averitec-dev-0498"
       ]
@@ -730,43 +828,43 @@
   },
   "averitec": {
     "rows": 140,
-    "records": 20,
+    "records": 40,
     "complete": false,
     "all": {
-      "n": 20,
-      "accuracy": 0.2,
+      "n": 40,
+      "accuracy": 0.25,
       "accuracyCi": {
-        "low": 0.05,
+        "low": 0.125,
         "high": 0.4
       },
-      "macroF1": 0.17570664629488159,
+      "macroF1": 0.22776610644257703,
       "macroF1Ci": {
-        "low": 0.0294,
-        "high": 0.3292
+        "low": 0.1078,
+        "high": 0.333
       },
       "f1": {
-        "Supported": 0.18181818181818182,
-        "Refuted": 0.23529411764705882,
-        "Not Enough Evidence": 0.2857142857142857,
+        "Supported": 0.19047619047619047,
+        "Refuted": 0.25,
+        "Not Enough Evidence": 0.47058823529411764,
         "Conflicting Evidence/Cherrypicking": 0.0
       }
     },
     "scored": {
-      "n": 20,
-      "accuracy": 0.2,
+      "n": 40,
+      "accuracy": 0.25,
       "accuracyCi": {
-        "low": 0.05,
+        "low": 0.125,
         "high": 0.4
       },
-      "macroF1": 0.17570664629488159,
+      "macroF1": 0.22776610644257703,
       "macroF1Ci": {
-        "low": 0.0294,
-        "high": 0.3292
+        "low": 0.1078,
+        "high": 0.333
       },
       "f1": {
-        "Supported": 0.18181818181818182,
-        "Refuted": 0.23529411764705882,
-        "Not Enough Evidence": 0.2857142857142857,
+        "Supported": 0.19047619047619047,
+        "Refuted": 0.25,
+        "Not Enough Evidence": 0.47058823529411764,
         "Conflicting Evidence/Cherrypicking": 0.0
       }
     },
@@ -775,58 +873,58 @@
       "macroF1": 0.1
     },
     "predicted": {
-      "Supported": 6,
-      "Refuted": 12,
-      "Not Enough Evidence": 2,
+      "Supported": 11,
+      "Refuted": 22,
+      "Not Enough Evidence": 7,
       "Conflicting Evidence/Cherrypicking": 0,
       "None": 0
     },
     "confusion": {
       "Supported": {
-        "Supported": 1,
-        "Refuted": 4,
+        "Supported": 2,
+        "Refuted": 8,
         "Not Enough Evidence": 0,
         "Conflicting Evidence/Cherrypicking": 0,
         "None": 0
       },
       "Refuted": {
-        "Supported": 3,
-        "Refuted": 2,
-        "Not Enough Evidence": 0,
+        "Supported": 5,
+        "Refuted": 4,
+        "Not Enough Evidence": 1,
         "Conflicting Evidence/Cherrypicking": 0,
         "None": 0
       },
       "Not Enough Evidence": {
-        "Supported": 2,
-        "Refuted": 2,
-        "Not Enough Evidence": 1,
+        "Supported": 3,
+        "Refuted": 3,
+        "Not Enough Evidence": 4,
         "Conflicting Evidence/Cherrypicking": 0,
         "None": 0
       },
       "Conflicting Evidence/Cherrypicking": {
-        "Supported": 0,
-        "Refuted": 4,
-        "Not Enough Evidence": 1,
+        "Supported": 1,
+        "Refuted": 7,
+        "Not Enough Evidence": 2,
         "Conflicting Evidence/Cherrypicking": 0,
         "None": 0
       }
     },
     "temporal": {
-      "claims": 20,
-      "sources": 96,
-      "datedBeforeTheClaim": 29,
-      "undated": 67,
-      "undatedAnywhere": 41,
+      "claims": 40,
+      "sources": 193,
+      "datedBeforeTheClaim": 70,
+      "undated": 123,
+      "undatedAnywhere": 71,
       "late": [],
       "lateInText": [],
       "factCheckInEvidence": [],
       "livingInEvidence": [],
       "claimsWithoutEvidence": 0,
-      "refusedAsLate": 16,
+      "refusedAsLate": 22,
       "refusedAsUndated": 0,
-      "refusedAsLiving": 10,
-      "refusedAsFactCheck": 37,
-      "refusedForTheirText": 40,
+      "refusedAsLiving": 22,
+      "refusedAsFactCheck": 77,
+      "refusedForTheirText": 81,
       "held": true
     },
     "published": [
@@ -899,63 +997,63 @@
     ]
   },
   "responseTime": {
-    "claims": 20,
+    "claims": 40,
     "stages": {
       "entities": {
-        "claims": 20,
-        "median": 0.6695,
-        "p90": 0.8234,
+        "claims": 40,
+        "median": 0.4011,
+        "p90": 0.7812,
         "max": 1.2383,
-        "share": 0.01
+        "share": 0.0096
       },
       "retrieval": {
-        "claims": 20,
-        "median": 13.3559,
-        "p90": 19.349,
+        "claims": 40,
+        "median": 9.6865,
+        "p90": 18.5325,
         "max": 21.0943,
-        "share": 0.2254
+        "share": 0.2218
       },
       "search": {
-        "claims": 20,
-        "median": 1.4565,
-        "p90": 2.125,
+        "claims": 40,
+        "median": 1.2425,
+        "p90": 2.0881,
         "max": 3.389,
-        "share": 0.0244
+        "share": 0.0284
       },
       "pages": {
-        "claims": 20,
+        "claims": 40,
         "median": 0.0,
         "p90": 0.0,
         "max": 0.0,
         "share": 0.0
       },
       "ranking": {
-        "claims": 20,
-        "median": 10.9299,
-        "p90": 12.9489,
+        "claims": 40,
+        "median": 7.382,
+        "p90": 12.0121,
         "max": 14.1258,
-        "share": 0.1712
+        "share": 0.1692
       },
       "llm": {
-        "claims": 20,
-        "median": 37.7954,
-        "p90": 46.0371,
+        "claims": 40,
+        "median": 25.8443,
+        "p90": 45.6979,
         "max": 54.3093,
-        "share": 0.5934
+        "share": 0.5995
       },
       "llmWait": {
-        "claims": 20,
+        "claims": 40,
         "median": 0.0,
         "p90": 0.0,
         "max": 0.0,
         "share": 0.0
       },
       "llmCall": {
-        "claims": 20,
-        "median": 37.779,
-        "p90": 46.0165,
+        "claims": 40,
+        "median": 25.825,
+        "p90": 45.6017,
         "max": 54.275,
-        "share": 0.5928
+        "share": 0.5989
       },
       "secondLook": {
         "claims": 0,
@@ -965,36 +1063,36 @@
         "share": 0.0
       },
       "total": {
-        "claims": 20,
-        "median": 66.6737,
-        "p90": 77.3343,
+        "claims": 40,
+        "median": 43.4118,
+        "p90": 72.4422,
         "max": 86.1135,
         "share": null
       }
     }
   },
   "usage": {
-    "units": 20,
-    "llmCalls": 96,
+    "units": 40,
+    "llmCalls": 193,
     "failedCalls": 0,
     "unitsWithoutCalls": 0,
-    "promptTokens": 41904,
-    "completionTokens": 3362,
+    "promptTokens": 83855,
+    "completionTokens": 6614,
     "usageMissing": 0,
-    "promptTokensPerUnit": 2095.2,
-    "completionTokensPerUnit": 168.1,
-    "llmSeconds": 724.46,
+    "promptTokensPerUnit": 2096.4,
+    "completionTokensPerUnit": 165.3,
+    "llmSeconds": 1205.21,
     "callLatency": {
-      "median": 7.129,
-      "p90": 10.173,
+      "median": 5.692,
+      "p90": 9.626,
       "max": 17.729
     },
     "unitLatency": {
-      "median": 66.674,
-      "p90": 77.334,
-      "total": 1222.07
+      "median": 43.412,
+      "p90": 72.442,
+      "total": 2012.41
     },
-    "completionTokensPerSecond": 4.6,
+    "completionTokensPerSecond": 5.5,
     "cost": null
   }
 }

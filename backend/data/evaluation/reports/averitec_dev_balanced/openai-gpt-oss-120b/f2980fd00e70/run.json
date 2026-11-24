@@ -215,6 +215,118 @@
         },
         "completionTokensPerSecond": 185.1
       }
+    },
+    {
+      "startedAt": "2026-11-24T17:30:15+01:00",
+      "gitCommit": "0163ff2bf81ac36743271116e146a75350e399ed",
+      "provider": "api.groq.com",
+      "limit": 30,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 10,
+      "settings": {
+        "LLM_BASE_URL": "https://api.groq.com/openai/v1",
+        "LLM_TIMEOUT": 180.0,
+        "LLM_REASONING_EFFORT": "low",
+        "LLM_REASONING_TOKENS": 2048,
+        "SEARXNG_URL": "http://localhost:8080",
+        "INFERENCE_URL": "http://localhost:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 1,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 1
+      },
+      "finishedAt": "2026-11-24T17:32:34+01:00",
+      "ran": 10,
+      "ok": 10,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 10,
+        "llmCalls": 66,
+        "failedCalls": 16,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 25270,
+        "completionTokens": 5309,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2527.0,
+        "completionTokensPerUnit": 530.9,
+        "llmSeconds": 34.3,
+        "callLatency": {
+          "median": 0.566,
+          "p90": 1.041,
+          "max": 1.286
+        },
+        "unitLatency": {
+          "median": 14.333,
+          "p90": 20.24,
+          "total": 138.65
+        },
+        "completionTokensPerSecond": 162.7
+      }
+    },
+    {
+      "startedAt": "2026-11-24T17:58:21+01:00",
+      "gitCommit": "0163ff2bf81ac36743271116e146a75350e399ed",
+      "provider": "api.groq.com",
+      "limit": 40,
+      "retryUnavailable": false,
+      "fresh": false,
+      "setAside": null,
+      "tornLinesDropped": 0,
+      "pending": 10,
+      "settings": {
+        "LLM_BASE_URL": "https://api.groq.com/openai/v1",
+        "LLM_TIMEOUT": 180.0,
+        "LLM_REASONING_EFFORT": "low",
+        "LLM_REASONING_TOKENS": 2048,
+        "SEARXNG_URL": "http://localhost:8080",
+        "INFERENCE_URL": "http://localhost:8001",
+        "INFERENCE_TIMEOUT": 120.0,
+        "DUCKDUCKGO_FALLBACK_ENABLED": true,
+        "CLAIM_MAX_CONCURRENCY": 1,
+        "LLM_MAX_CONCURRENCY": 1,
+        "QUERY_MAX_CONCURRENCY": 2,
+        "SEARXNG_MAX_CONCURRENCY": 2,
+        "SCRAPE_MAX_CONCURRENCY": 8,
+        "INFERENCE_MAX_CONCURRENCY": 1
+      },
+      "finishedAt": "2026-11-24T18:00:13+01:00",
+      "ran": 10,
+      "ok": 10,
+      "errors": 0,
+      "stopped": false,
+      "unattributedLlmCalls": 0,
+      "usage": {
+        "units": 10,
+        "llmCalls": 47,
+        "failedCalls": 0,
+        "unitsWithoutCalls": 0,
+        "promptTokens": 23980,
+        "completionTokens": 5055,
+        "usageMissing": 0,
+        "promptTokensPerUnit": 2398.0,
+        "completionTokensPerUnit": 505.5,
+        "llmSeconds": 49.49,
+        "callLatency": {
+          "median": 0.865,
+          "p90": 1.868,
+          "max": 3.008
+        },
+        "unitLatency": {
+          "median": 10.538,
+          "p90": 13.239,
+          "total": 111.81
+        },
+        "completionTokensPerSecond": 102.1
+      }
     }
   ]
 }

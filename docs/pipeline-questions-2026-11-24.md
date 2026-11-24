@@ -384,8 +384,11 @@ store       lake (the record) -> Neo4j (a view; the universe reads it)
 - **Other ways:** MiniCheck for support and the chat model only for
   contradiction, as `evaluation.md` proposes; a reliability-weighted vote
   (7.2); a stronger reader (8.3).
-- **Settle it:** the 40-claim balanced AVeriTeC comparison already under way
-  (`experiments/verifier/averitec-balanced.md`).
+- **Settle it:** the 40-claim balanced AVeriTeC comparison
+  (`experiments/verifier/averitec-balanced.md`), done on 24 Nov. The 3B under
+  this rule got 10 of 40, the same as always answering Refuted, and gpt-oss-120b
+  got 18 under the same rule. The rule is not what holds the 3B back: its reading
+  of each source is.
 - **Answer:**
 
 ### 8.2 Can the verifier say every verdict the reader explains?
