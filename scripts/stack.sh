@@ -38,6 +38,12 @@
 
 set -uo pipefail
 
+# Numbers with a decimal point, whatever the desktop's language: under
+# es_ES (2026-11-26) awk printed "50,4" GB free, and the Python comparison
+# below read it as a tuple - a SyntaxError, then a refusal to load a 3.9 GB
+# model with 50 GB free.
+export LC_NUMERIC=C
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="$ROOT/backend/.env"
 COMPOSE=(docker compose -f "$ROOT/docker/docker-compose.yml" --env-file "$ENV_FILE")
