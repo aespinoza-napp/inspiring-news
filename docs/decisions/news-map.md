@@ -786,6 +786,17 @@ important in the news and articles."
 - **Only the graph's stories.** The lake map's stories are other outlets'
   articles: their photos are theirs, and showing them on a public page is
   a decision nobody has taken. `MapArticle.image` stays None there.
+- **But the graph holds other outlets' photos too** (found 25 Nov). Since
+  20 Nov every analysed article carries its page's lead photo
+  (`extracted.lead_image`, the graph's `Article.image_url`), and since 23
+  Nov the graph map reads every analysis, not only the import. So an
+  outlet's story analysed after 20 Nov shows the outlet's photo, loaded
+  in the reader's browser straight from the outlet's site: on 25 Nov, 4 of
+  the map's 203 stories, all Upworthy's (analysed 24 Nov). The 11 other
+  outlets' stories were analysed before 20 Nov and have none. **Kept, by
+  the author's decision on 25 Nov**: a story shows its outlet's photo,
+  hosted where the outlet put it and never copied here, as it shows the
+  outlet's name and links to its page. The lake map still shows none.
 - **In the universe:**
   - The selected story's photo floats over it, larger, with a stem down
     to its seed; its connected stories' thumbnails over theirs. Near the

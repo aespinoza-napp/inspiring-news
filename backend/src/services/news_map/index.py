@@ -89,7 +89,9 @@ class MapArticle:
     # 150, each an address or a path under the map ("/images/<file>", served
     # by GET /map/images/{name}). None: no photo. Only the graph's stories
     # have one so far (news_map/graph_source.py); the lake map's are other
-    # outlets' articles, whose photos are theirs.
+    # outlets' articles, whose photos are theirs. The graph's own analyses
+    # of other outlets carry their outlet's photo by address since 20 Nov,
+    # and the graph map shows it (docs/decisions/news-map.md).
     image: str | None = None
     thumb: str | None = None
     image_alt: str | None = None

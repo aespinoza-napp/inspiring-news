@@ -154,7 +154,10 @@ their content hashes differ for the 104 posts that list their sources.
 - **An unverified import keeps its entities** (`unchecked_entities`): the
   rule of 17 Nov (`docs/decisions/writing.md`, "Checked twice") would
   otherwise give it none, since it never checks out, and its names are what
-  joins its posts in the graph. A verified import follows the rule.
+  joins its posts in the graph. A verified import follows the rule. Kept as
+  it is by the author's decision on 25 Nov: nothing is drafted from an
+  unverified import, and without its names the universe would join its
+  posts by topic alone.
 
 ## The job journal
 
