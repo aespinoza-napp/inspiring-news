@@ -385,6 +385,26 @@ class Settings(BaseSettings):
     # failure, doubled each attempt and capped at 5s.
     LLM_RETRY_BACKOFF_SECONDS: float = 0.5
 
+    # Groq first (2026-11-25, the author's decision; src/services/llms.py,
+    # docs/decisions/evaluation.md, "Groq first"): with a key here, the API
+    # asks Groq's hosted model before each local one, and the local one
+    # when Groq cannot answer - unreachable, the key refused, the model
+    # withdrawn, the free plan's day spent. Only the API process: the
+    # harness, the experiments and the scripts ask the model they name.
+    # No key (the default) is everything as it was.
+    GROQ_API_KEY: SecretStr | None = None
+    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
+    # The model asked in place of every local one. gpt-oss-120b: on
+    # AVeriTeC's 40 balanced claims it got 18 right against the 3B's 10,
+    # +20 points [+5, +35] paired, the one verifier distinguishable from it
+    # (24 Nov). Writing and reviewing were never measured on Groq.
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
+    # Per local model, the Groq model asked in its place, as JSON:
+    # {"gemma4:e4b": "qwen/qwen3.8-27b"} keeps the reviewer a different
+    # model from the writer, as it is here. An empty name keeps that
+    # model local.
+    GROQ_MODELS: dict[str, str] = {}
+
     # The writer's per-draft defaults. Read only through WriterThresholds
     # (src/config/thresholds.py), so one draft can be asked for with other
     # values; docs/decisions/writing.md, "Writing".

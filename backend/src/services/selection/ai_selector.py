@@ -220,8 +220,19 @@ class AISelector:
         # Input order is kept (bounded_map), so batch k's answer is
         # matched to batch k's candidates. The LLM permit inside
         # complete_json is what bounds how many calls run at once.
+        # The model that answered each batch, read on the batch's own thread
+        # right after its call (LLMClient.model): with Groq first
+        # (src/services/llms.py) one batch can be Groq's and the next the
+        # local model's.
+        models: list[str] = []
+
+        def score(batch: list[dict]) -> dict | None:
+            answer = self._score_batch(batch, groups, trending, edition)
+            models.append(getattr(self.llm, "model", None))
+            return answer
+
         answers = bounded_map(
-            lambda batch: self._score_batch(batch, groups, trending, edition),
+            score,
             batches,
             max_workers=max(len(batches), 1),
             thread_name_prefix="ai-selection",
@@ -256,7 +267,7 @@ class AISelector:
         return AISelection(
             picks=cap_picks(ranked, candidates, trending)[:limit],
             scored=scored,
-            model=self.llm.model,
+            model=", ".join(sorted({model for model in models if model})) or self.llm.model,
             calls=len(batches),
             unusable=unusable,
             elapsed_ms=round((time.perf_counter() - started) * 1000),

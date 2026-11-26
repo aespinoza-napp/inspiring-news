@@ -298,6 +298,11 @@ write them down than to have each be rediscovered.
   from every harness search: the harness measures a weaker search than the app
   runs. `query_plan: checkable` reads them from the sentence; the default
   `sentence` keeps it as it was. `docs/troubleshooting/fact-checking/02-queries.md`.
+- **The app asks Groq first since 2026-11-25** (`GROQ_API_KEY` in `backend/.env`;
+  `src/services/llms.py`): `openai/gpt-oss-120b` (the reviewer `qwen/qwen3.8-27b`,
+  `GROQ_MODELS`), and the local model when Groq is unreachable, refuses or is capped. The API
+  process only: the harness, experiments and scripts ask the model they name. Records name the
+  model that answered. `docs/decisions/evaluation.md`, "Groq first".
 - **The Docker backend cannot reach a host Ollama bound to 127.0.0.1.**
   On Linux the systemd service binds only localhost; the container's model
   calls then all fail (`/healthz`: `llm: ConnectError`). `docker/README.md`

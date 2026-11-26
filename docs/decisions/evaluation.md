@@ -1156,6 +1156,42 @@ evidence. Against gold: 44.9% then 42.0%, -2.9 points [-10.1, +4.3].
 difference inside about ten points is what two runs of one model
 already show.
 
+## Groq first (2026-11-25)
+
+By the author's decision, **the app asks Groq's hosted model first, and the local model when
+Groq cannot answer** (`src/services/llms.py`). With `GROQ_API_KEY` in `backend/.env`, each call
+goes to `GROQ_MODEL` (`openai/gpt-oss-120b`), or to the model `GROQ_MODELS` names for that
+local model (`{"gemma4:e4b": "qwen/qwen3.8-27b"}` here, so the reviewer stays a different model
+from the writer). Without a key, everything is as before.
+
+- **Why gpt-oss-120b:** on AVeriTeC's 40 balanced claims it got 18 right against the 3B's 10, the
+  one verifier distinguishable from it (+20 points [+5, +35], "The balanced sample"). Writing
+  and reviewing were never measured on Groq.
+- **When Groq can't answer, the local model does, and Groq is left alone for a while:**
+  - unreachable: every model, 5 minutes;
+  - the key refused: every model, an hour;
+  - a model withdrawn: that model, an hour;
+  - Groq's server failing: 1 minute;
+  - the free plan's day spent (a 429 asking to wait over 60 s): that model, for as long as
+    Groq's `retry-after` says.
+
+  A minute's rate limit is still waited out on Groq. One request refused, such as one too
+  large for the free plan's 8,000 tokens a minute or JSON that failed Groq's validation, goes
+  to the local model alone and pauses nothing. An answer Groq gave stays its answer, JSON or not.
+- **The API process only.** `src/main.py`'s startup turns it on. The harness, the experiments and
+  every script ask the model they name, so no measurement mixes models. A client given its own
+  endpoint or transport is never redirected. No test reaches Groq (`tests/conftest.py`,
+  `no_groq`).
+- **The records name the model that answered:**
+  - each call's record (`LLMClient.last_call()`: `model`, `provider`, `fallback`), and so each
+    claim's `claim_checked.llm` in the job journal;
+  - a claim's per-source calls list every model;
+  - drafts, reviews and AI selections record the answering model;
+  - the lake's lineage records `llm_model` (the model asked first) and `llm_fallback`.
+- **What leaves the machine:** claims, their sources' excerpts, the articles, the drafts and the
+  candidates' titles go to api.groq.com. The free plan bills nothing; past its day's requests,
+  the app runs on the local models until the cap resets.
+
 ## Choosing the models (2026-10-19)
 
 Three roles call a language model, and each was chosen apart: the

@@ -249,8 +249,13 @@ def merged_call(answers: list[SourceAnswer]) -> dict | None:
         values = [call.get(name) for call in calls if isinstance(call.get(name), (int, float))]
         return round(sum(values), 3) if values else None
 
+    # Every model that answered, in order: with Groq first
+    # (src/services/llms.py) one source's call can be Groq's and the next
+    # the local model's.
+    models = list(dict.fromkeys(call.get("model") for call in calls if call.get("model")))
+
     return {
-        "model": calls[0].get("model"),
+        "model": ", ".join(models) if models else None,
         "wait": total("wait"),
         "seconds": total("seconds"),
         "promptTokens": total("promptTokens"),

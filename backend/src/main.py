@@ -8,6 +8,7 @@ from src.api.routes import router
 from src.config.settings import settings
 from src.container import job_store
 from src.services.job_journal import JobJournal
+from src.services.llms import ask_groq_first, groq_key
 from src.services.log_format import configure_logging
 from src.services.scraper.request_stats import request_stats
 from src.services.scraper.sightings import sightings
@@ -24,6 +25,19 @@ configure_logging(settings.LOG_FORMAT)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Groq first (src/services/llms.py): the app's calls only. The harness,
+    # the experiments and the scripts never run this, and ask the model
+    # they name.
+    ask_groq_first(True)
+
+    if groq_key():
+        logger.info(
+            "LLM: Groq first (%s; GROQ_MODELS %s), else the local model (%s)",
+            settings.GROQ_MODEL, settings.GROQ_MODELS or "none", settings.LLM_MODEL,
+        )
+    else:
+        logger.info("LLM: %s only (no GROQ_API_KEY)", settings.LLM_MODEL)
+
     # Attached at startup rather than built into the container: importing
     # the app (as the API tests do) must not start writing job journals
     # into the real lake. TestClient only runs this when used as a

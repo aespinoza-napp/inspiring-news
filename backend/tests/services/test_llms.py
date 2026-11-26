@@ -1,6 +1,7 @@
 import httpx
 import pytest
 from openai import APIConnectionError, RateLimitError
+from pydantic import SecretStr
 
 from src.services.llms import LLMClient, LLMUnavailableError
 
@@ -390,3 +391,231 @@ def test_the_last_call_says_what_it_cost():
     assert call["completionTokens"] == 48
     assert call["seconds"] >= 0.0
     assert call["wait"] >= 0.0
+
+
+# ----------------------------------------------------------------------
+# Groq first (2026-11-25): Groq's model when it answers, the local one
+# when it cannot, and only in a process that asked for it.
+# ----------------------------------------------------------------------
+
+
+def status_error(status: int, code: str | None = None):
+    """The SDK's error for an HTTP status, as Groq would send it."""
+
+    from openai import APIStatusError, AuthenticationError, BadRequestError, InternalServerError, NotFoundError
+
+    kinds = {400: BadRequestError, 401: AuthenticationError, 404: NotFoundError, 500: InternalServerError}
+    response = httpx.Response(status, request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"))
+    body = {"code": code, "message": "refused"} if code else None
+
+    return kinds.get(status, APIStatusError)("refused", response=response, body=body)
+
+
+@pytest.fixture
+def groq_first(monkeypatch):
+    """This process asks Groq first, with no pause left from another test."""
+
+    from src.services import llms
+
+    llms.reset_groq_pauses()
+    monkeypatch.setattr(llms, "_GROQ_FIRST", True)
+
+    yield llms
+
+    llms.reset_groq_pauses()
+
+
+def two(groq_answers, local_answers, model="llama3.2:3b"):
+    """A client with a fake Groq in front of a fake local model."""
+
+    return LLMClient(model=model, client=FakeOpenAIClient(local_answers), groq_client=FakeOpenAIClient(groq_answers))
+
+
+def calls(fake) -> list:
+
+    return fake.chat.completions.calls
+
+
+def test_groq_answers_first_and_is_named_as_the_model(groq_first):
+
+    client = two(['{"verdict": "TRUE"}'], [])
+
+    assert client.complete_json("s", "u") == {"verdict": "TRUE"}
+
+    assert calls(client._groq_client)[0]["model"] == "openai/gpt-oss-120b"
+    assert calls(client._client) == []
+    assert client.model == "openai/gpt-oss-120b"
+    assert LLMClient.last_call()["model"] == "openai/gpt-oss-120b"
+    assert LLMClient.last_call()["provider"] == "groq"
+    assert "fallback" not in LLMClient.last_call()
+
+
+def test_groq_unreachable_is_answered_here_and_left_alone_for_a_while(groq_first):
+    """
+    No network to Groq: this call goes to the local model at once - no
+    retry against Groq, no backoff - and the next call does not try Groq
+    again until the pause is over.
+    """
+
+    client = two([APIConnectionError(request=None)], ['{"verdict": "FALSE"}', '{"verdict": "TRUE"}'])
+
+    assert client.complete_json("s", "u") == {"verdict": "FALSE"}
+
+    call = LLMClient.last_call()
+    assert (call["model"], call["provider"]) == ("llama3.2:3b", "local")
+    assert call["fallback"].startswith("Groq: unreachable")
+    assert client.model == "llama3.2:3b"
+
+    assert client.complete_json("s", "u") == {"verdict": "TRUE"}
+    assert len(calls(client._groq_client)) == 1
+    assert LLMClient.last_call()["fallback"].startswith("Groq: paused, unreachable")
+
+    assert groq_first.groq_paused("openai/gpt-oss-120b") is not None
+
+
+def test_a_spent_day_pauses_that_model_for_as_long_as_groq_says(groq_first, monkeypatch):
+    """A 429 past a minute's wait is the free plan's day used up: the local model until then."""
+
+    monkeypatch.setattr("src.services.llms.time.sleep", lambda seconds: None)
+
+    client = two([rate_limited("7200")], ['{"verdict": "TRUE"}'])
+
+    assert client.complete_json("s", "u") == {"verdict": "TRUE"}
+    assert "retry after 7200 s" in LLMClient.last_call()["fallback"]
+
+    until, _ = groq_first._GROQ_PAUSES["openai/gpt-oss-120b"]
+    assert until - groq_first.time.monotonic() > 7000
+    assert "*" not in groq_first._GROQ_PAUSES
+
+
+def test_a_minute_limit_is_still_waited_out_on_groq(groq_first, monkeypatch):
+
+    slept = []
+    monkeypatch.setattr("src.services.llms.time.sleep", slept.append)
+
+    client = two([rate_limited("2"), '{"verdict": "TRUE"}'], [])
+
+    assert client.complete_json("s", "u") == {"verdict": "TRUE"}
+    assert slept == [2.0]
+    assert LLMClient.last_call()["provider"] == "groq"
+
+
+@pytest.mark.parametrize(
+    "status, scope",
+    [(401, "*"), (404, "openai/gpt-oss-120b"), (500, "*"), (400, None)],
+)
+def test_what_each_refusal_pauses(groq_first, status, scope):
+    """
+    A refused key or Groq down: every model. A withdrawn model: that one.
+    One request refused (too large for the minute's tokens, JSON that
+    failed Groq's validation): nothing - the next may fit.
+    """
+
+    client = two([status_error(status, "json_validate_failed" if status == 400 else None)], ['{"ok": true}'])
+
+    assert client.complete_json("s", "u") == {"ok": True}
+    assert LLMClient.last_call()["provider"] == "local"
+    assert list(groq_first._GROQ_PAUSES) == ([scope] if scope else [])
+
+
+def test_an_answer_from_groq_is_its_answer_even_without_json(groq_first):
+    """Groq was there: the model's reply is the reply, asked again on Groq, never handed to another model."""
+
+    client = two(["not json", "still not"], ['{"verdict": "TRUE"}'])
+
+    assert client.complete_json("s", "u", max_retries=1) is None
+    assert len(calls(client._groq_client)) == 2
+    assert calls(client._client) == []
+
+
+def test_both_unreachable_says_so_and_names_groq(groq_first):
+
+    client = two([APIConnectionError(request=None)], [APIConnectionError(request=None)])
+
+    with pytest.raises(LLMUnavailableError, match="Groq: unreachable"):
+        client.complete_json("s", "u", max_retries=0)
+
+
+def test_groq_first_is_off_unless_the_process_asks_for_it(monkeypatch):
+    """The harness, the experiments and the scripts ask the model they name."""
+
+    from src.config.settings import settings
+    from src.services import llms
+
+    monkeypatch.setattr(llms, "_GROQ_FIRST", False)
+    monkeypatch.setattr(settings, "GROQ_API_KEY", SecretStr("gsk_test"))
+
+    client = LLMClient()
+
+    assert client._asks_groq() == ""
+    assert client.model == settings.LLM_MODEL
+    assert llms.asked_first(settings.LLM_MODEL) == settings.LLM_MODEL
+
+
+def test_groq_first_needs_a_key_and_a_client_built_from_the_settings(groq_first, monkeypatch):
+
+    from src.config.settings import settings
+
+    assert LLMClient()._groq_model is None
+
+    monkeypatch.setattr(settings, "GROQ_API_KEY", SecretStr("gsk_test"))
+
+    assert LLMClient()._groq_model == "openai/gpt-oss-120b"
+    assert LLMClient()._asks_groq() is None
+    # An endpoint or a transport of its own is asked as given.
+    assert LLMClient(base_url="http://elsewhere:1/v1")._groq_model is None
+    assert LLMClient(client=FakeOpenAIClient([]))._groq_model is None
+    # Already pointed at Groq: nothing to ask first.
+    monkeypatch.setattr(settings, "LLM_BASE_URL", "https://api.groq.com/openai/v1")
+    assert LLMClient()._groq_model is None
+
+
+def test_each_local_model_can_have_its_own_groq_model_or_none(groq_first, monkeypatch):
+    """The reviewer kept a different model from the writer; an empty name keeps one local."""
+
+    from src.config.settings import settings
+
+    monkeypatch.setattr(settings, "GROQ_API_KEY", SecretStr("gsk_test"))
+    monkeypatch.setattr(settings, "GROQ_MODELS", {"gemma4:e4b": "qwen/qwen3.8-27b", "qwen3.5:4b": ""})
+
+    assert LLMClient(model="gemma4:e4b")._groq_model == "qwen/qwen3.8-27b"
+    assert LLMClient(model="qwen3.5:4b")._groq_model is None
+    assert LLMClient(model="llama3.2:3b")._groq_model == "openai/gpt-oss-120b"
+
+
+def test_groq_gets_its_own_models_reasoning_settings(groq_first, monkeypatch):
+    """gpt-oss cannot be told not to think: its room above the cap, not the local model's."""
+
+    from src.config.settings import settings
+
+    monkeypatch.setattr(settings, "LLM_REASONING_EFFORT", {"openai/gpt-oss-120b": "low"})
+    monkeypatch.setattr(settings, "LLM_REASONING_TOKENS", {"openai/gpt-oss-120b": 2048})
+
+    client = two([status_error(400)], ['{"ok": true}'])
+
+    client.complete_json("s", "u", max_tokens=160)
+
+    groq_call, local_call = calls(client._groq_client)[0], calls(client._client)[0]
+
+    assert (groq_call["max_tokens"], groq_call["extra_body"]) == (160 + 2048, {"reasoning_effort": "low"})
+    assert local_call["max_tokens"] == 160
+    assert "extra_body" not in local_call
+
+
+def test_the_lake_names_the_model_asked_first_and_the_one_behind_it(groq_first, monkeypatch, tmp_path):
+
+    from src.config.settings import settings
+    from src.repositories.datalake_repository import DataLakeRepository
+
+    monkeypatch.setattr(settings, "GROQ_API_KEY", SecretStr("gsk_test"))
+
+    components = DataLakeRepository(tmp_path).start_run("https://example.org/a").components
+
+    assert components["llm_model"] == "openai/gpt-oss-120b"
+    assert components["llm_fallback"] == settings.LLM_MODEL
+
+    groq_first.ask_groq_first(False)
+    try:
+        assert "llm_fallback" not in DataLakeRepository(tmp_path).start_run("https://example.org/a").components
+    finally:
+        groq_first.ask_groq_first(True)

@@ -162,6 +162,9 @@ NON_THRESHOLD_SETTINGS = {
     "EMBEDDING_MODEL", "EMBEDDING_DIMENSION", "SENTIMENT_MODEL",
     "LLM_MODEL", "LLM_BASE_URL", "LLM_API_KEY", "LLM_TIMEOUT",
     "LLM_RETRY_BACKOFF_SECONDS",
+    # Groq first (src/services/llms.py): which hosted model is asked before
+    # the local one, and with what key - where a call goes, like LLM_MODEL.
+    "GROQ_API_KEY", "GROQ_BASE_URL", "GROQ_MODEL", "GROQ_MODELS",
     # The AI selection's own per-call limit (src/services/selection/):
     # infrastructure, like LLM_TIMEOUT - how long to wait on the model,
     # not how a run judges anything.

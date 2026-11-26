@@ -117,6 +117,24 @@ def pinned_settings(monkeypatch):
     pin_settings(monkeypatch)
 
 
+@pytest.fixture(autouse=True)
+def no_groq(monkeypatch):
+    """
+    No test reaches Groq (src/services/llms.py, Groq first): backend/.env's
+    GROQ_API_KEY is left out, like any infrastructure a test does not ask
+    for, and a test that starts the app - whose lifespan turns Groq first
+    on - does not leave it on for the next. The Groq-first tests give a
+    fake Groq client of their own.
+    """
+
+    from src.config.settings import settings
+    from src.services import llms
+
+    monkeypatch.setattr(settings, "GROQ_API_KEY", None)
+    monkeypatch.setattr(llms, "_GROQ_FIRST", False)
+    llms.reset_groq_pauses()
+
+
 @pytest.fixture
 def list_verifier(monkeypatch):
     """

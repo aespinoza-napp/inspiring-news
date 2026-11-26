@@ -6,6 +6,7 @@ import threading
 import time
 from logging import getLogger
 from typing import Any
+from urllib.parse import urlparse
 
 from openai import APIConnectionError, APIError, APITimeoutError, OpenAI, RateLimitError
 
@@ -115,6 +116,147 @@ def _is_model_loop(exc: Exception) -> bool:
     return "repeat limit" in str(exc).lower()
 
 
+# ----------------------------------------------------------------------
+# Groq first (2026-11-25, the author's decision)
+# ----------------------------------------------------------------------
+#
+# In the API process a call goes to Groq's hosted model when a key is
+# configured (GROQ_API_KEY) and Groq is answering, and to the configured
+# local model when it is not. Only there: src/main.py turns it on at
+# startup, so the evaluation harness, the experiments and every script ask
+# exactly the model they name - a run that switched models halfway would
+# measure neither. docs/decisions/evaluation.md, "Groq first".
+_GROQ_FIRST = False
+
+# How long Groq is left alone after a failure that would repeat, so every
+# call does not pay to find out again. For one model (a model withdrawn, a
+# day's cap reached) or the whole key, "*" (a refused key, no network, the
+# service down). A failure of one request - too large for the free plan's
+# tokens a minute, JSON that failed Groq's own validation - pauses nothing:
+# the next one may fit.
+GROQ_PAUSE_UNREACHABLE_SECONDS = 300.0
+GROQ_PAUSE_SERVER_ERROR_SECONDS = 60.0
+GROQ_PAUSE_REFUSED_SECONDS = 3600.0
+# A 429 past the minute's waits without a retry-after: an hour, rather than
+# asking again on every call of a day whose cap is spent.
+GROQ_PAUSE_CAPPED_SECONDS = 3600.0
+
+_GROQ_PAUSES: dict[str, tuple[float, str]] = {}
+_GROQ_LOCK = threading.Lock()
+
+
+def ask_groq_first(enabled: bool = True) -> None:
+    """Turn Groq first on for this process (src/main.py), or off."""
+
+    global _GROQ_FIRST
+    _GROQ_FIRST = enabled
+
+
+def groq_first() -> bool:
+
+    return _GROQ_FIRST
+
+
+def groq_model_for(model: str) -> str | None:
+    """
+    The Groq model asked in place of the local `model`: GROQ_MODELS' entry
+    for it, else GROQ_MODEL. An empty name keeps that model local.
+    """
+
+    return settings.GROQ_MODELS.get(model, settings.GROQ_MODEL) or None
+
+
+def groq_key() -> str | None:
+
+    key = settings.GROQ_API_KEY.get_secret_value().strip() if settings.GROQ_API_KEY else ""
+
+    return key or None
+
+
+def asked_first(model: str) -> str:
+    """
+    The model a call for the local `model` goes to first, in this process
+    now: its Groq model under Groq first, unless Groq is paused for it;
+    else `model`. For a record made before any call (the lake's lineage).
+    """
+
+    groq = groq_model_for(model)
+
+    if (
+        not _GROQ_FIRST
+        or groq is None
+        or groq_key() is None
+        or _host(settings.LLM_BASE_URL) == _host(settings.GROQ_BASE_URL)
+        or groq_paused(groq)
+    ):
+        return model
+
+    return groq
+
+
+def groq_paused(model: str) -> str | None:
+    """Why Groq is not being asked for `model` now, or None when it is."""
+
+    now = time.monotonic()
+
+    with _GROQ_LOCK:
+        for scope in ("*", model):
+            until, reason = _GROQ_PAUSES.get(scope, (0.0, ""))
+            if until > now:
+                return reason
+            _GROQ_PAUSES.pop(scope, None)
+
+    return None
+
+
+def reset_groq_pauses() -> None:
+
+    with _GROQ_LOCK:
+        _GROQ_PAUSES.clear()
+
+
+class _GroqUnavailable(Exception):
+    """Groq could not answer this call: ask the local model instead."""
+
+    def __init__(self, reason: str, scope: str | None = None, pause: float = 0.0):
+        super().__init__(reason)
+        self.reason = reason
+        self.scope = scope
+        self.pause = pause
+
+
+def _groq_failure(exc: Exception, model: str) -> _GroqUnavailable:
+    """What a failed Groq call means: for how long, and for what, to leave it alone."""
+
+    if isinstance(exc, RateLimitError):
+        try:
+            wait = float(exc.response.headers.get("retry-after", ""))
+        except (AttributeError, ValueError):
+            wait = None
+        if wait is not None and wait > 0:
+            return _GroqUnavailable(f"rate limit, retry after {wait:.0f} s", model, wait)
+        return _GroqUnavailable("rate limit", model, GROQ_PAUSE_CAPPED_SECONDS)
+
+    # APITimeoutError is one of these.
+    if isinstance(exc, APIConnectionError):
+        return _GroqUnavailable(f"unreachable ({type(exc).__name__})", "*", GROQ_PAUSE_UNREACHABLE_SECONDS)
+
+    status = getattr(exc, "status_code", None)
+    code = getattr(exc, "code", None)
+    detail = f"{status}{f', {code}' if code else ''}"
+
+    if status in (401, 403):
+        return _GroqUnavailable(f"refused the key ({detail})", "*", GROQ_PAUSE_REFUSED_SECONDS)
+
+    if status == 404:
+        return _GroqUnavailable(f"does not serve {model} ({detail})", model, GROQ_PAUSE_REFUSED_SECONDS)
+
+    if isinstance(status, int) and status >= 500:
+        return _GroqUnavailable(f"server error ({detail})", "*", GROQ_PAUSE_SERVER_ERROR_SECONDS)
+
+    return _GroqUnavailable(f"refused this request ({detail or type(exc).__name__})")
+
+
 class LLMClient:
     """
     Thin OpenAI-compatible chat-completions client.
@@ -123,6 +265,12 @@ class LLMClient:
     format: local Ollama (the default), Groq, OpenRouter, Together.ai,
     or real OpenAI/Azure. Swapping providers is a settings-only change
     (LLM_BASE_URL / LLM_API_KEY / LLM_MODEL) - no code change needed.
+
+    In the API process, Groq first (above): each call asks Groq's model
+    for this one (`groq_model_for`) and, when Groq cannot answer, this
+    one. Only for a client built from the settings: one given its own
+    endpoint or transport (a test's fake, the harness's headless Claude, a
+    script naming its server) is asked as given.
     """
 
     def __init__(
@@ -132,28 +280,89 @@ class LLMClient:
         model: str | None = None,
         timeout: float | None = None,
         client: OpenAI | None = None,
+        groq_client: OpenAI | None = None,
     ):
-        self.model = model or settings.LLM_MODEL
+        # The model the settings (or the caller) name: the one asked when
+        # Groq is not.
+        self.local_model = model or settings.LLM_MODEL
+        self._timeout = timeout or settings.LLM_TIMEOUT
 
         # Thinking switched off (or set) for the models that need it
         # (LLM_REASONING_EFFORT). Sent as an extra body field, so a
         # provider that does not know it never sees a typed argument.
-        effort = settings.LLM_REASONING_EFFORT.get(self.model)
-        self._extra = {"extra_body": {"reasoning_effort": effort}} if effort else {}
+        self._extra = _reasoning_effort(self.local_model)
 
         # Room for the reasoning on top of every cap (LLM_REASONING_TOKENS).
-        self._reasoning_tokens = settings.LLM_REASONING_TOKENS.get(self.model, 0)
+        self._reasoning_tokens = settings.LLM_REASONING_TOKENS.get(self.local_model, 0)
 
         self._client = client or OpenAI(
             base_url=base_url or settings.LLM_BASE_URL,
             api_key=api_key or settings.LLM_API_KEY.get_secret_value(),
-            timeout=timeout or settings.LLM_TIMEOUT,
+            timeout=self._timeout,
             # The SDK retries timeouts and connection errors twice on its
             # own (DEFAULT_MAX_RETRIES = 2), silently multiplying
             # complete_json's own retry: a slow local model could hold one
             # claim for 6 x LLM_TIMEOUT. Retries are owned by complete_json.
             max_retries=0,
         )
+
+        pinned = base_url is not None or api_key is not None or client is not None
+        # Already Groq (a harness run pointed LLM_BASE_URL at it): nothing
+        # to ask first.
+        local_is_groq = _host(settings.LLM_BASE_URL) == _host(settings.GROQ_BASE_URL)
+        eligible = groq_client is not None or (not pinned and not local_is_groq and groq_key() is not None)
+
+        self._groq_model = groq_model_for(self.local_model) if eligible else None
+        # A Groq transport given (a test's fake) is asked whatever the
+        # process says; one built here only in a process that asks Groq first.
+        self._groq_given = groq_client is not None
+        self._groq_client = groq_client
+        self._groq_lock = threading.Lock()
+
+        # The model this thread's last call went to, for `model`.
+        self._thread = threading.local()
+
+    @property
+    def model(self) -> str:
+        """
+        The model this thread's last call through this client went to - the
+        one that answered, or the last one tried when none did - and before
+        any, the one it would ask first. What a draft, a review or a
+        selection records as the model that made it, read after its call.
+        """
+
+        asked = getattr(self._thread, "model", None)
+
+        if asked:
+            return asked
+
+        return self._groq_model if self._asks_groq() is None else self.local_model
+
+    def _asks_groq(self) -> str | None:
+        """
+        None when this call goes to Groq first; otherwise why not, or ""
+        when Groq first does not apply to this client at all.
+        """
+
+        if not self._groq_model or not (_GROQ_FIRST or self._groq_given):
+            return ""
+
+        paused = groq_paused(self._groq_model)
+
+        return f"paused, {paused}" if paused else None
+
+    def _groq(self) -> OpenAI:
+
+        with self._groq_lock:
+            if self._groq_client is None:
+                self._groq_client = OpenAI(
+                    base_url=settings.GROQ_BASE_URL,
+                    api_key=groq_key() or "",
+                    timeout=self._timeout,
+                    max_retries=0,
+                )
+
+        return self._groq_client
 
     def complete_json(
         self,
@@ -182,8 +391,14 @@ class LLMClient:
         on a half-written answer. Closing the request stops Ollama
         generating, so the permit is not held past it.
 
+        Groq first (above): Groq is asked once, and a call it could not
+        answer - unreachable, refused, capped - goes to the local model
+        with whatever time is left. One it answered stays its answer,
+        JSON or not: Groq was there, and the model's reply is the reply.
+
         How the call went (permit wait, the call's own seconds, tokens) is
-        kept for this thread in `last_call()`.
+        kept for this thread in `last_call()`; with Groq first, also who
+        answered (`provider`) and why Groq did not (`fallback`).
         """
 
         messages = [
@@ -191,16 +406,75 @@ class LLMClient:
             {"role": "user", "content": user_prompt},
         ]
 
-        # Only sent when asked for, so every existing call is the request
-        # it always was.
-        limits = {"max_tokens": max_tokens + self._reasoning_tokens} if max_tokens is not None else {}
-
-        unreachable = False
-
         ends_at = None if timeout is None else time.monotonic() + timeout
 
-        call = {"model": self.model, "wait": 0.0, "seconds": 0.0, "promptTokens": None, "completionTokens": None}
+        call = {"model": self.local_model, "wait": 0.0, "seconds": 0.0, "promptTokens": None, "completionTokens": None}
         _LAST_CALL.value = call
+
+        not_groq = self._asks_groq()
+
+        if not_groq is None:
+
+            call["model"] = self._groq_model
+            call["provider"] = "groq"
+            self._thread.model = self._groq_model
+
+            try:
+                return self._ask(
+                    self._groq(), self._groq_model, _reasoning_effort(self._groq_model),
+                    settings.LLM_REASONING_TOKENS.get(self._groq_model, 0),
+                    list(messages), max_retries, max_tokens, timeout, ends_at, call, groq=True,
+                )
+            except _GroqUnavailable as exc:
+                if exc.scope and exc.pause > 0:
+                    with _GROQ_LOCK:
+                        _GROQ_PAUSES[exc.scope] = (time.monotonic() + exc.pause, exc.reason)
+                logger.warning(
+                    "Groq could not answer (%s: %s); asking %s instead",
+                    self._groq_model, exc.reason, self.local_model,
+                )
+                not_groq = exc.reason
+
+        if not_groq:
+            call["provider"] = "local"
+            call["fallback"] = f"Groq: {not_groq}"
+
+        call["model"] = self.local_model
+        call["promptTokens"] = call["completionTokens"] = None
+        self._thread.model = self.local_model
+
+        return self._ask(
+            self._client, self.local_model, self._extra, self._reasoning_tokens,
+            messages, max_retries, max_tokens, timeout, ends_at, call,
+        )
+
+    def _ask(
+        self,
+        client,
+        model: str,
+        extra: dict,
+        reasoning_tokens: int,
+        messages: list[dict],
+        max_retries: int,
+        max_tokens: int | None,
+        timeout: float | None,
+        ends_at: float | None,
+        call: dict,
+        groq: bool = False,
+    ) -> dict[str, Any] | None:
+        """
+        complete_json against one endpoint. `groq`: Groq first's attempt,
+        where a failure to get an answer is not retried here but raised as
+        _GroqUnavailable, for the local model to answer instead.
+        """
+
+        system_prompt, user_prompt = messages[0]["content"], messages[1]["content"]
+
+        # Only sent when asked for, so every existing call is the request
+        # it always was.
+        limits = {"max_tokens": max_tokens + reasoning_tokens} if max_tokens is not None else {}
+
+        unreachable = False
 
         for attempt in range(max_retries + 1):
 
@@ -236,14 +510,14 @@ class LLMClient:
                             )
 
                             try:
-                                response = self._client.chat.completions.create(
-                                    model=self.model,
+                                response = client.chat.completions.create(
+                                    model=model,
                                     messages=messages,
                                     response_format={"type": "json_object"},
                                     temperature=0.0,
                                     **limits,
                                     **per_request,
-                                    **self._extra,
+                                    **extra,
                                 )
                             finally:
                                 call["seconds"] = round(call["seconds"] + time.perf_counter() - started, 3)
@@ -255,6 +529,8 @@ class LLMClient:
                         wait = self._rate_limit_wait(exc, ends_at)
                         rate_limited += 1
                         if wait is None or rate_limited > RATE_LIMIT_MAX_WAITS:
+                            if groq:
+                                raise _groq_failure(exc, model) from exc
                             raise
                         logger.warning("LLM rate-limited; asking again in %.1f s", wait)
                         time.sleep(wait)
@@ -263,11 +539,17 @@ class LLMClient:
                         left = None if ends_at is None else ends_at - time.monotonic()
 
             except PermitTimeout as exc:
+                # Out of time waiting for the permit: the local model would
+                # wait for the same one, so this is "not checked" either way.
                 call["wait"] = round(call["wait"] + time.perf_counter() - asked, 3)
                 logger.warning("LLM call not started (attempt %d): %s", attempt, exc)
                 unreachable = True
                 break
             except (APIConnectionError, APITimeoutError, APIError) as exc:
+
+                if groq:
+                    raise _groq_failure(exc, model) from exc
+
                 logger.warning(
                     "LLM call failed (attempt %d): %s",
                     attempt,
@@ -294,7 +576,7 @@ class LLMClient:
             call["completionTokens"] = getattr(usage, "completion_tokens", None)
 
             if attempt == 0:
-                _warn_if_cut(self.model, len(system_prompt) + len(user_prompt), response)
+                _warn_if_cut(model, len(system_prompt) + len(user_prompt), response)
 
             content = response.choices[0].message.content or ""
 
@@ -332,10 +614,11 @@ class LLMClient:
             })
 
         if unreachable:
+            groq_note = f" ({call['fallback']})" if call.get("fallback") else ""
             raise LLMUnavailableError(
-                f"{self.model} unreachable after {max_retries + 1} attempt(s)"
+                f"{model} unreachable after {max_retries + 1} attempt(s){groq_note}"
                 if ends_at is None or time.monotonic() < ends_at
-                else f"{self.model} did not answer within {timeout:.0f} s"
+                else f"{model} did not answer within {timeout:.0f} s{groq_note}"
             )
 
         return None
@@ -385,3 +668,16 @@ class LLMClient:
             return None
 
         return wait
+
+
+def _reasoning_effort(model: str) -> dict:
+    """The extra body field that sets `model`'s reasoning (LLM_REASONING_EFFORT), or nothing."""
+
+    effort = settings.LLM_REASONING_EFFORT.get(model)
+
+    return {"extra_body": {"reasoning_effort": effort}} if effort else {}
+
+
+def _host(url: str) -> str:
+
+    return (urlparse(url).hostname or "").lower()

@@ -131,6 +131,15 @@ class DataLakeRepository:
         thresholds: PipelineThresholds | None = None,
     ) -> RunContext:
 
+        from src.services.llms import asked_first
+
+        # With Groq first (src/services/llms.py) the model asked first is
+        # Groq's, and the local one answers what Groq cannot: both named.
+        # Which one answered each claim is in the job journal
+        # (claim_checked's `llm`).
+        llm = asked_first(settings.LLM_MODEL)
+        fallback = {"llm_fallback": settings.LLM_MODEL} if llm != settings.LLM_MODEL else {}
+
         return RunContext(
             run_id=uuid4().hex,
             url=url,
@@ -146,7 +155,8 @@ class DataLakeRepository:
             components={
                 "embedding_model": settings.EMBEDDING_MODEL,
                 "sentiment_model": settings.SENTIMENT_MODEL,
-                "llm_model": settings.LLM_MODEL,
+                "llm_model": llm,
+                **fallback,
             },
         )
 
