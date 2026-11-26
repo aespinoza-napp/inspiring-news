@@ -39,6 +39,11 @@ Things that must stay true:
 - Thresholds (`topic_min_confidence`, `positive_impact_min_score`,
   `positive_impact_hard_fail_enabled`, `duplicate_threshold`, `relatedness_threshold`) are per call,
   like everywhere else (`docs/decisions/thresholds.md`).
+- **The defaults are reasoned, not fitted, and they turn editors' picks away.** Against the editor's
+  choices (`experiments admission`, 2026-11-25, 13 picks), 0.35 and 0.3 turned away 3 of 13 - light
+  culture stories chosen for their audience, which the impact score rates low - and the impact score's
+  AUC was 0.689 [0.512, 0.855]. No starting point for tuning yet: the rule needs 20 picks
+  (`docs/experiments.md`, "admission").
 
 The report keeps its admission fields (`topic_ok`, `positive_ok`, `duplicate`, `impact_score`,
 `impact_reasons`, `failed_stage = admission_filter`) so the stored records and the `/analyze` response

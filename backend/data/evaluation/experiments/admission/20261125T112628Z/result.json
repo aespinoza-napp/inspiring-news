@@ -1,0 +1,261 @@
+{
+ "articles": 146,
+ "enriched": 137,
+ "failed": 9,
+ "labelled": 137,
+ "chosen": 13,
+ "noTopicAtAll": 19,
+ "aucImpactScore": 0.6892,
+ "impactAuc": {
+  "auc": 0.689,
+  "low": 0.512,
+  "high": 0.855,
+  "n": 137,
+  "positives": 13
+ },
+ "topicAuc": {
+  "auc": 0.608,
+  "low": 0.429,
+  "high": 0.774,
+  "n": 137,
+  "positives": 13
+ },
+ "highestNotChosen": [
+  {
+   "url": "https://www.nih.gov/news-events/nih-research-matters/stroke-recovery-tracked-wearable-device",
+   "title": "Stroke recovery tracked with wearable device. An NIH-funded study found that wrist sensors could track improvements in arm use after stroke, potentially making rehabilitation assessments more sensitive to everyday movement.",
+   "impactScore": 0.814
+  },
+  {
+   "url": "https://timesofindia.indiatimes.com/world/rest-of-world/a-canadian-ranch-familys-two-decade-effort-to-protect-native-prairie-now-covers-more-than-55000-acres-auditors-have-verified-its-first-grassland-carbon-credit-issuance-under-a-national-protocol/articleshow/135682184.cms",
+   "title": "A Canadian ranch family's two-decade effort to protect native prairie now covers more than 55,000 acres; auditors have verified its first grassland carbon-credit issuance under a national protocol.",
+   "impactScore": 0.804
+  },
+  {
+   "url": "https://www.independent.co.uk/news/suriname-amazon-rainforest-chinese-brazil-french-guiana-b3073509.html",
+   "title": "Suriname’s Saamaka tribe are using modern technology to map and document their ancestral lands in effort to protect the Amazon rainforest and strengthen their case for government recognition",
+   "impactScore": 0.795
+  },
+  {
+   "url": "https://www.theguardian.com/society/2026/oct/07/gene-therapy-can-partly-restore-sight-in-blind-people-researchers-reveal",
+   "title": "Gene therapy can partly restore sight in blind people, researchers reveal",
+   "impactScore": 0.793
+  },
+  {
+   "url": "https://news.mongabay.com/2026/10/pembas-new-marine-protected-areas-show-the-power-of-collaboration-to-meet-30x30-goal/",
+   "title": "Pemba's new marine protected areas show the power of collaboration to meet 30x30 goal",
+   "impactScore": 0.791
+  }
+ ],
+ "lowestChosen": [
+  {
+   "url": "https://www.upworthy.com/before-natalie-imbruglia-sang-torn-its-songwriter-recorded-a-version-with-a-very-different-bite/",
+   "title": "Before Natalie Imbruglia sang ‘Torn,’ its songwriter recorded a version with a very different bite",
+   "impactScore": 0.063
+  },
+  {
+   "url": "https://www.upworthy.com/korea-girl-was-a-forgotten-90s-band-until-gen-zers-found-their-song-and-played-it-92-million-times/",
+   "title": "Korea Girl was a forgotten ’90s band until Gen Zers found their song and played it 92 million times",
+   "impactScore": 0.251
+  },
+  {
+   "url": "https://www.upworthy.com/neuroscience-expert-explains-5-ways-to-become-unrecognizable-6-months-from-now/",
+   "title": "Neuroscience expert explains 5 ways to become ‘unrecognizable’ 6 months from now",
+   "impactScore": 0.369
+  },
+  {
+   "url": "https://www.upworthy.com/pn-swiss-scientists-buried-underwear-soil-ig-nobel/",
+   "title": "1,000 Swiss volunteers buried their underwear for science. It just won an Ig Nobel Prize.",
+   "impactScore": 0.378
+  },
+  {
+   "url": "https://www.upworthy.com/ella-fitzgerald-forgot-the-words-to-mack-the-knife-her-improvised-version-earned-a-grammy/",
+   "title": "Ella Fitzgerald forgot the words to ‘Mack the Knife.’ Her improvised version earned a Grammy.",
+   "impactScore": 0.412
+  }
+ ],
+ "defaults": {
+  "topicMin": 0.35,
+  "impactMin": 0.3
+ },
+ "grid": [
+  {
+   "topicMin": 0.3,
+   "impactMin": 0.1,
+   "admitted": 126,
+   "rate": 0.9197,
+   "precision": 0.0952,
+   "recall": 0.9231,
+   "picksLost": 1,
+   "notChosenAdmitted": 0.9194
+  },
+  {
+   "topicMin": 0.3,
+   "impactMin": 0.2,
+   "admitted": 115,
+   "rate": 0.8394,
+   "precision": 0.1043,
+   "recall": 0.9231,
+   "picksLost": 1,
+   "notChosenAdmitted": 0.8306
+  },
+  {
+   "topicMin": 0.3,
+   "impactMin": 0.25,
+   "admitted": 105,
+   "rate": 0.7664,
+   "precision": 0.1143,
+   "recall": 0.9231,
+   "picksLost": 1,
+   "notChosenAdmitted": 0.75
+  },
+  {
+   "topicMin": 0.3,
+   "impactMin": 0.3,
+   "admitted": 92,
+   "rate": 0.6715,
+   "precision": 0.1196,
+   "recall": 0.8462,
+   "picksLost": 2,
+   "notChosenAdmitted": 0.6532
+  },
+  {
+   "topicMin": 0.35,
+   "impactMin": 0.1,
+   "admitted": 111,
+   "rate": 0.8102,
+   "precision": 0.0991,
+   "recall": 0.8462,
+   "picksLost": 2,
+   "notChosenAdmitted": 0.8065
+  },
+  {
+   "topicMin": 0.35,
+   "impactMin": 0.2,
+   "admitted": 104,
+   "rate": 0.7591,
+   "precision": 0.1058,
+   "recall": 0.8462,
+   "picksLost": 2,
+   "notChosenAdmitted": 0.75
+  },
+  {
+   "topicMin": 0.35,
+   "impactMin": 0.25,
+   "admitted": 95,
+   "rate": 0.6934,
+   "precision": 0.1158,
+   "recall": 0.8462,
+   "picksLost": 2,
+   "notChosenAdmitted": 0.6774
+  },
+  {
+   "topicMin": 0.35,
+   "impactMin": 0.3,
+   "admitted": 85,
+   "rate": 0.6204,
+   "precision": 0.1176,
+   "recall": 0.7692,
+   "picksLost": 3,
+   "notChosenAdmitted": 0.6048
+  },
+  {
+   "topicMin": 0.4,
+   "impactMin": 0.1,
+   "admitted": 72,
+   "rate": 0.5255,
+   "precision": 0.125,
+   "recall": 0.6923,
+   "picksLost": 4,
+   "notChosenAdmitted": 0.5081
+  },
+  {
+   "topicMin": 0.4,
+   "impactMin": 0.2,
+   "admitted": 70,
+   "rate": 0.5109,
+   "precision": 0.1286,
+   "recall": 0.6923,
+   "picksLost": 4,
+   "notChosenAdmitted": 0.4919
+  },
+  {
+   "topicMin": 0.4,
+   "impactMin": 0.25,
+   "admitted": 67,
+   "rate": 0.4891,
+   "precision": 0.1343,
+   "recall": 0.6923,
+   "picksLost": 4,
+   "notChosenAdmitted": 0.4677
+  },
+  {
+   "topicMin": 0.4,
+   "impactMin": 0.3,
+   "admitted": 61,
+   "rate": 0.4453,
+   "precision": 0.1311,
+   "recall": 0.6154,
+   "picksLost": 5,
+   "notChosenAdmitted": 0.4274
+  },
+  {
+   "topicMin": 0.45,
+   "impactMin": 0.1,
+   "admitted": 41,
+   "rate": 0.2993,
+   "precision": 0.1463,
+   "recall": 0.4615,
+   "picksLost": 7,
+   "notChosenAdmitted": 0.2823
+  },
+  {
+   "topicMin": 0.45,
+   "impactMin": 0.2,
+   "admitted": 40,
+   "rate": 0.292,
+   "precision": 0.15,
+   "recall": 0.4615,
+   "picksLost": 7,
+   "notChosenAdmitted": 0.2742
+  },
+  {
+   "topicMin": 0.45,
+   "impactMin": 0.25,
+   "admitted": 39,
+   "rate": 0.2847,
+   "precision": 0.1538,
+   "recall": 0.4615,
+   "picksLost": 7,
+   "notChosenAdmitted": 0.2661
+  },
+  {
+   "topicMin": 0.45,
+   "impactMin": 0.3,
+   "admitted": 37,
+   "rate": 0.2701,
+   "precision": 0.1622,
+   "recall": 0.4615,
+   "picksLost": 7,
+   "notChosenAdmitted": 0.25
+  }
+ ],
+ "startingPoint": {
+  "proposed": false,
+  "why": "137 labelled candidates and 13 picks; the rule needs 100 and 20.",
+  "rule": {
+   "recallKept": 0.95,
+   "minLabelled": 100,
+   "minChosen": 20
+  }
+ },
+ "labels": {
+  "roundsRead": 37,
+  "rounds": 9,
+  "recorded": 0,
+  "sent": 9,
+  "rejected": 1,
+  "devastatingLeftOut": 11,
+  "unlabelledRounds": 16
+ }
+}

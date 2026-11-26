@@ -164,19 +164,86 @@ uv run python -m src.evaluation.experiments admission --backend http://127.0.0.1
 uv run python -m src.evaluation.experiments admission --articles facts
 ```
 
-Every candidate of the recorded rounds (`--articles rounds`, the default)
-or every labelled fact's article (`--articles facts`) is sent once through
-the running backend's `POST /enrich` - with the classifier's floor at 0,
-so every topic's confidence comes back - and cached in
+Every candidate an editor's choice labels (`--articles rounds`, the
+default) or every labelled fact's article (`--articles facts`) is sent once
+through the running backend's `POST /enrich` - with the classifier's floor
+at 0, so every topic's confidence comes back - and cached in
 `experiments/enrich_cache.jsonl`: a re-run, or a different grid, fetches
 nothing. Then every (topic minimum, impact minimum) pair is replayed
 offline with the pipeline's own `PositiveImpactScorer` and the topic
 filter's rule. Below today's classifier floor (0.35) the floor is lowered
 with the minimum, so the question becomes what a lower floor would let
-through. Reported: admitted and rate per pair; for round candidates, where
-the editor's choice is the label, precision and recall of "admitted"
-against "chosen", and the AUC of the impact score. Duplicate detection is
-not replayed: it depends on what the vector store held at the time.
+through. Duplicate detection is not replayed: it depends on what the
+vector store held at the time.
+
+**The labels (since 2026-11-25, `admission_labels`).** The rounds are the
+running backend's (`--lake` reads `data/lake` instead; the Docker
+backend's lake is a volume, and `data/lake` held one round against its 36).
+In each round the editor's picks are the choice recorded on `/discover`
+when there is one, else what was sent to analysis, read as `selection`
+reads them, over the candidates shown: a pick is yes, a candidate passed
+over is no. So a blind round recorded and never sent labels its candidates
+too, which before 25 Nov it did not. A candidate marked **Not for us** is
+no in any round, even one with no choice. Devastating-edition rounds are
+left out: admission's tone gate there is the devastation score, and their
+picks are the stories this score should rank lowest. A round with no
+choice and no mark is not read, and its candidates are not fetched.
+
+**Reported:** admitted and rate per pair; recall (the share of picks
+admitted), picks lost, the share of the not chosen admitted, and precision
+against the picks (low by construction: five of twenty); the AUC of the
+positive-impact score and of the best topic's confidence, each with a 95%
+bootstrap interval; and the five not chosen the impact score rates highest
+beside the five chosen it rates lowest, by title, which is the gap the plan
+lists (it counts upbeat words, and on 5 Oct ranked a match report above a
+decarbonisation analysis).
+
+**The starting point for the tuning, by a rule written on 25 Nov before
+any run with the editor's choices** (`starting_point`, `RECALL_KEPT`).
+Admission runs after the editor has chosen, so a pick it turns away is a
+story lost, while a passed-over candidate it admits costs a fact-check
+only when everything is queued (`POST /ingest`). The starting point is the
+strictest cell that keeps the picks: of the cells admitting at least 95% of
+them, the one admitting the smallest share of the not chosen, ties to the
+cell nearest today's defaults (the sum of the two minimums' distances). If
+no cell keeps 95%, the cell keeping the most, ties the same way, and the
+report says so. None is proposed under 100 labelled candidates (the plan's
+floor) or 20 picks: under twenty, one pick moves recall by more than the
+5% the rule allows. It is where the tuning of week 4 starts, not a new
+default.
+
+**First run against the editor's choices, 2026-11-25**
+(`admission/20261125T112628Z/`, the Docker backend rebuilt that morning).
+37 rounds read: 11 Devastating and 16 with no choice left out, so 9
+positive-edition rounds sent between 20 Oct and 24 Nov, 1 to 4 picks each,
+none recorded on `/discover` yet, and one candidate marked not for us. 146
+candidates, 137 enriched (9 pages refused: 422), **13 of them picks**:
+under the rule's 20, so **no starting point is proposed yet**. What it
+already shows:
+
+- **Today's defaults (0.35, 0.3) turn away 3 of the 13 picks** (recall
+  0.769) and admit 61% of the rest. No cell of the grid keeps 95%: the most
+  is 12 of 13 (topic minimum 0.30, impact 0.25 or lower). The three are
+  Upworthy's music stories (the songwriter of "Torn", "Korea Girl", Ella
+  Fitzgerald): two under the impact minimum (0.063, 0.251), one under the
+  topic minimum (0.331). The replay agrees with the live pipeline on all
+  13: those three are the picks the graph holds without a verdict, and the
+  other ten were fact-checked.
+- **The impact score follows the editor only a little**: AUC 0.689 [0.512,
+  0.855]; the best topic's confidence 0.608 [0.429, 0.774], an interval
+  that includes a coin.
+- **The gap runs the other way from 5 Oct.** Then the score rated a match
+  report's upbeat words above a decarbonisation analysis. Here the
+  not chosen it rates highest are earnest constructive reports (stroke
+  recovery tracked by wrist sensors, a ranch's 55,000 acres of prairie,
+  gene therapy for sight, 0.79-0.81), and the picks it rates lowest are
+  light culture stories chosen for their audience. The score measures a
+  register, constructive and hopeful, not what this editor picks.
+- Read it as a first look: 13 picks from sends of 1 to 4, where a
+  candidate passed over may only not have been needed that day. The same
+  command after step 10's twenty rounds (100 picks of five from twenty)
+  is the run the rule decides on; the pages enriched here are not fetched
+  again.
 
 First run, 2026-10-05, the 41 labelled facts' articles: at the defaults
 (0.35, 0.3 from `.env`) 71% would be admitted; at a topic minimum of 0.40,

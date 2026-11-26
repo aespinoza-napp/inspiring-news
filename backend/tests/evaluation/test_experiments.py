@@ -123,12 +123,104 @@ def test_a_choice_recorded_after_the_ais_proposal_is_assisted():
     assert (row["mode"], row["editor"]) == ("assisted", "recorded")
 
 
-def test_round_labels_come_only_from_rounds_sent_to_analysis():
+def test_round_labels_come_from_a_choice_recorded_or_sent_and_never_from_a_round_without_one():
 
     sent = {"candidates": [{"url": "a"}, {"url": "b"}], "queued": {"urls": ["a"]}}
     not_sent = {"candidates": [{"url": "c"}], "queued": None}
 
     assert round_labels([sent, not_sent]) == {"a": True, "b": False}
+
+
+def test_a_recorded_choice_labels_its_round_unsent_and_wins_over_what_was_sent():
+    """
+    Step 10's blind rounds are recorded on /discover and need not be sent
+    (2026-11-24): the recorded choice over what was shown is the label,
+    as the selection experiment reads it.
+    """
+
+    recorded = {
+        "candidates": [{"url": u, "title": u.upper()} for u in ("p", "q", "r", "s")],
+        "personSelection": {"urls": ["q"], "shown": ["p", "q", "r"], "blind": True},
+        "queued": {"urls": ["p"]},
+    }
+
+    labels, titles, provenance = experiments.admission_labels([recorded])
+
+    # s was never shown, so it was not passed over.
+    assert labels == {"p": False, "q": True, "r": False}
+    assert titles["q"] == "Q"
+    assert (provenance["rounds"], provenance["recorded"], provenance["sent"]) == (1, 1, 0)
+
+
+def test_not_for_us_is_a_no_anywhere_and_devastating_rounds_are_left_out():
+
+    marked_only = {"candidates": [{"url": "m"}, {"url": "n"}], "rejected": {"m": {"reasons": ["off_topic"]}}}
+    devastating = {"edition": "devastating", "candidates": [{"url": "d"}], "queued": {"urls": ["d"]}}
+    elsewhere = {"candidates": [{"url": "n"}, {"url": "o"}], "queued": {"urls": ["n"]}}
+
+    labels, _, provenance = experiments.admission_labels([marked_only, devastating, elsewhere])
+
+    # m was marked in a round with no choice; n passed over there is not
+    # labelled by it, and a pick in another round makes it True.
+    assert labels == {"m": False, "n": True, "o": False}
+    assert (provenance["rejected"], provenance["devastatingLeftOut"], provenance["roundsRead"]) == (1, 1, 3)
+
+
+def cell(topic, impact, recall, not_chosen):
+    return {"topicMin": topic, "impactMin": impact, "recall": recall, "notChosenAdmitted": not_chosen}
+
+
+DEFAULTS = {"topicMin": 0.35, "impactMin": 0.3}
+
+
+def test_the_starting_point_is_the_strictest_cell_keeping_95_percent_of_the_picks():
+
+    grid = [
+        cell(0.30, 0.10, 1.00, 0.90),
+        cell(0.35, 0.20, 0.96, 0.60),
+        cell(0.40, 0.20, 0.96, 0.60),   # as strict, but further from the defaults
+        cell(0.45, 0.30, 0.80, 0.20),   # strictest, but loses a fifth of the picks
+    ]
+
+    point = experiments.starting_point(grid, DEFAULTS, labelled=120, chosen=25)
+
+    assert point["proposed"] and point["keepsRecall"]
+    assert (point["topicMin"], point["impactMin"]) == (0.35, 0.20)
+
+
+def test_with_no_cell_keeping_95_percent_the_most_keeping_one_is_proposed_and_said_so():
+
+    grid = [cell(0.35, 0.30, 0.90, 0.50), cell(0.40, 0.30, 0.90, 0.40), cell(0.45, 0.30, 0.70, 0.10)]
+
+    point = experiments.starting_point(grid, DEFAULTS, labelled=120, chosen=25)
+
+    assert (point["topicMin"], point["keepsRecall"]) == (0.40, False)
+
+
+def test_no_starting_point_under_100_labelled_or_20_picks():
+
+    grid = [cell(0.35, 0.30, 1.0, 0.5)]
+
+    assert not experiments.starting_point(grid, DEFAULTS, labelled=99, chosen=30)["proposed"]
+    assert not experiments.starting_point(grid, DEFAULTS, labelled=162, chosen=15)["proposed"]
+
+
+def test_admission_reads_the_backends_rounds_and_enriches_only_what_a_choice_labels(monkeypatch, tmp_path):
+
+    labelled = {"id": "a", "candidates": [{"url": "x", "title": "X"}, {"url": "y"}], "queued": {"urls": ["x"]}}
+    unlabelled = {"id": "b", "candidates": [{"url": "z"}], "queued": None}
+    asked = []
+
+    monkeypatch.setattr(experiments, "http_backend", lambda backend: f"call:{backend}")
+    monkeypatch.setattr(experiments, "load_rounds_from", lambda call: [labelled, unlabelled] if call == "call:http://b" else [])
+    monkeypatch.setattr(experiments, "load_rounds", lambda folder: pytest.fail("read data/lake without --lake"))
+    monkeypatch.setattr(experiments, "http_enrich", lambda backend: lambda url: asked.append(url) or enrich_entry([("Climate", 0.5)]))
+    monkeypatch.setattr(experiments, "ENRICH_CACHE", tmp_path / "cache.jsonl")
+    monkeypatch.setattr(experiments, "enriched", lambda urls, enrich: {url: {"url": url, **enrich(url)} for url in urls})
+    monkeypatch.setattr(experiments, "write", lambda name, result, report: tmp_path)
+
+    assert experiments.main(["admission", "--backend", "http://b"]) == 0
+    assert sorted(asked) == ["x", "y"]
 
 
 def enrich_entry(topic_confidences, positive=0.6, constructiveness=0.6):
@@ -172,7 +264,17 @@ def test_admission_is_replayed_per_threshold_pair_and_scored_against_the_editor(
     [loose, strict] = result["grid"]
     assert (loose["admitted"], loose["precision"], loose["recall"]) == (2, 0.5, 1.0)
     assert (strict["admitted"], strict["precision"], strict["recall"]) == (1, 1.0, 1.0)
+    # Of the two not chosen, weak is admitted at 0.35 (0.37 > 0.35) and
+    # nothing at 0.40; no pick is lost at either.
+    assert (loose["notChosenAdmitted"], strict["notChosenAdmitted"]) == (0.5, 0.0)
+    assert (loose["picksLost"], strict["picksLost"]) == (0, 0)
     assert result["aucImpactScore"] == 1.0
+    assert result["impactAuc"]["auc"] == 1.0 and result["topicAuc"]["auc"] == 1.0
+    assert [row["url"] for row in result["highestNotChosen"]] == ["off", "weak"]
+    assert [row["url"] for row in result["lowestChosen"]] == ["good"]
+    # Three labelled, one pick: too few for the rule.
+    assert not result["startingPoint"]["proposed"]
+    assert "No starting point proposed yet" in experiments.admission_report(result)
 
 
 def test_topics_are_scored_by_topic_group_and_by_what_the_pipeline_would_see():

@@ -39,12 +39,15 @@ What each costs, and what it needs:
   sent to analysis, so the agreement is measured without the editor
   having seen the AI's picks first (an anchored editor agrees more).
   Needs the LLM.
-- **admission** sends every candidate of the recorded rounds (or every
-  labelled fact's article, `--articles facts`) through the running
-  backend's POST /enrich once - cached, so a re-run fetches nothing - and
-  then replays the topic filter and the positive-impact gate over a grid
-  of thresholds offline, with the pipeline's own classes. Where the
-  editor chose among candidates, their choice is the label. Duplicate
+- **admission** reads the running backend's rounds (`--lake`: data/lake's)
+  and sends every candidate an editor's choice labels - picked, passed
+  over or marked not for us, positive edition only (admission_labels) -
+  (or every labelled fact's article, `--articles facts`) through its POST
+  /enrich once - cached, so a re-run fetches nothing - and then replays
+  the topic filter and the positive-impact gate over a grid of thresholds
+  offline, with the pipeline's own classes: recall of the picks, the
+  share of the rest admitted, both gates' AUC and the starting point for
+  the tuning by a rule written before the run (RECALL_KEPT). Duplicate
   detection is left out: it depends on what the vector store held at the
   time. Needs the stack (inference/).
 - **topics** compares the classifier's topics for each labelled fact's
@@ -886,20 +889,48 @@ def topic_ok(entry: dict, minimum: float, floor: float | None = None) -> bool:
 # ----------------------------------------------------------------------
 
 
+# Where week 4's tuning of the admission thresholds starts (written
+# 2026-11-25, before any run with the editor's choices). Admission runs
+# after the editor has chosen, so a pick it turns away is a story lost,
+# while a passed-over candidate it admits costs a fact-check only when
+# everything is queued (POST /ingest). The starting point is therefore the
+# strictest cell that still keeps RECALL_KEPT of the picks: of the cells
+# admitting at least that share of them, the one admitting the smallest
+# share of the candidates not chosen (passed over or marked not for us),
+# ties to the cell nearest today's defaults. When no cell keeps that share,
+# the cell keeping the most, ties the same way. Proposed only from
+# MIN_LABELLED labelled candidates (the plan's floor) and MIN_CHOSEN picks:
+# under twenty, one pick moves recall by more than the 5% the rule allows.
+RECALL_KEPT = 0.95
+MIN_LABELLED = 100
+MIN_CHOSEN = 20
+# How many of each side the report lists by impact score (the gap it
+# measures: the score counts upbeat words, and on 5 Oct it ranked a match
+# report above a decarbonisation analysis).
+EXTREMES = 5
+
+
 def admission_experiment(
     articles: dict[str, dict],
     labels: dict[str, bool],
     topic_mins: Sequence[float],
     impact_mins: Sequence[float],
+    titles: dict[str, str] | None = None,
 ) -> dict:
     """
     Every (topic minimum, impact minimum) pair replayed over the same
     enriched articles: how many would be admitted, and - for articles an
     editor chose for or against - precision and recall of "admitted"
-    against "chosen".
+    against "chosen", and the share of the candidates not chosen that it
+    admits. Then how well the impact score and the topic confidence each
+    separate the chosen from the rest, and the starting point by the rule
+    above.
     """
 
     usable = {url: entry for url, entry in articles.items() if "error" not in entry}
+    labelled = [url for url in usable if url in labels]
+    chosen = {url for url in labelled if labels[url]}
+    not_chosen = set(labelled) - chosen
 
     grid = []
 
@@ -917,8 +948,6 @@ def admission_experiment(
                 and impact(entry, thresholds).passed
             }
 
-            labelled = [url for url in usable if url in labels]
-            chosen = {url for url in labelled if labels[url]}
             admitted_labelled = admitted & set(labelled)
             hits = admitted_labelled & chosen
 
@@ -929,67 +958,229 @@ def admission_experiment(
                 "rate": rounded(len(admitted) / len(usable)) if usable else None,
                 "precision": rounded(len(hits) / len(admitted_labelled)) if admitted_labelled else None,
                 "recall": rounded(len(hits) / len(chosen)) if chosen else None,
+                "picksLost": len(chosen - admitted),
+                "notChosenAdmitted": rounded(len(admitted & not_chosen) / len(not_chosen)) if not_chosen else None,
             })
 
     default = PipelineThresholds()
+    defaults = {"topicMin": default.topic_min_confidence, "impactMin": default.positive_impact_min_score}
     scores = {url: impact(entry, default).score for url, entry in usable.items()}
+    # The topic filter's own question: the best topic's confidence.
+    topic_scores = {url: max((t.get("confidence") or 0.0 for t in entry.get("topics") or []), default=0.0) for url, entry in usable.items()}
+
+    def ranked(urls, reverse):
+        rows = sorted(urls, key=lambda url: (scores[url], url), reverse=reverse)[:EXTREMES]
+        return [{"url": url, "title": (titles or {}).get(url), "impactScore": rounded(scores[url], 3)} for url in rows]
 
     return {
         "articles": len(articles),
         "enriched": len(usable),
         "failed": len(articles) - len(usable),
-        "labelled": sum(1 for url in usable if url in labels),
-        "chosen": sum(1 for url in usable if labels.get(url)),
+        "labelled": len(labelled),
+        "chosen": len(chosen),
         "noTopicAtAll": sum(1 for entry in usable.values() if not topic_ok(entry, 0.0)),
         # Does the impact score separate what the editor chose from what
         # they passed over? 0.5 is a coin.
         "aucImpactScore": rounded(auc(
-            [scores[url] for url in usable if labels.get(url) is True],
-            [scores[url] for url in usable if labels.get(url) is False],
+            [scores[url] for url in chosen],
+            [scores[url] for url in not_chosen],
         )),
-        "defaults": {"topicMin": default.topic_min_confidence, "impactMin": default.positive_impact_min_score},
+        # The same with a 95% bootstrap interval, and for the topic
+        # confidence beside it: which of the two gates follows the editor.
+        "impactAuc": auc_interval([(scores[url], url in chosen) for url in labelled]),
+        "topicAuc": auc_interval([(topic_scores[url], url in chosen) for url in labelled]),
+        # The gap, by name: what the editor passed over that the score
+        # rates most positive, and what they chose that it rates least.
+        "highestNotChosen": ranked(not_chosen, reverse=True),
+        "lowestChosen": ranked(chosen, reverse=False),
+        "defaults": defaults,
         "grid": grid,
+        "startingPoint": starting_point(grid, defaults, len(labelled), len(chosen)),
     }
+
+
+def starting_point(grid: list[dict], defaults: dict, labelled: int, chosen: int) -> dict:
+    """The cell week 4's tuning starts from, by the rule written above RECALL_KEPT, or why there is none yet."""
+
+    rule = {"recallKept": RECALL_KEPT, "minLabelled": MIN_LABELLED, "minChosen": MIN_CHOSEN}
+
+    if labelled < MIN_LABELLED or chosen < MIN_CHOSEN:
+        return {
+            "proposed": False,
+            "why": f"{labelled} labelled candidates and {chosen} picks; the rule needs {MIN_LABELLED} and {MIN_CHOSEN}.",
+            "rule": rule,
+        }
+
+    rows = [row for row in grid if row["recall"] is not None]
+
+    if not rows:
+        return {"proposed": False, "why": "No cell has a recall: nothing labelled was enriched.", "rule": rule}
+
+    keeping = [row for row in rows if row["recall"] >= RECALL_KEPT]
+    pool = keeping or [row for row in rows if row["recall"] == max(r["recall"] for r in rows)]
+
+    def distance(row):
+        return abs(row["topicMin"] - defaults["topicMin"]) + abs(row["impactMin"] - defaults["impactMin"])
+
+    def key(row):
+        admitted = row["notChosenAdmitted"] if row["notChosenAdmitted"] is not None else 1.0
+        return (admitted, distance(row), row["topicMin"], row["impactMin"])
+
+    best = min(pool, key=key)
+
+    return {
+        "proposed": True,
+        "topicMin": best["topicMin"],
+        "impactMin": best["impactMin"],
+        "recall": best["recall"],
+        "notChosenAdmitted": best["notChosenAdmitted"],
+        "keepsRecall": bool(keeping),
+        "rule": rule,
+    }
+
+
+def _auc_text(value: dict | None) -> str:
+
+    if not value or value.get("auc") is None:
+        return "–"
+
+    return f"{value['auc']:.3f} [{value['low']:.3f}, {value['high']:.3f}]"
 
 
 def admission_report(result: dict) -> str:
 
     rows = [
-        (row["topicMin"], row["impactMin"], row["admitted"], row["rate"], row["precision"], row["recall"])
+        (row["topicMin"], row["impactMin"], row["admitted"], row["rate"], row["precision"], row["recall"],
+         row.get("picksLost"), row.get("notChosenAdmitted"))
         for row in result["grid"]
     ]
 
-    return "\n".join([
-        "# Admission thresholds, replayed",
-        "",
-        f"{result['enriched']} articles enriched ({result['failed']} failed); {result['labelled']} labelled by an editor's choice,"
-        f" {result['chosen']} of them chosen. {result['noTopicAtAll']} had no topic at today's classifier floor"
-        f" ({settings.TOPIC_CLASSIFIER_THRESHOLD}), so today's topic filter rejects them whatever its minimum.",
-        f"Defaults: topic minimum {result['defaults']['topicMin']}, impact minimum {result['defaults']['impactMin']}.",
-        f"AUC of the positive-impact score, chosen against passed over: {result['aucImpactScore'] if result['aucImpactScore'] is not None else '–'} (0.5 is a coin).",
-        "Duplicate detection is not replayed.",
-        "",
-        table(["Topic min", "Impact min", "Admitted", "Rate", "Precision vs editor", "Recall vs editor"], rows),
-        "",
-    ])
+    labels = result.get("labels") or {}
+    point = result.get("startingPoint") or {}
+
+    if point.get("proposed"):
+        start = (
+            f"**Starting point for the tuning: topic minimum {point['topicMin']}, impact minimum {point['impactMin']}**"
+            f" (recall {point['recall']:.3f}, {point['notChosenAdmitted'] if point['notChosenAdmitted'] is not None else '–'} of the not chosen admitted)."
+            + ("" if point["keepsRecall"] else f" No cell keeps {RECALL_KEPT:.0%} of the picks; this one keeps the most.")
+        )
+    else:
+        start = f"**No starting point proposed yet**: {point.get('why', 'no rule applied')}"
+
+    def listed(rows):
+        return table(["Impact score", "Title"], [(row["impactScore"], row.get("title") or row["url"]) for row in rows])
+
+    return "\n".join(
+        [
+            "# Admission thresholds, replayed",
+            "",
+        ]
+        + ([
+            f"Labels: {labels['rounds']} positive-edition rounds with the editor's choice ({labels['recorded']} recorded on /discover,"
+            f" {labels['sent']} by what was sent to analysis), {labels['rejected']} candidate{'' if labels['rejected'] == 1 else 's'} marked not for us;"
+            f" {labels['devastatingLeftOut']} Devastating-edition rounds and {labels['unlabelledRounds']} rounds with no choice left out"
+            f" of {labels['roundsRead']} read.",
+            "",
+        ] if labels else [])
+        + [
+            f"{result['enriched']} articles enriched ({result['failed']} failed); {result['labelled']} labelled by an editor's choice,"
+            f" {result['chosen']} of them chosen. {result['noTopicAtAll']} had no topic at today's classifier floor"
+            f" ({settings.TOPIC_CLASSIFIER_THRESHOLD}), so today's topic filter rejects them whatever its minimum.",
+            f"Defaults: topic minimum {result['defaults']['topicMin']}, impact minimum {result['defaults']['impactMin']}.",
+            f"AUC, chosen against not chosen (0.5 is a coin): the positive-impact score {_auc_text(result.get('impactAuc'))},"
+            f" the best topic's confidence {_auc_text(result.get('topicAuc'))}.",
+            "Duplicate detection is not replayed.",
+            "",
+            table(
+                ["Topic min", "Impact min", "Admitted", "Rate", "Precision vs editor", "Recall vs editor", "Picks lost", "Not chosen admitted"],
+                rows,
+            ),
+            "",
+            start,
+            "",
+            f"The rule, written before the run: of the cells keeping at least {RECALL_KEPT:.0%} of the picks, the one admitting the"
+            f" smallest share of the not chosen, ties to the nearest of today's defaults; from {MIN_LABELLED} labelled candidates and"
+            f" {MIN_CHOSEN} picks.",
+            "",
+            "## The impact score's gap",
+            "",
+            "Not chosen, and rated most positive:",
+            "",
+            listed(result.get("highestNotChosen") or []),
+            "",
+            "Chosen, and rated least positive:",
+            "",
+            listed(result.get("lowestChosen") or []),
+            "",
+        ]
+    )
 
 
-def round_labels(rounds: list[dict]) -> dict[str, bool]:
-    """Every candidate of a round sent to analysis: True if the editor sent it, False if not."""
+def admission_labels(rounds: list[dict]) -> tuple[dict[str, bool], dict[str, str], dict]:
+    """
+    ({url: chosen or not}, {url: its title}, where the labels came from).
 
-    labels = {}
+    The editor's choice over each round's shown candidates: True for a
+    pick, False for one passed over. The picks are the choice recorded on
+    /discover when there is one (2026-11-24: at most five, blind or not),
+    else what was sent to analysis, as the selection experiment reads them
+    (_editor_picks), so a blind round recorded and never sent labels its
+    candidates too. A candidate marked not for us is False in any round,
+    even one with no choice. A pick anywhere wins over a pass elsewhere.
+
+    Devastating-edition rounds are left out: admission's tone gate there
+    is the devastation score, not the positive-impact score replayed
+    here, and their picks are the stories this score should rank lowest.
+    """
+
+    from src.services.selection.selection_service import edition_of
+
+    labels: dict[str, bool] = {}
+    titles: dict[str, str] = {}
+    counts = Counter()
 
     for round_ in rounds:
 
-        sent = set((round_.get("queued") or {}).get("urls") or [])
+        counts["roundsRead"] += 1
 
-        if not sent:
+        if edition_of(round_) != "positive":
+            counts["devastatingLeftOut"] += 1
             continue
 
-        for candidate in round_.get("candidates") or []:
-            labels[candidate["url"]] = candidate["url"] in sent
+        candidates = {candidate["url"]: candidate for candidate in round_.get("candidates") or []}
+        editor = _editor_picks(round_)
+        rejected = set(round_.get("rejected") or {})
 
-    return labels
+        if editor is None and not rejected:
+            counts["unlabelledRounds"] += 1
+            continue
+
+        if editor is not None:
+
+            picks, shown, picked_by = editor
+            counts["rounds"] += 1
+            counts[picked_by] += 1
+
+            for url in shown:
+                labels[url] = labels.get(url, False) or url in picks
+
+        for url in rejected:
+            counts["rejected"] += 1
+            labels.setdefault(url, False)
+
+        for url in labels:
+            if url in candidates and candidates[url].get("title"):
+                titles.setdefault(url, candidates[url]["title"])
+
+    provenance = {key: counts[key] for key in ("roundsRead", "rounds", "recorded", "sent", "rejected", "devastatingLeftOut", "unlabelledRounds")}
+
+    return labels, titles, provenance
+
+
+def round_labels(rounds: list[dict]) -> dict[str, bool]:
+    """admission_labels' labels alone."""
+
+    return admission_labels(rounds)[0]
 
 
 # ----------------------------------------------------------------------
@@ -1632,6 +1823,10 @@ def parser() -> argparse.ArgumentParser:
     admission.add_argument("--articles", choices=("rounds", "facts"), default="rounds")
     admission.add_argument("--topic-min", default="0.30,0.35,0.40,0.45")
     admission.add_argument("--impact-min", default="0.10,0.20,0.25,0.30")
+    admission.add_argument(
+        "--lake", action="store_true",
+        help="read the rounds from data/lake instead of the backend's (the Docker backend's lake is a volume)",
+    )
 
     topics = commands.add_parser("topics", help="the topic classifier against the labelled facts")
     topics.add_argument("--backend", default="http://127.0.0.1:8000")
@@ -1694,14 +1889,23 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     elif args.command == "admission":
+        provenance = None
+        titles = {}
         if args.articles == "facts":
             urls, labels = list(labelled_articles()), {}
         else:
-            rounds = load_rounds(rounds_folder)
-            urls = list(dict.fromkeys(c["url"] for r in rounds for c in r.get("candidates") or []))
-            labels = round_labels(rounds)
+            # The backend's rounds, as `selection --backend` reads them: the
+            # Docker backend's lake is a volume, and data/lake held one
+            # round of October on 25 Nov against the volume's 36.
+            rounds = load_rounds(rounds_folder) if args.lake else load_rounds_from(http_backend(args.backend))
+            labels, titles, provenance = admission_labels(rounds)
+            # Only what a choice labels: a round nobody chose from says
+            # nothing about the editor, and enriching it is a page fetch each.
+            urls = list(labels)
         articles = enriched(urls, http_enrich(args.backend))
-        result = admission_experiment(articles, labels, _floats(args.topic_min), _floats(args.impact_min))
+        result = admission_experiment(articles, labels, _floats(args.topic_min), _floats(args.impact_min), titles)
+        if provenance is not None:
+            result["labels"] = provenance
         name, report = "admission", admission_report(result)
 
     elif args.command == "emphasis":
