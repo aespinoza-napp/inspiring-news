@@ -23,7 +23,7 @@ artefact; the evaluation is the contribution.
 | **How it decides** | A cautious pipeline: no evidence, or a verdict that cites none, is forced to `UNVERIFIED`; a source that does not address the claim is cut before the model sees it; every verdict names its sources and quotes them |
 | **How it is measured** | A hand-built validation set of 139 facts with a frozen train/test split, a resumable evaluation harness with bootstrap confidence intervals, run-to-run consistency, an oracle-evidence condition, and response time for every stage |
 | **Engineering** | Python/FastAPI back end, a separate model server, Next.js front end, Docker Compose for development and production, Terraform for Google Cloud. 1,800+ automated tests and CI on every push |
-| **Status** | Built end to end and measured on its own data. Thesis due December 2026 |
+| **Status** | Built end to end; measured on a published benchmark (AVeriTeC) and on its own data. Thesis due December 2026 |
 
 ## How it works
 
@@ -87,9 +87,11 @@ writes; `qwen3.5:9b` reviews, finding all ten planted defects in test
 drafts against five for the 3B.
 
 These numbers are reported as they came out, intervals included. 108 of
-the 139 gold labels were proposed by an AI and are being checked by hand,
-so every figure is provisional until that review is done. The full
-method and results are in [`docs/decisions/evaluation.md`](docs/decisions/evaluation.md).
+the 139 gold labels were proposed by an AI, and the hand review of them
+was cut on 17 November 2026, so read every figure above as provisional.
+Evaluation has been on a published benchmark, AVeriTeC, since 5 November
+("Status and what is next", below). The full method and results are in
+[`docs/decisions/evaluation.md`](docs/decisions/evaluation.md).
 
 ## Engineering highlights
 
@@ -228,17 +230,39 @@ The settings, and made-up stories for performance work, are in
 
 ## Status and what is next
 
-Built and working: discovery and selection, the fact-checking pipeline,
-the graph, the writing and publishing flow, the public reader, the
-evaluation harness, and the production configuration. In progress until
-December 2026:
+Built and working: discovery and selection (a person's five picks
+recorded against the AI's five from the same list), the fact-checking
+pipeline, the graph, the writing and publishing flow (each draft checked
+against its own sources before it can be approved), the public reader,
+Inspiring News Universe, the evaluation harness, and the production
+configuration.
 
-- the hand review of the AI-proposed labels, and a blind re-label of a
-  fifth of the test half for annotator consistency;
-- the test half under three evidence conditions (none, retrieved, the
-  annotator's own pages);
-- the reader in Catalan and Spanish, and a usability check with readers;
-- the thesis.
+Measured since 5 November 2026 on a published benchmark, AVeriTeC's dev
+split, with no evidence from the claim's day on. On 40 balanced claims:
+
+- on the same fixed evidence, a hosted `gpt-oss-120b` got 18 right
+  against 10 for `llama3.2:3b` (+20 points [+5, +35]), the only verifier
+  better than the 3B; the 3B is level with always answering Refuted;
+- searching the web, the "checkable" query plan got 15 right against the
+  plain search's 11 (+10 points [0, +22.5]).
+
+The hand-labelled custom set is frozen as it stood on 17 November 2026:
+the hand review of its AI-proposed labels and the blind re-label were cut.
+
+Next, until December 2026:
+
+- the runs that need days apart: discovery and trend rounds over five
+  days, source health over four weeks;
+- ten blind and ten assisted selection rounds, and the admission
+  thresholds measured against those choices;
+- the custom set's test half, read once, under three evidence conditions
+  (none, retrieved, the annotator's own pages), then tuning on the train
+  half;
+- a native speaker's read of the Spanish and Catalan reader, five readers
+  trying it, and a screen-reader check;
+- the universe in production, a final bug pass, smoke and load tests;
+- the thesis: a draft to the director around 10 December, submitted by
+  31 December.
 
 The task-by-task status, with what is verified and what is not, is in
 [`docs/roadmap.md`](docs/roadmap.md).
