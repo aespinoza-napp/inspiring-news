@@ -63,6 +63,7 @@ from src.services.selection.feedback import Feedback, SelectionFeedback, describ
 from src.services.selection.photos import PhotoKeeper
 from src.services.selection.reasons import UnknownReason, cleaned as cleaned_reasons, cleaned_codes, reject_reasons_for
 from src.services.selection.rounds import SelectionRounds, selection_rounds as default_rounds
+from src.services.selection.judgements import SelectionJudgements, selection_judgements as default_judgements
 
 logger = getLogger(__name__)
 
@@ -124,6 +125,7 @@ class SelectionService:
         ledger=None,
         photos: PhotoKeeper | None = None,
         feedback: SelectionFeedback | None = None,
+        judgements: SelectionJudgements | None = None,
     ):
         self.ingestion = ingestion
         self.selector = selector or AISelector()
@@ -146,6 +148,11 @@ class SelectionService:
         # them to lower anything, so a service nobody taught never asks
         # inference/ for it.
         self.feedback = feedback or SelectionFeedback(self.rounds.folder, embed=_embed, rounds=self.rounds)
+
+        # Every judgement made here, logged in the lake as one dataset
+        # (judgements.py), after the round that holds it is saved. The
+        # process-wide one writes only once src/main.py attaches it.
+        self.judgements = judgements if judgements is not None else default_judgements
 
         self._lock = threading.Lock()
         self._running: str | None = None
@@ -453,6 +460,8 @@ class SelectionService:
 
         self.rounds.save(round_)
 
+        self.judgements.ai(round_, state)
+
         if state["status"] == "done" and round_.get("personSelection"):
             self.keep_photos(round_)
 
@@ -537,6 +546,9 @@ class SelectionService:
         # What the person chose: the other side of what they rejected.
         self.feedback.choose(round_, chosen, "recorded")
 
+        person = round_["personSelection"]
+        self.judgements.picked(round_, "recorded", chosen, why, at=person["at"], blind=person["blind"])
+
         self.keep_photos(round_)
 
         return round_["personSelection"]
@@ -605,8 +617,10 @@ class SelectionService:
 
         if undo:
             self.feedback.forget(edition, url=url)
+            self.judgements.undone(round_, url)
         else:
             self.feedback.reject(round_, candidate, codes, marks[url]["note"], marks[url]["site"])
+            self.judgements.rejected(round_, candidate, codes, marks[url]["note"], marks[url]["site"], at=marks[url]["at"])
 
         rejected, chosen, blocked = self.feedback.counts(edition)
 
@@ -626,7 +640,10 @@ class SelectionService:
             try:
                 round_ = self.get(row["roundId"])
             except (RoundNotFound, KeyError):
+                self.judgements.taken_back(edition, row, None)
                 continue
+
+            self.judgements.taken_back(edition, row, round_)
 
             marks = dict(round_.get("rejected") or {})
             mark = marks.get(row.get("url"))
@@ -755,6 +772,9 @@ class SelectionService:
                 self._sending.discard(round_id)
 
         self.feedback.choose(round_, chosen, "sent")
+
+        queued = round_["queued"]
+        self.judgements.picked(round_, "sent", chosen, why, at=queued["at"], selectedBy=queued.get("selectedBy"))
 
         # A trend's article is analysed like any other; the draft written
         # from it later needs to know its trend.

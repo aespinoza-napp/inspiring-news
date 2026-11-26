@@ -1,3 +1,5 @@
+import json
+
 from fastapi.testclient import TestClient
 
 import src.api.routes as routes
@@ -557,3 +559,36 @@ def test_a_rounds_picks_are_analysed_in_the_rounds_edition(monkeypatch):
 
     assert response.status_code == 200
     assert editions == ["devastating"]
+
+
+def test_the_judgements_are_listed_and_their_dataset_downloads_as_json_lines_or_csv(monkeypatch, tmp_path):
+
+    from types import SimpleNamespace
+
+    from src.services.selection.judgements import CSV_COLUMNS, SelectionJudgements
+
+    log = SelectionJudgements(tmp_path)
+    round_ = {
+        "id": "0123456789abcdef", "startedAt": "2026-11-26T10:00:00+00:00", "edition": "positive", "groups": ["health"],
+        "candidates": [{"url": "https://news.example/1", "title": "One"}, {"url": "https://news.example/2", "title": "Two"}],
+        "queued": {"at": "2026-11-26T10:05:00+00:00", "urls": ["https://news.example/2"], "reasons": {"https://news.example/2": ["positive"]}},
+    }
+    log.backfill([round_])
+    monkeypatch.setattr(routes, "get_selection_service", lambda: SimpleNamespace(judgements=log))
+
+    summary = client.get("/ingest/judgements").json()
+    assert summary["rows"] == 2 and summary["labels"]["chosen"] == 1 and summary["latest"][0]["kind"] == "sent"
+    assert client.get("/ingest/judgements?edition=devastating").json()["rows"] == 0
+    assert client.get("/ingest/judgements?edition=other").status_code == 422
+
+    events = client.get("/ingest/judgements/events")
+    assert [json.loads(line)["kind"] for line in events.text.splitlines()] == ["shown", "sent"]
+
+    rows = client.get("/ingest/judgements/dataset")
+    assert [json.loads(line)["label"] for line in rows.text.splitlines()] == ["not_chosen", "chosen"]
+    assert 'filename="judgements-all.jsonl"' in rows.headers["content-disposition"]
+
+    table = client.get("/ingest/judgements/dataset?format=csv&edition=positive")
+    assert table.headers["content-type"].startswith("text/csv")
+    assert table.text.splitlines()[0] == ",".join(CSV_COLUMNS) and len(table.text.splitlines()) == 3
+    assert client.get("/ingest/judgements/dataset?format=xlsx").status_code == 422

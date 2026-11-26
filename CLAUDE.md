@@ -92,6 +92,7 @@ src.main:app --port 8001`.
 | Why a given rule exists; what broke before | `docs/decisions/incidents.md` |
 | The extraction cascade and what it counts | `docs/decisions/scraping.md` |
 | Discovering by topic group; ranking the candidates; choosing up to 20 to analyse (person or AI) | `docs/decisions/selection.md` |
+| Every judgement made on /discover (sent, recorded, not for us, why) as one dataset in the lake, `lake/judgements/` | `backend/src/services/selection/judgements.py`, `GET /ingest/judgements/dataset`, `docs/decisions/selection.md` ("Every judgement, one dataset in the lake") |
 | Experiments on discovery, selection, admission and the topic classifier | `docs/experiments.md` |
 | The Neo4j graph: schema, write path, console | `docs/decisions/graph.md` |
 | Pages, polling hook, API proxies | `frontend/CLAUDE.md` |

@@ -28,6 +28,7 @@ groups -> IngestionService.discover_candidates -> ranked best first,
 | AI selection | `ai_selector.py` (`AISelector`) | Scores candidates 0-10 against `DEFINITION`, ten per LLM call, and picks the best at `DEFAULT_MIN_SCORE` or more |
 | The step | `selection_service.py` (`SelectionService`) | Creates a round (the best `LISTED` shown), shows more on request (up to `MAX_LISTED`), runs the AI selection in a background thread (one at a time), queues a selection and records who chose it; records a person's own choice of at most `COMPARED` (5) to compare with the AI's (`record_person_selection`, `compare`, `kappa`) |
 | Feedback | `feedback.py` (`SelectionFeedback`, `Feedback`) | What the person marked not for us and what they chose, per edition (`lake/stats/selection/feedback/examples.json`): a marked article never offered again, a blocked site left out, stories like the marked ones lowered from 3 + 3 examples by a share of their *lean* (nearer the marked average than the chosen one), left out over a lean of 0.08 from 40 + 20 |
+| Judgements | `judgements.py` (`SelectionJudgements`, `build_dataset`) | Every judgement made here as one dataset in the lake (`lake/judgements/`): `events.jsonl` appended as each is made (sent, recorded, not for us, undone, forgotten, unblocked, the AI's scores, and the list each was made from), `dataset.jsonl` and `dataset.csv` rebuilt from it alone - one row per shown candidate of a judged round, labelled chosen / not_for_us / not_chosen. The rounds from before it backfilled once at startup; `GET /ingest/judgements[/events\|/dataset]` |
 | Reasons | `reasons.py` (`reasons_for`, `cleaned`, `reject_reasons_for`) | Why a person may say they chose a story, per edition (several at once): offered by `GET /ingest/sources` as `pickReasons`, kept as codes on a recorded choice and on what is sent; an unknown code is refused |
 | Photos | `photos.py` (`PhotoKeeper`) | Copies the photos of a compared round's picks beside it (`lake/stats/selection/photos/<id>/`), through the URL guard, kept only when their bytes are a JPEG, PNG, GIF, WebP or AVIF of 5 MB at most |
 
@@ -73,6 +74,9 @@ Things that must stay true:
   asked of `inference/`. It only lowers the story part, so the weights
   still sum to 1; leaving out waits for `LEAVE_OUT_MINIMUM`. A marked
   candidate stays in its round's list and cannot be queued or recorded.
+- **A judgement is logged after its round is saved, and fail-soft**
+  (`judgements.py`): `events.jsonl` is only ever appended to, and the
+  dataset is rebuilt from it alone. Nothing the step decides reads it.
 - **A candidate's `image` is a link, never fetched at discovery.** Only a
   compared pick's photo is copied, and only what its bytes prove is an
   image.

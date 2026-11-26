@@ -159,6 +159,18 @@ their content hashes differ for the 104 posts that list their sources.
   unverified import, and without its names the universe would join its
   posts by topic alone.
 
+## Judgements
+
+Every judgement made on `/discover` - what was sent, recorded, marked not
+for us, and why - is kept in `data/lake/judgements/` (2026-11-26,
+`services/selection/judgements.py`): `events.jsonl`, append-only, one line
+per judgement with the list it was made from, and `dataset.jsonl` /
+`dataset.csv` rebuilt from it alone. Outside the three layers on purpose:
+a judgement is about a candidate a feed listed, usually never fetched, so
+it has no article lineage; it joins the layers by `key` (host and path,
+the reader id). `docs/decisions/selection.md`, "Every judgement, one
+dataset in the lake".
+
 ## The job journal
 
 The lake keeps *results*. Everything a run does on the way — the queries it

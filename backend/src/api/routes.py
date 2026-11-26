@@ -1,3 +1,4 @@
+import json
 import secrets
 from logging import getLogger
 from typing import Literal
@@ -975,6 +976,59 @@ def forget_feedback(request: ForgetFeedbackRequest):
         raise HTTPException(status_code=404, detail="Nothing like that was rejected or blocked.")
 
     return service.feedback.summary(request.edition)
+
+
+@router.get("/ingest/judgements", dependencies=[Depends(require_storage_key)])
+def selection_judgements_summary(
+    edition: Edition | None = Query(default=None),
+    limit: int = Query(default=50, ge=0, le=500),
+):
+    """
+    Every judgement made on /discover, as the lake keeps it
+    (`lake/judgements/`, src/services/selection/judgements.py): how many of
+    each kind, the dataset's rows by label, and the newest lines without
+    their candidate lists. No edition: both.
+    """
+
+    return get_selection_service().judgements.summary(edition, limit)
+
+
+@router.get("/ingest/judgements/events", dependencies=[Depends(require_storage_key)])
+def selection_judgements_events(edition: Edition | None = Query(default=None)):
+    """The log itself, one JSON line per judgement, oldest first (`events.jsonl`)."""
+
+    events = get_selection_service().judgements.events()
+    lines = "".join(
+        json.dumps(event, ensure_ascii=False) + "\n"
+        for event in events
+        if edition is None or event.get("edition") == edition
+    )
+
+    return PlainTextResponse(lines, media_type="application/x-ndjson")
+
+
+@router.get("/ingest/judgements/dataset", dependencies=[Depends(require_storage_key)])
+def selection_judgements_dataset(
+    edition: Edition | None = Query(default=None),
+    format: Literal["jsonl", "csv"] = Query(default="jsonl"),
+):
+    """
+    The dataset built from the log: one row per candidate shown in a round
+    a person judged, labelled chosen / not_for_us / not_chosen, as JSON
+    lines or CSV, to download.
+    """
+
+    from src.services.selection.judgements import dataset_csv, dataset_jsonl
+
+    rows = get_selection_service().judgements.dataset(edition)
+    name = f"judgements-{edition or 'all'}.{format}"
+
+    if format == "csv":
+        body, media_type = dataset_csv(rows), "text/csv"
+    else:
+        body, media_type = dataset_jsonl(rows), "application/x-ndjson"
+
+    return PlainTextResponse(body, media_type=media_type, headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
 @router.get("/ingest/rounds/{round_id}/photos/{name}", dependencies=[Depends(require_storage_key)])

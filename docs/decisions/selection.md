@@ -762,6 +762,54 @@ what is shown, so a blind round (above) still compares the person and the
 AI on one list, but that list now carries the person's past marks; each
 round records them.
 
+## Every judgement, one dataset in the lake (2026-11-26)
+
+Asked by the author: their judgements - what they sent, what they recorded
+against the AI, what was not for us, and why - should live in the lake in
+one place, easy to read, to carry to another deployment and to make a
+dataset from. Until then they were spread over one file per round
+(`lake/stats/selection/`, 2.2 MB for 37 rounds, mostly discovery's own
+record of every source) and the feedback's examples, inside the Docker
+volume; reading them meant knowing each round's shape.
+
+`lake/judgements/` (`judgements.py`, `SelectionJudgements`) holds three
+files and needs nothing beside it:
+
+| File | What | Written |
+|---|---|---|
+| `events.jsonl` | One line per judgement: `sent`, `recorded`, `not_for_us`, `undone`, `forgotten`, `unblocked`, and the AI's finished scores (`ai`). Before a round's first one, and again when its list grew, a `shown` line with every candidate shown, in order, with its text, reading, rank and trend | Appended as each is made; never rewritten |
+| `dataset.jsonl`, `dataset.csv` | One row per candidate shown in a round a person judged: `label` (`chosen`, `not_for_us`, `not_chosen`), `chosenBy`, `reasons`, `note`, `blockSite`, its position and the list's length, the round's edition, groups, lens and emphasis, the candidate's own text, the ranking's scores and the AI's (`ai_score`, `ai_picked`) | Rebuilt from `events.jsonl` alone after every judgement |
+
+- **Append-only, so an undo is a line of its own.** The rounds keep only
+  the current marks; the log keeps the history, and the dataset is what
+  the history leaves standing.
+- **The list it was judged from is in the log.** A dataset of picks alone
+  has no negatives; the `shown` line is what makes "shown and passed over"
+  a label. A round only the AI read is logged and left out of the dataset.
+- **Derived, so its columns can change.** A new column is a rebuild from
+  the log, never a migration of old rows (`build_dataset`, `SCHEMA`).
+- **The rounds from before it are backfilled once**, the first time the
+  app starts with rounds and no `events.jsonl` (`backfilled: true`, each at
+  the time its round recorded it). What was undone before then is lost: a
+  round keeps only its current marks. On the 37 rounds of the Docker
+  volume (26 Nov): 30 events, 14 judged rounds, 241 rows - 22 chosen, 2
+  not for us, 217 not chosen.
+- **The rounds and the feedback's examples are still what the step
+  reads.** This is the record of what was said; it changes no ranking.
+- **Fail-soft.** The round is saved before its judgement is logged; a log
+  that cannot be written loses the line, never the click. Like the rounds,
+  only `src/main.py` attaches the folder, so tests never write into the
+  lake.
+
+Read it with `GET /ingest/judgements` (counts by kind and label, the newest
+lines), `GET /ingest/judgements/events` and `GET
+/ingest/judgements/dataset?format=jsonl|csv&edition=` (a download). From a
+host whose backend runs in Docker, `uv run python -m
+src.services.selection.judgements --backend http://127.0.0.1:8000 --out
+<dir>` writes the three files; `--rounds <dir>` builds them from a copy of
+the rounds (`docker cp docker-backend-1:/app/data/lake/stats/selection
+<dir>`).
+
 ## What was left out
 
 - **No age limit on a candidate dated nowhere** - no feed time and no

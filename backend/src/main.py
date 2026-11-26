@@ -12,6 +12,7 @@ from src.services.llms import ask_groq_first, groq_key
 from src.services.log_format import configure_logging
 from src.services.scraper.request_stats import request_stats
 from src.services.scraper.sightings import sightings
+from src.services.selection.judgements import selection_judgements
 from src.services.selection.rounds import selection_rounds
 from src.services.trends.ledger import trend_ledger
 
@@ -58,6 +59,16 @@ async def lifespan(app: FastAPI):
         # Every candidate round: what was found, what the AI proposed,
         # what was sent to analysis (src/services/selection/rounds.py).
         selection_rounds.attach(settings.LAKE_PATH / "stats" / "selection")
+
+        # Every judgement made on /discover, as one dataset in the lake
+        # (src/services/selection/judgements.py); the rounds from before
+        # it, once, the first time the folder has no log.
+        selection_judgements.attach(settings.LAKE_PATH / "judgements")
+
+        try:
+            selection_judgements.backfill(selection_rounds.list(limit=100_000))
+        except Exception:
+            logger.warning("Could not backfill the judgements from the rounds", exc_info=True)
 
         # Which queued article came from which trend, for the writing flow
         # (src/services/trends/ledger.py).
