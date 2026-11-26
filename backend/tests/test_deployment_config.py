@@ -220,7 +220,10 @@ def test_on_google_cloud_only_the_proxy_faces_the_internet(base):
     assert services["caddy"]["ports"] == ["80:80", "443:443"]
 
 
-def caddy_code() -> str:
+UNIVERSE_SITE = "{$UNIVERSE_ADDRESS:http://universe.invalid} {"
+
+
+def caddy_all() -> str:
     """The Caddyfile without its comments, which name every route too."""
 
     text = CADDYFILE.read_text(encoding="utf-8")
@@ -228,14 +231,31 @@ def caddy_code() -> str:
     return "\n".join(line for line in text.splitlines() if not line.strip().startswith("#"))
 
 
-def caddy_handles() -> list[tuple[str, str]]:
+def caddy_code() -> str:
+    """The newsroom's site: everything before the universe's block."""
+
+    code = caddy_all()
+
+    return code[:code.index(UNIVERSE_SITE)]
+
+
+def universe_code() -> str:
+    """The readers' universe: its block, the file's last."""
+
+    code = caddy_all()
+
+    return code[code.index(UNIVERSE_SITE):]
+
+
+def caddy_handles(code: str | None = None) -> list[tuple[str, str]]:
     """
-    Every `handle` block as (matcher, body), in file order; "" for the
-    catch-all. Braces are counted rather than matched by a regex: the
-    bodies hold {$PLACEHOLDERS} and nested blocks.
+    Every `handle` block of `code` (the newsroom's site by default) as
+    (matcher, body), in file order; "" for the catch-all. Braces are
+    counted rather than matched by a regex: the bodies hold
+    {$PLACEHOLDERS} and nested blocks.
     """
 
-    code = caddy_code()
+    code = caddy_code() if code is None else code
     handles = []
 
     for match in re.finditer(r"^\s*handle(?:[ \t]+([^\s{]+))?[ \t]*\{", code, flags=re.MULTILINE):
@@ -491,12 +511,41 @@ def test_the_domain_reaches_caddy():
     bootstrap = BOOTSTRAP.read_text(encoding="utf-8")
     caddy = load(GCP)["services"]["caddy"]
 
-    assert 'site_address = var.domain != "" ? var.domain : ":80"' in vm
-    assert "site_address  = local.site_address" in vm
+    assert re.search(
+        r'site_address\s+= var\.domain != "" \? var\.domain : \(var\.free_hostnames \? "admin\.\$\{local\.free_name\}" : ":80"\)',
+        vm,
+    )
+    assert re.search(r"site_address\s+= local\.site_address", vm)
     assert 'export SITE_ADDRESS="${site_address}"' in startup
     assert 'echo "SITE_ADDRESS=${SITE_ADDRESS:-:80}"' in bootstrap
     assert "SITE_ADDRESS=${SITE_ADDRESS:-:80}" in caddy["environment"]
     assert caddy_code().lstrip().startswith("{$SITE_ADDRESS::80} {")
+
+
+def test_the_universe_address_reaches_caddy_and_is_never_empty():
+    """
+    The same way for the universe: variables.tf -> vm.tf -> the startup
+    script -> the .env -> compose -> its block of the Caddyfile. Never
+    empty on the way: Caddy takes an empty address for a global options
+    block and refuses the whole file (`server block without any key is
+    global configuration`, tried 2026-11-26), and /healthz goes down with
+    the universe. Compose's `:-` covers unset and empty both.
+    """
+
+    vm = (DEPLOY / "vm.tf").read_text(encoding="utf-8")
+    startup = (DEPLOY / "startup.sh.tftpl").read_text(encoding="utf-8")
+    bootstrap = BOOTSTRAP.read_text(encoding="utf-8")
+    caddy = load(GCP)["services"]["caddy"]
+
+    assert re.search(
+        r'universe_address = var\.universe_domain != "" \? var\.universe_domain : \(var\.free_hostnames \? local\.free_name : "http://\$\{google_compute_address\.vm\.address\}"\)',
+        vm,
+    )
+    assert re.search(r"universe_address\s+= local\.universe_address", vm)
+    assert 'export UNIVERSE_ADDRESS="${universe_address}"' in startup
+    assert 'echo "UNIVERSE_ADDRESS=${UNIVERSE_ADDRESS:-http://universe.invalid}"' in bootstrap
+    assert "UNIVERSE_ADDRESS=${UNIVERSE_ADDRESS:-http://universe.invalid}" in caddy["environment"]
+    assert UNIVERSE_SITE in caddy_all()
 
 
 def test_the_domain_variable_takes_a_bare_hostname_only():
@@ -523,12 +572,20 @@ def test_every_secret_terraform_creates_is_read_on_the_vm():
     """
 
     main = (DEPLOY / "main.tf").read_text(encoding="utf-8")
-    secrets_block = re.search(r"secrets = \{(.*?)\n  \}", main, flags=re.DOTALL).group(1)
-    created = set(re.findall(r'"([a-z0-9-]+)"\s*=', secrets_block))
+    bootstrap = BOOTSTRAP.read_text(encoding="utf-8")
 
-    read = set(re.findall(r"\$\(secret ([a-z0-9-]+)\)", BOOTSTRAP.read_text(encoding="utf-8")))
+    secrets_block = re.search(r"  secrets = \{(.*?)\n  \}", main, flags=re.DOTALL).group(1)
+    created = set(re.findall(r'"([a-z0-9-]+)"\s*=', secrets_block))
+    read = set(re.findall(r"\$\(secret ([a-z0-9-]+)\)", bootstrap))
 
     assert created == read == {"neo4j-password", "searxng-secret", "storage-api-key", "site-password-hash"}
+
+    # Given, not generated, and only when given: read as optional, so a VM
+    # without it still boots.
+    optional = set(re.findall(r'optional_secrets = .*?\{ "([a-z0-9-]+)" = var\.', main))
+    assert optional == set(re.findall(r"\$\(optional_secret ([a-z0-9-]+)\)", bootstrap)) == {"groq-api-key"}
+    assert "all_secrets = merge(local.secrets, local.optional_secrets)" in main
+    assert main.count("for_each = local.all_secrets") == 3
 
 
 def test_only_the_site_password_hash_reaches_the_vm():
@@ -666,3 +723,227 @@ def test_every_committed_data_folder_the_backend_reads_is_mounted(base):
 
     for folder in sorted(_committed_data_folders() - NOT_READ_BY_THE_SERVER):
         assert f"../backend/data/{folder}:/app/data/{folder}:ro" in mounts, folder
+
+
+# ----------------------------------------------------------------------
+# The readers' universe (its Caddyfile block, docker/caddy.Dockerfile)
+# ----------------------------------------------------------------------
+
+CADDY_DOCKERFILE = DOCKER / "caddy.Dockerfile"
+UNIVERSE = DOCKER.parent / "universe"
+
+
+def test_the_universe_reaches_the_backend_only_for_its_open_routes():
+    """
+    Open to anyone, and so it reaches the backend for exactly three things:
+    /healthz, and the two route groups the universe reads, each with /api
+    taken off as the universe's own dev proxy does (astro.config.mjs). Any
+    other /api path is a 404, never the frontend and never the password.
+    Exercised 2026-11-26 against the dev stack's backend: the map, names,
+    search and a photo 200, /api/account/me 401, /api/storage and
+    /api/ingest 404.
+    """
+
+    handles = caddy_handles(universe_code())
+    by_matcher = dict(handles)
+
+    to_backend = [matcher for matcher, body in handles if "backend:" in body]
+    assert to_backend == ["/healthz", "/api/map/*", "/api/account/*"]
+    assert universe_code().count("backend:") == 3
+
+    for matcher in ("/api/map/*", "/api/account/*"):
+        body = by_matcher[matcher]
+        assert re.search(r"uri strip_prefix /api\s+reverse_proxy backend:8000", body), matcher
+
+    assert re.search(r'respond\s+".*"\s+404', by_matcher["/api/*"])
+    assert [m for m, _ in handles].index("/api/*") > [m for m, _ in handles].index("/api/account/*")
+
+    site = by_matcher[""]
+    assert "root * /srv/universe" in site and "file_server" in site
+
+    assert "frontend:" not in universe_code()
+    assert "basic_auth" not in universe_code()
+
+
+def test_every_backend_route_the_universe_can_reach_is_open_by_design():
+    """
+    Caddy forwards all of /map/* and /account/* - a new route there is
+    public the moment it exists - so each must be one test_api_key.py
+    already lists as open, with its reason.
+    """
+
+    # From the OpenAPI schema, as test_api_key.py reads it: app.routes no
+    # longer lists an included router's routes, and a walk over it finds
+    # nothing and passes (this test's first version did).
+    from tests.api.test_api_key import OPEN_ENDPOINTS, endpoints
+
+    reached = {(method, path) for method, path in endpoints() if path.startswith(("/map/", "/account/"))}
+
+    assert len(reached) >= 20
+    assert reached <= set(OPEN_ENDPOINTS), sorted(reached - set(OPEN_ENDPOINTS))
+
+
+def test_the_universe_is_built_into_the_proxys_image():
+    """
+    One image for the door and the site it serves: built on the VM with
+    the rest of the stack, from universe/ alone, with no key and no API at
+    build time (the site reads them in the browser).
+    """
+
+    caddy = load(GCP)["services"]["caddy"]
+    assert caddy["build"] == {"context": "../universe", "dockerfile": "../docker/caddy.Dockerfile"}
+
+    dockerfile = CADDY_DOCKERFILE.read_text(encoding="utf-8")
+    assert "RUN npm ci" in dockerfile and "RUN npm run build" in dockerfile
+    assert "FROM caddy:2.10.2" in dockerfile
+    assert "COPY --from=universe /universe/dist /srv/universe" in dockerfile
+    assert "STORAGE_API_KEY" not in dockerfile
+
+    ignored = (UNIVERSE / ".dockerignore").read_text(encoding="utf-8").split()
+    assert {"node_modules/", "dist/"} <= set(ignored)
+
+
+# ----------------------------------------------------------------------
+# The lite stack: the universe and /discover, Groq as the LLM
+# ----------------------------------------------------------------------
+
+LITE = DOCKER / "docker-compose.lite.yml"
+
+
+def test_the_lite_stack_runs_no_local_model_and_no_second_graph():
+    """
+    What made the full stack need 16 GB, left out by profiles nothing asks
+    for: `up` then starts backend, caddy, frontend, inference, neo4j and
+    searxng (`docker compose config --services`, 2026-11-26).
+    """
+
+    services = load(LITE)["services"]
+
+    for name in ("ollama", "ollama-pull", "neo4j-devastating"):
+        assert services[name]["profiles"], name
+
+    # The production file's wait for the model pull is replaced, not added
+    # to: the base file's two waits are all that is left.
+    tag, depends = services["backend"]["depends_on"]
+    assert tag == "!override"
+    assert depends == {
+        "searxng": {"condition": "service_healthy"},
+        "inference": {"condition": "service_healthy"},
+    }
+
+    # /healthz asks Groq instead of a local server.
+    assert "LLM_LOCAL=false" in services["backend"]["environment"]
+
+
+def test_the_lite_stack_fits_its_machine():
+    """
+    Every cap of what it runs, the production file's with the lite file's
+    over them, adds up to under e2-standard-2's 8 GB: 7.1 GiB on
+    2026-11-26. The caps are ceilings, not reservations; the working sets
+    are ~4 GiB.
+    """
+
+    base_services = load(BASE)["services"]
+    prod_services = load(PROD)["services"]
+    gcp_services = load(GCP)["services"]
+    lite_services = load(LITE)["services"]
+
+    def gib(limit: str) -> float:
+        number, unit = re.fullmatch(r"(\d+)([mg])", limit).groups()
+        return int(number) / (1024 if unit == "m" else 1)
+
+    total = 0.0
+    for name in ("backend", "caddy", "frontend", "inference", "neo4j", "searxng"):
+        limit = next(
+            layer[name]["mem_limit"]
+            for layer in (lite_services, gcp_services, prod_services, base_services)
+            if name in layer and layer[name].get("mem_limit")
+        )
+        total += gib(limit)
+
+    assert total < 7.5, total
+
+    vm = (DEPLOY / "vm.tf").read_text(encoding="utf-8")
+    assert 'var.stack == "lite" ? "e2-standard-2" : "e2-standard-4"' in vm
+
+
+def test_the_vm_layers_the_lite_file_only_for_the_lite_stack():
+
+    bootstrap = BOOTSTRAP.read_text(encoding="utf-8")
+    variables = (DEPLOY / "variables.tf").read_text(encoding="utf-8")
+    startup = (DEPLOY / "startup.sh.tftpl").read_text(encoding="utf-8")
+
+    assert re.search(r'if \[ "\$STACK" = "lite" \]; then\s+files\+=\(-f docker-compose\.lite\.yml\)', bootstrap)
+    assert 'STACK="${STACK:-full}"' in bootstrap
+    assert 'export STACK="${stack}"' in startup
+    assert 'contains(["full", "lite"], var.stack)' in variables
+    # The key is optional in the module, sensitive, and reaches the backend
+    # only when there is one.
+    assert re.search(r'variable "groq_api_key" \{[^}]*sensitive\s*=\s*true', variables)
+    assert 'echo "GROQ_API_KEY=$groq"' in bootstrap
+
+
+# ----------------------------------------------------------------------
+# The seed (scripts/gcp_seed.sh -> the bucket -> bootstrap.sh, seed)
+# ----------------------------------------------------------------------
+
+SEED_SCRIPT = DOCKER.parent / "scripts" / "gcp_seed.sh"
+
+
+def test_the_seed_restores_the_photos_where_compose_mounts_them(base):
+    """
+    The photos are a bind mount of a gitignored folder of the checkout: a
+    fresh clone has an empty one, and the universe would show no photos.
+    The seed script names the folder, the manifest carries it, and the VM
+    restores it there.
+    """
+
+    script = SEED_SCRIPT.read_text(encoding="utf-8")
+    photos = re.search(r'^PHOTOS_PATH="([^"]+)"$', script, flags=re.MULTILINE).group(1)
+
+    assert f"../{photos}:/app/data/map-images:ro" in base["backend"]["volumes"]
+    assert photos.startswith("backend/data/imports/")
+
+
+def test_the_seed_never_overwrites_what_the_vm_wrote():
+    """
+    A seed uploaded after the stack ran must not replace its graph or its
+    lake: each part is restored only into a volume compose has not made
+    yet, or an empty photo folder, and a failed load takes its volume with
+    it so the next boot tries again.
+    """
+
+    bootstrap = BOOTSTRAP.read_text(encoding="utf-8")
+    seed = bootstrap[bootstrap.index("\nseed() {"):]
+
+    assert "if ! has_volume neo4j-data; then" in seed
+    assert "if ! has_volume backend-data; then" in seed
+    assert '[ -z "$(ls -A "$photos" 2>/dev/null)" ]' in seed
+    assert seed.count('|| { docker volume rm "${PROJECT}_') == 2
+    # Before the stack starts, so compose finds the volumes made.
+    assert re.search(r"\n    seed\n.*\n    up\n", bootstrap)
+    # The volumes compose makes for project inspiring-news.
+    assert "PROJECT=inspiring-news" in bootstrap and "docker compose -p inspiring-news" in bootstrap
+
+
+def test_the_seed_carries_no_readers_accounts_and_no_cache():
+    """Readers' accounts on the dev machine are test accounts; the cache is rebuilt."""
+
+    script = SEED_SCRIPT.read_text(encoding="utf-8")
+    keep = re.search(r'^BACKEND_KEEP="([^"]+)"$', script, flags=re.MULTILINE).group(1).split()
+
+    assert keep == ["lake", "vector_db", "drafts", "imports"]
+    # The manifest goes up last: until it is there, a VM sees no seed.
+    assert script.index('cp "$OUT/manifest.json"') > script.index('cp "$OUT/neo4j.dump"')
+
+
+def test_the_seed_bucket_is_private_and_only_the_vm_reads_it():
+
+    main = (DEPLOY / "main.tf").read_text(encoding="utf-8")
+    vm = (DEPLOY / "vm.tf").read_text(encoding="utf-8")
+    bucket = re.search(r'resource "google_storage_bucket" "seed" \{(.*?)\n\}', main, flags=re.DOTALL).group(1)
+
+    assert 'public_access_prevention    = "enforced"' in bucket
+    assert "uniform_bucket_level_access = true" in bucket
+    assert re.findall(r'role\s*=\s*"(roles/storage\.[a-zA-Z]+)"', main) == ["roles/storage.objectViewer"]
+    assert "seed_bucket      = google_storage_bucket.seed.name" in vm

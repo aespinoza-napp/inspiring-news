@@ -102,3 +102,33 @@ def test_the_graph_is_not_checked_when_it_is_off(monkeypatch):
     monkeypatch.setattr(settings, "GRAPH_ENABLED", True)
 
     assert "neo4j" in health.default_checks()
+
+
+def test_without_a_local_model_it_is_groq_that_must_serve_its_model(monkeypatch):
+    """
+    The first Google Cloud deploy runs no Ollama (docker-compose.lite.yml):
+    asked, the local server would report a working stack down.
+    """
+
+    asked = []
+
+    def get(url, headers=None):
+        asked.append((url, headers))
+        return httpx.Response(200, json={"data": [{"id": "openai/gpt-oss-120b"}]})
+
+    monkeypatch.setattr(settings, "LLM_LOCAL", False)
+    monkeypatch.setattr(settings, "GROQ_MODEL", "openai/gpt-oss-120b")
+    monkeypatch.setattr(settings, "GROQ_API_KEY", SecretStr("gsk-test"))
+    monkeypatch.setattr(health, "_get", get)
+
+    health._check_llm()
+
+    assert asked == [(f"{settings.GROQ_BASE_URL}/models", {"Authorization": "Bearer gsk-test"})]
+
+    monkeypatch.setattr(settings, "GROQ_MODEL", "withdrawn-model")
+    with pytest.raises(CheckFailed, match="withdrawn-model"):
+        health._check_llm()
+
+    monkeypatch.setattr(settings, "GROQ_API_KEY", None)
+    with pytest.raises(CheckFailed, match="GROQ_API_KEY"):
+        health._check_llm()

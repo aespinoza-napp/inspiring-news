@@ -18,7 +18,12 @@
 
 services:
   caddy:
-    image: caddy:2.10.2
+    # Caddy 2.10.2 with the readers' universe built into it
+    # (docker/caddy.Dockerfile): a static site, served by its own block of
+    # the Caddyfile.
+    build:
+      context: ../universe
+      dockerfile: ../docker/caddy.Dockerfile
     ports:
       - "80:80"
       - "443:443"
@@ -31,6 +36,9 @@ services:
     environment:
       # The domain, or ":80" without one (then only /healthz answers).
       - SITE_ADDRESS=${SITE_ADDRESS:-:80}
+      # The universe's address (deploy/gcp/vm.tf): a domain, an sslip.io
+      # name, or http://<ip>. Unset, a name nothing resolves to.
+      - UNIVERSE_ADDRESS=${UNIVERSE_ADDRESS:-http://universe.invalid}
       # The site password's bcrypt hash, never the password: Terraform
       # generates both, Secret Manager holds the hash, bootstrap.sh
       # renders it into backend/.env single-quoted (it is full of `$`).

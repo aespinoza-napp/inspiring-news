@@ -600,8 +600,11 @@ app with an interface of its own; they suggested Astro. Built as
   terminal, Astro 7 started it as a background daemon a script could not
   hold. In production Caddy will do the same: serve `universe/dist`,
   and send `/api/map` and `/api/account` to the backend.
-  - *Not done yet*: that Caddy site, its test, and e2e checks for the
-    universe. Today `./scripts/check.sh universe` (part of `all`)
+  - *Done 2026-11-26*: that Caddy site - the universe built into the
+    proxy's image (`docker/caddy.Dockerfile`), its own block of the
+    Caddyfile, held by `backend/tests/test_deployment_config.py` and run in
+    front of the dev stack's backend (`docs/decisions/deployment.md`, "The
+    first deploy"). *Not done yet*: e2e checks for the universe. Today `./scripts/check.sh universe` (part of `all`)
     typechecks it, and it was looked at in screenshots on the Intel GPU:
     the whole galaxy, a flight to Science, a selected story, Today, and
     a phone.

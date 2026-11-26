@@ -97,7 +97,7 @@ src.main:app --port 8001`.
 | The Neo4j graph: schema, write path, console | `docs/decisions/graph.md` |
 | Pages, polling hook, API proxies | `frontend/CLAUDE.md` |
 | Running the stack | `docker/README.md` |
-| Production, Google Cloud, sizing, `/healthz` and `/metrics` | `docs/decisions/deployment.md` |
+| Production, Google Cloud, sizing, `/healthz` and `/metrics`; the first deploy (`stack = "lite"`: the universe and /discover, Groq as the LLM, the seed) and what each stack costs | `docs/decisions/deployment.md`, `docker/docker-compose.lite.yml`, `scripts/gcp_seed.sh` |
 | Asking up to three questions before searching (`query_plan: questions`, off); a search cache for comparing plans on train; AVeriTeC's web runs without the scholarly engines | `backend/src/services/fact_checker/questions.py`, `backend/data/evaluation/experiments/averitec/questions-rule.md`, `docs/fact-checking-changes.md` (14) |
 | The benchmark since 5 Nov 2026: AVeriTeC, how it is scored, the gate on evidence from after the claim, the results | `docs/decisions/evaluation.md` ("AVeriTeC"), `backend/data/evaluation/experiments/averitec/protocol.md`, `backend/src/services/fact_checker/retrieval/temporal.py` |
 | The evaluation harness: research questions, record format, metrics, stage attribution | `docs/decisions/evaluation.md` |

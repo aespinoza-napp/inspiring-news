@@ -65,6 +65,11 @@ domain the site to the frontend, over HTTPS, behind a password (user `editor`); 
 Floci, a local Google Cloud emulator, with nothing but Docker. Everything else, the step-by-step
 first deploy included: `docs/decisions/deployment.md`.
 
+Caddy's image carries the readers' universe (`caddy.Dockerfile` builds `universe/` into it), served
+at `UNIVERSE_ADDRESS` by the Caddyfile's second block, open, with `/api/map` and `/api/account` sent
+to the backend. `docker-compose.lite.yml`, layered last, is the first deploy (`stack = "lite"`): no
+local model and no Devastating graph, Groq as the LLM, on 8 GB.
+
 The backend image also carries Chromium for the last step of the extraction cascade (the `browser`
 extra plus `playwright install --with-deps chromium`, in its own layer). That roughly doubles the
 image: 1.43GB without it, 2.91GB with it (measured 2026-09-23). To build without it, drop

@@ -19,4 +19,5 @@ provider "google" {
   iam_beta_custom_endpoint         = local.emulated ? "${local.endpoint}/v1/" : null
   resource_manager_custom_endpoint = local.emulated ? "${local.endpoint}/v1/" : null
   service_usage_custom_endpoint    = local.emulated ? "${local.endpoint}/v1/" : null
+  storage_custom_endpoint          = local.emulated ? "${local.endpoint}/storage/v1/" : null
 }

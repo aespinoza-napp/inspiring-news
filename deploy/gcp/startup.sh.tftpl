@@ -23,5 +23,8 @@ export PROJECT_ID="${project_id}"
 export SECRET_PREFIX="${secret_prefix}"
 export LLM_MODEL="${llm_model}"
 export SITE_ADDRESS="${site_address}"
+export UNIVERSE_ADDRESS="${universe_address}"
+export STACK="${stack}"
+export SEED_BUCKET="${seed_bucket}"
 
 exec bash "$REPO_DIR/deploy/gcp/vm/bootstrap.sh"

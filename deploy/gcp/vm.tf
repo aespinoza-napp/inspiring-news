@@ -11,7 +11,17 @@ locals {
   # being exercised there; no guest ever runs.
   boot_image = local.emulated ? google_compute_image.emulator_seed[0].self_link : var.boot_image
 
-  site_address = var.domain != "" ? var.domain : ":80"
+  machine_type = var.machine_type != "" ? var.machine_type : (var.stack == "lite" ? "e2-standard-2" : "e2-standard-4")
+
+  # sslip.io's form of the address: 34.175.1.2 -> 34-175-1-2.sslip.io.
+  free_name = "${replace(google_compute_address.vm.address, ".", "-")}.sslip.io"
+
+  # The newsroom's site (behind the password) and the readers' universe
+  # (open), each a domain, an sslip.io name, or the fallback: ":80" with
+  # /healthz alone for the newsroom, plain HTTP on the address for the
+  # universe (docker/caddy/Caddyfile).
+  site_address     = var.domain != "" ? var.domain : (var.free_hostnames ? "admin.${local.free_name}" : ":80")
+  universe_address = var.universe_domain != "" ? var.universe_domain : (var.free_hostnames ? local.free_name : "http://${google_compute_address.vm.address}")
 }
 
 resource "google_compute_disk" "emulator_seed" {
@@ -32,7 +42,7 @@ resource "google_compute_image" "emulator_seed" {
 
 resource "google_compute_instance" "vm" {
   name         = var.name
-  machine_type = var.machine_type
+  machine_type = local.machine_type
   zone         = var.zone
   tags         = [var.name]
   labels       = { app = var.name }
@@ -72,12 +82,15 @@ resource "google_compute_instance" "vm" {
     # .gitattributes pinned *.tftpl to LF, the template is CRLF, and the
     # VM's bash reads "pipefail\r" as an unknown option on line one.
     startup-script = replace(templatefile("${path.module}/startup.sh.tftpl", {
-      repo_url      = var.repo_url
-      repo_ref      = var.repo_ref
-      project_id    = var.project_id
-      secret_prefix = var.name
-      llm_model     = var.llm_model
-      site_address  = local.site_address
+      repo_url         = var.repo_url
+      repo_ref         = var.repo_ref
+      project_id       = var.project_id
+      secret_prefix    = var.name
+      llm_model        = var.llm_model
+      site_address     = local.site_address
+      universe_address = local.universe_address
+      stack            = var.stack
+      seed_bucket      = google_storage_bucket.seed.name
     }), "\r", "")
     enable-oslogin = "TRUE"
   }
@@ -86,6 +99,7 @@ resource "google_compute_instance" "vm" {
   depends_on = [
     google_secret_manager_secret_version.stack,
     google_secret_manager_secret_iam_member.vm,
+    google_storage_bucket_iam_member.seed,
   ]
 }
 

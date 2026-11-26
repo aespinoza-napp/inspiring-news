@@ -2,12 +2,16 @@
 # (docker-compose.gcp.yml). The backend and the frontend themselves
 # listen on the VM's loopback and the compose network.
 #
-# SITE_ADDRESS is the Terraform variable `domain`, rendered into
-# backend/.env by deploy/gcp/vm/bootstrap.sh. With a domain whose A
-# record points at the VM, Caddy fetches and renews its certificate by
-# itself, redirects HTTP to HTTPS, and serves the site. Without one it is
-# ":80", plain HTTP, and only /healthz answers: the UI is then reached
-# through an IAP tunnel (docs/decisions/deployment.md, "The front door").
+# Two sites: the newsroom's (this first block: the frontend, behind a
+# password) and the readers' universe (the last block, open).
+#
+# SITE_ADDRESS is the Terraform variable `domain` (or, with
+# free_hostnames, `admin.<ip>.sslip.io`), rendered into backend/.env by
+# deploy/gcp/vm/bootstrap.sh. With a name whose A record points at the
+# VM, Caddy fetches and renews its certificate by itself, redirects HTTP
+# to HTTPS, and serves the site. Without one it is ":80", plain HTTP, and
+# only /healthz answers: the UI is then reached through an IAP tunnel
+# (docs/decisions/deployment.md, "The front door").
 {$SITE_ADDRESS::80} {
 	# For the uptime check (deploy/gcp/monitoring.tf) and scripts/smoke.sh.
 	# Says which dependency is down and how, never the error text. No
@@ -65,5 +69,58 @@
 	# through the frontend's server routes or an SSH tunnel.
 	handle {
 		respond "Not here. With a domain set, the site is served over HTTPS; without one, through an IAP tunnel (terraform output ui_tunnel)." 404
+	}
+}
+
+# The readers' universe (universe/, docs/decisions/news-map.md, "The
+# universe"), at an address of its own and open to anyone, like /reader.
+# A static site built into this image (docker/caddy.Dockerfile) that reads
+# /api/map and /api/account from its own origin, so the session cookie is
+# the universe's and the backend is reached without the frontend: its
+# proxies forward only four /map routes, not the photos or For you.
+#
+# UNIVERSE_ADDRESS is rendered by deploy/gcp/vm/bootstrap.sh from
+# Terraform's `universe_domain`, else `<ip>.sslip.io` with free_hostnames,
+# else `http://<ip>` (plain HTTP: browsing and search work, signing in
+# does not, the cookie being Secure). Unset (a laptop, the emulator check)
+# it is a name nothing resolves to, so the block is inert.
+{$UNIVERSE_ADDRESS:http://universe.invalid} {
+	# The map document is ~210 KB of JSON; compressed it is a fraction,
+	# and egress is what a visit costs.
+	encode zstd gzip
+
+	# The uptime check asks the IP when there is no domain, which lands
+	# here (deploy/gcp/monitoring.tf).
+	handle /healthz {
+		reverse_proxy backend:8000
+	}
+
+	# The universe's two backends, and nothing else of the API. Every
+	# backend route under /map and /account is open by design - the map is
+	# public, an account's capability is its session cookie - which
+	# backend/tests/test_deployment_config.py holds against
+	# test_api_key.py::OPEN_ENDPOINTS. Caddy sets X-Forwarded-For from the
+	# connection, which is what the search and sign-in limits count by.
+	handle /api/map/* {
+		uri strip_prefix /api
+		reverse_proxy backend:8000
+	}
+
+	handle /api/account/* {
+		uri strip_prefix /api
+		reverse_proxy backend:8000
+	}
+
+	handle /api/* {
+		respond "Not here: the universe reaches only /api/map and /api/account." 404
+	}
+
+	# Astro names its bundles by their content: a new build is a new name.
+	@bundles path /_astro/*
+	header @bundles Cache-Control "public, max-age=31536000, immutable"
+
+	handle {
+		root * /srv/universe
+		file_server
 	}
 }

@@ -4,8 +4,27 @@ output "external_ip" {
 }
 
 output "site_url" {
-  description = "The UI, over HTTPS, once the domain's A record points at external_ip. Without a domain there is none: use ui_tunnel."
-  value       = var.domain != "" ? "https://${var.domain}/" : "(no domain: only http://${google_compute_address.vm.address}/healthz and /reader are public - use ui_tunnel)"
+  description = "The newsroom's UI (/discover among it), over HTTPS behind the password, once its name points at external_ip. Without a name there is none: use ui_tunnel."
+  value       = local.site_address != ":80" ? "https://${local.site_address}/" : "(no domain: only http://${google_compute_address.vm.address}/healthz and /reader are public - use ui_tunnel)"
+}
+
+output "universe_url" {
+  description = "The readers' universe, open to anyone. Over plain HTTP when it has no name: browsing works, signing in does not."
+  value       = startswith(local.universe_address, "http://") ? "${local.universe_address}/" : "https://${local.universe_address}/"
+}
+
+output "machine_type" {
+  value = local.machine_type
+}
+
+output "seed_bucket" {
+  description = "Where scripts/gcp_seed.sh uploads the graph, the lake and the photos for the first boot."
+  value       = google_storage_bucket.seed.name
+}
+
+output "seed_command" {
+  description = "Run on the dev machine after applying the bucket and before the VM exists (docs/decisions/deployment.md, \"The first deploy\"): the VM restores the seed only into volumes it has not created yet."
+  value       = "./scripts/gcp_seed.sh ${google_storage_bucket.seed.name}"
 }
 
 output "ui_tunnel" {

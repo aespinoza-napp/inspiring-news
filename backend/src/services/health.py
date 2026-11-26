@@ -43,7 +43,26 @@ def _check_llm() -> None:
     The endpoint answering is not enough: Ollama answers with no model
     pulled, and every verification then fails. So the configured model
     must be one it serves.
+
+    With no local model (LLM_LOCAL false: the first Google Cloud deploy,
+    docker-compose.lite.yml) Groq is the LLM, so it is Groq that must
+    serve GROQ_MODEL, with the key the app sends: asking the local server
+    there would report down a stack that works.
     """
+
+    if not settings.LLM_LOCAL:
+        key = settings.GROQ_API_KEY.get_secret_value() if settings.GROQ_API_KEY else ""
+
+        if not key:
+            raise CheckFailed("no local model and no GROQ_API_KEY")
+
+        response = _get(f"{settings.GROQ_BASE_URL.rstrip('/')}/models", headers={"Authorization": f"Bearer {key}"})
+        served = {model.get("id") for model in response.json().get("data", [])}
+
+        if settings.GROQ_MODEL not in served:
+            raise CheckFailed(f"model {settings.GROQ_MODEL} is not served by Groq")
+
+        return
 
     response = _get(
         f"{settings.LLM_BASE_URL.rstrip('/')}/models",

@@ -20,7 +20,10 @@ compose files' own comments.
 | The frontend image (`docker/frontend.Dockerfile`) | Built, then run against a stub API, 2026-10-02 | Builds in 1m19s, 259 MB; every `/api/*` route is dynamic (nothing calls the API at build time); the key reached the API from every proxy tried; runs as `node` |
 | The front door (`docker/caddy/Caddyfile`) | `caddy:2.10.2` in front of that frontend and the stub, both modes, 2026-10-02 | Without a domain: `/healthz` only, all else 404. With TLS (Caddy's internal CA on `localhost` standing in for a domain): HTTP redirected, `/healthz` open, the UI 401 without the password and served with it, no API path forwarded |
 | The public reader (`@reader` in the Caddyfile) | `caddy:2.10.2` in front of a stub frontend, both modes, 2026-10-04 | Without a domain: `/reader`, `/reader/<id>`, `/api/reader/*`, `/_next/static/*` and the favicon 200, every other UI path 404. With TLS: the same five open without the password; `/`, `/evaluation`, `/api/evaluation`, `/live` 401 without it and 200 with it |
-| A real Google Cloud deploy | - | **Not done.** Needs a project with billing: "The first real deploy, step by step" below |
+| The universe's door (`docker/caddy.Dockerfile`, its Caddyfile block) | The image built, run in front of the dev stack's backend, 2026-11-26 | The page, its bundle (immutable cache), the map (223 KB, 66 KB gzipped), names, search and a photo 200; `/api/account/me` 401; `/api/storage/*`, `/api/ingest/*` 404; the newsroom's site unchanged. An empty address breaks the whole Caddyfile, so it never is one |
+| The lite stack (`docker-compose.lite.yml`) | `docker compose config`, and `./scripts/check.sh gcp` with `stack = "lite"`, 2026-11-26 | Starts backend, caddy, frontend, inference, neo4j and searxng; caps add up to 7.1 GiB; 38 resources apply to Floci, the `.env` renders with Groq's key and the universe's address, the full stack still plans |
+| The seed (`scripts/gcp_seed.sh`, `bootstrap.sh` `seed`) | On scratch volumes and against Floci's Cloud Storage, 2026-11-26 | A dump loads into a fresh volume and opens under another password (25 of 25 nodes); the backend's record without its cache or `users.db`; the download by the VM's REST call. Not yet run on the real data or a real VM |
+| A real Google Cloud deploy | - | **Not done.** Needs a project with billing: "The first deploy: the universe and /discover" below |
 
 ## The stack, measured (2026-10-01)
 
@@ -427,6 +430,177 @@ compose -p inspiring-news exec backend curl -s
 back `UNVERIFIED` (`searchUnavailable`) and the search alert fires. The
 fix is then an engine with an API key (`docs/decisions/retrieval.md`,
 "What would fix it", item 1), not a different VM.
+
+## The first deploy: the universe and /discover (2026-11-26)
+
+Asked for by the author: "as first deploy I would like only to deploy the
+universe app and the search of the discovery part", and what everything
+would cost on Google Cloud. `stack = "lite"` in `terraform.tfvars`.
+
+**What runs.** The readers' universe, open to anyone, and the newsroom's
+site behind its password, `/discover` among it: finding candidates,
+ranking them, choosing, "Not for us", and the judgements log
+(`docs/decisions/selection.md`). Six containers on an `e2-standard-2`
+(2 vCPU, 8 GB), where the full stack needs an `e2-standard-4`:
+
+| Container | Why it is there |
+|---|---|
+| `caddy` | The one door, now with the universe built in (`docker/caddy.Dockerfile`): two sites, the newsroom's and the universe's |
+| `backend` | `/map` and `/account` for the universe; `/ingest/rounds` and the rest for `/discover` |
+| `neo4j` | The positive graph: the universe's 209 stories (`MAP_SOURCE=graph`) |
+| `inference` | The mission screen and the ranking embed every candidate; an analysis enriches its article |
+| `frontend` | The `/discover` page and its proxies |
+| `searxng` | What `/discover` sends to analysis searches the web; ~0.2 GB, and the open risk below is checked by it |
+
+**What it leaves out** (`docker/docker-compose.lite.yml`, by profiles
+nothing asks for): the local model (Ollama, ~3.2 GiB and the CPU of every
+call) and the Devastating graph (~1 GB). **Groq is the LLM**
+(`groq_api_key` -> Secret Manager -> `GROQ_API_KEY`): the AI selection and
+every analysis `/discover` sends. When Groq cannot answer - the free plan's
+1,000 requests a day spent, the key refused - a call fails as "LLM provider
+was unreachable", never as a verdict: there is no local model to fall back
+to. `/healthz` asks Groq for `GROQ_MODEL` instead of a local server
+(`LLM_LOCAL=false`, `src/services/health.py`).
+
+**Two addresses.** The universe at `universe_domain`, the newsroom at
+`domain`. Without either, `free_hostnames = true` gives both a name from
+the VM's address - `34-175-1-2.sslip.io` and `admin.34-175-1-2.sslip.io` -
+which sslip.io resolves to it, so Caddy gets real certificates with no
+domain bought: HTTPS, the password over TLS, and readers' accounts (their
+cookie is `Secure`). A third party answering the names and Let's
+Encrypt's limits shared with its other users make it a way to start, not
+to stay; a domain later is one variable. With neither, the universe is
+plain HTTP on the address (browsing and search work, signing in does not)
+and the newsroom only through the IAP tunnel, as before.
+
+**The seed: the data comes with it.** A new VM would open on an empty
+graph - no stories in the universe - and an empty lake, losing the rounds,
+judgements and "Not for us" feedback `/discover` learns from. So the
+deployment has a private bucket, and `scripts/gcp_seed.sh` uploads what
+this machine's stack holds: the graph as a Neo4j dump, the backend's lake,
+vector store, drafts and imports (not its cache, not `users.db`: readers'
+accounts here are test accounts), and the WordPress import's photos, which
+git ignores (374 MB). The VM's first boot restores each part before the
+stack starts, and **only into what does not exist yet** - a volume compose
+has not made, an empty photo folder - so a seed uploaded later can never
+overwrite what the VM wrote. A load that fails takes its volume with it,
+and the next boot tries again.
+
+### Step by step
+
+Before you start: what "The first real deploy" below lists (a project
+with billing, `gcloud`, Terraform 1.6+), a Groq key (console.groq.com),
+and **the code on `main` and pushed** - the VM clones the public
+repository at `repo_ref`, not this disk.
+
+**1. Variables.** `cd deploy/gcp && cp terraform.tfvars.example
+terraform.tfvars`: `project_id`, `groq_api_key`; it already says `stack =
+"lite"` and `free_hostnames = true`. Then `terraform init`.
+
+**2. The bucket and the address first** - the seed has to be there before
+the VM's first boot looks for it, a minute or two after it exists:
+
+```bash
+terraform apply -target=google_project_service.apis -target=google_compute_address.vm \
+  -target=google_storage_bucket.seed -target=google_storage_bucket_iam_member.seed
+```
+
+**3. The seed**, from the repository's root, with the dev stack's volumes on
+this machine. It stops Neo4j and the backend while it copies them (up to two
+minutes each for a clean stop: a dump refuses a database killed mid-write)
+and starts them again:
+
+```bash
+./scripts/gcp_seed.sh "$(terraform -chdir=deploy/gcp output -raw seed_bucket)"
+```
+
+`--local <dir>` builds the same files without uploading, to look at them.
+With real domains, create their A records now (`terraform output
+external_ip`); with `free_hostnames` there is nothing to do.
+
+**4. Apply, and follow the first boot** (the images build, inference's models
+download - ~7 GB, no LLM - and the seed is restored; 15-25 minutes):
+
+```bash
+terraform apply
+eval "$(terraform output -raw follow_first_boot)"
+```
+
+It ends with the `universe:` and `site:` lines. `terraform output
+universe_url` and `site_url` have them too; the newsroom's user is
+`editor`, its password `terraform output -raw site_password`.
+
+**5. Check, in this order:**
+
+- `curl -s <site_url>healthz`: 200, every dependency `ok` - `llm` is Groq here.
+- The universe: the stories and their photos, a search, an account.
+- Search from the VM's address ("The open risk" below; step 5 of the full
+  deploy has the command). Zero results with every engine unresponsive
+  means an analysis sent from `/discover` would come back `UNVERIFIED` for
+  every claim.
+- `/discover`: a round, a "Not for us", a choice; then, through the tunnel
+  (`terraform output ui_tunnel`), `GET /ingest/judgements` names them.
+
+**Later.** A deploy is still "push, then reset the VM". **To seed again**,
+the VM's own data must go first - `docker compose -p inspiring-news ...
+down -v` on it deletes the graph and the lake it wrote, then reset. The
+full stack is `stack = "full"` on the same VM: `terraform apply` changes
+the machine type (stop and start, not a new disk) and the next boot starts
+everything, the local model included.
+
+## What it costs (estimate, 2026-11-26)
+
+Google Cloud list prices in USD for `europe-southwest1` (Madrid), a month
+of 730 hours. The E2 figures are gcloud-compute.com's for Madrid, which
+agree with this document's September figure for `e2-standard-4`; the rest
+are Google's published rates as known on this date - the pricing pages
+render their tables in the browser only, and could not be read here. Check
+the Pricing Calculator before committing to one.
+
+| | Lite (first deploy) | Full (local LLM) |
+|---|---|---|
+| VM, on demand | `e2-standard-2`: **$57.7** | `e2-standard-4`: **$115** |
+| ... with a 1-year / 3-year commitment | $36.4 / $26.0 | ~$73 / ~$52 |
+| Boot disk, 60 GB `pd-balanced` (~$0.10-0.12/GB) | $6-7 | $6-7 |
+| Snapshots, daily, 7 kept (incremental; ~20-30 GB used) | $1-2 | $1.5-2 |
+| Static external IPv4, in use ($0.005/h) | $3.65 | $3.65 |
+| Internet egress (~$0.12/GB) | ~$0.06 per 1,000 universe visits | the same |
+| Seed bucket (~0.4 GB) | $0.01 | $0.01 |
+| Secret Manager (5-6 secrets, read at boot) | $0 (free tier) | $0 |
+| Logging (first 50 GiB a month free) | $0 | $0 |
+| Metrics (Ops Agent, `/metrics` into managed Prometheus) | ~$0-3 | ~$0-3 |
+| Alerts, only with `alert_email` (two conditions) | ~$0-3 | ~$0-3 |
+| The LLM | Groq: $0 on the free plan; ~$3 a month at most on the paid one | in the VM |
+| **A month, on demand** | **~$70** | **~$130** |
+| **With a 1-year commitment** | **~$49** | **~$88** |
+
+Google's $300 free trial is about four months of the lite stack, two of
+the full one.
+
+**Per unit:**
+
+- **A universe visit**: the bundle (162 KB gzipped, then cached for good),
+  the map (66 KB gzipped) and the photos as they come into view (10
+  thumbnails, 45 KB, in the first 20 s) - ~0.3-0.6 MB on a first visit,
+  less after. At $0.12/GB, 10,000 visits a month is ~$0.60.
+- **A claim on Groq** (`openai/gpt-oss-120b`, $0.15 / $0.60 per million
+  tokens in / out, `backend/data/evaluation/prices.json`): $0.064 per 100
+  claims at the verifier (the 20-claim screen of 23 Nov,
+  `backend/data/evaluation/experiments/models/results.md`). An article of
+  four claims with its other calls is a few tenths of a cent; an AI
+  selection of 20-40 candidates, 2-4 calls. On the free plan the limit is
+  requests, not money: the per-source verifier asks once per source, so
+  1,000 requests a day is roughly 30 articles.
+- **Nothing is metered by CPU.** The VM costs the same idle or busy; what
+  more work costs is time. On 2 vCPU a discovery round's embedding and an
+  analysis's enrichment take longer than on the dev machine - **not yet
+  measured on the VM**: the first deploy's step 5 is where.
+
+**Where it could be cheaper, and why not now:** a Spot VM costs a
+fraction and can be stopped at any time, the public universe with it; a
+Hetzner CX43 runs the full stack for ~€16 (above); Cloud Run for the
+universe alone would need the map's data without Neo4j - a redesign for
+~$0 of savings against a VM that has to run for `/discover` anyway.
 
 ## Floci: the deployment, checked without an account
 

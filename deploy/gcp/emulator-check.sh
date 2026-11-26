@@ -42,7 +42,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "-- compose: base + prod + gcp merge"
+echo "-- compose: base + prod + gcp merge, and with the lite file over them"
 (
   # A copy of docker/ beside a throwaway backend/.env: only that the three
   # files merge is checked, and compose reads the backend's env_file
@@ -58,6 +58,13 @@ echo "-- compose: base + prod + gcp merge"
   hash='$2a$10$abcdefghijklmnopqrstuuJ8GzbS7m0r0b3RqnSPdnqN0mE3JbV0G'
   printf "NEO4J_PASSWORD=x\nSEARXNG_SECRET=x\nSTORAGE_API_KEY=x\nLLM_MODEL=x\nSITE_PASSWORD_HASH='%s'\n" "$hash" > "$scratch/backend/.env"
   cd "$scratch/docker"
+  # The lite stack (deploy/gcp: stack = "lite") starts exactly these: no
+  # local model, no second graph.
+  lite="$(docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.gcp.yml \
+    -f docker-compose.lite.yml --env-file ../backend/.env config --services | sort | tr '\n' ' ')"
+  [ "$lite" = "backend caddy frontend inference neo4j searxng " ] \
+    || { echo "the lite stack would start: $lite"; exit 1; }
+  echo "lite merges; it starts: $lite"
   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.gcp.yml \
     --env-file ../backend/.env config > "$scratch/merged.yml"
   escaped="$(printf '%s' "$hash" | sed 's/\$/$$/g')"
@@ -101,8 +108,15 @@ docker run --rm --network "$NETWORK" \
     # bash here rejects on line one.
     tr -d "\r" < /repo/deploy/gcp/vm/bootstrap.sh > /tmp/repo/deploy/gcp/vm/bootstrap.sh
     PROJECT_ID=floci-local SECRET_PREFIX=inspiring-news LLM_MODEL=llama3.2:3b SITE_ADDRESS=:80 \
+    UNIVERSE_ADDRESS=universe.example STACK=lite \
     SECRET_MANAGER_ENDPOINT=http://floci-gcp:4588 SECRET_MANAGER_TOKEN=floci \
       bash /tmp/repo/deploy/gcp/vm/bootstrap.sh render-env /tmp/rendered.env
+
+    # The Groq key is given, not generated: the one emulator.tfvars names.
+    [ "$(grep "^GROQ_API_KEY=" /tmp/rendered.env | cut -d= -f2-)" = "gsk-emulator-not-a-key" ] \
+      || { echo "GROQ_API_KEY did not reach the rendered .env"; exit 1; }
+    grep -qx "UNIVERSE_ADDRESS=universe.example" /tmp/rendered.env \
+      || { echo "UNIVERSE_ADDRESS did not reach the rendered .env"; exit 1; }
 
     rendered="$(grep "^STORAGE_API_KEY=" /tmp/rendered.env | cut -d= -f2-)"
     [ "$rendered" = "$(terraform output -raw storage_api_key)" ] \
@@ -129,6 +143,12 @@ assert bcrypt.checkpw(os.environ[\"SITE_PASSWORD\"].encode(), value[1:-1].encode
     # code does not describe - drift a real apply would show too.
     terraform plan -detailed-exitcode -input=false -no-color -var-file=emulator.tfvars >/dev/null
     echo "second plan: no changes"
+
+    # The full stack, planned over what is applied: its variables must
+    # still make a valid plan (changes expected, nothing applied).
+    terraform plan -input=false -no-color -var-file=emulator.tfvars \
+      -var stack=full -var free_hostnames=false -var groq_api_key= >/dev/null
+    echo "the full stack plans"
 
     terraform destroy -auto-approve -input=false -no-color -var-file=emulator.tfvars >/dev/null
     echo "destroyed"

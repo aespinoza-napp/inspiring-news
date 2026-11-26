@@ -11,8 +11,12 @@
 # channels or alert policies - so none of this is created under it.
 
 locals {
-  monitor     = var.alert_email != "" && !local.emulated
-  uptime_host = var.domain != "" ? var.domain : google_compute_address.vm.address
+  monitor = var.alert_email != "" && !local.emulated
+  # The newsroom's site when it has a name (a domain, or the sslip.io one
+  # with free_hostnames), over HTTPS; else the address over HTTP, which
+  # both Caddy sites answer /healthz on.
+  site_named  = local.site_address != ":80"
+  uptime_host = local.site_named ? local.site_address : google_compute_address.vm.address
 }
 
 resource "google_monitoring_notification_channel" "email" {
@@ -36,9 +40,9 @@ resource "google_monitoring_uptime_check_config" "healthz" {
 
   http_check {
     path         = "/healthz"
-    port         = var.domain != "" ? 443 : 80
-    use_ssl      = var.domain != ""
-    validate_ssl = var.domain != ""
+    port         = local.site_named ? 443 : 80
+    use_ssl      = local.site_named
+    validate_ssl = local.site_named
   }
 
   monitored_resource {

@@ -405,6 +405,14 @@ class Settings(BaseSettings):
     # model local.
     GROQ_MODELS: dict[str, str] = {}
 
+    # Whether a local model serves LLM_BASE_URL at all. False on the first
+    # Google Cloud deploy (2026-11-26, docker/docker-compose.lite.yml):
+    # no Ollama on the machine, Groq is the LLM, and /healthz asks Groq
+    # for GROQ_MODEL instead of the local server (src/services/health.py).
+    # The calls themselves still try the local model when Groq cannot
+    # answer, and fail there as "unreachable", never as a verdict.
+    LLM_LOCAL: bool = True
+
     # The writer's per-draft defaults. Read only through WriterThresholds
     # (src/config/thresholds.py), so one draft can be asked for with other
     # values; docs/decisions/writing.md, "Writing".

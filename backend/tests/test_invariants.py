@@ -165,6 +165,9 @@ NON_THRESHOLD_SETTINGS = {
     # Groq first (src/services/llms.py): which hosted model is asked before
     # the local one, and with what key - where a call goes, like LLM_MODEL.
     "GROQ_API_KEY", "GROQ_BASE_URL", "GROQ_MODEL", "GROQ_MODELS",
+    # Whether there is a local model at all (/healthz asks Groq when not):
+    # what the machine runs, not how a run judges.
+    "LLM_LOCAL",
     # The AI selection's own per-call limit (src/services/selection/):
     # infrastructure, like LLM_TIMEOUT - how long to wait on the model,
     # not how a run judges anything.

@@ -10,6 +10,7 @@ resource "google_project_service" "apis" {
     "iam.googleapis.com",
     "logging.googleapis.com",
     "monitoring.googleapis.com",
+    "storage.googleapis.com",
   ])
 
   service = each.value
@@ -84,10 +85,18 @@ locals {
     "storage-api-key"    = random_password.storage_api_key.result
     "site-password-hash" = random_password.site.bcrypt_hash
   }
+
+  # Given rather than generated, and only when given: bootstrap.sh reads
+  # it with optional_secret. nonsensitive() on the test alone - the key
+  # stays sensitive - since a map chosen by a sensitive condition would be
+  # sensitive as a whole, and for_each refuses that.
+  optional_secrets = nonsensitive(var.groq_api_key != "") ? { "groq-api-key" = var.groq_api_key } : {}
+
+  all_secrets = merge(local.secrets, local.optional_secrets)
 }
 
 resource "google_secret_manager_secret" "stack" {
-  for_each = local.secrets
+  for_each = local.all_secrets
 
   secret_id = "${var.name}-${each.key}"
 
@@ -104,16 +113,45 @@ resource "google_secret_manager_secret" "stack" {
 }
 
 resource "google_secret_manager_secret_version" "stack" {
-  for_each = local.secrets
+  for_each = local.all_secrets
 
   secret      = google_secret_manager_secret.stack[each.key].id
   secret_data = each.value
 }
 
 resource "google_secret_manager_secret_iam_member" "vm" {
-  for_each = local.secrets
+  for_each = local.all_secrets
 
   secret_id = google_secret_manager_secret.stack[each.key].id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.vm.email}"
+}
+
+# ---------------------------------------------------------------------
+# The seed: what a new VM starts from (deploy/gcp/vm/bootstrap.sh, seed).
+# scripts/gcp_seed.sh uploads the graph's dump, the lake and the import's
+# photos from the dev machine; the first boot restores them into volumes
+# that do not exist yet, never over what the VM wrote. Private: the VM
+# reads it with its own account, no one else is granted anything.
+# ---------------------------------------------------------------------
+
+resource "google_storage_bucket" "seed" {
+  # Bucket names are global, hence the project in it.
+  name     = "${var.project_id}-${var.name}-seed"
+  location = var.region
+
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+
+  # A copy of what the dev machine holds, made again by gcp_seed.sh: a
+  # destroy should not stop at it.
+  force_destroy = true
+
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_storage_bucket_iam_member" "seed" {
+  bucket = google_storage_bucket.seed.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.vm.email}"
 }

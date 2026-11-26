@@ -20,13 +20,31 @@ variable "name" {
   default     = "inspiring-news"
 }
 
-variable "machine_type" {
-  # 4 vCPU, 16 GB. 16 GB is the measured requirement: the stack's working
-  # sets add up to ~6.1 GiB, ~8.4 GiB with caches, and ~9.6 GiB were
-  # resident on the first production run (docs/decisions/deployment.md).
-  description = "16 GB is the floor; see docs/decisions/deployment.md."
+variable "stack" {
+  # full: the whole pipeline with its own LLM (Ollama), both graphs - 16 GB.
+  # lite: the readers' universe and the newsroom's /discover, with Groq as
+  # the LLM, no local model and no Devastating graph
+  # (docker/docker-compose.lite.yml) - 8 GB. docs/decisions/deployment.md,
+  # "The first deploy: the universe and /discover".
+  description = "\"full\" or \"lite\" (the universe and /discover, Groq as the LLM)."
   type        = string
-  default     = "e2-standard-4"
+  default     = "full"
+
+  validation {
+    condition     = contains(["full", "lite"], var.stack)
+    error_message = "stack is \"full\" or \"lite\"."
+  }
+}
+
+variable "machine_type" {
+  # By the stack when not given (vm.tf): e2-standard-4 (4 vCPU, 16 GB) for
+  # full - its working sets add up to ~6.1 GiB, ~8.4 GiB with caches, and
+  # ~9.6 GiB were resident on the first production run - and
+  # e2-standard-2 (2 vCPU, 8 GB) for lite, whose caps add up to ~7.1 GB
+  # without the LLM's ~3.2 GiB and the second graph's ~1 GB.
+  description = "Empty: e2-standard-4 for the full stack, e2-standard-2 for lite. See docs/decisions/deployment.md."
+  type        = string
+  default     = ""
 }
 
 variable "boot_disk_gb" {
@@ -72,6 +90,41 @@ variable "domain" {
     condition     = var.domain == "" || can(regex("^([a-z0-9]([a-z0-9-]*[a-z0-9])?[.])+[a-z]{2,}$", var.domain))
     error_message = "domain is a bare hostname such as factcheck.example.org - no https://, path or port - or empty."
   }
+}
+
+variable "universe_domain" {
+  # The readers' universe, open to anyone, at a name of its own (the
+  # newsroom's site, `domain`, is behind a password). Empty: an sslip.io
+  # name with free_hostnames, else plain HTTP on the VM's address.
+  description = "Optional. A name whose A record points at external_ip, for the universe. Empty: see free_hostnames."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.universe_domain == "" || can(regex("^([a-z0-9]([a-z0-9-]*[a-z0-9])?[.])+[a-z]{2,}$", var.universe_domain))
+    error_message = "universe_domain is a bare hostname such as universe.example.org - no https://, path or port - or empty."
+  }
+}
+
+variable "free_hostnames" {
+  # sslip.io answers any name with an address in it with that address
+  # (34-175-1-2.sslip.io -> 34.175.1.2, and admin.34-175-1-2.sslip.io too),
+  # so Caddy can get a real certificate with no domain bought. A third
+  # party resolving the names, and Let's Encrypt's limits shared with its
+  # other users: a way to start, not to stay.
+  description = "With no domain: the universe at <ip>.sslip.io and the newsroom's site at admin.<ip>.sslip.io, both over HTTPS."
+  type        = bool
+  default     = false
+}
+
+variable "groq_api_key" {
+  # Groq first (backend/src/services/llms.py); with the lite stack it is
+  # the only LLM. Into Secret Manager like the generated ones, and into
+  # the state: deploy/gcp/.gitignore keeps that out of git.
+  description = "Optional; needed by the lite stack for the AI selection and analyses. From console.groq.com."
+  type        = string
+  default     = ""
+  sensitive   = true
 }
 
 variable "alert_email" {

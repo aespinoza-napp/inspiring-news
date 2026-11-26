@@ -1,0 +1,58 @@
+# The first Google Cloud deploy (2026-11-26): the readers' universe and
+# the newsroom's /discover, on an 8 GB machine. Layered last, on the
+# production and Google Cloud files:
+#
+#   docker compose -p inspiring-news -f docker-compose.yml \
+#     -f docker-compose.prod.yml -f docker-compose.gcp.yml \
+#     -f docker-compose.lite.yml --env-file ../backend/.env up -d --build
+#
+# deploy/gcp/vm/bootstrap.sh adds it when Terraform's `stack` is "lite".
+# What it leaves out is what made the full stack need 16 GB:
+#
+# - **No local model.** Ollama held ~3.2 GiB for the 3B verifier and ~4 GB
+#   of CPU per call. Groq is the LLM (GROQ_API_KEY, Secret Manager): the AI
+#   selection, and the analyses /discover sends. When Groq cannot answer
+#   (its free plan's day spent, the key refused) a call fails as
+#   "unreachable", never as a verdict - there is no local model to fall
+#   back to here.
+# - **No Devastating graph** (~1 GB): the universe reads the positive one.
+#   A Devastating analysis still runs; its graph write fails soft.
+#
+# The universe needs the backend and Neo4j; /discover needs the frontend,
+# the backend and inference/ (the mission screen and the ranking embed
+# every candidate). SearXNG stays, at ~0.2 GB: what /discover sends to
+# analysis searches the web, and a search from a datacenter address is
+# the deployment's one untested risk (docs/decisions/deployment.md).
+
+services:
+  # Not started by `up`: a service with a profile runs only when that
+  # profile is asked for, and nothing here asks.
+  ollama:
+    profiles: ["local-llm"]
+
+  ollama-pull:
+    profiles: ["local-llm"]
+
+  neo4j-devastating:
+    profiles: ["devastating"]
+
+  backend:
+    # The production file makes the backend wait for the model pull; there
+    # is no model. Its own two waits stay: SearXNG and inference/.
+    depends_on: !override
+      searxng:
+        condition: service_healthy
+      inference:
+        condition: service_healthy
+    environment:
+      # /healthz asks Groq for GROQ_MODEL instead of a local server
+      # (src/services/health.py), so the uptime check reports a stack that
+      # works as up.
+      - LLM_LOCAL=false
+
+  inference:
+    # The working set is 1.4-2.1 GiB; the rest of the production 6g was
+    # file cache (deployment.md, "The stack, measured"), which the kernel
+    # reclaims under a lower cap - slower reads, not a kill. 4g leaves the
+    # 8 GB machine room for Neo4j, the backend and the frontend.
+    mem_limit: 4g
